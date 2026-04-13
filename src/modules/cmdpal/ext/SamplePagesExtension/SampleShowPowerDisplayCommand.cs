@@ -25,7 +25,7 @@ internal sealed partial class SampleShowPowerDisplayCommand : InvokableCommand
             PInvoke.GetCursorPos(out var cursorPos);
 
             var extensionDir = AppContext.BaseDirectory;
-            var exePath = Path.GetFullPath(Path.Combine(extensionDir, "..", "..", "..", "PowerDisplay", "PowerDisplay.exe"));
+            var exePath = Path.GetFullPath(Path.Combine(extensionDir, "..", "..", "..", "PowerToys.PowerDisplay.exe"));
 
             if (!File.Exists(exePath))
             {

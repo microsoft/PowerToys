@@ -24,11 +24,11 @@ namespace PowerDisplay
     public partial class App : Application
     {
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
+        private readonly int? _showAtX;
+        private readonly int? _showAtY;
         private Window? _mainWindow;
         private int _powerToysRunnerPid;
         private string? _pipeName;
-        private readonly int? _showAtX;
-        private readonly int? _showAtY;
         private TrayIconService? _trayIconService;
 
         public App(int runnerPid, string? pipeName, int? showAtX = null, int? showAtY = null)
