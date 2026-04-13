@@ -1,3 +1,4 @@
 GetForegroundWindow
 GetWindowTextLength
 GetWindowText
+GetCursorPos

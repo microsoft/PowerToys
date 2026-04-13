@@ -35,6 +35,7 @@ public partial class SamplePagesCommandsProvider : CommandProvider
         {
             new SampleDockBand(),
             new SampleButtonsDockBand(),
+            new SamplePowerDisplayDockBand(),
         };
 
         return bands.ToArray();
