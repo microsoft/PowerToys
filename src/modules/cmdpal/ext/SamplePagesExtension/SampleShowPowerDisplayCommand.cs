@@ -5,7 +5,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
@@ -25,8 +24,8 @@ internal sealed partial class SampleShowPowerDisplayCommand : InvokableCommand
         {
             PInvoke.GetCursorPos(out var cursorPos);
 
-            var extensionDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var exePath = Path.GetFullPath(Path.Combine(extensionDir!, "..", "..", "..", "PowerDisplay", "PowerDisplay.exe"));
+            var extensionDir = AppContext.BaseDirectory;
+            var exePath = Path.GetFullPath(Path.Combine(extensionDir, "..", "..", "..", "PowerDisplay", "PowerDisplay.exe"));
 
             if (!File.Exists(exePath))
             {
