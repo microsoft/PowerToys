@@ -5,6 +5,7 @@
 using System.Globalization;
 
 using ManagedCommon;
+using Microsoft.PowerToys.PreviewHandler;
 
 namespace Microsoft.PowerToys.ThumbnailHandler.Svg
 {
@@ -18,6 +19,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Svg
         [STAThread]
         public static void Main(string[] args)
         {
+            WebView2Resolver.Register();
             ApplicationConfiguration.Initialize();
             Logger.InitializeLogger("\\FileExplorer_localLow\\SvgThumbnails\\logs", true);
             if (args != null)

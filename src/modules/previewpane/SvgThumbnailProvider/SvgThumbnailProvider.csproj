@@ -42,4 +42,5 @@
     <ProjectReference Include="..\Common\PreviewHandlerCommon.csproj" />
     <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
   </ItemGroup>
+  <Import Project="..\PreviewHandler.WebView2.targets" />
 </Project>

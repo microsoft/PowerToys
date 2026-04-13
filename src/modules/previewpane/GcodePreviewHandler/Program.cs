@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Windows.Threading;
 
 using Common.UI;
+using Microsoft.PowerToys.PreviewHandler;
 using Microsoft.PowerToys.Telemetry;
 using PowerToys.Interop;
 
@@ -23,6 +24,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Gcode
         [STAThread]
         public static void Main(string[] args)
         {
+            WebView2Resolver.Register();
             ApplicationConfiguration.Initialize();
             if (args != null)
             {

@@ -66,4 +66,5 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <Import Project="..\PreviewHandler.WebView2.targets" />
 </Project>

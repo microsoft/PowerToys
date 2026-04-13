@@ -7,6 +7,7 @@ using System.Windows.Threading;
 
 using Common.UI;
 using ManagedCommon;
+using Microsoft.PowerToys.PreviewHandler;
 using PowerToys.Interop;
 
 namespace Microsoft.PowerToys.PreviewHandler.Monaco
@@ -23,6 +24,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         [STAThread]
         public static void Main(string[] args)
         {
+            WebView2Resolver.Register();
             Logger.InitializeLogger("\\FileExplorer_localLow\\Monaco\\logs", true);
 
             ApplicationConfiguration.Initialize();

@@ -4,6 +4,8 @@
 
 using System.Globalization;
 
+using Microsoft.PowerToys.PreviewHandler;
+
 namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
 {
     internal static class Program
@@ -16,6 +18,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
         [STAThread]
         public static void Main(string[] args)
         {
+            WebView2Resolver.Register();
             ApplicationConfiguration.Initialize();
             if (args != null)
             {

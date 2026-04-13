@@ -1,0 +1,31 @@
+<!-- Shared targets for preview handler EXE projects.
+     1. Copies the managed WebView2.Core.dll as a renamed file
+     2. Removes the managed WebView2.Core.dll from the deps.json generation inputs
+     so WebView2Resolver can load the managed copy at runtime. -->
+<Project>
+  <Target Name="CopyManagedWebView2Core" AfterTargets="Build">
+    <PropertyGroup>
+      <_WebView2ManagedSource>$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', 'microsoft.web.webview2', '1.0.3179.45', 'lib_manual', 'netcoreapp3.0', 'Microsoft.Web.WebView2.Core.dll'))</_WebView2ManagedSource>
+      <_WebView2ManagedDest>$(OutputPath)Microsoft.Web.WebView2.Core.Managed.dll</_WebView2ManagedDest>
+    </PropertyGroup>
+    <Copy SourceFiles="$(_WebView2ManagedSource)" DestinationFiles="$(_WebView2ManagedDest)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Remove Microsoft.Web.WebView2.Core.dll from assembly references to prevent:
+       1. The managed DLL from being copied to the output folder (where it would conflict
+          with the native DLL that WinUI3 projects place there)
+       2. The DLL from appearing in deps.json TPA list (so WebView2Resolver can fire)
+       Runs before both deps.json generation AND file copy stages. -->
+  <Target Name="RemoveWebView2CoreFromDeps"
+          BeforeTargets="GenerateBuildDependencyFile;GeneratePublishDependencyFile;_CopyFilesMarkedCopyLocal;CopyFilesToOutputDirectory"
+          Condition="'$(WebView2EnableCsWinRTProjection)' != 'true'">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+          Condition="'%(Filename)' == 'Microsoft.Web.WebView2.Core' AND '%(Extension)' == '.dll'" />
+      <RuntimeCopyLocalItems Remove="@(RuntimeCopyLocalItems)"
+          Condition="'%(Filename)' == 'Microsoft.Web.WebView2.Core' AND '%(Extension)' == '.dll'" />
+      <ReferencePath Remove="@(ReferencePath)"
+          Condition="'%(Filename)' == 'Microsoft.Web.WebView2.Core' AND '%(Extension)' == '.dll'" />
+    </ItemGroup>
+  </Target>
+</Project>
