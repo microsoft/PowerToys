@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "components": [
+    "Microsoft.VisualStudio.Workload.ManagedDesktop",
+    "Microsoft.VisualStudio.Workload.NetCrossPlat",
+    "Microsoft.Net.Component.4.8.SDK",
+    "Microsoft.NetCore.Component.Runtime.9.0",
+    "Microsoft.NetCore.Component.SDK",
+    "Microsoft.VisualStudio.Component.Windows11SDK.26100"
+  ]
+}
