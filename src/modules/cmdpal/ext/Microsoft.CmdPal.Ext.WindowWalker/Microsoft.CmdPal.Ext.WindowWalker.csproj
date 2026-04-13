@@ -19,6 +19,9 @@
     <!-- WASDK, WebView2, CmdPal Toolkit references now included via Common.ExtDependencies.props -->
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>

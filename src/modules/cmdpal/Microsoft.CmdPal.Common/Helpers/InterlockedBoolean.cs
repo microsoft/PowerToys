@@ -12,7 +12,7 @@ public struct InterlockedBoolean(bool initialValue = false)
     private int _value = initialValue ? 1 : 0;
 
     /// <summary>
-    /// Gets or sets the boolean value atomically
+    /// Gets or sets a value indicating whether the atomic boolean is true.
     /// </summary>
     public bool Value
     {

@@ -70,7 +70,8 @@ public:
         Logger::trace(L"Created SEND_SETTINGS_TELEMETRY_EVENT: handle={}", reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
 
         // Create Toggle event for Quick Access support
-        // This allows Quick Access to launch PowerDisplay even when module is not enabled
+        // Listener registration is tied to enable()/disable() so activation still
+        // flows through the module's runtime enable/GPO checks.
         m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
         Logger::trace(L"Created TOGGLE_EVENT: handle={}", reinterpret_cast<void*>(m_hToggleEvent));
 
@@ -90,8 +91,6 @@ public:
             Logger::info(L"All Windows Events created successfully");
         }
 
-        // Start toggle event listener thread for Quick Access support
-        StartToggleEventListener();
     }
 
     ~PowerDisplayModule()
@@ -129,7 +128,7 @@ public:
 
     void StartToggleEventListener()
     {
-        if (!m_hToggleEvent || !m_hStopEvent)
+        if (!m_hToggleEvent || !m_hStopEvent || m_toggleEventThread.joinable())
         {
             return;
         }
@@ -152,7 +151,7 @@ public:
                 if (result == WAIT_OBJECT_0 + TOGGLE_EVENT_INDEX)
                 {
                     Logger::trace(L"Toggle event received");
-                    TogglePowerDisplay();
+                    TryTogglePowerDisplay(L"Toggle event");
                 }
                 else if (result == WAIT_OBJECT_0 + STOP_EVENT_INDEX)
                 {
@@ -170,6 +169,34 @@ public:
 
             Logger::info(L"Toggle event listener thread stopped");
         });
+    }
+
+    bool IsActivationAllowed(const wchar_t* source)
+    {
+        if (gpo_policy_enabled_configuration() == powertoys_gpo::gpo_rule_configured_t::gpo_rule_configured_disabled)
+        {
+            Logger::warn(L"{} ignored because PowerDisplay is disabled by GPO", source);
+            return false;
+        }
+
+        if (!m_enabled)
+        {
+            Logger::info(L"{} ignored because PowerDisplay module is disabled", source);
+            return false;
+        }
+
+        return true;
+    }
+
+    bool TrySendMessage(const std::wstring& message_type, const std::wstring& message_arg, const wchar_t* source)
+    {
+        if (!IsActivationAllowed(source))
+        {
+            return false;
+        }
+
+        m_processManager.send_message(message_type, message_arg);
+        return true;
     }
 
     void StopToggleEventListener()
@@ -191,8 +218,13 @@ public:
     /// If process is running, launches again to trigger redirect activation (OnActivated handles toggle).
     /// If process is not running, starts it via Named Pipe and sends toggle message.
     /// </summary>
-    void TogglePowerDisplay()
+    bool TryTogglePowerDisplay(const wchar_t* source)
     {
+        if (!IsActivationAllowed(source))
+        {
+            return false;
+        }
+
         if (m_processManager.is_running())
         {
             // Process running - launch to trigger single instance redirect, OnActivated will toggle
@@ -208,6 +240,7 @@ public:
             m_processManager.send_message(CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE);
         }
         Trace::ActivatePowerDisplay();
+        return true;
     }
 
     virtual void destroy() override
@@ -251,7 +284,7 @@ public:
             if (action_object.get_name() == L"Launch")
             {
                 Logger::trace(L"Launch action received");
-                TogglePowerDisplay();
+                TryTogglePowerDisplay(L"Launch action");
             }
             else if (action_object.get_name() == L"RefreshMonitors")
             {
@@ -274,7 +307,7 @@ public:
                 Logger::trace(L"ApplyProfile: profile name = '{}'", profileName);
 
                 // Send ApplyProfile message with profile name via Named Pipe
-                m_processManager.send_message(CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE, profileName);
+                TrySendMessage(CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE, profileName, L"ApplyProfile action");
             }
         }
         catch (std::exception&)
@@ -297,6 +330,8 @@ public:
         m_enabled = true;
         Trace::EnablePowerDisplay(true);
 
+        StartToggleEventListener();
+
         // Start the process manager (launches PowerDisplay.exe with Named Pipe)
         m_processManager.start();
 
@@ -307,13 +342,12 @@ public:
     {
         Logger::trace(L"PowerDisplay::disable()");
 
-        if (m_enabled)
-        {
-            // Stop the process manager (sends terminate message and waits for exit)
-            m_processManager.stop();
-        }
-
         m_enabled = false;
+
+        StopToggleEventListener();
+
+        // Stop the process manager (sends terminate message and waits for exit)
+        m_processManager.stop();
         Trace::EnablePowerDisplay(false);
     }
 

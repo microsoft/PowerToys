@@ -70,12 +70,12 @@
             Spacing="2">
             <TextBlock
                 Style="{StaticResource BodyTextBlockStyle}"
-                Text="{x:Bind Header, Mode=OneWay}"
+                Text="{x:Bind Header, Mode=OneTime}"
                 TextWrapping="NoWrap" />
             <TextBlock
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
-                Text="{x:Bind Timestamp, Converter={StaticResource DateTimeToFriendlyStringConverter}, Mode=OneWay}" />
+                Text="{x:Bind Timestamp, Converter={StaticResource DateTimeToFriendlyStringConverter}, Mode=OneTime}" />
         </StackPanel>
     </Grid>
 </UserControl>

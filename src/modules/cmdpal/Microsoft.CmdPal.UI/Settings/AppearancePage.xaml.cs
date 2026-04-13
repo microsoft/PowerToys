@@ -31,10 +31,10 @@ public sealed partial class AppearancePage : Page
     {
         InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
         var themeService = App.Current.Services.GetRequiredService<IThemeService>();
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        ViewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)

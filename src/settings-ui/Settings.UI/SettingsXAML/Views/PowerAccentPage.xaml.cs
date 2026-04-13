@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
+using System;
 using System.Linq;
 using CommunityToolkit.WinUI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -90,6 +91,36 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             loadingLanguageListDontTriggerSelectionChanged = false;
+        }
+
+        private void LanguageSettingsCard_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateLanguageListMaxWidth(sender as Control);
+        }
+
+        private void LanguageSettingsCard_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateLanguageListMaxWidth(sender as Control);
+        }
+
+        /// <summary>
+        /// Constrain the character set lists to the width of the parent card to permit
+        /// column reflow.
+        /// </summary>
+        /// <param name="card">The parent SettingsCard control.</param>
+        private void UpdateLanguageListMaxWidth(Control card)
+        {
+            if (card is null)
+            {
+                return;
+            }
+
+            double availableWidth =
+                card.ActualWidth - card.Padding.Left - card.Padding.Right;
+
+            QuickAccent_Language_Select.MaxWidth = Math.Max(
+                QuickAccent_Language_Select.MinWidth,
+                availableWidth);
         }
     }
 }

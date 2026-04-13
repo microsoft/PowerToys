@@ -34,7 +34,7 @@ namespace ColorPicker.Helpers
         public void GetStringRepresentationTest(string type, string expected)
         {
             var result = ColorRepresentationHelper.GetStringRepresentation(Color.Black, type, ColorFormatHelper.GetDefaultFormat(type));
-            Assert.AreEqual(result, expected);
+            Assert.AreEqual(expected, result);
         }
     }
 }

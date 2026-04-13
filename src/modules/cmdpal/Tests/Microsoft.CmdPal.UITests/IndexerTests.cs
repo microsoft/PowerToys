@@ -45,7 +45,7 @@ public class IndexerTests : CommandPaletteTestBase
         SetSearchBox("files");
 
         var searchFileItem = this.Find<NavigationViewItem>("Search files");
-        Assert.AreEqual(searchFileItem.Name, "Search files");
+        Assert.AreEqual("Search files", searchFileItem.Name);
         searchFileItem.DoubleClick();
     }
 

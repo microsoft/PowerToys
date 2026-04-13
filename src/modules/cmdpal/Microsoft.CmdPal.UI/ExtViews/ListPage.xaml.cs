@@ -9,6 +9,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -155,21 +156,7 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private int GetFirstSelectableIndex()
     {
-        var items = ItemView.Items;
-        if (items is null || items.Count == 0)
-        {
-            return -1;
-        }
-
-        for (var i = 0; i < items.Count; i++)
-        {
-            if (!IsSeparator(items[i]))
-            {
-                return i;
-            }
-        }
-
-        return -1;
+        return FindSelectableIndex(0, 1);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
@@ -183,7 +170,7 @@ public sealed partial class ListPage : Page,
                 return;
             }
 
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
             if (settings.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(item);
@@ -203,7 +190,7 @@ public sealed partial class ListPage : Page,
     {
         if (ItemView.SelectedItem is ListItemViewModel vm)
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
             if (!settings.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(vm);
@@ -603,7 +590,42 @@ public sealed partial class ListPage : Page,
             ? Math.Min(itemCount - 1, currentIndex + Math.Max(1, itemsPerPage))
             : Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
 
+        targetIndex = FindSelectableIndexForPageNavigation(targetIndex, isPageDown);
+        if (targetIndex == -1)
+        {
+            return null;
+        }
+
         return (currentIndex, targetIndex);
+    }
+
+    private int FindSelectableIndex(int startIndex, int step)
+    {
+        var items = ItemView.Items;
+        var count = items.Count;
+        if (count == 0 || step == 0)
+        {
+            return -1;
+        }
+
+        startIndex = Math.Clamp(startIndex, 0, count - 1);
+
+        for (var i = startIndex; i >= 0 && i < count; i += step)
+        {
+            if (!IsSeparator(items[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private int FindSelectableIndexForPageNavigation(int targetIndex, bool isPageDown)
+    {
+        var step = isPageDown ? 1 : -1;
+        var index = FindSelectableIndex(targetIndex, step);
+        return index != -1 ? index : FindSelectableIndex(targetIndex - step, -step);
     }
 
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -1044,39 +1066,24 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private void NavigateUp()
     {
-        var newIndex = ItemView.SelectedIndex;
-
-        if (ItemView.SelectedIndex > 0)
+        if (ItemView.Items.Count == 0)
         {
-            newIndex--;
-
-            while (
-                newIndex >= 0 &&
-                IsSeparator(ItemView.Items[newIndex]) &&
-                newIndex != ItemView.SelectedIndex)
-            {
-                newIndex--;
-            }
-
-            if (newIndex < 0)
-            {
-                newIndex = ItemView.Items.Count - 1;
-
-                while (
-                    newIndex >= 0 &&
-                    IsSeparator(ItemView.Items[newIndex]) &&
-                    newIndex != ItemView.SelectedIndex)
-                {
-                    newIndex--;
-                }
-            }
-        }
-        else
-        {
-            newIndex = ItemView.Items.Count - 1;
+            return;
         }
 
-        ItemView.SelectedIndex = newIndex;
+        var newIndex = ItemView.SelectedIndex > 0
+            ? FindSelectableIndex(ItemView.SelectedIndex - 1, -1)
+            : -1;
+
+        if (newIndex == -1)
+        {
+            newIndex = FindSelectableIndex(ItemView.Items.Count - 1, -1);
+        }
+
+        if (newIndex != -1)
+        {
+            ItemView.SelectedIndex = newIndex;
+        }
     }
 
     private void Items_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
@@ -1167,50 +1174,24 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private void NavigateDown()
     {
-        var newIndex = ItemView.SelectedIndex;
-
-        if (ItemView.SelectedIndex == ItemView.Items.Count - 1)
+        if (ItemView.Items.Count == 0)
         {
-            newIndex = 0;
-            while (
-                newIndex < ItemView.Items.Count &&
-                IsSeparator(ItemView.Items[newIndex]))
-            {
-                newIndex++;
-            }
-
-            if (newIndex >= ItemView.Items.Count)
-            {
-                return;
-            }
-        }
-        else
-        {
-            newIndex++;
-
-            while (
-                newIndex < ItemView.Items.Count &&
-                IsSeparator(ItemView.Items[newIndex]) &&
-                newIndex != ItemView.SelectedIndex)
-            {
-                newIndex++;
-            }
-
-            if (newIndex >= ItemView.Items.Count)
-            {
-                newIndex = 0;
-
-                while (
-                    newIndex < ItemView.Items.Count &&
-                    IsSeparator(ItemView.Items[newIndex]) &&
-                    newIndex != ItemView.SelectedIndex)
-                {
-                    newIndex++;
-                }
-            }
+            return;
         }
 
-        ItemView.SelectedIndex = newIndex;
+        var newIndex = ItemView.SelectedIndex < ItemView.Items.Count - 1
+            ? FindSelectableIndex(ItemView.SelectedIndex + 1, 1)
+            : -1;
+
+        if (newIndex == -1)
+        {
+            newIndex = FindSelectableIndex(0, 1);
+        }
+
+        if (newIndex != -1)
+        {
+            ItemView.SelectedIndex = newIndex;
+        }
     }
 
     private bool IsSeparator(object? item) => item is ListItemViewModel li && !li.IsInteractive;

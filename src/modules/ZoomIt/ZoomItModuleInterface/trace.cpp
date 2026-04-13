@@ -91,3 +91,12 @@ void Trace::ZoomItActivateSnip() noexcept
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+void Trace::ZoomItActivateSnipOcr() noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "ZoomIt_ActivateSnipOcr",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

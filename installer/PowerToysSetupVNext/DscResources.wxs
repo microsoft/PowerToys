@@ -22,6 +22,16 @@
 
     <ComponentGroup Id="DscResourcesComponentGroup">
       <ComponentRef Id="PowerToysDSCReference" />
+      <?if $(var.PerUser) = "false" ?>
+      <Component Id="SecureDSCModulesFolder" Guid="7D2F4E57-CCB2-4F89-9B8B-62E9B3CC4E12" Directory="DSCModulesReferenceFolder" Bitness="always64">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="SecureDSCModulesFolder" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <CreateFolder>
+          <PermissionEx Sddl="D:PAI(A;OICI;GA;;;SY)(A;OICI;GA;;;BA)(A;OICI;GRGX;;;BU)(A;OICIIO;GA;;;CO)" />
+        </CreateFolder>
+      </Component>
+      <?endif?>
       <Component Id="RemoveDSCModulesFolder" Guid="A3C77D92-4E97-4C1A-9F2E-8B3C5D6E7F80" Directory="DSCModulesReferenceFolder">
         <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
           <RegistryValue Type="string" Name="RemoveDSCModulesFolder" Value="" KeyPath="yes" />

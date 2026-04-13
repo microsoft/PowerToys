@@ -4807,6 +4807,9 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Microphones_Default_Name" xml:space="preserve">
     <value>Default</value>
   </data>
+  <data name="ZoomIt_Break_LockWorkstation.Content" xml:space="preserve">
+    <value>Lock workstation during break</value>
+  </data>
   <data name="ZoomIt_SnipGroup.Header" xml:space="preserve">
     <value>Snip</value>
   </data>
@@ -4818,6 +4821,24 @@ The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
     <value>Press **{0}** to save the snip to a file instead of the clipboard.</value>
+  </data>
+  <data name="ZoomIt_SnipOcr_Shortcut.Header" xml:space="preserve">
+    <value>Snip OCR activation</value>
+  </data>
+  <data name="ZoomIt_SnipOcr_Shortcut.Description" xml:space="preserve">
+    <value>Copy text from the selected region to the clipboard.</value>
+  </data>
+  <data name="ZoomIt_PanoramaGroup.Header" xml:space="preserve">
+    <value>Panorama</value>
+  </data>
+  <data name="ZoomIt_PanoramaGroup.Description" xml:space="preserve">
+    <value>Capture a scrolling panorama of a selected screen region.</value>
+  </data>
+  <data name="ZoomIt_Panorama_Shortcut.Header" xml:space="preserve">
+    <value>Panorama activation</value>
+  </data>
+  <data name="ZoomIt_Panorama_Shortcut.Description" xml:space="preserve">
+    <value>Select the area, then scroll the content. Move slowly and consistently, and do not rewind to previously covered areas. Press the hotkey again or with Shift to save to a file.</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -5363,9 +5384,6 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
     <value>Enable Power Display</value>
   </data>
-  <data name="PowerDisplay_Configuration_GroupSettings.Header" xml:space="preserve">
-    <value>Configuration</value>
-  </data>
   <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
     <value>Toggle Power Display</value>
     <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
@@ -5377,26 +5395,17 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
   </data>
+	<data name="PowerDisplay_LaunchButton.Content" xml:space="preserve">
+    <value>Open Power Display</value>
+  </data>
   <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
     <value>Launch the Power Display utility</value>
   </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup.Header" xml:space="preserve">
-    <value>Restore settings on startup</value>
-  </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup.Description" xml:space="preserve">
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Content" xml:space="preserve">
     <value>Restore monitor brightness and color temperature when Power Display launches</value>
   </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OnContent" xml:space="preserve">
-    <value>On</value>
-  </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OffContent" xml:space="preserve">
-    <value>Off</value>
-  </data>
-  <data name="PowerDisplay_ShowSystemTrayIcon.Header" xml:space="preserve">
+  <data name="PowerDisplay_ShowSystemTrayIcon.Content" xml:space="preserve">
     <value>Show system tray icon</value>
-  </data>
-  <data name="PowerDisplay_ShowSystemTrayIcon.Description" xml:space="preserve">
-    <value>Choose if PowerDisplay is visible in the system tray</value>
   </data>
   <data name="PowerDisplay_MonitorRefreshDelay.Header" xml:space="preserve">
     <value>Monitor refresh delay</value>
@@ -5583,26 +5592,23 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Monitor_VcpCodes_CopyText.Text" xml:space="preserve">
     <value>Copy</value>
   </data>
-  <data name="PowerDisplay_FlyoutOptions_GroupSettings.Header" xml:space="preserve">
-    <value>Flyout options</value>
+  <data name="PowerDisplay_ShowProfileSwitcher.Content" xml:space="preserve">
+    <value>Show profile switcher button</value>
   </data>
-  <data name="PowerDisplay_ShowProfileSwitcher.Header" xml:space="preserve">
-    <value>Show profile switcher</value>
-  </data>
-  <data name="PowerDisplay_ShowProfileSwitcher.Description" xml:space="preserve">
-    <value>Show or hide the profile switcher button in the Power Display flyout</value>
-  </data>
-  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Header" xml:space="preserve">
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Content" xml:space="preserve">
     <value>Show identify monitors button</value>
   </data>
-  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
-    <value>Show or hide the identify monitors button in the Power Display flyout</value>
-  </data>
   <data name="PowerDisplay_CustomVcpMappings_GroupSettings.Header" xml:space="preserve">
-    <value>Custom VCP Name Mappings</value>
+    <value>Custom VCP name mappings</value>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Header" xml:space="preserve">
     <value>Custom name mappings</value>
+  </data>
+	<data name="PowerDisplayGroupHeader.Header" xml:space="preserve">
+    <value>Power Display</value>
+  </data>
+  <data name="PowerDisplayFlyoutHeader.Header" xml:space="preserve">
+    <value>Power Display flyout</value>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
     <value>Define custom display names for color temperature presets and input sources</value>
@@ -5610,23 +5616,29 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_AddCustomMappingButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Add custom mapping</value>
   </data>
+  <data name="PowerDisplay_EditCustomMapping_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PowerDisplay_DeleteCustomMapping_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
   <data name="PowerDisplay_AddCustomMapping_Text.Text" xml:space="preserve">
     <value>Add mapping</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_Title" xml:space="preserve">
-    <value>Custom VCP Name Mapping</value>
+    <value>Custom VCP name mapping</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_VcpCode.Header" xml:space="preserve">
-    <value>VCP Code</value>
+    <value>VCP code</value>
   </data>
   <data name="PowerDisplay_VcpCode_Name_0x14" xml:space="preserve">
-    <value>Color Temperature</value>
+    <value>Color temperature</value>
   </data>
   <data name="PowerDisplay_VcpCode_Name_0x60" xml:space="preserve">
-    <value>Input Source</value>
+    <value>Input source</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_CustomName.Header" xml:space="preserve">
-    <value>Custom Name</value>
+    <value>Custom name</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_CustomName.PlaceholderText" xml:space="preserve">
     <value>Enter custom name</value>
@@ -5877,7 +5889,7 @@ Text uses the current drawing color.</value>
     <value>Welcome to PowerToys</value>
   </data>
   <data name="ShortcutConflictWindow_IgnoreShortcut.Content" xml:space="preserve">
-    <value>Ignore shortcut</value>
+    <value>Ignore conflict</value>
   </data>
   <data name="AdvancedPaste_AddModelButton.Content" xml:space="preserve">
     <value>Add model</value>
