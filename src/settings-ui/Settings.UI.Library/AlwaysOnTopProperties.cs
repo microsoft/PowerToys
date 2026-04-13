@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const bool DefaultFrameEnabled = true;
         public const bool DefaultShowInSystemMenu = false;
         public const int DefaultFrameThickness = 15;
-        public const string DefaultFrameColor = "#0099cc";
+        public const string DefaultFrameColor = "#00ADEF";
         public const bool DefaultFrameAccentColor = true;
         public const int DefaultFrameOpacity = 100;
         public const bool DefaultSoundEnabled = true;

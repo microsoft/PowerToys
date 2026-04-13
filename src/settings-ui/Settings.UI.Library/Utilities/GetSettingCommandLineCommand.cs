@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library;
 /// {
 ///   "AlwaysOnTop": {
 ///     "FrameEnabled": true,
-///     "FrameAccentColor": "#0099cc"
+///     "FrameAccentColor": "#00ADEF"
 ///   },
 ///   "FancyZones": {
 ///     "FancyzonesShiftDrag": true,
