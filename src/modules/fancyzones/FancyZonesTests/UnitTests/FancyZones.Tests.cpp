@@ -3,30 +3,22 @@
 // See the LICENSE file in the project root for more information.
 
 // Tests ported from the Rust FancyZones implementation.
-// Each TEST_METHOD here corresponds to a Rust #[test] that had no existing C++ equivalent.
-// Rust sources: fancyzones-core/src/{layout,zone,keyboard_snap,data,util}.rs
+// Genuine new coverage only — duplicates of existing .Spec.cpp tests removed.
+// Rust sources: fancyzones-core/src/{layout,zone,util}.rs
 //               fancyzones-engine/src/engine.rs
 
 #include "pch.h"
 
-#include <filesystem>
 #include <algorithm>
 #include <numeric>
 
 #include <FancyZonesLib/FancyZonesData/LayoutDefaults.h>
-#include <FancyZonesLib/FancyZonesData/CustomLayouts.h>
-#include <FancyZonesLib/FancyZonesData/AppliedLayouts.h>
-#include <FancyZonesLib/FancyZonesData/LayoutHotkeys.h>
 #include <FancyZonesLib/FancyZonesData/LayoutTemplates.h>
-#include <FancyZonesLib/FancyZonesData/DefaultLayouts.h>
 #include <FancyZonesLib/FancyZonesDataTypes.h>
-#include <FancyZonesLib/ZoneIndexSetBitmask.h>
 #include <FancyZonesLib/Layout.h>
 #include <FancyZonesLib/LayoutConfigurator.h>
 #include <FancyZonesLib/Zone.h>
-#include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/util.h>
-#include <FancyZonesLib/JsonHelpers.h>
 
 #include "Util.h"
 
@@ -42,68 +34,24 @@ namespace FancyZonesUnitTests
     TEST_CLASS(RustPortedZoneTests)
     {
     public:
-        // zone.rs: zone_area
+        // Product code: Zone.h — Zone::GetZoneArea()
+        // What: Verifies zone area calculation for a normal rectangle
+        // Why: Area calculation is used for zone overlap detection and priority ordering
+        // Risk: Wrong area breaks Focus layout sizing and zone selection priority
         TEST_METHOD(ZoneArea)
         {
             Zone zone({ 0, 0, 100, 50 }, 0);
             Assert::AreEqual(static_cast<long>(5000), zone.GetZoneArea());
         }
 
-        // zone.rs: zone_area_inverted — width or height negative yields 0 via max(0,…)
+        // Product code: Zone.h — Zone::GetZoneArea()
+        // What: Verifies inverted rect (right < left) clamps area to 0
+        // Why: Inverted rects can arise from bad monitor geometry; negative area would corrupt sorting
+        // Risk: Negative area values cause undefined ordering in zone priority comparisons
         TEST_METHOD(ZoneAreaInverted)
         {
             Zone zone({ 100, 100, 50, 50 }, 0);
-            // Inverted rect: right < left, so area should clamp to 0
             Assert::AreEqual(0L, zone.GetZoneArea());
-        }
-
-        // zone.rs: bitmask_from_index_set_test
-        TEST_METHOD(BitmaskFromIndexSet)
-        {
-            ZoneIndexSet set = { 0, 64 };
-            auto bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
-            Assert::AreEqual(static_cast<uint64_t>(1), bitmask.part1);
-            Assert::AreEqual(static_cast<uint64_t>(1), bitmask.part2);
-        }
-
-        // zone.rs: bitmask_to_index_set
-        TEST_METHOD(BitmaskToIndexSet)
-        {
-            ZoneIndexSetBitmask bitmask{ 1, 1 };
-            auto set = bitmask.ToIndexSet();
-            Assert::AreEqual(static_cast<size_t>(2), set.size());
-            Assert::AreEqual(static_cast<ZoneIndex>(0), set[0]);
-            Assert::AreEqual(static_cast<ZoneIndex>(64), set[1]);
-        }
-
-        // zone.rs: bitmask_convert_test
-        TEST_METHOD(BitmaskConvert)
-        {
-            ZoneIndexSet set = { 53, 54, 55, 65, 66, 67 };
-            auto bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
-            auto actual = bitmask.ToIndexSet();
-            Assert::AreEqual(set.size(), actual.size());
-            for (size_t i = 0; i < set.size(); i++)
-            {
-                Assert::AreEqual(set[i], actual[i]);
-            }
-        }
-
-        // zone.rs: bitmask_convert2_test — full 128-zone range
-        TEST_METHOD(BitmaskConvertFull128)
-        {
-            ZoneIndexSet set;
-            for (ZoneIndex i = 0; i < 128; i++)
-            {
-                set.push_back(i);
-            }
-            auto bitmask = ZoneIndexSetBitmask::FromIndexSet(set);
-            auto actual = bitmask.ToIndexSet();
-            Assert::AreEqual(set.size(), actual.size());
-            for (size_t i = 0; i < set.size(); i++)
-            {
-                Assert::AreEqual(set[i], actual[i]);
-            }
         }
     };
 
@@ -132,7 +80,10 @@ namespace FancyZonesUnitTests
         }
 
     public:
-        // layout.rs: layout_columns with 1 zone
+        // Product code: Layout.h — Layout::Init() with Columns type
+        // What: Single-column layout creates exactly 1 zone covering the work area
+        // Why: Single zone is the degenerate case; wrong count causes empty/corrupt layouts
+        // Risk: Off-by-one in column splitter produces 0 zones on single-zone request
         TEST_METHOD(LayoutColumns1Zone)
         {
             LayoutData data{
@@ -149,7 +100,10 @@ namespace FancyZonesUnitTests
             checkZonesValid(layout.get(), ZoneSetLayoutType::Columns, 1, { 0, 0, 1920, 1080 });
         }
 
-        // layout.rs: layout_columns with 2 zones
+        // Product code: Layout.h — Layout::Init() with Columns type
+        // What: Two-column layout creates 2 valid non-overlapping zones
+        // Why: Exercises the basic column-splitting algorithm for even division
+        // Risk: Integer rounding in column width calculation could misalign boundaries
         TEST_METHOD(LayoutColumns2Zones)
         {
             LayoutData data{
@@ -166,7 +120,10 @@ namespace FancyZonesUnitTests
             checkZonesValid(layout.get(), ZoneSetLayoutType::Columns, 2, { 0, 0, 1920, 1080 });
         }
 
-        // layout.rs: layout_columns with 3 zones
+        // Product code: Layout.h — Layout::Init() with Columns type
+        // What: Three-column layout on 1920px — tests odd division (1920/3 = 640)
+        // Why: Non-power-of-2 zone counts stress integer rounding in splitter
+        // Risk: Last column could be 1px too wide/narrow from rounding remainders
         TEST_METHOD(LayoutColumns3Zones)
         {
             LayoutData data{
@@ -182,7 +139,10 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(static_cast<size_t>(3), layout->Zones().size());
         }
 
-        // layout.rs: layout_columns with 5 zones
+        // Product code: Layout.h — Layout::Init() with Columns type
+        // What: Five-column layout pushes zone count beyond typical 2-4 usage
+        // Why: Higher zone counts amplify rounding errors in width distribution
+        // Risk: Accumulated pixel rounding across 5 columns could leave gap or overflow
         TEST_METHOD(LayoutColumns5Zones)
         {
             LayoutData data{
@@ -198,7 +158,10 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(static_cast<size_t>(5), layout->Zones().size());
         }
 
-        // layout.rs: layout_rows with spacing
+        // Product code: Layout.h — Layout::Init() with Rows type + spacing
+        // What: 3-row layout with 10px spacing creates valid non-overlapping zones
+        // Why: Spacing changes zone height calculation; must subtract spacing gaps
+        // Risk: Spacing subtracted incorrectly could make zones extend past work area
         TEST_METHOD(LayoutRowsWithSpacing)
         {
             LayoutData data{
@@ -215,7 +178,10 @@ namespace FancyZonesUnitTests
             checkZonesValid(layout.get(), ZoneSetLayoutType::Rows, 3, { 0, 0, 1920, 1080 });
         }
 
-        // layout.rs: layout_grid with non-square aspect ratio (wide)
+        // Product code: Layout.h — Layout::Init() with Grid type
+        // What: 4-zone grid on ultra-wide 2560x1080 tests wide aspect ratio handling
+        // Why: Grid row/column calculation depends on aspect ratio to decide split direction
+        // Risk: Wide monitors may get wrong row/column ratio producing very narrow columns
         TEST_METHOD(LayoutGridWideAspectRatio)
         {
             LayoutData data{
@@ -232,7 +198,10 @@ namespace FancyZonesUnitTests
             checkZonesValid(layout.get(), ZoneSetLayoutType::Grid, 4, { 0, 0, 2560, 1080 });
         }
 
-        // layout.rs: layout_grid with non-square aspect ratio (tall)
+        // Product code: Layout.h — Layout::Init() with Grid type
+        // What: 4-zone grid on portrait 1080x1920 tests tall aspect ratio handling
+        // Why: Portrait monitors flip the expected row/column split direction
+        // Risk: Aspect ratio inversion could produce 4 very flat rows instead of a 2x2 grid
         TEST_METHOD(LayoutGridTallAspectRatio)
         {
             LayoutData data{
@@ -249,7 +218,10 @@ namespace FancyZonesUnitTests
             checkZonesValid(layout.get(), ZoneSetLayoutType::Grid, 4, { 0, 0, 1080, 1920 });
         }
 
-        // layout.rs: layout_priority_grid with high zone counts
+        // Product code: Layout.h — Layout::Init() with PriorityGrid type
+        // What: PriorityGrid with 10 zones and 5px spacing — high zone count stress test
+        // Why: PriorityGrid uses a predefined template; 10 zones is near the template limit
+        // Risk: Template lookup overflow or zone position miscalculation at high counts
         TEST_METHOD(LayoutPriorityGrid10Zones)
         {
             LayoutData data{
@@ -266,7 +238,10 @@ namespace FancyZonesUnitTests
             checkZonesValid(layout.get(), ZoneSetLayoutType::PriorityGrid, 10, { 0, 0, 1920, 1080 });
         }
 
-        // layout.rs: layout_focus positioning
+        // Product code: Layout.h — Layout::Init() with Focus type
+        // What: Focus layout creates 3 centered zones with zone 0 being the largest
+        // Why: Focus zones must be concentrically sized for the overlay UX to work
+        // Risk: Zone ordering or sizing inversion would put smallest zone on top
         TEST_METHOD(LayoutFocusPositioning)
         {
             LayoutData data{
@@ -281,88 +256,16 @@ namespace FancyZonesUnitTests
             Assert::IsTrue(layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor()));
             Assert::AreEqual(static_cast<size_t>(3), layout->Zones().size());
 
-            // Focus zones are centered — zone 0 should be the largest
             const auto& zones = layout->Zones();
             long area0 = zones.at(0).GetZoneArea();
             long area1 = zones.at(1).GetZoneArea();
             Assert::IsTrue(area0 >= area1, L"Focus zone 0 should be >= zone 1 in area");
         }
 
-        // layout.rs: big_zone_count
-        TEST_METHOD(BigZoneCount128)
-        {
-            const int zoneCount = 128;
-            LayoutData data{
-                .uuid = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000010}").value(),
-                .type = ZoneSetLayoutType::Grid,
-                .showSpacing = true,
-                .spacing = 0,
-                .zoneCount = zoneCount,
-                .sensitivityRadius = 33
-            };
-            auto layout = std::make_unique<Layout>(data);
-            Assert::IsTrue(layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor()));
-            Assert::AreEqual(static_cast<size_t>(zoneCount), layout->Zones().size());
-            checkZonesValid(layout.get(), ZoneSetLayoutType::Grid, zoneCount, { 0, 0, 1920, 1080 });
-        }
-
-        // layout.rs: zero_zone_count — blank with 0 should succeed
-        TEST_METHOD(BlankZeroZoneCountSucceeds)
-        {
-            LayoutData data{
-                .uuid = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000011}").value(),
-                .type = ZoneSetLayoutType::Blank,
-                .showSpacing = true,
-                .spacing = 17,
-                .zoneCount = 0,
-                .sensitivityRadius = 33
-            };
-            auto layout = std::make_unique<Layout>(data);
-            Assert::IsTrue(layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor()));
-            Assert::AreEqual(static_cast<size_t>(0), layout->Zones().size());
-        }
-
-        // layout.rs: zero_zone_count — focus with 0 should succeed
-        TEST_METHOD(FocusZeroZoneCountSucceeds)
-        {
-            LayoutData data{
-                .uuid = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000012}").value(),
-                .type = ZoneSetLayoutType::Focus,
-                .showSpacing = true,
-                .spacing = 17,
-                .zoneCount = 0,
-                .sensitivityRadius = 33
-            };
-            auto layout = std::make_unique<Layout>(data);
-            Assert::IsTrue(layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor()));
-            Assert::AreEqual(static_cast<size_t>(0), layout->Zones().size());
-        }
-
-        // layout.rs: zero_zone_count — grid types with 0 should fail
-        TEST_METHOD(GridZeroZoneCountFails)
-        {
-            const ZoneSetLayoutType gridTypes[] = {
-                ZoneSetLayoutType::Columns,
-                ZoneSetLayoutType::Rows,
-                ZoneSetLayoutType::Grid,
-                ZoneSetLayoutType::PriorityGrid
-            };
-            for (auto lt : gridTypes)
-            {
-                LayoutData data{
-                    .uuid = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000013}").value(),
-                    .type = lt,
-                    .showSpacing = true,
-                    .spacing = 17,
-                    .zoneCount = 0,
-                    .sensitivityRadius = 33
-                };
-                auto layout = std::make_unique<Layout>(data);
-                Assert::IsFalse(layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor()));
-            }
-        }
-
-        // layout.rs: GetCombinedZoneRange — zones 0 and 1 in a 4-zone grid
+        // Product code: Layout.h — Layout::GetCombinedZoneRange()
+        // What: Combining zones 0 and 1 in a 4-zone grid returns a set containing both
+        // Why: Zone merging is used for multi-zone window snapping (Shift+drag)
+        // Risk: Off-by-one in range expansion could miss boundary zones
         TEST_METHOD(GetCombinedZoneRangeTopRow)
         {
             LayoutData data{
@@ -380,12 +283,14 @@ namespace FancyZonesUnitTests
             ZoneIndexSet initial = { 0 };
             ZoneIndexSet final_zones = { 1 };
             auto range = layout->GetCombinedZoneRange(initial, final_zones);
-            // Should contain at least zones 0 and 1
             Assert::IsTrue(std::find(range.begin(), range.end(), 0) != range.end());
             Assert::IsTrue(std::find(range.begin(), range.end(), 1) != range.end());
         }
 
-        // layout.rs: layout across various standard work area sizes
+        // Product code: Layout.h — Layout::Init() with Columns across resolutions
+        // What: 3-column layout with 10px spacing succeeds on 9 standard resolutions
+        // Why: Resolution diversity catches integer overflow or underflow in zone math
+        // Risk: Narrow resolutions (1024x768) with spacing could produce zero-width zones
         TEST_METHOD(LayoutColumnsAllStandardResolutions)
         {
             const RECT rects[] = {
@@ -422,7 +327,10 @@ namespace FancyZonesUnitTests
     TEST_CLASS(RustPortedUtilTests)
     {
     public:
-        // util.rs: choose_next_zone_right
+        // Product code: util.h — ChooseNextZoneByPosition(VK_RIGHT, ...)
+        // What: From a window at x=50..150, snapping right picks the nearest zone to the right
+        // Why: Directional zone selection is the core keyboard-driven window management UX
+        // Risk: Wrong distance metric would select farther zone or no zone
         TEST_METHOD(ChooseNextZoneRight)
         {
             RECT window = { 50, 0, 150, 100 };
@@ -431,10 +339,13 @@ namespace FancyZonesUnitTests
                 { 400, 0, 500, 100 },
             };
             auto result = FancyZonesUtils::ChooseNextZoneByPosition(VK_RIGHT, window, zones);
-            Assert::AreEqual(static_cast<size_t>(0), result); // nearest to the right
+            Assert::AreEqual(static_cast<size_t>(0), result);
         }
 
-        // util.rs: choose_next_zone_left
+        // Product code: util.h — ChooseNextZoneByPosition(VK_LEFT, ...)
+        // What: From a window at x=350..450, snapping left picks the nearest zone to the left
+        // Why: Left-snap must choose the closest zone by left-edge distance
+        // Risk: Using center distance instead of edge distance selects wrong zone
         TEST_METHOD(ChooseNextZoneLeft)
         {
             RECT window = { 350, 0, 450, 100 };
@@ -443,10 +354,13 @@ namespace FancyZonesUnitTests
                 { 200, 0, 300, 100 },
             };
             auto result = FancyZonesUtils::ChooseNextZoneByPosition(VK_LEFT, window, zones);
-            Assert::AreEqual(static_cast<size_t>(1), result); // nearest to the left
+            Assert::AreEqual(static_cast<size_t>(1), result);
         }
 
-        // util.rs: choose_next_zone_down
+        // Product code: util.h — ChooseNextZoneByPosition(VK_DOWN, ...)
+        // What: From a window at y=0..100, snapping down picks the nearest zone below
+        // Why: Vertical navigation is essential for grid layouts with multiple rows
+        // Risk: Vertical distance calculation using wrong rect edge (top vs bottom)
         TEST_METHOD(ChooseNextZoneDown)
         {
             RECT window = { 0, 0, 100, 100 };
@@ -458,7 +372,10 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(static_cast<size_t>(0), result);
         }
 
-        // util.rs: choose_next_zone_up
+        // Product code: util.h — ChooseNextZoneByPosition(VK_UP, ...)
+        // What: From a window at y=400..500, snapping up picks the nearest zone above
+        // Why: Upward navigation completes the 4-directional zone selection
+        // Risk: Reversed comparison (top > bottom check) would skip valid candidates
         TEST_METHOD(ChooseNextZoneUp)
         {
             RECT window = { 0, 400, 100, 500 };
@@ -467,19 +384,25 @@ namespace FancyZonesUnitTests
                 { 0, 200, 100, 300 },
             };
             auto result = FancyZonesUtils::ChooseNextZoneByPosition(VK_UP, window, zones);
-            Assert::AreEqual(static_cast<size_t>(1), result); // nearest upward
+            Assert::AreEqual(static_cast<size_t>(1), result);
         }
 
-        // util.rs: choose_next_zone_no_match
+        // Product code: util.h — ChooseNextZoneByPosition() with empty zone list
+        // What: No zones available returns an invalid index (== zones.size())
+        // Why: Empty layouts must not crash or return a valid-looking index
+        // Risk: Returning 0 on empty would cause out-of-bounds access in callers
         TEST_METHOD(ChooseNextZoneEmptyZones)
         {
             RECT window = { 0, 0, 100, 100 };
             std::vector<RECT> zones = {};
             auto result = FancyZonesUtils::ChooseNextZoneByPosition(VK_RIGHT, window, zones);
-            Assert::AreEqual(zones.size(), result); // invalid = size
+            Assert::AreEqual(zones.size(), result);
         }
 
-        // util.rs: prepare_rect_for_cycling_left
+        // Product code: util.h — PrepareRectForCycling(VK_LEFT, ...)
+        // What: Cycling left wraps window to right edge of work area
+        // Why: Enables keyboard cycling through zones that wrap around the monitor
+        // Risk: Wrong wrap offset makes window appear at wrong position after cycle
         TEST_METHOD(PrepareRectForCyclingLeft)
         {
             RECT window = { 0, 0, 100, 100 };
@@ -491,7 +414,10 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(100L, result.bottom);
         }
 
-        // util.rs: prepare_rect_for_cycling_right
+        // Product code: util.h — PrepareRectForCycling(VK_RIGHT, ...)
+        // What: Cycling right wraps window to left edge (negative coordinates)
+        // Why: Right-wrap must place window just left of work area for zone search
+        // Risk: Negative coordinate handling could be clamped to 0 incorrectly
         TEST_METHOD(PrepareRectForCyclingRight)
         {
             RECT window = { 1820, 0, 1920, 100 };
@@ -503,7 +429,10 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(100L, result.bottom);
         }
 
-        // util.rs: prepare_rect_for_cycling up
+        // Product code: util.h — PrepareRectForCycling(VK_UP, ...)
+        // What: Cycling up wraps window to bottom edge of work area
+        // Why: Vertical cycling enables wrap-around in multi-row layouts
+        // Risk: Height miscalculation in wrap places window partially off-screen
         TEST_METHOD(PrepareRectForCyclingUp)
         {
             RECT window = { 0, 0, 100, 100 };
@@ -515,7 +444,10 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(1180L, result.bottom);
         }
 
-        // util.rs: prepare_rect_for_cycling down
+        // Product code: util.h — PrepareRectForCycling(VK_DOWN, ...)
+        // What: Cycling down wraps window to top edge (negative y)
+        // Why: Down-wrap completes the 4-directional cycling for grid layouts
+        // Risk: Negative y coordinate could be mishandled by zone matching logic
         TEST_METHOD(PrepareRectForCyclingDown)
         {
             RECT window = { 0, 980, 100, 1080 };
@@ -526,152 +458,18 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(-100L, result.top);
             Assert::AreEqual(0L, result.bottom);
         }
-
-        // util.rs: hex_to_rgb with #RRGGBB format
-        TEST_METHOD(HexToRGB_RGBFormat)
-        {
-            auto color = FancyZonesUtils::HexToRGB(L"#A3F6FF");
-            Assert::AreEqual(static_cast<BYTE>(163), GetRValue(color));
-            Assert::AreEqual(static_cast<BYTE>(246), GetGValue(color));
-            Assert::AreEqual(static_cast<BYTE>(255), GetBValue(color));
-        }
-
-        // util.rs: hex_to_rgb with #AARRGGBB format
-        TEST_METHOD(HexToRGB_ARGBFormat)
-        {
-            auto color = FancyZonesUtils::HexToRGB(L"#FFA3F6FF");
-            Assert::AreEqual(static_cast<BYTE>(163), GetRValue(color));
-            Assert::AreEqual(static_cast<BYTE>(246), GetGValue(color));
-            Assert::AreEqual(static_cast<BYTE>(255), GetBValue(color));
-        }
-
-        // util.rs: hex_to_rgb invalid returns fallback
-        TEST_METHOD(HexToRGB_Invalid)
-        {
-            auto color = FancyZonesUtils::HexToRGB(L"zzz");
-            Assert::AreEqual(static_cast<COLORREF>(RGB(255, 255, 255)), color);
-        }
     };
 
     // ========================================================================
-    // Keyboard snap tests — ported from keyboard_snap.rs
+    // Keyboard snap-by-position tests — ported from keyboard_snap.rs
     // ========================================================================
     TEST_CLASS(RustPortedKeyboardSnapTests)
     {
-        // Helper: simulate snap_by_index logic
-        // Left = decrement with wrap, Right = increment with wrap
-        static std::optional<ZoneIndex> SnapByIndex(
-            std::optional<ZoneIndex> currentZone,
-            size_t zoneCount,
-            DWORD direction)
-        {
-            if (zoneCount == 0)
-                return std::nullopt;
-
-            if (direction == VK_LEFT)
-            {
-                if (currentZone.has_value())
-                {
-                    if (*currentZone > 0)
-                        return *currentZone - 1;
-                    else
-                        return static_cast<ZoneIndex>(zoneCount) - 1; // wrap
-                }
-                return static_cast<ZoneIndex>(zoneCount) - 1;
-            }
-            else if (direction == VK_RIGHT)
-            {
-                if (currentZone.has_value())
-                {
-                    if (*currentZone < static_cast<ZoneIndex>(zoneCount) - 1)
-                        return *currentZone + 1;
-                    else
-                        return static_cast<ZoneIndex>(0); // wrap
-                }
-                return static_cast<ZoneIndex>(0);
-            }
-            return currentZone;
-        }
-
     public:
-        // keyboard_snap.rs: snap_right_no_current
-        TEST_METHOD(SnapRightNoCurrent)
-        {
-            auto result = SnapByIndex(std::nullopt, 4, VK_RIGHT);
-            Assert::IsTrue(result.has_value());
-            Assert::AreEqual(static_cast<ZoneIndex>(0), result.value());
-        }
-
-        // keyboard_snap.rs: snap_left_no_current
-        TEST_METHOD(SnapLeftNoCurrent)
-        {
-            auto result = SnapByIndex(std::nullopt, 4, VK_LEFT);
-            Assert::IsTrue(result.has_value());
-            Assert::AreEqual(static_cast<ZoneIndex>(3), result.value());
-        }
-
-        // keyboard_snap.rs: snap_right_from_first
-        TEST_METHOD(SnapRightFromFirst)
-        {
-            auto result = SnapByIndex(static_cast<ZoneIndex>(0), 4, VK_RIGHT);
-            Assert::AreEqual(static_cast<ZoneIndex>(1), result.value());
-        }
-
-        // keyboard_snap.rs: snap_left_from_first (wraps to last)
-        TEST_METHOD(SnapLeftFromFirst)
-        {
-            auto result = SnapByIndex(static_cast<ZoneIndex>(0), 4, VK_LEFT);
-            Assert::AreEqual(static_cast<ZoneIndex>(3), result.value());
-        }
-
-        // keyboard_snap.rs: snap_right_from_last (wraps to 0)
-        TEST_METHOD(SnapRightFromLast)
-        {
-            auto result = SnapByIndex(static_cast<ZoneIndex>(3), 4, VK_RIGHT);
-            Assert::AreEqual(static_cast<ZoneIndex>(0), result.value());
-        }
-
-        // keyboard_snap.rs: snap_left_from_last
-        TEST_METHOD(SnapLeftFromLast)
-        {
-            auto result = SnapByIndex(static_cast<ZoneIndex>(3), 4, VK_LEFT);
-            Assert::AreEqual(static_cast<ZoneIndex>(2), result.value());
-        }
-
-        // keyboard_snap.rs: snap_right_cycle — full cycle through 4 zones
-        TEST_METHOD(SnapRightFullCycle)
-        {
-            auto zone = SnapByIndex(std::nullopt, 4, VK_RIGHT);
-            ZoneIndex expected[] = { 0, 1, 2, 3, 0 };
-            for (auto exp : expected)
-            {
-                Assert::AreEqual(exp, zone.value());
-                zone = SnapByIndex(zone, 4, VK_RIGHT);
-            }
-        }
-
-        // keyboard_snap.rs: snap_left_cycle — full cycle through 4 zones
-        TEST_METHOD(SnapLeftFullCycle)
-        {
-            auto zone = SnapByIndex(std::nullopt, 4, VK_LEFT);
-            ZoneIndex expected[] = { 3, 2, 1, 0, 3 };
-            for (auto exp : expected)
-            {
-                Assert::AreEqual(exp, zone.value());
-                zone = SnapByIndex(zone, 4, VK_LEFT);
-            }
-        }
-
-        // keyboard_snap.rs: snap_empty_zones
-        TEST_METHOD(SnapEmptyZones)
-        {
-            auto right = SnapByIndex(std::nullopt, 0, VK_RIGHT);
-            Assert::IsFalse(right.has_value());
-            auto left = SnapByIndex(std::nullopt, 0, VK_LEFT);
-            Assert::IsFalse(left.has_value());
-        }
-
-        // keyboard_snap.rs: snap_by_position_right — 2x2 grid
+        // Product code: util.h — ChooseNextZoneByPosition(VK_RIGHT, ...) on 2x2 grid
+        // What: From zone 0 (top-left), snap right selects zone 1 (top-right)
+        // Why: 2D grid navigation must respect spatial adjacency, not just index order
+        // Risk: Index-based snap would select zone 2 (bottom-left) instead of zone 1
         TEST_METHOD(SnapByPositionRight2x2)
         {
             std::vector<RECT> zones = {
@@ -682,10 +480,13 @@ namespace FancyZonesUnitTests
             };
             RECT window = { 0, 0, 480, 540 }; // positioned at zone 0
             auto result = FancyZonesUtils::ChooseNextZoneByPosition(VK_RIGHT, window, zones);
-            Assert::IsTrue(result < zones.size());
+            Assert::AreEqual(static_cast<size_t>(1), result, L"Right from zone 0 should select zone 1 (top-right)");
         }
 
-        // keyboard_snap.rs: snap_by_position_down — 2x2 grid
+        // Product code: util.h — ChooseNextZoneByPosition(VK_DOWN, ...) on 2x2 grid
+        // What: From zone 0 (top-left), snap down selects zone 2 (bottom-left)
+        // Why: Vertical navigation in 2D grid must find the spatially below zone
+        // Risk: Down-snap picking zone 1 (same row) instead of zone 2 (below)
         TEST_METHOD(SnapByPositionDown2x2)
         {
             std::vector<RECT> zones = {
@@ -696,352 +497,7 @@ namespace FancyZonesUnitTests
             };
             RECT window = { 0, 0, 480, 540 }; // zone 0
             auto result = FancyZonesUtils::ChooseNextZoneByPosition(VK_DOWN, window, zones);
-            Assert::IsTrue(result < zones.size());
-        }
-    };
-
-    // ========================================================================
-    // WorkAreaId comparison tests — ported from data.rs
-    // ========================================================================
-    TEST_CLASS(RustPortedWorkAreaIdTests)
-    {
-    public:
-        // data.rs: monitor_handle_same — same handle, different device/serial
-        TEST_METHOD(MonitorHandleSame)
-        {
-            auto mon = Mocks::Monitor();
-            WorkAreaId id1{
-                .monitorId = { .monitor = mon, .deviceId = { .id = L"device-1", .instanceId = L"instance-id-1" }, .serialNumber = L"serial-1" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .monitor = mon, .deviceId = { .id = L"device-2", .instanceId = L"instance-id-2" }, .serialNumber = L"serial-2" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsTrue(id1 == id2, L"Same monitor handle should match");
-        }
-
-        // data.rs: monitor_handle_different
-        TEST_METHOD(MonitorHandleDifferent)
-        {
-            WorkAreaId id1{
-                .monitorId = { .monitor = Mocks::Monitor(), .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"serial" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .monitor = Mocks::Monitor(), .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"serial" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsFalse(id1 == id2, L"Different monitor handles should not match");
-        }
-
-        // data.rs: virtual_desktop_different
-        TEST_METHOD(VirtualDesktopDifferent)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"serial" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{F21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"serial" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsFalse(id1 == id2, L"Different virtual desktop IDs should not match");
-        }
-
-        // data.rs: different_serial_number
-        TEST_METHOD(DifferentSerialNumber)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"serial-number" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id" }, .serialNumber = L"another-serial-number" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsFalse(id1 == id2, L"Different serial numbers should not match");
-        }
-
-        // data.rs: default_monitor_id_different_instance_id_same_number
-        TEST_METHOD(DefaultMonitorDifferentInstanceSameNumber)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"Default_Monitor", .instanceId = L"instance-id", .number = 1 } },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"Default_Monitor", .instanceId = L"another-instance-id", .number = 1 } },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsTrue(id1 == id2, L"Same number with different instance ID should match for Default_Monitor");
-        }
-
-        // data.rs: default_monitor_id_different_instance_id_different_number
-        TEST_METHOD(DefaultMonitorDifferentInstanceDifferentNumber)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"Default_Monitor", .instanceId = L"instance-id", .number = 1 } },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"Default_Monitor", .instanceId = L"another-instance-id", .number = 2 } },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsFalse(id1 == id2);
-        }
-
-        // data.rs: monitor_reconnect — same device, different UID suffix
-        TEST_METHOD(MonitorReconnect)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"4&125707d6&0&UID1", .number = 1 }, .serialNumber = L"serial-number" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"4&125707d6&0&UID2", .number = 1 }, .serialNumber = L"serial-number" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsTrue(id1 == id2, L"Monitor reconnect with same number should match");
-        }
-
-        // data.rs: same_monitor_models — same device, different UID, different numbers
-        TEST_METHOD(SameMonitorModels)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"4&125707d6&0&UID1", .number = 1 }, .serialNumber = L"serial-number" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"4&125707d6&0&UID2", .number = 2 }, .serialNumber = L"serial-number" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsFalse(id1 == id2, L"Same model different numbers should NOT match");
-        }
-
-        // data.rs: serial_number_not_found_error — one empty serial
-        TEST_METHOD(SerialNumberNotFoundError)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id", .number = 1 }, .serialNumber = L"serial-number" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"device", .instanceId = L"instance-id", .number = 1 }, .serialNumber = L"" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            // When one serial is empty, serial comparison is skipped → match on deviceId
-            Assert::IsTrue(id1 == id2, L"One empty serial should still match by device ID");
-        }
-
-        // data.rs: different_id
-        TEST_METHOD(DifferentDeviceId)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"device-1", .instanceId = L"instance-id" } },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"device-2", .instanceId = L"instance-id" } },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsFalse(id1 == id2);
-        }
-
-        // data.rs: same_id_different_serial_numbers
-        TEST_METHOD(SameIdDifferentSerialNumbers)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"device-1", .instanceId = L"instance-id-1" }, .serialNumber = L"serial-number-1" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"device-1", .instanceId = L"instance-id-2" }, .serialNumber = L"serial-number-2" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsFalse(id1 == id2);
-        }
-
-        // data.rs: different_id_same_serial_numbers
-        TEST_METHOD(DifferentIdSameSerialNumbers)
-        {
-            WorkAreaId id1{
-                .monitorId = { .deviceId = { .id = L"device-1", .instanceId = L"instance-id-1" }, .serialNumber = L"serial-number-1" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            WorkAreaId id2{
-                .monitorId = { .deviceId = { .id = L"device-2", .instanceId = L"instance-id-2" }, .serialNumber = L"serial-number-1" },
-                .virtualDesktopId = FancyZonesUtils::GuidFromString(L"{E21F6F29-76FD-4FC1-8970-17AB8AD64847}").value()
-            };
-            Assert::IsFalse(id1 == id2);
-        }
-    };
-
-    // ========================================================================
-    // Data validation tests — ported from data.rs
-    // ========================================================================
-    TEST_CLASS(RustPortedDataValidationTests)
-    {
-    public:
-        // data.rs: guid_valid
-        TEST_METHOD(GuidValidFormat)
-        {
-            Assert::IsTrue(FancyZonesUtils::IsValidGuid(L"{33A2B101-06E0-437B-A61E-CDBECF502906}"));
-        }
-
-        // data.rs: guid_invalid_form (missing braces)
-        TEST_METHOD(GuidInvalidFormNoBraces)
-        {
-            Assert::IsFalse(FancyZonesUtils::IsValidGuid(L"33A2B101-06E0-437B-A61E-CDBECF502906"));
-        }
-
-        // data.rs: guid_invalid_symbols
-        TEST_METHOD(GuidInvalidSymbols)
-        {
-            Assert::IsFalse(FancyZonesUtils::IsValidGuid(L"{33A2B101-06E0-437B-A61E-CDBECF50290*}"));
-        }
-
-        // data.rs: guid_invalid
-        TEST_METHOD(GuidInvalidRandom)
-        {
-            Assert::IsFalse(FancyZonesUtils::IsValidGuid(L"guid"));
-        }
-
-        // data.rs: device_id_valid
-        TEST_METHOD(DeviceIdValid)
-        {
-            Assert::IsTrue(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"AOC2460#4&fe3a015&0&UID65793_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
-        }
-
-        // data.rs: device_id_without_hash_in_name
-        TEST_METHOD(DeviceIdWithoutHash)
-        {
-            Assert::IsTrue(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"LOCALDISPLAY_5120_1440_{00000000-0000-0000-0000-000000000000}"));
-        }
-
-        // data.rs: device_id_without_hash_in_name_but_with_underscores
-        TEST_METHOD(DeviceIdWithoutHashButUnderscores)
-        {
-            Assert::IsFalse(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"LOCAL_DISPLAY_5120_1440_{00000000-0000-0000-0000-000000000000}"));
-        }
-
-        // data.rs: device_id_with_underscores_in_name
-        TEST_METHOD(DeviceIdWithUnderscoresInName)
-        {
-            Assert::IsTrue(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"Default_Monitor#1&1f0c3c2f&0&UID256_5120_1440_{00000000-0000-0000-0000-000000000000}"));
-        }
-
-        // data.rs: device_id_invalid_format
-        TEST_METHOD(DeviceIdInvalidFormatNoName)
-        {
-            Assert::IsFalse(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"_1920_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
-        }
-
-        // data.rs: device_id_invalid_format2
-        TEST_METHOD(DeviceIdInvalidFormatMissingUnderscore)
-        {
-            Assert::IsFalse(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"AOC2460#4&fe3a015&0&UID65793_19201200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
-        }
-
-        // data.rs: device_id_invalid_decimals
-        TEST_METHOD(DeviceIdInvalidDecimals)
-        {
-            Assert::IsFalse(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"AOC2460#4&fe3a015&0&UID65793_xxxx_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
-        }
-
-        // data.rs: device_id_invalid_decimals2
-        TEST_METHOD(DeviceIdInvalidDecimals2)
-        {
-            Assert::IsFalse(BackwardsCompatibility::DeviceIdData::IsValidDeviceId(
-                L"AOC2460#4&fe3a015&0&UID65793_19a0_1200_{39B25DD2-130D-4B5D-8851-4791D66B1539}"));
-        }
-
-        // data.rs: zone_set_layout_type_to_string
-        TEST_METHOD(ZoneSetLayoutTypeToStringAll)
-        {
-            Assert::AreEqual(std::wstring(L"blank"), TypeToString(ZoneSetLayoutType::Blank));
-            Assert::AreEqual(std::wstring(L"focus"), TypeToString(ZoneSetLayoutType::Focus));
-            Assert::AreEqual(std::wstring(L"columns"), TypeToString(ZoneSetLayoutType::Columns));
-            Assert::AreEqual(std::wstring(L"rows"), TypeToString(ZoneSetLayoutType::Rows));
-            Assert::AreEqual(std::wstring(L"grid"), TypeToString(ZoneSetLayoutType::Grid));
-            Assert::AreEqual(std::wstring(L"priority-grid"), TypeToString(ZoneSetLayoutType::PriorityGrid));
-            Assert::AreEqual(std::wstring(L"custom"), TypeToString(ZoneSetLayoutType::Custom));
-        }
-
-        // data.rs: zone_set_layout_type_from_string
-        TEST_METHOD(ZoneSetLayoutTypeFromStringAll)
-        {
-            Assert::IsTrue(ZoneSetLayoutType::Blank == TypeFromString(L"blank"));
-            Assert::IsTrue(ZoneSetLayoutType::Focus == TypeFromString(L"focus"));
-            Assert::IsTrue(ZoneSetLayoutType::Columns == TypeFromString(L"columns"));
-            Assert::IsTrue(ZoneSetLayoutType::Rows == TypeFromString(L"rows"));
-            Assert::IsTrue(ZoneSetLayoutType::Grid == TypeFromString(L"grid"));
-            Assert::IsTrue(ZoneSetLayoutType::PriorityGrid == TypeFromString(L"priority-grid"));
-            Assert::IsTrue(ZoneSetLayoutType::Custom == TypeFromString(L"custom"));
-        }
-
-        // data.rs: zone_set_layout_type_from_string invalid
-        TEST_METHOD(ZoneSetLayoutTypeFromStringInvalid)
-        {
-            // Invalid string should return Blank (default)
-            auto result = TypeFromString(L"invalid");
-            Assert::IsTrue(result == ZoneSetLayoutType::Blank);
-        }
-    };
-
-    // ========================================================================
-    // LayoutAssignedWindows tests — ported from data.rs
-    // ========================================================================
-    TEST_CLASS(RustPortedLayoutAssignedWindowsTests)
-    {
-    public:
-        // data.rs: zone_index_from_window_unknown
-        TEST_METHOD(ZoneIndexFromWindowUnknown)
-        {
-            // If we assign one window but query a different one, should get empty
-            LayoutData data{
-                .uuid = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000020}").value(),
-                .type = ZoneSetLayoutType::Grid,
-                .showSpacing = false,
-                .spacing = 0,
-                .zoneCount = 4,
-                .sensitivityRadius = 20
-            };
-            auto layout = std::make_unique<Layout>(data);
-            Assert::IsTrue(layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor()));
-            // ZonesFromPoint for a point in zone 0 gives a valid zone
-            auto zones = layout->ZonesFromPoint(POINT{ 1, 1 });
-            Assert::IsFalse(zones.empty());
-        }
-
-        // data.rs: assign + reassign same window
-        TEST_METHOD(AssignSameWindowMultipleTimes)
-        {
-            // This tests that reassigning a window to different zones works
-            LayoutData data{
-                .uuid = FancyZonesUtils::GuidFromString(L"{00000000-0000-0000-0000-000000000021}").value(),
-                .type = ZoneSetLayoutType::Grid,
-                .showSpacing = false,
-                .spacing = 0,
-                .zoneCount = 4,
-                .sensitivityRadius = 20
-            };
-            auto layout = std::make_unique<Layout>(data);
-            Assert::IsTrue(layout->Init(RECT{ 0, 0, 1920, 1080 }, Mocks::Monitor()));
-            Assert::AreEqual(static_cast<size_t>(4), layout->Zones().size());
-
-            // Verify zones from different points are different
-            auto z0 = layout->ZonesFromPoint(POINT{ 1, 1 });
-            auto z3 = layout->ZonesFromPoint(POINT{ 1919, 1079 });
-            Assert::IsFalse(z0.empty());
-            Assert::IsFalse(z3.empty());
+            Assert::AreEqual(static_cast<size_t>(2), result, L"Down from zone 0 should select zone 2 (bottom-left)");
         }
     };
 
@@ -1051,13 +507,15 @@ namespace FancyZonesUnitTests
     TEST_CLASS(RustPortedLayoutConfiguratorTests)
     {
     public:
-        // layout.rs: columns generates correct number of non-overlapping zones
+        // Product code: LayoutConfigurator.h — LayoutConfigurator::Columns()
+        // What: 3 columns with 0 spacing are perfectly adjacent (no gap, no overlap)
+        // Why: Adjacency is the fundamental invariant for column layouts
+        // Risk: Off-by-one in column boundary calculation leaves 1px gaps or overlaps
         TEST_METHOD(ColumnsNoOverlap)
         {
             auto zones = LayoutConfigurator::Columns(FancyZonesUtils::Rect(RECT{ 0, 0, 1920, 1080 }), 3, 0);
             Assert::AreEqual(static_cast<size_t>(3), zones.size());
 
-            // Zones should be adjacent (no overlap, no gap with 0 spacing)
             auto it = zones.begin();
             RECT prev = it->second.GetZoneRect();
             ++it;
@@ -1070,7 +528,10 @@ namespace FancyZonesUnitTests
             }
         }
 
-        // layout.rs: rows generates correct number of zones
+        // Product code: LayoutConfigurator.h — LayoutConfigurator::Rows()
+        // What: 3 rows with 0 spacing are perfectly adjacent vertically
+        // Why: Row adjacency ensures no dead pixels between horizontal bands
+        // Risk: Height rounding remainder causes gap between last two rows
         TEST_METHOD(RowsNoOverlap)
         {
             auto zones = LayoutConfigurator::Rows(FancyZonesUtils::Rect(RECT{ 0, 0, 1920, 1080 }), 3, 0);
@@ -1088,13 +549,15 @@ namespace FancyZonesUnitTests
             }
         }
 
-        // layout.rs: grid with spacing
+        // Product code: LayoutConfigurator.h — LayoutConfigurator::Grid()
+        // What: 4-zone grid with 10px spacing has all zones within work area bounds
+        // Why: Spacing must be subtracted from zone dimensions, not added to work area
+        // Risk: Spacing applied to wrong side pushes zones outside monitor bounds
         TEST_METHOD(GridWithSpacing)
         {
             auto zones = LayoutConfigurator::Grid(FancyZonesUtils::Rect(RECT{ 0, 0, 1920, 1080 }), 4, 10);
             Assert::AreEqual(static_cast<size_t>(4), zones.size());
 
-            // All zones should be within the work area
             for (const auto& [id, zone] : zones)
             {
                 auto r = zone.GetZoneRect();
@@ -1107,20 +570,37 @@ namespace FancyZonesUnitTests
             }
         }
 
-        // layout.rs: priority_grid with many zones
+        // Product code: LayoutConfigurator.h — LayoutConfigurator::PriorityGrid()
+        // What: PriorityGrid with 11 zones creates correct count with valid zone geometry
+        // Why: 11 zones exceeds the predefined template count for common layouts
+        // Risk: Template index out-of-bounds for zone counts beyond built-in templates
         TEST_METHOD(PriorityGrid11Zones)
         {
             auto zones = LayoutConfigurator::PriorityGrid(FancyZonesUtils::Rect(RECT{ 0, 0, 1920, 1080 }), 11, 5);
             Assert::AreEqual(static_cast<size_t>(11), zones.size());
+
+            // Verify every zone has valid positive-area geometry within work area
+            for (const auto& [id, zone] : zones)
+            {
+                auto r = zone.GetZoneRect();
+                Assert::IsTrue(r.left < r.right, L"Zone must have positive width");
+                Assert::IsTrue(r.top < r.bottom, L"Zone must have positive height");
+                Assert::IsTrue(r.left >= 0, L"Zone left must be non-negative");
+                Assert::IsTrue(r.top >= 0, L"Zone top must be non-negative");
+                Assert::IsTrue(r.right <= 1920, L"Zone right must be within work area");
+                Assert::IsTrue(r.bottom <= 1080, L"Zone bottom must be within work area");
+            }
         }
 
-        // layout.rs: focus generates zones centered and decreasing in size
+        // Product code: LayoutConfigurator.h — LayoutConfigurator::Focus()
+        // What: 4 Focus zones are each smaller or equal in area to the previous
+        // Why: Focus layout relies on decreasing size for the stacked-center UX
+        // Risk: Non-monotonic sizing would overlay larger zone on top of smaller one
         TEST_METHOD(FocusDecreasingSize)
         {
             auto zones = LayoutConfigurator::Focus(FancyZonesUtils::Rect(RECT{ 0, 0, 1920, 1080 }), 4);
             Assert::AreEqual(static_cast<size_t>(4), zones.size());
 
-            // Each subsequent focus zone should be smaller or equal
             long prevArea = LONG_MAX;
             for (const auto& [id, zone] : zones)
             {
@@ -1130,7 +610,10 @@ namespace FancyZonesUnitTests
             }
         }
 
-        // layout.rs: columns with spacing — zones don't overlap
+        // Product code: LayoutConfigurator.h — LayoutConfigurator::Columns() with spacing
+        // What: 3 columns with 16px spacing don't overlap (prev.right <= curr.left)
+        // Why: Spacing creates visual separation; overlap would merge adjacent columns
+        // Risk: Spacing applied as offset instead of gap leaves columns overlapping
         TEST_METHOD(ColumnsWithSpacingNoOverlap)
         {
             auto zones = LayoutConfigurator::Columns(FancyZonesUtils::Rect(RECT{ 0, 0, 1920, 1080 }), 3, 16);
@@ -1148,7 +631,10 @@ namespace FancyZonesUnitTests
             }
         }
 
-        // layout.rs: rows with spacing — zones don't overlap
+        // Product code: LayoutConfigurator.h — LayoutConfigurator::Rows() with spacing
+        // What: 4 rows with 10px spacing don't overlap (prev.bottom <= curr.top)
+        // Why: Spacing must create actual gaps, not just visual padding
+        // Risk: Row spacing calculated from wrong edge creates negative-height zones
         TEST_METHOD(RowsWithSpacingNoOverlap)
         {
             auto zones = LayoutConfigurator::Rows(FancyZonesUtils::Rect(RECT{ 0, 0, 1920, 1080 }), 4, 10);
@@ -1166,14 +652,16 @@ namespace FancyZonesUnitTests
             }
         }
 
-        // layout.rs: grid covers entire work area (minus spacing)
+        // Product code: LayoutConfigurator.h — LayoutConfigurator::Grid()
+        // What: Union of 4 grid zones with 0 spacing exactly covers the work area
+        // Why: Full coverage ensures no dead pixels where drops would be ignored
+        // Risk: Rounding errors in grid splitting leave uncovered strips at edges
         TEST_METHOD(GridCoversWorkArea)
         {
             const RECT workArea = { 0, 0, 1920, 1080 };
             auto zones = LayoutConfigurator::Grid(FancyZonesUtils::Rect(workArea), 4, 0);
             Assert::AreEqual(static_cast<size_t>(4), zones.size());
 
-            // Union of all zones should cover the full work area
             RECT unionRect = { LONG_MAX, LONG_MAX, LONG_MIN, LONG_MIN };
             for (const auto& [id, zone] : zones)
             {
@@ -1187,71 +675,6 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(workArea.top, unionRect.top);
             Assert::AreEqual(workArea.right, unionRect.right);
             Assert::AreEqual(workArea.bottom, unionRect.bottom);
-        }
-    };
-
-    // ========================================================================
-    // Monitor ordering tests — ported from util.rs (additional scenarios)
-    // ========================================================================
-    TEST_CLASS(RustPortedMonitorOrderingTests)
-    {
-        void TestPermutationsWithOffsets(const std::vector<std::pair<HMONITOR, RECT>>& expected)
-        {
-            // Generate all permutations and verify OrderMonitors produces the
-            // expected ordering regardless of input order.
-            auto permuted = expected;
-            std::sort(permuted.begin(), permuted.end(),
-                [](const auto& a, const auto& b) { return a.first < b.first; });
-
-            do
-            {
-                auto copy = permuted;
-                FancyZonesUtils::OrderMonitors(copy);
-                for (size_t i = 0; i < expected.size(); i++)
-                {
-                    Assert::IsTrue(expected[i].first == copy[i].first,
-                                   L"OrderMonitors produced wrong order for a permutation");
-                }
-            } while (std::next_permutation(permuted.begin(), permuted.end(),
-                [](const auto& a, const auto& b) { return a.first < b.first; }));
-        }
-
-    public:
-        // util.rs: test_monitor_ordering_07 — vertical stack
-        TEST_METHOD(MonitorOrderingVerticalStack)
-        {
-            std::vector<std::pair<HMONITOR, RECT>> monitors = {
-                { reinterpret_cast<HMONITOR>(1), { 100, 0, 1700, 900 } },
-                { reinterpret_cast<HMONITOR>(2), { 0, 900, 1800, 1800 } },
-                { reinterpret_cast<HMONITOR>(3), { 100, 1800, 1700, 2700 } },
-            };
-            TestPermutationsWithOffsets(monitors);
-        }
-
-        // util.rs: test_monitor_ordering_08 — 5 monitors in 2 rows
-        TEST_METHOD(MonitorOrdering5Monitors2Rows)
-        {
-            std::vector<std::pair<HMONITOR, RECT>> monitors = {
-                { reinterpret_cast<HMONITOR>(1), { 0, 0, 600, 400 } },
-                { reinterpret_cast<HMONITOR>(2), { 600, 0, 1200, 400 } },
-                { reinterpret_cast<HMONITOR>(3), { 1200, 0, 1800, 400 } },
-                { reinterpret_cast<HMONITOR>(4), { 0, 400, 900, 800 } },
-                { reinterpret_cast<HMONITOR>(5), { 900, 400, 1800, 800 } },
-            };
-            TestPermutationsWithOffsets(monitors);
-        }
-
-        // util.rs: test_monitor_ordering_10 — asymmetric 2 rows
-        TEST_METHOD(MonitorOrderingAsymmetric2Rows)
-        {
-            std::vector<std::pair<HMONITOR, RECT>> monitors = {
-                { reinterpret_cast<HMONITOR>(1), { 0, 0, 900, 400 } },
-                { reinterpret_cast<HMONITOR>(2), { 900, 0, 1800, 400 } },
-                { reinterpret_cast<HMONITOR>(3), { 0, 400, 600, 800 } },
-                { reinterpret_cast<HMONITOR>(4), { 600, 400, 1200, 800 } },
-                { reinterpret_cast<HMONITOR>(5), { 1200, 400, 1800, 800 } },
-            };
-            TestPermutationsWithOffsets(monitors);
         }
     };
 }
