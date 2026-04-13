@@ -117,7 +117,7 @@ public:
         m_enabled = false;
 
         unsigned long powertoys_pid = GetCurrentProcessId();
-        std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
+        std::wstring args = std::to_wstring(powertoys_pid);
         std::wstring exe_name = L"PowerToys.WinPos.exe";
 
         std::wstring resolved_path(MAX_PATH, L'\0');

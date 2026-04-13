@@ -17,6 +17,7 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/Telemetry/ProjectTelemetry.h>
 #include <common/utils/process_path.h>
+#include <common/utils/ProcessWaiter.h>
 #include <common/utils/excluded_apps.h>
 #include <common/utils/game_mode.h>
 
@@ -995,10 +996,38 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 // ---------------------------------------------------------------------------
 // Entry point
 // ---------------------------------------------------------------------------
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int)
+const std::wstring instanceMutexName = L"Local\\PowerToys_WinPos_InstanceMutex";
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 {
     g_hInstance = hInstance;
     TraceLoggingRegister(g_hProvider);
+
+    // Prevent multiple instances
+    auto mutex = CreateMutexW(nullptr, TRUE, instanceMutexName.c_str());
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        TraceLoggingUnregister(g_hProvider);
+        return 1;
+    }
+
+    // Require runner PID on the command line; refuse to run standalone
+    std::wstring pid = std::wstring(lpCmdLine);
+    if (pid.empty())
+    {
+        MessageBoxW(nullptr, L"WinPos can't run as a standalone. Start it from PowerToys.", L"WinPos", MB_ICONERROR);
+        TraceLoggingUnregister(g_hProvider);
+        return 1;
+    }
+
+    auto mainThreadId = GetCurrentThreadId();
+    ProcessWaiter::OnProcessTerminate(pid, [mainThreadId](int err) {
+        if (err != ERROR_SUCCESS)
+        {
+            // Failed to wait for parent process exit
+        }
+        PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+    });
 
     // Load initial settings from JSON before anything else
     LoadSettingsFromFile();
@@ -1068,8 +1097,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int)
         return 1;
     }
 
-    // Add system tray icon
-    AddTrayIcon(g_hMsgWnd);
+    // This is a good place to add system tray icon with AddTrayIcon(g_hMsgWnd);
 
     // Message loop – required for low-level hooks to function
     MSG msg;
