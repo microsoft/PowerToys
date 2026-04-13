@@ -74,31 +74,6 @@ void PowerDisplayProcessManager::send_message(const std::wstring& message_type, 
     });
 }
 
-void PowerDisplayProcessManager::bring_to_front()
-{
-    submit_task([this] {
-        if (!is_process_running())
-        {
-            return;
-        }
-
-        const auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
-            const auto process_handle = reinterpret_cast<HANDLE>(param);
-            DWORD window_process_id = 0;
-
-            GetWindowThreadProcessId(hwnd, &window_process_id);
-            if (GetProcessId(process_handle) == window_process_id)
-            {
-                SetForegroundWindow(hwnd);
-                return FALSE;
-            }
-            return TRUE;
-        };
-
-        EnumWindows(enum_windows, reinterpret_cast<LPARAM>(m_hProcess));
-    });
-}
-
 bool PowerDisplayProcessManager::is_running() const
 {
     return is_process_running();

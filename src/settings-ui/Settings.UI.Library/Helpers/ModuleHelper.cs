@@ -152,6 +152,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerRename => PowerRenameSettings.ModuleName,
                 ModuleType.PowerLauncher => PowerLauncherSettings.ModuleName,
                 ModuleType.PowerAccent => PowerAccentSettings.ModuleName,
+                ModuleType.PowerDisplay => PowerDisplaySettings.ModuleName,
                 ModuleType.RegistryPreview => RegistryPreviewSettings.ModuleName,
                 ModuleType.MeasureTool => MeasureToolSettings.ModuleName,
                 ModuleType.ShortcutGuide => ShortcutGuideSettings.ModuleName,
