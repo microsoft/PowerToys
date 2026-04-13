@@ -54,6 +54,8 @@ namespace updating
 
             std::error_code ec;
             fs::remove_all(backupDir, ec);
+            // Note: remove_all failure means stale backup may persist; continue anyway
+            // since create_directories will overlay
             fs::create_directories(backupDir, ec);
             if (ec)
             {
@@ -100,6 +102,8 @@ namespace updating
         }
         catch (...)
         {
+            // Intentionally swallowed — update must not fail due to backup errors.
+            // Logging would require spdlog dependency which is unavailable in test context.
         }
     }
 
@@ -126,7 +130,8 @@ namespace updating
                 if (backupEntry.is_regular_file() && backupEntry.path().extension() == L".json")
                 {
                     const auto originalPath = rootPath / backupEntry.path().filename();
-                    if (fs::exists(originalPath) && IsJsonFileCorrupted(originalPath))
+                    // Only restore if the backup itself is valid
+                    if (fs::exists(originalPath) && IsJsonFileCorrupted(originalPath) && !IsJsonFileCorrupted(backupEntry.path()))
                     {
                         fs::copy_file(backupEntry.path(), originalPath, fs::copy_options::overwrite_existing, ec);
                     }
@@ -146,7 +151,8 @@ namespace updating
                         if (moduleBackupEntry.is_regular_file() && moduleBackupEntry.path().extension() == L".json")
                         {
                             const auto originalModulePath = moduleDir / moduleBackupEntry.path().filename();
-                            if (fs::exists(originalModulePath) && IsJsonFileCorrupted(originalModulePath))
+                            // Only restore if the backup itself is valid
+                            if (fs::exists(originalModulePath) && IsJsonFileCorrupted(originalModulePath) && !IsJsonFileCorrupted(moduleBackupEntry.path()))
                             {
                                 fs::copy_file(moduleBackupEntry.path(), originalModulePath, fs::copy_options::overwrite_existing, moduleEc);
                             }
@@ -157,6 +163,8 @@ namespace updating
         }
         catch (...)
         {
+            // Intentionally swallowed — update must not fail due to backup errors.
+            // Logging would require spdlog dependency which is unavailable in test context.
         }
     }
 }

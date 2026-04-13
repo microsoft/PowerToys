@@ -5,6 +5,7 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include <atomic>
 #include <Windows.h>
 
 // Suppressing 26466 - Don't use static_cast downcasts - in CppUnitTest.h

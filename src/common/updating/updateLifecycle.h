@@ -14,6 +14,8 @@ namespace updating
     // Build the command-line arguments for Stage 2.
     // Stage 1 passes the installer path and the PT install directory
     // so Stage 2 can run the installer and relaunch PowerToys afterward.
+    // Note: paths containing embedded double-quote characters are not supported.
+    // This is safe because install paths come from get_module_folderpath().
     inline std::wstring BuildStage2Arguments(
         const std::wstring& stage2Flag,
         const fs::path& installerPath,
@@ -32,13 +34,7 @@ namespace updating
     // Used by Stage 2 to relaunch PT after a successful update.
     inline std::wstring BuildPowerToysExePath(const std::wstring& installDir)
     {
-        std::wstring path{ installDir };
-        if (!path.empty() && path.back() != L'\\')
-        {
-            path += L'\\';
-        }
-        path += L"PowerToys.exe";
-        return path;
+        return (std::filesystem::path(installDir) / L"PowerToys.exe").wstring();
     }
 
     // Determine whether Stage 2 has enough information to relaunch PT.
