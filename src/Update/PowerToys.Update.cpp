@@ -21,6 +21,8 @@
 #include <common/utils/resources.h>
 #include <common/utils/timeutil.h>
 
+#include <wil/resource.h>
+
 #include <common/SettingsAPI/settings_helpers.h>
 
 #include <common/logger/logger.h>
@@ -190,8 +192,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     LPWSTR* args = CommandLineToArgvW(GetCommandLineW(), &nArgs);
     if (!args || nArgs < 2)
     {
+        if (args)
+        {
+            LocalFree(args);
+        }
         return 1;
     }
+
+    // Ensure args is freed on all exit paths
+    auto freeArgs = wil::scope_exit([&] { LocalFree(args); });
 
     std::wstring_view action{ args[1] };
 
