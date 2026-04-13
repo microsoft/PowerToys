@@ -445,7 +445,8 @@
 
                         <cpcontrols:IconBox
                             x:Name="HeroImageBorder"
-                            Width="64"
+                            MaxWidth="320"
+                            MaxHeight="240"
                             Margin="0,0,16,16"
                             HorizontalAlignment="Left"
                             AutomationProperties.AccessibilityView="Raw"
