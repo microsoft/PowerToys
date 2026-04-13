@@ -60,8 +60,10 @@ namespace CursorWrapUnitTests
     public:
         // ── Single monitor ──────────────────────────────────────────────
 
-        // A single monitor has 4 outer edges but none have an opposite outer
-        // edge to wrap to (wrapping would go to itself).
+        // Product code: MonitorTopology.h — Initialize(), IdentifyOuterEdges()
+        // What: Verifies single monitor has all 4 edges marked as outer (no adjacent monitors)
+        // Why: Single-monitor is the base case; if outer-edge detection fails here, wrap logic breaks everywhere
+        // Risk: CursorWrap would never wrap (or always wrap incorrectly) on single-monitor setups
         TEST_METHOD(SingleMonitor_AllEdgesAreOuter)
         {
             MonitorTopology topo;
@@ -74,7 +76,10 @@ namespace CursorWrapUnitTests
                              L"Single monitor should have 4 outer edges");
         }
 
-        // With one monitor there is no wrapping partner on the opposite side.
+        // Product code: MonitorTopology.h — IsOnOuterEdge(), GetWrapDestination()
+        // What: Verifies IsOnOuterEdge detects the left edge and GetWrapDestination returns a different point (self-wrap)
+        // Why: When no opposite monitor exists, wrapping falls back to same-monitor opposite edge
+        // Risk: Cursor would get stuck at edges on single-monitor setups instead of wrapping
         TEST_METHOD(SingleMonitor_NoWrapPartner)
         {
             MonitorTopology topo;
@@ -101,9 +106,10 @@ namespace CursorWrapUnitTests
 
         // ── Two side-by-side monitors ───────────────────────────────────
 
-        // [Mon0: 0-1920] [Mon1: 1920-3840]
-        // The shared edges (Mon0 Right, Mon1 Left) should be inner; all other
-        // edges should be outer.
+        // Product code: MonitorTopology.h — Initialize(), IdentifyOuterEdges(), EdgesAreAdjacent()
+        // What: [Mon0: 0–1920] [Mon1: 1920–3840] — verifies 6 outer edges (8 total minus 2 shared inner edges)
+        // Why: Adjacency detection must correctly identify shared edges to prevent wrapping between touching monitors
+        // Risk: Wrap triggers at monitor seams (cursor teleports when moving between side-by-side monitors)
         TEST_METHOD(TwoSideBySide_CorrectOuterEdges)
         {
             MonitorTopology topo;
@@ -118,6 +124,10 @@ namespace CursorWrapUnitTests
                              L"Expected 6 outer edges for two side-by-side monitors");
         }
 
+        // Product code: MonitorTopology.h — IdentifyOuterEdges(), EdgesAreAdjacent()
+        // What: Confirms Mon0 has 3 outer edges (Left/Top/Bottom) and Mon1 has 3 (Right/Top/Bottom)
+        // Why: Per-monitor outer-edge count verifies RIGHT of Mon0 and LEFT of Mon1 are correctly inner
+        // Risk: Wrapping could fire at the wrong edge, sending cursor to unexpected monitor
         TEST_METHOD(TwoSideBySide_SharedEdgesAreInner)
         {
             MonitorTopology topo;
@@ -137,8 +147,10 @@ namespace CursorWrapUnitTests
 
         // ── Two stacked monitors ────────────────────────────────────────
 
-        // [Mon0: 0,0-1920,1080]
-        // [Mon1: 0,1080-1920,2160]
+        // Product code: MonitorTopology.h — Initialize(), IdentifyOuterEdges(), EdgesAreAdjacent()
+        // What: [Mon0: 0,0–1920,1080] / [Mon1: 0,1080–1920,2160] — verifies 6 outer edges (Mon0-Bottom/Mon1-Top are inner)
+        // Why: Validates vertical adjacency detection (complements horizontal test above)
+        // Risk: Cursor wraps vertically between stacked monitors instead of crossing normally
         TEST_METHOD(TwoStacked_CorrectOuterEdges)
         {
             MonitorTopology topo;
@@ -155,8 +167,10 @@ namespace CursorWrapUnitTests
 
         // ── L-shaped layout ─────────────────────────────────────────────
 
-        //  [Mon1: 0,0-1920,1080]
-        //  [Mon0: 0,1080-1920,2160] [Mon2: 1920,1080-3840,2160]
+        // Product code: MonitorTopology.h — Initialize(), IdentifyOuterEdges(), EdgesAreAdjacent()
+        // What: L-shaped 3-monitor layout — verifies 8 outer edges (12 total minus 4 adjacent)
+        // Why: Non-rectangular layouts are common (laptop + 2 externals); adjacency must handle partial-edge overlap
+        // Risk: Some outer edges misclassified, causing wrap to fail on non-rectangular multi-monitor setups
         TEST_METHOD(LShaped_CorrectOuterEdges)
         {
             MonitorTopology topo;
@@ -178,8 +192,10 @@ namespace CursorWrapUnitTests
 
         // ── Edge adjacency within tolerance ─────────────────────────────
 
-        // Two monitors with a small gap (within 50px tolerance) should be
-        // treated as adjacent.
+        // Product code: MonitorTopology.h — EdgesAreAdjacent(tolerance=50)
+        // What: Two monitors with 10px gap (within 50px tolerance) are still treated as adjacent → 6 outer edges
+        // Why: Windows display settings often leave small gaps between monitors; tolerance prevents false outer edges
+        // Risk: Small alignment gaps cause spurious wrapping at monitor seams
         TEST_METHOD(EdgeAdjacency_WithinTolerance)
         {
             MonitorTopology topo;
@@ -197,7 +213,10 @@ namespace CursorWrapUnitTests
 
         // ── Edge adjacency beyond tolerance ─────────────────────────────
 
-        // A gap > 50px means edges are NOT adjacent.
+        // Product code: MonitorTopology.h — EdgesAreAdjacent(tolerance=50)
+        // What: Two monitors with 100px gap (beyond 50px tolerance) are NOT adjacent → 8 outer edges (all independent)
+        // Why: Truly separated monitors must each have full outer edges so wrapping works independently per monitor
+        // Risk: Distant monitors incorrectly treated as adjacent, suppressing wrap on their shared sides
         TEST_METHOD(EdgeAdjacency_BeyondTolerance_NoMatch)
         {
             MonitorTopology topo;
@@ -215,6 +234,10 @@ namespace CursorWrapUnitTests
 
         // ── Wrap destination: horizontal preserves Y ────────────────────
 
+        // Product code: MonitorTopology.h — IsOnOuterEdge(), GetWrapDestination()
+        // What: Cursor at Mon0 left edge (0,540) wraps horizontally; Y coordinate (540) is preserved in destination
+        // Why: Users expect horizontal wrap to keep vertical position — losing Y makes cursor appear to jump
+        // Risk: Cursor teleports to wrong vertical position after horizontal wrap
         TEST_METHOD(WrapDestination_HorizontalWrapPreservesY)
         {
             MonitorTopology topo;
@@ -240,6 +263,10 @@ namespace CursorWrapUnitTests
 
         // ── Wrap destination: vertical preserves X ──────────────────────
 
+        // Product code: MonitorTopology.h — IsOnOuterEdge(), GetWrapDestination()
+        // What: Cursor at Mon0 top edge (960,0) wraps vertically; X coordinate (960) is preserved in destination
+        // Why: Vertical wrap must preserve horizontal position for a smooth user experience
+        // Risk: Cursor teleports to wrong horizontal position after vertical wrap
         TEST_METHOD(WrapDestination_VerticalWrapPreservesX)
         {
             MonitorTopology topo;
@@ -264,6 +291,10 @@ namespace CursorWrapUnitTests
 
         // ── WrapMode filtering: HorizontalOnly ─────────────────────────
 
+        // Product code: MonitorTopology.h — IsOnOuterEdge() with WrapMode::HorizontalOnly
+        // What: Top edge (vertical) is not detected as outer when WrapMode is HorizontalOnly
+        // Why: Users can restrict wrap to horizontal-only; vertical edges must be filtered out
+        // Risk: Cursor wraps vertically even when user configured horizontal-only mode
         TEST_METHOD(WrapMode_HorizontalOnly_IgnoresVerticalEdges)
         {
             MonitorTopology topo;
@@ -285,6 +316,10 @@ namespace CursorWrapUnitTests
 
         // ── WrapMode filtering: VerticalOnly ────────────────────────────
 
+        // Product code: MonitorTopology.h — IsOnOuterEdge() with WrapMode::VerticalOnly
+        // What: Left edge (horizontal) is not detected as outer when WrapMode is VerticalOnly
+        // Why: Users can restrict wrap to vertical-only; horizontal edges must be filtered out
+        // Risk: Cursor wraps horizontally even when user configured vertical-only mode
         TEST_METHOD(WrapMode_VerticalOnly_IgnoresHorizontalEdges)
         {
             MonitorTopology topo;
@@ -305,6 +340,10 @@ namespace CursorWrapUnitTests
 
         // ── WrapMode filtering: Both ────────────────────────────────────
 
+        // Product code: MonitorTopology.h — IsOnOuterEdge() with WrapMode::Both
+        // What: Both left and top edges detected as outer when WrapMode is Both (default)
+        // Why: Default mode must not filter any direction — ensures full bidirectional wrapping
+        // Risk: Default wrap mode silently drops an axis, confusing users who expect both directions
         TEST_METHOD(WrapMode_Both_DetectsAllEdges)
         {
             MonitorTopology topo;
@@ -327,8 +366,10 @@ namespace CursorWrapUnitTests
 
         // ── Threshold: prevents rapid oscillation ───────────────────────
 
-        // The CursorWrapCore tracks wrap destinations and uses WRAP_DISTANCE_THRESHOLD
-        // (50px) to prevent rapid back-and-forth wrapping.
+        // Product code: CursorWrapCore.h — WRAP_DISTANCE_THRESHOLD constant
+        // What: Verifies the anti-oscillation threshold is exactly 50 pixels
+        // Why: Too small → cursor ping-pongs between edges; too large → legitimate wraps are suppressed
+        // Risk: Threshold drift causes either jitter (oscillation) or dead zones near edges
         TEST_METHOD(Threshold_ConstantIs50Pixels)
         {
             Assert::AreEqual(50, WRAP_DISTANCE_THRESHOLD,
@@ -337,6 +378,10 @@ namespace CursorWrapUnitTests
 
         // ── Direction tracking ──────────────────────────────────────────
 
+        // Product code: CursorWrapCore.h — CursorDirection struct (IsMovingLeft/Right/Up/Down, IsPrimarilyHorizontal)
+        // What: dx=-5,dy=2 → left, down, primarily horizontal (|dx|>=|dy|)
+        // Why: Edge priority at corners depends on movement direction; wrong classification picks wrong edge
+        // Risk: Cursor wraps to the wrong monitor at corner junctions
         TEST_METHOD(CursorDirection_DxDyTracking)
         {
             CursorDirection dir{};
@@ -353,6 +398,10 @@ namespace CursorWrapUnitTests
                            L"|dx| >= |dy| → primarily horizontal");
         }
 
+        // Product code: CursorWrapCore.h — CursorDirection::IsPrimarilyHorizontal()
+        // What: dx=1,dy=-10 → primarily vertical (|dx|<|dy|), moving up
+        // Why: Complements the horizontal case; ensures vertical dominance is correctly detected
+        // Risk: Vertical movement misclassified as horizontal → wrong edge selected at corners
         TEST_METHOD(CursorDirection_PrimarilyVertical)
         {
             CursorDirection dir{};
