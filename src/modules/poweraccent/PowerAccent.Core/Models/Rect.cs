@@ -58,7 +58,7 @@ public struct Rect
 
     public static Rect operator /(Rect rect, Rect divider)
     {
-        if (divider.X == 0 || divider.Y == 0)
+        if (divider.X == 0 || divider.Y == 0 || divider.Width == 0 || divider.Height == 0)
         {
             throw new DivideByZeroException();
         }

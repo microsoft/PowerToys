@@ -11,6 +11,11 @@ namespace PowerAccent.Core.UnitTests
     [TestClass]
     public class RectTests
     {
+        /// <summary>
+        /// Product code: Rect() default constructor
+        /// What: Verifies all properties initialize to zero
+        /// Why: Default state must be well-defined to avoid uninitialized geometry bugs
+        /// </summary>
         [TestMethod]
         public void DefaultConstructor_ShouldInitializeToZero()
         {
@@ -21,6 +26,11 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(0, rect.Height);
         }
 
+        /// <summary>
+        /// Product code: Rect(int, int, int, int) constructor
+        /// What: Verifies that integer arguments are correctly stored as doubles
+        /// Why: Implicit int→double conversion must preserve exact values
+        /// </summary>
         [TestMethod]
         public void IntConstructor_ShouldSetAllProperties()
         {
@@ -31,6 +41,11 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(600.0, rect.Height);
         }
 
+        /// <summary>
+        /// Product code: Rect(double, double, double, double) constructor
+        /// What: Verifies that fractional double values are stored exactly
+        /// Why: Ensures no rounding or truncation occurs during construction
+        /// </summary>
         [TestMethod]
         public void DoubleConstructor_ShouldSetAllProperties()
         {
@@ -41,6 +56,11 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(200.7, rect.Height);
         }
 
+        /// <summary>
+        /// Product code: Rect(Point, Size) constructor
+        /// What: Verifies that Point and Size components map to correct Rect properties
+        /// Why: X/Y come from Point, Width/Height from Size — a swap would silently corrupt layout
+        /// </summary>
         [TestMethod]
         public void PointSizeConstructor_ShouldSetFromComponents()
         {
@@ -53,6 +73,11 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(300.0, rect.Height);
         }
 
+        /// <summary>
+        /// Product code: Rect operator /(Rect, double)
+        /// What: Verifies component-wise division by a scalar
+        /// Why: Used for DPI scaling — incorrect division would misposition the toolbar
+        /// </summary>
         [TestMethod]
         public void DivisionByScalar_ShouldDivideAllComponents()
         {
@@ -64,6 +89,11 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(100.0, result.Height);
         }
 
+        /// <summary>
+        /// Product code: Rect operator /(Rect, double) zero guard
+        /// What: Verifies that dividing by zero throws DivideByZeroException
+        /// Why: Prevents Infinity values from propagating through layout calculations
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(DivideByZeroException))]
         public void DivisionByScalar_WithZero_ShouldThrow()
@@ -72,6 +102,11 @@ namespace PowerAccent.Core.UnitTests
             _ = rect / 0.0;
         }
 
+        /// <summary>
+        /// Product code: Rect operator /(Rect, Rect)
+        /// What: Verifies component-wise division (X/X, Y/Y, Width/Width, Height/Height)
+        /// Why: Used for coordinate system transformations between screen and window space
+        /// </summary>
         [TestMethod]
         public void DivisionByRect_ShouldDivideComponentwise()
         {
@@ -84,6 +119,11 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(10.0, result.Height);
         }
 
+        /// <summary>
+        /// Product code: Rect operator /(Rect, Rect) zero guard for X component
+        /// What: Verifies that a divider with X=0 throws DivideByZeroException
+        /// Why: X=0 in a divider Rect would produce Infinity for the X coordinate
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(DivideByZeroException))]
         public void DivisionByRect_WithZeroX_ShouldThrow()
@@ -93,6 +133,11 @@ namespace PowerAccent.Core.UnitTests
             _ = rect / divider;
         }
 
+        /// <summary>
+        /// Product code: Rect operator /(Rect, Rect) zero guard for Y component
+        /// What: Verifies that a divider with Y=0 throws DivideByZeroException
+        /// Why: Y=0 in a divider Rect would produce Infinity for the Y coordinate
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(DivideByZeroException))]
         public void DivisionByRect_WithZeroY_ShouldThrow()
@@ -102,6 +147,53 @@ namespace PowerAccent.Core.UnitTests
             _ = rect / divider;
         }
 
+        /// <summary>
+        /// Product code: Rect operator /(Rect, Rect) zero guard for Width component
+        /// What: Verifies that a divider with Width=0 throws DivideByZeroException
+        /// Why: Guards against producing Infinity values that propagate through calculations
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(DivideByZeroException))]
+        public void DivisionByRect_WithZeroWidth_ShouldThrow()
+        {
+            var rect = new Rect(10, 20, 100, 200);
+            var divider = new Rect(1, 1, 0, 1);
+            _ = rect / divider;
+        }
+
+        /// <summary>
+        /// Product code: Rect operator /(Rect, Rect) zero guard for Height component
+        /// What: Verifies that a divider with Height=0 throws DivideByZeroException
+        /// Why: Guards against producing Infinity values that propagate through calculations
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(DivideByZeroException))]
+        public void DivisionByRect_WithZeroHeight_ShouldThrow()
+        {
+            var rect = new Rect(10, 20, 100, 200);
+            var divider = new Rect(1, 1, 1, 0);
+            _ = rect / divider;
+        }
+
+        /// <summary>
+        /// Product code: Rect operator /(Rect, Rect) zero guard for all components
+        /// What: Verifies that a divider with all zero components throws DivideByZeroException
+        /// Why: Degenerate all-zero divider must be caught — tests the first guard hit (X=0)
+        /// </summary>
+        [TestMethod]
+        [ExpectedException(typeof(DivideByZeroException))]
+        public void DivisionByRect_WithAllZeroComponents_ShouldThrow()
+        {
+            var rect = new Rect(10, 20, 100, 200);
+            var divider = new Rect(0, 0, 0, 0);
+            _ = rect / divider;
+        }
+
+        /// <summary>
+        /// Product code: Rect(double, double, double, double) constructor
+        /// What: Verifies that negative X/Y coordinates are allowed
+        /// Why: Multi-monitor setups can have negative screen coordinates (left/above primary)
+        /// </summary>
         [TestMethod]
         public void NegativeCoordinates_ShouldBeAllowed()
         {
@@ -112,6 +204,11 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(300.0, rect.Height);
         }
 
+        /// <summary>
+        /// Product code: Rect operator /(Rect, double) with negative divisor
+        /// What: Verifies that negative divisor negates all components
+        /// Why: Ensures sign propagation is correct — used in coordinate flipping scenarios
+        /// </summary>
         [TestMethod]
         public void DivisionByScalar_WithNegativeDivider_ShouldNegateComponents()
         {
