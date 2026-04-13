@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace PowerDisplay.Common.Models
+namespace PowerDisplay.Models
 {
     /// <summary>
     /// Represents a PowerDisplay profile containing monitor settings

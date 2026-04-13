@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -17,11 +18,8 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
-using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using PowerToys.Interop;
-using CustomVcpValueMapping = Microsoft.PowerToys.Settings.UI.Library.CustomVcpValueMapping;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -37,9 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            // Set up localized VCP code names for UI display
-            VcpNames.LocalizedCodeNameProvider = GetLocalizedVcpCodeName;
-
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
@@ -180,7 +175,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (SetSettingsProperty(_settings.Properties.ActivationShortcut, value, v => _settings.Properties.ActivationShortcut = v))
                 {
                     // Signal PowerDisplay.exe to re-register the hotkey
-                    EventHelper.SignalEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
+                    SignalNamedEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
                     Logger.LogInfo($"ActivationShortcut changed, signaled HotkeyUpdatedPowerDisplayEvent");
                 }
             }
@@ -358,8 +353,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SignalSettingsUpdated()
         {
-            EventHelper.SignalEvent(Constants.SettingsUpdatedPowerDisplayEvent());
+            SignalNamedEvent(Constants.SettingsUpdatedPowerDisplayEvent());
             Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
+        }
+
+        private static void SignalNamedEvent(string eventName)
+        {
+            try
+            {
+                using var handle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+                handle.Set();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to signal event '{eventName}': {ex.Message}");
+            }
         }
 
         public void Launch()
@@ -505,7 +513,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var profilesData = ProfileService.LoadProfiles();
+                var profilesData = ProfileHelper.LoadProfiles();
 
                 // Load profile objects (no Custom - it's not a profile anymore)
                 Profiles.Clear();
@@ -577,9 +585,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Creating profile: {profile.Name}");
 
-                var profilesData = ProfileService.LoadProfiles();
-                profilesData.SetProfile(profile);
-                ProfileService.SaveProfiles(profilesData);
+                ProfileHelper.AddOrUpdateProfile(profile);
 
                 // Reload profile list
                 LoadProfiles();
@@ -610,12 +616,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Updating profile: {oldName} -> {newProfile.Name}");
 
-                var profilesData = ProfileService.LoadProfiles();
-
-                // Remove old profile and add updated one
-                profilesData.RemoveProfile(oldName);
-                profilesData.SetProfile(newProfile);
-                ProfileService.SaveProfiles(profilesData);
+                ProfileHelper.RenameAndUpdateProfile(oldName, newProfile);
 
                 // Reload profile list
                 LoadProfiles();
@@ -645,9 +646,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Deleting profile: {profileName}");
 
-                var profilesData = ProfileService.LoadProfiles();
-                profilesData.RemoveProfile(profileName);
-                ProfileService.SaveProfiles(profilesData);
+                ProfileHelper.RemoveProfile(profileName);
 
                 // Reload profile list
                 LoadProfiles();
@@ -749,22 +748,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Signal PowerDisplay to reload settings
             SignalSettingsUpdated();
         }
-
-        /// <summary>
-        /// Provides localized VCP code names for UI display.
-        /// Looks for resource string with pattern "PowerDisplay_VcpCode_Name_0xXX".
-        /// Returns null for unknown codes to use the default MCCS name.
-        /// </summary>
-#nullable enable
-        private static string? GetLocalizedVcpCodeName(byte vcpCode)
-        {
-            var resourceKey = $"PowerDisplay_VcpCode_Name_0x{vcpCode:X2}";
-            var localizedName = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
-
-            // ResourceLoader returns empty string if key not found
-            return string.IsNullOrEmpty(localizedName) ? null : localizedName;
-        }
-#nullable restore
 
         private void NotifySettingsChanged()
         {

@@ -11,6 +11,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public WinPosProperties()
         {
             ShouldAbsorbAlt = new BoolProperty(true);
+            DoNotActivateOnGameMode = new BoolProperty(true);
             ShowGeometry = new BoolProperty(true);
             ExcludedApps = new StringProperty();
         }
@@ -20,6 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("showGeometry")]
         public BoolProperty ShowGeometry { get; set; }
+
+        [JsonPropertyName("doNotActivateOnGameMode")]
+        public BoolProperty DoNotActivateOnGameMode { get; set; }
 
         [JsonPropertyName("excluded_apps")]
         public StringProperty ExcludedApps { get; set; }

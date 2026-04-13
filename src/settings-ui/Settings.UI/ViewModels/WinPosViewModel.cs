@@ -113,6 +113,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool DoNotActivateOnGameMode
+        {
+            get => _moduleSettings.Properties.DoNotActivateOnGameMode.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.DoNotActivateOnGameMode.Value != value)
+                {
+                    _moduleSettings.Properties.DoNotActivateOnGameMode.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(DoNotActivateOnGameMode));
+                }
+            }
+        }
+
         public string ExcludedApps
         {
             get => _moduleSettings.Properties.ExcludedApps.Value;

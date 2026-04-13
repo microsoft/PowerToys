@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Models;
 
 namespace PowerDisplay.Serialization
 {
