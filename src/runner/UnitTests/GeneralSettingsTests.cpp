@@ -7,7 +7,7 @@
 // These tests exercise the real validation and parsing logic mirrored from
 // general_settings.cpp — specifically ValidateTheme() and the dashboard
 // sort-order parser. Both are branching functions where invalid/unexpected
-// input must produce safe fallback values; the tests verify those branches.
+// input must produce safe fall back values; the tests verify those branches.
 
 #include "pch.h"
 
@@ -113,14 +113,14 @@ namespace RunnerUnitTests
             Assert::AreEqual(std::wstring(L"system"), result);
         }
 
-        // Arbitrary garbage → fallback to "system".
+        // Arbitrary garbage → fall back to "system".
         TEST_METHOD(InvalidTheme_RandomString_FallsBackToSystem)
         {
             auto result = ValidateTheme(L"sepia");
             Assert::AreEqual(std::wstring(L"system"), result);
         }
 
-        // Empty string → fallback (guards against missing JSON key).
+        // Empty string → fall back (guards against missing JSON key).
         TEST_METHOD(InvalidTheme_EmptyString_FallsBackToSystem)
         {
             auto result = ValidateTheme(L"");
@@ -201,7 +201,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
-        // Unrecognized string → caller's fallback is used.
+        // Unrecognized string → caller's fall back is used.
         TEST_METHOD(ParseFromString_Invalid_UsesFallback)
         {
             auto result = ParseDashboardSortOrderFromString(L"unknown", DashboardSortOrder::ByStatus);
@@ -209,7 +209,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
-        // Empty string → caller's fallback is used.
+        // Empty string → caller's fall back is used.
         TEST_METHOD(ParseFromString_Empty_UsesFallback)
         {
             auto result = ParseDashboardSortOrderFromString(L"", DashboardSortOrder::Alphabetical);
