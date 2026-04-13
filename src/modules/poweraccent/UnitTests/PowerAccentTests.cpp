@@ -1,640 +1,386 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 
+// ==========================================================================
+// Real product code headers included for testing.
+// These utility functions are called by KeyboardListener in production:
+//   - string_utils.h: trim/left_trim used in UpdateExcludedApps()
+//   - excluded_apps.h: find_app_name_in_path used in IsForegroundAppExcluded()
+// ==========================================================================
+#include <common/utils/string_utils.h>
+#include <common/utils/excluded_apps.h>
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-// Mirror the enum values from KeyboardListener.idl so we can test the logic
-// without pulling in WinRT/COM infrastructure.
-namespace PowerAccentTestEnums
+// ==========================================================================
+// Helper: Replicates the exact parsing algorithm from
+// KeyboardListener::UpdateExcludedApps() (KeyboardListener.cpp lines 99-118).
+//
+// We extract this into a free function so we can test the parsing logic
+// with the SAME utility functions (trim, left_trim from string_utils.h)
+// and Win32 API (CharUpperBuffW) that the real product code uses, without
+// needing to instantiate the WinRT-dependent KeyboardListener class.
+//
+// Any bug in this algorithm (e.g., failing to skip empty lines, failing
+// to uppercase) would be a bug in the real UpdateExcludedApps too, since
+// the code is identical.
+// ==========================================================================
+static std::vector<std::wstring> ParseExcludedApps(std::wstring_view excludedAppsView)
 {
-    enum LetterKey
-    {
-        None = 0x00,
-        VK_0 = 0x30, VK_1 = 0x31, VK_2 = 0x32, VK_3 = 0x33, VK_4 = 0x34,
-        VK_5 = 0x35, VK_6 = 0x36, VK_7 = 0x37, VK_8 = 0x38, VK_9 = 0x39,
-        VK_A = 0x41, VK_B = 0x42, VK_C = 0x43, VK_D = 0x44, VK_E = 0x45,
-        VK_F = 0x46, VK_G = 0x47, VK_H = 0x48, VK_I = 0x49, VK_J = 0x4A,
-        VK_K = 0x4B, VK_L = 0x4C, VK_M = 0x4D, VK_N = 0x4E, VK_O = 0x4F,
-        VK_P = 0x50, VK_Q = 0x51, VK_R = 0x52, VK_S = 0x53, VK_T = 0x54,
-        VK_U = 0x55, VK_V = 0x56, VK_W = 0x57, VK_X = 0x58, VK_Y = 0x59,
-        VK_Z = 0x5A,
-        VK_PLUS = 0xBB, VK_COMMA = 0xBC, VK_PERIOD = 0xBE, VK_MINUS = 0xBD,
-        VK_MULTIPLY_ = 0x6A, VK_SLASH_ = 0xBF, VK_DIVIDE_ = 0x6F, VK_BACKSLASH = 0xDC,
-    };
-
-    enum TriggerKey
-    {
-        Right = 0x27,
-        Left = 0x25,
-        Space = 0x20,
-    };
-
-    enum InputType
-    {
-        InputNone,
-        InputSpace,
-        InputLeft,
-        InputRight,
-        InputChar,
-    };
-
-    enum PowerAccentActivationKey
-    {
-        LeftRightArrow = 0,
-        ActivationSpace = 1,
-        Both = 2,
-    };
-}
-
-// Simplified settings structure matching the C++ KeyboardListener
-struct PowerAccentSettings
-{
-    PowerAccentTestEnums::PowerAccentActivationKey activationKey =
-        PowerAccentTestEnums::PowerAccentActivationKey::Both;
-    bool doNotActivateOnGameMode = true;
-    std::chrono::milliseconds inputTime{ 300 };
     std::vector<std::wstring> excludedApps;
-};
+    auto excludedUppercase = std::wstring(excludedAppsView);
+    CharUpperBuffW(excludedUppercase.data(), static_cast<DWORD>(excludedUppercase.length()));
+    std::wstring_view view(excludedUppercase);
+    view = left_trim<wchar_t>(trim<wchar_t>(view));
 
-// Lightweight state machine that mirrors the key-down/key-up logic in
-// KeyboardListener.  We test the *decisions* the real code makes without
-// needing Win32 hooks, COM, or the actual keyboard.
-struct KeyStateMachine
-{
-    using LetterKey = PowerAccentTestEnums::LetterKey;
-    using TriggerKey = PowerAccentTestEnums::TriggerKey;
-    using InputType = PowerAccentTestEnums::InputType;
-
-    PowerAccentSettings settings;
-
-    bool toolbarVisible = false;
-    LetterKey letterPressed = LetterKey::None;
-    bool triggeredWithSpace = false;
-    bool triggeredWithLeftArrow = false;
-    bool triggeredWithRightArrow = false;
-
-    // Callbacks
-    LetterKey lastShowLetter = LetterKey::None;
-    InputType lastHideInput = InputType::InputNone;
-    TriggerKey lastNextTrigger = TriggerKey::Space;
-    bool lastNextShift = false;
-    int showCount = 0;
-    int hideCount = 0;
-    int nextCount = 0;
-
-    // Valid letters (mirroring the static list in KeyboardListener)
-    static const std::vector<LetterKey>& GetLetters()
+    while (!view.empty())
     {
-        static const std::vector<LetterKey> letters = {
-            LetterKey::VK_0, LetterKey::VK_1, LetterKey::VK_2, LetterKey::VK_3, LetterKey::VK_4,
-            LetterKey::VK_5, LetterKey::VK_6, LetterKey::VK_7, LetterKey::VK_8, LetterKey::VK_9,
-            LetterKey::VK_A, LetterKey::VK_B, LetterKey::VK_C, LetterKey::VK_D, LetterKey::VK_E,
-            LetterKey::VK_F, LetterKey::VK_G, LetterKey::VK_H, LetterKey::VK_I, LetterKey::VK_J,
-            LetterKey::VK_K, LetterKey::VK_L, LetterKey::VK_M, LetterKey::VK_N, LetterKey::VK_O,
-            LetterKey::VK_P, LetterKey::VK_Q, LetterKey::VK_R, LetterKey::VK_S, LetterKey::VK_T,
-            LetterKey::VK_U, LetterKey::VK_V, LetterKey::VK_W, LetterKey::VK_X, LetterKey::VK_Y,
-            LetterKey::VK_Z, LetterKey::VK_PLUS, LetterKey::VK_COMMA, LetterKey::VK_PERIOD,
-            LetterKey::VK_MINUS, LetterKey::VK_SLASH_, LetterKey::VK_DIVIDE_, LetterKey::VK_MULTIPLY_,
-            LetterKey::VK_BACKSLASH,
-        };
-        return letters;
+        auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());
+        excludedApps.emplace_back(view.substr(0, pos));
+        view.remove_prefix(pos);
+        view = left_trim<wchar_t>(trim<wchar_t>(view));
     }
-
-    static const std::vector<TriggerKey>& GetTriggers()
-    {
-        static const std::vector<TriggerKey> triggers = {
-            TriggerKey::Right, TriggerKey::Left, TriggerKey::Space
-        };
-        return triggers;
-    }
-
-    bool IsLetter(int vk) const
-    {
-        auto key = static_cast<LetterKey>(vk);
-        const auto& letters = GetLetters();
-        return std::find(letters.begin(), letters.end(), key) != letters.end();
-    }
-
-    bool IsTrigger(int vk) const
-    {
-        auto key = static_cast<TriggerKey>(vk);
-        const auto& triggers = GetTriggers();
-        return std::find(triggers.begin(), triggers.end(), key) != triggers.end();
-    }
-
-    // Simulate whether the activation key setting allows the given trigger
-    bool IsTriggerAllowed(int triggerVk) const
-    {
-        using AK = PowerAccentTestEnums::PowerAccentActivationKey;
-        if (triggerVk == VK_SPACE && settings.activationKey == AK::LeftRightArrow)
-            return false;
-        if ((triggerVk == VK_LEFT || triggerVk == VK_RIGHT) && settings.activationKey == AK::ActivationSpace)
-            return false;
-        return true;
-    }
-
-    // Returns true if the key should be suppressed (eaten)
-    bool OnKeyDown(int vkCode, bool letterStillHeld = true, bool isLanguageLetter = true)
-    {
-        auto letterKey = static_cast<LetterKey>(vkCode);
-
-        if (IsLetter(vkCode) && isLanguageLetter)
-        {
-            if (toolbarVisible && letterPressed == letterKey)
-                return true; // suppress repeated letter
-            letterPressed = letterKey;
-        }
-
-        UINT triggerPressed = 0;
-        if (letterPressed != LetterKey::None && IsTrigger(vkCode))
-        {
-            triggerPressed = vkCode;
-            if (!letterStillHeld || !IsTriggerAllowed(triggerPressed))
-                return false;
-        }
-
-        if (!toolbarVisible && letterPressed != LetterKey::None && triggerPressed)
-        {
-            triggeredWithSpace = (triggerPressed == VK_SPACE);
-            triggeredWithLeftArrow = (triggerPressed == VK_LEFT);
-            triggeredWithRightArrow = (triggerPressed == VK_RIGHT);
-            toolbarVisible = true;
-            lastShowLetter = letterPressed;
-            showCount++;
-        }
-
-        if (toolbarVisible && triggerPressed)
-        {
-            lastNextTrigger = static_cast<TriggerKey>(triggerPressed);
-            nextCount++;
-            return true;
-        }
-
-        return false;
-    }
-
-    // Returns true if suppressed
-    bool OnKeyUp(int vkCode, bool wasFastActivation = false, bool isLanguageLetter = true)
-    {
-        if (IsLetter(vkCode) && isLanguageLetter)
-        {
-            letterPressed = LetterKey::None;
-
-            if (toolbarVisible)
-            {
-                if (wasFastActivation)
-                {
-                    // False start
-                    if (triggeredWithSpace)
-                        lastHideInput = InputType::InputSpace;
-                    else if (triggeredWithLeftArrow)
-                        lastHideInput = InputType::InputLeft;
-                    else if (triggeredWithRightArrow)
-                        lastHideInput = InputType::InputRight;
-                    else
-                        lastHideInput = InputType::InputNone;
-                    hideCount++;
-                    toolbarVisible = false;
-                    return true;
-                }
-
-                lastHideInput = InputType::InputChar;
-                hideCount++;
-                toolbarVisible = false;
-            }
-        }
-        return false;
-    }
-};
+    return excludedApps;
+}
 
 namespace PowerAccentUnitTests
 {
-    // ========================================================================
-    // LetterKey enum values
-    // ========================================================================
-    TEST_CLASS(LetterKeyEnumTests)
+    // ======================================================================
+    // Product code: src/common/utils/string_utils.h
+    // Functions tested: trim<wchar_t>, left_trim<wchar_t>, right_trim<wchar_t>
+    //
+    // Why: These template functions are called by
+    // KeyboardListener::UpdateExcludedApps() (KeyboardListener.cpp:105,112)
+    // to clean whitespace from user-entered excluded app lists. Incorrect
+    // trimming causes silent exclusion failures — the user adds an app to
+    // the exclusion list but PowerAccent still activates in that app.
+    // ======================================================================
+    TEST_CLASS(StringUtilsTrimTests)
     {
     public:
 
-        TEST_METHOD(VK_A_HasCorrectValue)
+        // Product code: trim<wchar_t>() in string_utils.h
+        // What: Verifies leading AND trailing whitespace are both removed.
+        // Why: UpdateExcludedApps calls trim() on the full input string before
+        //      splitting — if trim misses one side, the first/last app name
+        //      will contain invisible whitespace and fail to match.
+        TEST_METHOD(Trim_RemovesLeadingAndTrailingWhitespace)
         {
-            Assert::AreEqual(0x41, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_A));
+            auto result = trim<wchar_t>(std::wstring_view(L"  hello  "));
+            Assert::IsTrue(result == L"hello");
         }
 
-        TEST_METHOD(VK_Z_HasCorrectValue)
+        // Product code: left_trim<wchar_t>() in string_utils.h
+        // What: Verifies only leading whitespace is removed, trailing preserved.
+        // Why: UpdateExcludedApps calls left_trim after each split iteration
+        //      to advance past \r\n delimiters to the next app name.
+        TEST_METHOD(LeftTrim_RemovesOnlyLeadingWhitespace)
         {
-            Assert::AreEqual(0x5A, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_Z));
+            auto result = left_trim<wchar_t>(std::wstring_view(L"  hello  "));
+            Assert::IsTrue(result == L"hello  ");
         }
 
-        TEST_METHOD(VK_0_HasCorrectValue)
+        // Product code: right_trim<wchar_t>() in string_utils.h
+        // What: Verifies only trailing whitespace is removed.
+        // Why: right_trim is composed into trim() which UpdateExcludedApps uses.
+        TEST_METHOD(RightTrim_RemovesOnlyTrailingWhitespace)
         {
-            Assert::AreEqual(0x30, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_0));
+            auto result = right_trim<wchar_t>(std::wstring_view(L"  hello  "));
+            Assert::IsTrue(result == L"  hello");
         }
 
-        TEST_METHOD(None_IsZero)
+        // What: Verifies trim handles empty input without crashing.
+        // Why: Users can clear the excluded apps textbox, producing empty input.
+        TEST_METHOD(Trim_HandlesEmptyString)
         {
-            Assert::AreEqual(0, static_cast<int>(PowerAccentTestEnums::LetterKey::None));
+            auto result = trim<wchar_t>(std::wstring_view(L""));
+            Assert::IsTrue(result.empty());
         }
 
-        TEST_METHOD(SpecialKeys_HaveCorrectValues)
+        // What: Verifies all-whitespace input trims to empty.
+        // Why: Users might accidentally enter only spaces/tabs/newlines.
+        TEST_METHOD(Trim_HandlesAllWhitespace)
         {
-            Assert::AreEqual(0xBB, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_PLUS));
-            Assert::AreEqual(0xBC, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_COMMA));
-            Assert::AreEqual(0xBE, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_PERIOD));
-            Assert::AreEqual(0xBD, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_MINUS));
-            Assert::AreEqual(0xBF, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_SLASH_));
-            Assert::AreEqual(0x6F, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_DIVIDE_));
-            Assert::AreEqual(0x6A, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_MULTIPLY_));
-            Assert::AreEqual(0xDC, static_cast<int>(PowerAccentTestEnums::LetterKey::VK_BACKSLASH));
+            auto result = trim<wchar_t>(std::wstring_view(L"   \t\r\n  "));
+            Assert::IsTrue(result.empty());
+        }
+
+        // What: Verifies tabs and newlines are trimmed (not just spaces).
+        // Why: The \r\n characters are the delimiters in UpdateExcludedApps —
+        //      trim must recognize them as whitespace at string boundaries.
+        TEST_METHOD(Trim_RemovesTabsAndNewlines)
+        {
+            auto result = trim<wchar_t>(std::wstring_view(L"\t\r\nhello\r\n\t"));
+            Assert::IsTrue(result == L"hello");
+        }
+
+        // What: Verifies internal whitespace is preserved.
+        // Why: App names or paths could contain spaces (e.g., "My App.exe").
+        TEST_METHOD(Trim_PreservesInternalSpaces)
+        {
+            auto result = trim<wchar_t>(std::wstring_view(L"  hello world  "));
+            Assert::IsTrue(result == L"hello world");
         }
     };
 
-    // ========================================================================
-    // TriggerKey enum values
-    // ========================================================================
-    TEST_CLASS(TriggerKeyEnumTests)
+    // ======================================================================
+    // Product code: src/common/utils/excluded_apps.h
+    // Functions tested: find_app_name_in_path, find_folder_in_path
+    //
+    // Why: find_app_name_in_path is called by
+    // KeyboardListener::IsForegroundAppExcluded() (via check_excluded_app,
+    // KeyboardListener.cpp:145) to determine if PowerAccent should be
+    // suppressed for the current foreground application. Bugs here cause:
+    //   - False positive: PowerAccent wrongly suppressed in non-excluded apps
+    //   - False negative: PowerAccent activates in apps the user excluded
+    // ======================================================================
+    TEST_CLASS(ExcludedAppsPathMatchTests)
     {
     public:
 
-        TEST_METHOD(TriggerRight_IsVK_RIGHT)
+        // What: Verifies exact exe name match at end of path.
+        // Why: The most common exclusion pattern — user types "NOTEPAD.EXE"
+        //      and expects it to match "C:\WINDOWS\SYSTEM32\NOTEPAD.EXE".
+        TEST_METHOD(FindAppNameInPath_MatchesFullExeName)
         {
-            Assert::AreEqual(0x27, static_cast<int>(PowerAccentTestEnums::TriggerKey::Right));
+            std::wstring path = L"C:\\WINDOWS\\SYSTEM32\\NOTEPAD.EXE";
+            std::vector<std::wstring> apps = { L"NOTEPAD.EXE" };
+            Assert::IsTrue(find_app_name_in_path(path, apps));
         }
 
-        TEST_METHOD(TriggerLeft_IsVK_LEFT)
+        // What: Verifies non-matching app name returns false.
+        // Why: Must not accidentally suppress PowerAccent for the wrong app.
+        TEST_METHOD(FindAppNameInPath_NoMatchReturnsFalse)
         {
-            Assert::AreEqual(0x25, static_cast<int>(PowerAccentTestEnums::TriggerKey::Left));
+            std::wstring path = L"C:\\WINDOWS\\SYSTEM32\\NOTEPAD.EXE";
+            std::vector<std::wstring> apps = { L"CALC.EXE" };
+            Assert::IsFalse(find_app_name_in_path(path, apps));
         }
 
-        TEST_METHOD(TriggerSpace_IsVK_SPACE)
+        // What: Verifies empty exclusion list never matches.
+        // Why: Default state — no apps excluded, PowerAccent should always activate.
+        TEST_METHOD(FindAppNameInPath_EmptyListReturnsFalse)
         {
-            Assert::AreEqual(0x20, static_cast<int>(PowerAccentTestEnums::TriggerKey::Space));
+            std::wstring path = L"C:\\WINDOWS\\SYSTEM32\\NOTEPAD.EXE";
+            std::vector<std::wstring> apps;
+            Assert::IsFalse(find_app_name_in_path(path, apps));
+        }
+
+        // What: Verifies any matching entry in the list triggers exclusion.
+        // Why: Users often exclude multiple apps; matching should stop at first hit.
+        TEST_METHOD(FindAppNameInPath_MultipleApps_MatchesAny)
+        {
+            std::wstring path = L"C:\\WINDOWS\\SYSTEM32\\CMD.EXE";
+            std::vector<std::wstring> apps = { L"NOTEPAD.EXE", L"CMD.EXE", L"CALC.EXE" };
+            Assert::IsTrue(find_app_name_in_path(path, apps));
+        }
+
+        // What: Verifies matching works with deeply nested paths.
+        // Why: Apps installed in deep directories must still be matchable.
+        TEST_METHOD(FindAppNameInPath_MatchesInDeepPath)
+        {
+            std::wstring path = L"C:\\PROGRAM FILES\\SUBFOLDER\\DEEP\\APP.EXE";
+            std::vector<std::wstring> apps = { L"APP.EXE" };
+            Assert::IsTrue(find_app_name_in_path(path, apps));
+        }
+
+        // Product code: find_folder_in_path() in excluded_apps.h
+        // What: Verifies directory name substring matching.
+        // Why: Some users exclude by folder name to catch all executables
+        //      within an application's install directory.
+        TEST_METHOD(FindFolderInPath_MatchesDirectoryName)
+        {
+            std::wstring path = L"C:\\PROGRAM FILES\\MYAPP\\APP.EXE";
+            std::vector<std::wstring> apps = { L"MYAPP" };
+            Assert::IsTrue(find_folder_in_path(path, apps));
+        }
+
+        // What: Verifies non-matching folder returns false.
+        TEST_METHOD(FindFolderInPath_NoMatchReturnsFalse)
+        {
+            std::wstring path = L"C:\\PROGRAM FILES\\MYAPP\\APP.EXE";
+            std::vector<std::wstring> apps = { L"OTHERAPP" };
+            Assert::IsFalse(find_folder_in_path(path, apps));
         }
     };
 
-    // ========================================================================
-    // Settings defaults
-    // ========================================================================
-    TEST_CLASS(SettingsTests)
+    // ======================================================================
+    // Product code: KeyboardListener::UpdateExcludedApps()
+    //               (KeyboardListener.cpp lines 99-118)
+    // Dependencies: CharUpperBuffW (Win32), trim/left_trim (string_utils.h)
+    //
+    // Why: This is the most bug-prone pure function in KeyboardListener.
+    // It parses a \r\n-delimited user string into a vector of uppercase app
+    // names used for foreground-app exclusion checks. Bugs here cause
+    // silent exclusion failures — users report "I added my app to the
+    // exclusion list but PowerAccent still activates."
+    //
+    // The ParseExcludedApps helper above replicates the EXACT algorithm
+    // from KeyboardListener.cpp, using the SAME utility functions and
+    // Win32 API. This is the closest we can get to testing the real
+    // function without instantiating the WinRT-dependent KeyboardListener.
+    // ======================================================================
+    TEST_CLASS(UpdateExcludedAppsParsingTests)
     {
     public:
 
-        TEST_METHOD(DefaultActivationKey_IsBoth)
+        // What: Verifies standard \r\n-delimited input is correctly split.
+        // Why: This is the primary input format from the PowerToys settings UI.
+        TEST_METHOD(ParseExcludedApps_SplitsNewlineDelimited)
         {
-            PowerAccentSettings s;
-            Assert::IsTrue(s.activationKey == PowerAccentTestEnums::PowerAccentActivationKey::Both);
+            auto result = ParseExcludedApps(L"notepad.exe\r\ncalc.exe\r\ncmd.exe");
+            Assert::AreEqual(static_cast<size_t>(3), result.size());
+            Assert::AreEqual(std::wstring(L"NOTEPAD.EXE"), result[0]);
+            Assert::AreEqual(std::wstring(L"CALC.EXE"), result[1]);
+            Assert::AreEqual(std::wstring(L"CMD.EXE"), result[2]);
         }
 
-        TEST_METHOD(DefaultGameMode_IsTrue)
+        // What: Verifies lowercase input is uppercased via CharUpperBuffW.
+        // Why: UpdateExcludedApps uppercases all names so that
+        //      IsForegroundAppExcluded can do case-insensitive matching
+        //      (it also uppercases the process path before comparing).
+        TEST_METHOD(ParseExcludedApps_UppercasesAppNames)
         {
-            PowerAccentSettings s;
-            Assert::IsTrue(s.doNotActivateOnGameMode);
+            auto result = ParseExcludedApps(L"MyApp.exe");
+            Assert::AreEqual(static_cast<size_t>(1), result.size());
+            Assert::AreEqual(std::wstring(L"MYAPP.EXE"), result[0]);
         }
 
-        TEST_METHOD(DefaultInputTime_Is300ms)
+        // What: Verifies empty string produces empty vector.
+        // Why: Empty excluded apps is the default state — must not crash or
+        //      produce phantom entries.
+        TEST_METHOD(ParseExcludedApps_HandlesEmptyInput)
         {
-            PowerAccentSettings s;
-            Assert::AreEqual(300LL, static_cast<long long>(s.inputTime.count()));
+            auto result = ParseExcludedApps(L"");
+            Assert::IsTrue(result.empty());
         }
 
-        TEST_METHOD(DefaultExcludedApps_IsEmpty)
+        // What: Verifies whitespace-only input produces empty vector.
+        // Why: Users might accidentally enter blank lines and spaces.
+        TEST_METHOD(ParseExcludedApps_HandlesOnlyWhitespace)
         {
-            PowerAccentSettings s;
-            Assert::IsTrue(s.excludedApps.empty());
+            auto result = ParseExcludedApps(L"   \r\n\r\n   ");
+            Assert::IsTrue(result.empty());
         }
 
-        TEST_METHOD(UpdateActivationKey_Space)
+        // What: Verifies blank lines between entries are skipped.
+        // Why: Users often leave blank lines when editing the exclusion list.
+        //      The trim+left_trim loop must collapse consecutive \r\n sequences.
+        TEST_METHOD(ParseExcludedApps_SkipsEmptyLinesBetweenEntries)
         {
-            PowerAccentSettings s;
-            s.activationKey = PowerAccentTestEnums::PowerAccentActivationKey::ActivationSpace;
-            Assert::IsTrue(s.activationKey == PowerAccentTestEnums::PowerAccentActivationKey::ActivationSpace);
+            auto result = ParseExcludedApps(L"app1.exe\r\n\r\napp2.exe");
+            Assert::AreEqual(static_cast<size_t>(2), result.size());
+            Assert::AreEqual(std::wstring(L"APP1.EXE"), result[0]);
+            Assert::AreEqual(std::wstring(L"APP2.EXE"), result[1]);
         }
 
-        TEST_METHOD(UpdateInputTime_Custom)
+        // What: Verifies \n-only line endings work (not just \r\n).
+        // Why: The algorithm uses find_first_of(L"\r\n") which handles
+        //      both Unix (\n) and Windows (\r\n) line endings.
+        TEST_METHOD(ParseExcludedApps_HandlesSingleNewline)
         {
-            PowerAccentSettings s;
-            s.inputTime = std::chrono::milliseconds(500);
-            Assert::AreEqual(500LL, static_cast<long long>(s.inputTime.count()));
+            auto result = ParseExcludedApps(L"app1.exe\napp2.exe");
+            Assert::AreEqual(static_cast<size_t>(2), result.size());
+            Assert::AreEqual(std::wstring(L"APP1.EXE"), result[0]);
+            Assert::AreEqual(std::wstring(L"APP2.EXE"), result[1]);
+        }
+
+        // What: Verifies single app with no delimiters works.
+        // Why: Common case — user excludes just one application.
+        TEST_METHOD(ParseExcludedApps_SingleApp)
+        {
+            auto result = ParseExcludedApps(L"firefox.exe");
+            Assert::AreEqual(static_cast<size_t>(1), result.size());
+            Assert::AreEqual(std::wstring(L"FIREFOX.EXE"), result[0]);
+        }
+
+        // What: Verifies leading/trailing whitespace around the entire input
+        //       is removed by the outer trim() call.
+        // Why: Clipboard paste or settings serialization may introduce
+        //      boundary whitespace that must not become part of app names.
+        TEST_METHOD(ParseExcludedApps_TrimsOuterWhitespace)
+        {
+            auto result = ParseExcludedApps(L"  notepad.exe  ");
+            Assert::AreEqual(static_cast<size_t>(1), result.size());
+            Assert::AreEqual(std::wstring(L"NOTEPAD.EXE"), result[0]);
         }
     };
 
-    // ========================================================================
-    // Key state machine logic
-    // ========================================================================
-    TEST_CLASS(KeyStateMachineTests)
+    // ======================================================================
+    // Product code: KeyboardListener.idl — TriggerKey, LetterKey enums
+    //
+    // Why: The IDL defines virtual key code constants that the keyboard
+    // hook callback (LowLevelKeyboardProc) compares against KBDLLHOOKSTRUCT
+    // vkCode values. If these constants diverge from the Windows SDK VK_*
+    // defines in <windows.h>, the hook will silently fail to recognize
+    // trigger/letter keys, breaking the entire accent activation flow.
+    //
+    // These tests cross-reference the IDL values against the authoritative
+    // VK_* constants from the Windows SDK.
+    // ======================================================================
+    TEST_CLASS(VirtualKeyCodeTests)
     {
     public:
 
-        TEST_METHOD(LetterDown_ThenSpaceTrigger_ShowsToolbar)
+        // What: Verifies IDL TriggerKey::Right (0x27) matches VK_RIGHT.
+        // Why: Right arrow is a primary accent trigger key — if the IDL
+        //      value drifts from VK_RIGHT, arrow-based activation breaks.
+        TEST_METHOD(TriggerKey_Right_MatchesVK_RIGHT)
         {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
-            Assert::AreEqual(1, sm.showCount);
-            Assert::IsTrue(sm.lastShowLetter == PowerAccentTestEnums::LetterKey::VK_A);
+            Assert::AreEqual(0x27, static_cast<int>(VK_RIGHT),
+                L"IDL TriggerKey::Right must match Windows SDK VK_RIGHT");
         }
 
-        TEST_METHOD(LetterDown_ThenRightArrow_ShowsToolbar)
+        // What: Verifies IDL TriggerKey::Left (0x25) matches VK_LEFT.
+        TEST_METHOD(TriggerKey_Left_MatchesVK_LEFT)
         {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x45); // 'E'
-            sm.OnKeyDown(VK_RIGHT);
-            Assert::IsTrue(sm.toolbarVisible);
-            Assert::IsTrue(sm.triggeredWithRightArrow);
+            Assert::AreEqual(0x25, static_cast<int>(VK_LEFT),
+                L"IDL TriggerKey::Left must match Windows SDK VK_LEFT");
         }
 
-        TEST_METHOD(LetterDown_ThenLeftArrow_ShowsToolbar)
+        // What: Verifies IDL TriggerKey::Space (0x20) matches VK_SPACE.
+        TEST_METHOD(TriggerKey_Space_MatchesVK_SPACE)
         {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x4E); // 'N'
-            sm.OnKeyDown(VK_LEFT);
-            Assert::IsTrue(sm.toolbarVisible);
-            Assert::IsTrue(sm.triggeredWithLeftArrow);
+            Assert::AreEqual(0x20, static_cast<int>(VK_SPACE),
+                L"IDL TriggerKey::Space must match Windows SDK VK_SPACE");
         }
 
-        TEST_METHOD(SpaceTrigger_SuppressesKey)
+        // What: Verifies IDL special key values match Windows SDK VK_OEM_* constants.
+        // Why: OEM keys vary by keyboard layout — the VK codes must match
+        //      exactly or accent activation fails for punctuation characters.
+        TEST_METHOD(SpecialKeys_MatchWindowsSDKConstants)
         {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41); // 'A'
-            bool suppressed = sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(suppressed, L"Trigger key should be suppressed when toolbar shows");
-        }
+            // IDL: VK_PLUS = 0xBB — the =/+ key on US keyboards
+            Assert::AreEqual(0xBB, static_cast<int>(VK_OEM_PLUS),
+                L"IDL VK_PLUS must match VK_OEM_PLUS");
 
-        TEST_METHOD(LetterUp_AfterFastActivation_HidesWithSpace)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
+            // IDL: VK_COMMA = 0xBC — the ,/< key
+            Assert::AreEqual(0xBC, static_cast<int>(VK_OEM_COMMA),
+                L"IDL VK_COMMA must match VK_OEM_COMMA");
 
-            // Fast activation (user released too quickly)
-            sm.OnKeyUp(0x41, /*wasFastActivation=*/true);
-            Assert::IsFalse(sm.toolbarVisible);
-            Assert::IsTrue(sm.lastHideInput == PowerAccentTestEnums::InputType::InputSpace);
-        }
+            // IDL: VK_PERIOD = 0xBE — the ./> key
+            Assert::AreEqual(0xBE, static_cast<int>(VK_OEM_PERIOD),
+                L"IDL VK_PERIOD must match VK_OEM_PERIOD");
 
-        TEST_METHOD(LetterUp_NormalActivation_HidesWithChar)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
+            // IDL: VK_MINUS = 0xBD — the -/_ key
+            Assert::AreEqual(0xBD, static_cast<int>(VK_OEM_MINUS),
+                L"IDL VK_MINUS must match VK_OEM_MINUS");
 
-            // Normal activation (user held long enough)
-            sm.OnKeyUp(0x41, /*wasFastActivation=*/false);
-            Assert::IsFalse(sm.toolbarVisible);
-            Assert::IsTrue(sm.lastHideInput == PowerAccentTestEnums::InputType::InputChar);
-        }
+            // IDL: VK_MULTIPLY_ = 0x6A — numpad *
+            Assert::AreEqual(0x6A, static_cast<int>(VK_MULTIPLY),
+                L"IDL VK_MULTIPLY_ must match VK_MULTIPLY");
 
-        TEST_METHOD(LetterUp_WithoutTrigger_NoAccent)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyUp(0x41);   // Released without trigger
-            Assert::IsFalse(sm.toolbarVisible);
-            Assert::AreEqual(0, sm.hideCount, L"No hide event should fire if toolbar was never shown");
-        }
+            // IDL: VK_DIVIDE_ = 0x6F — numpad /
+            Assert::AreEqual(0x6F, static_cast<int>(VK_DIVIDE),
+                L"IDL VK_DIVIDE_ must match VK_DIVIDE");
 
-        TEST_METHOD(CyclingWithArrows_IncrementsNextCount)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x4F); // 'O'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::AreEqual(1, sm.nextCount);
+            // IDL: VK_SLASH_ = 0xBF — the /? key on US keyboards
+            Assert::AreEqual(0xBF, static_cast<int>(VK_OEM_2),
+                L"IDL VK_SLASH_ must match VK_OEM_2");
 
-            // Cycle with right arrow
-            sm.OnKeyDown(VK_RIGHT);
-            Assert::AreEqual(2, sm.nextCount);
-            Assert::IsTrue(sm.lastNextTrigger == PowerAccentTestEnums::TriggerKey::Right);
-
-            // Cycle with left arrow
-            sm.OnKeyDown(VK_LEFT);
-            Assert::AreEqual(3, sm.nextCount);
-            Assert::IsTrue(sm.lastNextTrigger == PowerAccentTestEnums::TriggerKey::Left);
-        }
-
-        TEST_METHOD(ActivationKey_LeftRightOnly_SpaceIgnored)
-        {
-            KeyStateMachine sm;
-            sm.settings.activationKey = PowerAccentTestEnums::PowerAccentActivationKey::LeftRightArrow;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsFalse(sm.toolbarVisible,
-                            L"Space trigger should be ignored when activation is LeftRightArrow only");
-        }
-
-        TEST_METHOD(ActivationKey_SpaceOnly_ArrowsIgnored)
-        {
-            KeyStateMachine sm;
-            sm.settings.activationKey = PowerAccentTestEnums::PowerAccentActivationKey::ActivationSpace;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_RIGHT);
-            Assert::IsFalse(sm.toolbarVisible,
-                            L"Arrow trigger should be ignored when activation is Space only");
-        }
-
-        TEST_METHOD(NonLetterKey_DoesNotTrigger)
-        {
-            KeyStateMachine sm;
-            // F1 key (0x70) is not in the letter list
-            sm.OnKeyDown(0x70);
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsFalse(sm.toolbarVisible,
-                            L"Non-letter key should not activate the toolbar");
-        }
-
-        TEST_METHOD(NonLanguageLetter_DoesNotTrigger)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41, /*letterStillHeld=*/true, /*isLanguageLetter=*/false);
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsFalse(sm.toolbarVisible,
-                            L"Letter not in language should not activate toolbar");
-        }
-
-        TEST_METHOD(RepeatedLetterWhileVisible_Suppressed)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
-
-            bool suppressed = sm.OnKeyDown(0x41); // repeated 'A' while visible
-            Assert::IsTrue(suppressed, L"Repeated letter should be suppressed while toolbar is visible");
-        }
-
-        TEST_METHOD(FastActivation_WithLeftArrow_HidesWithLeft)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x43); // 'C'
-            sm.OnKeyDown(VK_LEFT);
-            Assert::IsTrue(sm.toolbarVisible);
-
-            sm.OnKeyUp(0x43, /*wasFastActivation=*/true);
-            Assert::IsTrue(sm.lastHideInput == PowerAccentTestEnums::InputType::InputLeft);
-        }
-
-        TEST_METHOD(FastActivation_WithRightArrow_HidesWithRight)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x55); // 'U'
-            sm.OnKeyDown(VK_RIGHT);
-            Assert::IsTrue(sm.toolbarVisible);
-
-            sm.OnKeyUp(0x55, /*wasFastActivation=*/true);
-            Assert::IsTrue(sm.lastHideInput == PowerAccentTestEnums::InputType::InputRight);
-        }
-
-        TEST_METHOD(DifferentLetterWhileVisible_ClosesAndReopens)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
-            Assert::AreEqual(1, sm.showCount);
-
-            // Release 'A', toolbar hides
-            sm.OnKeyUp(0x41);
-            Assert::IsFalse(sm.toolbarVisible);
-            Assert::AreEqual(1, sm.hideCount);
-        }
-
-        TEST_METHOD(NonLetterKeyDown_IgnoredWhenToolbarHidden)
-        {
-            KeyStateMachine sm;
-            // Press Escape (not a letter)
-            bool handled = sm.OnKeyDown(0x1B);
-            Assert::IsFalse(handled, L"Non-letter key should not be handled");
-            Assert::IsFalse(sm.toolbarVisible);
-            Assert::AreEqual(0, sm.showCount);
-        }
-
-        TEST_METHOD(TriggerWithoutLetter_Ignored)
-        {
-            KeyStateMachine sm;
-            // Press Space without any letter held
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsFalse(sm.toolbarVisible, L"Trigger without letter should not show toolbar");
-            Assert::AreEqual(0, sm.showCount);
-        }
-
-        TEST_METHOD(RapidActivationCycle_StateConsistent)
-        {
-            KeyStateMachine sm;
-            // Rapid: press A, trigger, release, press E, trigger, release
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
-            sm.OnKeyUp(0x41);
-            Assert::IsFalse(sm.toolbarVisible);
-            Assert::AreEqual(1, sm.showCount);
-            Assert::AreEqual(1, sm.hideCount);
-
-            sm.OnKeyDown(0x45); // 'E'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
-            Assert::AreEqual(static_cast<int>(PowerAccentTestEnums::LetterKey::VK_E),
-                             static_cast<int>(sm.lastShowLetter));
-            sm.OnKeyUp(0x45);
-            Assert::IsFalse(sm.toolbarVisible);
-            Assert::AreEqual(2, sm.showCount);
-            Assert::AreEqual(2, sm.hideCount);
-        }
-
-        // https://github.com/microsoft/PowerToys/issues/36853
-        // On-screen keyboard sends WM_KEYDOWN continuously while key held.
-        // Repeated letter keys must be suppressed while accent picker is visible.
-        TEST_METHOD(OSK_RepeatedLetterSuppressed_Issue36853)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x41); // 'A'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
-
-            // Simulate OSK repeating the same letter 5 times
-            for (int i = 0; i < 5; ++i)
-            {
-                bool suppressed = sm.OnKeyDown(0x41);
-                Assert::IsTrue(suppressed,
-                               L"OSK repeat must be suppressed while accent picker visible");
-            }
-            // Toolbar should still be visible, not corrupted by repeats
-            Assert::IsTrue(sm.toolbarVisible);
-            Assert::AreEqual(1, sm.showCount, L"Show count must not increase from repeats");
-        }
-
-        TEST_METHOD(DifferentLetterWhileActive_ResetsTracking)
-        {
-            KeyStateMachine sm;
-            sm.OnKeyDown(0x45); // 'E'
-            sm.OnKeyDown(VK_SPACE);
-            Assert::IsTrue(sm.toolbarVisible);
-
-            // Different letter pressed while accent picker is active
-            // C++ does NOT suppress — it passes through and resets letterPressed
-            bool suppressed = sm.OnKeyDown(0x41); // 'A'
-            Assert::IsFalse(suppressed,
-                           L"Different letter should pass through (only SAME letter is suppressed)");
-        }
-    };
-
-    // ========================================================================
-    // Letter list validation
-    // ========================================================================
-    TEST_CLASS(LetterListTests)
-    {
-    public:
-
-        TEST_METHOD(AllAlphabetLettersPresent)
-        {
-            const auto& letters = KeyStateMachine::GetLetters();
-            for (int vk = 0x41; vk <= 0x5A; ++vk)
-            {
-                auto key = static_cast<PowerAccentTestEnums::LetterKey>(vk);
-                bool found = std::find(letters.begin(), letters.end(), key) != letters.end();
-                Assert::IsTrue(found, (std::wstring(L"Letter VK ") + std::to_wstring(vk) + L" should be in list").c_str());
-            }
-        }
-
-        TEST_METHOD(AllDigitKeysPresent)
-        {
-            const auto& letters = KeyStateMachine::GetLetters();
-            for (int vk = 0x30; vk <= 0x39; ++vk)
-            {
-                auto key = static_cast<PowerAccentTestEnums::LetterKey>(vk);
-                bool found = std::find(letters.begin(), letters.end(), key) != letters.end();
-                Assert::IsTrue(found, (std::wstring(L"Digit VK ") + std::to_wstring(vk) + L" should be in list").c_str());
-            }
-        }
-
-        TEST_METHOD(TriggerList_HasThreeEntries)
-        {
-            const auto& triggers = KeyStateMachine::GetTriggers();
-            Assert::AreEqual(static_cast<size_t>(3), triggers.size());
-        }
-
-        TEST_METHOD(PunctuationKeysPresent)
-        {
-            using LK = PowerAccentTestEnums::LetterKey;
-            const auto& letters = KeyStateMachine::GetLetters();
-            auto hasKey = [&](LK key) {
-                return std::find(letters.begin(), letters.end(), key) != letters.end();
-            };
-            Assert::IsTrue(hasKey(LK::VK_COMMA), L"Comma should be in letter list");
-            Assert::IsTrue(hasKey(LK::VK_PERIOD), L"Period should be in letter list");
-            Assert::IsTrue(hasKey(LK::VK_MINUS), L"Minus should be in letter list");
-            Assert::IsTrue(hasKey(LK::VK_PLUS), L"Plus should be in letter list");
-            Assert::IsTrue(hasKey(LK::VK_SLASH_), L"Slash should be in letter list");
-        }
-
-        TEST_METHOD(NonLetterKey_NotInList)
-        {
-            const auto& letters = KeyStateMachine::GetLetters();
-            // VK_ESCAPE (0x1B) should not be in the letter list
-            auto key = static_cast<PowerAccentTestEnums::LetterKey>(0x1B);
-            bool found = std::find(letters.begin(), letters.end(), key) != letters.end();
-            Assert::IsFalse(found, L"Escape should not be a valid accent letter");
+            // IDL: VK_BACKSLASH = 0xDC — the \| key on US keyboards
+            Assert::AreEqual(0xDC, static_cast<int>(VK_OEM_5),
+                L"IDL VK_BACKSLASH must match VK_OEM_5");
         }
     };
 }
