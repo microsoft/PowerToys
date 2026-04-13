@@ -47,6 +47,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private readonly IThemeService _themeService;
     private readonly ISettingsService _settingsService;
+    private readonly IMonitorService _monitorService;
     private readonly DockWindowViewModel _windowViewModel;
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerWindowBehavior = new();
 
@@ -105,6 +106,7 @@ public sealed partial class DockWindow : WindowEx,
         var mainSettings = serviceProvider.GetRequiredService<ISettingsService>().Settings;
         _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         _settingsService.SettingsChanged += SettingsChangedHandler;
+        _monitorService = serviceProvider.GetRequiredService<IMonitorService>();
         _settings = mainSettings.DockSettings;
         _lastSize = _settings.DockSize;
 
@@ -486,7 +488,7 @@ public sealed partial class DockWindow : WindowEx,
         for (var i = 0; i < monitorConfigs.Count; i++)
         {
             var cfg = monitorConfigs[i];
-            if (string.Equals(cfg.MonitorDeviceId, _targetMonitor.DeviceId, System.StringComparison.Ordinal))
+            if (string.Equals(cfg.MonitorDeviceId, _targetMonitor.DeviceId, System.StringComparison.OrdinalIgnoreCase))
             {
                 _sideOverride = cfg.Side;
                 break;
@@ -577,6 +579,9 @@ public sealed partial class DockWindow : WindowEx,
         else if (msg == PInvoke.WM_DISPLAYCHANGE)
         {
             Logger.LogDebug("WM_DISPLAYCHANGE");
+
+            // Invalidate the monitor cache so DockWindowManager can reconcile
+            _monitorService.NotifyMonitorsChanged();
 
             // Use dispatcher to ensure we're on the UI thread
             DispatcherQueue.TryEnqueue(() => UpdateWindowPosition());

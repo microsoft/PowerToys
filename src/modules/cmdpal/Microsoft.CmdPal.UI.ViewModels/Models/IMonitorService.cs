@@ -27,6 +27,12 @@ public interface IMonitorService
     MonitorInfo? GetPrimaryMonitor();
 
     /// <summary>
+    /// Invalidates the cached monitor list and raises <see cref="MonitorsChanged"/>.
+    /// Call this when a display settings change is detected (e.g. WM_DISPLAYCHANGE).
+    /// </summary>
+    void NotifyMonitorsChanged();
+
+    /// <summary>
     /// Raised when the set of connected monitors changes (connect, disconnect, or resolution change).
     /// </summary>
     event System.EventHandler? MonitorsChanged;

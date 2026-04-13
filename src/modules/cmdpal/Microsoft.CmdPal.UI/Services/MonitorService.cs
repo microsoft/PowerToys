@@ -34,6 +34,11 @@ public sealed class MonitorService : IMonitorService
     {
         lock (_lock)
         {
+            if (_cachedMonitors is not null)
+            {
+                return _cachedMonitors;
+            }
+
             _cachedMonitors = EnumerateMonitors();
             return _cachedMonitors;
         }
@@ -96,7 +101,11 @@ public sealed class MonitorService : IMonitorService
                 info.Size = Marshal.SizeOf<NativeMonitorInfoEx>();
                 if (GetMonitorInfo(hMonitor, ref info))
                 {
-                    _ = GetDpiForMonitor(hMonitor, 0, out var dpiX, out _);
+                    var hr = GetDpiForMonitor(hMonitor, 0, out var dpiX, out _);
+                    if (hr != 0 || dpiX == 0)
+                    {
+                        dpiX = 96;
+                    }
 
                     var isPrimary = (info.Flags & PrimaryFlag) != 0;
                     var deviceName = info.DeviceName;

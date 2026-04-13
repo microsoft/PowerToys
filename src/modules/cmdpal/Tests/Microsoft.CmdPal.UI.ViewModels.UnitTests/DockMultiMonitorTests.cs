@@ -232,6 +232,27 @@ public class DockMultiMonitorTests
         Assert.IsTrue(result[0].IsPrimary);
     }
 
+    [TestMethod]
+    public void Reconciler_FuzzyMatch_DoesNotMatchNonPrimaryMonitors()
+    {
+        // Config has stale device ID for a non-primary monitor
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = true, IsPrimary = true },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY_STALE", Enabled = true, IsPrimary = false, IsCustomized = true });
+
+        // Current monitors have primary + a different secondary
+        var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, monitors);
+
+        // Primary keeps its config, stale secondary is orphaned (removed),
+        // new secondary gets a fresh default config instead of inheriting the stale one
+        Assert.AreEqual(2, result.Count);
+        Assert.AreEqual(@"\\.\DISPLAY1", result[0].MonitorDeviceId);
+        Assert.AreEqual(@"\\.\DISPLAY2", result[1].MonitorDeviceId);
+        Assert.IsFalse(result[1].IsCustomized, "New secondary should get a default config, not inherit the stale one.");
+    }
+
     // --- JSON serialization round-trip ---
     [TestMethod]
     public void DockMonitorConfig_JsonRoundTrip_PreservesAllFields()

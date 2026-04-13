@@ -90,7 +90,7 @@ public sealed partial class DockViewModel : IDisposable
 
     /// <summary>
     /// Gets the active band lists for this dock instance. Returns per-monitor bands
-    /// when the associated monitor is customized, otherwise falls back to global bands.
+    /// when the associated monitor is customized; otherwise falls back to global bands.
     /// </summary>
     private (ImmutableList<DockBandSettings> Start, ImmutableList<DockBandSettings> Center, ImmutableList<DockBandSettings> End) GetActiveBands()
     {

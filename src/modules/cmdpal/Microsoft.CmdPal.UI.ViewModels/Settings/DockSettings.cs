@@ -146,21 +146,21 @@ public sealed record DockMonitorConfig
 
     /// <summary>
     /// Resolves the effective start bands for this monitor.
-    /// Returns per-monitor bands when customized, otherwise falls back to the global bands.
+    /// Returns per-monitor bands when customized; otherwise falls back to the global bands.
     /// </summary>
     public ImmutableList<DockBandSettings> ResolveStartBands(ImmutableList<DockBandSettings> globalBands) =>
         IsCustomized && StartBands is not null ? StartBands : globalBands;
 
     /// <summary>
     /// Resolves the effective center bands for this monitor.
-    /// Returns per-monitor bands when customized, otherwise falls back to the global bands.
+    /// Returns per-monitor bands when customized; otherwise falls back to the global bands.
     /// </summary>
     public ImmutableList<DockBandSettings> ResolveCenterBands(ImmutableList<DockBandSettings> globalBands) =>
         IsCustomized && CenterBands is not null ? CenterBands : globalBands;
 
     /// <summary>
     /// Resolves the effective end bands for this monitor.
-    /// Returns per-monitor bands when customized, otherwise falls back to the global bands.
+    /// Returns per-monitor bands when customized; otherwise falls back to the global bands.
     /// </summary>
     public ImmutableList<DockBandSettings> ResolveEndBands(ImmutableList<DockBandSettings> globalBands) =>
         IsCustomized && EndBands is not null ? EndBands : globalBands;

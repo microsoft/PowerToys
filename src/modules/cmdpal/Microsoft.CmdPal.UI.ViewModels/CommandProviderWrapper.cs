@@ -496,7 +496,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
     }
 
-    public void PinDockBand(string commandId, IServiceProvider serviceProvider, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null)
+    public void PinDockBand(string commandId, IServiceProvider serviceProvider, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null, string? monitorDeviceId = null)
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var settings = settingsService.Settings;
@@ -519,6 +519,21 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             ShowSubtitles = showSubtitles,
         };
 
+        if (monitorDeviceId is not null)
+        {
+            PinDockBandToMonitor(settingsService, bandSettings, side, monitorDeviceId);
+        }
+        else
+        {
+            PinDockBandGlobal(settingsService, bandSettings, side);
+        }
+
+        // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
+        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+    }
+
+    private static void PinDockBandGlobal(ISettingsService settingsService, DockBandSettings bandSettings, Dock.DockPinSide side)
+    {
         settingsService.UpdateSettings(
             s =>
             {
@@ -534,9 +549,59 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
                 };
             },
             hotReload: false);
+    }
 
-        // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
-        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+    private static void PinDockBandToMonitor(ISettingsService settingsService, DockBandSettings bandSettings, Dock.DockPinSide side, string monitorDeviceId)
+    {
+        settingsService.UpdateSettings(
+            s =>
+            {
+                var dockSettings = s.DockSettings;
+                var configs = dockSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
+
+                // Find or create the monitor config
+                DockMonitorConfig? target = null;
+                var targetIndex = -1;
+                for (var i = 0; i < configs.Count; i++)
+                {
+                    if (string.Equals(configs[i].MonitorDeviceId, monitorDeviceId, System.StringComparison.OrdinalIgnoreCase))
+                    {
+                        target = configs[i];
+                        targetIndex = i;
+                        break;
+                    }
+                }
+
+                if (target is null)
+                {
+                    // Monitor not yet in config; create and fork from global
+                    target = new DockMonitorConfig { MonitorDeviceId = monitorDeviceId, Enabled = true };
+                    target = target.ForkFromGlobal(dockSettings);
+                    configs = configs.Add(target);
+                    targetIndex = configs.Count - 1;
+                }
+                else if (!target.IsCustomized)
+                {
+                    // Fork from global on first per-monitor customization
+                    target = target.ForkFromGlobal(dockSettings);
+                }
+
+                // Add band to the appropriate section
+                target = side switch
+                {
+                    Dock.DockPinSide.Center => target with { CenterBands = (target.CenterBands ?? System.Collections.Immutable.ImmutableList<DockBandSettings>.Empty).Add(bandSettings) },
+                    Dock.DockPinSide.End => target with { EndBands = (target.EndBands ?? System.Collections.Immutable.ImmutableList<DockBandSettings>.Empty).Add(bandSettings) },
+                    _ => target with { StartBands = (target.StartBands ?? System.Collections.Immutable.ImmutableList<DockBandSettings>.Empty).Add(bandSettings) },
+                };
+
+                configs = configs.SetItem(targetIndex, target);
+
+                return s with
+                {
+                    DockSettings = dockSettings with { MonitorConfigs = configs },
+                };
+            },
+            hotReload: false);
     }
 
     public void UnpinDockBand(string commandId, IServiceProvider serviceProvider)

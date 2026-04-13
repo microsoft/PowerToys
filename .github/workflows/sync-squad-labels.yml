@@ -1,0 +1,169 @@
+name: Sync Squad Labels
+
+on:
+  push:
+    paths:
+      - '.squad/team.md'
+      - '.ai-team/team.md'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sync-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse roster and sync labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let teamFile = '.squad/team.md';
+            if (!fs.existsSync(teamFile)) {
+              teamFile = '.ai-team/team.md';
+            }
+
+            if (!fs.existsSync(teamFile)) {
+              core.info('No .squad/team.md or .ai-team/team.md found — skipping label sync');
+              return;
+            }
+
+            const content = fs.readFileSync(teamFile, 'utf8');
+            const lines = content.split('\n');
+
+            // Parse the Members table for agent names
+            const members = [];
+            let inMembersTable = false;
+            for (const line of lines) {
+              if (line.match(/^##\s+(Members|Team Roster)/i)) {
+                inMembersTable = true;
+                continue;
+              }
+              if (inMembersTable && line.startsWith('## ')) {
+                break;
+              }
+              if (inMembersTable && line.startsWith('|') && !line.includes('---') && !line.includes('Name')) {
+                const cells = line.split('|').map(c => c.trim()).filter(Boolean);
+                if (cells.length >= 2 && cells[0] !== 'Scribe') {
+                  members.push({
+                    name: cells[0],
+                    role: cells[1]
+                  });
+                }
+              }
+            }
+
+            core.info(`Found ${members.length} squad members: ${members.map(m => m.name).join(', ')}`);
+
+            // Check if @copilot is on the team
+            const hasCopilot = content.includes('🤖 Coding Agent');
+
+            // Define label color palette for squad labels
+            const SQUAD_COLOR = '9B8FCC';
+            const MEMBER_COLOR = '9B8FCC';
+            const COPILOT_COLOR = '10b981';
+
+            // Define go: and release: labels (static)
+            const GO_LABELS = [
+              { name: 'go:yes', color: '0E8A16', description: 'Ready to implement' },
+              { name: 'go:no', color: 'B60205', description: 'Not pursuing' },
+              { name: 'go:needs-research', color: 'FBCA04', description: 'Needs investigation' }
+            ];
+
+            const RELEASE_LABELS = [
+              { name: 'release:v0.4.0', color: '6B8EB5', description: 'Targeted for v0.4.0' },
+              { name: 'release:v0.5.0', color: '6B8EB5', description: 'Targeted for v0.5.0' },
+              { name: 'release:v0.6.0', color: '8B7DB5', description: 'Targeted for v0.6.0' },
+              { name: 'release:v1.0.0', color: '8B7DB5', description: 'Targeted for v1.0.0' },
+              { name: 'release:backlog', color: 'D4E5F7', description: 'Not yet targeted' }
+            ];
+
+            const TYPE_LABELS = [
+              { name: 'type:feature', color: 'DDD1F2', description: 'New capability' },
+              { name: 'type:bug', color: 'FF0422', description: 'Something broken' },
+              { name: 'type:spike', color: 'F2DDD4', description: 'Research/investigation — produces a plan, not code' },
+              { name: 'type:docs', color: 'D4E5F7', description: 'Documentation work' },
+              { name: 'type:chore', color: 'D4E5F7', description: 'Maintenance, refactoring, cleanup' },
+              { name: 'type:epic', color: 'CC4455', description: 'Parent issue that decomposes into sub-issues' }
+            ];
+
+            // High-signal labels — these MUST visually dominate all others
+            const SIGNAL_LABELS = [
+              { name: 'bug', color: 'FF0422', description: 'Something isn\'t working' },
+              { name: 'feedback', color: '00E5FF', description: 'User feedback — high signal, needs attention' }
+            ];
+
+            const PRIORITY_LABELS = [
+              { name: 'priority:p0', color: 'B60205', description: 'Blocking release' },
+              { name: 'priority:p1', color: 'D93F0B', description: 'This sprint' },
+              { name: 'priority:p2', color: 'FBCA04', description: 'Next sprint' }
+            ];
+
+            // Ensure the base "squad" triage label exists
+            const labels = [
+              { name: 'squad', color: SQUAD_COLOR, description: 'Squad triage inbox — Lead will assign to a member' }
+            ];
+
+            for (const member of members) {
+              labels.push({
+                name: `squad:${member.name.toLowerCase()}`,
+                color: MEMBER_COLOR,
+                description: `Assigned to ${member.name} (${member.role})`
+              });
+            }
+
+            // Add @copilot label if coding agent is on the team
+            if (hasCopilot) {
+              labels.push({
+                name: 'squad:copilot',
+                color: COPILOT_COLOR,
+                description: 'Assigned to @copilot (Coding Agent) for autonomous work'
+              });
+            }
+
+            // Add go:, release:, type:, priority:, and high-signal labels
+            labels.push(...GO_LABELS);
+            labels.push(...RELEASE_LABELS);
+            labels.push(...TYPE_LABELS);
+            labels.push(...PRIORITY_LABELS);
+            labels.push(...SIGNAL_LABELS);
+
+            // Sync labels (create or update)
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name
+                });
+                // Label exists — update it
+                await github.rest.issues.updateLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+                core.info(`Updated label: ${label.name}`);
+              } catch (err) {
+                if (err.status === 404) {
+                  // Label doesn't exist — create it
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description
+                  });
+                  core.info(`Created label: ${label.name}`);
+                } else {
+                  throw err;
+                }
+              }
+            }
+
+            core.info(`Label sync complete: ${labels.length} labels synced`);

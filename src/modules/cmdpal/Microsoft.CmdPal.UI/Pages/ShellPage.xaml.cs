@@ -68,7 +68,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private SettingsWindow? _settingsWindow;
-    private DockWindow? _dockWindow;
     private Dock.DockWindowManager? _dockWindowManager;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
@@ -859,21 +858,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var dockWindowManager = _dockWindowManager;
         _dockWindowManager = null;
         dockWindowManager?.Dispose();
-
-        var dockWindow = _dockWindow;
-        _dockWindow = null;
-
-        if (dockWindow is not null)
-        {
-            if (DispatcherQueue.HasThreadAccess)
-            {
-                dockWindow.Close();
-            }
-            else
-            {
-                DispatcherQueue.TryEnqueue(dockWindow.Close);
-            }
-        }
 
         GC.SuppressFinalize(this);
     }

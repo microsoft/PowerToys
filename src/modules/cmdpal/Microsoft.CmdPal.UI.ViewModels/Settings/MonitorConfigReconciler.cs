@@ -69,11 +69,12 @@ public static class MonitorConfigReconciler
             }
         }
 
-        // Phase 2: Fuzzy match by IsPrimary for unmatched configs
+        // Phase 2: Fuzzy match by IsPrimary for unmatched configs (primary only).
+        // Non-primary monitors are not interchangeable, so we only fuzzy-match the primary.
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
-            if (matchedMonitorDeviceIds.Contains(monitor.DeviceId))
+            if (!monitor.IsPrimary || matchedMonitorDeviceIds.Contains(monitor.DeviceId))
             {
                 continue;
             }
@@ -85,7 +86,7 @@ public static class MonitorConfigReconciler
                     continue;
                 }
 
-                if (configs[ci].IsPrimary == monitor.IsPrimary)
+                if (configs[ci].IsPrimary)
                 {
                     // Reassociate: update DeviceId and IsPrimary
                     result.Add(configs[ci] with

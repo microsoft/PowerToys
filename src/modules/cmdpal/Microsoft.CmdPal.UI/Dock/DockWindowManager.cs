@@ -45,6 +45,7 @@ public sealed class DockWindowManager : IDisposable
 
     /// <summary>
     /// Creates dock windows for all enabled monitors according to current settings.
+    /// Runs reconciliation to ensure configs match currently connected monitors.
     /// </summary>
     public void ShowDocks()
     {
@@ -54,28 +55,7 @@ public sealed class DockWindowManager : IDisposable
             return;
         }
 
-        var dockSettings = settings.DockSettings;
-        var configs = GetEffectiveConfigs(dockSettings);
-
-        for (var i = 0; i < configs.Count; i++)
-        {
-            var config = configs[i];
-            if (!config.Enabled)
-            {
-                continue;
-            }
-
-            var monitor = _monitorService.GetMonitorByDeviceId(config.MonitorDeviceId);
-            if (monitor is null)
-            {
-                continue;
-            }
-
-            if (!_dockWindows.ContainsKey(config.MonitorDeviceId))
-            {
-                CreateDockForMonitor(config.MonitorDeviceId, dockSettings);
-            }
-        }
+        SyncDocksToSettings();
     }
 
     /// <summary>
@@ -206,19 +186,7 @@ public sealed class DockWindowManager : IDisposable
         _monitorService.MonitorsChanged -= OnMonitorsChanged;
         _settingsService.SettingsChanged -= OnSettingsChanged;
 
-        foreach (var kvp in _dockWindows)
-        {
-            kvp.Value.Dispose();
-        }
-
-        _dockWindows.Clear();
-
-        foreach (var kvp in _dockViewModels)
-        {
-            kvp.Value.Dispose();
-        }
-
-        _dockViewModels.Clear();
+        HideDocks();
     }
 
     private void CreateDockForMonitor(string monitorDeviceId, DockSettings dockSettings)
