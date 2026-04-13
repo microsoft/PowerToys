@@ -167,11 +167,11 @@ namespace PowerDisplay
                 bool isStandaloneMode = _powerToysRunnerPid <= 0;
                 Logger.LogInfo($"OnLaunched: isStandaloneMode={isStandaloneMode}");
 
-                if (_showAtX.HasValue && _showAtY.HasValue)
+                if (_showAtX.HasValue && _showAtY.HasValue && _mainWindow is MainWindow showAtWindow)
                 {
                     // CLI show-at mode - show window at specified position
                     Logger.LogInfo($"OnLaunched: Showing window at ({_showAtX.Value}, {_showAtY.Value})");
-                    _mainWindow.ShowWindowAt(_showAtX.Value, _showAtY.Value);
+                    showAtWindow.ShowWindowAt(_showAtX.Value, _showAtY.Value);
                 }
                 else if (isStandaloneMode)
                 {

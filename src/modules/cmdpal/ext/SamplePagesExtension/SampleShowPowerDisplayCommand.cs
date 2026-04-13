@@ -33,7 +33,7 @@ internal sealed partial class SampleShowPowerDisplayCommand : InvokableCommand
                 return CommandResult.ShowToast($"PowerDisplay.exe not found at {exePath}");
             }
 
-            Process.Start(new ProcessStartInfo
+            using var process = Process.Start(new ProcessStartInfo
             {
                 FileName = exePath,
                 Arguments = $"--show-at {cursorPos.X} {cursorPos.Y}",
