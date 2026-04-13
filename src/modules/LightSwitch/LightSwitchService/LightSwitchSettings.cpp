@@ -255,6 +255,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.enableDarkModeProfile != val)
             {
                 m_settings.enableDarkModeProfile = val;
+                NotifyObservers(SettingId::EnableDarkModeProfile);
             }
         }
 
@@ -265,6 +266,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.enableLightModeProfile != val)
             {
                 m_settings.enableLightModeProfile = val;
+                NotifyObservers(SettingId::EnableLightModeProfile);
             }
         }
 
@@ -275,6 +277,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.darkModeProfile != val)
             {
                 m_settings.darkModeProfile = val;
+                NotifyObservers(SettingId::DarkModeProfile);
             }
         }
 
@@ -285,6 +288,7 @@ void LightSwitchSettings::LoadSettings()
             if (m_settings.lightModeProfile != val)
             {
                 m_settings.lightModeProfile = val;
+                NotifyObservers(SettingId::LightModeProfile);
             }
         }
 
