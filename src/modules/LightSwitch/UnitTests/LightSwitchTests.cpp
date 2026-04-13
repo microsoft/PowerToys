@@ -319,7 +319,7 @@ namespace LightSwitchUnitTests
         // Product code: LightSwitchTypes.h — LightSwitchConfig::latitude default
         // What: Verifies latitude defaults to "0.0" (null island sentinel)
         // Why: CoordinatesAreValid rejects (0,0) — forces user to configure location
-        // Risk: Unconfigured users accidentally get sunset times for null island
+        // Risk: Misconfigured users accidentally get sunset times for null island
         TEST_METHOD(DefaultLatitude_IsZero)
         {
             LightSwitchConfig config;
