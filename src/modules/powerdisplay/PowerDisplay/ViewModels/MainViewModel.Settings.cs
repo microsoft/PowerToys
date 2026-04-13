@@ -50,7 +50,7 @@ public partial class MainViewModel
 
             // Apply UI configuration changes only (feature visibility toggles, etc.)
             // Hardware parameters (brightness, color temperature) are applied via custom actions
-            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ApplyUIConfiguration(settings);
 
             // Reload profiles in case they were added/updated/deleted in Settings UI

@@ -37,6 +37,9 @@ namespace PowerDisplay.PowerDisplayXAML
             // Subclass WndProc to suppress WM_DPICHANGED during cross-DPI positioning
             _dpiSuppressor = new DpiSuppressor(this);
 
+            // Ensure DpiSuppressor is disposed when window closes
+            this.Closed += (_, _) => Dispose();
+
             // Auto close after 3 seconds
             Task.Delay(3000).ContinueWith(_ =>
             {

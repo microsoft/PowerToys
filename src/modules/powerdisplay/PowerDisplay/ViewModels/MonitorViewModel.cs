@@ -60,36 +60,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private bool _showPowerState;
 
     /// <summary>
-    /// Updates a property value directly without triggering hardware updates.
-    /// Used during initialization to update UI from saved state.
-    /// </summary>
-    internal void UpdatePropertySilently(string propertyName, int value)
-    {
-        switch (propertyName)
-        {
-            case nameof(Brightness):
-                _brightness = value;
-                OnPropertyChanged(nameof(Brightness));
-                break;
-            case nameof(Contrast):
-                _contrast = value;
-                OnPropertyChanged(nameof(Contrast));
-                OnPropertyChanged(nameof(ContrastPercent));
-                break;
-            case nameof(Volume):
-                _volume = value;
-                OnPropertyChanged(nameof(Volume));
-                break;
-            case nameof(ColorTemperature):
-                // Update underlying monitor model
-                _monitor.CurrentColorTemperature = value;
-                OnPropertyChanged(nameof(ColorTemperature));
-                OnPropertyChanged(nameof(ColorTemperaturePresetName));
-                break;
-        }
-    }
-
-    /// <summary>
     /// Apply brightness with hardware update and state persistence.
     /// </summary>
     /// <param name="brightness">Brightness value (0-100)</param>

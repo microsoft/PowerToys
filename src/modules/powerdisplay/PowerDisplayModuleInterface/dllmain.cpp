@@ -39,7 +39,7 @@ const static wchar_t* MODULE_DESC = L"A utility to manage display brightness and
 class PowerDisplayModule : public PowertoyModuleIface
 {
 private:
-    bool m_enabled = false;
+    std::atomic<bool> m_enabled = false;
 
     // Process manager handles Named Pipe communication and process lifecycle
     PowerDisplayProcessManager m_processManager;
@@ -81,10 +81,11 @@ public:
 
         if (!m_hRefreshEvent || !m_hSendSettingsTelemetryEvent || !m_hToggleEvent || !m_hStopEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}, Toggle={}",
+            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}, Toggle={}, Stop={}",
                          reinterpret_cast<void*>(m_hRefreshEvent),
                          reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent),
-                         reinterpret_cast<void*>(m_hToggleEvent));
+                         reinterpret_cast<void*>(m_hToggleEvent),
+                         reinterpret_cast<void*>(m_hStopEvent));
         }
         else
         {
@@ -99,9 +100,6 @@ public:
         {
             disable();
         }
-
-        // Stop toggle event listener thread
-        StopToggleEventListener();
 
         // Clean up event handles
         if (m_hRefreshEvent)
