@@ -30,7 +30,7 @@ public static class ResultHelper
             return null;
         }
 
-        var result = roundedResult?.ToString(outputCulture);
+        var result = FormatWithSeparators(roundedResult.Value, outputCulture);
 
         // Create a SaveCommand and subscribe to the SaveRequested event
         // This can append the result to the history list.
@@ -66,7 +66,7 @@ public static class ResultHelper
             return null;
         }
 
-        var decimalResult = roundedResult?.ToString(outputCulture);
+        var decimalResult = FormatWithSeparators(roundedResult.Value, outputCulture);
         var decimalValue = (decimal)roundedResult;
 
         List<IContextItem> context = [];
@@ -135,5 +135,18 @@ public static class ResultHelper
             TextToSuggest = decimalResult,
             MoreCommands = context.ToArray(),
         };
+    }
+
+    /// <summary>
+    /// Formats a decimal with locale-aware thousands separators while preserving
+    /// the original number of decimal places.
+    /// </summary>
+    private static string FormatWithSeparators(decimal value, CultureInfo culture)
+    {
+        var plain = value.ToString(culture);
+        var sep = culture.NumberFormat.NumberDecimalSeparator;
+        var decIdx = plain.IndexOf(sep, StringComparison.Ordinal);
+        var decimals = decIdx >= 0 ? plain.Length - decIdx - sep.Length : 0;
+        return value.ToString("N" + decimals, culture);
     }
 }
