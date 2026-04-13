@@ -60,6 +60,15 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
     auto state = UpdateState::read();
 
     const auto new_version_info = std::move(get_github_version_info_async()).get();
+
+    // Check for error BEFORE dereferencing — the old code crashed here
+    // when GitHub API was unreachable (new_version_info held an error string).
+    if (!new_version_info)
+    {
+        Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
+        return std::nullopt;
+    }
+
     if (std::holds_alternative<version_up_to_date>(*new_version_info))
     {
         isUpToDate = true;
@@ -69,12 +78,6 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 
     if (state.state == UpdateState::readyToDownload || state.state == UpdateState::errorDownloading)
     {
-        if (!new_version_info)
-        {
-            Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
-            return std::nullopt;
-        }
-
         // Cleanup old updates before downloading the latest
         updating::cleanup_updates();
 
@@ -224,6 +227,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
+        if (nArgs < 3)
+        {
+            Logger::error("Stage 2 invoked without installer path argument");
+            return 1;
+        }
+
         using namespace std::string_view_literals;
         const bool failed = !InstallNewVersionStage2(args[2]);
         if (failed)
