@@ -233,7 +233,7 @@ namespace PowerDisplay
                 this.Show();
                 this.IsAlwaysOnTop = true;
                 this.BringToFront();
-                RootGrid.Focus(FocusState.Programmatic);
+                RootGrid?.Focus(FocusState.Programmatic);
 
                 Logger.LogInfo($"ShowWindowAt: Window shown at ({screenXPixels}, {screenYPixels})");
             }
