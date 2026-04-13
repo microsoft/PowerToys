@@ -77,8 +77,26 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
     private static int ScoreFunction(string q, Window window)
     {
         var titleScore = FuzzyStringMatcher.ScoreFuzzy(q, window.Title);
-        var processNameScore = FuzzyStringMatcher.ScoreFuzzy(q, window.Process.Name ?? string.Empty);
-        return Math.Max(titleScore, processNameScore);
+        var processName = window.Process.Name ?? string.Empty;
+        var processNameScore = FuzzyStringMatcher.ScoreFuzzy(q, processName);
+
+        // Support compound queries like "word budget" where "word" matches the
+        // process name and "budget" matches something in the window title.
+        var combinedScore = 0;
+        var parts = q.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+        {
+            var appPart = parts[0];
+            var titlePart = string.Join(" ", parts[1..]);
+            var appScore = FuzzyStringMatcher.ScoreFuzzy(appPart, processName);
+            var restScore = FuzzyStringMatcher.ScoreFuzzy(titlePart, window.Title);
+            if (appScore > 0 && restScore > 0)
+            {
+                combinedScore = appScore + restScore;
+            }
+        }
+
+        return Math.Max(Math.Max(titleScore, processNameScore), combinedScore);
     }
 
     public override IListItem[] GetItems() => Query(SearchText);
