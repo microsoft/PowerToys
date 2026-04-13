@@ -18,7 +18,7 @@
 
 #include "BGRATextureView.h"
 #include "EdgeDetection.h"
-#include "MeasurementForTests.h"
+#include "../MeasureToolCore/Measurement.h"
 #include "constants.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;

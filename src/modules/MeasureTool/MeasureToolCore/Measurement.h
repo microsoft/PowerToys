@@ -18,7 +18,9 @@ struct Measurement
     D2D1_RECT_F rect = {}; // corners are inclusive
 
     float px2mmRatio = 0;
+#ifndef UNIT_TEST
     static winrt::hstring abbreviations[4]; // Abbreviations of units.
+#endif
 
     Measurement(const Measurement&) = default;
     Measurement& operator=(const Measurement&) = default;
@@ -29,6 +31,9 @@ struct Measurement
     float Width(const Unit units) const;
     float Height(const Unit units) const;
 
+    static Unit GetUnitFromIndex(int index);
+
+#ifndef UNIT_TEST
     struct PrintResult
     {
         size_t crossSymbolPos[2] = {};
@@ -36,7 +41,6 @@ struct Measurement
     };
 
     static void InitResources();
-    static Unit GetUnitFromIndex(int index);
     static const wchar_t* GetUnitAbbreviation(const Unit units);
 
     PrintResult Print(wchar_t* buf,
@@ -50,4 +54,5 @@ struct Measurement
                        const bool printWidth,
                        const bool printHeight,
                        const Unit units) const;
+#endif // !UNIT_TEST
 };

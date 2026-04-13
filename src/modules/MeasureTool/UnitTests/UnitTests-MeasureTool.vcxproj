@@ -43,13 +43,12 @@
     </ClCompile>
     <ClCompile Include="MeasureToolTests.cpp" />
     <ClCompile Include="..\MeasureToolCore\EdgeDetection.cpp" />
-    <ClCompile Include="MeasurementForTests.cpp" />
+    <ClCompile Include="..\MeasureToolCore\Measurement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="..\MeasureToolCore\BGRATextureView.h" />
     <ClInclude Include="..\MeasureToolCore\EdgeDetection.h" />
-    <ClInclude Include="MeasurementForTests.h" />
     <ClInclude Include="..\MeasureToolCore\constants.h" />
   </ItemGroup>
   <ItemGroup>
