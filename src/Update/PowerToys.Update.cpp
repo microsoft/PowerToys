@@ -23,6 +23,8 @@
 #include <common/utils/resources.h>
 #include <common/utils/timeutil.h>
 
+#include <wil/resource.h>
+
 #include <common/SettingsAPI/settings_helpers.h>
 
 #include <common/logger/logger.h>
@@ -40,15 +42,16 @@ namespace fs = std::filesystem;
 
 std::optional<fs::path> CopySelfToTempDir()
 {
+    // D5 fix: Use unique temp path with PID to avoid collision on concurrent updates
     std::error_code error;
-    auto dst_path = fs::temp_directory_path() / "PowerToys.Update.exe";
+    auto dst_path = fs::temp_directory_path() / (L"PowerToys.Update." + std::to_wstring(GetCurrentProcessId()) + L".exe");
     fs::copy_file(get_module_filename(), dst_path, fs::copy_options::overwrite_existing, error);
     if (error)
     {
         return std::nullopt;
     }
 
-    return std::move(dst_path);
+    return dst_path;
 }
 
 std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
@@ -121,7 +124,22 @@ bool InstallNewVersionStage1(fs::path installer)
 
         if (pt_main_window != nullptr)
         {
+            // Get the process that owns the tray window so we can wait for it to exit
+            DWORD ptProcessId = 0;
+            GetWindowThreadProcessId(pt_main_window, &ptProcessId);
+
             SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
+
+            // D4 fix: Wait for PT to actually exit before launching installer.
+            // Without this, the installer may find PT files locked.
+            if (ptProcessId != 0)
+            {
+                wil::unique_handle ptProcess{ OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) };
+                if (ptProcess)
+                {
+                    WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
+                }
+            }
         }
 
         // Pass the install directory so Stage 2 can relaunch PowerToys after install
@@ -196,8 +214,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     LPWSTR* args = CommandLineToArgvW(GetCommandLineW(), &nArgs);
     if (!args || nArgs < 2)
     {
+        if (args)
+        {
+            LocalFree(args);
+        }
         return 1;
     }
+
+    // D3 fix: ensure args is freed on all exit paths
+    auto freeArgs = wil::scope_exit([&] { LocalFree(args); });
 
     std::wstring_view action{ args[1] };
 
@@ -243,11 +268,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 state.state = UpdateState::errorDownloading;
             });
         }
-        else
+
+        // D7 fix: Always check for corrupted configs after Stage 2, regardless
+        // of install success/failure. A failed install may still corrupt configs.
+        Logger::info("Checking for corrupted config files after update");
+        updating::RestoreCorruptedConfigs(fs::path(PTSettingsHelper::get_root_save_folder_location()));
+
+        if (!failed)
         {
-            // Validate configs and restore any that were corrupted during update
-            Logger::info("Checking for corrupted config files after update");
-            updating::RestoreCorruptedConfigs(fs::path(PTSettingsHelper::get_root_save_folder_location()));
 
             // Relaunch PowerToys from the install directory
             if (updating::CanRelaunchAfterUpdate(nArgs))
