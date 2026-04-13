@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 // Unit tests for Runner general settings parsing.
-// These are pure-logic tests that exercise theme validation, dashboard sort
-// order parsing, module enable map structures, and default values without
-// requiring file I/O or the full runner initialization.
+//
+// These tests exercise the real validation and parsing logic mirrored from
+// general_settings.cpp — specifically ValidateTheme() and the dashboard
+// sort-order parser. Both are branching functions where invalid/unexpected
+// input must produce safe fallback values; the tests verify those branches.
 
 #include "pch.h"
 
@@ -73,54 +75,66 @@ namespace RunnerUnitTests
     };
 
     // ── Theme validation tests ──────────────────────────────────────────────
+    // Product function: ValidateTheme() in general_settings.cpp
+    // Behavior: only "dark" and "light" are accepted; everything else
+    //   (including "system", empty string, wrong case) falls back to "system".
+    // Risk if broken: UI theme silently resets or displays garbage.
 
     TEST_CLASS(GeneralSettingsThemeTests)
     {
     public:
+        // Verify the default struct value before any JSON is parsed.
         TEST_METHOD(DefaultTheme_IsSystem)
         {
             GeneralSettingsDefaults s;
             Assert::AreEqual(std::wstring(L"system"), s.theme);
         }
 
+        // "dark" is one of two accepted values — must pass through unchanged.
         TEST_METHOD(ValidTheme_Dark_Accepted)
         {
             auto result = ValidateTheme(L"dark");
             Assert::AreEqual(std::wstring(L"dark"), result);
         }
 
+        // "light" is one of two accepted values — must pass through unchanged.
         TEST_METHOD(ValidTheme_Light_Accepted)
         {
             auto result = ValidateTheme(L"light");
             Assert::AreEqual(std::wstring(L"light"), result);
         }
 
+        // "system" is NOT in the accept-list; the validator intentionally
+        // returns "system" as the fallback, so the round-trip still works,
+        // but it exercises the else-branch.
         TEST_METHOD(ValidTheme_System_FallsBack)
         {
-            // "system" is not "dark" or "light", so validation returns "system"
             auto result = ValidateTheme(L"system");
             Assert::AreEqual(std::wstring(L"system"), result);
         }
 
+        // Arbitrary garbage → fallback to "system".
         TEST_METHOD(InvalidTheme_RandomString_FallsBackToSystem)
         {
             auto result = ValidateTheme(L"sepia");
             Assert::AreEqual(std::wstring(L"system"), result);
         }
 
+        // Empty string → fallback (guards against missing JSON key).
         TEST_METHOD(InvalidTheme_EmptyString_FallsBackToSystem)
         {
             auto result = ValidateTheme(L"");
             Assert::AreEqual(std::wstring(L"system"), result);
         }
 
+        // Comparison is case-sensitive: "Dark" ≠ "dark".
         TEST_METHOD(InvalidTheme_CaseSensitive_DarkUppercase)
         {
-            // Theme validation is case-sensitive: "Dark" != "dark"
             auto result = ValidateTheme(L"Dark");
             Assert::AreEqual(std::wstring(L"system"), result);
         }
 
+        // Comparison is case-sensitive: "Light" ≠ "light".
         TEST_METHOD(InvalidTheme_CaseSensitive_LightUppercase)
         {
             auto result = ValidateTheme(L"Light");
@@ -128,78 +142,18 @@ namespace RunnerUnitTests
         }
     };
 
-    // ── Default value tests ─────────────────────────────────────────────────
-
-    TEST_CLASS(GeneralSettingsDefaultsTests)
-    {
-    public:
-        TEST_METHOD(ShowSystemTrayIcon_DefaultIsTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.showSystemTrayIcon);
-        }
-
-        TEST_METHOD(ShowThemeAdaptiveTrayIcon_DefaultIsFalse)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsFalse(s.showThemeAdaptiveTrayIcon);
-        }
-
-        TEST_METHOD(EnableQuickAccess_DefaultIsTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.enableQuickAccess);
-        }
-
-        TEST_METHOD(RunAsElevated_DefaultIsFalse)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsFalse(s.runAsElevated);
-        }
-
-        TEST_METHOD(ShowNewUpdatesToastNotification_DefaultIsTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.showNewUpdatesToastNotification);
-        }
-
-        TEST_METHOD(DownloadUpdatesAutomatically_DefaultIsTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.downloadUpdatesAutomatically);
-        }
-
-        TEST_METHOD(ShowWhatsNewAfterUpdates_DefaultIsTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.showWhatsNewAfterUpdates);
-        }
-
-        TEST_METHOD(EnableExperimentation_DefaultIsTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.enableExperimentation);
-        }
-
-        TEST_METHOD(EnableWarningsElevatedApps_DefaultIsTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.enableWarningsElevatedApps);
-        }
-
-        TEST_METHOD(DashboardSortOrder_DefaultIsAlphabetical)
-        {
-            GeneralSettingsDefaults s;
-            Assert::AreEqual(static_cast<int>(DashboardSortOrder::Alphabetical),
-                             static_cast<int>(s.dashboardSortOrder));
-        }
-    };
-
     // ── Dashboard sort order parsing tests ──────────────────────────────────
+    // Product functions: ParseDashboardSortOrderFromInt / FromString
+    //   in general_settings.cpp
+    // Behavior: only recognised enum values are accepted; anything else
+    //   falls back to a caller-supplied default.
+    // Risk if broken: dashboard displays modules in wrong order after
+    //   settings migration or manual JSON edit.
 
     TEST_CLASS(DashboardSortOrderTests)
     {
     public:
+        // 0 → Alphabetical (the first enum value).
         TEST_METHOD(ParseFromInt_0_IsAlphabetical)
         {
             auto result = ParseDashboardSortOrderFromInt(0, DashboardSortOrder::Alphabetical);
@@ -207,6 +161,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
+        // 1 → ByStatus (the only other valid value).
         TEST_METHOD(ParseFromInt_1_IsByStatus)
         {
             auto result = ParseDashboardSortOrderFromInt(1, DashboardSortOrder::Alphabetical);
@@ -214,6 +169,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
+        // Out-of-range positive int → falls back to Alphabetical.
         TEST_METHOD(ParseFromInt_InvalidValue_FallsBackToAlphabetical)
         {
             auto result = ParseDashboardSortOrderFromInt(99, DashboardSortOrder::Alphabetical);
@@ -221,6 +177,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
+        // Negative int → falls back to Alphabetical.
         TEST_METHOD(ParseFromInt_Negative_FallsBackToAlphabetical)
         {
             auto result = ParseDashboardSortOrderFromInt(-1, DashboardSortOrder::Alphabetical);
@@ -228,6 +185,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
+        // String "Alphabetical" → enum Alphabetical (overrides any fallback).
         TEST_METHOD(ParseFromString_Alphabetical)
         {
             auto result = ParseDashboardSortOrderFromString(L"Alphabetical", DashboardSortOrder::ByStatus);
@@ -235,6 +193,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
+        // String "ByStatus" → enum ByStatus (overrides any fallback).
         TEST_METHOD(ParseFromString_ByStatus)
         {
             auto result = ParseDashboardSortOrderFromString(L"ByStatus", DashboardSortOrder::Alphabetical);
@@ -242,6 +201,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
+        // Unrecognised string → caller's fallback is used.
         TEST_METHOD(ParseFromString_Invalid_UsesFallback)
         {
             auto result = ParseDashboardSortOrderFromString(L"unknown", DashboardSortOrder::ByStatus);
@@ -249,110 +209,12 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
+        // Empty string → caller's fallback is used.
         TEST_METHOD(ParseFromString_Empty_UsesFallback)
         {
             auto result = ParseDashboardSortOrderFromString(L"", DashboardSortOrder::Alphabetical);
             Assert::AreEqual(static_cast<int>(DashboardSortOrder::Alphabetical),
                              static_cast<int>(result));
-        }
-    };
-
-    // ── Module enable map tests ─────────────────────────────────────────────
-
-    TEST_CLASS(ModuleEnableMapTests)
-    {
-    public:
-        TEST_METHOD(EmptyMap_HasNoModules)
-        {
-            std::map<std::wstring, bool> moduleMap;
-            Assert::AreEqual(static_cast<size_t>(0), moduleMap.size());
-        }
-
-        TEST_METHOD(SingleModule_Enabled)
-        {
-            std::map<std::wstring, bool> moduleMap;
-            moduleMap[L"FancyZones"] = true;
-            Assert::IsTrue(moduleMap[L"FancyZones"]);
-        }
-
-        TEST_METHOD(SingleModule_Disabled)
-        {
-            std::map<std::wstring, bool> moduleMap;
-            moduleMap[L"PowerRename"] = false;
-            Assert::IsFalse(moduleMap[L"PowerRename"]);
-        }
-
-        TEST_METHOD(MultipleModules_MixedState)
-        {
-            std::map<std::wstring, bool> moduleMap;
-            moduleMap[L"FancyZones"] = true;
-            moduleMap[L"PowerRename"] = false;
-            moduleMap[L"ColorPicker"] = true;
-
-            Assert::AreEqual(static_cast<size_t>(3), moduleMap.size());
-            Assert::IsTrue(moduleMap[L"FancyZones"]);
-            Assert::IsFalse(moduleMap[L"PowerRename"]);
-            Assert::IsTrue(moduleMap[L"ColorPicker"]);
-        }
-
-        TEST_METHOD(ModuleNotInMap_DefaultInsertedAsFalse)
-        {
-            std::map<std::wstring, bool> moduleMap;
-            // Accessing a nonexistent key default-inserts bool as false
-            bool val = moduleMap[L"NonExistent"];
-            Assert::IsFalse(val);
-        }
-
-        TEST_METHOD(FindModule_NotFound)
-        {
-            std::map<std::wstring, bool> moduleMap;
-            moduleMap[L"FancyZones"] = true;
-            Assert::IsTrue(moduleMap.find(L"Awake") == moduleMap.end());
-        }
-    };
-
-    // ── Empty JSON → all defaults ───────────────────────────────────────────
-
-    TEST_CLASS(GeneralSettingsEmptyJsonTests)
-    {
-    public:
-        TEST_METHOD(EmptyJson_ThemeDefaultsToSystem)
-        {
-            GeneralSettingsDefaults s;
-            Assert::AreEqual(std::wstring(L"system"), s.theme);
-        }
-
-        TEST_METHOD(EmptyJson_TrayIconDefaultsToTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.showSystemTrayIcon);
-        }
-
-        TEST_METHOD(EmptyJson_QuickAccessDefaultsToTrue)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.enableQuickAccess);
-        }
-
-        TEST_METHOD(EmptyJson_DashboardSortDefaultsToAlphabetical)
-        {
-            GeneralSettingsDefaults s;
-            Assert::AreEqual(static_cast<int>(DashboardSortOrder::Alphabetical),
-                             static_cast<int>(s.dashboardSortOrder));
-        }
-
-        TEST_METHOD(EmptyJson_AllBoolDefaultsCorrect)
-        {
-            GeneralSettingsDefaults s;
-            Assert::IsTrue(s.showSystemTrayIcon);
-            Assert::IsFalse(s.showThemeAdaptiveTrayIcon);
-            Assert::IsFalse(s.runAsElevated);
-            Assert::IsTrue(s.showNewUpdatesToastNotification);
-            Assert::IsTrue(s.downloadUpdatesAutomatically);
-            Assert::IsTrue(s.showWhatsNewAfterUpdates);
-            Assert::IsTrue(s.enableExperimentation);
-            Assert::IsTrue(s.enableWarningsElevatedApps);
-            Assert::IsTrue(s.enableQuickAccess);
         }
     };
 }

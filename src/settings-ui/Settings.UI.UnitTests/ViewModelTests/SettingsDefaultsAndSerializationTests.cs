@@ -19,6 +19,12 @@ namespace ViewModelTests
         [TestClass]
         public class AlwaysOnTopSettingsTests
         {
+            /// <summary>
+            /// Product code: AlwaysOnTopProperties constructor
+            /// What: Verifies every constructor default (frame enabled/thickness/color/opacity, sound, hotkeys, game-mode, round corners, excluded apps)
+            /// Why: Catches unintentional default changes introduced by property refactors or new fields
+            /// Risk: Settings silently change after upgrade, e.g., frame becomes invisible or sound turns off for new installs
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -50,6 +56,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0xBD, settings.DecreaseOpacityHotkey.Value.Code);
             }
 
+            /// <summary>
+            /// Product code: AlwaysOnTopProperties constructor + System.Text.Json serializer
+            /// What: Serializes a modified AlwaysOnTopProperties to JSON and deserializes it back, then asserts every field matches
+            /// Why: Proves the JSON property names and converters are wired correctly for all fields
+            /// Risk: Settings silently reset to defaults after save/load cycle, losing user customizations like frame color or thickness
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -77,6 +89,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.Hotkey.Value.Code, deserialized.Hotkey.Value.Code);
             }
 
+            /// <summary>
+            /// Product code: AlwaysOnTopProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" into AlwaysOnTopProperties without throwing
+            /// Why: Users may have an empty or corrupt settings file; deserialization must be resilient
+            /// Risk: Crash or null-reference exception when user opens Settings UI with empty/corrupt AlwaysOnTop config
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_DoesNotThrow()
             {
@@ -88,6 +106,12 @@ namespace ViewModelTests
         [TestClass]
         public class AwakeSettingsTests
         {
+            /// <summary>
+            /// Product code: AwakeProperties constructor
+            /// What: Verifies constructor defaults for keep-display-on, mode, interval hours/minutes, and custom tray times
+            /// Why: Catches default drift when new properties are added or enum values change
+            /// Risk: Awake stays active with wrong mode or interval after fresh install, keeping the display on unexpectedly
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -101,6 +125,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0, settings.CustomTrayTimes.Count);
             }
 
+            /// <summary>
+            /// Product code: AwakeProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a modified AwakeProperties through JSON and verifies all fields including custom tray times dictionary
+            /// Why: Validates that dictionary-typed properties and enum values survive serialization
+            /// Risk: Custom tray times or mode selection lost after save, reverting to passive mode silently
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -122,6 +152,12 @@ namespace ViewModelTests
                 Assert.AreEqual(15u, deserialized.CustomTrayTimes["quick"]);
             }
 
+            /// <summary>
+            /// Product code: AwakeProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" and verifies sensible defaults are filled in
+            /// Why: An empty or freshly-created settings file must not crash and must produce valid defaults
+            /// Risk: Crash on missing fields when Awake reads an empty settings file after first install
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_FillsDefaults()
             {
@@ -134,6 +170,12 @@ namespace ViewModelTests
                 Assert.AreEqual(1u, deserialized.IntervalMinutes);
             }
 
+            /// <summary>
+            /// Product code: AwakeProperties constructor + System.Text.Json serializer
+            /// What: Deserializes partial JSON with only keepDisplayOn and mode set, verifies provided values kept and missing fields get defaults
+            /// Why: Settings files may be hand-edited or from older versions with fewer fields
+            /// Risk: Partial settings file silently drops provided values, reverting user choices to defaults
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromPartialJson_PreservesProvidedValues()
             {
@@ -149,6 +191,12 @@ namespace ViewModelTests
         [TestClass]
         public class MouseHighlighterSettingsTests
         {
+            /// <summary>
+            /// Product code: MouseHighlighterProperties constructor
+            /// What: Verifies defaults for left/right click colors, always-color, opacity, radius, fade delay/duration, auto-activate, spotlight mode, and hotkey
+            /// Why: Catches accidental default changes that could make the highlight invisible or wrong color
+            /// Risk: Highlight invisible or wrong color on first use after install, confusing new users
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -171,6 +219,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0x48, settings.ActivationShortcut.Code);
             }
 
+            /// <summary>
+            /// Product code: MouseHighlighterProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a modified MouseHighlighterProperties through JSON and verifies all color, radius, and mode fields match
+            /// Why: Proves JSON property names map correctly for color strings and numeric properties
+            /// Risk: Custom highlight colors or radius lost after save, reverting to defaults on next load
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -193,6 +247,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.SpotlightMode.Value, deserialized.SpotlightMode.Value);
             }
 
+            /// <summary>
+            /// Product code: MouseHighlighterProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" into MouseHighlighterProperties without throwing
+            /// Why: Guards against null-reference or missing-property exceptions from empty config files
+            /// Risk: Crash or null-ref when user has empty/corrupt MouseHighlighter settings file
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_DoesNotThrow()
             {
@@ -204,6 +264,12 @@ namespace ViewModelTests
         [TestClass]
         public class FindMyMouseSettingsTests
         {
+            /// <summary>
+            /// Product code: FindMyMouseProperties constructor
+            /// What: Verifies defaults for activation method, spotlight radius/color, animation duration, shaking thresholds, excluded apps, and hotkey
+            /// Why: Catches default changes that would break mouse-locate activation or produce wrong animations
+            /// Risk: FindMyMouse fails to activate or uses wrong animation/spotlight on first use after install
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -229,6 +295,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0x46, settings.ActivationShortcut.Code);
             }
 
+            /// <summary>
+            /// Product code: FindMyMouseProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a modified FindMyMouseProperties through JSON and verifies all fields including spotlight, shaking, and excluded apps
+            /// Why: Validates that all numeric, string, and boolean properties survive serialization
+            /// Risk: Spotlight radius or excluded apps list lost after save, reverting to defaults on next load
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -255,6 +327,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.ShakingFactor.Value, deserialized.ShakingFactor.Value);
             }
 
+            /// <summary>
+            /// Product code: FindMyMouseProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" into FindMyMouseProperties without throwing
+            /// Why: Empty or corrupt settings files must not crash the application
+            /// Risk: Crash or null-ref when user has empty/corrupt FindMyMouse settings file
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_DoesNotThrow()
             {
@@ -266,6 +344,12 @@ namespace ViewModelTests
         [TestClass]
         public class PowerAccentSettingsTests
         {
+            /// <summary>
+            /// Product code: PowerAccentProperties constructor
+            /// What: Verifies defaults for activation key, game-mode, toolbar position, input time, language, excluded apps, and sort/description flags
+            /// Why: Catches default drift that could break accent input or select the wrong activation key
+            /// Risk: Wrong default activation key breaks accent input on first use, or toolbar appears in unexpected position
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -282,6 +366,12 @@ namespace ViewModelTests
                 Assert.IsFalse(settings.StartSelectionFromTheLeft);
             }
 
+            /// <summary>
+            /// Product code: PowerAccentProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a modified PowerAccentProperties through JSON and verifies all fields including enum, string, and boolean properties
+            /// Why: Validates that enum serialization (ActivationKey) and string properties (language, toolbar position) survive the round-trip
+            /// Risk: Language selection or toolbar position lost after save, reverting to defaults on next load
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -307,6 +397,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.StartSelectionFromTheLeft, deserialized.StartSelectionFromTheLeft);
             }
 
+            /// <summary>
+            /// Product code: PowerAccentProperties constructor + System.Text.Json serializer
+            /// What: Deserializes partial JSON with only activation_key and game-mode set, verifies provided values kept and missing fields get defaults
+            /// Why: Older settings files or hand-edited JSON may only contain a subset of fields
+            /// Risk: Unset fields get garbage values instead of safe defaults, causing erratic accent behavior
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromPartialJson_FillsDefaults()
             {
@@ -323,6 +419,12 @@ namespace ViewModelTests
         [TestClass]
         public class PeekSettingsTests
         {
+            /// <summary>
+            /// Product code: PeekProperties constructor
+            /// What: Verifies defaults for always-run-not-elevated, close-after-losing-focus, confirm-file-delete, space-to-activate, and hotkey
+            /// Why: Catches default changes that could run Peek elevated unexpectedly or skip delete confirmation
+            /// Risk: Peek runs elevated unexpectedly or missing delete confirmation dialog, risking accidental file deletion
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -340,6 +442,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0x20, settings.ActivationShortcut.Code);
             }
 
+            /// <summary>
+            /// Product code: PeekProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a modified PeekProperties through JSON and verifies elevation, focus, delete-confirm, space-activate, and hotkey fields
+            /// Why: Validates that boolean properties and hotkey structure survive serialization
+            /// Risk: Elevation or focus settings lost after save, causing Peek to run elevated or not close on focus loss
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -359,6 +467,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.ActivationShortcut.Code, deserialized.ActivationShortcut.Code);
             }
 
+            /// <summary>
+            /// Product code: PeekProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" into PeekProperties without throwing
+            /// Why: Empty or corrupt settings files must not crash the application
+            /// Risk: Crash or null-ref when user has empty/corrupt Peek settings file
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_DoesNotThrow()
             {
@@ -370,6 +484,12 @@ namespace ViewModelTests
         [TestClass]
         public class CursorWrapSettingsTests
         {
+            /// <summary>
+            /// Product code: CursorWrapProperties constructor
+            /// What: Verifies defaults for auto-activate, disable-wrap-during-drag, wrap mode, activation mode, single-monitor disable, and hotkey
+            /// Why: Catches default changes that could activate cursor wrap unexpectedly on first run
+            /// Risk: Cursor wrap activates unexpectedly on first run or wraps in wrong mode, confusing users
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -388,6 +508,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0x55, settings.ActivationShortcut.Code);
             }
 
+            /// <summary>
+            /// Product code: CursorWrapProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a modified CursorWrapProperties through JSON and verifies all fields including wrap mode, activation mode, and hotkey
+            /// Why: Validates that integer-enum properties and boolean flags survive serialization
+            /// Risk: Wrap mode or activation mode lost after save, reverting to defaults on next load
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -409,6 +535,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.ActivationShortcut.Code, deserialized.ActivationShortcut.Code);
             }
 
+            /// <summary>
+            /// Product code: CursorWrapProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" into CursorWrapProperties without throwing
+            /// Why: Empty or corrupt settings files must not crash the application
+            /// Risk: Crash or null-ref when user has empty/corrupt CursorWrap settings file
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_DoesNotThrow()
             {
@@ -420,6 +552,12 @@ namespace ViewModelTests
         [TestClass]
         public class MousePointerCrosshairsSettingsTests
         {
+            /// <summary>
+            /// Product code: MousePointerCrosshairsProperties constructor
+            /// What: Verifies defaults for color, opacity, radius, thickness, border, orientation, auto-hide, fixed-length, gliding speeds, and hotkeys
+            /// Why: Catches default changes that could make crosshairs invisible or enormously oversized
+            /// Risk: Crosshairs invisible or enormous on first activation, rendering the feature unusable
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -450,6 +588,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0xBE, settings.GlidingCursorActivationShortcut.Code);
             }
 
+            /// <summary>
+            /// Product code: MousePointerCrosshairsProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a fully modified MousePointerCrosshairsProperties through JSON and verifies all 13+ fields match
+            /// Why: Validates that all color strings, integer properties, and boolean flags survive serialization
+            /// Risk: Custom crosshair appearance (color, thickness, gliding speed) lost after save, reverting to defaults
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -486,6 +630,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.GlidingDelaySpeed.Value, deserialized.GlidingDelaySpeed.Value);
             }
 
+            /// <summary>
+            /// Product code: MousePointerCrosshairsProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" into MousePointerCrosshairsProperties without throwing
+            /// Why: Empty or corrupt settings files must not crash the application
+            /// Risk: Crash or null-ref when user has empty/corrupt MousePointerCrosshairs settings file
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_DoesNotThrow()
             {
@@ -497,6 +647,12 @@ namespace ViewModelTests
         [TestClass]
         public class MeasureToolSettingsTests
         {
+            /// <summary>
+            /// Product code: MeasureToolProperties constructor
+            /// What: Verifies defaults for units of measure, pixel tolerance, continuous capture, draw feet, edge detection, cross color, measure style, and hotkey
+            /// Why: Catches default changes that could produce wrong units or invisible cross color
+            /// Risk: Wrong default units or invisible cross color on first use, making measurements unreliable
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -517,6 +673,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0x4D, settings.ActivationShortcut.Code);
             }
 
+            /// <summary>
+            /// Product code: MeasureToolProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a modified MeasureToolProperties through JSON and verifies all fields including enum-backed measure style
+            /// Why: Validates that enum, boolean, and color-string properties survive serialization
+            /// Risk: Custom measure style or cross color lost after save, reverting to defaults on next load
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -541,6 +703,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.DefaultMeasureStyle.Value, deserialized.DefaultMeasureStyle.Value);
             }
 
+            /// <summary>
+            /// Product code: MeasureToolProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" into MeasureToolProperties without throwing
+            /// Why: Empty or corrupt settings files must not crash the application
+            /// Risk: Crash or null-ref when user has empty/corrupt MeasureTool settings file
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_DoesNotThrow()
             {
@@ -548,6 +716,12 @@ namespace ViewModelTests
                 Assert.IsNotNull(deserialized);
             }
 
+            /// <summary>
+            /// Product code: MeasureToolProperties constructor + System.Text.Json serializer
+            /// What: Deserializes partial JSON with ContinuousCapture and PixelTolerance set, verifies provided values kept and missing fields get defaults
+            /// Why: Settings files from older versions may only contain a subset of current fields
+            /// Risk: Partial settings updates silently drop provided values like pixel tolerance, reverting to defaults
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromPartialJson_PreservesProvidedValues()
             {
@@ -562,6 +736,12 @@ namespace ViewModelTests
         [TestClass]
         public class WorkspacesSettingsTests
         {
+            /// <summary>
+            /// Product code: WorkspacesProperties constructor
+            /// What: Verifies defaults for sort-by preference and hotkey (Win+Ctrl+`)
+            /// Why: Catches default changes that could break workspace list sorting or hotkey on first use
+            /// Risk: Workspaces list sorted wrong or hotkey broken on first use after install
+            /// </summary>
             [TestMethod]
             public void DefaultValues_AreCorrect()
             {
@@ -576,6 +756,12 @@ namespace ViewModelTests
                 Assert.AreEqual(0xC0, settings.Hotkey.Value.Code);
             }
 
+            /// <summary>
+            /// Product code: WorkspacesProperties constructor + System.Text.Json serializer
+            /// What: Round-trips a modified WorkspacesProperties through JSON and verifies sort-by and hotkey fields match
+            /// Why: Validates that enum-backed sort preference and hotkey structure survive serialization
+            /// Risk: Sort preference or hotkey lost after save, reverting to defaults on next load
+            /// </summary>
             [TestMethod]
             public void JsonRoundTrip_PreservesAllFields()
             {
@@ -591,6 +777,12 @@ namespace ViewModelTests
                 Assert.AreEqual(original.Hotkey.Value.Code, deserialized.Hotkey.Value.Code);
             }
 
+            /// <summary>
+            /// Product code: WorkspacesProperties constructor + System.Text.Json serializer
+            /// What: Deserializes an empty JSON object "{}" into WorkspacesProperties without throwing
+            /// Why: Empty or corrupt settings files must not crash the application
+            /// Risk: Crash or null-ref when user has empty/corrupt Workspaces settings file
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromEmptyJson_DoesNotThrow()
             {
@@ -598,6 +790,12 @@ namespace ViewModelTests
                 Assert.IsNotNull(deserialized);
             }
 
+            /// <summary>
+            /// Product code: WorkspacesProperties constructor + System.Text.Json serializer
+            /// What: Deserializes partial JSON with only sortby set, verifies provided sort order is preserved and missing fields get defaults
+            /// Why: Settings files may be hand-edited or from older versions with fewer fields
+            /// Risk: Partial settings file discards provided sort order, reverting to default sorting
+            /// </summary>
             [TestMethod]
             public void Deserialization_FromPartialJson_PreservesProvidedValues()
             {
