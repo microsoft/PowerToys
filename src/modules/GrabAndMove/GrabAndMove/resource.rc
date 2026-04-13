@@ -1,4 +1,0 @@
-#include "resource.h"
-#include <winres.h>
-
-IDI_APP_ICON ICON "GrabAndMove.ico"

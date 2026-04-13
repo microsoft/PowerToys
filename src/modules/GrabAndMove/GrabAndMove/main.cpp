@@ -1,17 +1,4 @@
-#ifndef UNICODE
-#define UNICODE
-#endif
-#ifndef _UNICODE
-#define _UNICODE
-#endif
-
-#include <windows.h>
-#include <shellapi.h>
-#include <commctrl.h>
-#include <TraceLoggingProvider.h>
-#include <limits>
-#include <string>
-#include <thread>
+#include "pch.h"
 
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
