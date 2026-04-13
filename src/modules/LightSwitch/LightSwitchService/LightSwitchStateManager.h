@@ -47,7 +47,6 @@ private:
     std::mutex _stateMutex;
 
     void EvaluateAndApplyIfNeeded();
-    bool CoordinatesAreValid(const std::wstring& lat, const std::wstring& lon);
 
     // Notify PowerDisplay module about theme change to apply display profiles
     void NotifyPowerDisplay(bool isLight);
