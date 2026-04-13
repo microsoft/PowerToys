@@ -173,6 +173,69 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Position a window near an anchor point on screen.
+        /// Prefers placing the window above the anchor (for bottom-docked panels),
+        /// but falls back to below if there isn't enough space above.
+        /// Clamps to the display's work area to avoid going off-screen.
+        /// </summary>
+        /// <param name="window">WinUIEx window to position</param>
+        /// <param name="anchorScreenXPixels">Anchor X coordinate in absolute screen pixels</param>
+        /// <param name="anchorScreenYPixels">Anchor Y coordinate in absolute screen pixels</param>
+        /// <param name="widthDip">Window width in device-independent pixels (DIP)</param>
+        /// <param name="heightDip">Window height in device-independent pixels (DIP)</param>
+        /// <param name="marginDip">Margin between the anchor point and the window edge in DIP</param>
+        public static void PositionWindowNear(
+            WindowEx window,
+            int anchorScreenXPixels,
+            int anchorScreenYPixels,
+            int widthDip,
+            int heightDip,
+            int marginDip = 8)
+        {
+            // Find the display containing the anchor point
+            var displayArea = DisplayArea.GetFromPoint(
+                new Windows.Graphics.PointInt32(anchorScreenXPixels, anchorScreenYPixels),
+                DisplayAreaFallback.Nearest);
+
+            if (displayArea is null)
+            {
+                ManagedCommon.Logger.LogWarning("PositionWindowNear: Unable to determine target display, skipping positioning");
+                return;
+            }
+
+            double dpiScale = GetDpiScale(displayArea);
+            int w = ScaleToPhysicalPixels(widthDip, dpiScale);
+            int h = ScaleToPhysicalPixels(heightDip, dpiScale);
+            int margin = ScaleToPhysicalPixels(marginDip, dpiScale);
+
+            // WorkArea relative to DisplayArea (accounts for taskbar position)
+            var rel = GetWorkAreaRelativeToDisplay(displayArea);
+
+            // Convert anchor point to be relative to the display area
+            var outer = displayArea.OuterBounds;
+            int anchorRelX = anchorScreenXPixels - outer.X;
+            int anchorRelY = anchorScreenYPixels - outer.Y;
+
+            // Center horizontally on the anchor point
+            int x = anchorRelX - (w / 2);
+
+            // Prefer placing above the anchor point (common for bottom dock)
+            int y = anchorRelY - h - margin;
+
+            // If not enough space above, place below
+            if (y < rel.Y)
+            {
+                y = anchorRelY + margin;
+            }
+
+            // Clamp to work area bounds
+            x = Math.Max(rel.X, Math.Min(x, rel.X + rel.Width - w));
+            y = Math.Max(rel.Y, Math.Min(y, rel.Y + rel.Height - h));
+
+            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, w, h), displayArea);
+        }
+
+        /// <summary>
         /// Center a window within the specified display area's work area.
         /// </summary>
         public static void CenterWindowOnDisplay(
