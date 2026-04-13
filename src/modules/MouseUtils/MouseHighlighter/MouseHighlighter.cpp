@@ -217,8 +217,12 @@ void Highlighter::AddDrawingPoint(MouseButton button)
 
     m_shape.Shapes().Append(circleShape);
 
-    // TODO: We're leaking shapes for long drawing sessions.
-    // Perhaps add a task to the Dispatcher every X circles to clean up.
+    // Cap the number of shapes to prevent unbounded memory growth in long sessions.
+    constexpr uint32_t maxShapes = 10000;
+    while (m_shape.Shapes().Size() > maxShapes)
+    {
+        m_shape.Shapes().RemoveAt(0);
+    }
 
     // Get back on top in case other Window is now the topmost.
     // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
