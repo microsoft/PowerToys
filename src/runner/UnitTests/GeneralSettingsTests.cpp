@@ -201,7 +201,7 @@ namespace RunnerUnitTests
                              static_cast<int>(result));
         }
 
-        // Unrecognised string → caller's fallback is used.
+        // Unrecognized string → caller's fallback is used.
         TEST_METHOD(ParseFromString_Invalid_UsesFallback)
         {
             auto result = ParseDashboardSortOrderFromString(L"unknown", DashboardSortOrder::ByStatus);
