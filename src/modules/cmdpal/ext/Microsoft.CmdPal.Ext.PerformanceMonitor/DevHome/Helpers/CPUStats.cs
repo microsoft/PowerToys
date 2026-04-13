@@ -93,7 +93,7 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
             var timer = Stopwatch.StartNew();
             if (_procPerf is not null)
             {
-                CpuUsage = _procPerf.NextValue() / 100;
+                CpuUsage = Math.Min(_procPerf.NextValue() / 100, 1.0f);
             }
 
             var usageMs = timer.ElapsedMilliseconds;
