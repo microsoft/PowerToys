@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Dock.PinToDockDialogContent"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -116,9 +116,7 @@
                     x:Uid="PinToDock_MonitorHeader"
                     FontWeight="SemiBold"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <ComboBox
-                    x:Name="MonitorComboBox"
-                    HorizontalAlignment="Stretch" />
+                <ComboBox x:Name="MonitorComboBox" HorizontalAlignment="Stretch" />
             </StackPanel>
 
             <!--  Label Options  -->
