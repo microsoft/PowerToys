@@ -116,14 +116,6 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of the settings helpers",
         },
 
-        // Controls page
-        new ListItem(new SampleControlsPage())
-        {
-            Title = "Sample controls page",
-            Subtitle = "Display toggle switches and sliders in sections",
-            Icon = new IconInfo("\uE713"),
-        },
-
         // Data package samples
         new ListItem(new SampleDataTransferPage())
         {

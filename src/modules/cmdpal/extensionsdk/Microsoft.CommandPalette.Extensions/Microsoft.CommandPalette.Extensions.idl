@@ -375,38 +375,7 @@ namespace Microsoft.CommandPalette.Extensions
         IDetails Details { get; };
         IContextItem[] Commands { get; };
     }
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    enum ControlType
-    {
-        Toggle = 0,
-        Slider = 1,
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IControlItem requires INotifyPropChanged
-    {
-        String Name { get; };
-        ControlType Type { get; };
-        Double Value { get; set; };
-        Double Minimum { get; };
-        Double Maximum { get; };
-        Double StepValue { get; };
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IControlsSection
-    {
-        String Title { get; };
-        IControlItem[] GetItems();
-    };
-
-    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
-    interface IControlsPage requires IPage, INotifyItemsChanged
-    {
-        IControlsSection[] GetSections();
-    };
-
+    
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface ICommandSettings {
         IContentPage SettingsPage { get; };
