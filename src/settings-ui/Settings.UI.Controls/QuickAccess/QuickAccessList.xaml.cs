@@ -22,5 +22,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         }
 
         public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(nameof(ItemsSource), typeof(object), typeof(QuickAccessList), new PropertyMetadata(null));
+
+        private void FlyoutMenuButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is QuickAccessItem item)
+            {
+                item.Command?.Execute(item.CommandParameter);
+            }
+        }
     }
 }

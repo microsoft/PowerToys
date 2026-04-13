@@ -10,7 +10,8 @@ using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
-public sealed class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction, ICloneable
+[WinRT.GeneratedBindableCustomProperty]
+public sealed partial class AdvancedPasteCustomAction : Observable, IAdvancedPasteAction, ICloneable
 {
     private int _id;
     private string _name = string.Empty;

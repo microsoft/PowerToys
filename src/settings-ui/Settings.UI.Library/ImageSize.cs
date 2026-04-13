@@ -13,6 +13,7 @@ using Settings.UI.Library.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
+[WinRT.GeneratedBindableCustomProperty]
 public partial class ImageSize : INotifyPropertyChanged, IHasId
 {
     public event PropertyChangedEventHandler PropertyChanged;
@@ -118,5 +119,5 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     [JsonIgnore]
     public ImageSize AccessibleTextHelper => this;
 
-    public string ToJsonString() => JsonSerializer.Serialize(this);
+    public string ToJsonString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.ImageSize);
 }

@@ -12,7 +12,7 @@ using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
-    public class SearchResultsViewModel : INotifyPropertyChanged
+    public partial class SearchResultsViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<SettingEntry> _moduleResults = new();
         private ObservableCollection<SettingsGroup> _groupedSettingsResults = new();
@@ -97,7 +97,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     }
 
 #pragma warning disable SA1402 // File may only contain a single type
-    public class SettingsGroup : INotifyPropertyChanged
+    public partial class SettingsGroup : INotifyPropertyChanged
 #pragma warning restore SA1402 // File may only contain a single type
     {
         private string _groupName;

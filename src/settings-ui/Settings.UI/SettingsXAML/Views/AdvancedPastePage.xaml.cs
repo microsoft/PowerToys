@@ -10,7 +10,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
 
 using LanguageModelProvider;
 using Microsoft.PowerToys.Settings.UI.Controls;
@@ -681,7 +680,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await LoadFoundryLocalModelsAsync();
         }
 
-        private sealed class FoundryDownloadableModel : INotifyPropertyChanged
+        private sealed partial class FoundryDownloadableModel : INotifyPropertyChanged
         {
             private readonly List<string> _deviceTags;
             private double _progress;

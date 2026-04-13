@@ -6,8 +6,9 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.Management.Deployment;
 using Windows.System;
 
@@ -16,7 +17,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     /// <summary>
     /// Helper class to manage installation status and installation command for a Microsoft Store extension.
     /// </summary>
-    public class StoreExtensionHelper : INotifyPropertyChanged
+    public partial class StoreExtensionHelper : INotifyPropertyChanged
     {
         private readonly string _packageFamilyName;
         private readonly string _storeUri;

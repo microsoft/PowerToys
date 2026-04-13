@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
@@ -481,13 +482,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             {
                                 foreach (var machine in machineMatrixString)
                                 {
-                                    if (states.TryGetValue(machine.Item.Name, out var state))
+                                    if (states.TryGetValue(machine.Name, out var state))
                                     {
                                         _uiDispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
                                         {
                                             try
                                             {
-                                                machine.Item.StatusBrush = StatusColors[state.Status];
+                                                machine.StatusBrush = StatusColors[state.Status];
                                             }
                                             catch (Exception)
                                             {
@@ -625,7 +626,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             // Dragging while elevated crashes on WinUI3: https://github.com/microsoft/microsoft-ui-xaml/issues/7690
-            machineMatrixString = new IndexedObservableCollection<DeviceViewModel>(loadMachineMatrixString.Select(name => new DeviceViewModel { Name = name, CanDragDrop = !IsElevated }));
+            machineMatrixString = new ObservableCollection<MouseWithoutBordersDeviceViewModel>(
+                loadMachineMatrixString.Select((name, index) => new MouseWithoutBordersDeviceViewModel
+                {
+                    Index = index,
+                    Name = name,
+                    CanDragDrop = !IsElevated,
+                }));
 
             if (editedTheMatrix)
             {
@@ -1183,35 +1190,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        private IndexedObservableCollection<DeviceViewModel> machineMatrixString;
+        private ObservableCollection<MouseWithoutBordersDeviceViewModel> machineMatrixString;
 
-        public partial class DeviceViewModel : Observable
-        {
-            public string Name { get; set; }
-
-            public bool CanDragDrop { get; set; }
-
-            private Brush _statusBrush = StatusColors[SocketStatus.NA];
-
-            public Brush StatusBrush
-            {
-                get
-                {
-                    return _statusBrush;
-                }
-
-                set
-                {
-                    if (_statusBrush != value)
-                    {
-                        _statusBrush = value;
-                        OnPropertyChanged(nameof(StatusBrush));
-                    }
-                }
-            }
-        }
-
-        public IndexedObservableCollection<DeviceViewModel> MachineMatrixString
+        public ObservableCollection<MouseWithoutBordersDeviceViewModel> MachineMatrixString
         {
             get
             {
@@ -1228,9 +1209,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     machineMatrixString = value;
                 }
 
-                Settings.Properties.MachineMatrixString = new List<string>(value.ToEnumerable().Select(d => d.Name));
+                Settings.Properties.MachineMatrixString = new List<string>(value.Select(d => d.Name));
                 NotifyPropertyChanged();
             }
+        }
+
+        public void SwapMachineMatrixItems(int index1, int index2)
+        {
+            if (machineMatrixString is null || index1 == index2)
+            {
+                return;
+            }
+
+            (machineMatrixString[index1], machineMatrixString[index2]) = (machineMatrixString[index2], machineMatrixString[index1]);
+            machineMatrixString[index1].Index = index1;
+            machineMatrixString[index2].Index = index2;
+            Settings.Properties.MachineMatrixString = new List<string>(machineMatrixString.Select(d => d.Name));
+            NotifyPropertyChanged(nameof(MachineMatrixString));
         }
 
         public bool ShowClipboardAndNetworkStatusMessages

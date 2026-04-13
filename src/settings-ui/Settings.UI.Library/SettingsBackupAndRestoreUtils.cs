@@ -33,6 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
+            TypeInfoResolver = SettingsSerializationContext.Default,
         };
 
         private SettingsBackupAndRestoreUtils()
@@ -1024,7 +1025,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             private static List<object> DeserializeArray(string json)
             {
-                var result = JsonSerializer.Deserialize<List<object>>(json);
+                var result = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.ListObject);
 
                 var updates = new List<object>();
 
@@ -1053,12 +1054,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     }
                 }
 
-                return updates.OrderBy(x => JsonSerializer.Serialize(x)).ToList();
+                return updates.OrderBy(x => JsonSerializer.Serialize(x, _serializerOptions)).ToList();
             }
 
             private static Dictionary<string, object> Deserialize(string json)
             {
-                var doc = JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+                var doc = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.DictionaryStringObject);
 
                 var updates = new Dictionary<string, object>();
 

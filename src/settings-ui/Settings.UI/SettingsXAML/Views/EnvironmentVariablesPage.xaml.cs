@@ -24,5 +24,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ViewModel.RefreshEnabledState();
         }
+
+        private void LaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.LaunchEventHandler?.Execute(null);
+        }
     }
 }

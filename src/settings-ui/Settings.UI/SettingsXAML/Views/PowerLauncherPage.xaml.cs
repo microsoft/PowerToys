@@ -5,7 +5,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -96,7 +95,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void NavigateCmdPalSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+#if BUILD_INFO_PUBLISH_AOT
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.CmdPal);
+#else
+            global::Common.UI.SettingsDeepLink.OpenSettings(global::Common.UI.SettingsDeepLink.SettingsWindow.CmdPal);
+#endif
         }
 
         /*

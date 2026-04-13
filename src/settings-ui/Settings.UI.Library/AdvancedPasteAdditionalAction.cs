@@ -9,6 +9,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 
 namespace Microsoft.PowerToys.Settings.UI.Library;
 
+[WinRT.GeneratedBindableCustomProperty]
 public sealed partial class AdvancedPasteAdditionalAction : Observable, IAdvancedPasteAction
 {
     private HotkeySettings _shortcut = new();

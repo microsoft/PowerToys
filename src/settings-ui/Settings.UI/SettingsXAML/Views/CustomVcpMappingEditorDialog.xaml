@@ -29,9 +29,7 @@
                 x:Name="ValueComboBox"
                 x:Uid="PowerDisplay_CustomMappingEditor_ValueComboBox"
                 HorizontalAlignment="Stretch"
-                DisplayMemberPath="DisplayName"
                 ItemsSource="{x:Bind AvailableValues, Mode=OneWay}"
-                SelectedValuePath="Value"
                 SelectionChanged="ValueComboBox_SelectionChanged" />
 
             <!--  Custom Value Input (shown when "Custom value" is selected)  -->
@@ -65,9 +63,7 @@
                 x:Name="MonitorComboBox"
                 x:Uid="PowerDisplay_CustomMappingEditor_SelectMonitor"
                 HorizontalAlignment="Stretch"
-                DisplayMemberPath="DisplayName"
                 ItemsSource="{x:Bind AvailableMonitors, Mode=OneWay}"
-                SelectedValuePath="Id"
                 SelectionChanged="MonitorComboBox_SelectionChanged"
                 Visibility="{x:Bind ShowMonitorSelector, Mode=OneWay}" />
         </StackPanel>

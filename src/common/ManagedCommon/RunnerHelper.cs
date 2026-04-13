@@ -16,8 +16,8 @@ namespace ManagedCommon
     {
         public static void WaitForPowerToysRunner(int powerToysPID, Action act, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "")
         {
-            var stackTrace = new StackTrace();
-            var assembly = Assembly.GetCallingAssembly().GetName();
+            // AOT-compatible: Use GetExecutingAssembly instead of GetCallingAssembly (not supported in AOT)
+            var assembly = Assembly.GetExecutingAssembly().GetName();
             PowerToysTelemetry.Log.WriteEvent(new DebugEvent() { Message = $"[{assembly}][{memberName}]WaitForPowerToysRunner waiting for Event powerToysPID={powerToysPID}" });
             Task.Run(() =>
             {

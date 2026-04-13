@@ -5,7 +5,6 @@
 using System;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -47,8 +46,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             DataContext = ViewModel;
             InitializeComponent();
+            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Loaded += (s, e) =>
+            {
+                ViewModel.OnPageLoaded();
+                UpdateDeviceLayoutRows();
+            };
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MouseWithoutBordersViewModel.MatrixOneRow))
+            {
+                UpdateDeviceLayoutRows();
+            }
+        }
+
+        private void UpdateDeviceLayoutRows()
+        {
+            if (DevicesItemsControl?.ItemsPanelRoot is WrapGrid wrapGrid)
+            {
+                wrapGrid.MaximumRowsOrColumns = ViewModel.MatrixOneRow ? 4 : 2;
+            }
         }
 
         private void OnConfigFileUpdate()
@@ -86,10 +106,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return null;
         }
 
-        private int GetDeviceIndex(Border b)
-        {
-            return b.DataContext.As<IndexedItem<DeviceViewModel>>().Index;
-        }
+        private int GetDeviceIndex(Border b) => b.DataContext.As<MouseWithoutBordersDeviceViewModel>().Index;
 
         private void Device_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
@@ -127,7 +144,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var targetDeviceIndex = GetDeviceIndex((Border)e.OriginalSource);
 
-            ViewModel.MachineMatrixString.Swap(draggedDeviceIndex, targetDeviceIndex);
+            ViewModel.SwapMachineMatrixItems(draggedDeviceIndex, targetDeviceIndex);
             var itemsControl = (ItemsControl)FindName("DevicesItemsControl");
             var binding = itemsControl.GetBindingExpression(ItemsControl.ItemsSourceProperty);
             binding.UpdateSource();
@@ -170,6 +187,41 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
+        }
+
+        private void ConnectButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ConnectCommand?.Execute(null);
+        }
+
+        private void GenerateNewKeyButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            GenerateNewKeyCommand?.Execute(null);
+        }
+
+        private void ShowConnectFieldsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ShowConnectFieldsCommand?.Execute(null);
+        }
+
+        private void CopyPCNameButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            CopyPCNameCommand?.Execute(null);
+        }
+
+        private void ReconnectButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ReconnectCommand?.Execute(null);
+        }
+
+        private void UninstallServiceButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.UninstallServiceEventHandler?.Execute(null);
+        }
+
+        private void AddFirewallRuleButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.AddFirewallRuleEventHandler?.Execute(null);
         }
     }
 }

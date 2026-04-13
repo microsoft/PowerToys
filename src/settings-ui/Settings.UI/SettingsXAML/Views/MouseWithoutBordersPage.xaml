@@ -10,6 +10,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
@@ -57,7 +58,7 @@
                                         Width="248" />
                                     <Button
                                         x:Uid="MouseWithoutBorders_Connect"
-                                        Command="{x:Bind ConnectCommand, Mode=OneTime}"
+                                        Click="ConnectButton_Click"
                                         Style="{StaticResource AccentButtonStyle}" />
                                 </StackPanel>
                             </tkcontrols:SettingsCard>
@@ -66,11 +67,11 @@
                             <TextBox IsReadOnly="True" Text="{x:Bind ViewModel.SecurityKey, Mode=TwoWay}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_NewKey"
-                                Command="{x:Bind GenerateNewKeyCommand, Mode=OneTime}"
+                                Click="GenerateNewKeyButton_Click"
                                 Style="{StaticResource AccentButtonStyle}" />
                             <Button
                                 x:Uid="MouseWithoutBorders_Connect"
-                                Command="{x:Bind ShowConnectFieldsCommand, Mode=OneTime}"
+                                Click="ShowConnectFieldsButton_Click"
                                 Style="{StaticResource AccentButtonStyle}"
                                 Visibility="{x:Bind Path=ViewModel.ConnectFieldsVisible, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}, ConverterParameter=True}" />
                         </StackPanel>
@@ -110,14 +111,16 @@
                                 x:Name="DevicesItemsControl"
                                 HorizontalAlignment="Center"
                                 IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
-                                ItemsSource="{Binding MachineMatrixString, Mode=TwoWay}">
+                                ItemsSource="{x:Bind ViewModel.MachineMatrixString, Mode=OneWay}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapGrid MaximumRowsOrColumns="{Binding MatrixOneRow, Mode=OneWay, Converter={StaticResource OneRowMatrixBoolToNumberOfRowsConverter}}" Orientation="Horizontal" />
+                                        <WrapGrid
+                                            MaximumRowsOrColumns="4"
+                                            Orientation="Horizontal" />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
+                                    <DataTemplate x:DataType="viewModels:MouseWithoutBordersDeviceViewModel">
                                         <!--  TODO: colors?  -->
                                         <!--
                                             BorderBrush="#DFDFDF"
@@ -128,17 +131,16 @@
                                             Width="136"
                                             Height="90"
                                             Margin="4"
-                                            AllowDrop="{Binding Item.CanDragDrop, Mode=OneWay}"
+                                            AllowDrop="{x:Bind CanDragDrop, Mode=OneWay}"
                                             Background="{ThemeResource SolidBackgroundFillColorBaseAltBrush}"
-                                            BorderBrush="{Binding Item.StatusBrush}"
+                                            BorderBrush="{x:Bind StatusBrush, Mode=OneWay}"
                                             BorderThickness="2"
-                                            CanDrag="{Binding Item.CanDragDrop, Mode=OneWay}"
+                                            CanDrag="{x:Bind CanDragDrop, Mode=OneWay}"
                                             CornerRadius="4"
-                                            DataContext="{Binding}"
                                             DragOver="Device_DragOver"
                                             DragStarting="Device_DragStarting"
                                             Drop="Device_Drop"
-                                            ToolTipService.ToolTip="{Binding Item.Name, Mode=OneWay}">
+                                            ToolTipService.ToolTip="{x:Bind Name, Mode=OneWay}">
                                             <Grid>
                                                 <Grid.RowDefinitions>
                                                     <RowDefinition Height="*" />
@@ -155,13 +157,13 @@
                                                     HorizontalAlignment="Center"
                                                     Style="{StaticResource CaptionTextBlockStyle}"
                                                     Tag="DeviceName"
-                                                    Text="{Binding Item.Name}" />
+                                                    Text="{x:Bind Name, Mode=OneWay}" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button HorizontalAlignment="Right" Command="{x:Bind ReconnectCommand, Mode=OneTime}">
+                            <Button HorizontalAlignment="Right" Click="ReconnectButton_Click">
                                 <ToolTipService.ToolTip>
                                     <TextBlock x:Uid="MouseWithoutBorders_ReconnectTooltip" TextWrapping="Wrap" />
                                 </ToolTipService.ToolTip>
@@ -484,7 +486,7 @@
                         Name="MouseWithoutBordersAddFirewallRuleButtonControl"
                         x:Uid="MouseWithoutBorders_AddFirewallRuleButtonControl"
                         ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
-                        Command="{x:Bind ViewModel.AddFirewallRuleEventHandler}"
+                        Click="AddFirewallRuleButton_Click"
                         IsClickEnabled="True" />
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.ShowPolicyConfiguredInfoForOriginalUiSetting, Mode=OneWay}">
                         <tkcontrols:SettingsCard

@@ -69,10 +69,8 @@
                     <ComboBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         AutomationProperties.Name="{x:Bind Path=DisplayLabel}"
-                        DisplayMemberPath="Key"
-                        ItemsSource="{x:Bind Path=ComboBoxItems}"
-                        SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
-                        SelectedValuePath="Value" />
+                        ItemsSource="{x:Bind Path=ComboBoxOptionItems}"
+                        SelectedItem="{x:Bind SelectedComboBoxItem, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <Rectangle Style="{StaticResource OptionSeparator}" />
             </StackPanel>
@@ -179,10 +177,8 @@
                     <ComboBox
                         MinWidth="{StaticResource SettingActionControlMinWidth}"
                         AutomationProperties.Name="{x:Bind Path=SecondDisplayLabel}"
-                        DisplayMemberPath="Key"
-                        ItemsSource="{x:Bind Path=ComboBoxItems}"
-                        SelectedValue="{x:Bind ComboBoxValue, Mode=TwoWay}"
-                        SelectedValuePath="Value" />
+                        ItemsSource="{x:Bind Path=ComboBoxOptionItems}"
+                        SelectedItem="{x:Bind SelectedComboBoxItem, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
                 <Rectangle Style="{StaticResource OptionSeparator}" />
             </StackPanel>

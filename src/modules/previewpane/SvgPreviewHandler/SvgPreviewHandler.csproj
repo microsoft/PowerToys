@@ -3,6 +3,13 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
+  <!-- Force WebView2 to use Win32/WinForms mode instead of WinRT mode -->
+  <!-- Required because Settings.UI.Library has UseWinUI=true which triggers WebView2UseWinRT -->
+  <PropertyGroup>
+    <WebView2UseWinRT>false</WebView2UseWinRT>
+    <WebView2EnableCsWinRTProjection>false</WebView2EnableCsWinRTProjection>
+  </PropertyGroup>
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWindowsForms>true</UseWindowsForms>

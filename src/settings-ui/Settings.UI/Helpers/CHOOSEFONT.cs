@@ -16,7 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
     public class CHOOSEFONT
     {
-        public int lStructSize = Marshal.SizeOf(typeof(CHOOSEFONT));
+        // Use generic overload for AOT compatibility (IL3050)
+        public int lStructSize = Marshal.SizeOf<CHOOSEFONT>();
         public IntPtr hwndOwner = IntPtr.Zero;
         public IntPtr hDC = IntPtr.Zero;
         public IntPtr lpLogFont = IntPtr.Zero;

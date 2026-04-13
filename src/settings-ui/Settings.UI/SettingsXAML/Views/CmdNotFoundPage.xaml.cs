@@ -18,5 +18,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
             InitializeComponent();
         }
+
+        private void UninstallButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.UninstallModuleEventHandler?.Execute(null);
+        }
+
+        private void InstallButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.InstallModuleEventHandler?.Execute(null);
+        }
+
+        private void CheckRequirementsButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.CheckRequirementsEventHandler?.Execute(null);
+        }
+
+        private void InstallPowerShell7Button_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.InstallPowerShell7EventHandler?.Execute(null);
+        }
+
+        private void InstallWinGetButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.InstallWinGetClientModuleEventHandler?.Execute(null);
+        }
     }
 }

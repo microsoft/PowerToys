@@ -277,6 +277,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != _colorFormatPreviewIndex)
                 {
                     _colorFormatPreviewIndex = value;
+                    if (value >= 0 && value < ColorFormats.Count)
+                    {
+                        SelectedColorRepresentationValue = ColorFormats[value].Name;
+                    }
+
                     OnPropertyChanged(nameof(ColorFormatsPreviewIndex));
                 }
             }
