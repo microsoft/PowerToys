@@ -31,9 +31,11 @@ public static class ResultHelper
         }
 
         var result = roundedResult?.ToString(outputCulture);
+        var displayResult = FormatWithSeparators(roundedResult.Value, outputCulture);
 
         // Create a SaveCommand and subscribe to the SaveRequested event
         // This can append the result to the history list.
+        // SaveCommand uses the raw result (no separators) so it can be re-parsed.
         var saveCommand = new SaveCommand(result);
         saveCommand.SaveRequested += handleSave;
 
@@ -46,9 +48,9 @@ public static class ResultHelper
         // as the user is typing it.
         return new ListItem(settings.CloseOnEnter ? copyCommandItem.Command : saveCommand)
         {
-            // Using CurrentCulture since this is user facing
+            // Title uses formatted display value; data operations use raw result
             Icon = Icons.ResultIcon,
-            Title = result,
+            Title = displayResult,
             Subtitle = query,
             MoreCommands = [
                 new CommandContextItem(settings.CloseOnEnter ? saveCommand : copyCommandItem.Command),
@@ -67,6 +69,7 @@ public static class ResultHelper
         }
 
         var decimalResult = roundedResult?.ToString(outputCulture);
+        var decimalDisplay = FormatWithSeparators(roundedResult.Value, outputCulture);
         var decimalValue = (decimal)roundedResult;
 
         List<IContextItem> context = [];
@@ -129,11 +132,20 @@ public static class ResultHelper
 
         return new ListItem(new CopyTextCommand(decimalResult))
         {
-            // Using CurrentCulture since this is user facing
-            Title = decimalResult,
+            // Title shows formatted display; CopyText and TextToSuggest use raw value
+            Title = decimalDisplay,
             Subtitle = query,
             TextToSuggest = decimalResult,
             MoreCommands = context.ToArray(),
         };
+    }
+
+    private static string FormatWithSeparators(decimal value, CultureInfo culture)
+    {
+        var plain = value.ToString(culture);
+        var sep = culture.NumberFormat.NumberDecimalSeparator;
+        var decIdx = plain.IndexOf(sep, StringComparison.Ordinal);
+        var decimals = decIdx >= 0 ? plain.Length - decIdx - sep.Length : 0;
+        return value.ToString("N" + decimals, culture);
     }
 }
