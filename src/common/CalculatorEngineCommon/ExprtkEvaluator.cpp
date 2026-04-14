@@ -28,6 +28,7 @@ namespace ExprtkCalculator::internal
     std::wstring ToWStringFullPrecision(double value)
     {
         std::wostringstream oss;
+        oss.imbue(std::locale::classic());
         oss << std::fixed << std::setprecision(15) << value;
         return oss.str();
     }

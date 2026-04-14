@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Telemetry;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using PowerDisplay.Serialization;
 using PowerDisplay.Services;
 using PowerDisplay.Telemetry.Events;
@@ -49,7 +50,7 @@ public partial class MainViewModel
 
             // Apply UI configuration changes only (feature visibility toggles, etc.)
             // Hardware parameters (brightness, color temperature) are applied via custom actions
-            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ApplyUIConfiguration(settings);
 
             // Reload profiles in case they were added/updated/deleted in Settings UI
@@ -232,7 +233,8 @@ public partial class MainViewModel
             }
 
             // Apply color temperature if included in profile
-            if (setting.ColorTemperatureVcp.HasValue && setting.ColorTemperatureVcp.Value > 0)
+            if (setting.ColorTemperatureVcp.HasValue && setting.ColorTemperatureVcp.Value > 0 &&
+                monitorVm.ShowColorTemperature)
             {
                 updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperatureVcp.Value));
             }
@@ -272,7 +274,8 @@ public partial class MainViewModel
                 }
 
                 // Restore color temperature if different from current
-                if (savedState.Value.ColorTemperatureVcp > 0 &&
+                if (monitorVm.ShowColorTemperature &&
+                    savedState.Value.ColorTemperatureVcp > 0 &&
                     savedState.Value.ColorTemperatureVcp != monitorVm.ColorTemperature)
                 {
                     updateTasks.Add(monitorVm.SetColorTemperatureAsync(savedState.Value.ColorTemperatureVcp));

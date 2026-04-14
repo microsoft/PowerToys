@@ -24,8 +24,11 @@
 	<data name="SettingsTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Settings</value>
   </data>
-	<data name="MonitorTooltip.ToolTipService.ToolTip" xml:space="preserve">
+	<data name="ExternalMonitorTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Monitor</value>
+  </data>
+	<data name="BuiltInMonitorTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Built-in display</value>
   </data>
 	<data name="BrightnessTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Brightness</value>
@@ -51,6 +54,18 @@
 	<data name="RotateInvertedTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Inverted (180°)</value>
   </data>
+	<data name="RotationOptionLandscape.Content" xml:space="preserve">
+    <value>Landscape</value>
+  </data>
+	<data name="RotationOptionPortrait.Content" xml:space="preserve">
+    <value>Portrait</value>
+  </data>
+	<data name="RotationOptionLandscapeFlipped.Content" xml:space="preserve">
+    <value>Landscape (flipped)</value>
+  </data>
+	<data name="RotationOptionPortraitFlipped.Content" xml:space="preserve">
+    <value>Portrait (flipped)</value>
+  </data>
 	<data name="VolumeAutomation.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Volume</value>
   </data>
@@ -72,8 +87,11 @@
   <data name="ProfilesTooltip.ToolTipService.ToolTip" xml:space="preserve">
     <value>Quick apply profiles</value>
   </data>
-  <data name="IdentifyTooltip.ToolTipService.ToolTip" xml:space="preserve">
+  <data name="IdentifyText.Text" xml:space="preserve">
     <value>Identify monitors</value>
+  </data>
+	<data name="RefreshText.Text" xml:space="preserve">
+    <value>Refresh</value>
   </data>
   <data name="InputSourceHeader.Text" xml:space="preserve">
     <value>Input source</value>

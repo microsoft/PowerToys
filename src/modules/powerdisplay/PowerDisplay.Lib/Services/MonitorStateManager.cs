@@ -26,8 +26,8 @@ namespace PowerDisplay.Common.Services
         private readonly ConcurrentDictionary<string, MonitorState> _states = new();
         private readonly SimpleDebouncer _saveDebouncer;
 
-        private bool _disposed;
-        private bool _isDirty; // Track pending changes for flush on dispose
+        private volatile bool _disposed;
+        private volatile bool _isDirty; // Track pending changes for flush on dispose
         private const int SaveDebounceMs = 2000; // Save 2 seconds after last update
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace PowerDisplay.Common.Services
                 }
 
                 var json = File.ReadAllText(_stateFilePath);
-                var stateFile = JsonSerializer.Deserialize(json, ProfileSerializationContext.Default.MonitorStateFile);
+                var stateFile = JsonSerializer.Deserialize(json, MonitorStateSerializationContext.Default.MonitorStateFile);
 
                 if (stateFile?.Monitors != null)
                 {
@@ -257,7 +257,7 @@ namespace PowerDisplay.Common.Services
                 };
             }
 
-            return JsonSerializer.Serialize(stateFile, ProfileSerializationContext.Default.MonitorStateFile);
+            return JsonSerializer.Serialize(stateFile, MonitorStateSerializationContext.Default.MonitorStateFile);
         }
 
         /// <summary>

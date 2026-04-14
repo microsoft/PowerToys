@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using PowerDisplay.Models;
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -11,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class PowerDisplayProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, false, true, 0x44); // Ctrl+Shift+Win+D (win, ctrl, alt, shift, code)
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, false, true, 0x50); // Win+Ctrl+Shift+P (win, ctrl, alt, shift, code)
 
         public PowerDisplayProperties()
         {
@@ -28,8 +29,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // which is managed separately by PowerDisplay app
         }
 
+        private HotkeySettings _activationShortcut;
+
         [JsonPropertyName("activation_shortcut")]
-        public HotkeySettings ActivationShortcut { get; set; }
+        public HotkeySettings ActivationShortcut
+        {
+            get => _activationShortcut ?? DefaultActivationShortcut;
+            set => _activationShortcut = value;
+        }
 
         /// <summary>
         /// Gets or sets delay in seconds before refreshing monitors after display changes (hot-plug).
