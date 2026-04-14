@@ -943,7 +943,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Size</value>
   </data>
   <data name="DockAppearance_DockSize_SettingsCard.Description" xml:space="preserve">
-    <value>Choose the dock size</value>
+    <value>Choose the dock size; subtitles of dock items are hidden in compact mode</value>
   </data>
   <data name="DockAppearance_DockSize_Default.Content" xml:space="preserve">
     <value>Default</value>
