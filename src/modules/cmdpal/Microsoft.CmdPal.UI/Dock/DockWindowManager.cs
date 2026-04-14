@@ -128,6 +128,12 @@ public sealed class DockWindowManager : IDisposable
         var configs = GetEffectiveConfigs(dockSettings);
         var desiredMonitorIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        // Refresh settings on existing ViewModels so they pick up new pins/changes
+        foreach (var kvp in _dockViewModels)
+        {
+            kvp.Value.UpdateSettings(dockSettings);
+        }
+
         for (var i = 0; i < configs.Count; i++)
         {
             var config = configs[i];

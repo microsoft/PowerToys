@@ -37,9 +37,12 @@ public sealed partial class PinToDockDialogContent : UserControl
     {
         get
         {
-            if (_monitors is null || MonitorComboBox.SelectedIndex < 0 || MonitorComboBox.SelectedIndex >= _monitors.Count)
+            // When only one monitor exists, return null so the pin lands in the
+            // global bands (visible on all monitors by default).  The per-monitor
+            // path is only used when the user explicitly chooses from 2+ monitors.
+            if (_monitors is null or { Count: <= 1 } || MonitorComboBox.SelectedIndex < 0 || MonitorComboBox.SelectedIndex >= _monitors.Count)
             {
-                return _monitors is { Count: 1 } ? _monitors[0].DeviceId : null;
+                return null;
             }
 
             return _monitors[MonitorComboBox.SelectedIndex].DeviceId;
