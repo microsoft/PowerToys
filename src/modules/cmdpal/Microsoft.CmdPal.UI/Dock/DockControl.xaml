@@ -243,6 +243,7 @@
     <Grid
         x:Name="RootGrid"
         Background="Transparent"
+        BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1"
         RightTapped="RootGrid_RightTapped">
         <!--  Dock content with Start / Center / End sections  -->
