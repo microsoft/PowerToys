@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ShouldAbsorbAlt = new BoolProperty(true);
             DoNotActivateOnGameMode = new BoolProperty(true);
-            ShowGeometry = new BoolProperty(true);
+            ShowGeometry = new BoolProperty(false);
             ExcludedApps = new StringProperty();
         }
 

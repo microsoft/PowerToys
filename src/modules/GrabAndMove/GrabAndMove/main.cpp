@@ -45,7 +45,7 @@ static DWORD g_absorbedVk = 0;         // VK code of absorbed Alt key
 static DWORD g_absorbedScanCode = 0;   // scan code for replay
 static DWORD g_absorbedFlags = 0;      // flags for replay (extended key, etc.)
 
-static bool g_showGeometry = true;            // true if we want to draw the X, Y, W and H on the overlay on move and resize
+static bool g_showGeometry = false;            // true if we want to draw the X, Y, W and H on the overlay on move and resize
 static bool g_doNotActivateOnGameMode = true; // true if GrabAndMove is suppressed when Windows Game Mode is active
 
 // Resize handle identifiers
