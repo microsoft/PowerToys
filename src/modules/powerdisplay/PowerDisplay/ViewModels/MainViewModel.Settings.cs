@@ -233,7 +233,8 @@ public partial class MainViewModel
             }
 
             // Apply color temperature if included in profile
-            if (setting.ColorTemperatureVcp.HasValue && setting.ColorTemperatureVcp.Value > 0)
+            if (setting.ColorTemperatureVcp.HasValue && setting.ColorTemperatureVcp.Value > 0 &&
+                monitorVm.ShowColorTemperature)
             {
                 updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperatureVcp.Value));
             }
@@ -273,7 +274,8 @@ public partial class MainViewModel
                 }
 
                 // Restore color temperature if different from current
-                if (savedState.Value.ColorTemperatureVcp > 0 &&
+                if (monitorVm.ShowColorTemperature &&
+                    savedState.Value.ColorTemperatureVcp > 0 &&
                     savedState.Value.ColorTemperatureVcp != monitorVm.ColorTemperature)
                 {
                     updateTasks.Add(monitorVm.SetColorTemperatureAsync(savedState.Value.ColorTemperatureVcp));
