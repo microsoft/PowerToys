@@ -37,12 +37,14 @@ private:
     bool m_enabled = false;
     HANDLE m_process{ nullptr };
     HANDLE m_reload_settings_event_handle{ nullptr };
+    HANDLE m_exit_event_handle{ nullptr };
 
 public:
     GrabAndMoveInterface()
     {
         LoggerHelpers::init_logger(L"GrabAndMove", L"ModuleInterface", LogSettings::grabAndMoveLoggerName);
         m_reload_settings_event_handle = CreateDefaultEvent(CommonSharedConstants::GRABANDMOVE_REFRESH_SETTINGS_EVENT);
+        m_exit_event_handle = CreateDefaultEvent(CommonSharedConstants::GRABANDMOVE_EXIT_EVENT);
     }
 
     virtual const wchar_t* get_key() override
@@ -173,6 +175,11 @@ public:
     {
         Logger::info("GrabAndMove disabling");
         m_enabled = false;
+
+        if (m_exit_event_handle)
+        {
+            SetEvent(m_exit_event_handle);
+        }
 
         if (m_process)
         {

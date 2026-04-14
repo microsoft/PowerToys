@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by CropAndLock.rc
+// Used by GrabAndMove.rc
 //
 #pragma once
 

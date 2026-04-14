@@ -7,5 +7,7 @@
 #include <commctrl.h>
 #include <TraceLoggingProvider.h>
 #include <limits>
+#include <mutex>
 #include <string>
 #include <thread>
+#include <vector>

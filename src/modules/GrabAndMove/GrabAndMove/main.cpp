@@ -94,9 +94,15 @@ static const wchar_t* const APP_TITLE = L"GrabAndMove";
 static const wchar_t* const GRABANDMOVE_REFRESH_SETTINGS_EVENT =
     L"Local\\PowerToysGrabAndMove-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
 
+// Must match CommonSharedConstants::GRABANDMOVE_EXIT_EVENT in shared_constants.h
+static const wchar_t* const GRABANDMOVE_EXIT_EVENT =
+    L"Local\\PowerToysGrabAndMove-ExitEvent-b8c4d2e3-5f6a-7b8c-9d0e-1f2a3b4c5d6e";
+
 static std::vector<std::wstring> g_excludedApps;
+static std::mutex g_excludedAppsMutex;
 
 static HANDLE g_hReloadSettingsEvent = nullptr;
+static HANDLE g_hExitEvent = nullptr;
 static std::thread g_settingsThread;
 static bool g_running = true;
 
@@ -186,7 +192,10 @@ static void LoadSettingsFromFile()
                 view.remove_prefix(pos);
             }
 
-            g_excludedApps = std::move(apps);
+            {
+                std::lock_guard<std::mutex> lock(g_excludedAppsMutex);
+                g_excludedApps = std::move(apps);
+            }
         }
     }
     catch (...)
@@ -195,16 +204,25 @@ static void LoadSettingsFromFile()
     }
 }
 
-static void SettingsWatcherThread()
+static void SettingsWatcherThread(DWORD mainThreadId)
 {
+    HANDLE events[2] = { g_hReloadSettingsEvent, g_hExitEvent };
+    DWORD eventCount = g_hExitEvent ? 2 : 1;
+
     while (g_running)
     {
-        DWORD wait = WaitForSingleObject(g_hReloadSettingsEvent, 1000);
+        DWORD wait = WaitForMultipleObjects(eventCount, events, FALSE, 1000);
         if (!g_running)
             break;
         if (wait == WAIT_OBJECT_0)
         {
             LoadSettingsFromFile();
+        }
+        else if (wait == WAIT_OBJECT_0 + 1)
+        {
+            // Exit event signaled by the module interface
+            PostThreadMessage(mainThreadId, WM_QUIT, 0, 0);
+            break;
         }
     }
 }
@@ -421,19 +439,14 @@ static void StopResizing()
 
 static void EndInteraction(bool endDrag, bool endResize)
 {
-    bool endedDrag = false;
-    bool endedResize = false;
-
     if (endDrag && g_dragging)
     {
         StopDragging();
-        endedDrag = true;
     }
 
     if (endResize && g_resizing)
     {
         StopResizing();
-        endedResize = true;
     }
 }
 
@@ -500,16 +513,22 @@ static bool IsExcluded(HWND hwnd)
     if (IsSystemClass(hwnd))
         return true;
 
-    if (g_excludedApps.empty())
+    std::vector<std::wstring> excludedApps;
+    {
+        std::lock_guard<std::mutex> lock(g_excludedAppsMutex);
+        excludedApps = g_excludedApps;
+    }
+
+    if (excludedApps.empty())
         return false;
 
     std::wstring processPath = get_process_path(hwnd);
     CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
 
-    if (find_app_name_in_path(processPath, g_excludedApps))
+    if (find_app_name_in_path(processPath, excludedApps))
         return true;
 
-    if (check_excluded_app_with_title(hwnd, g_excludedApps))
+    if (check_excluded_app_with_title(hwnd, excludedApps))
         return true;
 
     return false;
@@ -1021,9 +1040,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
     // Open the named event for settings reload notifications
     g_hReloadSettingsEvent = CreateEventW(nullptr, FALSE, FALSE, GRABANDMOVE_REFRESH_SETTINGS_EVENT);
+
+    // Open the named event for exit signal from the module interface
+    g_hExitEvent = CreateEventW(nullptr, FALSE, FALSE, GRABANDMOVE_EXIT_EVENT);
+
     if (g_hReloadSettingsEvent)
     {
-        g_settingsThread = std::thread(SettingsWatcherThread);
+        g_settingsThread = std::thread(SettingsWatcherThread, mainThreadId);
     }
 
     // Ensure common controls are initialised (for Shell_NotifyIcon)
@@ -1107,6 +1130,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     if (g_hReloadSettingsEvent)
     {
         CloseHandle(g_hReloadSettingsEvent);
+    }
+    if (g_hExitEvent)
+    {
+        CloseHandle(g_hExitEvent);
     }
     UnhookWindowsHookEx(g_hhkKeyboard);
     UnhookWindowsHookEx(g_hhkMouse);
