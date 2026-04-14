@@ -48,6 +48,8 @@ static DWORD g_absorbedFlags = 0;      // flags for replay (extended key, etc.)
 static bool g_showGeometry = false;            // true if we want to draw the X, Y, W and H on the overlay on move and resize
 static bool g_doNotActivateOnGameMode = true; // true if GrabAndMove is suppressed when Windows Game Mode is active
 
+static bool g_useAltResize = true;      // This can be toggled from the settings. If false, Alt + right click does nothing.
+
 // Resize handle identifiers
 enum ResizeHandle
 {
@@ -167,6 +169,11 @@ static void LoadSettingsFromFile()
         if (auto v = values.get_bool_value(L"doNotActivateOnGameMode"))
         {
             g_doNotActivateOnGameMode = *v;
+        }
+
+        if (auto v = values.get_bool_value(L"useAltResize"))
+        {
+            g_useAltResize = *v;
         }
 
         if (auto v = values.get_string_value(L"excluded_apps"))
@@ -792,7 +799,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
 
         // ----- Alt + Right Button Down: start resize -----
-        if (wParam == WM_RBUTTONDOWN && IsActivationModifierPressed())
+        if (wParam == WM_RBUTTONDOWN && g_useAltResize && IsActivationModifierPressed())
         {
             if (IsSuppressedByGameMode())
             {

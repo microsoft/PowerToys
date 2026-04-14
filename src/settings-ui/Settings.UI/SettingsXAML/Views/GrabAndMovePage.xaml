@@ -30,6 +30,9 @@
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_ShouldAbsorbAlt" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_UseAltResize" HeaderIcon="{ui:FontIcon Glyph=&#xE740;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.UseAltResize, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_DoNotActivateOnGameMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>

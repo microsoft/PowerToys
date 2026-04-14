@@ -5954,6 +5954,13 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_ShowGeometry.Description" xml:space="preserve">
     <value>Display the window position and size on the overlay during drag and resize operations</value>
   </data>
+  <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
+    <value>Enable Alt + Right-click to resize</value>
+    <comment>When enabled, holding Alt and right-clicking allows resizing windows by dragging from the closest edge or corner.</comment>
+  </data>
+  <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
+    <value>Hold Alt and right-click to resize a window by dragging from the nearest edge or corner</value>
+  </data>
   <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>

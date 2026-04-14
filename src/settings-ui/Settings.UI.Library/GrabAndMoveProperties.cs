@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShouldAbsorbAlt = new BoolProperty(true);
             DoNotActivateOnGameMode = new BoolProperty(true);
             ShowGeometry = new BoolProperty(false);
+            UseAltResize = new BoolProperty(true);
             ExcludedApps = new StringProperty();
         }
 
@@ -21,6 +22,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("showGeometry")]
         public BoolProperty ShowGeometry { get; set; }
+
+        [JsonPropertyName("useAltResize")]
+        public BoolProperty UseAltResize { get; set; }
 
         [JsonPropertyName("doNotActivateOnGameMode")]
         public BoolProperty DoNotActivateOnGameMode { get; set; }

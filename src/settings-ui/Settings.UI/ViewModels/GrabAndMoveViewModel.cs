@@ -113,6 +113,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool UseAltResize
+        {
+            get => _moduleSettings.Properties.UseAltResize.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.UseAltResize.Value != value)
+                {
+                    _moduleSettings.Properties.UseAltResize.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(UseAltResize));
+                }
+            }
+        }
+
         public bool DoNotActivateOnGameMode
         {
             get => _moduleSettings.Properties.DoNotActivateOnGameMode.Value;
