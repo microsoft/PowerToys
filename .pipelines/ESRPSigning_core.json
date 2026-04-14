@@ -250,8 +250,8 @@
             "PowerToys.ZoomItModuleInterface.dll",
             "PowerToys.ZoomItSettingsInterop.dll",
 
-            "PowerToys.WinPos.exe",
-            "PowerToys.WinPosModuleInterface.dll",
+            "PowerToys.GrabAndMove.exe",
+            "PowerToys.GrabAndMoveModuleInterface.dll",
 
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",

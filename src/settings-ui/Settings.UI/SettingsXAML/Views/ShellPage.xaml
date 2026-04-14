@@ -275,11 +275,11 @@
                             AutomationProperties.AutomationId="WorkspacesNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
                         <NavigationViewItem
-                            x:Name="WinPosNavigationItem"
-                            x:Uid="Shell_WinPos"
-                            helpers:NavHelper.NavigateTo="views:WinPosPage"
-                            AutomationProperties.AutomationId="WinPosNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WinPos.png}" />
+                            x:Name="GrabAndMoveNavigationItem"
+                            x:Uid="Shell_GrabAndMove"
+                            helpers:NavHelper.NavigateTo="views:GrabAndMovePage"
+                            AutomationProperties.AutomationId="GrabAndMoveNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

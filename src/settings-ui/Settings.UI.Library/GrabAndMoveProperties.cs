@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class WinPosProperties
+    public class GrabAndMoveProperties
     {
-        public WinPosProperties()
+        public GrabAndMoveProperties()
         {
             ShouldAbsorbAlt = new BoolProperty(true);
             DoNotActivateOnGameMode = new BoolProperty(true);

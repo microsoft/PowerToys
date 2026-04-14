@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         Workspaces,
         RegistryPreview,
         PowerDisplay,
-        WinPos,
+        GrabAndMove,
         NewPlus,
         ZoomIt,
     }

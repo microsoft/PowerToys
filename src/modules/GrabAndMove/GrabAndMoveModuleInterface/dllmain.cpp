@@ -27,11 +27,11 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 }
 
 // The PowerToy name that will be shown in the settings.
-const static wchar_t* MODULE_NAME = L"WinPos";
+const static wchar_t* MODULE_NAME = L"GrabAndMove";
 // Add a description that will be shown in the module settings page.
 const static wchar_t* MODULE_DESC = L"Move and resize windows with Alt+Drag (left button to move, right button to resize).";
 
-class WinPosInterface : public PowertoyModuleIface
+class GrabAndMoveInterface : public PowertoyModuleIface
 {
 private:
     bool m_enabled = false;
@@ -39,15 +39,15 @@ private:
     HANDLE m_reload_settings_event_handle{ nullptr };
 
 public:
-    WinPosInterface()
+    GrabAndMoveInterface()
     {
-        LoggerHelpers::init_logger(L"WinPos", L"ModuleInterface", LogSettings::winPosLoggerName);
-        m_reload_settings_event_handle = CreateDefaultEvent(CommonSharedConstants::WINPOS_REFRESH_SETTINGS_EVENT);
+        LoggerHelpers::init_logger(L"GrabAndMove", L"ModuleInterface", LogSettings::grabAndMoveLoggerName);
+        m_reload_settings_event_handle = CreateDefaultEvent(CommonSharedConstants::GRABANDMOVE_REFRESH_SETTINGS_EVENT);
     }
 
     virtual const wchar_t* get_key() override
     {
-        return L"WinPos";
+        return L"GrabAndMove";
     }
 
     virtual void destroy() override
@@ -63,7 +63,7 @@ public:
 
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        return powertoys_gpo::getConfiguredWinPosEnabledValue();
+        return powertoys_gpo::getConfiguredGrabAndMoveEnabledValue();
     }
 
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
@@ -84,7 +84,7 @@ public:
             auto values = PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
             values.save_to_settings_file();
 
-            // Signal the WinPos process to reload settings
+            // Signal the GrabAndMove process to reload settings
             if (m_reload_settings_event_handle)
             {
                 SetEvent(m_reload_settings_event_handle);
@@ -92,19 +92,19 @@ public:
         }
         catch (const std::exception&)
         {
-            Logger::error("[WinPos] set_config: Failed to parse or apply config.");
+            Logger::error("[GrabAndMove] set_config: Failed to parse or apply config.");
         }
     }
 
     virtual void enable()
     {
-        Logger::info(L"Enabling WinPos module...");
+        Logger::info(L"Enabling GrabAndMove module...");
 
         if (m_process && WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT)
         {
             m_enabled = true;
             Trace::Enable(true);
-            Logger::debug(L"WinPos process already running.");
+            Logger::debug(L"GrabAndMove process already running.");
             return;
         }
 
@@ -117,8 +117,8 @@ public:
         m_enabled = false;
 
         unsigned long powertoys_pid = GetCurrentProcessId();
-        std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
-        std::wstring exe_name = L"PowerToys.WinPos.exe";
+        std::wstring args = std::to_wstring(powertoys_pid);
+        std::wstring exe_name = L"PowerToys.GrabAndMove.exe";
 
         std::wstring resolved_path(MAX_PATH, L'\0');
         DWORD result = SearchPathW(
@@ -132,7 +132,7 @@ public:
         if (result == 0 || result >= resolved_path.size())
         {
             Logger::error(
-                L"Failed to locate WinPos executable named '{}' at location '{}'",
+                L"Failed to locate GrabAndMove executable named '{}' at location '{}'",
                 exe_name,
                 resolved_path.c_str());
             return;
@@ -158,11 +158,11 @@ public:
                 &si,
                 &pi))
         {
-            Logger::error(L"Failed to launch WinPos process. {}", get_last_error_or_default(GetLastError()));
+            Logger::error(L"Failed to launch GrabAndMove process. {}", get_last_error_or_default(GetLastError()));
             return;
         }
 
-        Logger::info(L"WinPos process launched successfully (PID: {}).", pi.dwProcessId);
+        Logger::info(L"GrabAndMove process launched successfully (PID: {}).", pi.dwProcessId);
         m_process = pi.hProcess;
         m_enabled = true;
         Trace::Enable(true);
@@ -171,7 +171,7 @@ public:
 
     virtual void disable()
     {
-        Logger::info("WinPos disabling");
+        Logger::info("GrabAndMove disabling");
         m_enabled = false;
 
         if (m_process)
@@ -181,7 +181,7 @@ public:
 
             if (result == WAIT_TIMEOUT)
             {
-                Logger::warn("WinPos: Process didn't exit in time. Forcing termination.");
+                Logger::warn("GrabAndMove: Process didn't exit in time. Forcing termination.");
                 TerminateProcess(m_process, 0);
             }
 
@@ -205,5 +205,5 @@ public:
 
 extern "C" __declspec(dllexport) PowertoyModuleIface* __cdecl powertoy_create()
 {
-    return new WinPosInterface();
+    return new GrabAndMoveInterface();
 }

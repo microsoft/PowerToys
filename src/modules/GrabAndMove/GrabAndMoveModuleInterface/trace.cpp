@@ -23,7 +23,7 @@ void Trace::Enable(bool enabled) noexcept
 {
     TraceLoggingWrite(
         g_hProvider,
-        "WinPos_EnableWinPos",
+        "GrabAndMove_EnableGrabAndMove",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));

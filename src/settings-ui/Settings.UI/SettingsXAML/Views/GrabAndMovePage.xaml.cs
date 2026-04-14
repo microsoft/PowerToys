@@ -8,14 +8,14 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
-    public sealed partial class WinPosPage : NavigablePage, IRefreshablePage
+    public sealed partial class GrabAndMovePage : NavigablePage, IRefreshablePage
     {
-        private WinPosViewModel ViewModel { get; set; }
+        private GrabAndMoveViewModel ViewModel { get; set; }
 
-        public WinPosPage()
+        public GrabAndMovePage()
         {
-            var moduleSettingsRepository = SettingsRepository<WinPosSettings>.GetInstance(SettingsUtils.Default);
-            ViewModel = new WinPosViewModel(
+            var moduleSettingsRepository = SettingsRepository<GrabAndMoveSettings>.GetInstance(SettingsUtils.Default);
+            ViewModel = new GrabAndMoveViewModel(
                 SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default),
                 moduleSettingsRepository.SettingsConfig,
                 ShellPage.SendDefaultIPCMessage);
