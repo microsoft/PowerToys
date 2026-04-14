@@ -125,6 +125,12 @@ public partial class MainViewModel
 
     private void UpdateMonitorList(IReadOnlyList<Monitor> monitors, bool isInitialLoad)
     {
+        // Dispose old ViewModels to unsubscribe PropertyChanged handlers
+        foreach (var vm in Monitors)
+        {
+            vm.Dispose();
+        }
+
         Monitors.Clear();
 
         // Load settings to check for hidden monitors
