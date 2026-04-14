@@ -1641,6 +1641,7 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
+traies
 transicc
 TRAYMOUSEMESSAGE
 triaging
@@ -1661,6 +1662,7 @@ UBR
 UCallback
 ucrt
 ucrtd
+udit
 uefi
 uesc
 UFlags
