@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pch.h"
+#include <Windows.h>
 
 // Non-localizable constants
 namespace constants::nonlocalizable
