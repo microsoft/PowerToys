@@ -68,7 +68,10 @@
                     </controls:SettingsCard>
 
                     <!--  Dock Size (only for Top/Bottom positions)  -->
-                    <controls:SettingsCard x:Name="DockSizeSettingsCard" x:Uid="DockAppearance_DockSize_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE799;}">
+                    <controls:SettingsCard
+                        x:Name="DockSizeSettingsCard"
+                        x:Uid="DockAppearance_DockSize_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE799;}">
                         <ComboBox
                             x:Name="DockSizeComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
