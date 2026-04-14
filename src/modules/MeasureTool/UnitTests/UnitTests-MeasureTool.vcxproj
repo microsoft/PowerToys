@@ -4,18 +4,18 @@
   <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{9C6A7905-72D4-4BF5-B256-ABFDAEF68AE9}</ProjectGuid>
+    <ProjectGuid>{A8F12D3E-5B6C-4E7F-9A0B-C1D2E3F4A5B6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>UnitTests</RootNamespace>
+    <RootNamespace>UnitTestsMeasureTool</RootNamespace>
     <ProjectSubType>NativeUnitTestProject</ProjectSubType>
-    <ProjectName>FancyZones.UnitTests</ProjectName>
+    <ProjectName>MeasureTool.UnitTests</ProjectName>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration">
-    
+
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\tests\MeasureTool\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\tests\MeasureTool\</IntDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -27,68 +27,35 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\tests\$(ProjectName)\</OutDir>
+    <TargetName>MeasureTool.UnitTests</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(RepoRoot)src\common\Telemetry;$(RepoRoot)src\;..\..\;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>UNIT_TESTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\MeasureToolCore\;$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.250325.1\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>gdiplus.lib;dwmapi.lib;shlwapi.lib;uxtheme.lib;shcore.lib;wbemuuid.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AppliedLayoutsTests.Spec.cpp" />
-    <ClCompile Include="AppZoneHistoryTests.Spec.cpp" />
-    <ClCompile Include="CustomLayoutsTests.Spec.cpp" />
-    <ClCompile Include="DefaultLayoutsTests.Spec.cpp" />
-    <ClCompile Include="FancyZonesSettings.Spec.cpp" />
-    <ClCompile Include="JsonHelpers.Tests.cpp" />
-    <ClCompile Include="Layout.Spec.cpp" />
-    <ClCompile Include="LayoutHotkeysTests.Spec.cpp" />
-    <ClCompile Include="LayoutTemplatesTests.Spec.cpp" />
-    <ClCompile Include="LayoutAssignedWindows.Spec.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Util.Spec.cpp" />
-    <ClCompile Include="Util.cpp" />
-    <ClCompile Include="WindowKeyboardSnap.Spec.cpp" />
-    <ClCompile Include="WindowProcessingTests.Spec.cpp" />
-    <ClCompile Include="WorkArea.Spec.cpp" />
-    <ClCompile Include="WorkAreaIdTests.Spec.cpp" />
-    <ClCompile Include="Zone.Spec.cpp" />
-    <ClCompile Include="FancyZones.Tests.cpp" />
+    <ClCompile Include="MeasureToolTests.cpp" />
+    <ClCompile Include="..\MeasureToolCore\EdgeDetection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Util.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\common\Display\Display.vcxproj">
-      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
-      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\FancyZonesLib\FancyZonesLib.vcxproj">
-      <Project>{f9c68edf-ac74-4b77-9af1-005d9c9f6a99}</Project>
-    </ProjectReference>
+    <ClInclude Include="..\MeasureToolCore\BGRATextureView.h" />
+    <ClInclude Include="..\MeasureToolCore\EdgeDetection.h" />
+    <ClInclude Include="..\MeasureToolCore\constants.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="UnitTests-FancyZones.rc" />
-  </ItemGroup>
-  <Import Project="$(RepoRoot)deps\spdlog.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
-    <Import Project="$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -96,6 +63,5 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-    <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
   </Target>
 </Project>

@@ -439,6 +439,7 @@
   </Folder>
   <Folder Name="/modules/FileLocksmith/Tests/">
     <Project Path="src/modules/FileLocksmith/FileLocksmithCLI/tests/FileLocksmithCLIUnitTests.vcxproj" Id="a1b2c3d4-e5f6-7890-1234-567890abcdef" />
+    <Project Path="src/modules/FileLocksmith/UnitTests/UnitTests-FileLocksmith.vcxproj" Id="d3e4f5a6-3333-4444-5555-666677778888" />
   </Folder>
   <Folder Name="/modules/Hosts/">
     <Project Path="src/modules/Hosts/Hosts/Hosts.csproj">
@@ -521,6 +522,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/MouseUtils/CursorWrap/UnitTests/UnitTests-CursorWrap.vcxproj" Id="c1f0fe89-a695-472e-9df5-f793b88ee220" />
+    <Project Path="src/modules/MouseUtils/MouseHighlighter/UnitTests/UnitTests-MouseHighlighter.vcxproj" Id="753db0e7-1670-4cdf-90c9-cc8316593410" />
+    <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/UnitTests/UnitTests-Crosshairs.vcxproj" Id="9f01b331-8518-4d02-b8c2-8f7415c7742f" />
+    <Project Path="src/modules/MouseUtils/FindMyMouse/UnitTests/UnitTests-FindMyMouse.vcxproj" Id="a3e7b4d1-92f6-4c8a-b5d3-1f0e2a9c6b78" />
   </Folder>
   <Folder Name="/modules/keyboardmanager/Tests/">
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
@@ -707,6 +712,7 @@
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
+    <Project Path="src/modules/LightSwitch/UnitTests/UnitTests-LightSwitch.vcxproj" Id="b1a2c3d4-1111-2222-3333-444455556666" />
   </Folder>
   <Folder Name="/modules/PowerDisplay/">
     <Project Path="src/modules/powerdisplay/PowerDisplay.Models/PowerDisplay.Models.csproj">
@@ -746,6 +752,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/MeasureTool/UnitTests/UnitTests-MeasureTool.vcxproj" Id="a8f12d3e-5b6c-4e7f-9a0b-c1d2e3f4a5b6" />
   </Folder>
   <Folder Name="/modules/MouseWithoutBorders/">
     <Project Path="src/modules/MouseWithoutBorders/App/Helper/MouseWithoutBordersHelper.csproj">
@@ -803,6 +810,9 @@
     </Project>
     <Project Path="src/modules/poweraccent/PowerAccentKeyboardService/PowerAccentKeyboardService.vcxproj" Id="c97d9a5d-206c-454e-997e-009e227d7f02" />
     <Project Path="src/modules/poweraccent/PowerAccentModuleInterface/PowerAccentModuleInterface.vcxproj" Id="34a354c5-23c7-4343-916c-c52daf4fc39d" />
+  </Folder>
+  <Folder Name="/modules/PowerAccent/Tests/">
+    <Project Path="src/modules/poweraccent/UnitTests/UnitTests-PowerAccent.vcxproj" Id="c2b3d4e5-2222-3333-4444-555566667777" />
   </Folder>
   <Folder Name="/modules/PowerOCR/">
     <Project Path="src/modules/PowerOCR/PowerOCR/PowerOCR.csproj">
@@ -1110,5 +1120,6 @@
     <BuildDependency Project="src/PackageIdentity/PackageIdentity.vcxproj" />
   </Project>
   <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
+  <Project Path="src/runner/UnitTests/UnitTests-Runner.vcxproj" Id="97bdacf8-261d-4e23-a708-a27e0b60e444" />
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
 </Solution>
