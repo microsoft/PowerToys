@@ -22,6 +22,7 @@ namespace PowerAccent.Core
         GD,
         DE,
         EL,
+        GRC,
         EST,
         EPO,
         FI,
@@ -86,6 +87,7 @@ namespace PowerAccent.Core
                     Language.GD => GetDefaultLetterKeyGD(letter), // Gàidhlig (Scottish Gaelic)
                     Language.DE => GetDefaultLetterKeyDE(letter), // German
                     Language.EL => GetDefaultLetterKeyEL(letter), // Greek
+                    Language.GRC => GetDefaultLetterKeyGRC(letter), // Greek Polytonic
                     Language.EST => GetDefaultLetterKeyEST(letter), // Estonian
                     Language.EPO => GetDefaultLetterKeyEPO(letter), // Esperanto
                     Language.FI => GetDefaultLetterKeyFI(letter), // Finnish
@@ -143,6 +145,7 @@ namespace PowerAccent.Core
                 .Union(GetDefaultLetterKeyGD(letter))
                 .Union(GetDefaultLetterKeyDE(letter))
                 .Union(GetDefaultLetterKeyEL(letter))
+                .Union(GetDefaultLetterKeyGRC(letter))
                 .Union(GetDefaultLetterKeyEST(letter))
                 .Union(GetDefaultLetterKeyEPO(letter))
                 .Union(GetDefaultLetterKeyFI(letter))
@@ -706,6 +709,41 @@ namespace PowerAccent.Core
                 LetterKey.VK_Y => new string[] { "υ" },
                 LetterKey.VK_Z => new string[] { "ζ" },
                 LetterKey.VK_COMMA => new[] { "“", "”", "«", "»", },
+                _ => Array.Empty<string>(),
+            };
+        }
+
+        // Greek Polytonic
+        private static string[] GetDefaultLetterKeyGRC(LetterKey letter)
+        {
+            return letter switch
+            {
+                LetterKey.VK_A => new string[] { "α", "ἀ", "ἁ", "ὰ", "ά", "ᾶ", "ᾱ", "ᾰ", "ἂ", "ἃ", "ἄ", "ἅ", "ἆ", "ἇ", "ᾳ", "ᾀ", "ᾁ", "ᾴ", "ᾲ", "ᾷ", "ᾄ", "ᾅ", "ᾂ", "ᾃ", "ᾆ", "ᾇ" },
+                LetterKey.VK_B => new string[] { "β" },
+                LetterKey.VK_C => new string[] { "χ" },
+                LetterKey.VK_D => new string[] { "δ" },
+                LetterKey.VK_E => new string[] { "ε", "ἐ", "ἑ", "ὲ", "έ", "ἒ", "ἓ", "ἔ", "ἕ" },
+                LetterKey.VK_F => new string[] { "φ", "ϝ" },
+                LetterKey.VK_G => new string[] { "γ" },
+                LetterKey.VK_H => new string[] { "η", "ἠ", "ἡ", "ὴ", "ή", "ῆ", "ἢ", "ἣ", "ἤ", "ἥ", "ἦ", "ἧ", "ῃ", "ᾐ", "ᾑ", "ῄ", "ῂ", "ῇ", "ᾔ", "ᾕ", "ᾒ", "ᾓ", "ᾖ", "ᾗ" },
+                LetterKey.VK_I => new string[] { "ι", "ἰ", "ἱ", "ὶ", "ί", "ῖ", "ῑ", "ῐ", "ἲ", "ἳ", "ἴ", "ἵ", "ἶ", "ἷ", "ϊ", "ΐ", "ῒ", "ῗ" },
+                LetterKey.VK_K => new string[] { "κ" },
+                LetterKey.VK_L => new string[] { "λ" },
+                LetterKey.VK_M => new string[] { "μ" },
+                LetterKey.VK_N => new string[] { "ν" },
+                LetterKey.VK_O => new string[] { "ο", "ὀ", "ὁ", "ὸ", "ό", "ὂ", "ὃ", "ὄ", "ὅ" },
+                LetterKey.VK_P => new string[] { "π", "φ", "ψ" },
+                LetterKey.VK_Q => new string[] { "ϟ" },
+                LetterKey.VK_R => new string[] { "ρ", "ῤ", "ῥ" },
+                LetterKey.VK_S => new string[] { "σ", "ς", "ϛ", "ϲ", "ϡ" },
+                LetterKey.VK_T => new string[] { "τ", "θ", "ϑ" },
+                LetterKey.VK_U => new string[] { "υ", "ὐ", "ὑ", "ὺ", "ύ", "ῦ", "ῡ", "ῠ", "ὒ", "ὓ", "ὔ", "ὕ", "ὖ", "ὗ", "ϋ", "ΰ", "ῢ", "ῧ" },
+                LetterKey.VK_W => new string[] { "ω", "ὠ", "ὡ", "ὼ", "ώ", "ῶ", "ὢ", "ὣ", "ὤ", "ὥ", "ὦ", "ὧ", "ῳ", "ᾠ", "ᾡ", "ῴ", "ῲ", "ῷ", "ᾤ", "ᾥ", "ᾢ", "ᾣ", "ᾦ", "ᾧ" },
+                LetterKey.VK_X => new string[] { "ξ" },
+                LetterKey.VK_Y => new string[] { "υ", "ὐ", "ὑ", "ὺ", "ύ", "ῦ", "ῡ", "ῠ", "ὒ", "ὓ", "ὔ", "ὕ", "ὖ", "ὗ", "ϋ", "ΰ", "ῢ", "ῧ" },
+                LetterKey.VK_Z => new string[] { "ζ" },
+                LetterKey.VK_COMMA => new[] { "“", "”", "‘", "’", ";", "`", "´" },
+                LetterKey.VK_PERIOD => new string[] { "·" },
                 _ => Array.Empty<string>(),
             };
         }
