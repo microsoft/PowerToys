@@ -562,7 +562,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
 
-                Logger.LogInfo($"Profile '{profile.Name}' applied successfully");
+                Logger.LogInfo($"Profile '{profile.Name}' apply request sent via IPC");
             }
             catch (Exception ex)
             {
