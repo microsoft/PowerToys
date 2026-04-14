@@ -38,5 +38,6 @@ namespace ManagedCommon
         Workspaces,
         ZoomIt,
         GeneralSettings,
+        FileConverter,
     }
 }
