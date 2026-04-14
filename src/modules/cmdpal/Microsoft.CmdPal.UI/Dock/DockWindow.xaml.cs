@@ -77,7 +77,7 @@ public sealed partial class DockWindow : WindowEx,
         _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         _settingsService.SettingsChanged += SettingsChangedHandler;
         _settings = mainSettings.DockSettings;
-        _lastSize = _settings.DockSize;
+        _lastSize = EffectiveDockSize(_settings);
 
         viewModel = serviceProvider.GetService<DockViewModel>()!;
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
@@ -174,7 +174,7 @@ public sealed partial class DockWindow : WindowEx,
         if (_appBarData.hWnd != IntPtr.Zero)
         {
             var sameEdge = _appBarData.uEdge == side;
-            var sameSize = _lastSize == _settings.DockSize;
+            var sameSize = _lastSize == EffectiveDockSize(_settings);
             if (sameEdge && sameSize)
             {
                 UpdateTopmostState();
@@ -332,7 +332,7 @@ public sealed partial class DockWindow : WindowEx,
 
         // Stash the last size we created the bar at, so we know when to hot-
         // reload it
-        _lastSize = _settings.DockSize;
+        _lastSize = EffectiveDockSize(_settings);
 
         UpdateWindowPosition();
     }
@@ -385,7 +385,8 @@ public sealed partial class DockWindow : WindowEx,
         var dpi = PInvoke.GetDpiForWindow(_hwnd);
 
         var scaleFactor = dpi / 96.0;
-        UpdateAppBarDataForEdge(_settings.Side, _settings.DockSize, scaleFactor);
+        var effectiveSize = EffectiveDockSize(_settings);
+        UpdateAppBarDataForEdge(_settings.Side, effectiveSize, scaleFactor);
 
         // Query and set position
         PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
@@ -399,16 +400,16 @@ public sealed partial class DockWindow : WindowEx,
         switch (_settings.Side)
         {
             case DockSide.Top:
-                _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Bottom:
-                _appBarData.rc.top = _appBarData.rc.bottom - (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.top = _appBarData.rc.bottom - (int)(DockSettingsToViews.HeightForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Left:
-                _appBarData.rc.right = _appBarData.rc.left + (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.right = _appBarData.rc.left + (int)(DockSettingsToViews.WidthForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Right:
-                _appBarData.rc.left = _appBarData.rc.right - (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.left = _appBarData.rc.right - (int)(DockSettingsToViews.WidthForSize(effectiveSize) * scaleFactor);
                 break;
         }
 
@@ -431,6 +432,16 @@ public sealed partial class DockWindow : WindowEx,
             _appBarData.rc.right - _appBarData.rc.left,
             _appBarData.rc.bottom - _appBarData.rc.top,
             true);
+    }
+
+    /// <summary>
+    /// Compact mode is only supported for Top/Bottom dock positions.
+    /// For Left/Right, always use Default size.
+    /// </summary>
+    private static DockSize EffectiveDockSize(DockSettings settings)
+    {
+        var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        return isHorizontal ? settings.DockSize : DockSize.Default;
     }
 
     private void UpdateAppBarDataForEdge(DockSide side, DockSize size, double scaleFactor)

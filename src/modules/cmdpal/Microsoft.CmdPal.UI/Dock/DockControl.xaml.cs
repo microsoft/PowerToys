@@ -242,14 +242,16 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     internal void UpdateSettings(DockSettings settings)
     {
         DockSide = settings.Side;
-        DockSize = settings.DockSize;
 
+        // Compact mode is only supported for Top/Bottom positions
         var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        var effectiveSize = isHorizontal ? settings.DockSize : DockSize.Default;
+        DockSize = effectiveSize;
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
 
         // Swap the band template to use the appropriate DockItemControl style
-        var templateKey = settings.DockSize == DockSize.Compact
+        var templateKey = effectiveSize == DockSize.Compact
             ? "CompactDockBandTemplate"
             : "DockBandTemplate";
         if (Resources.TryGetValue(templateKey, out var resource) && resource is DataTemplate template)

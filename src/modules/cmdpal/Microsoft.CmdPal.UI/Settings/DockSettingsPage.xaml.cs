@@ -44,6 +44,7 @@ public sealed partial class DockSettingsPage : Page
         DockPositionComboBox.SelectedIndex = SelectedSideIndex;
         DockSizeComboBox.SelectedIndex = SelectedDockSizeIndex;
         BackdropComboBox.SelectedIndex = SelectedBackdropIndex;
+        UpdateDockSizeCardVisibility();
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)
@@ -109,7 +110,11 @@ public sealed partial class DockSettingsPage : Page
     public int SelectedSideIndex
     {
         get => SideToSelectedIndex(ViewModel.Dock_Side);
-        set => ViewModel.Dock_Side = SelectedIndexToSide(value);
+        set
+        {
+            ViewModel.Dock_Side = SelectedIndexToSide(value);
+            UpdateDockSizeCardVisibility();
+        }
     }
 
     public int SelectedBackdropIndex
@@ -170,6 +175,13 @@ public sealed partial class DockSettingsPage : Page
         1 => DockBackdrop.Acrylic,
         _ => DockBackdrop.Acrylic,
     };
+
+    private void UpdateDockSizeCardVisibility()
+    {
+        var side = ViewModel.Dock_Side;
+        var isTopOrBottom = side == DockSide.Top || side == DockSide.Bottom;
+        DockSizeSettingsCard.Visibility = isTopOrBottom ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     private List<TopLevelViewModel> GetAllBands()
     {
