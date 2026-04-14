@@ -23,7 +23,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
+public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>
 {
     private DockViewModel _viewModel;
 
@@ -80,6 +80,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         WeakReferenceMessenger.Default.UnregisterAll(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
@@ -130,6 +131,21 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         DispatcherQueue.TryEnqueue(() =>
         {
             EnterEditMode();
+        });
+    }
+
+    public void Receive(ExitDockEditModeMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.Discard)
+            {
+                DiscardEditMode();
+            }
+            else
+            {
+                ExitEditMode();
+            }
         });
     }
 
@@ -222,12 +238,12 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        ExitEditMode();
+        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: false));
     }
 
     private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        DiscardEditMode();
+        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: true));
     }
 
     internal void UpdateSettings(DockSettings settings)
