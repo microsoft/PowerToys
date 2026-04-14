@@ -14,7 +14,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PowerDisplay.Models;
 using Windows.ApplicationModel.DataTransfer;
-using CustomVcpValueMapping = Microsoft.PowerToys.Settings.UI.Library.CustomVcpValueMapping;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
