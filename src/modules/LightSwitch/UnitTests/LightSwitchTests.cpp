@@ -659,7 +659,7 @@ namespace LightSwitchUnitTests
         // Product code: LightSwitchUtils.h — CoordinatesAreValid(lat, lon)
         // What: Verifies (0, 0) is rejected as a "not configured" sentinel
         // Why: Default config uses "0.0"/"0.0" — must not trigger sun calculations
-        // Risk: Unconfigured users get sunset times for Null Island in the Gulf of Guinea
+        // Risk: Misconfigured users get sunset times for Null Island in the Gulf of Guinea
         TEST_METHOD(CoordinatesAreValid_ZeroZero_RejectedAsSentinel)
         {
             Assert::IsFalse(CoordinatesAreValid(L"0.0", L"0.0"));
