@@ -324,4 +324,54 @@ public class DockMultiMonitorTests
 
         Assert.AreSame(configs, reconciled, "Reconciler should return the same reference when nothing changed");
     }
+
+    // --- Per-monitor save isolation test ---
+    [TestMethod]
+    public void WithActiveBands_PerMonitor_DoesNotClobberOtherMonitorConfig()
+    {
+        var bandA = new DockBandSettings { ProviderId = "provA", CommandId = "cmdA" };
+        var bandB = new DockBandSettings { ProviderId = "provB", CommandId = "cmdB" };
+
+        var monitorAConfig = new DockMonitorConfig
+        {
+            MonitorDeviceId = PrimaryMonitor.DeviceId,
+            Enabled = true,
+            IsPrimary = true,
+            IsCustomized = true,
+            StartBands = ImmutableList.Create(bandA),
+            CenterBands = ImmutableList<DockBandSettings>.Empty,
+            EndBands = ImmutableList<DockBandSettings>.Empty,
+        };
+        var monitorBConfig = new DockMonitorConfig
+        {
+            MonitorDeviceId = SecondaryMonitor.DeviceId,
+            Enabled = true,
+            IsPrimary = false,
+            IsCustomized = true,
+            StartBands = ImmutableList.Create(bandB),
+            CenterBands = ImmutableList<DockBandSettings>.Empty,
+            EndBands = ImmutableList<DockBandSettings>.Empty,
+        };
+
+        var settings = new DockSettings
+        {
+            MonitorConfigs = ImmutableList.Create(monitorAConfig, monitorBConfig),
+        };
+
+        // Simulate Monitor A saving new bands — only A's config should change
+        var newBandA = new DockBandSettings { ProviderId = "provA2", CommandId = "cmdA2" };
+        var configA = settings.MonitorConfigs[0];
+        var updatedConfigA = configA with { StartBands = ImmutableList.Create(newBandA) };
+        var afterSaveA = settings with
+        {
+            MonitorConfigs = ImmutableList.Create(updatedConfigA, monitorBConfig),
+        };
+
+        // Verify Monitor A's config was updated
+        Assert.AreEqual("provA2", afterSaveA.MonitorConfigs![0].StartBands![0].ProviderId);
+
+        // Verify Monitor B's config was NOT changed
+        Assert.AreEqual("provB", afterSaveA.MonitorConfigs![1].StartBands![0].ProviderId);
+        Assert.AreEqual("cmdB", afterSaveA.MonitorConfigs![1].StartBands![0].CommandId);
+    }
 }

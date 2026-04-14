@@ -77,6 +77,12 @@ public sealed partial class DockViewModel : IDisposable
 
     public void UpdateSettings(DockSettings settings)
     {
+        if (_isEditing)
+        {
+            Logger.LogDebug("DockViewModel.UpdateSettings skipped (edit in progress)");
+            return;
+        }
+
         Logger.LogDebug($"DockViewModel.UpdateSettings");
         _settings = settings;
         SetupBands();
@@ -493,10 +499,53 @@ public sealed partial class DockViewModel : IDisposable
         _snapshotDockSettings = null;
         _snapshotBandViewModels = null;
 
-        // Save without hotReload to avoid triggering SettingsChanged → SetupBands,
-        // which could race with stale DockBands_CollectionChanged work items and
-        // re-add bands that were just unpinned.
-        _settingsService.UpdateSettings(s => s with { DockSettings = _settings }, false);
+        // Extract the final merged bands for this monitor
+        var (myStart, myCenter, myEnd) = GetActiveBands();
+
+        // Save only this monitor's bands into the CURRENT persisted settings,
+        // preserving other monitors' changes. Without this, each DockViewModel's
+        // save would overwrite the entire DockSettings, causing the last save to
+        // clobber changes from monitors that saved earlier.
+        _settingsService.UpdateSettings(
+            s =>
+            {
+                var currentDock = s.DockSettings;
+                if (_monitorDeviceId is not null)
+                {
+                    var config = FindMonitorConfig(currentDock, _monitorDeviceId);
+                    if (config is not null && config.IsCustomized)
+                    {
+                        var updatedConfig = config with
+                        {
+                            StartBands = myStart,
+                            CenterBands = myCenter,
+                            EndBands = myEnd,
+                        };
+                        var configs = currentDock.MonitorConfigs ?? ImmutableList<DockMonitorConfig>.Empty;
+                        return s with
+                        {
+                            DockSettings = currentDock with
+                            {
+                                MonitorConfigs = ReplaceMonitorConfig(configs, updatedConfig),
+                            },
+                        };
+                    }
+                }
+
+                return s with
+                {
+                    DockSettings = currentDock with
+                    {
+                        StartBands = myStart,
+                        CenterBands = myCenter,
+                        EndBands = myEnd,
+                    },
+                };
+            },
+            false);
+
+        // Refresh local settings from persisted state so all monitors' changes are visible
+        _settings = _settingsService.Settings.DockSettings;
         _isEditing = false;
         Logger.LogDebug("Saved band order to settings");
     }
