@@ -83,10 +83,35 @@ public record DockSettings
     public ImmutableList<DockMonitorConfig> MonitorConfigs { get; init; } = ImmutableList<DockMonitorConfig>.Empty;
 
     [JsonIgnore]
-    public IEnumerable<(string ProviderId, string CommandId)> AllPinnedCommands =>
-        StartBands.Select(b => (b.ProviderId, b.CommandId))
-        .Concat(CenterBands.Select(b => (b.ProviderId, b.CommandId)))
-        .Concat(EndBands.Select(b => (b.ProviderId, b.CommandId)));
+    public IEnumerable<(string ProviderId, string CommandId)> AllPinnedCommands
+    {
+        get
+        {
+            // Start with global bands
+            var result = StartBands.Select(b => (b.ProviderId, b.CommandId))
+                .Concat(CenterBands.Select(b => (b.ProviderId, b.CommandId)))
+                .Concat(EndBands.Select(b => (b.ProviderId, b.CommandId)));
+
+            // Include per-monitor bands so that commands pinned to specific
+            // monitors are loaded as TopLevelViewModels and appear in the dock.
+            var configs = MonitorConfigs ?? ImmutableList<DockMonitorConfig>.Empty;
+            foreach (var config in configs)
+            {
+                if (config.IsCustomized)
+                {
+                    var start = config.StartBands ?? ImmutableList<DockBandSettings>.Empty;
+                    var center = config.CenterBands ?? ImmutableList<DockBandSettings>.Empty;
+                    var end = config.EndBands ?? ImmutableList<DockBandSettings>.Empty;
+                    result = result
+                        .Concat(start.Select(b => (b.ProviderId, b.CommandId)))
+                        .Concat(center.Select(b => (b.ProviderId, b.CommandId)))
+                        .Concat(end.Select(b => (b.ProviderId, b.CommandId)));
+                }
+            }
+
+            return result;
+        }
+    }
 }
 
 /// <summary>

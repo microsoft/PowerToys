@@ -358,7 +358,7 @@ public class DockMultiMonitorTests
             MonitorConfigs = ImmutableList.Create(monitorAConfig, monitorBConfig),
         };
 
-        // Simulate Monitor A saving new bands — only A's config should change
+            // Simulate Monitor A saving new bands — only A's config should change
         var newBandA = new DockBandSettings { ProviderId = "provA2", CommandId = "cmdA2" };
         var configA = settings.MonitorConfigs[0];
         var updatedConfigA = configA with { StartBands = ImmutableList.Create(newBandA) };
@@ -373,5 +373,62 @@ public class DockMultiMonitorTests
         // Verify Monitor B's config was NOT changed
         Assert.AreEqual("provB", afterSaveA.MonitorConfigs![1].StartBands![0].ProviderId);
         Assert.AreEqual("cmdB", afterSaveA.MonitorConfigs![1].StartBands![0].CommandId);
+    }
+
+    [TestMethod]
+    public void AllPinnedCommands_IncludesPerMonitorBands()
+    {
+        // Set up global bands
+        var globalBand = new DockBandSettings { ProviderId = "prov1", CommandId = "globalCmd" };
+
+        // Set up a customized per-monitor config with a unique band
+        var perMonitorBand = new DockBandSettings { ProviderId = "prov1", CommandId = "monitorOnlyCmd" };
+        var config = new DockMonitorConfig
+        {
+            MonitorDeviceId = @"\\.\DISPLAY2",
+            IsCustomized = true,
+            StartBands = ImmutableList.Create(globalBand, perMonitorBand),
+        };
+
+        var settings = new DockSettings
+        {
+            StartBands = ImmutableList.Create(globalBand),
+            CenterBands = ImmutableList<DockBandSettings>.Empty,
+            EndBands = ImmutableList<DockBandSettings>.Empty,
+            MonitorConfigs = ImmutableList.Create(config),
+        };
+
+        var allPinned = new List<(string ProviderId, string CommandId)>(settings.AllPinnedCommands);
+
+        // Should include the global band AND the per-monitor band
+        Assert.IsTrue(allPinned.Exists(p => p.CommandId == "globalCmd"), "Global band should be included");
+        Assert.IsTrue(allPinned.Exists(p => p.CommandId == "monitorOnlyCmd"), "Per-monitor band should be included");
+    }
+
+    [TestMethod]
+    public void AllPinnedCommands_ExcludesNonCustomizedMonitorBands()
+    {
+        var globalBand = new DockBandSettings { ProviderId = "prov1", CommandId = "globalCmd" };
+
+        // Non-customized config should NOT contribute its own bands
+        var config = new DockMonitorConfig
+        {
+            MonitorDeviceId = @"\\.\DISPLAY2",
+            IsCustomized = false,
+            StartBands = ImmutableList.Create(new DockBandSettings { ProviderId = "prov1", CommandId = "shouldNotAppear" }),
+        };
+
+        var settings = new DockSettings
+        {
+            StartBands = ImmutableList.Create(globalBand),
+            CenterBands = ImmutableList<DockBandSettings>.Empty,
+            EndBands = ImmutableList<DockBandSettings>.Empty,
+            MonitorConfigs = ImmutableList.Create(config),
+        };
+
+        var allPinned = new List<(string ProviderId, string CommandId)>(settings.AllPinnedCommands);
+
+        Assert.IsTrue(allPinned.Exists(p => p.CommandId == "globalCmd"), "Global band should be included");
+        Assert.IsFalse(allPinned.Exists(p => p.CommandId == "shouldNotAppear"), "Non-customized per-monitor band should NOT be included");
     }
 }
