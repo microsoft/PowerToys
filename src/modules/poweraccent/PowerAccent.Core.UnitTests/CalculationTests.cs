@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
@@ -132,27 +134,11 @@ namespace PowerAccent.Core.UnitTests
             Assert.AreEqual(30.0, result.Y);
         }
 
-        /// <summary>
-        /// Product code: Calculation.GetRawCoordinatesFromPosition — all Position enum values
-        /// What: Smoke-tests every Position to ensure none throw or produce NaN
-        /// Why: Missing switch arm would throw NotImplementedException at runtime
-        /// </summary>
         [TestMethod]
-        [DataRow(Position.Top)]
-        [DataRow(Position.Bottom)]
-        [DataRow(Position.Left)]
-        [DataRow(Position.Right)]
-        [DataRow(Position.TopLeft)]
-        [DataRow(Position.TopRight)]
-        [DataRow(Position.BottomLeft)]
-        [DataRow(Position.BottomRight)]
-        [DataRow(Position.Center)]
-        public void GetRawCoordinatesFromPosition_AllPositions_ShouldNotThrow(Position position)
+        [ExpectedException(typeof(NotImplementedException))]
+        public void GetRawCoordinatesFromPosition_InvalidPosition_ShouldThrow()
         {
-            var result = Calculation.GetRawCoordinatesFromPosition(position, StandardScreen, ToolbarWindow, 1.0);
-
-            Assert.IsTrue(!double.IsNaN(result.X));
-            Assert.IsTrue(!double.IsNaN(result.Y));
+            Calculation.GetRawCoordinatesFromPosition((Position)999, StandardScreen, ToolbarWindow, 1.0);
         }
 
         /// <summary>

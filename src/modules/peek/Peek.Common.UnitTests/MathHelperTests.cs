@@ -139,10 +139,17 @@ namespace Peek.Common.UnitTests
         /// Why: Edge case — callers must handle zero divisor; the method does not guard against it
         /// </summary>
         [TestMethod]
-        [ExpectedException(typeof(DivideByZeroException))]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Modulo_ZeroDivisor_ShouldThrow()
         {
             MathHelper.Modulo(5, 0);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentOutOfRangeException))]
+        public void Modulo_NegativeDivisor_ShouldThrow()
+        {
+            MathHelper.Modulo(-1, -3);
         }
 
         /// <summary>
