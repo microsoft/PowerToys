@@ -30,7 +30,7 @@
 	
   <ItemGroup>
     <PackageReference Include="System.ComponentModel.Composition" />
-    <PackageReference Include="WPF-UI" />
+    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 	
   <ItemGroup>
