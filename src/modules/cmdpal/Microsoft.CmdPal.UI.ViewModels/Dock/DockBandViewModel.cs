@@ -105,7 +105,18 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     /// </summary>
     internal void SaveShowLabels()
     {
-        ReplaceBandInSettings(_bandSettings with { ShowTitles = _showTitles, ShowSubtitles = _showSubtitles });
+        // Only write to settings if the label values actually changed from
+        // the snapshot. When multiple non-customized monitors share global
+        // bands, an unconditional save would overwrite changes made by
+        // another monitor's ViewModel (last-save-wins clobber).
+        var changed = _showTitlesSnapshot is null
+                   || _showTitles != _showTitlesSnapshot
+                   || _showSubtitles != _showSubtitlesSnapshot;
+        if (changed)
+        {
+            ReplaceBandInSettings(_bandSettings with { ShowTitles = _showTitles, ShowSubtitles = _showSubtitles });
+        }
+
         _showTitlesSnapshot = null;
         _showSubtitlesSnapshot = null;
     }

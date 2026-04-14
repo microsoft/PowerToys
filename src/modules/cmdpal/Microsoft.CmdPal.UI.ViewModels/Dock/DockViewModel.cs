@@ -71,6 +71,10 @@ public sealed partial class DockViewModel : IDisposable
         }
 
         Logger.LogDebug("Starting DockBands_CollectionChanged");
+
+        // Refresh local settings from the persisted state so SetupBands sees
+        // the latest data (e.g., new pins saved with hotReload: false).
+        _settings = _settingsService.Settings.DockSettings;
         SetupBands();
         Logger.LogDebug("Ended DockBands_CollectionChanged");
     }
