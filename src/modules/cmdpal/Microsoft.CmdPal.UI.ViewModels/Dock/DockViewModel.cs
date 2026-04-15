@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -34,11 +35,14 @@ public sealed partial class DockViewModel
 
     public IReadOnlyList<TopLevelViewModel> AllItems => _topLevelCommandManager.GetDockBandsSnapshot();
 
+    // ITelemetryService dependency ensures TelemetryForwarder is constructed
+    // (and its message listeners registered) before this ViewModel fires events.
     public DockViewModel(
         TopLevelCommandManager tlcManager,
         IContextMenuFactory contextMenuFactory,
         TaskScheduler scheduler,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        ITelemetryService telemetryService)
     {
         _topLevelCommandManager = tlcManager;
         _contextMenuFactory = contextMenuFactory;
