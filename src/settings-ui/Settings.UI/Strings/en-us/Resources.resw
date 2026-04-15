@@ -5913,4 +5913,62 @@ Text uses the current drawing color.</value>
   <data name="ZoomIt_Type_DemoSample.Text" xml:space="preserve">
     <value>Sample</value>
   </data>
+  <data name="GrabAndMove.ModuleDescription" xml:space="preserve">
+    <value>Move and resize windows with Alt+Drag. Left-click to move, right-click to resize.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove.ModuleTitle" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Shell_GrabAndMove.Content" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_GrabAndMove.Text" xml:space="preserve">
+    <value>Learn more about Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="GrabAndMove_ShouldAbsorbAlt.Header" xml:space="preserve">
+    <value>Absorb Alt presses</value>
+    <comment>When enabled, Grab And Move absorbs the Alt keypress so it does not activate the window menu after a drag/resize.</comment>
+  </data>
+  <data name="GrabAndMove_ShouldAbsorbAlt.Description" xml:space="preserve">
+    <value>Prevent Alt from activating the window menu after a drag or resize operation</value>
+  </data>
+  <data name="GrabAndMove_DoNotActivateOnGameMode.Header" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>Game Mode is a Windows feature</comment>
+  </data>
+  <data name="GrabAndMove_ShowGeometry.Header" xml:space="preserve">
+    <value>Show window geometry</value>
+    <comment>When enabled, Grab And Move displays the window position (X, Y) and size (W, H) on the overlay during move and resize.</comment>
+  </data>
+  <data name="GrabAndMove_ShowGeometry.Description" xml:space="preserve">
+    <value>Display the window position and size on the overlay during drag and resize operations</value>
+  </data>
+  <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
+    <value>Enable Alt + Right-click to resize</value>
+    <comment>When enabled, holding Alt and right-clicking allows resizing windows by dragging from the closest edge or corner.</comment>
+  </data>
+  <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
+    <value>Hold Alt and right-click to resize a window by dragging from the nearest edge or corner</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps.Description" xml:space="preserve">
+    <value>Excludes an application from being moved or resized with Alt+Drag - add one application name per line</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook.exe</value>
+    <comment>{Locked="outlook.exe"}</comment>
+  </data>
 </root>
