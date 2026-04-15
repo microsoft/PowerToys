@@ -78,7 +78,7 @@ namespace LightSwitchTests
     {
     public:
         // London (51.5°N, 0°W), summer solstice.
-        // Astronomical sunrise UTC ≈ 03:43, sunset ≈ 20:20 (USNO).
+        // Almanac sunrise UTC ≈ 03:43, sunset ≈ 20:20.
         TEST_METHOD(LondonSummerSolstice_SunriseAndSunsetAreReasonable)
         {
             const int N       = dayOfYear(2024, 6, 21);
@@ -117,7 +117,7 @@ namespace LightSwitchTests
         // single-subtract for all t values reachable from real Earth inputs.
         // Maximum practical t ≈ 367.3 (N=366, lon=-180, sunset).
         // For this t: L_raw ≈ 641, and old/new code must give the same result.
-        TEST_METHOD(LNormalisation_OldAndNewMatchForAllReachableInputs)
+        TEST_METHOD(LongitudeNorm_OldAndNewMatchForAllReachableInputs)
         {
             // Sweep the full practical range of t values.
             for (double t = 0.0; t <= 368.0; t += 0.5)
