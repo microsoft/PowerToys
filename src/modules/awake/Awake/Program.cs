@@ -125,6 +125,9 @@ namespace Awake
                     Bridge.GetPwrCapabilities(out _powerCapabilities);
                     Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities, _serializerOptions));
 
+                    // Initialize the lid override manager (checks for crash recovery)
+                    LidOverrideManager.Initialize(_powerCapabilities.LidPresent);
+
                     return await rootCommand.InvokeAsync(args);
                 }
             }
@@ -502,7 +505,7 @@ namespace Awake
         private static void InitializeSettings()
         {
             AwakeSettings settings = Manager.ModuleSettings?.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
-            TrayHelper.SetTray(settings, _startedFromPowerToys);
+            TrayHelper.SetTray(settings, _startedFromPowerToys, _powerCapabilities.LidPresent);
         }
 
         private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
@@ -564,7 +567,19 @@ namespace Awake
                         break;
                 }
 
-                TrayHelper.SetTray(settings, _startedFromPowerToys);
+                // Apply or remove lid override based on current mode and settings.
+                // Pass the mode explicitly to avoid reading stale CurrentOperatingMode
+                // during FileSystemWatcher reentrancy (mode setters may save settings and
+                // return before updating the static property).
+                if (_powerCapabilities.LidPresent)
+                {
+                    if (!Manager.ApplyLidOverrideIfNeeded(settings.Properties.Mode, settings.Properties.KeepAwakeOnLidClose))
+                    {
+                        Logger.LogError("Lid override application failed during settings processing.");
+                    }
+                }
+
+                TrayHelper.SetTray(settings, _startedFromPowerToys, _powerCapabilities.LidPresent);
             }
             catch (Exception ex)
             {

@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -17,6 +18,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class AwakePage : NavigablePage, IRefreshablePage
     {
+        [DllImport("powrprof.dll", SetLastError = true)]
+        private static extern bool GetPwrCapabilities(out SystemPowerCapabilities lpSystemPowerCapabilities);
+
+        // Partial definition of Win32 SYSTEM_POWER_CAPABILITIES. Only the first three
+        // fields are needed; the rest are absorbed into Remainder to satisfy the marshaler.
+        // The full struct is 112 bytes (see PowrProf.h). The three leading bool fields
+        // marshal as 1 byte each (UnmanagedType.U1), so Remainder = 112 - 3 = 109 bytes.
+        // See also: Awake.Core.Models.SystemPowerCapabilities for the canonical full definition.
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        private struct SystemPowerCapabilities
+        {
+            [MarshalAs(UnmanagedType.U1)]
+            public bool PowerButtonPresent;
+
+            [MarshalAs(UnmanagedType.U1)]
+            public bool SleepButtonPresent;
+
+            [MarshalAs(UnmanagedType.U1)]
+            public bool LidPresent;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 109)]
+            public byte[] Remainder;
+        }
+
         private readonly string _appName = "Awake";
         private readonly SettingsUtils _settingsUtils;
 
@@ -47,6 +72,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // We load the view model settings first.
             LoadSettings(_generalSettingsRepository, _moduleSettingsRepository);
+
+            // Detect if the device has a lid
+            if (GetPwrCapabilities(out SystemPowerCapabilities capabilities))
+            {
+                ViewModel.SetLidPresent(capabilities.LidPresent);
+            }
 
             DataContext = ViewModel;
 

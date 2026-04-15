@@ -157,6 +157,10 @@ namespace Awake.Core
 
             Logger.LogInfo($"Power event received. Reapplying awake state for mode: {CurrentOperatingMode}");
             _stateQueue.Add(ComputeAwakeState(IsDisplayOn));
+
+            // Re-apply lid override if active, in case Windows reset power plan settings.
+            // ReapplyLidOverride has its own internal early-out check.
+            LidOverrideManager.ReapplyLidOverride();
         }
 
         internal static void CancelExistingThread()
@@ -391,6 +395,11 @@ namespace Awake.Core
             Logger.LogInfo($"Completed {timerType} keep-awake.");
             CancelExistingThread();
 
+            // Restore lid settings directly rather than relying on the FileSystemWatcher
+            // round-trip through ProcessSettings, which is non-deterministic.
+            // RestoreLidSettings is a no-op when no override is active.
+            LidOverrideManager.RestoreLidSettings();
+
             if (IsUsingPowerToysConfig)
             {
                 // If running under PowerToys settings, just revert to the default Passive state.
@@ -411,6 +420,10 @@ namespace Awake.Core
         internal static void CompleteExit(int exitCode)
         {
             SetPassiveKeepAwake(updateSettings: false);
+
+            // Safe to call unconditionally: RestoreLidSettings is a no-op when _currentState is null
+            // (which is the case when Initialize was called with lidPresent=false or no override was applied).
+            LidOverrideManager.RestoreLidSettings();
 
             // Stop the monitor thread gracefully
             StopMonitor();
@@ -519,6 +532,99 @@ namespace Awake.Core
             CurrentOperatingMode = AwakeMode.PASSIVE;
 
             SetModeShellIcon();
+        }
+
+        /// <summary>
+        /// Sets the lid override setting.
+        /// </summary>
+        internal static void SetLidOverride([CallerMemberName] string callerName = "")
+        {
+            Logger.LogInfo($"Setting lid override configuration from settings. Invoked by {callerName}.");
+            if (IsUsingPowerToysConfig)
+            {
+                try
+                {
+                    AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                    currentSettings.Properties.KeepAwakeOnLidClose = !currentSettings.Properties.KeepAwakeOnLidClose;
+
+                    // For TIMED mode: apply lid override directly without restarting the timer.
+                    // Saving settings triggers ProcessSettings via FileSystemWatcher, which would
+                    // call SetTimedKeepAwake and reset the countdown. Mirror the SetDisplay pattern.
+                    // Safe to use CurrentOperatingMode here: SetLidOverride is only called from
+                    // the tray WndProc (single-threaded), so no FileSystemWatcher reentrancy concern.
+                    if (CurrentOperatingMode == AwakeMode.TIMED && TimeRemaining > 0)
+                    {
+                        if (!ApplyLidOverrideIfNeeded(CurrentOperatingMode, currentSettings.Properties.KeepAwakeOnLidClose))
+                        {
+                            Logger.LogError("Lid override failed in TIMED mode. Setting not saved.");
+                            return;
+                        }
+
+                        ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                        return;
+                    }
+
+                    ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to handle lid override setting command: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Applies or removes lid override based on the given mode and settings.
+        /// </summary>
+        /// <param name="mode">The awake mode to evaluate against. Passed explicitly to avoid
+        /// reading stale <see cref="CurrentOperatingMode"/> during FileSystemWatcher reentrancy.</param>
+        /// <param name="keepAwakeOnLidClose">Whether to keep awake when lid is closed.</param>
+        /// <returns>True if the operation succeeded, false if a power API call failed.</returns>
+        internal static bool ApplyLidOverrideIfNeeded(AwakeMode mode, bool keepAwakeOnLidClose)
+        {
+            if (mode == AwakeMode.PASSIVE)
+            {
+                // In passive mode, always restore original lid settings
+                if (LidOverrideManager.IsOverrideActive)
+                {
+                    Logger.LogInfo("Restoring lid settings due to passive mode.");
+                    if (!LidOverrideManager.RestoreLidSettings())
+                    {
+                        Logger.LogError("Failed to restore lid settings during passive transition.");
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            // In active modes (INDEFINITE, TIMED, EXPIRABLE)
+            if (keepAwakeOnLidClose)
+            {
+                if (!LidOverrideManager.IsOverrideActive)
+                {
+                    Logger.LogInfo("Applying lid override for active mode.");
+                    if (!LidOverrideManager.ApplyLidOverride())
+                    {
+                        Logger.LogError("Failed to apply lid override.");
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                if (LidOverrideManager.IsOverrideActive)
+                {
+                    Logger.LogInfo("Removing lid override (setting disabled).");
+                    if (!LidOverrideManager.RestoreLidSettings())
+                    {
+                        Logger.LogError("Failed to remove lid override.");
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         /// <summary>

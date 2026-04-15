@@ -765,6 +765,7 @@ LEVELID
 LExit
 lhwnd
 LIBID
+LIDCLOSE
 LIMITSIZE
 LIMITTEXT
 lindex
@@ -1187,6 +1188,8 @@ POWERRENAMETEST
 POWERTOYNAME
 powertoyssetup
 powertoysusersetup
+Powr
+powrprof
 Powrprof
 ppenum
 ppidl

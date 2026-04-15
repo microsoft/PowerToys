@@ -113,5 +113,46 @@ namespace Awake.Core.Native
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         internal static extern int RegisterWindowMessage(string lpString);
+
+        [DllImport("powrprof.dll", SetLastError = true)]
+        internal static extern uint PowerGetActiveScheme(IntPtr userRootPowerKey, out IntPtr activePolicyGuid);
+
+        [DllImport("powrprof.dll", SetLastError = true)]
+        internal static extern uint PowerReadACValueIndex(
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            ref Guid subGroupOfPowerSettingsGuid,
+            ref Guid powerSettingGuid,
+            out uint acValueIndex);
+
+        [DllImport("powrprof.dll", SetLastError = true)]
+        internal static extern uint PowerReadDCValueIndex(
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            ref Guid subGroupOfPowerSettingsGuid,
+            ref Guid powerSettingGuid,
+            out uint dcValueIndex);
+
+        [DllImport("powrprof.dll", SetLastError = true)]
+        internal static extern uint PowerWriteACValueIndex(
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            ref Guid subGroupOfPowerSettingsGuid,
+            ref Guid powerSettingGuid,
+            uint acValueIndex);
+
+        [DllImport("powrprof.dll", SetLastError = true)]
+        internal static extern uint PowerWriteDCValueIndex(
+            IntPtr rootPowerKey,
+            ref Guid schemeGuid,
+            ref Guid subGroupOfPowerSettingsGuid,
+            ref Guid powerSettingGuid,
+            uint dcValueIndex);
+
+        [DllImport("powrprof.dll", SetLastError = true)]
+        internal static extern uint PowerSetActiveScheme(IntPtr userRootPowerKey, ref Guid schemeGuid);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern IntPtr LocalFree(IntPtr hMem);
     }
 }

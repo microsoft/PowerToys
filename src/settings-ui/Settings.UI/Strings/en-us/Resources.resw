@@ -2268,6 +2268,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="Awake_DisplaySettingsCard.Description" xml:space="preserve">
     <value>This setting is only available when keeping the PC awake</value>
   </data>
+  <data name="Awake_LidSettingsCard.Header" xml:space="preserve">
+    <value>Keep awake when lid closed</value>
+  </data>
+  <data name="Awake_LidSettingsCard.Description" xml:space="preserve">
+    <value>Prevents sleep when the laptop lid is closed while keeping the PC awake</value>
+  </data>
   <data name="Awake_ExpirationSettingsExpander.Description" xml:space="preserve">
     <value>Keep custom awake state until a specific date and time</value>
   </data>
