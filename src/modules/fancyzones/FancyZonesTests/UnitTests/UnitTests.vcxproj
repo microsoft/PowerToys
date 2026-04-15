@@ -60,6 +60,7 @@
     <ClCompile Include="WorkArea.Spec.cpp" />
     <ClCompile Include="WorkAreaIdTests.Spec.cpp" />
     <ClCompile Include="Zone.Spec.cpp" />
+    <ClCompile Include="FancyZones.Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
