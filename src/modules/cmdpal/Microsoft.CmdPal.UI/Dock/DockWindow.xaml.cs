@@ -34,8 +34,8 @@ namespace Microsoft.CmdPal.UI.Dock;
 #pragma warning disable SA1402 // File may only contain a single type
 
 public sealed partial class DockWindow : WindowEx,
-                                                 IRecipient<BringToTopMessage>,
-                                                 IRecipient<RequestShowPaletteAtMessage>,
+    IRecipient<BringToTopMessage>,
+    IRecipient<RequestShowPaletteAtMessage>,
     IRecipient<QuitMessage>,
     IDisposable
 {

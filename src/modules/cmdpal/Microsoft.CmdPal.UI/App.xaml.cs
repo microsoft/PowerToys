@@ -259,7 +259,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
 
         // Multi-monitor dock support
-        services.AddSingleton<IMonitorService, Microsoft.CmdPal.UI.Services.MonitorService>();
+        services.AddSingleton<IMonitorService, MonitorService>();
         services.AddSingleton<Dock.DockWindowManager>(sp =>
             new Dock.DockWindowManager(
                 sp.GetRequiredService<IMonitorService>(),

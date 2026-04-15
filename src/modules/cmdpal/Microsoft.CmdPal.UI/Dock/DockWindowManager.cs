@@ -2,9 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
-using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -20,7 +17,7 @@ namespace Microsoft.CmdPal.UI.Dock;
 /// Manages multiple <see cref="DockWindow"/> instances, one per enabled monitor.
 /// Replaces the single <c>_dockWindow</c> field previously held by ShellPage.
 /// </summary>
-public sealed class DockWindowManager : IDisposable
+public sealed partial class DockWindowManager : IDisposable
 {
     private readonly IMonitorService _monitorService;
     private readonly ISettingsService _settingsService;

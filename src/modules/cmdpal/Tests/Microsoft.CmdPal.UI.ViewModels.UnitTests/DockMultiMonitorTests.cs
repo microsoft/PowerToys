@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text.Json;
@@ -332,7 +331,7 @@ public class DockMultiMonitorTests
         var bandA = new DockBandSettings { ProviderId = "provA", CommandId = "cmdA" };
         var bandB = new DockBandSettings { ProviderId = "provB", CommandId = "cmdB" };
 
-        var monitorAConfig = new DockMonitorConfig
+        var monitorOneConfig = new DockMonitorConfig
         {
             MonitorDeviceId = PrimaryMonitor.DeviceId,
             Enabled = true,
@@ -342,7 +341,7 @@ public class DockMultiMonitorTests
             CenterBands = ImmutableList<DockBandSettings>.Empty,
             EndBands = ImmutableList<DockBandSettings>.Empty,
         };
-        var monitorBConfig = new DockMonitorConfig
+        var monitorTwoConfig = new DockMonitorConfig
         {
             MonitorDeviceId = SecondaryMonitor.DeviceId,
             Enabled = true,
@@ -355,16 +354,16 @@ public class DockMultiMonitorTests
 
         var settings = new DockSettings
         {
-            MonitorConfigs = ImmutableList.Create(monitorAConfig, monitorBConfig),
+            MonitorConfigs = ImmutableList.Create(monitorOneConfig, monitorTwoConfig),
         };
 
-            // Simulate Monitor A saving new bands — only A's config should change
+        // Simulate Monitor A saving new bands — only A's config should change
         var newBandA = new DockBandSettings { ProviderId = "provA2", CommandId = "cmdA2" };
         var configA = settings.MonitorConfigs[0];
         var updatedConfigA = configA with { StartBands = ImmutableList.Create(newBandA) };
         var afterSaveA = settings with
         {
-            MonitorConfigs = ImmutableList.Create(updatedConfigA, monitorBConfig),
+            MonitorConfigs = ImmutableList.Create(updatedConfigA, monitorTwoConfig),
         };
 
         // Verify Monitor A's config was updated

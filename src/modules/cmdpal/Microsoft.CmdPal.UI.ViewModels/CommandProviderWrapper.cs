@@ -504,7 +504,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
         // Prevent duplicate pins — check the target destination's bands.
         // When pinning to a specific monitor, check that monitor's resolved bands
-        // (which include forked-from-global bands). Otherwise check global bands.
+        // (which include forked-from-global bands). Otherwise, check global bands.
         bool alreadyPinned;
         if (monitorDeviceId is not null)
         {
