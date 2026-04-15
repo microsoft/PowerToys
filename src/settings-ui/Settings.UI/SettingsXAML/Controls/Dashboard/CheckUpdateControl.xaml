@@ -72,7 +72,7 @@
                 <TextBlock x:Uid="YoureUpToDate" FontWeight="SemiBold" />
                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}">
                     <Run x:Uid="General_VersionLastChecked" />
-                    <Run Text="{x:Bind UpdateSettingsConfig.LastCheckedDateLocalized, Mode=OneTime}" />
+                    <Run Text="{x:Bind LastCheckedDateFriendly, Mode=OneTime}" />
                 </TextBlock>
             </StackPanel>
         </Grid>

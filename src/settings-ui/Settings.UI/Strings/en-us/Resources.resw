@@ -1377,6 +1377,14 @@ opera.exe</value>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
   </data>
+  <data name="General_LastCheckedDate_TodayAt" xml:space="preserve">
+    <value>Today at {0}</value>
+    <comment>Friendly date format when the last update check was today. {0} is the localized short time, e.g. "Today at 1:22 PM".</comment>
+  </data>
+  <data name="General_LastCheckedDate_YesterdayAt" xml:space="preserve">
+    <value>Yesterday at {0}</value>
+    <comment>Friendly date format when the last update check was yesterday. {0} is the localized short time, e.g. "Yesterday at 3:45 PM".</comment>
+  </data>
   <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
     <value>Created at:</value>
   </data>
