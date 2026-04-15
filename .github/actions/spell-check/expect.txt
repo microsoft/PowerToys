@@ -1037,9 +1037,7 @@ NORMALDISPLAY
 NORMALUSER
 NOSEARCH
 NOSENDCHANGING
-NOSIZE
 notdefault
-Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1644,6 +1642,7 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
+traies
 transicc
 TRAYMOUSEMESSAGE
 triaging
@@ -1664,6 +1663,7 @@ UBR
 UCallback
 ucrt
 ucrtd
+udit
 uefi
 uesc
 UFlags
@@ -1695,6 +1695,7 @@ UOI
 UPDATENOW
 updown
 UPGRADINGPRODUCTCODE
+upserts
 Uptool
 urld
 Usb
@@ -1779,7 +1780,6 @@ webpage
 websites
 wekyb
 wgpocpl
-WIC
 wic
 wifi
 winapi
@@ -2177,7 +2177,7 @@ nodiscard
 nologo
 nomove
 nosize
-notopmost
+NOTOPMOST
 Notupdated
 notwindows
 nowarn
@@ -2344,3 +2344,9 @@ YTimer
 zamora
 zonability
 Zorder
+LLMHF
+RIGHTBUTTON
+SIZEALL
+grabandmove
+GRABANDMOVEMODULEINTERFACE
+INITCOMMONCONTROLSEX

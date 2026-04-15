@@ -209,18 +209,6 @@
                             helpers:NavHelper.NavigateTo="views:LightSwitchPage"
                             AutomationProperties.AutomationId="LightSwitchNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/LightSwitch.png}" />
-                        <!-- TEMPORARILY_DISABLED: PowerDisplay
-                        <NavigationViewItem
-                            x:Name="PowerDisplayNavigationItem"
-                            x:Uid="Shell_PowerDisplay"
-                            helpers:NavHelper.NavigateTo="views:PowerDisplayPage"
-                            AutomationProperties.AutomationId="PowerDisplayNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}">
-                            <NavigationViewItem.InfoBadge>
-                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
-                            </NavigationViewItem.InfoBadge>
-                        </NavigationViewItem>
-                        -->
                         <NavigationViewItem
                             x:Name="PowerLauncherNavigationItem"
                             x:Uid="Shell_PowerLauncher"
@@ -286,6 +274,12 @@
                             helpers:NavHelper.NavigateTo="views:WorkspacesPage"
                             AutomationProperties.AutomationId="WorkspacesNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
+                        <NavigationViewItem
+                            x:Name="GrabAndMoveNavigationItem"
+                            x:Uid="Shell_GrabAndMove"
+                            helpers:NavHelper.NavigateTo="views:GrabAndMovePage"
+                            AutomationProperties.AutomationId="GrabAndMoveNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 
@@ -305,11 +299,7 @@
                             x:Uid="Shell_KeyboardManager"
                             helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
                             AutomationProperties.AutomationId="KeyboardManagerNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}">
-                            <NavigationViewItem.InfoBadge>
-                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
-                            </NavigationViewItem.InfoBadge>
-                        </NavigationViewItem>
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}" />
                         <NavigationViewItem
                             x:Name="MouseUtilitiesNavigationItem"
                             x:Uid="Shell_MouseUtilities"
@@ -322,6 +312,16 @@
                             helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
                             AutomationProperties.AutomationId="MouseWithoutBordersNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}" />
+                        <NavigationViewItem
+                            x:Name="PowerDisplayNavigationItem"
+                            x:Uid="Shell_PowerDisplay"
+                            helpers:NavHelper.NavigateTo="views:PowerDisplayPage"
+                            AutomationProperties.AutomationId="PowerDisplayNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="QuickAccentNavigationItem"
                             x:Uid="Shell_QuickAccent"

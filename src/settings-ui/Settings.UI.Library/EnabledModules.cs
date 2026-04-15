@@ -563,6 +563,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool grabAndMove;
+
+        [JsonPropertyName("GrabAndMove")]
+        public bool GrabAndMove
+        {
+            get => grabAndMove;
+            set
+            {
+                if (grabAndMove != value)
+                {
+                    LogTelemetryEvent(value);
+                    grabAndMove = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

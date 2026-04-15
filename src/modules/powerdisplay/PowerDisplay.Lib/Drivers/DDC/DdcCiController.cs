@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -556,7 +557,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return true;
             }
 
-            var lastError = GetLastError();
+            var lastError = Marshal.GetLastWin32Error();
             var monitorPrefix = string.IsNullOrEmpty(monitorId) ? string.Empty : $"[{monitorId}] ";
             Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {lastError}");
             return false;
@@ -696,8 +697,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                             return MonitorOperationResult.Success();
                         }
 
-                        var lastError = GetLastError();
-                        return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", (int)lastError);
+                        var lastError = Marshal.GetLastWin32Error();
+                        return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", lastError);
                     }
                     catch (Exception ex)
                     {

@@ -105,7 +105,7 @@
 ^src/common/ManagedCommon/ColorFormatHelper\.cs$
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$
 ^src/common/sysinternals/Eula/
-^src/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002\.pdn$
+^doc/devdocs/modules/cmdpal/initial-sdk-spec/list-elements-mock-002\.pdn$
 ^src/modules/cmdpal/doc/extension-gallery/sample-gallery/
 ^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage\.cs$
 ^src/modules/cmdpal/Microsoft\.CmdPal\.UI/Settings/InternalPage\.SampleData\.cs$
@@ -141,8 +141,6 @@
 ^tools/project_template/ModuleTemplate/resource\.h$
 ^tools/Verification scripts/Check preview handler registration\.ps1$
 ignore$
-^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
-^src/common/CalculatorEngineCommon/exprtk\.hpp$
 src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs
 ^src/modules/powerrename/unittests/testdata/avif_test\.avif$
 ^src/modules/powerrename/unittests/testdata/heif_test\.heic$
