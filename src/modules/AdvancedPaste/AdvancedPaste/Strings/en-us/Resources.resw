@@ -428,4 +428,8 @@ Install them now?</value>
     <value>Failed to install package(s) "{0}": {1}</value>
     <comment>{0} = pip package names, {1} = error detail. Do not translate package names.</comment>
   </data>
+  <data name="PythonPackageInstallTimeout" xml:space="preserve">
+    <value>Package installation for "{0}" timed out ({1} seconds).</value>
+    <comment>{0} = pip package names, {1} = timeout in seconds. Do not translate {0} or {1}.</comment>
+  </data>
 </root>

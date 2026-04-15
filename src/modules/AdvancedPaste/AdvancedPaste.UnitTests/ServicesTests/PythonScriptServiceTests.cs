@@ -171,6 +171,8 @@ public sealed class PythonScriptServiceTests
 
         var (summary, details) = PythonScriptService.ParsePythonError(stderr);
 
+        Assert.IsTrue(summary.Contains("reverse.py"), $"Summary should mention the script: {summary}");
+        Assert.IsTrue(summary.Contains("line 4"), $"Summary should mention the line: {summary}");
         Assert.IsTrue(summary.Contains("win32clipboard"), $"Summary should mention the module: {summary}");
         Assert.IsTrue(summary.Contains("pywin32"), $"Summary should suggest pip package: {summary}");
         Assert.IsTrue(!string.IsNullOrEmpty(details));
@@ -188,7 +190,23 @@ public sealed class PythonScriptServiceTests
 
         var (summary, details) = PythonScriptService.ParsePythonError(stderr);
 
-        Assert.IsTrue(summary.StartsWith("Python syntax error:", StringComparison.Ordinal), $"Summary: {summary}");
+        Assert.IsTrue(summary.Contains("test.py"), $"Summary should mention the script: {summary}");
+        Assert.IsTrue(summary.Contains("line 5"), $"Summary should mention the line: {summary}");
+        Assert.IsTrue(summary.Contains("Python syntax error:"), $"Summary: {summary}");
+        Assert.IsTrue(!string.IsNullOrEmpty(details));
+    }
+
+    [TestMethod]
+    public void ParsePythonError_SyntaxErrorWithColumn()
+    {
+        var stderr = "  File \"script.py\", line 3\n    x = (1 +\n        ^\nSyntaxError: '(' was never closed\n";
+
+        var (summary, details) = PythonScriptService.ParsePythonError(stderr);
+
+        Assert.IsTrue(summary.Contains("script.py"), $"Summary should mention the script: {summary}");
+        Assert.IsTrue(summary.Contains("line 3"), $"Summary should mention the line: {summary}");
+        Assert.IsTrue(summary.Contains("col"), $"Summary should mention the column: {summary}");
+        Assert.IsTrue(summary.Contains("Python syntax error:"), $"Summary: {summary}");
         Assert.IsTrue(!string.IsNullOrEmpty(details));
     }
 
@@ -204,8 +222,31 @@ public sealed class PythonScriptServiceTests
 
         var (summary, details) = PythonScriptService.ParsePythonError(stderr);
 
+        Assert.IsTrue(summary.Contains("test.py"), $"Summary should mention the script: {summary}");
+        Assert.IsTrue(summary.Contains("line 10"), $"Summary should mention the line: {summary}");
         Assert.IsTrue(summary.Contains("ZeroDivisionError"), $"Summary: {summary}");
         Assert.IsTrue(!string.IsNullOrEmpty(details));
+    }
+
+    [TestMethod]
+    public void ParsePythonError_NestedTraceback_ShowsLastFrame()
+    {
+        var stderr = """
+            Traceback (most recent call last):
+              File "main.py", line 5, in <module>
+                helper()
+              File "helper.py", line 12, in helper
+                do_work()
+              File "worker.py", line 8, in do_work
+                raise RuntimeError("bad state")
+            RuntimeError: bad state
+            """;
+
+        var (summary, details) = PythonScriptService.ParsePythonError(stderr);
+
+        Assert.IsTrue(summary.Contains("worker.py"), $"Summary should mention the last script in the chain: {summary}");
+        Assert.IsTrue(summary.Contains("line 8"), $"Summary should mention the line of the last frame: {summary}");
+        Assert.IsTrue(summary.Contains("bad state"), $"Summary should contain the error message: {summary}");
     }
 
     [TestMethod]
@@ -215,5 +256,123 @@ public sealed class PythonScriptServiceTests
 
         Assert.IsTrue(!string.IsNullOrEmpty(summary));
         Assert.AreEqual(string.Empty, details);
+    }
+
+    [TestMethod]
+    public void ParsePythonError_NoTraceback_PlainStderr()
+    {
+        var stderr = "Something went wrong in the script\n";
+
+        var (summary, details) = PythonScriptService.ParsePythonError(stderr);
+
+        // No File "..." reference, so no location — just the message
+        Assert.IsTrue(summary.Contains("Something went wrong"), $"Summary: {summary}");
+        Assert.IsFalse(summary.Contains("line"), $"Summary should not contain 'line' without a traceback: {summary}");
+    }
+
+    [TestMethod]
+    public void ExtractLastTracebackLocation_BasicTraceback()
+    {
+        var lines = new[]
+        {
+            "Traceback (most recent call last):",
+            "  File \"script.py\", line 10, in <module>",
+            "    result = 1 / 0",
+            "ZeroDivisionError: division by zero",
+        };
+
+        var location = PythonScriptService.ExtractLastTracebackLocation(lines);
+
+        Assert.IsNotNull(location);
+        Assert.AreEqual("script.py", location.Value.FileName);
+        Assert.AreEqual(10, location.Value.Line);
+        Assert.IsNull(location.Value.Column);
+    }
+
+    [TestMethod]
+    public void ExtractLastTracebackLocation_WithCaret()
+    {
+        var lines = new[]
+        {
+            "  File \"test.py\", line 5",
+            "    def foo(",
+            "           ^",
+            "SyntaxError: unexpected EOF while parsing",
+        };
+
+        var location = PythonScriptService.ExtractLastTracebackLocation(lines);
+
+        Assert.IsNotNull(location);
+        Assert.AreEqual("test.py", location.Value.FileName);
+        Assert.AreEqual(5, location.Value.Line);
+        Assert.IsNotNull(location.Value.Column);
+    }
+
+    [TestMethod]
+    public void ExtractLastTracebackLocation_FullPath_ReturnsBasename()
+    {
+        var lines = new[]
+        {
+            "Traceback (most recent call last):",
+            "  File \"C:\\Users\\user\\scripts\\my_script.py\", line 42, in <module>",
+            "    some_call()",
+            "ValueError: invalid value",
+        };
+
+        var location = PythonScriptService.ExtractLastTracebackLocation(lines);
+
+        Assert.IsNotNull(location);
+        Assert.AreEqual("my_script.py", location.Value.FileName);
+        Assert.AreEqual(42, location.Value.Line);
+    }
+
+    [TestMethod]
+    public void ExtractLastTracebackLocation_NoFileLine_ReturnsNull()
+    {
+        var lines = new[]
+        {
+            "Some random error output",
+            "No traceback here",
+        };
+
+        var location = PythonScriptService.ExtractLastTracebackLocation(lines);
+
+        Assert.IsNull(location);
+    }
+
+    [TestMethod]
+    public void ParsePipInstallError_ExtractsErrorLine()
+    {
+        var stderr = """
+            Collecting some-package
+              Downloading some-package-1.0.tar.gz (15 kB)
+            ERROR: Could not find a version that satisfies the requirement some-package (from versions: none)
+            ERROR: No matching distribution found for some-package
+            """;
+
+        var (summary, fullStderr) = PythonScriptService.ParsePipInstallError(stderr);
+
+        Assert.IsTrue(summary.Contains("No matching distribution"), $"Summary should contain the last ERROR line: {summary}");
+        Assert.IsTrue(!string.IsNullOrEmpty(fullStderr));
+    }
+
+    [TestMethod]
+    public void ParsePipInstallError_NoErrorPrefix_UsesLastLine()
+    {
+        var stderr = "permission denied: /usr/lib/python3/dist-packages\n";
+
+        var (summary, fullStderr) = PythonScriptService.ParsePipInstallError(stderr);
+
+        Assert.IsTrue(summary.Contains("permission denied"), $"Summary: {summary}");
+        Assert.IsTrue(!string.IsNullOrEmpty(fullStderr));
+    }
+
+    [TestMethod]
+    public void ParsePipInstallError_EmptyStderr()
+    {
+        var (summary, fullStderr) = PythonScriptService.ParsePipInstallError(string.Empty);
+
+        Assert.AreEqual("unknown error", summary);
+        Assert.AreEqual(string.Empty, fullStderr);
     }
 }

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -637,7 +638,19 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             return false;
         }
 
-        await process.WaitForExitAsync(cancellationToken);
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(15));
+
+        try
+        {
+            await process.WaitForExitAsync(timeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            process.Kill(entireProcessTree: true);
+            return false;
+        }
+
         return process.ExitCode == 0;
     }
 
@@ -655,7 +668,19 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             return false;
         }
 
-        await process.WaitForExitAsync(cancellationToken);
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(TimeSpan.FromSeconds(15));
+
+        try
+        {
+            await process.WaitForExitAsync(timeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            process.Kill(entireProcessTree: true);
+            return false;
+        }
+
         return process.ExitCode == 0;
     }
 
@@ -682,23 +707,45 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"),
                 new InvalidOperationException("Failed to start pip."));
 
-        await process.WaitForExitAsync(cancellationToken);
+        int timeoutMs = _userSettings.PythonScriptTimeoutSeconds * 1000;
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCts.CancelAfter(timeoutMs);
+
+        try
+        {
+            await process.WaitForExitAsync(timeoutCts.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            process.Kill(entireProcessTree: true);
+            throw new PasteActionException(
+                string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallTimeout"),
+                    packages,
+                    _userSettings.PythonScriptTimeoutSeconds),
+                new TimeoutException());
+        }
 
         if (process.ExitCode != 0)
         {
             var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
+            var (summary, _) = ParsePipInstallError(stderr);
             throw new PasteActionException(
                 string.Format(
                     System.Globalization.CultureInfo.CurrentCulture,
                     ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallFailed"),
                     packages,
-                    stderr.Length > 300 ? stderr[..300] : stderr),
-                new InvalidOperationException($"pip exited with code {process.ExitCode}."));
+                    summary),
+                new InvalidOperationException($"pip exited with code {process.ExitCode}."),
+                aiServiceMessage: stderr.Length > 3000 ? stderr[^3000..] : stderr);
         }
     }
 
-    private static async Task InstallInWslAsync(string packages, CancellationToken cancellationToken)
+    private async Task InstallInWslAsync(string packages, CancellationToken cancellationToken)
     {
+        int timeoutMs = _userSettings.PythonScriptTimeoutSeconds * 1000;
+
         // Try plain pip3 first; if the environment is managed (PEP 668), retry with --break-system-packages.
         foreach (var extraArgs in (string[])[string.Empty, "--break-system-packages"])
         {
@@ -719,7 +766,24 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 continue;
             }
 
-            await process.WaitForExitAsync(cancellationToken);
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(timeoutMs);
+
+            try
+            {
+                await process.WaitForExitAsync(timeoutCts.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                process.Kill(entireProcessTree: true);
+                throw new PasteActionException(
+                    string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallTimeout"),
+                        packages,
+                        _userSettings.PythonScriptTimeoutSeconds),
+                    new TimeoutException());
+            }
 
             if (process.ExitCode == 0)
             {
@@ -731,13 +795,15 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             // If it failed for a reason OTHER than externally-managed-environment, throw immediately.
             if (!stderr.Contains("externally-managed-environment", StringComparison.OrdinalIgnoreCase))
             {
+                var (summary, _) = ParsePipInstallError(stderr);
                 throw new PasteActionException(
                     string.Format(
                         System.Globalization.CultureInfo.CurrentCulture,
                         ResourceLoaderInstance.ResourceLoader.GetString("PythonPackageInstallFailed"),
                         packages,
-                        stderr.Length > 300 ? stderr[..300] : stderr),
-                    new InvalidOperationException($"pip3 exited with code {process.ExitCode}."));
+                        summary),
+                    new InvalidOperationException($"pip3 exited with code {process.ExitCode}."),
+                    aiServiceMessage: stderr.Length > 3000 ? stderr[^3000..] : stderr);
             }
         }
 
@@ -1269,10 +1335,16 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
     }
 
+    // Matches Python traceback lines: File "path/to/file.py", line 10
+    private static readonly Regex TracebackFileLineRegex = new(
+        @"^\s*File\s+""(.+?)"",\s*line\s+(\d+)",
+        RegexOptions.Compiled);
+
     /// <summary>
     /// Parses Python stderr output and returns a user-friendly summary plus the full traceback
     /// as details. Identifies common error types (ModuleNotFoundError, SyntaxError, etc.)
-    /// for clearer messaging.
+    /// for clearer messaging. Extracts script name, line, and column from the traceback
+    /// so the user can quickly locate the failure.
     /// </summary>
     internal static (string Summary, string Details) ParsePythonError(string stderr)
     {
@@ -1313,8 +1385,11 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             return (ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"), fullDetails);
         }
 
+        // Extract location (script, line, column) from the traceback
+        var location = ExtractLastTracebackLocation(lines);
+
         // Build a user-friendly summary for well-known error types
-        var summary = lastExceptionLine switch
+        var errorMessage = lastExceptionLine switch
         {
             string s when s.StartsWith("ModuleNotFoundError:", StringComparison.Ordinal) =>
                 FormatModuleNotFoundSummary(s),
@@ -1333,7 +1408,77 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             _ => lastExceptionLine.Length > 200 ? lastExceptionLine[..200] + "…" : lastExceptionLine,
         };
 
+        // Prepend location info so the user can quickly find the failure
+        var summary = FormatErrorWithLocation(location, errorMessage);
+
         return (summary, fullDetails);
+    }
+
+    /// <summary>
+    /// Scans the traceback lines for the last <c>File "...", line N</c> reference and
+    /// optionally extracts the column from a caret (<c>^</c>) indicator line.
+    /// </summary>
+    internal static (string FileName, int Line, int? Column)? ExtractLastTracebackLocation(string[] lines)
+    {
+        string lastFile = null;
+        int lastLine = 0;
+        int lastFileLineIndex = -1;
+
+        for (int i = 0; i < lines.Length; i++)
+        {
+            var match = TracebackFileLineRegex.Match(lines[i]);
+            if (match.Success)
+            {
+                lastFile = match.Groups[1].Value;
+                lastLine = int.Parse(match.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture);
+                lastFileLineIndex = i;
+            }
+        }
+
+        if (lastFile is null)
+        {
+            return null;
+        }
+
+        // Try to extract column from a caret line. Python tracebacks show:
+        //   File "test.py", line 5
+        //       def foo(
+        //              ^
+        // The caret line (index lastFileLineIndex+2) marks the error column.
+        int? column = null;
+        int caretIdx = lastFileLineIndex + 2;
+        if (caretIdx < lines.Length)
+        {
+            var caretLine = lines[caretIdx];
+            var caretPos = caretLine.IndexOf('^');
+            if (caretPos >= 0 && caretLine.Trim().Replace("^", string.Empty, StringComparison.Ordinal).Trim().Length == 0)
+            {
+                // The code line sits at lastFileLineIndex+1; compute column relative to code indent
+                var codeLine = lines[lastFileLineIndex + 1];
+                var codeIndent = codeLine.Length - codeLine.TrimStart().Length;
+                var col = caretPos - codeIndent + 1; // 1-based
+                if (col >= 1)
+                {
+                    column = col;
+                }
+            }
+        }
+
+        return (Path.GetFileName(lastFile), lastLine, column);
+    }
+
+    private static string FormatErrorWithLocation((string FileName, int Line, int? Column)? location, string errorMessage)
+    {
+        if (location is not { } loc)
+        {
+            return errorMessage;
+        }
+
+        var locationText = loc.Column is { } col
+            ? $"{loc.FileName}, line {loc.Line}, col {col}"
+            : $"{loc.FileName}, line {loc.Line}";
+
+        return $"{locationText}: {errorMessage}";
     }
 
     private static string FormatModuleNotFoundSummary(string errorLine)
@@ -1350,5 +1495,42 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
 
         return errorLine;
+    }
+
+    /// <summary>
+    /// Extracts a concise summary from pip install stderr output.
+    /// pip typically ends with "ERROR: ..." lines; we grab the last one.
+    /// </summary>
+    internal static (string Summary, string FullStderr) ParsePipInstallError(string stderr)
+    {
+        if (string.IsNullOrWhiteSpace(stderr))
+        {
+            return ("unknown error", string.Empty);
+        }
+
+        var lines = stderr.Split('\n');
+
+        // Find the last line starting with "ERROR:" — pip's standard error prefix.
+        for (int i = lines.Length - 1; i >= 0; i--)
+        {
+            var trimmed = lines[i].Trim();
+            if (trimmed.StartsWith("ERROR:", StringComparison.OrdinalIgnoreCase))
+            {
+                var msg = trimmed["ERROR:".Length..].Trim();
+                return (msg.Length > 300 ? msg[..300] + "…" : msg, stderr);
+            }
+        }
+
+        // Fallback: use the last non-empty line.
+        for (int i = lines.Length - 1; i >= 0; i--)
+        {
+            var trimmed = lines[i].Trim();
+            if (trimmed.Length > 0)
+            {
+                return (trimmed.Length > 300 ? trimmed[..300] + "…" : trimmed, stderr);
+            }
+        }
+
+        return ("unknown error", stderr);
     }
 }
