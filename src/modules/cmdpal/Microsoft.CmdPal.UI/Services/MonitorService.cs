@@ -19,6 +19,7 @@ public sealed class MonitorService : IMonitorService
 
     private readonly object _lock = new();
     private List<MonitorInfo>? _cachedMonitors;
+    private IReadOnlyList<MonitorInfo>? _cachedSnapshot;
 
     private delegate bool MonitorEnumProc(
         IntPtr hMonitor,
@@ -34,13 +35,14 @@ public sealed class MonitorService : IMonitorService
     {
         lock (_lock)
         {
-            if (_cachedMonitors is not null)
+            if (_cachedSnapshot is not null)
             {
-                return _cachedMonitors;
+                return _cachedSnapshot;
             }
 
             _cachedMonitors = EnumerateMonitors();
-            return _cachedMonitors;
+            _cachedSnapshot = _cachedMonitors.AsReadOnly();
+            return _cachedSnapshot;
         }
     }
 
@@ -83,6 +85,7 @@ public sealed class MonitorService : IMonitorService
         lock (_lock)
         {
             _cachedMonitors = null;
+            _cachedSnapshot = null;
         }
 
         MonitorsChanged?.Invoke(this, EventArgs.Empty);

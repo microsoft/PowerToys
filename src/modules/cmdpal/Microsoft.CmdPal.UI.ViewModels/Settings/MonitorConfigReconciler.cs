@@ -36,7 +36,7 @@ public static class MonitorConfigReconciler
     {
         if (currentMonitors.Count == 0)
         {
-            return ImmutableList<DockMonitorConfig>.Empty;
+            return existingConfigs;
         }
 
         // Build sets for tracking
