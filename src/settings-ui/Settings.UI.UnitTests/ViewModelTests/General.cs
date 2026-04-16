@@ -351,7 +351,7 @@ namespace ViewModelTests
             Assert.IsTrue(modules.PowerPreview);
             Assert.IsTrue(modules.ShortcutGuide);
             Assert.IsTrue(modules.PowerRename);
-            Assert.IsTrue(modules.PowerLauncher);
+            Assert.IsFalse(modules.PowerLauncher);
             Assert.IsTrue(modules.ColorPicker);
         }
     }
