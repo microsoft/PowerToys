@@ -412,7 +412,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Open Command Palette extension gallery.
+        ///   Looks up a localized string similar to Find and install Command Palette extensions.
         /// </summary>
         public static string builtin_open_gallery_name {
             get {

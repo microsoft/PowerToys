@@ -25,19 +25,6 @@ public partial class WinGetExtensionCommandsProvider : CommandProvider
 
         _commands = [
             new ListItem(new WinGetExtensionPage(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler)),
-
-             new ListItem(
-                new WinGetExtensionPage(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler, WinGetExtensionPage.ExtensionsTag) { Title = Properties.Resources.winget_install_extensions_title })
-             {
-                Title = Properties.Resources.winget_install_extensions_title,
-             },
-
-            new ListItem(
-                new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette"))
-             {
-                Title = Properties.Resources.winget_search_store_title,
-                Icon = Icons.StoreIcon,
-             },
         ];
     }
 

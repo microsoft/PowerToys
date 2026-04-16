@@ -54,7 +54,31 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <ScrollViewer x:Name="RootScrollViewer" Grid.Row="1">
+        <!--  Loading state (shown full-page while fetching)  -->
+        <Grid
+            x:Name="LoadingPanel"
+            Grid.Row="1"
+            Padding="48"
+            x:Load="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
+            <StackPanel
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="12">
+                <ProgressRing
+                    Width="32"
+                    Height="32"
+                    IsActive="True" />
+                <TextBlock
+                    x:Uid="Settings_GalleryPage_Loading_Text"
+                    HorizontalAlignment="Center"
+                    Style="{StaticResource BodyTextBlockStyle}" />
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer
+            x:Name="RootScrollViewer"
+            Grid.Row="1"
+            Visibility="{x:Bind help:BindTransformers.BoolToInvertedVisibility(ViewModel.IsLoading), Mode=OneWay}">
             <StackPanel>
 
                 <!--  Custom feed InfoBar  -->
@@ -192,26 +216,6 @@
                                     FontSize="16"
                                     Glyph="&#xE8CB;" />
                             </Button>
-                        </StackPanel>
-                    </Grid>
-
-                    <!--  Loading state  -->
-                    <Grid
-                        x:Name="LoadingPanel"
-                        Padding="48"
-                        x:Load="{x:Bind ViewModel.IsLoading, Mode=OneWay}">
-                        <StackPanel
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Spacing="12">
-                            <ProgressRing
-                                Width="32"
-                                Height="32"
-                                IsActive="True" />
-                            <TextBlock
-                                x:Uid="Settings_GalleryPage_Loading_Text"
-                                HorizontalAlignment="Center"
-                                Style="{StaticResource BodyTextBlockStyle}" />
                         </StackPanel>
                     </Grid>
 
@@ -365,7 +369,7 @@
                                             Style="{StaticResource BodyStrongTextBlockStyle}"
                                             Text="{x:Bind DisplayTitle}"
                                             TextTrimming="CharacterEllipsis"
-                                            TextWrapping="WrapWholeWords" />
+                                            TextWrapping="NoWrap" />
 
                                         <Grid Grid.Row="2" Grid.Column="0">
                                             <Grid.RowDefinitions>
@@ -379,7 +383,7 @@
                                                 Style="{StaticResource CaptionTextBlockStyle}"
                                                 Text="{x:Bind DisplayShortDescription, Mode=OneWay}"
                                                 TextTrimming="CharacterEllipsis"
-                                                TextWrapping="WrapWholeWords" />
+                                                TextWrapping="NoWrap" />
                                             <StackPanel
                                                 Grid.Row="1"
                                                 Margin="0,8,0,0"

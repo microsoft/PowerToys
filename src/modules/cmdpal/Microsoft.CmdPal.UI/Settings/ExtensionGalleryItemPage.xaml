@@ -39,14 +39,14 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Button Margin="0,12,0,0"
+                    <Button
+                        Margin="0,12,0,0"
                         HorizontalAlignment="Stretch"
                         Command="{x:Bind ViewModel.InstallViaWinGetCommand, Mode=OneWay}"
                         Content="{x:Bind ViewModel.InstallViaWinGetText, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.CanInstallViaWinGet, Mode=OneWay}"
-                        Style="{StaticResource AccentButtonStyle}"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstallViaWinGetButton), Mode=OneWay, FallbackValue=Collapsed}" />
-                  <Button
+                    <Button
                         Grid.Column="2"
                         Width="32"
                         Height="32"
@@ -62,7 +62,7 @@
                 <TextBlock
                     Margin="0,8,0,8"
                     HorizontalAlignment="Center"
-                    Text="or"
+                    Text="or run this command in the Terminal:"
                     TextAlignment="Center" />
                 <Grid
                     Padding="8,4,0,4"
@@ -93,7 +93,7 @@
                         <FontIcon FontSize="12" Glyph="&#xE8C8;" />
                     </Button>
                 </Grid>
-                
+
                 <TextBlock
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Style="{StaticResource CaptionTextBlockStyle}"

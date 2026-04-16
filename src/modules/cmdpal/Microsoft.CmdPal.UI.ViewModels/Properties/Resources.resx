@@ -175,7 +175,7 @@
     <value>Open Command Palette settings</value>
   </data>
   <data name="builtin_open_gallery_name" xml:space="preserve">
-    <value>Open Command Palette extension gallery</value>
+    <value>Find and install Command Palette extensions</value>
   </data>
   <data name="builtin_create_extension_success" xml:space="preserve">
     <value>Successfully created your new extension!</value>
