@@ -5058,9 +5058,12 @@ The break timer font matches the text font.</value>
     <value>You're up to date</value>
   </data>
   <data name="UpdateAvailableTextBlock.Text" xml:space="preserve">
-    <value>Update Available</value>
+    <value>Update available</value>
   </data>
-  <data name="GeneralVersion.Text" xml:space="preserve">
+  <data name="UpdateAvailableInfoBar.Title" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+	<data name="GeneralVersion.Text" xml:space="preserve">
     <value>Version</value>
   </data>
   <data name="LearnWhatsNew.Text" xml:space="preserve">
