@@ -15,4 +15,5 @@ public sealed record PythonScriptMetadata(
     ClipboardFormat SupportedFormats,
     string Platform,
     string Version,
+    bool IsEnabled,
     IReadOnlyList<PythonRequirement> Requirements);

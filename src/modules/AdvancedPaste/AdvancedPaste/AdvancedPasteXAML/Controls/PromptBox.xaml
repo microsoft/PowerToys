@@ -755,63 +755,7 @@
                 <animations:OpacityAnimation To="0.0" Duration="0:0:0.167" />
             </animations:Implicit.HideAnimations>
         </TextBlock>
-        <Grid
-            x:Name="ErrorMessageGrid"
-            x:Uid="ErrorMessageGrid"
-            Grid.Row="1"
-            Margin="8,8,0,0"
-            ColumnSpacing="8"
-            Visibility="Collapsed">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <ToolTipService.ToolTip>
-                    <ToolTip VerticalOffset="-105" Visibility="{x:Bind ViewModel.PasteActionError.HasDetails, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <StackPanel
-                            MinWidth="300"
-                            HorizontalAlignment="Stretch"
-                            Orientation="Vertical">
-                            <TextBox
-                                x:Name="AIErrorMessage"
-                                x:Uid="AIErrorMessage"
-                                FontSize="12"
-                                IsReadOnly="True"
-                                Text="{x:Bind ViewModel.PasteActionError.Details, Mode=OneWay}"
-                                TextWrapping="Wrap" />
-                        </StackPanel>
-                    </ToolTip>
-                </ToolTipService.ToolTip>
-                <FontIcon
-                    Margin="0,3,3,0"
-                    VerticalAlignment="Top"
-                    FontSize="12"
-                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                    Glyph="&#xE946;"
-                    Visibility="{x:Bind ViewModel.PasteActionError.HasDetails, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                <TextBlock
-                    FontWeight="SemiBold"
-                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="{x:Bind ViewModel.PasteActionError.Text, Mode=OneWay}" />
-            </StackPanel>
-            <HyperlinkButton
-                x:Uid="SettingsBtn"
-                Grid.Column="1"
-                Margin="0,-1,0,0"
-                Padding="0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Top"
-                Command="{x:Bind ViewModel.OpenSettingsCommand}"
-                FontSize="12" />
-            <animations:Implicit.ShowAnimations>
-                <animations:OpacityAnimation To="1.0" Duration="0:0:0.6" />
-            </animations:Implicit.ShowAnimations>
-            <animations:Implicit.HideAnimations>
-                <animations:OpacityAnimation To="0.0" Duration="0:0:0.167" />
-            </animations:Implicit.HideAnimations>
-        </Grid>
+        <!--  Error message grid moved to MainPage.xaml so it remains enabled when PromptBox is disabled  -->
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="CommonStates">
                 <VisualState x:Name="DefaultState" />
@@ -832,7 +776,6 @@
                     <VisualState.Setters>
                         <Setter Target="InputTxtBox.BorderBrush" Value="{ThemeResource SystemFillColorCriticalBrush}" />
                         <Setter Target="DisclaimerPresenter.Visibility" Value="Collapsed" />
-                        <Setter Target="ErrorMessageGrid.Visibility" Value="Visible" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

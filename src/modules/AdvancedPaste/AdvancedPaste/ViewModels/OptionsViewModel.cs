@@ -449,7 +449,7 @@ namespace AdvancedPaste.ViewModels
 
             foreach (var meta in discoveredScripts)
             {
-                if (hiddenPaths.Contains(meta.ScriptPath))
+                if (hiddenPaths.Contains(meta.ScriptPath) || !meta.IsEnabled)
                 {
                     continue;
                 }

@@ -297,6 +297,61 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void RefreshPythonScripts_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.RefreshPythonScripts();
+        }
+
+        private void ApplyPythonScriptChanges_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel?.ApplyPythonScriptChanges();
+        }
+
+        private async void EditPythonScript_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { Tag: AdvancedPastePythonScriptAction action })
+            {
+                return;
+            }
+
+            // Populate dialog fields from the action
+            ScriptEditFilePath.Text = action.ScriptPath;
+            ScriptEditName.Text = action.Name;
+            ScriptEditDescription.Text = action.Description;
+            ScriptEditPlatform.SelectedItem = action.Platform;
+            ScriptEditText.IsChecked = action.SupportsText;
+            ScriptEditHtml.IsChecked = action.SupportsHtml;
+            ScriptEditImage.IsChecked = action.SupportsImage;
+            ScriptEditAudio.IsChecked = action.SupportsAudio;
+            ScriptEditVideo.IsChecked = action.SupportsVideo;
+            ScriptEditFiles.IsChecked = action.SupportsFiles;
+            ScriptEditAutoDetectDeps.IsOn = action.RequiresAutoDetect;
+            ScriptEditRequires.Text = action.Requires;
+            ScriptEditRequires.IsEnabled = !action.RequiresAutoDetect;
+
+            ScriptEditAutoDetectDeps.Toggled += (_, _) =>
+                ScriptEditRequires.IsEnabled = !ScriptEditAutoDetectDeps.IsOn;
+
+            PythonScriptEditDialog.XamlRoot = Content.XamlRoot;
+            var result = await PythonScriptEditDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                // Write dialog values back to the action
+                action.Name = ScriptEditName.Text;
+                action.Description = ScriptEditDescription.Text;
+                action.Platform = ScriptEditPlatform.SelectedItem as string ?? "windows";
+                action.SupportsText = ScriptEditText.IsChecked == true;
+                action.SupportsHtml = ScriptEditHtml.IsChecked == true;
+                action.SupportsImage = ScriptEditImage.IsChecked == true;
+                action.SupportsAudio = ScriptEditAudio.IsChecked == true;
+                action.SupportsVideo = ScriptEditVideo.IsChecked == true;
+                action.SupportsFiles = ScriptEditFiles.IsChecked == true;
+                action.RequiresAutoDetect = ScriptEditAutoDetectDeps.IsOn;
+                action.Requires = ScriptEditRequires.Text;
+            }
+        }
+
         private static string PickFileDialog(string filter, string title, string initialDir = null, int initialFilter = 0)
         {
             // Use Win32 OpenFileName dialog as FileOpenPicker doesn't work with elevated permissions

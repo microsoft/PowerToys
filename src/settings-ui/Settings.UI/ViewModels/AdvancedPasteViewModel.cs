@@ -323,6 +323,285 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private ObservableCollection<AdvancedPastePythonScriptAction> _pythonScriptActions = [];
+
+        public ObservableCollection<AdvancedPastePythonScriptAction> PythonScriptActions
+        {
+            get => _pythonScriptActions;
+            set
+            {
+                _pythonScriptActions = value;
+                OnPropertyChanged(nameof(PythonScriptActions));
+            }
+        }
+
+        /// <summary>
+        /// Scans the scripts folder for .py files and populates PythonScriptActions
+        /// with metadata from their headers. Existing settings (hotkeys) are preserved.
+        /// </summary>
+        public void RefreshPythonScripts()
+        {
+            var folder = ScriptsFolder;
+            if (string.IsNullOrWhiteSpace(folder) || !System.IO.Directory.Exists(folder))
+            {
+                PythonScriptActions = [];
+                return;
+            }
+
+            var scripts = new ObservableCollection<AdvancedPastePythonScriptAction>();
+            var savedActions = _advancedPasteSettings.Properties.PythonScripts?.Value ?? [];
+
+            foreach (var file in System.IO.Directory.EnumerateFiles(folder, "*.py", System.IO.SearchOption.TopDirectoryOnly))
+            {
+                try
+                {
+                    var action = CreateActionFromScript(file, savedActions);
+                    scripts.Add(action);
+                }
+                catch
+                {
+                    // Skip scripts that can't be read
+                }
+            }
+
+            PythonScriptActions = scripts;
+        }
+
+        private static AdvancedPastePythonScriptAction CreateActionFromScript(
+            string filePath,
+            List<AdvancedPastePythonScriptAction> savedActions)
+        {
+            // Read header metadata from the .py file
+            var name = System.IO.Path.GetFileNameWithoutExtension(filePath);
+            var description = string.Empty;
+            var platform = "windows";
+            var formats = "any";
+            var enabled = true;
+            var requires = string.Empty;
+            var hasExplicitRequires = false;
+
+            using var reader = new System.IO.StreamReader(filePath, System.Text.Encoding.UTF8);
+            int lineCount = 0;
+            while (lineCount < 50)
+            {
+                var line = reader.ReadLine();
+                if (line is null)
+                {
+                    break;
+                }
+
+                lineCount++;
+                var trimmed = line.Trim();
+                if (!trimmed.StartsWith('#'))
+                {
+                    continue;
+                }
+
+                if (TryParseTag(trimmed, "@advancedpaste:name", out var val))
+                {
+                    name = val;
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:desc", out val))
+                {
+                    description = val;
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:platform", out val))
+                {
+                    platform = val.ToLowerInvariant();
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:formats", out val))
+                {
+                    formats = val;
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:enabled", out val))
+                {
+                    enabled = !string.Equals(val, "false", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(val, "0", StringComparison.OrdinalIgnoreCase)
+                           && !string.Equals(val, "no", StringComparison.OrdinalIgnoreCase);
+                }
+                else if (TryParseTag(trimmed, "@advancedpaste:requires", out val))
+                {
+                    // Accumulate multiple requires tags
+                    requires = string.IsNullOrEmpty(requires) ? val : $"{requires} {val}";
+                    hasExplicitRequires = true;
+                }
+            }
+
+            // Preserve existing saved settings (hotkeys, IsShown)
+            var saved = savedActions?.FirstOrDefault(a =>
+                string.Equals(a.ScriptPath, filePath, StringComparison.OrdinalIgnoreCase));
+
+            return new AdvancedPastePythonScriptAction
+            {
+                ScriptPath = filePath,
+                Name = name,
+                Description = description,
+                Platform = platform,
+                Formats = formats,
+                IsEnabled = enabled,
+                Requires = requires,
+                RequiresAutoDetect = !hasExplicitRequires,
+                IsShown = saved?.IsShown ?? true,
+                Shortcut = saved?.Shortcut ?? new HotkeySettings(),
+            };
+        }
+
+        private static bool TryParseTag(string line, string tag, out string value)
+        {
+            var idx = line.IndexOf(tag, StringComparison.OrdinalIgnoreCase);
+            if (idx < 0)
+            {
+                value = null;
+                return false;
+            }
+
+            value = line[(idx + tag.Length)..].Trim();
+            return value.Length > 0;
+        }
+
+        /// <summary>
+        /// Writes changed metadata back to each script's header and saves settings.
+        /// </summary>
+        public void ApplyPythonScriptChanges()
+        {
+            foreach (var action in PythonScriptActions)
+            {
+                try
+                {
+                    WriteScriptHeader(action);
+                }
+                catch
+                {
+                    // Skip files that can't be written
+                }
+            }
+
+            // Save the actions to settings
+            var pythonSettings = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+            pythonSettings.Value = [.. PythonScriptActions.Select(a => (AdvancedPastePythonScriptAction)a.Clone())];
+            SaveAndNotifySettings();
+        }
+
+        private static void WriteScriptHeader(AdvancedPastePythonScriptAction action)
+        {
+            if (!System.IO.File.Exists(action.ScriptPath))
+            {
+                return;
+            }
+
+            var lines = System.IO.File.ReadAllLines(action.ScriptPath, System.Text.Encoding.UTF8).ToList();
+
+            var tagUpdates = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["@advancedpaste:name"] = action.Name,
+                ["@advancedpaste:desc"] = action.Description,
+                ["@advancedpaste:platform"] = action.Platform,
+                ["@advancedpaste:formats"] = action.Formats,
+                ["@advancedpaste:enabled"] = action.IsEnabled ? "true" : "false",
+            };
+
+            // Only write requires tag in manual mode
+            if (!action.RequiresAutoDetect && !string.IsNullOrWhiteSpace(action.Requires))
+            {
+                tagUpdates["@advancedpaste:requires"] = action.Requires;
+            }
+
+            var updatedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            int lastTagLine = -1;
+
+            // Track requires lines separately — we may need to remove them in auto mode
+            var requiresLineIndices = new List<int>();
+
+            for (int i = 0; i < Math.Min(lines.Count, 50); i++)
+            {
+                var trimmed = lines[i].Trim();
+                if (!trimmed.StartsWith('#'))
+                {
+                    continue;
+                }
+
+                // Track requires lines for potential removal
+                if (TryParseTag(trimmed, "@advancedpaste:requires", out _))
+                {
+                    requiresLineIndices.Add(i);
+                    lastTagLine = i;
+
+                    if (tagUpdates.ContainsKey("@advancedpaste:requires") && !updatedTags.Contains("@advancedpaste:requires"))
+                    {
+                        // Update first requires line, mark subsequent for removal
+                        lines[i] = $"# @advancedpaste:requires   {action.Requires}";
+                        updatedTags.Add("@advancedpaste:requires");
+                    }
+
+                    continue;
+                }
+
+                foreach (var (tag, newValue) in tagUpdates)
+                {
+                    if (TryParseTag(trimmed, tag, out _))
+                    {
+                        lines[i] = $"# {tag}   {newValue}";
+                        updatedTags.Add(tag);
+                        lastTagLine = i;
+                        break;
+                    }
+                }
+
+                if (trimmed.Contains("@advancedpaste:"))
+                {
+                    lastTagLine = i;
+                }
+            }
+
+            // In auto-detect mode, remove all existing requires lines
+            if (action.RequiresAutoDetect && requiresLineIndices.Count > 0)
+            {
+                for (int i = requiresLineIndices.Count - 1; i >= 0; i--)
+                {
+                    lines.RemoveAt(requiresLineIndices[i]);
+                }
+            }
+            else if (!action.RequiresAutoDetect && updatedTags.Contains("@advancedpaste:requires") && requiresLineIndices.Count > 1)
+            {
+                // Remove duplicate requires lines (keep only the first which was updated)
+                for (int i = requiresLineIndices.Count - 1; i >= 1; i--)
+                {
+                    lines.RemoveAt(requiresLineIndices[i]);
+                }
+            }
+
+            var insertionPoint = lastTagLine >= 0 ? lastTagLine + 1 : 0;
+
+            // Adjust insertion point for removed lines
+            if (action.RequiresAutoDetect)
+            {
+                var removedBefore = requiresLineIndices.Count(idx => idx < insertionPoint);
+                insertionPoint -= removedBefore;
+            }
+            else if (requiresLineIndices.Count > 1)
+            {
+                var removedBefore = requiresLineIndices.Skip(1).Count(idx => idx < insertionPoint);
+                insertionPoint -= removedBefore;
+            }
+
+            var newLines = new List<string>();
+            foreach (var (tag, newValue) in tagUpdates)
+            {
+                if (!updatedTags.Contains(tag))
+                {
+                    newLines.Add($"# {tag}   {newValue}");
+                }
+            }
+
+            if (newLines.Count > 0)
+            {
+                insertionPoint = Math.Min(insertionPoint, lines.Count);
+                lines.InsertRange(insertionPoint, newLines);
+            }
+
+            System.IO.File.WriteAllLines(action.ScriptPath, lines, new System.Text.UTF8Encoding(false));
+        }
+
         public static IEnumerable<AIServiceTypeMetadata> AvailableProviders => AIServiceTypeRegistry.GetAvailableServiceTypes();
 
         /// <summary>

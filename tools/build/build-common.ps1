@@ -201,6 +201,10 @@ function Ensure-VsDevEnvironment {
         if (-not $instPaths) {
             try { $p2 = & $vswhere -latest -products * -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
         }
+        # Fallback: include incomplete installations (e.g. pending reboot after component install)
+        if (-not $instPaths) {
+            try { $p3 = & $vswhere -latest -products * -all -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p3) { $instPaths += $p3 } } catch {}
+        }
     }
 
     # Add explicit common year-based candidates as a last resort

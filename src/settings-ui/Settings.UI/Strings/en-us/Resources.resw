@@ -619,6 +619,18 @@ opera.exe</value>
   <data name="AdvancedPaste_PythonExecutablePath_TextBox.PlaceholderText" xml:space="preserve">
     <value>Auto-detect (e.g. C:\Users\&lt;user&gt;\anaconda3\python.exe)</value>
   </data>
+  <data name="AdvancedPaste_PythonScriptList.Header" xml:space="preserve">
+    <value>Discovered scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonScriptList.Description" xml:space="preserve">
+    <value>Python scripts found in the scripts folder. Changes to settings are written back to the script file headers.</value>
+  </data>
+  <data name="AdvancedPaste_PythonScript_RefreshScripts.Content" xml:space="preserve">
+    <value>Refresh scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonScript_ApplyChanges.Content" xml:space="preserve">
+    <value>Apply changes</value>
+  </data>
   <data name="AdvancedPaste_FoundryLocal_LegalDescription" xml:space="preserve">
     <value>You're running local models directly on your device. Their behavior may vary or be unpredictable.</value>
   </data>

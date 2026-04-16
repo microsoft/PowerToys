@@ -430,6 +430,50 @@
                                     Style="{StaticResource SubtleButtonStyle}" />
                             </StackPanel>
                         </tkcontrols:SettingsCard>
+
+                        <!-- Discovered Python Scripts -->
+                        <tkcontrols:SettingsExpander
+                            x:Name="PythonScriptListExpander"
+                            x:Uid="AdvancedPaste_PythonScriptList"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE756;}"
+                            IsExpanded="True"
+                            ItemsSource="{x:Bind ViewModel.PythonScriptActions, Mode=OneWay}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button
+                                    x:Uid="AdvancedPaste_PythonScript_RefreshScripts"
+                                    Click="RefreshPythonScripts_Click"
+                                    Style="{ThemeResource AccentButtonStyle}" />
+                                <Button
+                                    x:Uid="AdvancedPaste_PythonScript_ApplyChanges"
+                                    Click="ApplyPythonScriptChanges_Click" />
+                            </StackPanel>
+                            <tkcontrols:SettingsExpander.ItemTemplate>
+                                <DataTemplate x:DataType="models:AdvancedPastePythonScriptAction">
+                                    <tkcontrols:SettingsCard
+                                        Margin="0,0,0,2"
+                                        Header="{x:Bind Name, Mode=OneWay}"
+                                        Description="{x:Bind ScriptPath, Mode=OneWay}"
+                                        IsActionIconVisible="False">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <ToggleSwitch
+                                                IsOn="{x:Bind IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                OffContent=""
+                                                OnContent="" />
+                                            <Button
+                                                Content="&#xE70F;"
+                                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                Click="EditPythonScript_Click"
+                                                Style="{StaticResource SubtleButtonStyle}"
+                                                Tag="{x:Bind}">
+                                                <ToolTipService.ToolTip>
+                                                    <TextBlock Text="Edit script settings" />
+                                                </ToolTipService.ToolTip>
+                                            </Button>
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard>
+                                </DataTemplate>
+                            </tkcontrols:SettingsExpander.ItemTemplate>
+                        </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
                 </StackPanel>
             </controls:SettingsPageControl.ModuleContent>
@@ -469,7 +513,74 @@
             </StackPanel>
         </ContentDialog>
 
-        <!--  Paste AI provider dialog  -->
+        <!--  Python Script Edit Dialog  -->
+        <ContentDialog
+            x:Name="PythonScriptEditDialog"
+            Title="Edit script settings"
+            CloseButtonText="Cancel"
+            PrimaryButtonText="Save"
+            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
+            <ContentDialog.Resources>
+                <x:Double x:Key="ContentDialogMaxWidth">600</x:Double>
+            </ContentDialog.Resources>
+            <StackPanel Spacing="14" MinWidth="400">
+                <TextBlock
+                    x:Name="ScriptEditFilePath"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    IsTextSelectionEnabled="True" />
+                <TextBox
+                    x:Name="ScriptEditName"
+                    Header="Name"
+                    Width="380"
+                    HorizontalAlignment="Left" />
+                <TextBox
+                    x:Name="ScriptEditDescription"
+                    Header="Description"
+                    Width="380"
+                    HorizontalAlignment="Left" />
+                <ComboBox
+                    x:Name="ScriptEditPlatform"
+                    Header="Platform"
+                    MinWidth="160">
+                    <x:String>windows</x:String>
+                    <x:String>linux</x:String>
+                    <x:String>any</x:String>
+                </ComboBox>
+                <TextBlock
+                    Text="Supported formats"
+                    Style="{StaticResource BodyTextBlockStyle}"
+                    Margin="0,4,0,0" />
+                <Grid ColumnSpacing="12" RowSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <CheckBox x:Name="ScriptEditText" Content="Text" Grid.Row="0" Grid.Column="0" />
+                    <CheckBox x:Name="ScriptEditHtml" Content="HTML" Grid.Row="0" Grid.Column="1" />
+                    <CheckBox x:Name="ScriptEditImage" Content="Image" Grid.Row="0" Grid.Column="2" />
+                    <CheckBox x:Name="ScriptEditAudio" Content="Audio" Grid.Row="1" Grid.Column="0" />
+                    <CheckBox x:Name="ScriptEditVideo" Content="Video" Grid.Row="1" Grid.Column="1" />
+                    <CheckBox x:Name="ScriptEditFiles" Content="Files" Grid.Row="1" Grid.Column="2" />
+                </Grid>
+                <ToggleSwitch
+                    x:Name="ScriptEditAutoDetectDeps"
+                    Header="Dependencies"
+                    OnContent="Auto-detect from imports"
+                    OffContent="Manual" />
+                <TextBox
+                    x:Name="ScriptEditRequires"
+                    Header="Required packages (space-separated)"
+                    Width="380"
+                    HorizontalAlignment="Left"
+                    PlaceholderText="e.g. numpy requests cv2=opencv-python-headless" />
+            </StackPanel>
+        </ContentDialog>
         <ContentDialog
             x:Name="PasteAIProviderConfigurationDialog"
             x:Uid="AdvancedPaste_EndpointDialog"

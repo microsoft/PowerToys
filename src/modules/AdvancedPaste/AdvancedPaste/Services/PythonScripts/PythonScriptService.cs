@@ -65,6 +65,9 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                     ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"),
                     new InvalidOperationException("Failed to start Python process."));
 
+            // Start reading stderr immediately to avoid truncation and deadlocks.
+            var stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
+
             int timeoutMs = _userSettings.PythonScriptTimeoutSeconds * 1000;
             using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeoutCts.CancelAfter(timeoutMs);
@@ -84,9 +87,10 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                     new TimeoutException());
             }
 
+            var stderr = await stderrTask;
+
             if (process.ExitCode != 0)
             {
-                var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
                 var (summary, details) = ParsePythonError(stderr);
                 throw new PasteActionException(summary, new InvalidOperationException($"Script exited with code {process.ExitCode}."), aiServiceMessage: details);
             }
@@ -213,6 +217,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             ClipboardFormat.Video | ClipboardFormat.File;
         var explicitRequirements = new List<PythonRequirement>();
         var allLines = new List<string>();
+        var isEnabled = true;
 
         try
         {
@@ -277,6 +282,15 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                     explicitRequirements.AddRange(ParseRequirements(tag));
                     continue;
                 }
+
+                tag = ParseTag(trimmed, "@advancedpaste:enabled");
+                if (tag != null)
+                {
+                    isEnabled = !string.Equals(tag, "false", StringComparison.OrdinalIgnoreCase)
+                             && !string.Equals(tag, "0", StringComparison.OrdinalIgnoreCase)
+                             && !string.Equals(tag, "no", StringComparison.OrdinalIgnoreCase);
+                    continue;
+                }
             }
 
             // Read remaining lines for import scanning
@@ -293,7 +307,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
         var mergedRequirements = MergeWithAutoDetectedImports(allLines, explicitRequirements);
 
-        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, mergedRequirements);
+        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, isEnabled, mergedRequirements);
     }
 
     /// <summary>
@@ -568,6 +582,126 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
 
         return scripts;
+    }
+
+    /// <summary>
+    /// Writes or updates metadata header tags in a Python script file.
+    /// Only the specified tags are written; existing tags are updated in-place,
+    /// new tags are inserted after the last existing tag block.
+    /// </summary>
+    public static void WriteMetadata(
+        string scriptPath,
+        string name,
+        string description,
+        string platform,
+        string formats,
+        bool enabled)
+    {
+        var lines = File.ReadAllLines(scriptPath, Encoding.UTF8).ToList();
+
+        var tagUpdates = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["@advancedpaste:name"] = name,
+            ["@advancedpaste:desc"] = description,
+            ["@advancedpaste:platform"] = platform,
+            ["@advancedpaste:formats"] = formats,
+            ["@advancedpaste:enabled"] = enabled ? "true" : "false",
+        };
+
+        var updatedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int lastTagLine = -1;
+
+        for (int i = 0; i < Math.Min(lines.Count, MetadataMaxLines); i++)
+        {
+            var trimmed = lines[i].Trim();
+            if (!trimmed.StartsWith('#'))
+            {
+                continue;
+            }
+
+            foreach (var (tag, newValue) in tagUpdates)
+            {
+                if (ParseTag(trimmed, tag) is not null)
+                {
+                    lines[i] = $"# {tag}   {newValue}";
+                    updatedTags.Add(tag);
+                    lastTagLine = i;
+                    break;
+                }
+            }
+
+            // Track last advancedpaste comment for insertion point
+            if (trimmed.Contains("@advancedpaste:"))
+            {
+                lastTagLine = i;
+            }
+        }
+
+        // Insert any tags that weren't found in the existing header
+        var insertionPoint = lastTagLine >= 0 ? lastTagLine + 1 : 0;
+        var newLines = new List<string>();
+        foreach (var (tag, newValue) in tagUpdates)
+        {
+            if (!updatedTags.Contains(tag))
+            {
+                newLines.Add($"# {tag}   {newValue}");
+            }
+        }
+
+        if (newLines.Count > 0)
+        {
+            lines.InsertRange(insertionPoint, newLines);
+        }
+
+        File.WriteAllLines(scriptPath, lines, new UTF8Encoding(false));
+    }
+
+    /// <summary>
+    /// Converts ClipboardFormat flags to a comma-separated format string for headers.
+    /// </summary>
+    public static string FormatFlagsToString(ClipboardFormat formats)
+    {
+        var allFormats = ClipboardFormat.Text | ClipboardFormat.Html |
+                         ClipboardFormat.Image | ClipboardFormat.Audio |
+                         ClipboardFormat.Video | ClipboardFormat.File;
+
+        if (formats == allFormats)
+        {
+            return "any";
+        }
+
+        var parts = new List<string>();
+        if (formats.HasFlag(ClipboardFormat.Text))
+        {
+            parts.Add("text");
+        }
+
+        if (formats.HasFlag(ClipboardFormat.Html))
+        {
+            parts.Add("html");
+        }
+
+        if (formats.HasFlag(ClipboardFormat.Image))
+        {
+            parts.Add("image");
+        }
+
+        if (formats.HasFlag(ClipboardFormat.Audio))
+        {
+            parts.Add("audio");
+        }
+
+        if (formats.HasFlag(ClipboardFormat.Video))
+        {
+            parts.Add("video");
+        }
+
+        if (formats.HasFlag(ClipboardFormat.File))
+        {
+            parts.Add("files");
+        }
+
+        return parts.Count > 0 ? string.Join(", ", parts) : "any";
     }
 
     public async Task<IReadOnlyList<PythonRequirement>> GetMissingRequirementsAsync(

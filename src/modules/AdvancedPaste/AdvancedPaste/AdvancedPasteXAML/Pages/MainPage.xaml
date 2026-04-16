@@ -146,6 +146,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -299,7 +300,57 @@
                 </StackPanel>
             </controls:PromptBox.Footer>
         </controls:PromptBox>
-        <ScrollViewer Grid.Row="2">
+        <Grid
+            x:Name="ErrorMessageGrid"
+            Grid.Row="2"
+            Margin="20,4,20,0"
+            ColumnSpacing="8"
+            Visibility="{x:Bind ViewModel.PasteActionError.HasText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <FontIcon
+                Grid.Column="0"
+                Margin="0,3,3,0"
+                VerticalAlignment="Top"
+                FontSize="12"
+                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                Glyph="&#xE946;"
+                Visibility="{x:Bind ViewModel.PasteActionError.HasDetails, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <TextBlock
+                Grid.Column="1"
+                FontWeight="SemiBold"
+                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                Style="{StaticResource CaptionTextBlockStyle}"
+                MaxLines="2"
+                TextTrimming="CharacterEllipsis"
+                TextWrapping="Wrap"
+                Text="{x:Bind ViewModel.PasteActionError.Text, Mode=OneWay}" />
+            <HyperlinkButton
+                x:Name="ShowErrorDetailsBtn"
+                x:Uid="ShowErrorDetailsBtn"
+                Grid.Column="2"
+                Margin="4,-1,0,0"
+                Padding="0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Click="ShowErrorDetailsBtn_Click"
+                FontSize="12"
+                Visibility="{x:Bind ViewModel.PasteActionError.HasDetails, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            <HyperlinkButton
+                x:Uid="SettingsBtn"
+                Grid.Column="3"
+                Margin="0,-1,0,0"
+                Padding="0"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Command="{x:Bind ViewModel.OpenSettingsCommand}"
+                FontSize="12" />
+        </Grid>
+        <ScrollViewer Grid.Row="3">
             <Grid RowSpacing="4">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
