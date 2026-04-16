@@ -119,7 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool powerLauncher = true;
+        private bool powerLauncher; // defaulting to off
 
         [JsonPropertyName("PowerToys Run")]
         public bool PowerLauncher
@@ -153,7 +153,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool cropAndLock = true;
+        private bool cropAndLock; // defaulting to off
 
         [JsonPropertyName("CropAndLock")]
         public bool CropAndLock
@@ -315,7 +315,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool advancedPaste = true;
+        private bool advancedPaste; // defaulting to off
 
         [JsonPropertyName("AdvancedPaste")]
         public bool AdvancedPaste
@@ -349,7 +349,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool hosts = true;
+        private bool hosts; // defaulting to off
 
         [JsonPropertyName("Hosts")]
         public bool Hosts
@@ -398,7 +398,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool registryPreview = true;
+        private bool registryPreview; // defaulting to off
 
         [JsonPropertyName("RegistryPreview")]
         public bool RegistryPreview
@@ -431,7 +431,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool environmentVariables = true;
+        private bool environmentVariables; // defaulting to off
 
         [JsonPropertyName("EnvironmentVariables")]
         public bool EnvironmentVariables
@@ -463,7 +463,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
-        private bool workspaces = true;
+        private bool workspaces; // defaulting to off
 
         [JsonPropertyName("Workspaces")]
         public bool Workspaces
