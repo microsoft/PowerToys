@@ -309,77 +309,89 @@ static void SettingsWatcherThread(DWORD mainThreadId)
 // ---------------------------------------------------------------------------
 // Overlay window helpers
 // ---------------------------------------------------------------------------
-static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+// Renders the overlay surface using per-pixel alpha via UpdateLayeredWindow.
+// The white background is painted at ~40% opacity; the geometry label box is
+// painted fully opaque so it remains legible regardless of what is beneath.
+static void RenderOverlayContent(HWND hwnd, int cw, int ch)
 {
-    // WM_NCHITTEST -> HTTRANSPARENT so clicks pass through to windows below,
-    // except we still get the SIZEALL cursor because we set it on the class.
-    // Actually, HTTRANSPARENT makes the window invisible to hit-testing, so
-    // the cursor won't show.  Instead, return HTCLIENT and let the class
-    // cursor do the work – the hook swallows the clicks anyway.
-    if (msg == WM_NCHITTEST)
-        return HTCLIENT;
+    if (!hwnd || cw <= 0 || ch <= 0)
+        return;
 
-    if (msg == WM_PAINT && g_showGeometry)
+    BITMAPINFO bmi        = {};
+    bmi.bmiHeader.biSize        = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth       = cw;
+    bmi.bmiHeader.biHeight      = -ch; // top-down so (0,0) is top-left
+    bmi.bmiHeader.biPlanes      = 1;
+    bmi.bmiHeader.biBitCount    = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    HDC screenDC = GetDC(nullptr);
+    DWORD* pBits = nullptr;
+    HBITMAP hDib = CreateDIBSection(screenDC, &bmi, DIB_RGB_COLORS,
+                                    reinterpret_cast<void**>(&pBits), nullptr, 0);
+    if (!hDib)
     {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hwnd, &ps);
+        ReleaseDC(nullptr, screenDC);
+        return;
+    }
 
-        RECT clientRect;
-        GetClientRect(hwnd, &clientRect);
-        int cw = clientRect.right - clientRect.left;
-        int ch = clientRect.bottom - clientRect.top;
+    HDC     memDC   = CreateCompatibleDC(screenDC);
+    HBITMAP hOldBmp = static_cast<HBITMAP>(SelectObject(memDC, hDib));
 
-        // Double-buffer: paint to an off-screen bitmap, then blit once
-        HDC memDC = CreateCompatibleDC(hdc);
-        HBITMAP memBmp = CreateCompatibleBitmap(hdc, cw, ch);
-        HBITMAP oldBmp = static_cast<HBITMAP>(SelectObject(memDC, memBmp));
+    // Premultiplied white at ~40% opacity: A=0x66, R=G=B=0x66 → 0x66666666
+    memset(pBits, 0x66, static_cast<size_t>(cw) * ch * sizeof(DWORD));
 
-        // Fill background (white, matching the overlay class brush)
-        FillRect(memDC, &clientRect, static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
-
+    if (g_showGeometry)
+    {
         wchar_t text[128];
-        swprintf_s(text, L"X: %d  Y: %d\nW: %d  H: %d", g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
+        swprintf_s(text, L"X: %d  Y: %d\nW: %d  H: %d",
+                   g_overlayInfoX, g_overlayInfoY, g_overlayInfoW, g_overlayInfoH);
 
-        HFONT hFont = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
+        HFONT hFont    = static_cast<HFONT>(GetStockObject(DEFAULT_GUI_FONT));
         HFONT hOldFont = static_cast<HFONT>(SelectObject(memDC, hFont));
 
-        // Measure the text
         RECT textRect = {};
         DrawTextW(memDC, text, -1, &textRect, DT_CALCRECT | DT_CENTER | DT_NOPREFIX);
-        int textW = textRect.right - textRect.left;
-        int textH = textRect.bottom - textRect.top;
 
-        // Center a padded box on the overlay
-        int pad = 10;
-        int boxW = textW + pad * 2;
-        int boxH = textH + pad * 2;
-        int cx = cw / 2;
-        int cy = ch / 2;
-        RECT boxRect = {cx - boxW / 2, cy - boxH / 2, cx + boxW / 2, cy + boxH / 2};
+        const int pad  = 10;
+        const int boxW = (textRect.right - textRect.left) + pad * 2;
+        const int boxH = (textRect.bottom - textRect.top) + pad * 2;
+        RECT boxRect   = {cw / 2 - boxW / 2, ch / 2 - boxH / 2,
+                          cw / 2 + boxW / 2, ch / 2 + boxH / 2};
 
-        HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0));
-        FillRect(memDC, &boxRect, hBrush);
-        DeleteObject(hBrush);
+        HBRUSH hBlack = CreateSolidBrush(RGB(0, 0, 0));
+        FillRect(memDC, &boxRect, hBlack);
+        DeleteObject(hBlack);
 
-        RECT textDrawRect = {boxRect.left + pad, boxRect.top + pad, boxRect.right - pad, boxRect.bottom - pad};
+        RECT textDrawRect = {boxRect.left + pad, boxRect.top + pad,
+                             boxRect.right - pad, boxRect.bottom - pad};
         SetTextColor(memDC, RGB(255, 255, 255));
         SetBkMode(memDC, TRANSPARENT);
         DrawTextW(memDC, text, -1, &textDrawRect, DT_CENTER | DT_NOPREFIX);
-
         SelectObject(memDC, hOldFont);
 
-        // Single blit to screen
-        BitBlt(hdc, 0, 0, cw, ch, memDC, 0, 0, SRCCOPY);
-
-        SelectObject(memDC, oldBmp);
-        DeleteObject(memBmp);
-        DeleteDC(memDC);
-
-        EndPaint(hwnd, &ps);
-        return 0;
+        // GDI zeroes the alpha byte for every pixel it touches in a 32bpp DIB.
+        // Walk the box region and force A=255 so those pixels are fully opaque.
+        // With A=255 premultiplied alpha equals straight RGB, so the colours GDI
+        // wrote (black fill, white text, anti-aliased edges) are correct as-is.
+        const int x0 = max(0, boxRect.left);
+        const int y0 = max(0, boxRect.top);
+        const int x1 = min(cw, boxRect.right);
+        const int y1 = min(ch, boxRect.bottom);
+        for (int y = y0; y < y1; ++y)
+            for (int x = x0; x < x1; ++x)
+                pBits[y * cw + x] |= 0xFF000000u;
     }
 
-    return DefWindowProcW(hwnd, msg, wParam, lParam);
+    SIZE          sz    = {cw, ch};
+    POINT         ptSrc = {0, 0};
+    BLENDFUNCTION blend = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+    UpdateLayeredWindow(hwnd, screenDC, nullptr, &sz, memDC, &ptSrc, 0, &blend, ULW_ALPHA);
+
+    SelectObject(memDC, hOldBmp);
+    DeleteObject(hDib);
+    DeleteDC(memDC);
+    ReleaseDC(nullptr, screenDC);
 }
 
 static void CreateOverlay(const RECT& rc, LPCWSTR cursorName)
@@ -414,8 +426,7 @@ static void CreateOverlay(const RECT& rc, LPCWSTR cursorName)
         g_overlayInfoY = rc.top;
         g_overlayInfoW = w;
         g_overlayInfoH = h;
-        // White background at 40 % opacity  (255 * 0.40 ≈ 102)
-        SetLayeredWindowAttributes(g_hOverlay, 0, 102, LWA_ALPHA);
+        RenderOverlayContent(g_hOverlay, w, h);
     }
 }
 
@@ -428,7 +439,7 @@ static void MoveOverlay(int x, int y, int w, int h)
         g_overlayInfoW = w;
         g_overlayInfoH = h;
         SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        InvalidateRect(g_hOverlay, nullptr, FALSE);
+        RenderOverlayContent(g_hOverlay, w, h);
     }
 }
 
@@ -1223,7 +1234,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     // Register the overlay window class (white background, ARROW cursor)
     WNDCLASSEXW overlayWindowClass = {};
     overlayWindowClass.cbSize = sizeof(overlayWindowClass);
-    overlayWindowClass.lpfnWndProc = OverlayWndProc;
+    overlayWindowClass.lpfnWndProc = DefWindowProcW;
     overlayWindowClass.hInstance = hInstance;
     overlayWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     overlayWindowClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
