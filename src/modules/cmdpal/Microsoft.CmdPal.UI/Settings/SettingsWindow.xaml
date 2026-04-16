@@ -161,9 +161,7 @@
                 </Button>
 
                 <Grid Grid.Row="1" Margin="24,16,24,24">
-                    <Border
-                        x:Name="ScreenshotViewerImageHost"
-                        Padding="16">
+                    <Border x:Name="ScreenshotViewerImageHost" Padding="16">
                         <FlipView
                             x:Name="ScreenshotViewerFlipView"
                             Background="Transparent"
@@ -172,9 +170,9 @@
                                 <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
                                     <Grid MinHeight="360">
                                         <Image
-                                            AutomationProperties.Name="{x:Bind DisplayName}"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"
+                                            AutomationProperties.Name="{x:Bind DisplayName}"
                                             Source="{x:Bind ImageSource}"
                                             Stretch="Uniform" />
                                     </Grid>
