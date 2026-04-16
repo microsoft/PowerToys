@@ -121,9 +121,60 @@ static HANDLE g_hReloadSettingsEvent = nullptr;
 static HANDLE g_hExitEvent = nullptr;
 static std::thread g_settingsThread;
 static bool g_running = true;
+static HWINEVENTHOOK g_hWinEventHook = nullptr;
 
 static void StopDragging();
 static void StopResizing();
+
+static void EndInteraction(bool endDrag, bool endResize)
+{
+    if (endDrag && g_dragging)
+    {
+        StopDragging();
+    }
+
+    if (endResize && g_resizing)
+    {
+        StopResizing();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// WinEvent hook – detects foreground switch to elevated processes where
+// low-level keyboard hooks stop delivering key-up events.
+// ---------------------------------------------------------------------------
+static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, DWORD, DWORD)
+{
+    // Ignore focus changes to our own windows – these are benign and fire constantly
+    // (overlay creation/destruction, repositioned drag targets, etc.).
+    if (hwnd == g_hOverlay || hwnd == g_hMsgWnd)
+        return;
+
+    // Any foreground switch to a non-own window can eat key-up events (e.g. Win+L eats
+    // the 'L' keyup before the session locks). Always reset the held-key counter so that
+    // the next Alt/Win press is never blocked by a stale non-zero count.
+    g_heldNonAltKeyCount = 0;
+
+    // Only validate modifier state when there is actually something to reset.
+    // Skipping here when all flags are clear prevents spurious resets that would
+    // break continuous Alt-dragging between multiple drags.
+    if (!g_altPressed && !g_winPressed && !g_altAbsorbed && !g_winAbsorbed && !g_dragging && !g_resizing)
+        return;
+
+    bool modActuallyHeld = (g_modifierKey == GrabAndMoveModifier::Win)
+        ? ((GetAsyncKeyState(VK_LWIN) | GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0
+        : ((GetAsyncKeyState(VK_LMENU) | GetAsyncKeyState(VK_RMENU)) & 0x8000) != 0;
+
+    if (!modActuallyHeld)
+    {
+        g_altPressed = false;
+        g_winPressed = false;
+        g_winAbsorbed = false;
+        g_altAbsorbed = false;
+        g_dragConsumedAlt = false;
+        EndInteraction(true, true);
+    }
+}
 
 static bool IsSuppressedByGameMode()
 {
@@ -463,19 +514,6 @@ static void StopResizing()
     g_resizeTarget = nullptr;
     g_currentHandle = RESIZE_NONE;
     DestroyOverlay();
-}
-
-static void EndInteraction(bool endDrag, bool endResize)
-{
-    if (endDrag && g_dragging)
-    {
-        StopDragging();
-    }
-
-    if (endResize && g_resizing)
-    {
-        StopResizing();
-    }
 }
 
 static void ReplayAbsorbedAlt()
@@ -1208,6 +1246,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     g_hhkKeyboard = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
     g_hhkMouse = SetWindowsHookExW(WH_MOUSE_LL, MouseProc, hInstance, 0);
 
+    // Detect foreground switches to elevated processes (where key-up events stop arriving)
+    g_hWinEventHook = SetWinEventHook(
+        EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND,
+        nullptr, WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+
     if (!g_hhkKeyboard || !g_hhkMouse)
     {
         MessageBoxW(
@@ -1254,6 +1297,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     }
     UnhookWindowsHookEx(g_hhkKeyboard);
     UnhookWindowsHookEx(g_hhkMouse);
+    if (g_hWinEventHook)
+    {
+        UnhookWinEvent(g_hWinEventHook);
+    }
     RemoveTrayIcon();
     TraceLoggingUnregister(g_hProvider);
 
