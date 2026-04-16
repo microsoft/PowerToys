@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,25 +6,24 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
+using Microsoft.UI.Xaml.Media.Imaging;
 using PowerOCR.Helpers;
 using PowerOCR.Models;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
+using Windows.Storage.Streams;
 
 using BitmapDecoder = Windows.Graphics.Imaging.BitmapDecoder;
+using Point = Windows.Foundation.Point;
 
 namespace PowerOCR;
 
@@ -52,14 +51,24 @@ internal sealed class ImageMethods
         return true;
     }
 
-    internal static ImageSource GetWindowBoundsImage(OCROverlay passedWindow)
+    internal static async Task<BitmapImage> GetWindowBoundsImageAsync(OCROverlay passedWindow)
     {
         Rectangle screenRectangle = passedWindow.GetScreenRectangle();
-        using Bitmap bmp = new(screenRectangle.Width, screenRectangle.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using Bitmap bmp = new(screenRectangle.Width, screenRectangle.Height, PixelFormat.Format32bppArgb);
         using Graphics g = Graphics.FromImage(bmp);
 
         g.CopyFromScreen(screenRectangle.Left, screenRectangle.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
-        return BitmapToImageSource(bmp);
+        return await BitmapToImageSourceAsync(bmp);
+    }
+
+    internal static BitmapImage GetWindowBoundsImage(OCROverlay passedWindow)
+    {
+        Rectangle screenRectangle = passedWindow.GetScreenRectangle();
+        using Bitmap bmp = new(screenRectangle.Width, screenRectangle.Height, PixelFormat.Format32bppArgb);
+        using Graphics g = Graphics.FromImage(bmp);
+
+        g.CopyFromScreen(screenRectangle.Left, screenRectangle.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+        return BitmapToImageSourceSync(bmp);
     }
 
     internal static Bitmap GetRegionAsBitmap(OCROverlay passedWindow, Rectangle selectedRegion)
@@ -67,7 +76,7 @@ internal sealed class ImageMethods
         Bitmap bmp = new(
             selectedRegion.Width,
             selectedRegion.Height,
-            System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            PixelFormat.Format32bppArgb);
 
         using Graphics g = Graphics.FromImage(bmp);
         Rectangle screenRectangle = passedWindow.GetScreenRectangle();
@@ -104,17 +113,15 @@ internal sealed class ImageMethods
         return resultText != null ? resultText.Trim() : string.Empty;
     }
 
-    internal static async Task<string> GetClickedWord(OCROverlay passedWindow, System.Windows.Point clickedPoint, Language? preferredLanguage)
+    internal static async Task<string> GetClickedWord(OCROverlay passedWindow, Point clickedPoint, Language? preferredLanguage)
     {
         Rectangle screenRectangle = passedWindow.GetScreenRectangle();
-        Bitmap bmp = new((int)screenRectangle.Width, (int)passedWindow.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        Bitmap bmp = new(screenRectangle.Width, screenRectangle.Height, PixelFormat.Format32bppArgb);
         Graphics g = Graphics.FromImage(bmp);
 
-        System.Windows.Point absPosPoint = passedWindow.GetAbsolutePosition();
+        g.CopyFromScreen(screenRectangle.Left, screenRectangle.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
 
-        g.CopyFromScreen((int)absPosPoint.X, (int)absPosPoint.Y, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
-
-        System.Windows.Point adjustedPoint = new(clickedPoint.X, clickedPoint.Y);
+        Point adjustedPoint = new(clickedPoint.X, clickedPoint.Y);
 
         string resultText = await ExtractText(bmp, preferredLanguage, adjustedPoint);
         return resultText.Trim();
@@ -122,7 +129,7 @@ internal sealed class ImageMethods
 
     internal static readonly char[] Separator = new char[] { '\n', '\r' };
 
-    public static async Task<string> ExtractText(Bitmap bmp, Language? preferredLanguage, System.Windows.Point? singlePoint = null)
+    public static async Task<string> ExtractText(Bitmap bmp, Language? preferredLanguage, Point? singlePoint = null)
     {
         Language? selectedLanguage = preferredLanguage ?? GetOCRLanguage();
         if (selectedLanguage == null)
@@ -130,8 +137,7 @@ internal sealed class ImageMethods
             return string.Empty;
         }
 
-        XmlLanguage lang = XmlLanguage.GetLanguage(selectedLanguage.LanguageTag);
-        CultureInfo culture = lang.GetEquivalentCulture();
+        CultureInfo culture = new(selectedLanguage.LanguageTag);
 
         bool isSpaceJoiningLang = LanguageHelper.IsLanguageSpaceJoining(selectedLanguage);
 
@@ -208,80 +214,49 @@ internal sealed class ImageMethods
 
     public static Bitmap ScaleBitmapUniform(Bitmap passedBitmap, double scale)
     {
-        using MemoryStream memoryStream = new();
-        using WrappingStream wrappingStream = new(memoryStream);
-        passedBitmap.Save(wrappingStream, ImageFormat.Bmp);
-        wrappingStream.Position = 0;
-        BitmapImage bitmapImage = new();
-        bitmapImage.BeginInit();
-        bitmapImage.StreamSource = wrappingStream;
-        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapImage.EndInit();
-        bitmapImage.Freeze();
-        TransformedBitmap transformedBmp = new();
-        transformedBmp.BeginInit();
-        transformedBmp.Source = bitmapImage;
-        transformedBmp.Transform = new ScaleTransform(scale, scale);
-        transformedBmp.EndInit();
-        transformedBmp.Freeze();
-
-        memoryStream.Dispose();
-        wrappingStream.Dispose();
-        GC.Collect();
-        return BitmapSourceToBitmap(transformedBmp);
+        int newWidth = (int)(passedBitmap.Width * scale);
+        int newHeight = (int)(passedBitmap.Height * scale);
+        Bitmap scaled = new(newWidth, newHeight, passedBitmap.PixelFormat);
+        using Graphics g = Graphics.FromImage(scaled);
+        g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+        g.DrawImage(passedBitmap, 0, 0, newWidth, newHeight);
+        return scaled;
     }
 
-    public static Bitmap BitmapSourceToBitmap(BitmapSource source)
+    internal static BitmapImage BitmapToImageSourceSync(Bitmap bitmap)
     {
-        Bitmap bmp = new(
-          source.PixelWidth,
-          source.PixelHeight,
-          System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
-        BitmapData data = bmp.LockBits(
-          new Rectangle(System.Drawing.Point.Empty, bmp.Size),
-          ImageLockMode.WriteOnly,
-          System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
-        source.CopyPixels(
-          Int32Rect.Empty,
-          data.Scan0,
-          data.Height * data.Stride,
-          data.Stride);
-        bmp.UnlockBits(data);
-        GC.Collect();
-        return bmp;
+        using MemoryStream ms = new();
+        bitmap.Save(ms, ImageFormat.Bmp);
+        ms.Position = 0;
+
+        var bitmapImage = new BitmapImage();
+        var stream = ms.AsRandomAccessStream();
+        bitmapImage.SetSourceAsync(stream).AsTask().GetAwaiter().GetResult();
+        return bitmapImage;
     }
 
-    internal static BitmapImage BitmapToImageSource(Bitmap bitmap)
+    internal static async Task<BitmapImage> BitmapToImageSourceAsync(Bitmap bitmap)
     {
-        using MemoryStream memoryStream = new();
-        using WrappingStream wrappingStream = new(memoryStream);
+        using MemoryStream ms = new();
+        bitmap.Save(ms, ImageFormat.Bmp);
+        ms.Position = 0;
 
-        bitmap.Save(wrappingStream, ImageFormat.Bmp);
-        wrappingStream.Position = 0;
-        BitmapImage bitmapImage = new();
-        bitmapImage.BeginInit();
-        bitmapImage.StreamSource = wrappingStream;
-        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapImage.EndInit();
-        bitmapImage.Freeze();
-
-        memoryStream.Dispose();
-        wrappingStream.Dispose();
-        GC.Collect();
+        var bitmapImage = new BitmapImage();
+        var stream = ms.AsRandomAccessStream();
+        await bitmapImage.SetSourceAsync(stream);
         return bitmapImage;
     }
 
     public static Language? GetOCRLanguage()
     {
-        // use currently selected Language
-        string inputLang = InputLanguageManager.Current.CurrentInputLanguage.Name;
+        // Use current input language from Windows.Globalization
+        string inputLang = Windows.Globalization.Language.CurrentInputMethodLanguageTag;
 
         Language? selectedLanguage = new(inputLang);
         List<Language> possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.ToList();
 
         if (possibleOcrLanguages.Count < 1)
         {
-            MessageBox.Show("No possible OCR languages are installed.", "Text Grab");
             return null;
         }
 

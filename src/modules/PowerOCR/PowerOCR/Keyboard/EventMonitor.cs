@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Common.UI;
+using PowerOCR.Helpers;
 using PowerOCR.Utilities;
 using PowerToys.Interop;
 
@@ -14,9 +14,9 @@ namespace PowerOCR.Keyboard
     /// </summary>
     internal sealed class EventMonitor
     {
-        public EventMonitor(System.Windows.Threading.Dispatcher dispatcher, System.Threading.CancellationToken exitToken)
+        public EventMonitor(System.Threading.CancellationToken exitToken)
         {
-            NativeEventWaiter.WaitForEventLoop(Constants.ShowPowerOCRSharedEvent(), StartOCRSession, dispatcher, exitToken);
+            NativeEventWaiter.WaitForEventLoop(Constants.ShowPowerOCRSharedEvent(), StartOCRSession, exitToken);
         }
 
         public void StartOCRSession()

@@ -1,43 +1,50 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
-using System.Windows;
-using Common.UI;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+using PowerOCR.Helpers;
 using PowerOCR.Keyboard;
 using PowerOCR.Settings;
 using PowerToys.Interop;
 
 namespace PowerOCR;
 
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
 public partial class App : Application, IDisposable
 {
+    private static DispatcherQueue? _dispatcherQueue;
+
+    public static DispatcherQueue? DispatcherQueueInstance => _dispatcherQueue;
+
     private KeyboardMonitor? keyboardMonitor;
     private EventMonitor? eventMonitor;
     private Mutex? _instanceMutex;
     private int _powerToysRunnerPid;
     private ETWTrace etwTrace = new ETWTrace();
+    private static readonly List<OCROverlay> _overlays = new();
 
     private CancellationTokenSource NativeThreadCTS { get; set; }
 
     public App()
     {
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
         Logger.InitializeLogger("\\TextExtractor\\Logs");
 
         try
         {
-            string appLanguage = LanguageHelper.LoadLanguage();
+            string appLanguage = ManagedCommon.LanguageHelper.LoadLanguage();
             if (!string.IsNullOrEmpty(appLanguage))
             {
-                System.Threading.Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo(appLanguage);
             }
         }
         catch (CultureNotFoundException ex)
@@ -49,9 +56,10 @@ public partial class App : Application, IDisposable
 
         NativeEventWaiter.WaitForEventLoop(
             Constants.TerminatePowerOCRSharedEvent(),
-            this.Shutdown,
-            this.Dispatcher,
+            () => Exit(),
             NativeThreadCTS.Token);
+
+        InitializeComponent();
     }
 
     public void Dispose()
@@ -61,12 +69,12 @@ public partial class App : Application, IDisposable
         etwTrace?.Dispose();
     }
 
-    private void Application_Startup(object sender, StartupEventArgs e)
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredTextExtractorEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
         {
             Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-            Shutdown();
+            Exit();
             return;
         }
 
@@ -76,25 +84,26 @@ public partial class App : Application, IDisposable
         {
             Logger.LogWarning("Another running TextExtractor instance was detected. Exiting TextExtractor");
             _instanceMutex = null;
-            Shutdown();
+            Exit();
             return;
         }
 
-        if (e.Args?.Length > 0)
+        string[] cmdArgs = Environment.GetCommandLineArgs();
+        if (cmdArgs.Length > 1)
         {
             try
             {
-                _ = int.TryParse(e.Args[0], out _powerToysRunnerPid);
+                _ = int.TryParse(cmdArgs[1], out _powerToysRunnerPid);
                 Logger.LogInfo($"TextExtractor started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
 
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting TextExtractor");
                     NativeThreadCTS.Cancel();
-                    Current.Dispatcher.Invoke(() => Shutdown());
+                    _dispatcherQueue?.TryEnqueue(() => Exit());
                 });
-                var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
-                eventMonitor = new EventMonitor(Current.Dispatcher, NativeThreadCTS.Token);
+                var userSettings = new UserSettings(new ThrottledActionInvoker());
+                eventMonitor = new EventMonitor(NativeThreadCTS.Token);
             }
             catch (Exception ex)
             {
@@ -105,20 +114,28 @@ public partial class App : Application, IDisposable
         {
             Logger.LogInfo($"TextExtractor started detached from PowerToys Runner.");
             _powerToysRunnerPid = -1;
-            var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
+            var userSettings = new UserSettings(new ThrottledActionInvoker());
             keyboardMonitor = new KeyboardMonitor(userSettings);
             keyboardMonitor?.Start();
         }
     }
 
-    protected override void OnExit(ExitEventArgs e)
+    public static void TrackOverlay(OCROverlay overlay)
     {
-        _instanceMutex?.ReleaseMutex();
-        base.OnExit(e);
+        _overlays.Add(overlay);
     }
 
-    private void Application_Exit(object sender, ExitEventArgs e)
+    public static void UntrackOverlay(OCROverlay overlay)
     {
+        _overlays.Remove(overlay);
+    }
+
+    public static IReadOnlyList<OCROverlay> Overlays => _overlays;
+
+    private new void Exit()
+    {
+        _instanceMutex?.ReleaseMutex();
         Dispose();
+        Environment.Exit(0);
     }
 }

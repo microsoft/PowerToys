@@ -1,49 +1,59 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel.Composition;
 using System.Threading;
-using System.Windows.Threading;
+
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 
 namespace PowerOCR.Helpers;
 
-[Export(typeof(IThrottledActionInvoker))]
 public sealed class ThrottledActionInvoker : IThrottledActionInvoker
 {
     private Lock _invokerLock = new Lock();
     private Action? _actionToRun;
 
-    private DispatcherTimer _timer;
+    private DispatcherQueueTimer? _timer;
 
     public ThrottledActionInvoker()
     {
-        _timer = new DispatcherTimer();
-        _timer.Tick += Timer_Tick;
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        if (dispatcherQueue != null)
+        {
+            _timer = dispatcherQueue.CreateTimer();
+            _timer.Tick += Timer_Tick;
+            _timer.IsRepeating = false;
+        }
     }
 
     public void ScheduleAction(Action action, int milliseconds)
     {
         lock (_invokerLock)
         {
-            if (_timer.IsEnabled)
+            if (_timer == null)
+            {
+                return;
+            }
+
+            if (_timer.IsRunning)
             {
                 _timer.Stop();
             }
 
             _actionToRun = action;
-            _timer.Interval = new TimeSpan(0, 0, 0, 0, milliseconds);
+            _timer.Interval = TimeSpan.FromMilliseconds(milliseconds);
 
             _timer.Start();
         }
     }
 
-    private void Timer_Tick(object? sender, EventArgs? e)
+    private void Timer_Tick(DispatcherQueueTimer sender, object args)
     {
         lock (_invokerLock)
         {
-            _timer.Stop();
+            _timer?.Stop();
             _actionToRun?.Invoke();
         }
     }

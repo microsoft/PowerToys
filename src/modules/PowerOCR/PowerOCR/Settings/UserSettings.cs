@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading;
@@ -14,7 +13,6 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace PowerOCR.Settings
 {
-    [Export(typeof(IUserSettings))]
     public class UserSettings : IUserSettings
     {
         private readonly SettingsUtils _settingsUtils;
@@ -26,7 +24,6 @@ namespace PowerOCR.Settings
         private readonly IFileSystemWatcher _watcher;
         private readonly Lock _loadingSettingsLock = new();
 
-        [ImportingConstructor]
         public UserSettings(Helpers.IThrottledActionInvoker throttledActionInvoker)
         {
             _settingsUtils = SettingsUtils.Default;

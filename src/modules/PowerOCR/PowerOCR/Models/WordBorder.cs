@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Windows;
+using Windows.Foundation;
 
 namespace PowerOCR.Models;
 
@@ -37,6 +37,12 @@ public class WordBorder
 
     public bool IntersectsWith(Rect rect)
     {
-        return rect.IntersectsWith(AsRect());
+        Rect thisRect = AsRect();
+
+        // Windows.Foundation.Rect doesn't have IntersectsWith, so implement manually
+        return thisRect.Left < rect.Right
+            && thisRect.Right > rect.Left
+            && thisRect.Top < rect.Bottom
+            && thisRect.Bottom > rect.Top;
     }
 }

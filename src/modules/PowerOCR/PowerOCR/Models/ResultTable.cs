@@ -7,14 +7,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
+
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 using PowerOCR.Helpers;
 using Windows.Media.Ocr;
 
-using Rect = System.Windows.Rect;
+using Rect = Windows.Foundation.Rect;
 
 namespace PowerOCR.Models;
 
@@ -32,7 +32,7 @@ public class ResultTable
 
     public Canvas? TableLines { get; set; }
 
-    public ResultTable(ref List<WordBorder> wordBorders, DpiScale dpiScale)
+    public ResultTable(ref List<WordBorder> wordBorders, double dpiScale)
     {
         int borderBuffer = 3;
         var leftsMin = wordBorders.Select(x => x.Left).Min();
@@ -48,8 +48,8 @@ public class ResultTable
             Height = (int)(bottomsMax + borderBuffer),
         };
 
-        bordersBorder.Width = (int)(bordersBorder.Width * dpiScale.DpiScaleX);
-        bordersBorder.Height = (int)(bordersBorder.Height * dpiScale.DpiScaleY);
+        bordersBorder.Width = (int)(bordersBorder.Width * dpiScale);
+        bordersBorder.Height = (int)(bordersBorder.Height * dpiScale);
 
         AnalyzeAsTable(wordBorders, bordersBorder);
     }
@@ -101,7 +101,7 @@ public class ResultTable
         }
     }
 
-    public static List<WordBorder> ParseOcrResultIntoWordBorders(OcrResult ocrResult, DpiScale dpi)
+    public static List<WordBorder> ParseOcrResultIntoWordBorders(OcrResult ocrResult, double dpiScale)
     {
         List<WordBorder> wordBorders = new();
         int lineNumber = 0;
@@ -126,8 +126,8 @@ public class ResultTable
 
             WordBorder wordBorderBox = new()
             {
-                Width = lineRect.Width / dpi.DpiScaleX,
-                Height = lineRect.Height / dpi.DpiScaleY,
+                Width = lineRect.Width / dpiScale,
+                Height = lineRect.Height / dpiScale,
                 Top = lineRect.Y,
                 Left = lineRect.X,
                 Word = lineText.ToString().Trim(),
@@ -148,12 +148,10 @@ public class ResultTable
         int numberOfVerticalLines = rectCanvasSize.Width / hitGridSpacing;
         int numberOfHorizontalLines = rectCanvasSize.Height / hitGridSpacing;
 
-        Canvas tableIntersectionCanvas = new();
-
-        List<int> rowAreas = CalculateRowAreas(rectCanvasSize, hitGridSpacing, numberOfHorizontalLines, tableIntersectionCanvas, wordBorders);
+        List<int> rowAreas = CalculateRowAreas(rectCanvasSize, hitGridSpacing, numberOfHorizontalLines, wordBorders);
         List<ResultRow> resultRows = CalculateResultRows(hitGridSpacing, rowAreas);
 
-        List<int> columnAreas = CalculateColumnAreas(rectCanvasSize, hitGridSpacing, numberOfVerticalLines, tableIntersectionCanvas, wordBorders);
+        List<int> columnAreas = CalculateColumnAreas(rectCanvasSize, hitGridSpacing, numberOfVerticalLines, wordBorders);
         List<ResultColumn> resultColumns = CalculateResultColumns(hitGridSpacing, columnAreas);
 
         Rect tableBoundingRect = new()
@@ -164,7 +162,7 @@ public class ResultTable
             Height = rowAreas.LastOrDefault() - rowAreas.FirstOrDefault(),
         };
 
-        CombineOutliers(wordBorders, resultRows, tableIntersectionCanvas, resultColumns, tableBoundingRect);
+        CombineOutliers(wordBorders, resultRows, resultColumns, tableBoundingRect);
 
         Rows.Clear();
         Rows.AddRange(resultRows);
@@ -218,23 +216,13 @@ public class ResultTable
         return resultRows;
     }
 
-    private static List<int> CalculateRowAreas(Rectangle rectCanvasSize, int hitGridSpacing, int numberOfHorizontalLines, Canvas tableIntersectionCanvas, ICollection<WordBorder> wordBorders)
+    private static List<int> CalculateRowAreas(Rectangle rectCanvasSize, int hitGridSpacing, int numberOfHorizontalLines, ICollection<WordBorder> wordBorders)
     {
         List<int> rowAreas = new();
 
         for (int i = 0; i < numberOfHorizontalLines; i++)
         {
-            Border horizontalLine = new()
-            {
-                Height = 1,
-                Width = rectCanvasSize.Width,
-                Opacity = 0,
-                Background = new SolidColorBrush(Colors.Gray),
-            };
-            Rect horizontalLineRect = new(0, i * hitGridSpacing, horizontalLine.Width, horizontalLine.Height);
-            _ = tableIntersectionCanvas.Children.Add(horizontalLine);
-            Canvas.SetTop(horizontalLine, i * 3);
-
+            Rect horizontalLineRect = new(0, i * hitGridSpacing, rectCanvasSize.Width, 1);
             CheckIntersectionsWithWordBorders(hitGridSpacing, wordBorders, rowAreas, i, horizontalLineRect);
         }
 
@@ -253,21 +241,21 @@ public class ResultTable
         }
     }
 
-    private static void CombineOutliers(ICollection<WordBorder> wordBorders, List<ResultRow> resultRows, Canvas tableIntersectionCanvas, List<ResultColumn> resultColumns, Rect tableBoundingRect)
+    private static void CombineOutliers(ICollection<WordBorder> wordBorders, List<ResultRow> resultRows, List<ResultColumn> resultColumns, Rect tableBoundingRect)
     {
         // try 4 times to refine the rows and columns for outliers
         // on the fifth time set the word boundary properties
         for (int r = 0; r < 5; r++)
         {
             int outlierThreshold = 2;
-            List<int> outlierRowIDs = FindOutlierRowIds(wordBorders, resultRows, tableIntersectionCanvas, tableBoundingRect, r, outlierThreshold);
+            List<int> outlierRowIDs = FindOutlierRowIds(wordBorders, resultRows, tableBoundingRect, r, outlierThreshold);
 
             if (outlierRowIDs.Count > 0)
             {
                 MergeTheseRowIDs(resultRows, outlierRowIDs);
             }
 
-            List<int> outlierColumnIDs = FindOutlierColumnIds(wordBorders, tableIntersectionCanvas, resultColumns, tableBoundingRect, outlierThreshold);
+            List<int> outlierColumnIDs = FindOutlierColumnIds(wordBorders, resultColumns, tableBoundingRect, outlierThreshold);
 
             if (outlierColumnIDs.Count > 0 && r != 4)
             {
@@ -279,7 +267,6 @@ public class ResultTable
     private static List<int> FindOutlierRowIds(
         ICollection<WordBorder> wordBorders,
         ICollection<ResultRow> resultRows,
-        Canvas tableIntersectionCanvas,
         Rect tableBoundingRect,
         int r,
         int outlierThreshold)
@@ -289,18 +276,8 @@ public class ResultTable
         foreach (ResultRow row in resultRows)
         {
             int numberOfIntersectingWords = 0;
-            Border rowBorder = new()
-            {
-                Height = row.Bottom - row.Top,
-                Width = tableBoundingRect.Width,
-                Background = new SolidColorBrush(Colors.Red),
-                Tag = row.ID,
-            };
-            tableIntersectionCanvas.Children.Add(rowBorder);
-            Canvas.SetLeft(rowBorder, tableBoundingRect.X);
-            Canvas.SetTop(rowBorder, row.Top);
 
-            Rect rowRect = new(tableBoundingRect.X, row.Top, rowBorder.Width, rowBorder.Height);
+            Rect rowRect = new(tableBoundingRect.X, row.Top, tableBoundingRect.Width, row.Bottom - row.Top);
 
             foreach (WordBorder wb in wordBorders)
             {
@@ -322,7 +299,6 @@ public class ResultTable
 
     private static List<int> FindOutlierColumnIds(
         ICollection<WordBorder> wordBorders,
-        Canvas tableIntersectionCanvas,
         List<ResultColumn> resultColumns,
         Rect tableBoundingRect,
         int outlierThreshold)
@@ -332,19 +308,8 @@ public class ResultTable
         foreach (ResultColumn column in resultColumns)
         {
             int numberOfIntersectingWords = 0;
-            Border columnBorder = new()
-            {
-                Height = tableBoundingRect.Height,
-                Width = column.Right - column.Left,
-                Background = new SolidColorBrush(Colors.Blue),
-                Opacity = 0.2,
-                Tag = column.ID,
-            };
-            tableIntersectionCanvas.Children.Add(columnBorder);
-            Canvas.SetLeft(columnBorder, column.Left);
-            Canvas.SetTop(columnBorder, tableBoundingRect.Y);
 
-            Rect columnRect = new(column.Left, tableBoundingRect.Y, columnBorder.Width, columnBorder.Height);
+            Rect columnRect = new(column.Left, tableBoundingRect.Y, column.Right - column.Left, tableBoundingRect.Height);
             foreach (WordBorder wb in wordBorders)
             {
                 if (wb.IntersectsWith(columnRect))
@@ -406,22 +371,12 @@ public class ResultTable
         return resultColumns;
     }
 
-    private static List<int> CalculateColumnAreas(Rectangle rectCanvasSize, int hitGridSpacing, int numberOfVerticalLines, Canvas tableIntersectionCanvas, ICollection<WordBorder> wordBorders)
+    private static List<int> CalculateColumnAreas(Rectangle rectCanvasSize, int hitGridSpacing, int numberOfVerticalLines, ICollection<WordBorder> wordBorders)
     {
         List<int> columnAreas = new();
         for (int i = 0; i < numberOfVerticalLines; i++)
         {
-            Border vertLine = new()
-            {
-                Height = rectCanvasSize.Height,
-                Width = 1,
-                Opacity = 0,
-                Background = new SolidColorBrush(Colors.Gray),
-            };
-            _ = tableIntersectionCanvas.Children.Add(vertLine);
-            Canvas.SetLeft(vertLine, i * hitGridSpacing);
-
-            Rect vertLineRect = new(i * hitGridSpacing, 0, vertLine.Width, vertLine.Height);
+            Rect vertLineRect = new(i * hitGridSpacing, 0, 1, rectCanvasSize.Height);
 
             foreach (WordBorder wb in wordBorders)
             {
@@ -570,7 +525,7 @@ public class ResultTable
     private void DrawTable()
     {
         // Draw the lines and bounds of the table
-        SolidColorBrush tableColor = new(System.Windows.Media.Color.FromArgb(255, 40, 118, 126));
+        SolidColorBrush tableColor = new(Microsoft.UI.ColorHelper.FromArgb(255, 40, 118, 126));
 
         TableLines = new Canvas()
         {
@@ -581,7 +536,7 @@ public class ResultTable
         {
             Width = this.BoundingRect.Width,
             Height = this.BoundingRect.Height,
-            BorderThickness = new Thickness(3),
+            BorderThickness = new Microsoft.UI.Xaml.Thickness(3),
             BorderBrush = tableColor,
         };
         TableLines.Children.Add(tableOutline);
@@ -615,7 +570,7 @@ public class ResultTable
         }
     }
 
-    public static string GetWordsAsTable(List<WordBorder> wordBorders, DpiScale dpiScale, bool isSpaceJoining)
+    public static string GetWordsAsTable(List<WordBorder> wordBorders, double dpiScale, bool isSpaceJoining)
     {
         List<WordBorder> smallerBorders = new();
         foreach (WordBorder originalWB in wordBorders)

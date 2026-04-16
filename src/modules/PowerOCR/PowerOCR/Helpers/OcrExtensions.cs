@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,8 +10,6 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
 
 using PowerOCR.Models;
 using Windows.Globalization;
@@ -80,11 +78,11 @@ namespace PowerOCR.Helpers
             }
 
             using Bitmap scaledBitmap = scaleBMP ? ImageMethods.ScaleBitmapUniform(bmp, 1.5) : ImageMethods.ScaleBitmapUniform(bmp, 1.0);
-            DpiScale dpiScale = VisualTreeHelper.GetDpi(passedWindow);
+            double scale = passedWindow.Content.XamlRoot.RasterizationScale;
 
             OcrResult ocrResult = await GetOcrResultFromImageAsync(scaledBitmap, language);
-            List<WordBorder> wordBorders = ResultTable.ParseOcrResultIntoWordBorders(ocrResult, dpiScale);
-            return ResultTable.GetWordsAsTable(wordBorders, dpiScale, LanguageHelper.IsLanguageSpaceJoining(language));
+            List<WordBorder> wordBorders = ResultTable.ParseOcrResultIntoWordBorders(ocrResult, scale);
+            return ResultTable.GetWordsAsTable(wordBorders, scale, LanguageHelper.IsLanguageSpaceJoining(language));
         }
 
         internal static async Task<OcrResult> GetOcrResultFromImageAsync(Bitmap bmp, Language language)

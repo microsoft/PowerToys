@@ -1,19 +1,26 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Windows;
-using System.Windows.Forms;
-using System.Windows.Input;
+using System.Runtime.InteropServices;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Windowing;
+using Windows.Graphics;
+using Windows.System;
 
 namespace PowerOCR.Utilities;
 
 public static class WindowUtilities
 {
+    [DllImport("Shcore.dll")]
+    private static extern IntPtr GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+    [DllImport("User32.dll")]
+    private static extern IntPtr MonitorFromPoint(System.Drawing.Point pt, uint dwFlags);
+
     public static void LaunchOCROverlayOnEveryScreen()
     {
         if (IsOCROverlayCreated())
@@ -23,14 +30,24 @@ public static class WindowUtilities
         }
 
         Logger.LogInfo($"Adding Overlays for each screen");
-        foreach (Screen screen in Screen.AllScreens)
+        var displays = DisplayArea.FindAll();
+        foreach (var display in displays)
         {
-            DpiScale dpiScale = screen.GetDpi();
-            Logger.LogInfo($"screen {screen}, dpiScale {dpiScale.DpiScaleX}, {dpiScale.DpiScaleY}");
-            OCROverlay overlay = new(screen.Bounds, dpiScale);
+            var outerBounds = display.OuterBounds;
+            var screenRect = new RectInt32(outerBounds.X, outerBounds.Y, outerBounds.Width, outerBounds.Height);
 
-            overlay.Show();
+            // Get DPI for this monitor
+            var monitorPoint = new System.Drawing.Point(outerBounds.X + 1, outerBounds.Y + 1);
+            var hMonitor = MonitorFromPoint(monitorPoint, 2 /* MONITOR_DEFAULTTONEAREST */);
+            GetDpiForMonitor(hMonitor, 0 /* Effective */, out uint dpiX, out _);
+            double scale = dpiX / 96.0;
+
+            Logger.LogInfo($"display {display.DisplayId}, scale {scale}");
+            OCROverlay overlay = new(screenRect, scale);
+
+            overlay.Activate();
             ActivateWindow(overlay);
+            App.TrackOverlay(overlay);
         }
 
         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRInvokedEvent());
@@ -38,44 +55,29 @@ public static class WindowUtilities
 
     internal static bool IsOCROverlayCreated()
     {
-        WindowCollection allWindows = System.Windows.Application.Current.Windows;
-
-        foreach (Window window in allWindows)
-        {
-            if (window is OCROverlay)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return App.Overlays.Count > 0;
     }
 
     internal static void CloseAllOCROverlays()
     {
-        WindowCollection allWindows = System.Windows.Application.Current.Windows;
+        // Copy to avoid modification during iteration
+        var overlays = new System.Collections.Generic.List<OCROverlay>(App.Overlays);
 
-        foreach (Window window in allWindows)
+        foreach (var overlay in overlays)
         {
-            if (window is OCROverlay overlay)
-            {
-                overlay.Close();
-            }
+            overlay.Close();
         }
 
         GC.Collect();
-
-        // TODO: Decide when to close the process
-        // System.Windows.Application.Current.Shutdown();
     }
 
-    public static void ActivateWindow(Window window)
+    public static void ActivateWindow(Microsoft.UI.Xaml.Window window)
     {
-        var handle = new System.Windows.Interop.WindowInteropHelper(window).Handle;
+        var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
         var fgHandle = OSInterop.GetForegroundWindow();
 
-        var threadId1 = OSInterop.GetWindowThreadProcessId(handle, System.IntPtr.Zero);
-        var threadId2 = OSInterop.GetWindowThreadProcessId(fgHandle, System.IntPtr.Zero);
+        var threadId1 = OSInterop.GetWindowThreadProcessId(handle, IntPtr.Zero);
+        var threadId2 = OSInterop.GetWindowThreadProcessId(fgHandle, IntPtr.Zero);
 
         if (threadId1 != threadId2)
         {
@@ -89,22 +91,17 @@ public static class WindowUtilities
         }
     }
 
-    internal static void OcrOverlayKeyDown(Key key, bool? isActive = null)
+    internal static void OcrOverlayKeyDown(VirtualKey key, bool? isActive = null)
     {
-        WindowCollection allWindows = System.Windows.Application.Current.Windows;
-
-        if (key == Key.Escape)
+        if (key == VirtualKey.Escape)
         {
             PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRCancelledEvent());
             CloseAllOCROverlays();
         }
 
-        foreach (Window window in allWindows)
+        foreach (var overlay in App.Overlays)
         {
-            if (window is OCROverlay overlay)
-            {
-                overlay.KeyPressed(key, isActive);
-            }
+            overlay.KeyPressed(key, isActive);
         }
     }
 }

@@ -56,6 +56,7 @@ These rules capture human judgment and must be applied consistently across every
 - **Do NOT create Exe→WinExe `ProjectReference`** — Extract shared code to a Library project. Causes phantom build artifacts.
 - **Do NOT instantiate services directly** — Use DI and CommunityToolkit.Mvvm patterns.
 - **Do NOT create new `Window` classes** — PowerToys modules use a single Window with content navigation.
+- **Do NOT omit `WindowsPackageType=None` and `WindowsAppSDKSelfContained=true`** — Both are mandatory in the csproj for every WinUI 3 module in PowerToys. Without them the app crashes at startup with `COMException: ClassFactory cannot supply requested class` because the WinUI 3 runtime DLLs are not found.
 
 **XAML prohibitions:**
 - **Do NOT use `{DynamicResource}`** — Replace with `{ThemeResource}` (theme-reactive) or `{StaticResource}`.
@@ -274,6 +275,8 @@ Read only the section relevant to your current task:
 | JPEG quality value wrong after migration | WPF: int 1-100; WinRT: float 0.0-1.0 |
 | MSIX packaging fails in PreBuildEvent | Move to PostBuildEvent; artifacts not ready at PreBuild time |
 | RC file icon path with forward slashes | Use double-backslash escaping: `..\\ui\\Assets\\icon.ico` |
+| `COMException: ClassFactory cannot supply requested class` at startup | Missing `<WindowsPackageType>None</WindowsPackageType>` and/or `<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>` in csproj. Without these, the app tries to locate the Windows App SDK framework package (not installed) instead of using bundled runtime DLLs. **Both properties are mandatory for every WinUI 3 module in PowerToys.** |
+| `CombinedGeometry` not available in WinUI 3 | WinUI 3 `UIElement.Clip` only accepts `RectangleGeometry`. For overlay hole effects (exclude region), use a `Path` element with `GeometryGroup FillRule="EvenOdd"` containing two `RectangleGeometry` children — the EvenOdd rule creates a transparent hole where geometries overlap. |
 
 ## Troubleshooting
 
@@ -286,3 +289,4 @@ Read only the section relevant to your current task:
 | NuGet restore failures | Run `build-essentials.cmd` after adding `Microsoft.WindowsAppSDK` package |
 | `Parallel.ForEach` compilation error | Migrate to `Parallel.ForEachAsync` for async imaging operations |
 | Signing check fails on leaked artifacts | Run `generateAllFileComponents.ps1`; verify only `WinUI3Apps\\` paths in signing config |
+| `COMException` / `ClassFactory` error at app launch | Ensure csproj has `<WindowsPackageType>None</WindowsPackageType>` and `<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>`. These are required for all unpackaged WinUI 3 apps in PowerToys — without them the WinUI 3 COM runtime cannot be found. |

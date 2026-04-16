@@ -196,8 +196,9 @@ These controls exist in WPF but require a different control, third-party library
 Key changes:
 - `UseWPF` → `UseWinUI`
 - TFM: `net8.0-windows` → `net8.0-windows10.0.19041.0`
-- Add `WindowsPackageType=None` for unpackaged desktop apps
-- Add `SelfContained=true` + `WindowsAppSDKSelfContained=true`
+- **CRITICAL: Add `WindowsPackageType=None`** — marks the app as unpackaged (no MSIX). Without this, the build produces an MSIX-style package that won't run as a standalone PowerToys module.
+- **CRITICAL: Add `WindowsAppSDKSelfContained=true`** — bundles the Windows App SDK runtime DLLs (e.g. `Microsoft.UI.Xaml.dll`) into the output directory. Without this, the app throws `COMException: ClassFactory cannot supply requested class` at startup because the WinUI 3 COM classes cannot be found.
+- Add `SelfContained=true` (usually via `Common.SelfContained.props`)
 - Add `DISABLE_XAML_GENERATED_MAIN` if using custom `Program.cs` entry point
 - Set `ProjectPriFileName` to match your module's assembly name
 - Move icon from `Resources/` to `Assets/<Module>/`

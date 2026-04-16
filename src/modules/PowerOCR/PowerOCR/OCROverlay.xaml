@@ -4,73 +4,57 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:p="clr-namespace:PowerOCR.Properties"
     x:Name="TextExtractorWindow"
     Title="TextExtractor"
-    AllowsTransparency="True"
-    Background="Transparent"
-    Loaded="Window_Loaded"
-    ResizeMode="NoResize"
-    ShowActivated="False"
-    ShowInTaskbar="False"
-    Topmost="True"
-    Unloaded="Window_Unloaded"
-    WindowStartupLocation="Manual"
-    WindowState="Normal"
-    WindowStyle="None"
     mc:Ignorable="d">
 
     <Grid>
         <Viewbox>
             <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
         </Viewbox>
+        <Path
+            x:Name="DarkOverlayPath"
+            IsHitTestVisible="False"
+            Opacity="0">
+            <Path.Fill>
+                <SolidColorBrush Color="Black" />
+            </Path.Fill>
+            <Path.Data>
+                <GeometryGroup FillRule="EvenOdd">
+                    <RectangleGeometry x:Name="FullWindow" />
+                    <RectangleGeometry x:Name="clippingGeometry" />
+                </GeometryGroup>
+            </Path.Data>
+        </Path>
         <Canvas
             Name="RegionClickCanvas"
-            Cursor="Cross"
-            MouseDown="RegionClickCanvas_MouseDown"
-            MouseMove="RegionClickCanvas_MouseMove"
-            MouseUp="RegionClickCanvas_MouseUp">
-            <Canvas.Clip>
-                <CombinedGeometry GeometryCombineMode="Exclude">
-                    <CombinedGeometry.Geometry1>
-                        <RectangleGeometry x:Name="FullWindow" />
-                    </CombinedGeometry.Geometry1>
-                    <CombinedGeometry.Geometry2>
-                        <RectangleGeometry x:Name="clippingGeometry" />
-                    </CombinedGeometry.Geometry2>
-                </CombinedGeometry>
-            </Canvas.Clip>
-            <Canvas.Background>
-                <SolidColorBrush
-                    x:Name="BackgroundBrush"
-                    Opacity="0"
-                    Color="Black" />
-            </Canvas.Background>
-            <Canvas.ContextMenu>
-                <ContextMenu x:Name="CanvasContextMenu">
-                    <MenuItem
+            Background="Transparent"
+            PointerPressed="RegionClickCanvas_PointerPressed"
+            PointerMoved="RegionClickCanvas_PointerMoved"
+            PointerReleased="RegionClickCanvas_PointerReleased">
+            <Canvas.ContextFlyout>
+                <MenuFlyout x:Name="CanvasContextMenu">
+                    <ToggleMenuFlyoutItem
                         Name="SingleLineMenuItem"
                         Click="SingleLineMenuItem_Click"
-                        Header="{x:Static p:Resources.ResultTextSingleLine}"
-                        IsCheckable="True" />
-                    <MenuItem
+                        x:Uid="ResultTextSingleLine" />
+                    <ToggleMenuFlyoutItem
                         Name="TableMenuItem"
                         Click="TableToggleButton_Click"
-                        Header="{x:Static p:Resources.ResultTextTable}"
-                        IsCheckable="True" />
-                    <Separator />
-                    <MenuItem
+                        x:Uid="ResultTextTable" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem
                         Name="SettingsMenuItem"
                         Click="SettingsMenuItem_Click"
-                        Header="{x:Static p:Resources.Settings}" />
-                    <Separator />
-                    <MenuItem
+                        x:Uid="Settings" />
+                    <MenuFlyoutSeparator />
+                    <MenuFlyoutItem
                         Name="CancelMenuItem"
                         AutomationProperties.AutomationId="CancelMenuItem"
                         Click="CancelMenuItem_Click"
-                        Header="{x:Static p:Resources.Cancel}" />
-                </ContextMenu>
-            </Canvas.ContextMenu>
+                        x:Uid="Cancel" />
+                </MenuFlyout>
+            </Canvas.ContextFlyout>
         </Canvas>
         <Border
             x:Name="TopButtonsStackPanel"
@@ -79,8 +63,8 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             d:Visibility="Visible"
-            Background="{DynamicResource SolidBackgroundFillColorBaseBrush}"
-            BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="8"
             Visibility="Collapsed">
@@ -92,7 +76,7 @@
                     x:Name="LanguagesComboBox"
                     Margin="4,0"
                     AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
-                    AutomationProperties.Name="{x:Static p:Resources.SelectedLang}"
+                    x:Uid="SelectedLang"
                     SelectionChanged="LanguagesComboBox_SelectionChanged">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
@@ -109,14 +93,12 @@
                     Height="32"
                     Margin="4,0"
                     Padding="0"
-                    d:IsChecked="True"
-                    AutomationProperties.Name="{x:Static p:Resources.ResultTextSingleLine}"
+                    x:Uid="ResultTextSingleLine"
                     Click="SingleLineMenuItem_Click"
-                    IsChecked="{Binding IsChecked, ElementName=SingleLineMenuItem, Mode=TwoWay}"
-                    Style="{DynamicResource SubtleToggleButtonStyle}"
-                    ToolTip="{x:Static p:Resources.ResultTextSingleLineShortcut}">
+                    Style="{ThemeResource SubtleToggleButtonStyle}"
+                    ToolTipService.ToolTip="{x:Bind SingleLineTooltip}">
                     <TextBlock
-                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Text="&#xF16E;" />
                 </ToggleButton>
@@ -126,14 +108,12 @@
                     Height="32"
                     Margin="4,0"
                     Padding="0"
-                    d:IsChecked="True"
-                    AutomationProperties.Name="{x:Static p:Resources.ResultTextTable}"
+                    x:Uid="ResultTextTable"
                     Click="TableToggleButton_Click"
-                    IsChecked="{Binding IsChecked, ElementName=TableMenuItem, Mode=TwoWay}"
-                    Style="{DynamicResource SubtleToggleButtonStyle}"
-                    ToolTip="{x:Static p:Resources.ResultTextTableShortcut}">
+                    Style="{ThemeResource SubtleToggleButtonStyle}"
+                    ToolTipService.ToolTip="{x:Bind TableTooltip}">
                     <TextBlock
-                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Text="&#xE80A;" />
                 </ToggleButton>
@@ -143,12 +123,11 @@
                     Height="32"
                     Margin="4,0"
                     Padding="0"
-                    AutomationProperties.Name="{x:Static p:Resources.Settings}"
+                    x:Uid="Settings"
                     Click="SettingsMenuItem_Click"
-                    Style="{DynamicResource SubtleButtonStyle}"
-                    ToolTip="{x:Static p:Resources.Settings}">
+                    Style="{ThemeResource SubtleButtonStyle}">
                     <TextBlock
-                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Text="&#xE713;" />
                 </Button>
@@ -158,12 +137,12 @@
                     Height="32"
                     Margin="4,0"
                     Padding="0"
-                    AutomationProperties.Name="{x:Static p:Resources.Cancel}"
+                    x:Uid="Cancel"
                     Click="CancelMenuItem_Click"
-                    Style="{DynamicResource SubtleButtonStyle}"
-                    ToolTip="{x:Static p:Resources.CancelShortcut}">
+                    Style="{ThemeResource SubtleButtonStyle}"
+                    ToolTipService.ToolTip="{x:Bind CancelTooltip}">
                     <TextBlock
-                        FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="16"
                         Text="&#xE711;" />
                 </Button>

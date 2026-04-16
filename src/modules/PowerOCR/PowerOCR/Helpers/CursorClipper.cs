@@ -1,9 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Windows;
+
+using Microsoft.UI.Xaml;
 
 namespace PowerOCR.Helpers;
 
@@ -13,34 +14,27 @@ namespace PowerOCR.Helpers;
 public static class CursorClipper
 {
     /// <summary>
-    /// Constrain mouse cursor to the area of the specified UI element.
+    /// Constrain mouse cursor to the area of the specified Window.
     /// </summary>
-    /// <param name="element">Target UI element.</param>
+    /// <param name="window">Target WinUI 3 Window.</param>
     /// <returns>True on success.</returns>
-    public static bool ClipCursor(FrameworkElement element)
+    public static bool ClipCursor(Window window)
     {
-        const double dpi96 = 96.0;
-
-        var topLeft = element.PointToScreen(new Point(0, 0));
-
-        PresentationSource source = PresentationSource.FromVisual(element);
-        if (source?.CompositionTarget == null)
+        var appWindow = window.AppWindow;
+        if (appWindow == null)
         {
             return false;
         }
 
-        double dpiX = dpi96 * source.CompositionTarget.TransformToDevice.M11;
-        double dpiY = dpi96 * source.CompositionTarget.TransformToDevice.M22;
-
-        var width = (int)((element.ActualWidth + 1) * dpiX / dpi96);
-        var height = (int)((element.ActualHeight + 1) * dpiY / dpi96);
+        var position = appWindow.Position;
+        var size = appWindow.Size;
 
         OSInterop.RECT rect = new OSInterop.RECT
         {
-            Left = (int)topLeft.X,
-            Top = (int)topLeft.Y,
-            Right = (int)topLeft.X + width,
-            Bottom = (int)topLeft.Y + height,
+            Left = position.X,
+            Top = position.Y,
+            Right = position.X + size.Width,
+            Bottom = position.Y + size.Height,
         };
 
         return OSInterop.ClipCursor(ref rect);
