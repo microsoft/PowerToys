@@ -268,8 +268,17 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
                     h_sub_menu = GetSubMenu(h_menu, 0);
                 }
 
-                // Dynamically add/remove "Update available" menu item
+                // Dynamically add/remove "Update available" menu item and its separator
                 DeleteMenu(h_sub_menu, ID_UPDATE_MENU_COMMAND, MF_BYCOMMAND);
+                // Remove the separator right after the update item (position 0 after deletion)
+                if (GetMenuItemCount(h_sub_menu) > 0)
+                {
+                    MENUITEMINFOW mii = { .cbSize = sizeof(mii), .fMask = MIIM_FTYPE };
+                    if (GetMenuItemInfoW(h_sub_menu, 0, TRUE, &mii) && (mii.fType & MFT_SEPARATOR))
+                    {
+                        DeleteMenu(h_sub_menu, 0, MF_BYPOSITION);
+                    }
+                }
                 if (update_available)
                 {
                     InsertMenuW(h_sub_menu, 0, MF_BYPOSITION | MF_STRING, ID_UPDATE_MENU_COMMAND, GET_RESOURCE_STRING(IDS_UPDATE_AVAILABLE_MENU_TEXT).c_str());
@@ -498,7 +507,7 @@ void set_tray_icon_theme_adaptive(bool theme_adaptive)
     // If not requesting adaptive icon, or if adaptive icon failed to load, use default icon
     if (!icon)
     {
-        icon = LoadIcon(h_instance, MAKEINTRESOURCE(APPICON));
+        icon = LoadIcon(h_instance, MAKEINTRESOURCE(update_available ? APPICON_UPDATE : APPICON));
         if (theme_adaptive && icon)
         {
             // We requested adaptive but had to fall back, so update the flag
