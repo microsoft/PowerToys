@@ -1,12 +1,12 @@
 ---
 name: community-pr-review
-description: Review community bug-fix PRs with 7-dimension code review, automated review→fix loop, build verification, and GitHub suggested changes generation. Use when asked to review a community PR, check a bug fix PR, verify a PR builds, generate review comments, generate suggested changes, or audit a community contribution.
+description: Triage and review community PRs using GitHub Copilot cloud review. Use when asked to review a community PR, triage a PR for review readiness, request Copilot review on GitHub, process Copilot review comments locally, auto-fix simple review findings, or iterate on PR review feedback.
 license: Complete terms in LICENSE.txt
 ---
 
 # Community PR Review Skill
 
-**Review**, **fix**, and **build-verify** community bug-fix PRs via an automated review→fix loop. Produces GitHub suggested changes, a build report, and end-to-end verification instructions.
+**Triage**, **request Copilot cloud review**, **process comments locally**, **build-verify**, and **iterate** on community PRs. Auto-fixes straightforward findings, escalates complex decisions to the maintainer.
 
 ## Skill Contents
 
@@ -16,124 +16,128 @@ license: Complete terms in LICENSE.txt
 ├── LICENSE.txt                           # MIT License
 ├── scripts/
 │   ├── Start-CommunityPRReview.ps1       # Main orchestrator (loop-aware)
-│   ├── Format-SuggestedChanges.ps1       # Generate GitHub suggestion blocks from diff
+│   ├── Format-SuggestedChanges.ps1       # Generate GitHub suggestion blocks from diff (fallback)
 │   └── ReviewLib.ps1                     # Shared helpers
 └── references/
-    ├── review-community-pr.prompt.md     # Detailed review prompt with loop protocol
-    └── review-dimensions.md              # Review criteria reference
+    ├── review-community-pr.prompt.md     # Detailed review prompt
+    └── review-dimensions.md              # Review criteria reference (for manual use)
 ```
 
 ## When to Use This Skill
 
-- Review a community-contributed bug-fix PR
-- Verify a PR builds cleanly against current main
-- Generate review comments ready to post on GitHub
-- Get end-to-end verification instructions for a bug fix
-- Audit a community contribution before merging
+- Triage a PR to decide if it's ready for code review
+- Review a community-contributed PR using GitHub Copilot cloud review
+- Process Copilot review comments: auto-fix easy ones, escalate hard ones
+- Verify a PR builds cleanly after applying fixes
+- Iterate: push fixes and re-request Copilot review until clean
 
 ## Prerequisites
 
 - GitHub CLI (`gh`) installed and authenticated
+- GitHub Copilot code review enabled for the repository
 - PowerShell 7+
 - Visual Studio 2022 17.4+ or Visual Studio 2026 (for build verification)
 - Git submodules initialized (`git submodule update --init --recursive`)
 
 ## Quick Start
 
-### Option A: Run the orchestrator script
-
-```powershell
-.github/skills/community-pr-review/scripts/Start-CommunityPRReview.ps1 -PRNumber 45234
-```
-
-### Option B: Use the agent directly
+### Option A: Use the agent directly
 
 Invoke the `ReviewCommunityPR` agent with a PR number:
 ```
 Review community PR #45234
 ```
 
+### Option B: Run the orchestrator script
+
+```powershell
+.github/skills/community-pr-review/scripts/Start-CommunityPRReview.ps1 -PRNumber 45234
+```
+
 ### Option C: Use the prompt
 
 Run `.github/prompts/review-community-pr.prompt.md` with a PR number.
 
-## CLI Options
+## Workflow Overview
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `-PRNumber` | PR number to review **(required)** | — |
-| `-MaxIterations` | Max review→fix loop iterations | `3` |
-| `-SkipBuild` | Skip build verification | `false` |
-| `-OutputRoot` | Output root folder | `Generated Files/communityPrReview` |
-| `-Force` | Re-review PRs that already have output | `false` |
+### Phase 1: Triage the PR
+Evaluate whether the PR is appropriate for review:
+- **Skip** drafts, closed/merged PRs, WIP/experimental PRs
+- **Flag** early-stage feature PRs, very large PRs, PRs with merge conflicts
+- **Confirm** with user before proceeding
 
-## Workflow
-
-### Phase 1: Understand the PR
-1. Fetch PR metadata via `gh pr view`
-2. Read linked issue to understand the bug
-3. Fetch full diff and changed file list
-4. Record original PR head SHA as baseline
-
-### Phase 2: Create Worktree and Initial Build
+### Phase 2: Setup Local Worktree
 1. Determine fork vs same-repo: `gh pr view <PR> --json isCrossRepository,...`
 2. Fork: `tools/build/New-WorktreeFromFork.ps1 -Spec <user>:<branch>`
 3. Same-repo: `tools/build/New-WorktreeFromBranch.ps1 -Branch <branch>`
-4. In new worktree: `tools/build/build-essentials.cmd` → `tools/build/build.cmd`
-5. If build fails, try merging main and rebuilding
+4. Initialize submodules
 
-### Phase 3: Review→Fix Loop (max 3 iterations)
+### Phase 3: Request GitHub Copilot Cloud Review
+Assign Copilot as a reviewer on the PR via the GitHub API:
+```powershell
+$repo = (gh repo view --json nameWithOwner --jq '.nameWithOwner')
+gh api "repos/$repo/pulls/<PR>/requested_reviewers" -X POST -f 'reviewers[]=copilot'
+```
+
+### Phase 4: Wait for and Fetch Comments
+Poll until Copilot posts a review, then fetch all inline comments.
+
+### Phase 5: Categorize and Fix
 
 ```
-┌─────────────────────────┐
-│  Code Review             │ ← 7 dimensions: correctness, security, perf, ...
-│  Write review-comments   │   Each finding includes ```suggestion``` block
-└──────────┬──────────────┘
+┌──────────────────────────────┐
+│  Fetch Copilot review        │
+│  comments from GitHub        │
+└──────────┬───────────────────┘
            │
-     High/Medium findings?
+           ▼
+┌──────────────────────────────┐
+│  Categorize each comment     │
+│  as EASY or HARD             │
+└──────────┬───────────────────┘
            │
     ┌──────┴──────┐
-    │ YES         │ NO → Exit loop
-    ▼             │
-┌──────────────┐  │
-│  Apply Fixes │  │ ← Fix high/medium findings in worktree
-│  Build Check │  │ ← Verify build passes
-│  Record in   │  │
-│  fix-summary │  │
-└──────┬───────┘  │
-       │          │
-       ▼          │
-   (loop back     │
-    to review)    │
-       │          │
-    Max 3x ───────┘
+    │             │
+    ▼             ▼
+┌─────────┐  ┌──────────────┐
+│  EASY   │  │  HARD        │
+│  Auto-  │  │  Present to  │
+│  fix    │  │  user, STOP  │
+└────┬────┘  └──────┬───────┘
+     │               │
+     ▼               │ (user provides guidance)
+┌──────────────┐     │
+│  Build check │     ▼
+│  (essentials │  ┌──────────────┐
+│   + modules) │  │  Apply user  │
+└──────┬───────┘  │  decisions   │
+       │          └──────┬───────┘
+       │                 │
+       ▼                 ▼
+┌──────────────────────────────┐
+│  Push fixes, request         │
+│  Copilot re-review           │
+└──────────┬───────────────────┘
+           │
+       (loop back, max 3x)
 ```
 
-Review across 7 dimensions:
+**Easy comments** (auto-fix): style fixes, missing null checks, unused imports, simple refactors, concrete Copilot suggestions.
 
-| # | Dimension | Key Checks |
-|---|-----------|------------|
-| 1 | **Correctness** | Fix solves the bug, edge cases handled, no regressions |
-| 2 | **Security** | Input validation, no injection, safe elevation, memory safety |
-| 3 | **Performance** | No hot-path regressions, efficient patterns, proper async |
-| 4 | **Reliability** | Error handling, race conditions, resource disposal, null checks |
-| 5 | **Design** | SOLID principles, appropriate scope, no over-engineering |
-| 6 | **Compatibility** | No breaking changes, backward compat, API stability |
-| 7 | **Repo Patterns** | PowerToys conventions, style, module interface compliance |
+**Hard comments** (need human): architecture changes, logic changes, performance trade-offs, multi-file changes, security decisions, ambiguous suggestions.
 
-Each finding includes: file, line range, severity, dimension, and a ` ```suggestion ` code block with replacement code.
+### Phase 6: Build Verification
+After fixes, build in the worktree:
+```powershell
+Push-Location $prWorktree
+tools\build\build-essentials.cmd
+tools\build\build.cmd
+Pop-Location
+```
+Fix simple build-breaking changes automatically (max 3 attempts).
 
-### Phase 4: Generate Suggested Changes
-Compare worktree (with all fixes) against original PR head SHA.
-Format each changed hunk as a GitHub suggested change with ` ```suggestion ` blocks.
-
-### Phase 5: Verification Guide
-Generate step-by-step instructions:
-- How to reproduce the original bug
-- How to verify the fix works
-- Expected vs actual behavior
-- Edge cases to test
-- Regression areas to smoke-test
+### Phase 7: Push and Iterate
+Push fixes → request Copilot re-review → repeat (max 3 full iterations).
 
 ## Output
 
@@ -141,12 +145,10 @@ All outputs go to `Generated Files/communityPrReview/<PR>/`:
 
 | File | Description |
 |------|-------------|
-| `review-comments.md` | Review findings per iteration with ` ```suggestion ` blocks |
-| `fix-summary.md` | Record of all fixes applied across iterations |
-| `suggested-changes.md` | Final GitHub suggested changes (diff between original and fixed) |
-| `suggested-changes.json` | Machine-readable suggestions for API posting |
+| `copilot-comments.md` | Categorized Copilot review comments per iteration |
+| `fix-summary.md` | Record of all fixes applied (auto + human-guided) |
 | `build-report.md` | Build status, errors encountered, fix-up actions taken |
-| `verification-guide.md` | E2E verification steps and expected behavior |
+| `final-summary.md` | Complete review record across all iterations |
 | `.signal` | Completion signal for tooling |
 
 ### Signal File Format
@@ -155,39 +157,17 @@ All outputs go to `Generated Files/communityPrReview/<PR>/`:
 {
   "status": "success",
   "prNumber": 45234,
-  "originalHeadSha": "abc123...",
   "iterations": 2,
-  "reviewFindings": { "high": 0, "medium": 0, "low": 1, "info": 3 },
-  "fixesApplied": 2,
-  "suggestedChanges": 2,
+  "copilotComments": { "total": 12, "autoFixed": 8, "humanGuided": 3, "skipped": 1 },
   "buildStatus": "success",
-  "buildActions": [],
-  "timestamp": "2026-04-07T10:05:23Z"
+  "timestamp": "2026-04-14T10:05:23Z"
 }
 ```
 
 Status values: `success`, `partial` (review done, build failed), `failure`
 
-## If You ARE the Reviewer
-
-When running inside Copilot CLI or Claude CLI (i.e., you were invoked by the orchestrator), follow [review-community-pr.prompt.md](./references/review-community-pr.prompt.md) directly. It tells you:
-
-1. Fetch PR data and record original head SHA
-2. Checkout and do initial build
-3. Review→fix loop (max 3 iterations):
-   - Review across all 7 dimensions with ` ```suggestion ` blocks
-   - Apply fixes for high/medium findings
-   - Re-review until clean
-4. Generate suggested changes from diff
-5. Write build-report.md
-6. Generate verification-guide.md
-7. Write `.signal`
-
-See [review-dimensions.md](./references/review-dimensions.md) for detailed criteria per dimension.
-
 ## Related Skills
 
 | Skill | Purpose |
 |-------|---------|
-| `pr-review` | Full 13-step PR review (more comprehensive, less bug-fix focused) |
 | `pr-fix` | Fix review comments after review identifies issues |

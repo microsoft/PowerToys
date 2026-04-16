@@ -1,28 +1,31 @@
 ---
 agent: 'ReviewCommunityPR'
-description: 'Review a community bug-fix PR with review→fix loop, build verification, and GitHub suggested changes'
+description: 'Triage a community PR, request GitHub Copilot cloud review, process comments locally (auto-fix easy ones, escalate hard ones), build-verify, and iterate'
 tools: ['execute', 'read', 'edit', 'search', 'web', 'github/*']
 argument-hint: 'PR number (e.g., #45234 or 45234)'
 ---
 
 # Review Community PR
 
-Review a community-contributed bug-fix PR. This prompt invokes the `ReviewCommunityPR` agent.
+Review a community-contributed PR using GitHub Copilot cloud review. This prompt invokes the `ReviewCommunityPR` agent.
 
 ## What It Does
 
 Given a PR number, this workflow:
 
-1. **Understands the bug** — reads the PR and linked issue
-2. **Reviews the code** across 7 dimensions: correctness, security, performance, reliability, design, compatibility, and repo patterns
-3. **Fixes issues** — applies fixes for high/medium findings, verifies build, re-reviews (up to 3 iterations)
-4. **Generates suggested changes** — diffs the fixed code against the original PR and formats as GitHub ` ```suggestion ` blocks
-5. **Generates outputs**:
-   - `suggested-changes.md` — GitHub suggested changes ready to post as PR review comments
-   - `review-comments.md` — Full review findings per iteration
-   - `fix-summary.md` — Record of all fixes applied
+1. **Triages the PR** — checks if it's ready for review (skips drafts, WIP, incomplete PRs; flags early-stage feature PRs)
+2. **Requests Copilot cloud review** — assigns GitHub Copilot as a reviewer on the PR
+3. **Waits for Copilot comments** — polls until Copilot posts its review
+4. **Categorizes comments** — separates easy (auto-fixable) from hard (needs human decision)
+5. **Auto-fixes easy comments** — applies straightforward fixes without asking
+6. **Builds the project** — runs `build-essentials` then `build` to verify fixes don't break anything
+7. **Stops for hard comments** — presents complex comments for your review and guidance
+8. **Iterates** — pushes fixes and requests Copilot re-review (up to 3 cycles)
+9. **Generates outputs**:
+   - `copilot-comments.md` — Categorized Copilot review comments per iteration
+   - `fix-summary.md` — Record of all fixes applied (auto + human-guided)
    - `build-report.md` — Build status and actions taken
-   - `verification-guide.md` — Step-by-step E2E verification instructions
+   - `final-summary.md` — Complete review record across all iterations
 
 ## Usage
 
