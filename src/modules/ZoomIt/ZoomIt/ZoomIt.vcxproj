@@ -90,7 +90,7 @@
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(InterPlatformDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -112,7 +112,7 @@
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(MSBuildThisFileDirectory)..\ZoomItBreak\$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
@@ -135,7 +135,7 @@
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(MSBuildThisFileDirectory)..\ZoomItBreak\$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <FixedBaseAddress>
@@ -156,7 +156,7 @@
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(InterPlatformDir)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -177,7 +177,7 @@
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(MSBuildThisFileDirectory)..\ZoomItBreak\$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACUIAccess>true</UACUIAccess>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -199,7 +199,7 @@
       <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)..\..\..\common\version;$(MSBuildThisFileDirectory)PowerToys;$(MSBuildThisFileDirectory)..\ZoomItBreak\$(Platform)\$(Configuration)\</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;comctl32.lib;odbc32.lib;odbccp32.lib;version.lib;Winmm.lib;gdiplus.lib;Msimg32.lib;Wtsapi32.lib;windowscodecs.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACUIAccess>true</UACUIAccess>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -314,6 +314,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="BackgroundBlur.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="WebcamPreviewWindow.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
@@ -348,6 +356,7 @@
     <ClInclude Include="VersionHelper.h" />
     <ClInclude Include="VideoRecordingSession.h" />
     <ClInclude Include="WebcamCapture.h" />
+    <ClInclude Include="BackgroundBlur.h" />
     <ClInclude Include="WebcamPreviewWindow.h" />
     <ClInclude Include="ZoomIt.h" />
     <ClInclude Include="ZoomItSettings.h" />
