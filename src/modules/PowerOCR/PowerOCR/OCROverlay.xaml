@@ -2,13 +2,9 @@
     x:Class="PowerOCR.OCROverlay"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    x:Name="TextExtractorWindow"
-    Title="TextExtractor"
-    mc:Ignorable="d">
+    Title="TextExtractor">
 
-    <Grid>
+    <Grid x:Name="RootGrid">
         <Viewbox>
             <Image x:Name="BackgroundImage" Stretch="UniformToFill" />
         </Viewbox>
@@ -32,29 +28,6 @@
             PointerPressed="RegionClickCanvas_PointerPressed"
             PointerMoved="RegionClickCanvas_PointerMoved"
             PointerReleased="RegionClickCanvas_PointerReleased">
-            <Canvas.ContextFlyout>
-                <MenuFlyout x:Name="CanvasContextMenu">
-                    <ToggleMenuFlyoutItem
-                        Name="SingleLineMenuItem"
-                        Click="SingleLineMenuItem_Click"
-                        x:Uid="ResultTextSingleLine" />
-                    <ToggleMenuFlyoutItem
-                        Name="TableMenuItem"
-                        Click="TableToggleButton_Click"
-                        x:Uid="ResultTextTable" />
-                    <MenuFlyoutSeparator />
-                    <MenuFlyoutItem
-                        Name="SettingsMenuItem"
-                        Click="SettingsMenuItem_Click"
-                        x:Uid="Settings" />
-                    <MenuFlyoutSeparator />
-                    <MenuFlyoutItem
-                        Name="CancelMenuItem"
-                        AutomationProperties.AutomationId="CancelMenuItem"
-                        Click="CancelMenuItem_Click"
-                        x:Uid="Cancel" />
-                </MenuFlyout>
-            </Canvas.ContextFlyout>
         </Canvas>
         <Border
             x:Name="TopButtonsStackPanel"
@@ -62,89 +35,39 @@
             Padding="4,8,4,8"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
-            d:Visibility="Visible"
             Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
             BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"
             CornerRadius="8"
             Visibility="Collapsed">
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Orientation="Horizontal">
+            <StackPanel Orientation="Horizontal">
                 <ComboBox
                     x:Name="LanguagesComboBox"
                     Margin="4,0"
-                    AutomationProperties.AutomationId="OCROverlayLanguagesComboBox"
-                    x:Uid="SelectedLang"
-                    SelectionChanged="LanguagesComboBox_SelectionChanged">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="{Binding NativeName}" />
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                    SelectionChanged="LanguagesComboBox_SelectionChanged" />
                 <ToggleButton
                     x:Name="SingleLineToggleButton"
-                    Width="32"
-                    Height="32"
-                    Margin="4,0"
-                    Padding="0"
-                    x:Uid="ResultTextSingleLine"
-                    Click="SingleLineMenuItem_Click"
-                    Style="{ThemeResource SubtleToggleButtonStyle}"
-                    ToolTipService.ToolTip="{x:Bind SingleLineTooltip}">
-                    <TextBlock
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        FontSize="16"
-                        Text="&#xF16E;" />
+                    Width="32" Height="32" Margin="4,0" Padding="0"
+                    Click="SingleLineMenuItem_Click">
+                    <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Text="&#xF16E;" />
                 </ToggleButton>
                 <ToggleButton
                     x:Name="TableToggleButton"
-                    Width="32"
-                    Height="32"
-                    Margin="4,0"
-                    Padding="0"
-                    x:Uid="ResultTextTable"
-                    Click="TableToggleButton_Click"
-                    Style="{ThemeResource SubtleToggleButtonStyle}"
-                    ToolTipService.ToolTip="{x:Bind TableTooltip}">
-                    <TextBlock
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        FontSize="16"
-                        Text="&#xE80A;" />
+                    Width="32" Height="32" Margin="4,0" Padding="0"
+                    Click="TableToggleButton_Click">
+                    <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Text="&#xE80A;" />
                 </ToggleButton>
                 <Button
                     x:Name="SettingsButton"
-                    Width="32"
-                    Height="32"
-                    Margin="4,0"
-                    Padding="0"
-                    x:Uid="Settings"
-                    Click="SettingsMenuItem_Click"
-                    Style="{ThemeResource SubtleButtonStyle}">
-                    <TextBlock
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        FontSize="16"
-                        Text="&#xE713;" />
+                    Width="32" Height="32" Margin="4,0" Padding="0"
+                    Click="SettingsMenuItem_Click">
+                    <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Text="&#xE713;" />
                 </Button>
                 <Button
                     x:Name="CancelButton"
-                    Width="32"
-                    Height="32"
-                    Margin="4,0"
-                    Padding="0"
-                    x:Uid="Cancel"
-                    Click="CancelMenuItem_Click"
-                    Style="{ThemeResource SubtleButtonStyle}"
-                    ToolTipService.ToolTip="{x:Bind CancelTooltip}">
-                    <TextBlock
-                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                        FontSize="16"
-                        Text="&#xE711;" />
+                    Width="32" Height="32" Margin="4,0" Padding="0"
+                    Click="CancelMenuItem_Click">
+                    <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="16" Text="&#xE711;" />
                 </Button>
             </StackPanel>
         </Border>

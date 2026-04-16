@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using ManagedCommon;
@@ -16,10 +17,10 @@ namespace PowerOCR.Utilities;
 public static class WindowUtilities
 {
     [DllImport("Shcore.dll")]
-    private static extern IntPtr GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+    private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
 
     [DllImport("User32.dll")]
-    private static extern IntPtr MonitorFromPoint(System.Drawing.Point pt, uint dwFlags);
+    private static extern IntPtr MonitorFromPoint(long pt, uint dwFlags);
 
     public static void LaunchOCROverlayOnEveryScreen()
     {
@@ -30,24 +31,50 @@ public static class WindowUtilities
         }
 
         Logger.LogInfo($"Adding Overlays for each screen");
-        var displays = DisplayArea.FindAll();
-        foreach (var display in displays)
+
+        IReadOnlyList<DisplayArea> displays;
+        try
         {
-            var outerBounds = display.OuterBounds;
-            var screenRect = new RectInt32(outerBounds.X, outerBounds.Y, outerBounds.Width, outerBounds.Height);
+            displays = DisplayArea.FindAll();
+            Logger.LogInfo($"Found {displays.Count} displays");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"DisplayArea.FindAll() failed: {ex}");
+            return;
+        }
 
-            // Get DPI for this monitor
-            var monitorPoint = new System.Drawing.Point(outerBounds.X + 1, outerBounds.Y + 1);
-            var hMonitor = MonitorFromPoint(monitorPoint, 2 /* MONITOR_DEFAULTTONEAREST */);
-            GetDpiForMonitor(hMonitor, 0 /* Effective */, out uint dpiX, out _);
-            double scale = dpiX / 96.0;
+        for (int i = 0; i < displays.Count; i++)
+        {
+            try
+            {
+                var display = displays[i];
+                Logger.LogInfo("Step 1: getting OuterBounds");
+                var outerBounds = display.OuterBounds;
+                Logger.LogInfo($"Step 2: bounds={outerBounds.X},{outerBounds.Y},{outerBounds.Width},{outerBounds.Height}");
+                var screenRect = new RectInt32(outerBounds.X, outerBounds.Y, outerBounds.Width, outerBounds.Height);
 
-            Logger.LogInfo($"display {display.DisplayId}, scale {scale}");
-            OCROverlay overlay = new(screenRect, scale);
+                // Get DPI for this monitor
+                Logger.LogInfo("Step 3: MonitorFromPoint");
+                long packedPoint = (long)(outerBounds.X + 1) | ((long)(outerBounds.Y + 1) << 32);
+                var hMonitor = MonitorFromPoint(packedPoint, 2 /* MONITOR_DEFAULTTONEAREST */);
+                Logger.LogInfo("Step 4: GetDpiForMonitor");
+                int hr = GetDpiForMonitor(hMonitor, 0 /* Effective */, out uint dpiX, out _);
+                double scale = hr == 0 ? dpiX / 96.0 : 1.0;
 
-            overlay.Activate();
-            ActivateWindow(overlay);
-            App.TrackOverlay(overlay);
+                Logger.LogInfo($"Step 5: display {display.DisplayId}, scale {scale}");
+                Logger.LogInfo("Step 6: Creating OCROverlay...");
+                OCROverlay overlay = new(screenRect, scale);
+                Logger.LogInfo("Step 7: OCROverlay created, activating...");
+
+                overlay.Activate();
+                ActivateWindow(overlay);
+                App.TrackOverlay(overlay);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to create overlay for display: {ex}");
+            }
         }
 
         PowerToysTelemetry.Log.WriteEvent(new PowerOCR.Telemetry.PowerOCRInvokedEvent());

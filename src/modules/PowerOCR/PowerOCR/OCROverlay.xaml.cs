@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 
 using ManagedCommon;
@@ -26,6 +27,7 @@ using Windows.Foundation;
 using Windows.Globalization;
 using Windows.Graphics;
 using Windows.Media.Ocr;
+using Windows.Storage.Streams;
 using Windows.System;
 
 namespace PowerOCR;
@@ -46,10 +48,13 @@ public sealed partial class OCROverlay : Window
     private double xShiftDelta;
     private double yShiftDelta;
     private bool isComboBoxReady;
+    private bool isSingleLineMode;
+    private bool isTableMode;
     private const double ActiveOpacity = 0.4;
-    private readonly UserSettings userSettings = new(new ThrottledActionInvoker());
+    private UserSettings? userSettings;
     private RectInt32 screenRect;
     private double rasterizationScale;
+    private byte[]? _capturedScreenshotBytes;
 
     // Tooltip strings loaded from resources for x:Bind
     internal string SingleLineTooltip { get; }
@@ -58,19 +63,66 @@ public sealed partial class OCROverlay : Window
 
     internal string CancelTooltip { get; }
 
-    private static readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader _resourceLoader =
-        new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.PowerOCR.pri");
+    private static Microsoft.Windows.ApplicationModel.Resources.ResourceLoader? _resourceLoader;
+
+    private static Microsoft.Windows.ApplicationModel.Resources.ResourceLoader? ResourceLoaderInstance
+    {
+        get
+        {
+            if (_resourceLoader == null)
+            {
+                try
+                {
+                    _resourceLoader = new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.PowerOCR.pri");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to create ResourceLoader: {ex}");
+                }
+            }
+
+            return _resourceLoader;
+        }
+    }
+
+    private static string GetLocalizedString(string resourceKey)
+    {
+        try
+        {
+            return ResourceLoaderInstance?.GetString(resourceKey) ?? string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to load resource '{resourceKey}': {ex}");
+            return string.Empty;
+        }
+    }
 
     public OCROverlay(RectInt32 screenRectParam, double rasterizationScaleParam)
     {
         screenRect = screenRectParam;
         rasterizationScale = rasterizationScaleParam;
 
-        SingleLineTooltip = _resourceLoader.GetString("ResultTextSingleLineShortcut/Text");
-        TableTooltip = _resourceLoader.GetString("ResultTextTableShortcut/Text");
-        CancelTooltip = _resourceLoader.GetString("CancelShortcut/Text");
+        SingleLineTooltip = GetLocalizedString("ResultTextSingleLineShortcut/Text");
+        TableTooltip = GetLocalizedString("ResultTextTableShortcut/Text");
+        CancelTooltip = GetLocalizedString("CancelShortcut/Text");
+
+        // Capture screenshot BEFORE window becomes visible (otherwise we capture our own white window)
+        // Store as raw bytes — converting to BitmapImage requires async, which deadlocks on UI thread
+        System.Drawing.Rectangle screenDrawingRect = new(screenRect.X, screenRect.Y, screenRect.Width, screenRect.Height);
+        using var bmp = new System.Drawing.Bitmap(screenDrawingRect.Width, screenDrawingRect.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using (var g = System.Drawing.Graphics.FromImage(bmp))
+        {
+            g.CopyFromScreen(screenDrawingRect.Left, screenDrawingRect.Top, 0, 0, bmp.Size, System.Drawing.CopyPixelOperation.SourceCopy);
+        }
+
+        using var ms = new System.IO.MemoryStream();
+        bmp.Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+        _capturedScreenshotBytes = ms.ToArray();
 
         InitializeComponent();
+
+        userSettings = new UserSettings(new ThrottledActionInvoker());
 
         // Configure transparent overlay window
         var presenter = AppWindow.Presenter as OverlappedPresenter;
@@ -86,19 +138,13 @@ public sealed partial class OCROverlay : Window
 
         PopulateLanguageMenu();
 
-        // Wire up events after content is loaded
-        var rootGrid = this.Content as Grid;
-        if (rootGrid != null)
-        {
-            rootGrid.Loaded += Window_Loaded;
-        }
-
+        RootGrid.Loaded += Window_Loaded;
         this.Closed += Window_Closed;
     }
 
     private void PopulateLanguageMenu()
     {
-        string? selectedLanguageName = userSettings.PreferredLanguage.Value;
+        string? selectedLanguageName = userSettings?.PreferredLanguage.Value;
 
         if (string.IsNullOrEmpty(selectedLanguageName))
         {
@@ -125,24 +171,32 @@ public sealed partial class OCROverlay : Window
         isComboBoxReady = true;
     }
 
-    private void Window_Loaded(object sender, RoutedEventArgs e)
+    private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-        var rootGrid = this.Content as Grid;
         double width = screenRect.Width / rasterizationScale;
         double height = screenRect.Height / rasterizationScale;
         FullWindow.Rect = new Rect(0, 0, width, height);
 
-        // Wire up keyboard events on the root grid (WinUI 3 Window doesn't have KeyDown/KeyUp)
-        if (rootGrid != null)
+        // Wire up keyboard events on the root grid
+        RootGrid.KeyDown += MainWindow_KeyDown;
+        RootGrid.KeyUp += MainWindow_KeyUp;
+
+        // Set pre-captured screenshot as background (async to avoid UI thread deadlock)
+        if (_capturedScreenshotBytes != null)
         {
-            rootGrid.KeyDown += MainWindow_KeyDown;
-            rootGrid.KeyUp += MainWindow_KeyUp;
+            var bitmapImage = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage();
+            using var stream = new System.IO.MemoryStream(_capturedScreenshotBytes);
+            await bitmapImage.SetSourceAsync(stream.AsRandomAccessStream());
+            BackgroundImage.Source = bitmapImage;
+            _capturedScreenshotBytes = null;
         }
 
-        BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
         DarkOverlayPath.Opacity = ActiveOpacity;
-
         TopButtonsStackPanel.Visibility = Visibility.Visible;
+
+        // Set focus so keyboard events fire
+        RootGrid.IsTabStop = true;
+        RootGrid.Focus(FocusState.Programmatic);
 
 #if DEBUG
         if (AppWindow.Presenter is OverlappedPresenter debugPresenter)
@@ -314,7 +368,7 @@ public sealed partial class OCROverlay : Window
         }
         else
         {
-            if (TableMenuItem.IsChecked)
+            if (isTableMode)
             {
                 Logger.LogInfo($"Getting region as table, {selectedLanguage?.LanguageTag}");
                 grabbedText = await OcrExtensions.GetRegionsTextAsTableAsync(this, regionScaled, selectedLanguage);
@@ -324,7 +378,7 @@ public sealed partial class OCROverlay : Window
                 Logger.LogInfo($"Standard region capture, {selectedLanguage?.LanguageTag}");
                 grabbedText = await ImageMethods.GetRegionsText(this, regionScaled, selectedLanguage);
 
-                if (SingleLineMenuItem.IsChecked)
+                if (isSingleLineMode)
                 {
                     Logger.LogInfo($"Making grabbed text single line");
                     grabbedText = grabbedText.MakeStringSingleLine();
@@ -436,11 +490,6 @@ public sealed partial class OCROverlay : Window
             return tb.IsChecked.Value;
         }
 
-        if (sender is ToggleMenuFlyoutItem mi)
-        {
-            return mi.IsChecked;
-        }
-
         return false;
     }
 
@@ -451,27 +500,26 @@ public sealed partial class OCROverlay : Window
             case VirtualKey.S:
                 if (isActive is null)
                 {
-                    SingleLineMenuItem.IsChecked = !SingleLineMenuItem.IsChecked;
-                    SingleLineToggleButton.IsChecked = SingleLineMenuItem.IsChecked;
+                    isSingleLineMode = !isSingleLineMode;
                 }
                 else
                 {
-                    SingleLineMenuItem.IsChecked = isActive.Value;
-                    SingleLineToggleButton.IsChecked = isActive.Value;
+                    isSingleLineMode = isActive.Value;
                 }
 
+                SingleLineToggleButton.IsChecked = isSingleLineMode;
                 break;
             case VirtualKey.T:
                 if (isActive is null)
                 {
-                    TableMenuItem.IsChecked = !TableMenuItem.IsChecked;
-                    TableToggleButton.IsChecked = TableMenuItem.IsChecked;
+                    isTableMode = !isTableMode;
                 }
                 else
                 {
-                    TableMenuItem.IsChecked = isActive.Value;
-                    TableToggleButton.IsChecked = isActive.Value;
+                    isTableMode = isActive.Value;
                 }
+
+                TableToggleButton.IsChecked = isTableMode;
 
                 break;
             case VirtualKey.Number1:

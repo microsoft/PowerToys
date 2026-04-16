@@ -98,7 +98,14 @@ public class KeyboardMonitor : IDisposable
             {
                 _activationShortcutPressed = true;
                 e.Handled = true;
-                WindowUtilities.LaunchOCROverlayOnEveryScreen();
+
+                // Defer Window creation to the DispatcherQueue — creating a WinUI 3
+                // Window inside a Win32 keyboard hook callback causes re-entrancy in
+                // the message loop, resulting in STATUS_FATAL_USER_CALLBACK_EXCEPTION.
+                App.DispatcherQueueInstance?.TryEnqueue(() =>
+                {
+                    WindowUtilities.LaunchOCROverlayOnEveryScreen();
+                });
             }
         }
     }
