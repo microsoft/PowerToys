@@ -573,6 +573,7 @@ HDEVNOTIFY
 hdr
 hdrop
 hdwwiz
+Headered
 Helpline
 helptext
 hgdiobj
