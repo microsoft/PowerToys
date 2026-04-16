@@ -52,6 +52,8 @@
                             Command="{x:Bind ViewModel.LaunchEventHandler}"
                             Style="{StaticResource AccentButtonStyle}" />
                         <tkcontrols:SettingsExpander.Items>
+                            <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                            <tkcontrols:SettingsCard Visibility="Collapsed" />
                             <tkcontrols:SettingsCard x:Uid="PowerDisplay_ActivationShortcut">
                                 <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>

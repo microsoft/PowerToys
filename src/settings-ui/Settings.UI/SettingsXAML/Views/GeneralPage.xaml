@@ -342,9 +342,11 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock
                                         x:Name="pathTextBlock"
+                                        MaxWidth="286"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
                                         Text="{x:Bind ViewModel.SettingsBackupAndRestoreDir, Mode=TwoWay}"
                                         TextWrapping="Wrap">
                                         <ToolTipService.ToolTip>
