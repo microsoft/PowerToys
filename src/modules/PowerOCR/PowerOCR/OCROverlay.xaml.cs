@@ -58,8 +58,8 @@ public sealed partial class OCROverlay : Window
 
     internal string CancelTooltip { get; }
 
-    private static readonly Windows.ApplicationModel.Resources.ResourceLoader _resourceLoader =
-        Windows.ApplicationModel.Resources.ResourceLoader.GetForViewIndependentUse();
+    private static readonly Microsoft.Windows.ApplicationModel.Resources.ResourceLoader _resourceLoader =
+        new Microsoft.Windows.ApplicationModel.Resources.ResourceLoader("PowerToys.PowerOCR.pri");
 
     public OCROverlay(RectInt32 screenRectParam, double rasterizationScaleParam)
     {
@@ -132,8 +132,12 @@ public sealed partial class OCROverlay : Window
         double height = screenRect.Height / rasterizationScale;
         FullWindow.Rect = new Rect(0, 0, width, height);
 
-        // Set Canvas cursor
-        RegionClickCanvas.SetValue(UIElement.ManipulationModeProperty, ManipulationModes.All);
+        // Wire up keyboard events on the root grid (WinUI 3 Window doesn't have KeyDown/KeyUp)
+        if (rootGrid != null)
+        {
+            rootGrid.KeyDown += MainWindow_KeyDown;
+            rootGrid.KeyUp += MainWindow_KeyUp;
+        }
 
         BackgroundImage.Source = ImageMethods.GetWindowBoundsImage(this);
         DarkOverlayPath.Opacity = ActiveOpacity;
