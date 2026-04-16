@@ -49,6 +49,13 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
         _procPerf = CreatePerformanceCounter("Processor Information", "% Processor Utility", "_Total");
         _procPerformance = CreatePerformanceCounter("Processor Information", "% Processor Performance", "_Total");
         _procFrequency = CreatePerformanceCounter("Processor Information", "Processor Frequency", "_Total");
+
+        // Rate-based counters always return 0 (or a garbage value) on the first
+        // call to NextValue() because they need two samples to compute a delta.
+        // Prime them here so the first real GetData() call returns a valid reading.
+        _procPerf?.NextValue();
+        _procPerformance?.NextValue();
+        _procFrequency?.NextValue();
     }
 
     private void EnsureCPUProcessCountersInitialized()
@@ -93,7 +100,7 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
             var timer = Stopwatch.StartNew();
             if (_procPerf is not null)
             {
-                CpuUsage = Math.Min(_procPerf.NextValue() / 100, 1.0f);
+                CpuUsage = _procPerf.NextValue() / 100;
             }
 
             var usageMs = timer.ElapsedMilliseconds;
