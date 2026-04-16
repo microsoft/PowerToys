@@ -128,7 +128,7 @@ void handle_tray_command(HWND window, const WPARAM command_id, LPARAM lparam)
     }
     case ID_UPDATE_MENU_COMMAND:
     {
-        open_settings_window(std::nullopt);
+        open_settings_window(std::wstring{ L"Overview" });
         break;
     }
     }
