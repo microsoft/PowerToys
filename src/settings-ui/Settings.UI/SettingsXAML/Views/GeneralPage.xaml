@@ -154,9 +154,10 @@
                             <InfoBar.Content>
                                 <Button
                                     x:Uid="General_InstallNow"
-                                    Margin="0,0,0,16" Style="{StaticResource AccentButtonStyle}"
+                                    Margin="0,0,0,16"
                                     Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed}" />
+                                    IsEnabled="{Binding IsDownloadAllowed}"
+                                    Style="{StaticResource AccentButtonStyle}" />
                             </InfoBar.Content>
                             <InfoBar.ActionButton>
                                 <HyperlinkButton

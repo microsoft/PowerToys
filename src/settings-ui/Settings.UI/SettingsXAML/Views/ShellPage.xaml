@@ -169,7 +169,11 @@
                         </AnimatedIcon>
                     </NavigationViewItem.Icon>
                     <NavigationViewItem.InfoBadge>
-                        <InfoBadge Margin="0,0,2,0" x:Name="UpdateInfoBadge" Style="{StaticResource UpdateInfoBadgeStyle}" Visibility="Collapsed" />
+                        <InfoBadge
+                            x:Name="UpdateInfoBadge"
+                            Margin="0,0,2,0"
+                            Style="{StaticResource UpdateInfoBadgeStyle}"
+                            Visibility="Collapsed" />
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
