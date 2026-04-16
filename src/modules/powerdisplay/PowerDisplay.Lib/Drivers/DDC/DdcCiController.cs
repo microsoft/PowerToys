@@ -471,6 +471,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         InitializeContrast(monitor, candidate.Handle);
                     }
+
+                    // Initialize volume if supported
+                    if (monitor.SupportsVolume)
+                    {
+                        InitializeVolume(monitor, candidate.Handle);
+                    }
                 }
 
                 // Initialize brightness (always supported for DDC/CI monitors)
@@ -538,6 +544,18 @@ namespace PowerDisplay.Common.Drivers.DDC
             {
                 var contrastInfo = new VcpFeatureValue((int)current, 0, (int)max);
                 monitor.CurrentContrast = contrastInfo.ToPercentage();
+            }
+        }
+
+        /// <summary>
+        /// Initialize volume value for a monitor using VCP 0x62.
+        /// </summary>
+        private static void InitializeVolume(Monitor monitor, IntPtr handle)
+        {
+            if (TryGetVcpFeature(handle, VcpCodeVolume, monitor.Id, out uint current, out uint max))
+            {
+                var volumeInfo = new VcpFeatureValue((int)current, 0, (int)max);
+                monitor.CurrentVolume = volumeInfo.ToPercentage();
             }
         }
 
