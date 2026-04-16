@@ -187,11 +187,135 @@ If the module uses the `WPF-UI` library, replace all Lepo controls with native W
 <!-- Handle Enter/Escape keys in code-behind if needed -->
 ```
 
+## No-Equivalent Patterns (Requires Architectural Rework)
+
+These WPF features demand design changes, not find-and-replace. Read this section BEFORE attempting to migrate any file that uses these patterns.
+
+### MultiBinding → x:Bind Function Binding
+
+WinUI does not support `MultiBinding`. Replace with `x:Bind` function binding (most direct replacement), a computed ViewModel property, or multiple simple bindings.
+
+**WPF:**
+```xml
+<TextBlock>
+    <TextBlock.Text>
+        <MultiBinding StringFormat="{}{0} {1}">
+            <Binding Path="FirstName" />
+            <Binding Path="LastName" />
+        </MultiBinding>
+    </TextBlock.Text>
+</TextBlock>
+```
+
+**WinUI 3:**
+```xml
+<TextBlock Text="{x:Bind local:Converters.FormatFullName(ViewModel.FirstName, ViewModel.LastName), Mode=OneWay}" />
+```
+
+```csharp
+public static class Converters
+{
+    public static string FormatFullName(string first, string last) => $"{first} {last}";
+}
+```
+
+### Adorners → Context-Dependent Replacements
+
+WPF's `AdornerLayer` has no WinUI equivalent. Choose replacement by use case:
+
+| Adorner Use Case | WinUI 3 Replacement |
+|------------------|---------------------|
+| Validation indicators | `TeachingTip`, `InfoBar`, or InputValidation templates |
+| Resize handles | `Popup` positioned relative to target |
+| Drag preview | `DragItemsStarting` event with custom DragUI |
+| Overlay decorations | Canvas overlay or Popup layer |
+| Watermark / Placeholder | `TextBox.PlaceholderText` (built-in) |
+
+### RoutedUICommand → ICommand / RelayCommand
+
+WinUI does not support routed commands or `CommandBinding`. Replace with standard `ICommand` pattern:
+
+```csharp
+// CommunityToolkit.Mvvm
+[RelayCommand(CanExecute = nameof(CanSave))]
+private void Save() { /* save logic */ }
+private bool CanSave() => IsDirty;
+```
+
+WinUI 3 also provides `StandardUICommand` and `XamlUICommand` for pre-defined platform commands (Cut, Copy, Paste, Delete) with built-in icons and keyboard accelerators.
+
+### Tunneling / Preview Events
+
+WinUI has no tunneling event model. `PreviewMouseDown`, `PreviewKeyDown`, etc. do not exist.
+
+- Replace with the bubbling equivalent (`PointerPressed`, `KeyDown`)
+- If you relied on tunneling to intercept events before children, restructure using the `Handled` property
+- For must-handle scenarios, use `AddHandler` with `handledEventsToo: true`:
+```csharp
+myElement.AddHandler(UIElement.PointerPressedEvent,
+    new PointerEventHandler(OnPointerPressed), handledEventsToo: true);
+```
+
 ## Style and Template Changes
+
+### Implicit Styles — Always Use BasedOn
+
+> **Warning:** In WinUI 3, always use `BasedOn` when overriding default control styles. Without it, your style **replaces the entire default style** rather than extending it.
+
+```xml
+<!-- WRONG — replaces entire default style, control may lose all visual appearance -->
+<Style TargetType="Button">
+    <Setter Property="Background" Value="Red" />
+</Style>
+
+<!-- CORRECT — extends the default style -->
+<Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+    <Setter Property="Background" Value="Red" />
+</Style>
+```
 
 ### Triggers → VisualStateManager
 
-WPF `Triggers`, `DataTriggers`, and `EventTriggers` are not supported.
+WPF `Triggers`, `DataTriggers`, and `EventTriggers` are not supported. Two replacement approaches:
+
+#### Approach 1: StateTrigger (direct DataTrigger replacement — simpler)
+
+Use this for data-driven state changes. This is the closest equivalent to WPF `DataTrigger`:
+
+**WPF:**
+```xml
+<Style TargetType="Border">
+    <Style.Triggers>
+        <DataTrigger Binding="{Binding IsActive}" Value="True">
+            <Setter Property="Background" Value="Green" />
+        </DataTrigger>
+    </Style.Triggers>
+</Style>
+```
+
+**WinUI 3:**
+```xml
+<Border x:Name="MyBorder">
+    <VisualStateManager.VisualStateGroups>
+        <VisualStateGroup>
+            <VisualState x:Name="Active">
+                <VisualState.StateTriggers>
+                    <StateTrigger IsActive="{x:Bind ViewModel.IsActive, Mode=OneWay}" />
+                </VisualState.StateTriggers>
+                <VisualState.Setters>
+                    <Setter Target="MyBorder.Background" Value="Green" />
+                </VisualState.Setters>
+            </VisualState>
+        </VisualStateGroup>
+    </VisualStateManager.VisualStateGroups>
+</Border>
+```
+
+Note: `VisualStateManager` must be placed on a control inside the Window, NOT on the Window itself.
+
+#### Approach 2: ControlTemplate (for property triggers like IsMouseOver)
+
+Use this when replacing `<Trigger Property="IsMouseOver">` or similar control-state triggers:
 
 **WPF:**
 ```xml
@@ -200,9 +324,6 @@ WPF `Triggers`, `DataTriggers`, and `EventTriggers` are not supported.
         <Trigger Property="IsMouseOver" Value="True">
             <Setter Property="Background" Value="LightBlue"/>
         </Trigger>
-        <DataTrigger Binding="{Binding IsEnabled}" Value="False">
-            <Setter Property="Opacity" Value="0.5"/>
-        </DataTrigger>
     </Style.Triggers>
 </Style>
 ```
@@ -249,7 +370,34 @@ WPF `Triggers`, `DataTriggers`, and `EventTriggers` are not supported.
 | `Disabled` | `Disabled` |
 | `Pressed` | `Pressed` |
 
+## Visibility.Hidden — No Equivalent
+
+WinUI only has `Visible` and `Collapsed`. There is no `Hidden`.
+
+| WPF | WinUI 3 | Behavior |
+|-----|---------|----------|
+| `Visibility.Visible` | `Visibility.Visible` | Rendered and occupies layout space |
+| `Visibility.Hidden` | **Not available** | Use `Opacity="0"` with `Visibility="Visible"` to hide but keep layout |
+| `Visibility.Collapsed` | `Visibility.Collapsed` | Not rendered, no layout space |
+
 ## Resource Dictionary Changes
+
+### XamlControlsResources Must Be First
+
+> **Warning:** `XamlControlsResources` must be the **first** merged dictionary in `App.xaml`. It provides the default Fluent styles. Omitting it gives you controls with no visual appearance. Resource paths use `ms-appx:///` instead of relative paths.
+
+```xml
+<Application.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <!-- MUST be first -->
+            <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            <!-- Then your custom dictionaries -->
+            <ResourceDictionary Source="ms-appx:///Styles/Colors.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+</Application.Resources>
+```
 
 ### Window.Resources → Grid.Resources
 
@@ -354,6 +502,61 @@ ExtendsContentIntoTitleBar="True"  <!-- Set in code-behind -->
 | `UseLayoutRounding` | `UseLayoutRounding` | Same |
 | `IsHitTestVisible` | `IsHitTestVisible` | Same |
 | `TextBox.VerticalScrollBarVisibility` | `ScrollViewer.VerticalScrollBarVisibility` (attached) | Attached property |
+
+## Complete Find-and-Replace Reference
+
+Use this table for mechanical batch translation. Apply these rules consistently to every file.
+
+### XAML Attribute Replacements
+
+| Find | Replace With | Context |
+|------|-------------|---------|
+| `ContextMenu=` | `ContextFlyout=` | On any UIElement |
+| `{DynamicResource ` | `{ThemeResource ` | Theme-responsive references |
+| `{x:Static ` | `{x:Bind ` | Static member references |
+| `Visibility="Hidden"` | `Visibility="Collapsed"` | Or use `Opacity="0"` for layout |
+| `MouseLeftButtonDown` | `PointerPressed` | Event handlers |
+| `MouseLeftButtonUp` | `PointerReleased` | Event handlers |
+| `MouseEnter` | `PointerEntered` | Event handlers |
+| `MouseLeave` | `PointerExited` | Event handlers |
+| `MouseMove` | `PointerMoved` | Event handlers |
+| `MouseWheel` | `PointerWheelChanged` | Event handlers |
+| `MouseDoubleClick` | `DoubleTapped` | Event handlers |
+| `PreviewMouseDown` | `PointerPressed` | No tunneling in WinUI — remove Preview |
+| `PreviewMouseUp` | `PointerReleased` | No tunneling in WinUI — remove Preview |
+| `PreviewKeyDown` | `KeyDown` | No tunneling in WinUI — remove Preview |
+| `PreviewKeyUp` | `KeyUp` | No tunneling in WinUI — remove Preview |
+| `PreviewMouseWheel` | `PointerWheelChanged` | No tunneling in WinUI — remove Preview |
+| `Focusable="True"` | `IsTabStop="True"` | Focus behavior |
+| `Focusable="False"` | `IsTabStop="False"` | Focus behavior |
+| `TextWrapping="WrapWithOverflow"` | `TextWrapping="Wrap"` | TextBlock, TextBox |
+| `MediaElement` | `MediaPlayerElement` | Media playback |
+| `clr-namespace:` | `using:` | xmlns declarations |
+| `;assembly=` | (remove) | Assembly qualification not needed |
+
+### Code-Behind Replacements
+
+| Find | Replace With |
+|------|-------------|
+| `using System.Windows;` | `using Microsoft.UI.Xaml;` |
+| `using System.Windows.Controls;` | `using Microsoft.UI.Xaml.Controls;` |
+| `using System.Windows.Media;` | `using Microsoft.UI.Xaml.Media;` |
+| `using System.Windows.Data;` | `using Microsoft.UI.Xaml.Data;` |
+| `using System.Windows.Input;` | `using Microsoft.UI.Xaml.Input;` |
+| `using System.Windows.Threading;` | `using Microsoft.UI.Dispatching;` |
+| `using System.Windows.Shapes;` | `using Microsoft.UI.Xaml.Shapes;` |
+| `using System.Windows.Markup;` | `using Microsoft.UI.Xaml.Markup;` |
+| `using System.Windows.Automation;` | `using Microsoft.UI.Xaml.Automation;` |
+| `using System.Windows.Media.Animation;` | `using Microsoft.UI.Xaml.Media.Animation;` |
+| `using System.Windows.Documents;` | `using Microsoft.UI.Xaml.Documents;` |
+| `using System.Windows.Navigation;` | `using Microsoft.UI.Xaml.Navigation;` |
+| `Dispatcher.Invoke(` | `DispatcherQueue.TryEnqueue(` |
+| `Dispatcher.BeginInvoke(` | `DispatcherQueue.TryEnqueue(` |
+| `Dispatcher.CheckAccess()` | `DispatcherQueue.HasThreadAccess` |
+| `MouseEventArgs` | `PointerRoutedEventArgs` |
+| `KeyEventArgs` | `KeyRoutedEventArgs` |
+| `RoutedUICommand` | `RelayCommand` (CommunityToolkit.Mvvm) |
+| `CommandBinding` | Remove; bind ICommand directly |
 
 ## XAML Formatting (XamlStyler)
 

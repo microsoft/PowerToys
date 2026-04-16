@@ -4,24 +4,26 @@ Complete reference for mapping WPF types to WinUI 3 equivalents, based on the Im
 
 ## Root Namespace Mapping
 
-| WPF Namespace | WinUI 3 Namespace |
-|---------------|-------------------|
-| `System.Windows` | `Microsoft.UI.Xaml` |
-| `System.Windows.Automation` | `Microsoft.UI.Xaml.Automation` |
-| `System.Windows.Automation.Peers` | `Microsoft.UI.Xaml.Automation.Peers` |
-| `System.Windows.Controls` | `Microsoft.UI.Xaml.Controls` |
-| `System.Windows.Controls.Primitives` | `Microsoft.UI.Xaml.Controls.Primitives` |
-| `System.Windows.Data` | `Microsoft.UI.Xaml.Data` |
-| `System.Windows.Documents` | `Microsoft.UI.Xaml.Documents` |
-| `System.Windows.Input` | `Microsoft.UI.Xaml.Input` |
-| `System.Windows.Markup` | `Microsoft.UI.Xaml.Markup` |
-| `System.Windows.Media` | `Microsoft.UI.Xaml.Media` |
-| `System.Windows.Media.Animation` | `Microsoft.UI.Xaml.Media.Animation` |
-| `System.Windows.Media.Imaging` | `Microsoft.UI.Xaml.Media.Imaging` |
-| `System.Windows.Navigation` | `Microsoft.UI.Xaml.Navigation` |
-| `System.Windows.Shapes` | `Microsoft.UI.Xaml.Shapes` |
-| `System.Windows.Threading` | `Microsoft.UI.Dispatching` |
-| `System.Windows.Interop` | `WinRT.Interop` |
+| WPF Namespace | WinUI 3 Namespace | Notes |
+|---------------|-------------------|-------|
+| `System.Windows` | `Microsoft.UI.Xaml` | Root namespace |
+| `System.Windows.Automation` | `Microsoft.UI.Xaml.Automation` | Accessibility / UI Automation |
+| `System.Windows.Automation.Peers` | `Microsoft.UI.Xaml.Automation.Peers` | |
+| `System.Windows.Controls` | `Microsoft.UI.Xaml.Controls` | Core controls |
+| `System.Windows.Controls.Primitives` | `Microsoft.UI.Xaml.Controls.Primitives` | Low-level primitives |
+| `System.Windows.Data` | `Microsoft.UI.Xaml.Data` | Binding, IValueConverter |
+| `System.Windows.Documents` | `Microsoft.UI.Xaml.Documents` | Limited — RichTextBlock + Paragraph only |
+| `System.Windows.Input` | `Microsoft.UI.Xaml.Input` | Pointer, keyboard, focus |
+| `System.Windows.Markup` | `Microsoft.UI.Xaml.Markup` | XAML parsing, markup extensions |
+| `System.Windows.Media` | `Microsoft.UI.Xaml.Media` | Brushes, transforms |
+| `System.Windows.Media.Animation` | `Microsoft.UI.Xaml.Media.Animation` | Storyboard, animations |
+| `System.Windows.Media.Imaging` | `Microsoft.UI.Xaml.Media.Imaging` | UI display only — use `Windows.Graphics.Imaging` for processing |
+| `System.Windows.Media.Media3D` | **No equivalent** | Use Win2D or Composition APIs |
+| `System.Windows.Navigation` | `Microsoft.UI.Xaml.Navigation` | For Frame navigation events; no `NavigationService` |
+| `System.Windows.Shapes` | `Microsoft.UI.Xaml.Shapes` | Rectangle, Ellipse, Path |
+| `System.Windows.Threading` | `Microsoft.UI.Dispatching` | Dispatcher → DispatcherQueue |
+| `System.Windows.Interop` | `WinRT.Interop` | HWND interop |
+| `System.Windows.Interop` | `Microsoft.UI.Xaml.Hosting` | XAML Islands |
 
 ## Core Type Mapping
 
@@ -109,6 +111,33 @@ Last parameter changes from `CultureInfo` to `string` (BCP-47 language tag). All
 | `System.Windows.Interop.WindowInteropHelper` | `WinRT.Interop.WindowNative.GetWindowHandle()` | |
 | `System.Windows.SystemColors` | Resource keys via `ThemeResource` | No direct static class |
 | `System.Windows.SystemParameters` | Win32 API or `DisplayInformation` | No direct equivalent |
+| `System.Windows.Clipboard` | `Windows.ApplicationModel.DataTransfer.Clipboard` | Different API surface |
+| `System.Windows.Input.RoutedUICommand` | `Microsoft.UI.Xaml.Input.StandardUICommand` / `XamlUICommand` | Or use `ICommand` / `[RelayCommand]` |
+| `System.Windows.Input.CommandBinding` | **Remove** | Bind `ICommand` directly in XAML |
+
+## Controls That Need Translation (No 1:1 Mapping)
+
+These controls exist in WPF but require a different control, third-party library, or Community Toolkit package in WinUI 3:
+
+| WPF Control | WinUI 3 Replacement | Package / Notes |
+|-------------|---------------------|-----------------|
+| `DataGrid` | `DataGrid` | `CommunityToolkit.WinUI.UI.Controls` — similar API, not identical |
+| `Ribbon` | `CommandBar` or `NavigationView` | No Ribbon in WinUI |
+| `Menu` / `MenuItem` | `MenuBar` / `MenuBarItem` / `MenuFlyoutItem` | `MenuBar` for classic menu, `MenuFlyout` for context |
+| `ContextMenu` | `MenuFlyout` | Assign to `ContextFlyout` property |
+| `ToolBar` / `ToolBarTray` | `CommandBar` + `AppBarButton` | |
+| `StatusBar` | Custom `Grid`/`StackPanel` or `InfoBar` | No StatusBar control |
+| `TabControl` | `TabView` or `NavigationView` (top mode) | `TabView` for closeable tabs |
+| `DocumentViewer` | `WebView2` | `Microsoft.Web.WebView2` — render PDFs/XPS |
+| `FlowDocument` | `RichTextBlock` | Partial replacement only |
+| `RichTextBox` | `RichEditBox` | Rich text editing |
+| `WrapPanel` | `WrapPanel` | `CommunityToolkit.WinUI.UI.Controls` |
+| `UniformGrid` | `UniformGrid` | `CommunityToolkit.WinUI.UI.Controls` |
+| `DockPanel` | `DockPanel` | `CommunityToolkit.WinUI.UI.Controls` |
+| `GroupBox` | `Expander` or custom `HeaderedContentControl` | No GroupBox in WinUI |
+| `Label` | `TextBlock` | WPF `Label` is a `ContentControl`; use `TextBlock` + `AccessKey` |
+| `TreeView` | `TreeView` (native) | Available natively, but data binding model differs significantly |
+| `MediaElement` | `MediaPlayerElement` | Different API |
 
 ## NuGet Package Migration
 
