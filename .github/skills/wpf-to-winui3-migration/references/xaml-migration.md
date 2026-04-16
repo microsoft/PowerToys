@@ -127,6 +127,74 @@ If the module uses the `WPF-UI` library, replace all Lepo controls with native W
 </Window>
 ```
 
+#### Recommended: Use WindowEx from WinUIEx
+
+> **Tip:** Prefer `WinUIEx.WindowEx` over bare `Window`. It restores many WPF-like window properties directly in XAML, avoiding boilerplate code-behind for common windowing tasks.
+
+```xml
+<!-- WinUI 3 with WindowEx (preferred in PowerToys) -->
+<winuiex:WindowEx
+    xmlns:winuiex="using:WinUIEx"
+    x:Class="MyApp.MainWindow"
+    MinWidth="480"
+    MinHeight="320"
+    IsShownInSwitchers="True"
+    IsTitleBarVisible="True">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid>
+        ...
+    </Grid>
+</winuiex:WindowEx>
+```
+
+Properties available on `WindowEx` that mirror WPF `Window`:
+
+| WPF Window Property | WindowEx Property | Notes |
+|---------------------|-------------------|-------|
+| `MinWidth` / `MinHeight` | `MinWidth` / `MinHeight` | Set directly in XAML |
+| `Width` / `Height` | `Width` / `Height` | Initial window size |
+| `WindowState` | `WindowState` | Minimized, Maximized, Normal |
+| `Title` | `Title` or `x:Uid` | Window title |
+| `Icon` | Use `TitleBar.IconSource` | Via WinUI TitleBar control |
+| `ShowInTaskbar` | `IsShownInSwitchers` | Alt-Tab visibility |
+| `TopMost` | `IsAlwaysOnTop` | Always-on-top window |
+
+NuGet: `WinUIEx` — already referenced by most PowerToys modules.
+
+#### Recommended: Page-in-Window Architecture
+
+> **Tip:** WinUI 3 `Window` is NOT a `FrameworkElement` — it does not support `Resources`, `DataContext`, `x:Bind`, or `VisualStateManager` directly. Place a `Page` as the Window's root content to regain these WPF-like capabilities.
+
+```xml
+<!-- WinUI 3 — Window contains a Page for full FrameworkElement support -->
+<winuiex:WindowEx x:Class="MyApp.MainWindow"
+    xmlns:winuiex="using:WinUIEx"
+    xmlns:views="using:MyApp.Views">
+    <views:MainPage x:Name="mainPage" />
+</winuiex:WindowEx>
+```
+
+```xml
+<!-- MainPage.xaml — has full FrameworkElement capabilities -->
+<Page x:Class="MyApp.Views.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+    <Page.Resources>
+        <!-- Resources work here (unlike on Window) -->
+        <SolidColorBrush x:Key="MyBrush" Color="Red"/>
+    </Page.Resources>
+    <Grid>
+        <VisualStateManager.VisualStateGroups>
+            <!-- VisualStateManager works here (unlike on Window) -->
+        </VisualStateManager.VisualStateGroups>
+        ...
+    </Grid>
+</Page>
+```
+
+This is the standard pattern in PowerToys (e.g., FileLocksmith, EnvironmentVariables).
+
 ### App.xaml Resources
 
 ```xml
@@ -149,6 +217,16 @@ If the module uses the `WPF-UI` library, replace all Lepo controls with native W
     </ResourceDictionary>
 </Application.Resources>
 ```
+
+### CommunityToolkit.WinUI — WPF Replacement Controls
+
+> **Tip:** The `CommunityToolkit.WinUI` package provides many controls and helpers familiar to WPF developers that are missing from WinUI 3 out of the box. Before writing custom replacements, check whether CommunityToolkit already provides what you need.
+
+Key packages:
+- **`CommunityToolkit.WinUI.Controls`** — `DataGrid`, `WrapPanel`, `DockPanel`, `UniformGrid`, `TokenizingTextBox`, `HeaderedContentControl`, and more
+- **`CommunityToolkit.WinUI.Converters`** — Common value converters (`BoolToVisibilityConverter`, `StringFormatConverter`, etc.)
+- **`CommunityToolkit.WinUI.Behaviors`** — XAML behaviors for animations and interactions
+- **`CommunityToolkit.WinUI.Extensions`** — Extension methods for WinUI types
 
 ### Common Control Replacements
 
@@ -399,9 +477,13 @@ WinUI only has `Visible` and `Collapsed`. There is no `Hidden`.
 </Application.Resources>
 ```
 
-### Window.Resources → Grid.Resources
+### Window.Resources → Grid.Resources (or use Page)
 
-WinUI 3 `Window` is NOT a `DependencyObject` — no `Window.Resources`, `DataContext`, or `VisualStateManager`.
+WinUI 3 `Window` is NOT a `FrameworkElement` — no `Window.Resources`, `DataContext`, or `VisualStateManager`.
+
+**Preferred approach:** Use the [Page-in-Window architecture](#recommended-page-in-window-architecture) described above. A `Page` inside the `Window` gives you full `FrameworkElement` capabilities (Resources, DataContext, x:Bind, VisualStateManager).
+
+**Fallback** (for simple windows without a Page):
 
 ```xml
 <!-- WPF -->
