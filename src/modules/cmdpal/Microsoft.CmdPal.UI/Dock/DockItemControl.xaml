@@ -298,7 +298,14 @@
                                 <VisualStateGroup x:Name="TextVisibilityStates">
                                     <VisualState x:Name="TextVisible" />
                                     <VisualState x:Name="TitleOnly" />
-                                    <VisualState x:Name="SubtitleOnly" />
+                                    <!--  Compact has no SubtitleText, so collapse like TextHidden  -->
+                                    <VisualState x:Name="SubtitleOnly">
+                                        <VisualState.Setters>
+                                            <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                            <Setter Target="ContentGrid.HorizontalAlignment" Value="Center" />
+                                            <Setter Target="TitleText.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
                                     <VisualState x:Name="TextHidden">
                                         <VisualState.Setters>
                                             <Setter Target="ContentGrid.ColumnSpacing" Value="0" />

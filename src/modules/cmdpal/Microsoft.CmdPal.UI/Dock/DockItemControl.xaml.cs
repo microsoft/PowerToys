@@ -122,6 +122,14 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextVisibilityState()
     {
+        // When TextVisibility is Collapsed, always hide text and collapse the
+        // grid column/spacing so the icon-only layout doesn't waste space.
+        if (TextVisibility == Visibility.Collapsed)
+        {
+            VisualStateManager.GoToState(this, "TextHidden", true);
+            return;
+        }
+
         // Determine which visual state to use based on title/subtitle presence
         var stateName = (HasTitle, HasSubtitle) switch
         {
