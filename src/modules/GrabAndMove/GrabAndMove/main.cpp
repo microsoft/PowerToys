@@ -50,6 +50,10 @@ static bool g_doNotActivateOnGameMode = true; // true if GrabAndMove is suppress
 
 static bool g_useAltResize = true;      // This can be toggled from the settings. If false, Alt + right click does nothing.
 
+// Count of non-Alt keys currently held. Used to suppress GrabAndMove when Alt is
+// pressed in combination with another key (e.g. Q held, then Alt pressed).
+static int g_heldNonAltKeyCount = 0;
+
 // Resize handle identifiers
 enum ResizeHandle
 {
@@ -124,7 +128,7 @@ static bool IsSuppressedByGameMode()
 
 static bool IsActivationModifierPressed()
 {
-    return g_altPressed || ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0);
+    return g_altPressed;
 }
 
 enum class GrabAndMoveShortcutAction
@@ -571,6 +575,17 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 {
                     goto forward;
                 }
+                // If any other modifier is already held (e.g. Ctrl in Ctrl+Alt+Del),
+                // or any regular key is currently held (e.g. Q held before Alt),
+                // don't intercept this Alt press – let it reach the target application.
+                if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
+                    (GetAsyncKeyState(VK_SHIFT) & 0x8000) ||
+                    (GetAsyncKeyState(VK_LWIN) & 0x8000) ||
+                    (GetAsyncKeyState(VK_RWIN) & 0x8000) ||
+                    g_heldNonAltKeyCount > 0)
+                {
+                    goto forward;
+                }
                 g_altPressed = true;
                 if (g_shouldAbsorbAlt)
                 {
@@ -607,6 +622,21 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
         else
         {
+            // Maintain a count of held non-Alt keys so we can suppress GrabAndMove
+            // when Alt is pressed while another key is already down.
+            // KF_REPEAT >> 8 (0x40) is set in KBDLLHOOKSTRUCT::flags for auto-repeat
+            // keydowns; only count the initial press to stay accurate.
+            if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
+            {
+                if (!(kb->flags & (KF_REPEAT >> 8)))
+                    ++g_heldNonAltKeyCount;
+            }
+            else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
+            {
+                if (g_heldNonAltKeyCount > 0)
+                    --g_heldNonAltKeyCount;
+            }
+
             // Non-Alt key while Alt was absorbed without a drag: replay Alt first
             if (g_altAbsorbed && !g_dragConsumedAlt)
             {
