@@ -27,7 +27,13 @@
                 </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="GrabAndMove_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_ShouldAbsorbAlt" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_ModifierKey" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ModifierKey, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Alt" />
+                            <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Win" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_ShouldAbsorbAlt" IsEnabled="{x:Bind ViewModel.IsAltModifier, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_UseAltResize" HeaderIcon="{ui:FontIcon Glyph=&#xE740;}">

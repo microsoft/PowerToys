@@ -5963,6 +5963,18 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_BehaviorSettingsGroup.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
+  <data name="GrabAndMove_ModifierKey.Header" xml:space="preserve">
+    <value>Activation modifier key</value>
+    <comment>Drop-down to choose which modifier key (Alt or Win) activates Grab And Move drag and resize.</comment>
+  </data>
+  <data name="GrabAndMove_ModifierKey_Alt.Content" xml:space="preserve">
+    <value>Alt</value>
+    <comment>The Alt key on the keyboard</comment>
+  </data>
+  <data name="GrabAndMove_ModifierKey_Win.Content" xml:space="preserve">
+    <value>Win</value>
+    <comment>The Windows key on the keyboard</comment>
+  </data>
   <data name="GrabAndMove_ShouldAbsorbAlt.Header" xml:space="preserve">
     <value>Absorb Alt presses</value>
     <comment>When enabled, Grab And Move absorbs the Alt keypress so it does not activate the window menu after a drag/resize.</comment>

@@ -25,7 +25,17 @@ static HHOOK g_hhkKeyboard = nullptr;
 static HHOOK g_hhkMouse = nullptr;
 static HWND g_hMsgWnd = nullptr;
 
+// 0 = Alt (default), 1 = Win
+enum class GrabAndMoveModifier
+{
+    Alt = 0,
+    Win = 1,
+};
+static GrabAndMoveModifier g_modifierKey = GrabAndMoveModifier::Alt;
+
 static bool g_altPressed = false;
+static bool g_winPressed = false;  // true while LWIN or RWIN is held (Win modifier mode)
+static bool g_winAbsorbed = false; // true if we absorbed a Win keydown
 static bool g_dragging = false;
 static bool g_dragFirstMove = false; // true until first WM_MOUSEMOVE of a drag
 static HWND g_dragTarget = nullptr;
@@ -50,8 +60,8 @@ static bool g_doNotActivateOnGameMode = true; // true if GrabAndMove is suppress
 
 static bool g_useAltResize = true;      // This can be toggled from the settings. If false, Alt + right click does nothing.
 
-// Count of non-Alt keys currently held. Used to suppress GrabAndMove when Alt is
-// pressed in combination with another key (e.g. Q held, then Alt pressed).
+// Count of non-modifier keys currently held. Used to suppress GrabAndMove when the
+// modifier key is pressed while another key is already down (e.g. Q held, then modifier pressed).
 static int g_heldNonAltKeyCount = 0;
 
 // Resize handle identifiers
@@ -128,6 +138,8 @@ static bool IsSuppressedByGameMode()
 
 static bool IsActivationModifierPressed()
 {
+    if (g_modifierKey == GrabAndMoveModifier::Win)
+        return g_winPressed;
     return g_altPressed;
 }
 
@@ -178,6 +190,11 @@ static void LoadSettingsFromFile()
         if (auto v = values.get_bool_value(L"useAltResize"))
         {
             g_useAltResize = *v;
+        }
+
+        if (auto v = values.get_int_value(L"modifierKey"))
+        {
+            g_modifierKey = (*v == 1) ? GrabAndMoveModifier::Win : GrabAndMoveModifier::Alt;
         }
 
         if (auto v = values.get_string_value(L"excluded_apps"))
@@ -566,52 +583,46 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         }
 
         bool isAltKey = (kb->vkCode == VK_MENU || kb->vkCode == VK_LMENU || kb->vkCode == VK_RMENU);
+        bool isWinKey = (kb->vkCode == VK_LWIN || kb->vkCode == VK_RWIN);
 
-        if (isAltKey)
+        // ----- Win key modifier handling -----
+        if (isWinKey && g_modifierKey == GrabAndMoveModifier::Win)
         {
             if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
             {
                 if (IsSuppressedByGameMode())
-                {
                     goto forward;
-                }
-                // If any other modifier is already held (e.g. Ctrl in Ctrl+Alt+Del),
-                // or any regular key is currently held (e.g. Q held before Alt),
-                // don't intercept this Alt press – let it reach the target application.
+                // Suppress if Ctrl, Alt, Shift, or any regular key is already held
                 if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
+                    (GetAsyncKeyState(VK_MENU) & 0x8000) ||
                     (GetAsyncKeyState(VK_SHIFT) & 0x8000) ||
-                    (GetAsyncKeyState(VK_LWIN) & 0x8000) ||
-                    (GetAsyncKeyState(VK_RWIN) & 0x8000) ||
                     g_heldNonAltKeyCount > 0)
                 {
                     goto forward;
                 }
-                g_altPressed = true;
-                if (g_shouldAbsorbAlt)
+                g_winPressed = true;
+                if (!g_winAbsorbed)
                 {
-                    if (!g_altAbsorbed)
-                    {
-                        g_altAbsorbed = true;
-                        g_dragConsumedAlt = false;
-                        g_absorbedVk = kb->vkCode;
-                        g_absorbedScanCode = kb->scanCode;
-                        g_absorbedFlags = kb->flags;
-                    }
-                    return 1; // swallow the Alt keydown
+                    g_winAbsorbed = true;
+                    g_dragConsumedAlt = false;
+                    g_absorbedVk = kb->vkCode;
+                    g_absorbedScanCode = kb->scanCode;
+                    g_absorbedFlags = kb->flags;
                 }
+                return 1; // swallow Win keydown
             }
             else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
             {
-                g_altPressed = false;
+                g_winPressed = false;
                 bool wasDragging = g_dragging;
                 bool wasResizing = g_resizing;
                 EndInteraction(true, true);
-                if (g_altAbsorbed)
+                if (g_winAbsorbed)
                 {
-                    g_altAbsorbed = false;
+                    g_winAbsorbed = false;
                     if (wasDragging || wasResizing || g_dragConsumedAlt)
                     {
-                        // Alt was used for a drag/resize; swallow the keyup too
+                        // Win was used for a drag/resize; swallow the keyup too
                         g_dragConsumedAlt = false;
                         return 1;
                     }
@@ -619,13 +630,89 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                     ReplayAbsorbedAlt();
                 }
             }
+            goto forward; // let Win keyup pass through
         }
-        else
+
+        if (g_modifierKey == GrabAndMoveModifier::Alt)
         {
-            // Maintain a count of held non-Alt keys so we can suppress GrabAndMove
-            // when Alt is pressed while another key is already down.
-            // KF_REPEAT >> 8 (0x40) is set in KBDLLHOOKSTRUCT::flags for auto-repeat
-            // keydowns; only count the initial press to stay accurate.
+            if (isAltKey)
+            {
+                if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
+                {
+                    if (IsSuppressedByGameMode())
+                    {
+                        goto forward;
+                    }
+                    // If any other modifier is already held (e.g. Ctrl in Ctrl+Alt+Del),
+                    // or any regular key is currently held (e.g. Q held before Alt),
+                    // don't intercept this Alt press – let it reach the target application.
+                    if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
+                        (GetAsyncKeyState(VK_SHIFT) & 0x8000) ||
+                        (GetAsyncKeyState(VK_LWIN) & 0x8000) ||
+                        (GetAsyncKeyState(VK_RWIN) & 0x8000) ||
+                        g_heldNonAltKeyCount > 0)
+                    {
+                        goto forward;
+                    }
+                    g_altPressed = true;
+                    if (g_shouldAbsorbAlt)
+                    {
+                        if (!g_altAbsorbed)
+                        {
+                            g_altAbsorbed = true;
+                            g_dragConsumedAlt = false;
+                            g_absorbedVk = kb->vkCode;
+                            g_absorbedScanCode = kb->scanCode;
+                            g_absorbedFlags = kb->flags;
+                        }
+                        return 1; // swallow the Alt keydown
+                    }
+                }
+                else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
+                {
+                    g_altPressed = false;
+                    bool wasDragging = g_dragging;
+                    bool wasResizing = g_resizing;
+                    EndInteraction(true, true);
+                    if (g_altAbsorbed)
+                    {
+                        g_altAbsorbed = false;
+                        if (wasDragging || wasResizing || g_dragConsumedAlt)
+                        {
+                            // Alt was used for a drag/resize; swallow the keyup too
+                            g_dragConsumedAlt = false;
+                            return 1;
+                        }
+                        // No drag happened; replay the keydown, then let keyup through
+                        ReplayAbsorbedAlt();
+                    }
+                }
+            }
+            else
+            {
+                // Non-Alt key while Alt was absorbed without a drag: replay Alt first
+                if (g_altAbsorbed && !g_dragConsumedAlt)
+                {
+                    g_altAbsorbed = false;
+                    ReplayAbsorbedAlt();
+                }
+            }
+        }
+
+        // Non-Win key while Win was absorbed without a drag: replay Win first
+        if (g_winAbsorbed && !g_dragConsumedAlt && !isWinKey)
+        {
+            g_winAbsorbed = false;
+            g_winPressed = false;
+            ReplayAbsorbedAlt();
+        }
+
+        // Track held non-modifier keys (used to suppress GrabAndMove when the modifier
+        // is pressed while another key is already down). Applies to both Alt and Win modes.
+        // KF_REPEAT >> 8 (0x40) is set in KBDLLHOOKSTRUCT::flags for auto-repeat
+        // keydowns; only count the initial press to stay accurate.
+        if (!isAltKey && !isWinKey)
+        {
             if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
             {
                 if (!(kb->flags & (KF_REPEAT >> 8)))
@@ -635,13 +722,6 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
             {
                 if (g_heldNonAltKeyCount > 0)
                     --g_heldNonAltKeyCount;
-            }
-
-            // Non-Alt key while Alt was absorbed without a drag: replay Alt first
-            if (g_altAbsorbed && !g_dragConsumedAlt)
-            {
-                g_altAbsorbed = false;
-                ReplayAbsorbedAlt();
             }
         }
     }
