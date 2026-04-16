@@ -65,6 +65,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetAllowedAdvancedPasteOllamaValue();
         static GpoRuleConfigured GetAllowedAdvancedPasteFoundryLocalValue();
         static GpoRuleConfigured GetConfiguredNewPlusEnabledValue();
+        static GpoRuleConfigured GetConfiguredShowDesktopEnabledValue();
         static GpoRuleConfigured GetConfiguredWorkspacesEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbClipboardSharingEnabledValue();
         static GpoRuleConfigured GetConfiguredMwbFileTransferEnabledValue();

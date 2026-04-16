@@ -69,6 +69,7 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
+      <ComponentGroupRef Id="ShowDesktopComponentGroup" />
       <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>
 

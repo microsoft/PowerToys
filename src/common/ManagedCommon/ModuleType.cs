@@ -37,6 +37,7 @@ namespace ManagedCommon
         PowerOCR,
         Workspaces,
         GrabAndMove,
+        ShowDesktop,
         ZoomIt,
         GeneralSettings,
     }

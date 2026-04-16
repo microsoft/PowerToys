@@ -1040,6 +1040,11 @@
     <Project Path="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" Id="568c4c30-2e3c-4c2c-a691-007362073765" />
     <Project Path="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" Id="2c3f7770-4e57-46b7-8dc1-7428a383d0db" />
   </Folder>
+  <Folder Name="/modules/ShowDesktop/">
+    <Project Path="src/modules/ShowDesktop/ShowDesktopModuleInterface/ShowDesktopModuleInterface.vcxproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
+    <Project Path="src/modules/ShowDesktop/ShowDesktop/ShowDesktop.csproj" Id="b2c3d4e5-f6a7-8901-bcde-f12345678901" />
+    <Project Path="src/modules/ShowDesktop/ShowDesktop.UnitTests/ShowDesktop.UnitTests.csproj" Id="c3d4e5f6-a7b8-9012-cdef-123456789012" />
+  </Folder>
   <Folder Name="/settings-ui/">
     <Project Path="src/settings-ui/QuickAccess.UI/PowerToys.QuickAccess.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -1106,6 +1111,7 @@
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
     <BuildDependency Project="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" />
+    <BuildDependency Project="src/modules/ShowDesktop/ShowDesktopModuleInterface/ShowDesktopModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
     <BuildDependency Project="src/modules/previewpane/Common/PreviewHandlerCommon.csproj" />

@@ -48,6 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.PowerDisplay: return GPOWrapper.GetConfiguredPowerDisplayEnabledValue();
                 case ModuleType.ZoomIt: return GPOWrapper.GetConfiguredZoomItEnabledValue();
                 case ModuleType.GrabAndMove: return GPOWrapper.GetConfiguredGrabAndMoveEnabledValue();
+                case ModuleType.ShowDesktop: return GPOWrapper.GetConfiguredShowDesktopEnabledValue();
                 default: return GpoRuleConfigured.Unavailable;
             }
         }
@@ -89,6 +90,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.PowerDisplay => typeof(PowerDisplayPage),
                 ModuleType.ZoomIt => typeof(ZoomItPage),
                 ModuleType.GrabAndMove => typeof(GrabAndMovePage),
+                ModuleType.ShowDesktop => typeof(ShowDesktopPage),
                 _ => typeof(DashboardPage), // never called, all values listed above
             };
         }

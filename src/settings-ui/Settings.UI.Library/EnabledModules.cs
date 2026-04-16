@@ -580,6 +580,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool showDesktop; // defaulting to off
+
+        [JsonPropertyName("ShowDesktop")]
+        public bool ShowDesktop
+        {
+            get => showDesktop;
+            set
+            {
+                if (showDesktop != value)
+                {
+                    LogTelemetryEvent(value);
+                    showDesktop = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

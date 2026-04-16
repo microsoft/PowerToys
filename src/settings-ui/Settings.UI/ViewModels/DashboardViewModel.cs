@@ -503,6 +503,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
                 ModuleType.GrabAndMove => new ObservableCollection<DashboardModuleItem>(),
+                ModuleType.ShowDesktop => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),

@@ -18,6 +18,7 @@
   <?define RegistryPreviewProjectName="RegistryPreview"?>
   <?define PeekProjectName="Peek"?>
   <?define WorkspacesProjectName="Workspaces"?>
+  <?define ShowDesktopProjectName="ShowDesktop"?>
   
   <?define RepoDir="$(var.ProjectDir)..\..\" ?>
   <?if $(var.Platform) = x64?>

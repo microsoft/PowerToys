@@ -76,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerDisplay => generalSettingsConfig.Enabled.PowerDisplay,
                 ModuleType.Workspaces => generalSettingsConfig.Enabled.Workspaces,
                 ModuleType.GrabAndMove => generalSettingsConfig.Enabled.GrabAndMove,
+                ModuleType.ShowDesktop => generalSettingsConfig.Enabled.ShowDesktop,
                 ModuleType.ZoomIt => generalSettingsConfig.Enabled.ZoomIt,
                 ModuleType.GeneralSettings => generalSettingsConfig.EnableQuickAccess,
                 _ => false,
@@ -117,6 +118,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.PowerDisplay: generalSettingsConfig.Enabled.PowerDisplay = isEnabled; break;
                 case ModuleType.Workspaces: generalSettingsConfig.Enabled.Workspaces = isEnabled; break;
                 case ModuleType.GrabAndMove: generalSettingsConfig.Enabled.GrabAndMove = isEnabled; break;
+                case ModuleType.ShowDesktop: generalSettingsConfig.Enabled.ShowDesktop = isEnabled; break;
                 case ModuleType.ZoomIt: generalSettingsConfig.Enabled.ZoomIt = isEnabled; break;
                 case ModuleType.GeneralSettings: generalSettingsConfig.EnableQuickAccess = isEnabled; break;
             }
@@ -161,6 +163,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerOCR => PowerOcrSettings.ModuleName,
                 ModuleType.Workspaces => WorkspacesSettings.ModuleName,
                 ModuleType.GrabAndMove => GrabAndMoveSettings.ModuleName,
+                ModuleType.ShowDesktop => ShowDesktopSettings.ModuleName,
                 ModuleType.ZoomIt => ZoomItSettings.ModuleName,
                 _ => moduleType.ToString(),
             };

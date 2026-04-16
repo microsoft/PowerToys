@@ -71,6 +71,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_PREVIEW = L"ConfigureEnabledUtilityFileExplorerQOIPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_QOI_THUMBNAILS = L"ConfigureEnabledUtilityFileExplorerQOIThumbnails";
     const std::wstring POLICY_CONFIGURE_ENABLED_NEWPLUS = L"ConfigureEnabledUtilityNewPlus";
+    const std::wstring POLICY_CONFIGURE_ENABLED_SHOW_DESKTOP = L"ConfigureEnabledUtilityShowDesktop";
     const std::wstring POLICY_CONFIGURE_ENABLED_WORKSPACES = L"ConfigureEnabledUtilityWorkspaces";
 
     // The registry value names for PowerToys installer and update policies.
@@ -511,6 +512,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredNewPlusEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_NEWPLUS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredShowDesktopEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_SHOW_DESKTOP);
     }
 #pragma endregion UtilityEnabledStatePolicies
 

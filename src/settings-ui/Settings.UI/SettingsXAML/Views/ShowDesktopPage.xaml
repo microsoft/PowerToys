@@ -1,0 +1,80 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.ShowDesktopPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <local:NavigablePage.Resources />
+    <controls:SettingsPageControl
+        x:Uid="ShowDesktop"
+        IsTabStop="False"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/ShowDesktop.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="ShowDesktop_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShowDesktop.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+
+                <controls:SettingsGroup x:Uid="ShowDesktop_Behavior_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="ShowDesktop_PeekMode"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7B3;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PeekMode, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="ShowDesktop_PeekMode_Native" />
+                            <ComboBoxItem x:Uid="ShowDesktop_PeekMode_Minimize" />
+                            <ComboBoxItem x:Uid="ShowDesktop_PeekMode_FlyAway" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="ShowDesktop_RequireDoubleClick"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B0;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RequireDoubleClick, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="ShowDesktop_EnableTaskbarPeek"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C4;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableTaskbarPeek, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="ShowDesktop_Advanced_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="ShowDesktop_EnableGamingDetection"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnableGamingDetection, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="ShowDesktop_FlyAwayAnimationDuration"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
+                        Visibility="{x:Bind ViewModel.IsFlyAwayMode, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            LargeChange="100"
+                            Maximum="1000"
+                            Minimum="100"
+                            SmallChange="50"
+                            StepFrequency="50"
+                            Value="{x:Bind ViewModel.FlyAwayAnimationDurationMs, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_ShowDesktop" Link="https://aka.ms/PowerToysOverview_ShowDesktop" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

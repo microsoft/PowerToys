@@ -5979,4 +5979,75 @@ Text uses the current drawing color.</value>
     <value>Example: outlook.exe</value>
     <comment>{Locked="outlook.exe"}</comment>
   </data>
+  <data name="ShowDesktop.ModuleDescription" xml:space="preserve">
+    <value>Click on empty desktop wallpaper to minimize all windows. Click again to restore them.</value>
+    <comment>"Show Desktop" is the name of the utility</comment>
+  </data>
+  <data name="ShowDesktop.ModuleTitle" xml:space="preserve">
+    <value>Show Desktop</value>
+    <comment>"Show Desktop" is the name of the utility</comment>
+  </data>
+  <data name="Shell_ShowDesktop.Content" xml:space="preserve">
+    <value>Show Desktop</value>
+    <comment>"Show Desktop" is the name of the utility</comment>
+  </data>
+  <data name="ShowDesktop_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Show Desktop</value>
+    <comment>"Show Desktop" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_ShowDesktop.Text" xml:space="preserve">
+    <value>Learn more about Show Desktop</value>
+    <comment>"Show Desktop" is the name of the utility</comment>
+  </data>
+  <data name="ShowDesktop_PeekMode.Header" xml:space="preserve">
+    <value>Peek mode</value>
+  </data>
+  <data name="ShowDesktop_PeekMode.Description" xml:space="preserve">
+    <value>Choose how windows are hidden when revealing the desktop</value>
+  </data>
+  <data name="ShowDesktop_PeekMode_Native.Content" xml:space="preserve">
+    <value>Native Show Desktop</value>
+    <comment>Uses the built-in Windows Show Desktop mechanism</comment>
+  </data>
+  <data name="ShowDesktop_PeekMode_Minimize.Content" xml:space="preserve">
+    <value>Minimize</value>
+    <comment>Minimizes each window individually</comment>
+  </data>
+  <data name="ShowDesktop_PeekMode_FlyAway.Content" xml:space="preserve">
+    <value>Fly Away</value>
+    <comment>Animates windows flying off-screen</comment>
+  </data>
+  <data name="ShowDesktop_RequireDoubleClick.Header" xml:space="preserve">
+    <value>Require double-click</value>
+  </data>
+  <data name="ShowDesktop_RequireDoubleClick.Description" xml:space="preserve">
+    <value>When enabled, you must double-click the wallpaper to reveal the desktop</value>
+  </data>
+  <data name="ShowDesktop_EnableTaskbarPeek.Header" xml:space="preserve">
+    <value>Enable taskbar peek</value>
+  </data>
+  <data name="ShowDesktop_EnableTaskbarPeek.Description" xml:space="preserve">
+    <value>Also trigger peek when clicking on empty taskbar space</value>
+  </data>
+  <data name="ShowDesktop_EnableGamingDetection.Header" xml:space="preserve">
+    <value>Pause during fullscreen gaming</value>
+  </data>
+  <data name="ShowDesktop_EnableGamingDetection.Description" xml:space="preserve">
+    <value>Automatically disable Show Desktop when a fullscreen game is detected</value>
+  </data>
+  <data name="ShowDesktop_FlyAwayAnimationDuration.Header" xml:space="preserve">
+    <value>Fly Away animation duration (ms)</value>
+  </data>
+  <data name="ShowDesktop_FlyAwayAnimationDuration.Description" xml:space="preserve">
+    <value>Duration of the animation when using Fly Away mode</value>
+  </data>
+  <data name="ShowDesktop_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="ShowDesktop_Behavior_GroupSettings.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="ShowDesktop_Advanced_GroupSettings.Header" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
 </root>
