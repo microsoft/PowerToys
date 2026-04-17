@@ -65,9 +65,10 @@ The feed is a single wrapped JSON document with inline entries:
 }
 ```
 
-Only the `extensions` array is read at runtime. See
-`gallery-manifest.schema.json` in this folder for the full entry shape (used
-for upstream authoring + editor validation).
+Only the `extensions` array is read at runtime. The authoritative JSON
+schema for an entry lives in the upstream feed repo
+([`microsoft/CmdPal-Extensions`](https://github.com/microsoft/CmdPal-Extensions));
+don't duplicate it here — it drifts.
 
 ### Required + optional entry fields
 
@@ -154,9 +155,8 @@ for UI hints:
 
 - Entries for the production gallery are added to the feed repo
   `microsoft/CmdPal-Extensions`.
-- Point an editor at `gallery-manifest.schema.json` in this folder (or the
-  schema served from the upstream repo) for inline validation of an
-  individual entry.
+- For editor validation of an entry, reference the schema published in the
+  upstream repo via the entry's `$schema` field.
 - Keep `id` stable once an extension is published — users may have it
   installed and the gallery keys install status by id.
 - Prefer providing a `winget` source when the extension ships through App
