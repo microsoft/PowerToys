@@ -25,10 +25,18 @@ namespace PowerDisplay.ViewModels;
 /// </summary>
 public partial class MainViewModel
 {
-    /// <summary>
-    /// Check if a value is within the valid range (inclusive).
-    /// </summary>
-    private static bool IsValueInRange(int value, int min, int max) => value >= min && value <= max;
+    private static void TryRestore(
+        List<Task> tasks,
+        int? savedValue,
+        bool isVisible,
+        int currentValue,
+        Func<int, Task> setter)
+    {
+        if (savedValue.HasValue && isVisible && savedValue.Value != currentValue)
+        {
+            tasks.Add(setter(savedValue.Value));
+        }
+    }
 
     /// <summary>
     /// Apply settings changes from Settings UI (IPC event handler entry point)
@@ -212,32 +220,16 @@ public partial class MainViewModel
             }
 
             // Apply brightness if included in profile
-            if (setting.Brightness.HasValue &&
-                IsValueInRange(setting.Brightness.Value, monitorVm.MinBrightness, monitorVm.MaxBrightness))
-            {
-                updateTasks.Add(monitorVm.SetBrightnessAsync(setting.Brightness.Value));
-            }
+            TryRestore(updateTasks, setting.Brightness, monitorVm.ShowBrightness, monitorVm.Brightness, monitorVm.SetBrightnessAsync);
 
             // Apply contrast if supported and value provided
-            if (setting.Contrast.HasValue && monitorVm.ShowContrast &&
-                IsValueInRange(setting.Contrast.Value, monitorVm.MinContrast, monitorVm.MaxContrast))
-            {
-                updateTasks.Add(monitorVm.SetContrastAsync(setting.Contrast.Value));
-            }
+            TryRestore(updateTasks, setting.Contrast, monitorVm.ShowContrast, monitorVm.Contrast, monitorVm.SetContrastAsync);
 
             // Apply volume if supported and value provided
-            if (setting.Volume.HasValue && monitorVm.ShowVolume &&
-                IsValueInRange(setting.Volume.Value, monitorVm.MinVolume, monitorVm.MaxVolume))
-            {
-                updateTasks.Add(monitorVm.SetVolumeAsync(setting.Volume.Value));
-            }
+            TryRestore(updateTasks, setting.Volume, monitorVm.ShowVolume, monitorVm.Volume, monitorVm.SetVolumeAsync);
 
             // Apply color temperature if included in profile
-            if (setting.ColorTemperatureVcp.HasValue && setting.ColorTemperatureVcp.Value > 0 &&
-                monitorVm.ShowColorTemperature)
-            {
-                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperatureVcp.Value));
-            }
+            TryRestore(updateTasks, setting.ColorTemperatureVcp, monitorVm.ShowColorTemperature, monitorVm.ColorTemperature, monitorVm.SetColorTemperatureAsync);
         }
 
         // Wait for all updates to complete
@@ -268,41 +260,10 @@ public partial class MainViewModel
 
                 var (brightness, colorTemp, contrast, volume) = savedState.Value;
 
-                // Restore brightness if different from current
-                if (brightness.HasValue &&
-                    monitorVm.ShowBrightness &&
-                    IsValueInRange(brightness.Value, monitorVm.MinBrightness, monitorVm.MaxBrightness) &&
-                    brightness.Value != monitorVm.Brightness)
-                {
-                    updateTasks.Add(monitorVm.SetBrightnessAsync(brightness.Value));
-                }
-
-                // Restore color temperature if different from current
-                if (colorTemp.HasValue &&
-                    monitorVm.ShowColorTemperature &&
-                    colorTemp.Value > 0 &&
-                    colorTemp.Value != monitorVm.ColorTemperature)
-                {
-                    updateTasks.Add(monitorVm.SetColorTemperatureAsync(colorTemp.Value));
-                }
-
-                // Restore contrast if different from current
-                if (contrast.HasValue &&
-                    monitorVm.ShowContrast &&
-                    IsValueInRange(contrast.Value, monitorVm.MinContrast, monitorVm.MaxContrast) &&
-                    contrast.Value != monitorVm.Contrast)
-                {
-                    updateTasks.Add(monitorVm.SetContrastAsync(contrast.Value));
-                }
-
-                // Restore volume if different from current
-                if (volume.HasValue &&
-                    monitorVm.ShowVolume &&
-                    IsValueInRange(volume.Value, monitorVm.MinVolume, monitorVm.MaxVolume) &&
-                    volume.Value != monitorVm.Volume)
-                {
-                    updateTasks.Add(monitorVm.SetVolumeAsync(volume.Value));
-                }
+                TryRestore(updateTasks, brightness, monitorVm.ShowBrightness, monitorVm.Brightness, monitorVm.SetBrightnessAsync);
+                TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.ColorTemperature, monitorVm.SetColorTemperatureAsync);
+                TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.Contrast, monitorVm.SetContrastAsync);
+                TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.Volume, monitorVm.SetVolumeAsync);
             }
 
             if (updateTasks.Count > 0)

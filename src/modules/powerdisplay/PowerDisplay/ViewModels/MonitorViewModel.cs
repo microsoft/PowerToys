@@ -120,6 +120,16 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetColorTemperatureAsync(int colorTemperature)
     {
+        var vcpInfo = VcpCapabilitiesInfo;
+        if (vcpInfo != null &&
+            vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var codeInfo) &&
+            codeInfo.HasDiscreteValues &&
+            !codeInfo.SupportedValues.Contains(colorTemperature))
+        {
+            Logger.LogWarning($"[{Id}] Color temperature 0x{colorTemperature:X2} not in supported values, skipping");
+            return;
+        }
+
         try
         {
             var result = await _monitorManager.SetColorTemperatureAsync(Id, colorTemperature);
