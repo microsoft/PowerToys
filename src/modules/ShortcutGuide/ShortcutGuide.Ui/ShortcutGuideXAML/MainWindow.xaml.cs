@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Common.UI;
@@ -11,6 +12,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Imaging;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.Pages;
@@ -26,7 +28,7 @@ namespace ShortcutGuide
 {
     public sealed partial class MainWindow : WindowEx
     {
-        private readonly string[] _currentApplicationIds;
+        private readonly Dictionary<string, string?> _currentApplicationIds;
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = null!;
 
@@ -146,9 +148,11 @@ namespace ShortcutGuide
             // TO DO: Check if Settings button is considered an item too.
             if (this.WindowSelector.MenuItems.Count == 0)
             {
-                foreach (var item in this._currentApplicationIds)
+                string defaultShellName = ManifestInterpreter.GetIndexYamlFile().DefaultShellName;
+
+                foreach (var (item, executablePath) in this._currentApplicationIds)
                 {
-                    if (item == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
+                    if (item == defaultShellName)
                     {
                         this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = "Windows", Icon = new FontIcon() { Glyph = "\xE770" } });
                     }
@@ -156,7 +160,8 @@ namespace ShortcutGuide
                     {
                         try
                         {
-                            this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = ManifestInterpreter.GetShortcutsOfApplication(item).Name, Icon = new FontIcon { Glyph = "\uEB91" } });
+                            IconElement icon = BuildNavIcon(executablePath);
+                            this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = ManifestInterpreter.GetShortcutsOfApplication(item).Name, Icon = icon });
                         }
                         catch (IOException)
                         {
@@ -166,6 +171,17 @@ namespace ShortcutGuide
 
                 this.WindowSelector.SelectedItem = this.WindowSelector.MenuItems[0];
             }
+        }
+
+        private static IconElement BuildNavIcon(string? executablePath)
+        {
+            BitmapImage? bitmap = IconHelper.TryGetExecutableIcon(executablePath);
+            if (bitmap is not null)
+            {
+                return new ImageIcon { Source = bitmap };
+            }
+
+            return new FontIcon { Glyph = "\uEB91" };
         }
 
         private bool _hasMovedToRightMonitor;

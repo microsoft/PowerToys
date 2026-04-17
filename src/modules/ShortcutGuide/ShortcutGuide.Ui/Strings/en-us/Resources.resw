@@ -152,7 +152,7 @@
     <comment>Refers to the action of pinning something on a pin board</comment>
   </data>
   <data name="RecommendedHeaderText.Text" xml:space="preserve">
-    <value>Recommended Shortcuts</value>
+    <value>Recommended shortcuts</value>
     <comment>Shortcuts refers to keyboard shortcuts</comment>
   </data>
   <data name="SearchBlank" xml:space="preserve">
@@ -170,7 +170,7 @@
     <comment>keys refers to keyboard keys</comment>
   </data>
   <data name="TaskbarHeaderTxt.Text" xml:space="preserve">
-    <value>Taskbar Shortcuts</value>
+    <value>Taskbar shortcuts</value>
     <comment>Shortcuts refers to keyboard shortcuts</comment>
   </data>
   <data name="Title" xml:space="preserve">

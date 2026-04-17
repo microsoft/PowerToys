@@ -118,8 +118,6 @@
                 <TextBlock
                     x:Uid="PinnedEmptyText"
                     Margin="16,0,16,8"
-                    FontWeight="SemiBold"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Visibility="{x:Bind PinnedShortcutsCount, Mode=OneWay, Converter={StaticResource DoubleToInvertedVisibilityConverter}}" />
 
                 <StackPanel

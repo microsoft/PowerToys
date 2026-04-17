@@ -81,26 +81,49 @@ namespace ShortcutGuide.Helpers
         /// <summary>
         /// Retrieves all application IDs that should be displayed, based on the foreground window and background processes.
         /// </summary>
-        /// <returns>An array of all application IDs.</returns>
-        public static string[] GetAllCurrentApplicationIds()
+        /// <returns>
+        /// A dictionary mapping each application ID to the full path of the executable
+        /// that caused the match (used for icon extraction), or <c>null</c> when no
+        /// specific executable is associated (for example, wildcard filters like the
+        /// default shell).
+        /// </returns>
+        public static Dictionary<string, string?> GetAllCurrentApplicationIds()
         {
             nint handle = NativeMethods.GetForegroundWindow();
 
-            List<string> applicationIds = [];
+            Dictionary<string, string?> applicationIds = new(StringComparer.Ordinal);
 
             Process[] processes = Process.GetProcesses();
 
             if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
             {
-                string? name = Process.GetProcessById((int)processId).MainModule?.ModuleName;
+                string? name = null;
+                string? executablePath = null;
+
+                try
+                {
+                    ProcessModule? mainModule = Process.GetProcessById((int)processId).MainModule;
+                    name = mainModule?.ModuleName;
+                    executablePath = mainModule?.FileName;
+                }
+                catch (Win32Exception)
+                {
+                    // Access denied for elevated processes; we cannot read the module.
+                }
+                catch (InvalidOperationException)
+                {
+                    // Process exited between enumeration and access.
+                }
 
                 if (name is not null)
                 {
                     try
                     {
-                        foreach (var item in GetIndexYamlFile().Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter)).Apps)
+                        IndexFile.IndexItem match = GetIndexYamlFile().Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter));
+                        string? pathForApp = match.WindowFilter == "*" ? null : executablePath;
+                        foreach (var item in match.Apps)
                         {
-                            applicationIds.Add(item);
+                            applicationIds[item] = pathForApp;
                         }
                     }
                     catch (InvalidOperationException)
@@ -113,21 +136,39 @@ namespace ShortcutGuide.Helpers
             {
                 try
                 {
-                    if (processes.Any((p) =>
+                    string? matchedExecutablePath = null;
+                    bool matched = false;
+                    foreach (var p in processes)
                     {
                         try
                         {
-                            return IsMatch(p.MainModule!.ModuleName, item.WindowFilter);
+                            if (IsMatch(p.MainModule!.ModuleName, item.WindowFilter))
+                            {
+                                matched = true;
+                                if (item.WindowFilter != "*")
+                                {
+                                    matchedExecutablePath = p.MainModule!.FileName;
+                                }
+
+                                break;
+                            }
                         }
                         catch (Win32Exception)
                         {
-                            return false;
+                            // Access denied for elevated processes; skip.
                         }
-                    }))
+                    }
+
+                    if (matched)
                     {
                         foreach (var app in item.Apps)
                         {
-                            applicationIds.Add(app);
+                            // Preserve an existing (foreground) path if one was already set;
+                            // only fill in a path when the slot is currently null.
+                            if (!applicationIds.TryGetValue(app, out string? existing) || existing is null)
+                            {
+                                applicationIds[app] = matchedExecutablePath;
+                            }
                         }
                     }
                 }
@@ -136,7 +177,7 @@ namespace ShortcutGuide.Helpers
                 }
             }
 
-            return [.. applicationIds];
+            return applicationIds;
 
             static bool IsMatch(string input, string filter)
             {

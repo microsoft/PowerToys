@@ -84,7 +84,7 @@
                         <Frame
                             x:Name="ContentFrame"
                             Margin="4,8,0,0"
-                            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                            Background="{ThemeResource LayerFillColorDefaultBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1"
                             CornerRadius="8,0,0,0" />
