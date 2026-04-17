@@ -319,11 +319,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     scripts.ScriptsFolder = value ?? string.Empty;
                     OnPropertyChanged(nameof(ScriptsFolder));
                     SaveAndNotifySettings();
+
+                    if (_scriptsDiscovered)
+                    {
+                        RefreshPythonScripts();
+                    }
                 }
             }
         }
 
         private ObservableCollection<AdvancedPastePythonScriptAction> _pythonScriptActions = [];
+        private bool _scriptsDiscovered;
 
         public ObservableCollection<AdvancedPastePythonScriptAction> PythonScriptActions
         {
@@ -341,6 +347,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public void RefreshPythonScripts()
         {
+            _scriptsDiscovered = true;
+
             var folder = ScriptsFolder;
             if (string.IsNullOrWhiteSpace(folder) || !System.IO.Directory.Exists(folder))
             {
@@ -480,6 +488,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var pythonSettings = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
             pythonSettings.Value = [.. PythonScriptActions.Select(a => (AdvancedPastePythonScriptAction)a.Clone())];
             SaveAndNotifySettings();
+
+            RefreshPythonScripts();
         }
 
         private static void WriteScriptHeader(AdvancedPastePythonScriptAction action)

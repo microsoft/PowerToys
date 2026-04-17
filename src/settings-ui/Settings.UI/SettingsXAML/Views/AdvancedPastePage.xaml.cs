@@ -329,26 +329,35 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ScriptEditRequires.Text = action.Requires;
             ScriptEditRequires.IsEnabled = !action.RequiresAutoDetect;
 
-            ScriptEditAutoDetectDeps.Toggled += (_, _) =>
+            void OnDepsToggled(object s, RoutedEventArgs args) =>
                 ScriptEditRequires.IsEnabled = !ScriptEditAutoDetectDeps.IsOn;
 
-            PythonScriptEditDialog.XamlRoot = Content.XamlRoot;
-            var result = await PythonScriptEditDialog.ShowAsync();
+            ScriptEditAutoDetectDeps.Toggled += OnDepsToggled;
 
-            if (result == ContentDialogResult.Primary)
+            try
             {
-                // Write dialog values back to the action
-                action.Name = ScriptEditName.Text;
-                action.Description = ScriptEditDescription.Text;
-                action.Platform = ScriptEditPlatform.SelectedItem as string ?? "windows";
-                action.SupportsText = ScriptEditText.IsChecked == true;
-                action.SupportsHtml = ScriptEditHtml.IsChecked == true;
-                action.SupportsImage = ScriptEditImage.IsChecked == true;
-                action.SupportsAudio = ScriptEditAudio.IsChecked == true;
-                action.SupportsVideo = ScriptEditVideo.IsChecked == true;
-                action.SupportsFiles = ScriptEditFiles.IsChecked == true;
-                action.RequiresAutoDetect = ScriptEditAutoDetectDeps.IsOn;
-                action.Requires = ScriptEditRequires.Text;
+                PythonScriptEditDialog.XamlRoot = Content.XamlRoot;
+                var result = await PythonScriptEditDialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    // Write dialog values back to the action
+                    action.Name = ScriptEditName.Text;
+                    action.Description = ScriptEditDescription.Text;
+                    action.Platform = ScriptEditPlatform.SelectedItem as string ?? "windows";
+                    action.SupportsText = ScriptEditText.IsChecked == true;
+                    action.SupportsHtml = ScriptEditHtml.IsChecked == true;
+                    action.SupportsImage = ScriptEditImage.IsChecked == true;
+                    action.SupportsAudio = ScriptEditAudio.IsChecked == true;
+                    action.SupportsVideo = ScriptEditVideo.IsChecked == true;
+                    action.SupportsFiles = ScriptEditFiles.IsChecked == true;
+                    action.RequiresAutoDetect = ScriptEditAutoDetectDeps.IsOn;
+                    action.Requires = ScriptEditRequires.Text;
+                }
+            }
+            finally
+            {
+                ScriptEditAutoDetectDeps.Toggled -= OnDepsToggled;
             }
         }
 

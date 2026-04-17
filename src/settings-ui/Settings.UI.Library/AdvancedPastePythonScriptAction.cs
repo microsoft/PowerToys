@@ -242,7 +242,7 @@ public sealed class AdvancedPastePythonScriptAction : Observable, IAdvancedPaste
             Formats = Formats,
             Requires = Requires,
             RequiresAutoDetect = RequiresAutoDetect,
-            Shortcut = Shortcut,
+            Shortcut = Shortcut != null ? new HotkeySettings(Shortcut.Win, Shortcut.Ctrl, Shortcut.Alt, Shortcut.Shift, Shortcut.Code) : null,
         };
     }
 }
