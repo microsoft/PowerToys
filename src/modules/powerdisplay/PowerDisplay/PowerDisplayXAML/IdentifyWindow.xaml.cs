@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
@@ -17,6 +17,8 @@ namespace PowerDisplay.PowerDisplayXAML
     public sealed partial class IdentifyWindow : WindowEx, IDisposable
     {
         private DpiSuppressor? _dpiSuppressor;
+        private DispatcherQueueTimer? _autoCloseTimer;
+        private bool _disposed;
 
         public IdentifyWindow(string displayText)
         {
@@ -40,14 +42,19 @@ namespace PowerDisplay.PowerDisplayXAML
             // Ensure DpiSuppressor is disposed when window closes
             this.Closed += (_, _) => Dispose();
 
-            // Auto close after 3 seconds
-            Task.Delay(3000).ContinueWith(_ =>
+            // Auto close after 3 seconds. DispatcherQueueTimer runs on the UI thread
+            // and can be deterministically cancelled on Dispose, unlike a detached Task.Delay.
+            _autoCloseTimer = DispatcherQueue.CreateTimer();
+            _autoCloseTimer.Interval = TimeSpan.FromSeconds(3);
+            _autoCloseTimer.IsRepeating = false;
+            _autoCloseTimer.Tick += (_, _) =>
             {
-                DispatcherQueue.TryEnqueue(() =>
+                if (!_disposed)
                 {
                     Close();
-                });
-            });
+                }
+            };
+            _autoCloseTimer.Start();
         }
 
         private void ConfigureWindow()
@@ -96,6 +103,15 @@ namespace PowerDisplay.PowerDisplayXAML
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            _autoCloseTimer?.Stop();
+            _autoCloseTimer = null;
             _dpiSuppressor?.Dispose();
         }
     }

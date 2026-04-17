@@ -14,28 +14,28 @@ namespace PowerDisplay.Common.Models
     public sealed class MonitorStateEntry
     {
         /// <summary>
-        /// Gets or sets the brightness level (0-100).
+        /// Gets or sets the brightness level (0-100), or <c>null</c> if not yet read from the monitor.
         /// </summary>
         [JsonPropertyName("brightness")]
-        public int Brightness { get; set; }
+        public int? Brightness { get; set; }
 
         /// <summary>
-        /// Gets or sets the color temperature VCP value.
+        /// Gets or sets the color temperature VCP value, or <c>null</c> if not yet read from the monitor.
         /// </summary>
         [JsonPropertyName("colorTemperature")]
-        public int ColorTemperatureVcp { get; set; }
+        public int? ColorTemperatureVcp { get; set; }
 
         /// <summary>
-        /// Gets or sets the contrast level (0-100).
+        /// Gets or sets the contrast level (0-100), or <c>null</c> if not yet read from the monitor.
         /// </summary>
         [JsonPropertyName("contrast")]
-        public int Contrast { get; set; }
+        public int? Contrast { get; set; }
 
         /// <summary>
-        /// Gets or sets the volume level (0-100).
+        /// Gets or sets the volume level (0-100), or <c>null</c> if not yet read from the monitor.
         /// </summary>
         [JsonPropertyName("volume")]
-        public int Volume { get; set; }
+        public int? Volume { get; set; }
 
         /// <summary>
         /// Gets or sets the raw capabilities string from DDC/CI.
