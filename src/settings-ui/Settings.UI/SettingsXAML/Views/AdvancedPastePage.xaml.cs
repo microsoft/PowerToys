@@ -297,6 +297,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        private void OpenScriptsFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var folder = ViewModel?.ScriptsFolder;
+            if (!string.IsNullOrEmpty(folder) && System.IO.Directory.Exists(folder))
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = folder,
+                    UseShellExecute = true,
+                });
+            }
+        }
+
         private void RefreshPythonScripts_Click(object sender, RoutedEventArgs e)
         {
             ViewModel?.RefreshPythonScripts();

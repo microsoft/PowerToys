@@ -409,6 +409,13 @@
                                     Content="{ui:FontIcon Glyph=&#xE8DA;,
                                                           FontSize=16}"
                                     Style="{StaticResource SubtleButtonStyle}" />
+                                <Button
+                                    VerticalAlignment="Bottom"
+                                    Click="OpenScriptsFolder_Click"
+                                    Content="{ui:FontIcon Glyph=&#xE838;,
+                                                          FontSize=16}"
+                                    Style="{StaticResource SubtleButtonStyle}"
+                                    ToolTipService.ToolTip="Open folder" />
                             </StackPanel>
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonExecutablePath_SettingsCard">

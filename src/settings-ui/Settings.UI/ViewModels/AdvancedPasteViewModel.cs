@@ -519,8 +519,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var updatedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             int lastTagLine = -1;
 
-            // Track requires lines separately — we may need to remove them in auto mode
-            var requiresLineIndices = new List<int>();
+            // Collect indices of duplicate tag lines and requires lines to remove
+            var linesToRemove = new HashSet<int>();
 
             for (int i = 0; i < Math.Min(lines.Count, 50); i++)
             {
@@ -530,17 +530,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     continue;
                 }
 
-                // Track requires lines for potential removal
+                // Handle requires tag separately (may need full removal in auto mode)
                 if (TryParseTag(trimmed, "@advancedpaste:requires", out _))
                 {
-                    requiresLineIndices.Add(i);
                     lastTagLine = i;
 
-                    if (tagUpdates.ContainsKey("@advancedpaste:requires") && !updatedTags.Contains("@advancedpaste:requires"))
+                    if (action.RequiresAutoDetect)
                     {
-                        // Update first requires line, mark subsequent for removal
-                        lines[i] = $"# @advancedpaste:requires   {action.Requires}";
-                        updatedTags.Add("@advancedpaste:requires");
+                        // Auto-detect mode: remove all requires lines
+                        linesToRemove.Add(i);
+                    }
+                    else if (!updatedTags.Contains("@advancedpaste:requires"))
+                    {
+                        // Manual mode: update first occurrence
+                        if (tagUpdates.ContainsKey("@advancedpaste:requires"))
+                        {
+                            lines[i] = $"# @advancedpaste:requires   {action.Requires}";
+                            updatedTags.Add("@advancedpaste:requires");
+                        }
+                    }
+                    else
+                    {
+                        // Duplicate requires line: remove
+                        linesToRemove.Add(i);
                     }
 
                     continue;
@@ -550,9 +562,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     if (TryParseTag(trimmed, tag, out _))
                     {
-                        lines[i] = $"# {tag}   {newValue}";
-                        updatedTags.Add(tag);
-                        lastTagLine = i;
+                        if (!updatedTags.Contains(tag))
+                        {
+                            // First occurrence: update in place
+                            lines[i] = $"# {tag}   {newValue}";
+                            updatedTags.Add(tag);
+                            lastTagLine = i;
+                        }
+                        else
+                        {
+                            // Duplicate: mark for removal
+                            linesToRemove.Add(i);
+                        }
+
                         break;
                     }
                 }
@@ -563,36 +585,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
 
-            // In auto-detect mode, remove all existing requires lines
-            if (action.RequiresAutoDetect && requiresLineIndices.Count > 0)
+            // Remove duplicate/unwanted lines in reverse order to preserve indices
+            foreach (var idx in linesToRemove.OrderByDescending(x => x))
             {
-                for (int i = requiresLineIndices.Count - 1; i >= 0; i--)
-                {
-                    lines.RemoveAt(requiresLineIndices[i]);
-                }
-            }
-            else if (!action.RequiresAutoDetect && updatedTags.Contains("@advancedpaste:requires") && requiresLineIndices.Count > 1)
-            {
-                // Remove duplicate requires lines (keep only the first which was updated)
-                for (int i = requiresLineIndices.Count - 1; i >= 1; i--)
-                {
-                    lines.RemoveAt(requiresLineIndices[i]);
-                }
+                lines.RemoveAt(idx);
             }
 
-            var insertionPoint = lastTagLine >= 0 ? lastTagLine + 1 : 0;
-
-            // Adjust insertion point for removed lines
-            if (action.RequiresAutoDetect)
-            {
-                var removedBefore = requiresLineIndices.Count(idx => idx < insertionPoint);
-                insertionPoint -= removedBefore;
-            }
-            else if (requiresLineIndices.Count > 1)
-            {
-                var removedBefore = requiresLineIndices.Skip(1).Count(idx => idx < insertionPoint);
-                insertionPoint -= removedBefore;
-            }
+            // Recalculate insertion point after removals
+            var removedBeforeLastTag = linesToRemove.Count(idx => idx <= lastTagLine);
+            var insertionPoint = lastTagLine >= 0 ? lastTagLine + 1 - removedBeforeLastTag : 0;
 
             var newLines = new List<string>();
             foreach (var (tag, newValue) in tagUpdates)
