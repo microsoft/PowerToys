@@ -123,7 +123,7 @@ CmdPal runs packaged, and to
 refresh, `forceRefresh: true`) both go through `FetchWrappedFeedAsync`:
 
 1. Resolve the feed URL (see above).
-2. If the URL is local, read it from disk. Otherwise hand it to
+2. If the URL is local, read it from disk. Otherwise, hand it to
    `HttpCachingClient.GetResourceAsync` which:
    - Serves a fresh cached copy if one exists and TTL has not elapsed.
    - Otherwise issues a conditional GET (ETag / `If-None-Match`). On `304
