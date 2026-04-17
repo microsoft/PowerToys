@@ -196,46 +196,57 @@ namespace updating
 
     void cleanup_updates()
     {
-        auto update_dir = updating::get_pending_updates_path();
-        if (std::filesystem::exists(update_dir))
+        try
         {
-            // Msi and exe files
-            for (const auto& entry : std::filesystem::directory_iterator(update_dir))
+            auto update_dir = updating::get_pending_updates_path();
+            if (std::filesystem::exists(update_dir))
             {
-                auto entryPath = entry.path().wstring();
-                std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
-
-                if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
+                // Msi and exe files
+                for (const auto& entry : std::filesystem::directory_iterator(update_dir))
                 {
-                    std::error_code err;
-                    std::filesystem::remove(entry, err);
-                    if (err.value())
+                    auto entryPath = entry.path().wstring();
+                    std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+
+                    if (entryPath.ends_with(L".msi") || entryPath.ends_with(L".exe"))
                     {
-                        Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
+                        std::error_code err;
+                        std::filesystem::remove(entry, err);
+                        if (err.value())
+                        {
+                            Logger::warn("Failed to delete installer file {}. {}", entry.path().string(), err.message());
+                        }
+                    }
+                }
+            }
+
+            // Log files
+            auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
+            auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
+            if (std::filesystem::exists(rootPath))
+            {
+                for (const auto& entry : std::filesystem::directory_iterator(rootPath))
+                {
+                    auto entryPath = entry.path().wstring();
+                    std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
+                    if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::wstring::npos)
+                    {
+                        std::error_code err;
+                        std::filesystem::remove(entry, err);
+                        if (err.value())
+                        {
+                            Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
+                        }
                     }
                 }
             }
         }
-
-        // Log files
-        auto rootPath{ PTSettingsHelper::get_root_save_folder_location() };
-        auto currentVersion = left_trim<wchar_t>(get_product_version(), L"v");
-        if (std::filesystem::exists(rootPath))
+        catch (const std::exception& e)
         {
-            for (const auto& entry : std::filesystem::directory_iterator(rootPath))
-            {
-                auto entryPath = entry.path().wstring();
-                std::transform(entryPath.begin(), entryPath.end(), entryPath.begin(), ::towlower);
-                if (entry.is_regular_file() && entryPath.ends_with(L".log") && entryPath.find(currentVersion) == std::string::npos)
-                {
-                    std::error_code err;
-                    std::filesystem::remove(entry, err);
-                    if (err.value())
-                    {
-                        Logger::warn("Failed to delete log file {}. {}", entry.path().string(), err.message());
-                    }
-                }
-            }
+            Logger::error("Failed to clean up old update files: {}", e.what());
+        }
+        catch (...)
+        {
+            Logger::error("Failed to clean up old update files: unknown exception");
         }
     }
 }
