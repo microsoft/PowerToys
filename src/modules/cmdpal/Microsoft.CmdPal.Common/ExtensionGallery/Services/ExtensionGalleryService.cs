@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.Common.ExtensionGallery.Services;
 
 public sealed partial class ExtensionGalleryService : IExtensionGalleryService
 {
-    private const string DefaultFeedUrl = "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json";
+    private const string DefaultFeedUrl = "https://aka.ms/CmdPal-ExtensionsJson";
     private const string LocalFeedFileName = "extensions.json";
     private static readonly TimeSpan IconCacheTtl = TimeSpan.FromDays(1);
     private static readonly TimeSpan CacheTtl = ExtensionGalleryHttpClient.DefaultTimeToLive;
