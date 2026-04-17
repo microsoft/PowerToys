@@ -144,7 +144,7 @@
     <comment>Category title</comment>
   </data>
   <data name="PinnedHeaderTxt.Text" xml:space="preserve">
-    <value>Pinned Shortcuts</value>
+    <value>Pinned shortcuts</value>
     <comment>Shortcuts refers to keyboard shortcuts</comment>
   </data>
   <data name="PinShortcut" xml:space="preserve">
