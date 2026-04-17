@@ -57,7 +57,7 @@ public:
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
     {
         std::wstring iconResourcePath = get_module_folderpath(g_hInst);
-        iconResourcePath += L"\\Assets\\FileLocksmith\\";
+        iconResourcePath += L"\\..\\Assets\\FileLocksmith\\";
         iconResourcePath += L"FileLocksmith.ico";
         return SHStrDup(iconResourcePath.c_str(), icon);
     }
@@ -113,11 +113,11 @@ public:
         }
 
         std::wstring path = get_module_folderpath(g_hInst);
-        path = path + L"\\PowerToys.FileLocksmithUI.exe";
+        path = path + L"\\..\\PowerToys.FileLocksmithUI.exe";
 
         HRESULT result;
 
-        if (!RunNonElevatedEx(path.c_str(), L"", get_module_folderpath(g_hInst)))
+        if (!RunNonElevatedEx(path.c_str(), L"", get_module_folderpath(g_hInst) + L"\\.."))
         {
             result = E_FAIL;
             Trace::InvokedRet(result);

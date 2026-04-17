@@ -214,7 +214,7 @@ public:
 
         if (package::IsWin11OrGreater())
         {
-            std::wstring path = get_module_folderpath(g_hInst);
+            std::wstring path = get_module_folderpath(g_hInst) + L"\\ContextMenu";
             std::wstring packageUri = path + L"\\PowerRenameContextMenuPackage.msix";
             if (!package::IsPackageRegisteredWithPowerToysVersion(PowerRenameConstants::ModulePackageDisplayName))
             {

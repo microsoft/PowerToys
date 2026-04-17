@@ -108,8 +108,7 @@ namespace newplus::utilities
 
     inline std::wstring get_new_icon_resource_filepath(const HMODULE module_instance_handle, const Theme theme)
     {
-        auto iconResourcePath = get_module_folderpath(module_instance_handle);
-
+        auto iconResourcePath = get_module_folderpath(module_instance_handle) + L"\\..";
         if (theme == Theme::Dark)
         {
             iconResourcePath += constants::non_localizable::new_icon_dark_resource_relative_path;
@@ -125,7 +124,7 @@ namespace newplus::utilities
 
     inline std::wstring get_open_templates_icon_resource_filepath(const HMODULE module_instance_handle, const Theme theme)
     {
-        auto iconResourcePath = get_module_folderpath(module_instance_handle);
+        auto iconResourcePath = get_module_folderpath(module_instance_handle) + L"\\..";
 
         if (theme == Theme::Dark)
         {
@@ -152,6 +151,8 @@ namespace newplus::utilities
     {
         if (package::IsWin11OrGreater())
         {
+            // NewPlus DLL is already loaded from ContextMenu\ subfolder,
+            // so get_module_folderpath() already returns the correct path.
             static const auto new_dll_path = get_module_folderpath(module_instance_handle);
             auto new_package_uri = new_dll_path + L"\\" + constants::non_localizable::msix_package_name;
 

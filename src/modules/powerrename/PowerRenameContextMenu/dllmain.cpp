@@ -77,7 +77,7 @@ public:
         }
 
         std::wstring iconResourcePath = get_module_folderpath(g_hInst);
-        iconResourcePath += L"\\Assets\\PowerRename\\";
+        iconResourcePath += L"\\..\\Assets\\PowerRename\\";
         iconResourcePath += L"PowerRenameUI.ico";
         return SHStrDup(iconResourcePath.c_str(), icon);
     }
@@ -210,7 +210,8 @@ private:
             Trace::Invoked();
             // Set the application path based on the location of the dll
             std::wstring path = get_module_folderpath(g_hInst);
-            path = path + L"\\PowerToys.PowerRename.exe";
+            std::wstring rootPath = path + L"\\..";
+            path = rootPath + L"\\PowerToys.PowerRename.exe";
 
             std::wstring pipe_name(L"\\\\.\\pipe\\powertoys_powerrenameinput_");
             UUID temp_uuid;
@@ -233,7 +234,7 @@ private:
                 uuid_chars = nullptr;
             }
             create_pipe_thread = std::thread(&PowerRenameContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
-            RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
+            RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst) + L"\\..");
             create_pipe_thread.join();
 
             if (hPipe != INVALID_HANDLE_VALUE)

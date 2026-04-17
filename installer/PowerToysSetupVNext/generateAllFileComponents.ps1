@@ -106,6 +106,7 @@ Function Generate-FileComponents() {
 "@
 
     foreach ($file in $fileList) {
+        if ([string]::IsNullOrWhiteSpace($file)) { continue }
         $fileTmp = $file -replace "-", "_"
         $componentDefs +=
     @"
@@ -331,3 +332,17 @@ Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFileP
 #DSC Resources - JSON manifest files in DSCModules subfolder
 Generate-FileList -fileDepsJson "" -fileListName DscJsonFiles -wxsFilePath $PSScriptRoot\DscResources.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\DSCModules\"
 Generate-FileComponents -fileListName "DscJsonFiles" -wxsFilePath $PSScriptRoot\DscResources.wxs
+
+#ContextMenu - Context menu DLLs and MSIX packages in ContextMenu subfolder
+Generate-FileList -fileDepsJson "" -fileListName ContextMenuFiles -wxsFilePath $PSScriptRoot\ContextMenu.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\ContextMenu\"
+Generate-FileComponents -fileListName "ContextMenuFiles" -wxsFilePath $PSScriptRoot\ContextMenu.wxs
+
+#ContextMenu Assets - MSIX visual assets duplicated under ContextMenu\Assets\ for sparse package registration
+Generate-FileList -fileDepsJson "" -fileListName ContextMenuFileLocksmithAssetsFiles -wxsFilePath $PSScriptRoot\ContextMenu.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\ContextMenu\Assets\FileLocksmith\"
+Generate-FileComponents -fileListName "ContextMenuFileLocksmithAssetsFiles" -wxsFilePath $PSScriptRoot\ContextMenu.wxs
+Generate-FileList -fileDepsJson "" -fileListName ContextMenuImageResizerAssetsFiles -wxsFilePath $PSScriptRoot\ContextMenu.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\ContextMenu\Assets\ImageResizer\"
+Generate-FileComponents -fileListName "ContextMenuImageResizerAssetsFiles" -wxsFilePath $PSScriptRoot\ContextMenu.wxs
+Generate-FileList -fileDepsJson "" -fileListName ContextMenuNewPlusAssetsFiles -wxsFilePath $PSScriptRoot\ContextMenu.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\ContextMenu\Assets\NewPlus\"
+Generate-FileComponents -fileListName "ContextMenuNewPlusAssetsFiles" -wxsFilePath $PSScriptRoot\ContextMenu.wxs
+Generate-FileList -fileDepsJson "" -fileListName ContextMenuPowerRenameAssetsFiles -wxsFilePath $PSScriptRoot\ContextMenu.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\ContextMenu\Assets\PowerRename\"
+Generate-FileComponents -fileListName "ContextMenuPowerRenameAssetsFiles" -wxsFilePath $PSScriptRoot\ContextMenu.wxs

@@ -101,7 +101,7 @@ public:
 
         if (package::IsWin11OrGreater())
         {
-            std::wstring path = get_module_folderpath(globals::instance);
+            std::wstring path = get_module_folderpath(globals::instance) + L"\\ContextMenu";
             std::wstring packageUri = path + L"\\FileLocksmithContextMenuPackage.msix";
             if (!package::IsPackageRegisteredWithPowerToysVersion(constants::nonlocalizable::ContextMenuPackageName))
             {

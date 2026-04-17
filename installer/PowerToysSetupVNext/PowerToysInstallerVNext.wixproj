@@ -58,6 +58,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
 
       call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
+      call move /Y ..\..\..\ContextMenu.wxs.bk ..\..\..\ContextMenu.wxs
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
@@ -138,6 +139,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Resources.wxs" />
     <Compile Include="WinAppSDK.wxs" />
     <Compile Include="Workspaces.wxs" />
+    <Compile Include="ContextMenu.wxs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomDialogs" />

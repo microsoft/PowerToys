@@ -37,7 +37,7 @@
     <TargetName>PowerToys.PowerRenameContextMenu</TargetName>
     <!-- Needs a different int dir to avoid conflicts in msix creation. -->
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\ContextMenu\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
@@ -103,30 +103,30 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Comma
     <None Include="PowerRenameContextMenu.base.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\PowerRename\LargeTile.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\PowerRename\PowerRenameUI.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\PowerRename\SmallTile.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\PowerRename\SplashScreen.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\PowerRename\Square150x150Logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\PowerRename\Square44x44Logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\PowerRename\storelogo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\PowerRename\Wide310x150Logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <CopyFileToFolders Include="Assets\PowerRename\LargeTile.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\PowerRename</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\PowerRename\PowerRenameUI.ico">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\PowerRename</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\PowerRename\SmallTile.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\PowerRename</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\PowerRename\SplashScreen.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\PowerRename</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\PowerRename\Square150x150Logo.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\PowerRename</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\PowerRename\Square44x44Logo.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\PowerRename</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\PowerRename\storelogo.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\PowerRename</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\PowerRename\Wide310x150Logo.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\PowerRename</DestinationFolders>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
@@ -155,5 +155,13 @@ MakeAppx.exe pack /d . /p $(OutDir)PowerRenameContextMenuPackage.msix /nv</Comma
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
+  </Target>
+  <!-- Copy MSIX visual assets to ContextMenu\Assets\ for sparse package registration -->
+  <Target Name="CopyMsixAssetsToContextMenu" AfterTargets="Link">
+    <ItemGroup>
+      <_MsixPngs Include="Assets\PowerRename\*.png" />
+    </ItemGroup>
+    <MakeDir Directories="$(RepoRoot)$(Platform)\$(Configuration)\ContextMenu\Assets\PowerRename" />
+    <Copy SourceFiles="@(_MsixPngs)" DestinationFolder="$(RepoRoot)$(Platform)\$(Configuration)\ContextMenu\Assets\PowerRename\" SkipUnchangedFiles="true" />
   </Target>
 </Project>

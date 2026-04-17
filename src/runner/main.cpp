@@ -275,7 +275,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.FileLocksmithExt.dll",
             L"PowerToys.RegistryPreviewExt.dll",
             L"PowerToys.MeasureToolModuleInterface.dll",
-            L"PowerToys.NewPlus.ShellExtension.dll",
+            L"ContextMenu\\PowerToys.NewPlus.ShellExtension.dll",
             L"PowerToys.HostsModuleInterface.dll",
             L"PowerToys.Peek.dll",
             L"PowerToys.EnvironmentVariablesModuleInterface.dll",

@@ -34,7 +34,7 @@
     <TargetName>PowerToys.ImageResizerContextMenu</TargetName>
     <!-- Needs a different int dir to avoid conflicts in msix creation. -->
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
-    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\ContextMenu\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
@@ -99,30 +99,30 @@ MakeAppx.exe pack /d "$(MSBuildThisFileDirectory)." /p "$(OutDir)ImageResizerCon
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\ImageResizer\ImageResizer.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\ImageResizer\LargeTile.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\ImageResizer\SmallTile.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\ImageResizer\SplashScreen.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\ImageResizer\Square150x150Logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\ImageResizer\Square44x44Logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\ImageResizer\storelogo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Assets\ImageResizer\Wide310x150Logo.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <CopyFileToFolders Include="Assets\ImageResizer\ImageResizer.ico">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\ImageResizer</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ImageResizer\LargeTile.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\ImageResizer</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ImageResizer\SmallTile.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\ImageResizer</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ImageResizer\SplashScreen.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\ImageResizer</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ImageResizer\Square150x150Logo.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\ImageResizer</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ImageResizer\Square44x44Logo.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\ImageResizer</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ImageResizer\storelogo.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\ImageResizer</DestinationFolders>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="Assets\ImageResizer\Wide310x150Logo.png">
+      <DestinationFolders>$(RepoRoot)$(Platform)\$(Configuration)\Assets\ImageResizer</DestinationFolders>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
@@ -154,5 +154,13 @@ MakeAppx.exe pack /d "$(MSBuildThisFileDirectory)." /p "$(OutDir)ImageResizerCon
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
     <Error Condition="!Exists('$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(RepoRoot)packages\Microsoft.Windows.ImplementationLibrary.1.0.231216.1\build\native\Microsoft.Windows.ImplementationLibrary.targets'))" />
+  </Target>
+  <!-- Copy MSIX visual assets to ContextMenu\Assets\ for sparse package registration -->
+  <Target Name="CopyMsixAssetsToContextMenu" AfterTargets="Link">
+    <ItemGroup>
+      <_MsixPngs Include="Assets\ImageResizer\*.png" />
+    </ItemGroup>
+    <MakeDir Directories="$(RepoRoot)$(Platform)\$(Configuration)\ContextMenu\Assets\ImageResizer" />
+    <Copy SourceFiles="@(_MsixPngs)" DestinationFolder="$(RepoRoot)$(Platform)\$(Configuration)\ContextMenu\Assets\ImageResizer\" SkipUnchangedFiles="true" />
   </Target>
 </Project>

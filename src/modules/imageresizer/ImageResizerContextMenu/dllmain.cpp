@@ -59,7 +59,7 @@ public:
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
     {
         std::wstring iconResourcePath = get_module_folderpath(g_hInst);
-        iconResourcePath += L"\\Assets\\ImageResizer\\";
+        iconResourcePath += L"\\..\\Assets\\ImageResizer\\";
         iconResourcePath += L"ImageResizer.ico";
         return SHStrDup(iconResourcePath.c_str(), icon);
     }
@@ -220,7 +220,8 @@ private:
     {
         // Set the application path based on the location of the dll
         std::wstring path = get_module_folderpath(g_hInst);
-        path = path + L"\\PowerToys.ImageResizer.exe";
+        std::wstring rootPath = path + L"\\..";
+        path = rootPath + L"\\PowerToys.ImageResizer.exe";
 
         std::wstring pipe_name(L"\\\\.\\pipe\\powertoys_imageresizerinput_");
         UUID temp_uuid;
@@ -243,7 +244,7 @@ private:
             uuid_chars = nullptr;
         }
         create_pipe_thread = std::thread(&ImageResizerContextMenuCommand::StartNamedPipeServerAndSendData, this, pipe_name);
-        RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst));
+        RunNonElevatedEx(path.c_str(), pipe_name, get_module_folderpath(g_hInst) + L"\\..");
         create_pipe_thread.join();
 
         if (hPipe != INVALID_HANDLE_VALUE)

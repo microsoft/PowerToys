@@ -402,7 +402,7 @@ function Test-CoreFiles {
         'PowerToys.ImageResizer.exe',
         'PowerToys.ImageResizer.dll',
         'PowerToys.ImageResizerExt.dll',
-        'PowerToys.ImageResizerContextMenu.dll',
+        'ContextMenu\PowerToys.ImageResizerContextMenu.dll',
         
         # Keyboard Manager
         'PowerToys.KeyboardManager.dll',
@@ -478,7 +478,7 @@ function Test-CoreFiles {
         'PowerToys.FileLocksmithExt.dll',
         'PowerToys.FileLocksmithUI.exe',
         'PowerToys.FileLocksmithUI.dll',
-        'PowerToys.FileLocksmithContextMenu.dll',
+        'ContextMenu\PowerToys.FileLocksmithContextMenu.dll',
         'Peek.Common.dll',
         'Peek.FilePreviewer.dll',
         'Powertoys.Peek.UI.dll',
@@ -492,11 +492,11 @@ function Test-CoreFiles {
         'PowerToys.MeasureToolCore.dll',
         'PowerToys.MeasureToolUI.dll',
         'PowerToys.MeasureToolUI.exe',
-        'PowerToys.NewPlus.ShellExtension.dll',
+        'ContextMenu\PowerToys.NewPlus.ShellExtension.dll',
         'PowerToys.NewPlus.ShellExtension.win10.dll',
         'PowerToys.PowerRenameExt.dll',
         'PowerToys.PowerRename.exe',
-        'PowerToys.PowerRenameContextMenu.dll',
+        'ContextMenu\PowerToys.PowerRenameContextMenu.dll',
         'PowerToys.RegistryPreviewExt.dll',
         'PowerToys.RegistryPreviewUILib.dll',
         'PowerToys.RegistryPreview.dll',
@@ -730,12 +730,12 @@ function Test-ContextMenuPackages {
     )
     
     # Context menu packages are installed as sparse packages
-    # These MSIX packages should be present in the installation root
+    # These MSIX packages should be present in the ContextMenu subfolder
     $contextMenuPackages = @{
-        "ImageResizerContextMenuPackage.msix" = @{ Name = "Image Resizer context menu package" }
-        "FileLocksmithContextMenuPackage.msix" = @{ Name = "File Locksmith context menu package" }
-        "PowerRenameContextMenuPackage.msix" = @{ Name = "PowerRename context menu package" }
-        "NewPlusPackage.msix" = @{ Name = "New+ context menu package" }
+        "ContextMenu\ImageResizerContextMenuPackage.msix" = @{ Name = "Image Resizer context menu package" }
+        "ContextMenu\FileLocksmithContextMenuPackage.msix" = @{ Name = "File Locksmith context menu package" }
+        "ContextMenu\PowerRenameContextMenuPackage.msix" = @{ Name = "PowerRename context menu package" }
+        "ContextMenu\NewPlusPackage.msix" = @{ Name = "New+ context menu package" }
     }
     
     # Check for packages in the install root

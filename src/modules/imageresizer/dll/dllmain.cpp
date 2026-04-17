@@ -126,7 +126,7 @@ public:
 
         if (package::IsWin11OrGreater())
         {
-            std::wstring path = get_module_folderpath(g_hInst_imageResizer);
+            std::wstring path = get_module_folderpath(g_hInst_imageResizer) + L"\\ContextMenu";
             std::wstring packageUri = path + L"\\ImageResizerContextMenuPackage.msix";
             if (!package::IsPackageRegisteredWithPowerToysVersion(ImageResizerConstants::ModulePackageDisplayName))
             {
