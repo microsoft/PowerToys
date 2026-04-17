@@ -9,7 +9,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_GrabAndMove" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/GrabAndMove.png">
+    <controls:OOBEPageControl x:Uid="Oobe_GrabAndMove" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/GrabAndMove.gif">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
