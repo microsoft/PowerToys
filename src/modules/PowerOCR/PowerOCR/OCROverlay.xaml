@@ -25,6 +25,7 @@
         <Canvas
             Name="RegionClickCanvas"
             Background="Transparent"
+            PointerEntered="RegionClickCanvas_PointerEntered"
             PointerPressed="RegionClickCanvas_PointerPressed"
             PointerMoved="RegionClickCanvas_PointerMoved"
             PointerReleased="RegionClickCanvas_PointerReleased">

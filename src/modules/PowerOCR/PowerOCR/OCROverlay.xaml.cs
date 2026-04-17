@@ -236,6 +236,12 @@ public sealed partial class OCROverlay : Window
         WindowUtilities.OcrOverlayKeyDown(e.Key);
     }
 
+    private void RegionClickCanvas_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        var crossCursor = OSInterop.LoadCursor(IntPtr.Zero, OSInterop.IDC_CROSS);
+        OSInterop.SetCursor(crossCursor);
+    }
+
     private void RegionClickCanvas_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
         var point = e.GetCurrentPoint(RegionClickCanvas);
@@ -272,6 +278,8 @@ public sealed partial class OCROverlay : Window
 
     private void RegionClickCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
     {
+        OSInterop.SetCursor(OSInterop.LoadCursor(IntPtr.Zero, OSInterop.IDC_CROSS));
+
         if (!IsSelecting)
         {
             return;

@@ -20,6 +20,7 @@ public static class OSInterop
     public const int WM_HOTKEY = 0x0312;
     public const int WM_KEYDOWN = 0x0100;
     public const int WM_KEYUP = 0x0101;
+    public const int IDC_CROSS = 32515;
 
 #pragma warning disable CA1401 // P/Invokes should not be visible
     [DllImport("user32.dll")]
@@ -81,6 +82,12 @@ public static class OSInterop
 
     [DllImport("user32.dll")]
     public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr LoadCursor(IntPtr hInstance, int lpCursorName);
+
+    [DllImport("user32.dll")]
+    public static extern IntPtr SetCursor(IntPtr hCursor);
 
 #pragma warning restore CA1401 // P/Invokes should not be visible
     [StructLayout(LayoutKind.Sequential)]
