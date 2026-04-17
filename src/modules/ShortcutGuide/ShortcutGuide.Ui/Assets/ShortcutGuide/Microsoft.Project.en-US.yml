@@ -1,0 +1,379 @@
+PackageName: Microsoft.Project
+Name: Project
+WindowFilter: "winproj.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: Frequently used
+    Properties:
+      - Name: Create a new project
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - N
+      - Name: Open a project file
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - O
+      - Name: Save a project file
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - S
+      - Name: Open dialog box (direct)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F12
+      - Name: Activate the entry bar
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F2
+      - Name: Activate the menu bar
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F10
+      - Name: Close the program window
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - F4
+      - Name: Display all filtered tasks or resources
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F3
+      - Name: Reset sort order and turn off grouping
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - F3
+      - Name: Open a new window
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - F11
+      - Name: Display task or resource information
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - F2
+      - Name: Turn Auto Calculate on or off
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F9
+      - Name: Turn Extend Selection mode on or off
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F8
+  - SectionName: Edit in a view
+    Properties:
+      - Name: Copy selected data
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - C
+      - Name: Cut selected data
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - X
+      - Name: Paste data
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - V
+      - Name: Undo
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Z
+      - Name: Fill down a column
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - D
+      - Name: Find
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F
+      - Name: Go To
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F5
+      - Name: Link tasks
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F2
+      - Name: Unlink tasks
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - F2
+      - Name: Clear or reset selected field
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Delete
+      - Name: Set task to manually schedule
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - M
+      - Name: Set task to auto schedule
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - A
+      - Name: Cancel an entry
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Escape>"
+  - SectionName: Outline a project
+    Properties:
+      - Name: Indent the selected task
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - "<Right>"
+      - Name: Remove a task indent
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - "<Left>"
+      - Name: Move selected task up
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - "<Up>"
+      - Name: Move selected task down
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - "<Down>"
+      - Name: Hide subtasks
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - Minus
+      - Name: Show subtasks
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - "="
+  - SectionName: Timescale navigation
+    Properties:
+      - Name: Move timescale to beginning of project
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Home
+      - Name: Move timescale to end of project
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - End
+      - Name: Scroll timescale left
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - "<Left>"
+      - Name: Scroll timescale right
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - "<Right>"
+      - Name: Move timescale left one page
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - PageUp
+      - Name: Move timescale right one page
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - PageDown
+  - SectionName: Select in a sheet view
+    Properties:
+      - Name: Move to first field in row
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Home
+      - Name: Move to last field in row
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - End
+      - Name: Move to first field of first row
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Home
+      - Name: Move to last field of last row
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - End
+      - Name: Select a column
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Space
+      - Name: Select a row
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Space
+      - Name: Select all rows and columns
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Space

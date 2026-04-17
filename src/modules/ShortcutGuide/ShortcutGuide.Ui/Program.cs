@@ -21,7 +21,19 @@ namespace ShortcutGuide
             "+WindowsNT.Shell.en-US.yml",
             "+WindowsNT.WindowsExplorer.en-US.yml",
             "+WindowsNT.Notepad.en-US.yml",
+            "Microsoft.Access.en-US.yml",
+            "Microsoft.Excel.en-US.yml",
+            "Microsoft.OneNote.en-US.yml",
+            "Microsoft.Outlook.en-US.yml",
+            "Microsoft.Paint.en-US.yml",
+            "Microsoft.PowerPoint.en-US.yml",
             "Microsoft.PowerToys.en-US.yml",
+            "Microsoft.Project.en-US.yml",
+            "Microsoft.Publisher.en-US.yml",
+            "Microsoft.Teams.en-US.yml",
+            "Microsoft.Visio.en-US.yml",
+            "Microsoft.WindowsTerminal.en-US.yml",
+            "Microsoft.Word.en-US.yml",
         ];
 
         [STAThread]
