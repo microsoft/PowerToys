@@ -122,6 +122,9 @@ public sealed partial class OCROverlay : Window
 
         InitializeComponent();
 
+        // Transparent window background to prevent white flash during load and close
+        this.SystemBackdrop = new WinUIEx.TransparentTintBackdrop();
+
         userSettings = new UserSettings(new ThrottledActionInvoker());
 
         // Configure transparent overlay window
@@ -191,6 +194,7 @@ public sealed partial class OCROverlay : Window
             _capturedScreenshotBytes = null;
         }
 
+        RootGrid.Visibility = Visibility.Visible;
         DarkOverlayPath.Opacity = ActiveOpacity;
         TopButtonsStackPanel.Visibility = Visibility.Visible;
 
@@ -208,6 +212,7 @@ public sealed partial class OCROverlay : Window
 
     private void Window_Closed(object sender, WindowEventArgs args)
     {
+        RootGrid.Visibility = Visibility.Collapsed;
         BackgroundImage.Source = null;
         App.UntrackOverlay(this);
     }
