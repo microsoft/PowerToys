@@ -908,6 +908,7 @@ namespace winrt::PowerRenameUI::implementation
 
         if (m_prManager)
         {
+            m_renameHadErrors = false;
             m_prManager->Rename(m_window, closeWindow);
         }
 
@@ -1353,6 +1354,14 @@ namespace winrt::PowerRenameUI::implementation
         return S_OK;
     }
 
+    HRESULT MainWindow::OnError(_In_ IPowerRenameItem* /*renameItem*/)
+    {
+        m_renameHadErrors = true;
+        UpdateCounts();
+        InvalidateItemListViewState();
+        return S_OK;
+    }
+
     HRESULT MainWindow::OnRegExCompleted(_In_ DWORD)
     {
         _TRACER_;
@@ -1379,8 +1388,11 @@ namespace winrt::PowerRenameUI::implementation
         }
         else
         {
-            // Force renaming work to start so newly renamed items are processed right away
-            SearchReplaceChanged(true);
+            if (!m_renameHadErrors)
+            {
+                // Force renaming work to start so newly renamed items are processed right away
+                SearchReplaceChanged(true);
+            }
         }
 
         InvalidateItemListViewState();
@@ -1388,6 +1400,5 @@ namespace winrt::PowerRenameUI::implementation
         return S_OK;
     }
 }
-
 
 
