@@ -33,7 +33,10 @@
                             <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Win" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_ShouldAbsorbAlt" IsEnabled="{x:Bind ViewModel.IsAltModifier, Mode=OneWay}" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                    <tkcontrols:SettingsCard
+                        x:Uid="GrabAndMove_ShouldAbsorbAlt"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}"
+                        IsEnabled="{x:Bind ViewModel.IsAltModifier, Mode=OneWay}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_UseAltResize" HeaderIcon="{ui:FontIcon Glyph=&#xE740;}">
