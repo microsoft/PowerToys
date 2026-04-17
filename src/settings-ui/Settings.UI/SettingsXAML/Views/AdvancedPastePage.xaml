@@ -392,7 +392,14 @@
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_PythonScripts_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonScripts_EnableCard">
+                            <tkcontrols:SettingsCard.HeaderIcon>
+                                <FontIcon Glyph="&#xE943;" />
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard"
+                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE8B7;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
@@ -418,7 +425,8 @@
                                     ToolTipService.ToolTip="Open folder" />
                             </StackPanel>
                         </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonExecutablePath_SettingsCard">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonExecutablePath_SettingsCard"
+                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE943;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
@@ -443,13 +451,15 @@
                             x:Name="PythonScriptListExpander"
                             x:Uid="AdvancedPaste_PythonScriptList"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE756;}"
+                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}"
                             IsExpanded="True"
                             ItemsSource="{x:Bind ViewModel.PythonScriptActions, Mode=OneWay}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <Button
-                                    x:Uid="AdvancedPaste_PythonScript_RefreshScripts"
+                                    x:Name="RefreshScriptsButton"
                                     Click="RefreshPythonScripts_Click"
-                                    Style="{ThemeResource AccentButtonStyle}" />
+                                    Style="{ThemeResource AccentButtonStyle}"
+                                    Content="Load scripts" />
                             </StackPanel>
                             <tkcontrols:SettingsExpander.ItemTemplate>
                                 <DataTemplate x:DataType="models:AdvancedPastePythonScriptAction">

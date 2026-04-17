@@ -601,6 +601,12 @@ opera.exe</value>
   <data name="AdvancedPaste_PythonScripts_GroupSettings.Header" xml:space="preserve">
     <value>Python scripts</value>
   </data>
+  <data name="AdvancedPaste_PythonScripts_EnableCard.Header" xml:space="preserve">
+    <value>Enable Python scripts</value>
+  </data>
+  <data name="AdvancedPaste_PythonScripts_EnableCard.Description" xml:space="preserve">
+    <value>Run custom Python scripts from the Advanced Paste menu</value>
+  </data>
   <data name="AdvancedPaste_ScriptsFolder_SettingsCard.Header" xml:space="preserve">
     <value>Scripts folder</value>
   </data>

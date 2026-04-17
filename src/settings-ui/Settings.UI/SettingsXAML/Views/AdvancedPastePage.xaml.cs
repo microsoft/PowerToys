@@ -314,6 +314,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void RefreshPythonScripts_Click(object sender, RoutedEventArgs e)
         {
             ViewModel?.RefreshPythonScripts();
+            RefreshScriptsButton.Content = "Refresh scripts";
         }
 
         private async void EditPythonScript_Click(object sender, RoutedEventArgs e)
@@ -322,6 +323,19 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 return;
             }
+
+            // Snapshot initial values to detect changes
+            var initialName = action.Name;
+            var initialDesc = action.Description;
+            var initialPlatform = action.Platform;
+            var initialText = action.SupportsText;
+            var initialHtml = action.SupportsHtml;
+            var initialImage = action.SupportsImage;
+            var initialAudio = action.SupportsAudio;
+            var initialVideo = action.SupportsVideo;
+            var initialFiles = action.SupportsFiles;
+            var initialAutoDetect = action.RequiresAutoDetect;
+            var initialRequires = action.Requires;
 
             // Populate dialog fields from the action
             ScriptEditFilePath.Text = action.ScriptPath;
@@ -341,7 +355,53 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             void OnDepsToggled(object s, RoutedEventArgs args) =>
                 ScriptEditRequires.IsEnabled = !ScriptEditAutoDetectDeps.IsOn;
 
-            ScriptEditAutoDetectDeps.Toggled += OnDepsToggled;
+            // Change detection: disable Apply button when nothing has changed
+            PythonScriptEditDialog.IsPrimaryButtonEnabled = false;
+
+            void CheckForChanges(object s, object args)
+            {
+                bool hasChanges =
+                    ScriptEditName.Text != initialName ||
+                    ScriptEditDescription.Text != initialDesc ||
+                    (ScriptEditPlatform.SelectedItem as string ?? "windows") != initialPlatform ||
+                    (ScriptEditText.IsChecked == true) != initialText ||
+                    (ScriptEditHtml.IsChecked == true) != initialHtml ||
+                    (ScriptEditImage.IsChecked == true) != initialImage ||
+                    (ScriptEditAudio.IsChecked == true) != initialAudio ||
+                    (ScriptEditVideo.IsChecked == true) != initialVideo ||
+                    (ScriptEditFiles.IsChecked == true) != initialFiles ||
+                    ScriptEditAutoDetectDeps.IsOn != initialAutoDetect ||
+                    ScriptEditRequires.Text != initialRequires;
+                PythonScriptEditDialog.IsPrimaryButtonEnabled = hasChanges;
+            }
+
+            void OnTextChanged(object s, TextChangedEventArgs args) => CheckForChanges(s, args);
+            void OnChecked(object s, RoutedEventArgs args) => CheckForChanges(s, args);
+            void OnToggled(object s, RoutedEventArgs args)
+            {
+                OnDepsToggled(s, args);
+                CheckForChanges(s, args);
+            }
+
+            void OnSelectionChanged(object s, SelectionChangedEventArgs args) => CheckForChanges(s, args);
+
+            ScriptEditName.TextChanged += OnTextChanged;
+            ScriptEditDescription.TextChanged += OnTextChanged;
+            ScriptEditRequires.TextChanged += OnTextChanged;
+            ScriptEditPlatform.SelectionChanged += OnSelectionChanged;
+            ScriptEditText.Checked += OnChecked;
+            ScriptEditText.Unchecked += OnChecked;
+            ScriptEditHtml.Checked += OnChecked;
+            ScriptEditHtml.Unchecked += OnChecked;
+            ScriptEditImage.Checked += OnChecked;
+            ScriptEditImage.Unchecked += OnChecked;
+            ScriptEditAudio.Checked += OnChecked;
+            ScriptEditAudio.Unchecked += OnChecked;
+            ScriptEditVideo.Checked += OnChecked;
+            ScriptEditVideo.Unchecked += OnChecked;
+            ScriptEditFiles.Checked += OnChecked;
+            ScriptEditFiles.Unchecked += OnChecked;
+            ScriptEditAutoDetectDeps.Toggled += OnToggled;
 
             try
             {
@@ -368,7 +428,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
             finally
             {
-                ScriptEditAutoDetectDeps.Toggled -= OnDepsToggled;
+                ScriptEditName.TextChanged -= OnTextChanged;
+                ScriptEditDescription.TextChanged -= OnTextChanged;
+                ScriptEditRequires.TextChanged -= OnTextChanged;
+                ScriptEditPlatform.SelectionChanged -= OnSelectionChanged;
+                ScriptEditText.Checked -= OnChecked;
+                ScriptEditText.Unchecked -= OnChecked;
+                ScriptEditHtml.Checked -= OnChecked;
+                ScriptEditHtml.Unchecked -= OnChecked;
+                ScriptEditImage.Checked -= OnChecked;
+                ScriptEditImage.Unchecked -= OnChecked;
+                ScriptEditAudio.Checked -= OnChecked;
+                ScriptEditAudio.Unchecked -= OnChecked;
+                ScriptEditVideo.Checked -= OnChecked;
+                ScriptEditVideo.Unchecked -= OnChecked;
+                ScriptEditFiles.Checked -= OnChecked;
+                ScriptEditFiles.Unchecked -= OnChecked;
+                ScriptEditAutoDetectDeps.Toggled -= OnToggled;
             }
         }
 

@@ -29,6 +29,8 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPastePythonScriptAction> PythonScriptActions { get; }
 
+        public bool IsPythonScriptsEnabled { get; }
+
         public string PythonScriptsFolder { get; }
 
         public string PythonExecutablePath { get; }

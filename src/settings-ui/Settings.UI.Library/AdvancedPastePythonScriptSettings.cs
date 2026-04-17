@@ -9,6 +9,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library;
 
 public sealed class AdvancedPastePythonScriptSettings
 {
+    [JsonPropertyName("isEnabled")]
+    public bool IsEnabled { get; set; }
+
     [JsonPropertyName("scriptsFolder")]
     public string ScriptsFolder { get; set; } = string.Empty;
 

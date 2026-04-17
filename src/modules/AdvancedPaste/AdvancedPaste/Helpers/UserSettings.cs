@@ -57,6 +57,8 @@ namespace AdvancedPaste.Settings
 
         public string PythonScriptsFolder { get; private set; }
 
+        public bool IsPythonScriptsEnabled { get; private set; }
+
         public string PythonExecutablePath { get; private set; }
 
         public int PythonScriptTimeoutSeconds { get; private set; } = 30;
@@ -159,6 +161,7 @@ namespace AdvancedPaste.Settings
                                 _customActions.AddRange(properties.CustomActions.Value.Where(customAction => customAction.IsShown && customAction.IsValid));
 
                                 var pythonScripts = properties.PythonScripts ?? new AdvancedPastePythonScriptSettings();
+                                IsPythonScriptsEnabled = pythonScripts.IsEnabled;
                                 PythonScriptsFolder = string.IsNullOrWhiteSpace(pythonScripts.ScriptsFolder)
                                     ? GetDefaultScriptsFolder()
                                     : pythonScripts.ScriptsFolder;

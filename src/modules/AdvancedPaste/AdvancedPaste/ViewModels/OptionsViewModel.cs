@@ -433,6 +433,11 @@ namespace AdvancedPaste.ViewModels
 
         private IEnumerable<PasteFormat> BuildPythonScriptFormats()
         {
+            if (!_userSettings.IsPythonScriptsEnabled)
+            {
+                yield break;
+            }
+
             var folder = _userSettings.PythonScriptsFolder;
             if (string.IsNullOrWhiteSpace(folder))
             {

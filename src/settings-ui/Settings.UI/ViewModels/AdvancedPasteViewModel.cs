@@ -293,6 +293,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public AdvancedPasteAdditionalActions AdditionalActions => _additionalActions;
 
+        public bool IsPythonScriptsEnabled
+        {
+            get
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts;
+                return scripts?.IsEnabled ?? false;
+            }
+
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                if (scripts.IsEnabled != value)
+                {
+                    scripts.IsEnabled = value;
+                    OnPropertyChanged(nameof(IsPythonScriptsEnabled));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
+        public bool ScriptsDiscovered => _scriptsDiscovered;
+
         public string PythonExecutablePath
         {
             get => _advancedPasteSettings.Properties.PythonScripts?.PythonExecutablePath ?? string.Empty;
@@ -348,6 +370,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public void RefreshPythonScripts()
         {
             _scriptsDiscovered = true;
+            OnPropertyChanged(nameof(ScriptsDiscovered));
 
             var folder = ScriptsFolder;
             if (string.IsNullOrWhiteSpace(folder) || !System.IO.Directory.Exists(folder))
