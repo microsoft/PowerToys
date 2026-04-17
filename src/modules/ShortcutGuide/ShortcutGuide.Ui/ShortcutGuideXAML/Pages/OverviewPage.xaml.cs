@@ -44,18 +44,24 @@ namespace ShortcutGuide.Pages
                 this._appName = param.AppName;
                 this._shortcutFile = param.ShortcutFile;
                 this._recommendedShortcuts = [.. this._shortcutFile.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Recommended))];
-                if (App.PinnedShortcuts.TryGetValue(this._appName, out var shortcuts))
+                try
                 {
-                    this._pinnedShortcuts = [.. shortcuts];
-                }
+                    if (App.PinnedShortcuts.TryGetValue(this._appName, out var shortcuts))
+                    {
+                        this._pinnedShortcuts = [.. shortcuts];
+                    }
 
-                if (this._appName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
+                    if (this._appName == ManifestInterpreter.GetIndexYamlFile().DefaultShellName)
+                    {
+                        this.TaskbarShortcutsPanel.Visibility = Visibility.Visible;
+                        this._taskbarShortcuts =
+                        [
+                            .. this._shortcutFile.Shortcuts.First(x => x.SectionName.StartsWith("<TASKBAR1-9>", StringComparison.InvariantCulture)).Properties,
+                        ];
+                    }
+                }
+                catch
                 {
-                    this.TaskbarShortcutsPanel.Visibility = Visibility.Visible;
-                    this._taskbarShortcuts =
-                    [
-                        .. this._shortcutFile.Shortcuts.First(x => x.SectionName.StartsWith("<TASKBAR1-9>", StringComparison.InvariantCulture)).Properties,
-                    ];
                 }
             }
         }
@@ -64,7 +70,7 @@ namespace ShortcutGuide.Pages
         {
             if (sender is MenuFlyout fl && fl.Target is Grid g && g.Tag is ShortcutEntry dataObject && fl.Items[0] is MenuFlyoutItem pinItem)
             {
-                bool isItemPinned = App.PinnedShortcuts[this._appName].Any(x => x.Equals(dataObject));
+                bool isItemPinned = App.PinnedShortcuts.TryGetValue(this._appName, out var pinned) && pinned.Any(x => x.Equals(dataObject));
                 pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
                 pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
             }
@@ -77,7 +83,9 @@ namespace ShortcutGuide.Pages
                 PinnedShortcutsHelper.UpdatePinnedShortcuts(this._appName, shortcutEntry);
 
                 // Update ListView to reflect changes
-                this._pinnedShortcuts = [.. App.PinnedShortcuts[this._appName]];
+                this._pinnedShortcuts = App.PinnedShortcuts.TryGetValue(this._appName, out var updated)
+                    ? [.. updated]
+                    : new ObservableCollection<ShortcutEntry>();
                 this.PinnedShortcutsListView.ItemsSource = this._pinnedShortcuts;
                 this.OnPropertyChanged(nameof(this.PinnedShortcutsCount));
             }

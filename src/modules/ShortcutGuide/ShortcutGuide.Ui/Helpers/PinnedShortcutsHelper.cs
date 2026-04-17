@@ -18,9 +18,15 @@ namespace ShortcutGuide.Helpers
     {
         public static void UpdatePinnedShortcuts(string appName, ShortcutEntry shortcutEntry)
         {
-            if (!App.PinnedShortcuts[appName].Remove(shortcutEntry))
+            if (!App.PinnedShortcuts.TryGetValue(appName, out var list))
             {
-                App.PinnedShortcuts[appName].Add(shortcutEntry);
+                list = new List<ShortcutEntry>();
+                App.PinnedShortcuts[appName] = list;
+            }
+
+            if (!list.Remove(shortcutEntry))
+            {
+                list.Add(shortcutEntry);
             }
 
             Save();

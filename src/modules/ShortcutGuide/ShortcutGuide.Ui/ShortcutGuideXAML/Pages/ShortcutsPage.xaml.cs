@@ -44,7 +44,7 @@ namespace ShortcutGuide.Pages
         {
             if (sender is MenuFlyout fl && fl.Target is Grid g && g.Tag is ShortcutEntry dataObject && fl.Items[0] is MenuFlyoutItem pinItem)
             {
-                bool isItemPinned = App.PinnedShortcuts[this._appName].Any(x => x.Equals(dataObject));
+                bool isItemPinned = App.PinnedShortcuts.TryGetValue(this._appName, out var pinned) && pinned.Any(x => x.Equals(dataObject));
                 pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
                 pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
             }

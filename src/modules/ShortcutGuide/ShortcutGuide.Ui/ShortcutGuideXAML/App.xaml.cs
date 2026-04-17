@@ -14,7 +14,7 @@ namespace ShortcutGuide
 {
     public partial class App
     {
-        internal static Dictionary<string, List<ShortcutEntry>> PinnedShortcuts { get; private set; } = null!;
+        internal static Dictionary<string, List<ShortcutEntry>> PinnedShortcuts { get; private set; } = new Dictionary<string, List<ShortcutEntry>>();
 
         internal static ShortcutGuideSettings ShortcutGuideSettings { get; private set; } = null!;
 
@@ -48,7 +48,18 @@ namespace ShortcutGuide
             if (settingsUtils.SettingsExists(ShortcutGuideSettings.ModuleName, "Pinned.json"))
             {
                 string pinnedPath = settingsUtils.GetSettingsFilePath(ShortcutGuideSettings.ModuleName, "Pinned.json");
-                PinnedShortcuts = JsonSerializer.Deserialize<Dictionary<string, List<ShortcutEntry>>>(File.ReadAllText(pinnedPath))!;
+                try
+                {
+                    var loaded = JsonSerializer.Deserialize<Dictionary<string, List<ShortcutEntry>>>(File.ReadAllText(pinnedPath));
+                    if (loaded != null)
+                    {
+                        PinnedShortcuts = loaded;
+                    }
+                }
+                catch (JsonException)
+                {
+                    // Fall back to the empty default if the file is corrupt.
+                }
             }
 
             ShortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig;
