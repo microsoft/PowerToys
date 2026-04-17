@@ -492,6 +492,38 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             RefreshPythonScripts();
         }
 
+        /// <summary>
+        /// Applies changes for a single script action. Writes the header to file and saves settings.
+        /// Throws IOException if the file is locked.
+        /// </summary>
+        public void ApplySingleScriptChange(AdvancedPastePythonScriptAction action)
+        {
+            WriteScriptHeader(action);
+
+            var pythonSettings = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+            pythonSettings.Value = [.. PythonScriptActions.Select(a => (AdvancedPastePythonScriptAction)a.Clone())];
+            SaveAndNotifySettings();
+        }
+
+        /// <summary>
+        /// Generates the full header text for a script action, for manual copy/paste fallback.
+        /// </summary>
+        public static string GenerateHeaderText(AdvancedPastePythonScriptAction action)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine(string.Concat("# @advancedpaste:name   ", action.Name));
+            sb.AppendLine(string.Concat("# @advancedpaste:desc   ", action.Description));
+            sb.AppendLine(string.Concat("# @advancedpaste:platform   ", action.Platform));
+            sb.AppendLine(string.Concat("# @advancedpaste:formats   ", action.Formats));
+            sb.AppendLine(string.Concat("# @advancedpaste:enabled   ", action.IsEnabled ? "true" : "false"));
+            if (!action.RequiresAutoDetect && !string.IsNullOrWhiteSpace(action.Requires))
+            {
+                sb.AppendLine(string.Concat("# @advancedpaste:requires   ", action.Requires));
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
         private static void WriteScriptHeader(AdvancedPastePythonScriptAction action)
         {
             if (!System.IO.File.Exists(action.ScriptPath))

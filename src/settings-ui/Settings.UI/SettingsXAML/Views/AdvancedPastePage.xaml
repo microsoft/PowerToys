@@ -450,9 +450,6 @@
                                     x:Uid="AdvancedPaste_PythonScript_RefreshScripts"
                                     Click="RefreshPythonScripts_Click"
                                     Style="{ThemeResource AccentButtonStyle}" />
-                                <Button
-                                    x:Uid="AdvancedPaste_PythonScript_ApplyChanges"
-                                    Click="ApplyPythonScriptChanges_Click" />
                             </StackPanel>
                             <tkcontrols:SettingsExpander.ItemTemplate>
                                 <DataTemplate x:DataType="models:AdvancedPastePythonScriptAction">
@@ -464,6 +461,7 @@
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <ToggleSwitch
                                                 IsOn="{x:Bind IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                Toggled="ScriptEnabledToggle_Toggled"
                                                 OffContent=""
                                                 OnContent="" />
                                             <Button
@@ -525,7 +523,7 @@
             x:Name="PythonScriptEditDialog"
             Title="Edit script settings"
             CloseButtonText="Cancel"
-            PrimaryButtonText="Save"
+            PrimaryButtonText="Apply changes"
             PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
             <ContentDialog.Resources>
                 <x:Double x:Key="ContentDialogMaxWidth">600</x:Double>

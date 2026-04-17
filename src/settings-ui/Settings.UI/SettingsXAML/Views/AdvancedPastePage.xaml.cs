@@ -21,6 +21,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -315,11 +316,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ViewModel?.RefreshPythonScripts();
         }
 
-        private void ApplyPythonScriptChanges_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel?.ApplyPythonScriptChanges();
-        }
-
         private async void EditPythonScript_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement { Tag: AdvancedPastePythonScriptAction action })
@@ -366,11 +362,71 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     action.SupportsFiles = ScriptEditFiles.IsChecked == true;
                     action.RequiresAutoDetect = ScriptEditAutoDetectDeps.IsOn;
                     action.Requires = ScriptEditRequires.Text;
+
+                    await ApplySingleActionAsync(action);
                 }
             }
             finally
             {
                 ScriptEditAutoDetectDeps.Toggled -= OnDepsToggled;
+            }
+        }
+
+        private async void ScriptEnabledToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleSwitch toggle && toggle.DataContext is AdvancedPastePythonScriptAction action)
+            {
+                action.IsEnabled = toggle.IsOn;
+                await ApplySingleActionAsync(action);
+            }
+        }
+
+        private async Task ApplySingleActionAsync(AdvancedPastePythonScriptAction action)
+        {
+            try
+            {
+                ViewModel?.ApplySingleScriptChange(action);
+            }
+            catch (System.IO.IOException)
+            {
+                var headerText = ViewModels.AdvancedPasteViewModel.GenerateHeaderText(action);
+                var errorDialog = new ContentDialog
+                {
+                    XamlRoot = Content.XamlRoot,
+                    Title = "Unable to write to file",
+                    PrimaryButtonText = "Copy header",
+                    CloseButtonText = "OK",
+                    PrimaryButtonStyle = (Style)Application.Current.Resources["AccentButtonStyle"],
+                    Content = new StackPanel
+                    {
+                        Spacing = 12,
+                        Children =
+                        {
+                            new TextBlock
+                            {
+                                Text = $"The file is locked by another process and cannot be updated:\n{action.ScriptPath}\n\nCopy the header below and paste it at the top of the file manually:",
+                                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+                            },
+                            new TextBox
+                            {
+                                Text = headerText,
+                                IsReadOnly = true,
+                                AcceptsReturn = true,
+                                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+                                FontFamily = new FontFamily("Consolas"),
+                                MaxHeight = 200,
+                            },
+                        },
+                    },
+                };
+
+                var dialogResult = await errorDialog.ShowAsync();
+                if (dialogResult == ContentDialogResult.Primary)
+                {
+                    var dataPackage = new DataPackage();
+                    dataPackage.SetText(headerText);
+                    Clipboard.SetContent(dataPackage);
+                }
             }
         }
 
