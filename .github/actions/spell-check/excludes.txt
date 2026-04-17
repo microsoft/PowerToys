@@ -106,7 +106,6 @@
 ^src/common/notifications/BackgroundActivatorDLL/cpp\.hint$
 ^src/common/sysinternals/Eula/
 ^doc/devdocs/modules/cmdpal/initial-sdk-spec/list-elements-mock-002\.pdn$
-^src/modules/cmdpal/doc/extension-gallery/sample-gallery/
 ^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage\.cs$
 ^src/modules/cmdpal/Microsoft\.CmdPal\.UI/Settings/InternalPage\.SampleData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/.*\.TestData\.cs$
