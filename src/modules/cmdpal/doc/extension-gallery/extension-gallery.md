@@ -1,197 +1,167 @@
 # Command Palette Extension Gallery
 
-This document describes the JSON feed format consumed by the Command Palette extension gallery.
+This document describes how Command Palette (CmdPal) discovers extensions for
+the in-app **Extension gallery** page.
 
-The live gallery content and extension submission workflow are maintained in the external repository:
+## At a glance
 
-- `https://github.com/microsoft/CmdPal-Extensions`
+- The gallery loads a single JSON feed called `extensions.json` from a remote
+  HTTPS URL, parses it, and renders the entries.
+- The default feed lives in the external repo
+  **`microsoft/CmdPal-Extensions`** at
+  `https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json`.
+- Feed content + icon images are cached on disk so the page works offline and
+  survives short network hiccups.
+- There is no WinGet discovery, no per-extension `manifest.json` fetch, and no
+  other network call for rendering the list.
 
-The current gallery implementation lives in:
+## Implementation pointers
 
-- `Microsoft.CmdPal.Common/ExtensionGallery/Services/ExtensionGalleryService.cs`
-- `Microsoft.CmdPal.Common/ExtensionGallery/Models/`
+| Concern | File |
+| --- | --- |
+| Fetching, parsing, caching, pruning | `Microsoft.CmdPal.Common/ExtensionGallery/Services/ExtensionGalleryService.cs` |
+| Resolving which URL to fetch | `Microsoft.CmdPal.Common/ExtensionGallery/Services/GalleryFeedUrlProvider.cs` + `Microsoft.CmdPal.UI/Helpers/GalleryServiceRegistration.cs` |
+| HTTP + on-disk cache | `Microsoft.CmdPal.Common/ExtensionGallery/Services/ExtensionGalleryHttpClient.cs` (wraps `Microsoft.CmdPal.Common/Services/HttpCaching/HttpCachingClient`) |
+| Feed + entry models | `Microsoft.CmdPal.Common/ExtensionGallery/Models/` |
 
-The local sample gallery content in this repo lives in:
+## Feed URL resolution
 
-- `doc/extension-gallery/extensionGallery/extensions.json`
-- `doc/extension-gallery/extensionGallery/extensions/<extension-id>/manifest.json`
+`ExtensionGalleryService.GetFeedUrl()` returns, in order:
 
-## Feed layout
+1. The user-configured URL from CmdPal settings (`SettingsModel.GalleryFeedUrl`,
+   exposed via the hidden `InternalPage` settings page). Any non-empty value
+   wins. Mostly used for local testing against a custom feed.
+2. Otherwise, the built-in default
+   `https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json`.
 
-The local sample feed is stored alongside these docs:
+Local `file://` URIs are allowed too — `FetchFeedDocumentAsync` reads the file
+directly and bypasses the HTTP cache.
 
-```text
-doc/extension-gallery/
-  extension-gallery.md
-  gallery-index.schema.json
-  gallery-manifest.schema.json
-  extensionGallery/
-    extensions.json
-    schema.json
-    Validate-GalleryJson.ps1
-    extensions/
-      sample-extension/
-        manifest.json
-        icon.png
-        README.md
-```
+## Feed format
 
-At runtime, the gallery service:
-
-1. Loads the configured feed endpoint, typically `extensions.json`
-2. Parses the wrapped `extensions` payload when full extension data is inline
-3. Normalizes icon URIs for local file feeds
-4. Caches the resulting entries for offline fallback
-
-## `extensions.json`
-
-The preferred feed format is a wrapped compound document with inline extension entries.
-
-Example:
+The feed is a single wrapped JSON document with inline entries:
 
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/main/.github/schemas/gallery.schema.json",
-  "version": "1.0",
-  "generatedAt": "2026-04-01T13:40:15Z",
-  "extensionCount": 1,
   "extensions": [
     {
       "id": "sample-extension",
       "title": "Sample Extension",
       "description": "A sample extension demonstrating the gallery feed format.",
-      "author": {
-        "name": "Microsoft",
-        "url": "https://github.com/microsoft"
-      },
+      "author": { "name": "Microsoft", "url": "https://github.com/microsoft" },
       "homepage": "https://github.com/microsoft/CmdPal-Extensions",
-      "tags": [
-        "sample",
-        "reference",
-        "template"
-      ],
+      "iconUrl": "https://.../icon.png",
+      "screenshotUrls": ["https://.../screenshot-1.png"],
+      "tags": ["sample"],
       "installSources": [
-        {
-          "type": "url",
-          "uri": "https://github.com/microsoft/CmdPal-Extensions/releases/latest"
-        }
+        { "type": "winget",  "id":  "Contoso.SampleExtension" },
+        { "type": "msstore", "id":  "9P…" },
+        { "type": "url",     "uri": "https://github.com/contoso/sample/releases/latest" }
       ],
-      "iconUrl": "extensions/sample-extension/icon.png"
+      "detection": { "packageFamilyName": "Contoso.SampleExtension_1234567890abc" }
     }
   ]
 }
 ```
 
-### Compound feed notes
+Only the `extensions` array is read at runtime. See
+`gallery-manifest.schema.json` in this folder for the full entry shape (used
+for upstream authoring + editor validation).
 
-- The production feed typically uses absolute HTTP `iconUrl` values.
-- The checked-in local sample feed can use relative `iconUrl` values.
-- `ExtensionGalleryService` resolves local relative icon paths against the feed location.
+### Required + optional entry fields
 
-## `manifest.json`
+| Field | Required | Notes |
+| --- | --- | --- |
+| `id` | yes | Lowercase stable identifier; entries with empty id are dropped. |
+| `title` | yes | Display name. |
+| `description` | yes | Shown in list and detail views. |
+| `author.name` | yes | `author.url` optional. |
+| `installSources` | yes | At least one entry; see [Install sources](#install-sources). |
+| `homepage`, `iconUrl`, `screenshotUrls`, `tags`, `detection.packageFamilyName` | no | All optional. |
 
-Each local sample extension folder can still contain a `manifest.json` file with source metadata for that entry.
-Those files are useful for authoring and validation, even though the runtime now prefers the wrapped `extensions.json` feed.
-
-Example:
-
-```json
-{
-  "$schema": "../../schema.json",
-  "id": "sample-extension",
-  "title": "Sample Extension",
-  "description": "A sample extension demonstrating the gallery manifest format.",
-  "author": {
-    "name": "Microsoft",
-    "url": "https://github.com/microsoft"
-  },
-  "homepage": "https://github.com/microsoft/CmdPal-Extensions",
-  "readme": "README.md",
-  "icon": "icon.png",
-  "tags": [
-    "sample",
-    "reference",
-    "template"
-  ],
-  "installSources": [
-    {
-      "type": "url",
-      "uri": "https://github.com/microsoft/CmdPal-Extensions/releases/latest"
-    }
-  ],
-  "detection": {
-    "packageFamilyName": "Contoso.SampleExtension_1234567890abc"
-  }
-}
-```
-
-### Manifest fields
-
-| Field | Required | Type | Notes |
-| --- | --- | --- | --- |
-| `id` | Yes | `string` | Lowercase identifier. Should match the folder name and the index entry id. |
-| `title` | Yes | `string` | Display name shown in the gallery UI. |
-| `description` | Yes | `string` | Short summary shown in the list and detail page. |
-| `author` | Yes | `object` | Currently supports `name` and optional `url`. |
-| `homepage` | No | `string` | Absolute URL for the extension home page or repo. |
-| `readme` | No | `string` | Relative filename for extension documentation metadata. |
-| `icon` | No | `string` | Relative filename for the icon asset. |
-| `iconDark` | No | `string` | Optional dark-theme icon variant kept in the manifest model. |
-| `installSources` | Yes | `array` | One or more install sources such as WinGet, Microsoft Store, or a URL. |
-| `detection` | No | `object` | Optional install-state hints. Currently supports `packageFamilyName`. |
-| `tags` | No | `array` | Optional discoverability tags. |
+Relative `iconUrl` / `screenshotUrls` are resolved against the feed URL's
+directory (useful only for local / `file://` feeds during development).
 
 ## Install sources
 
-The gallery currently understands these source types:
+Each entry's `installSources` is consumed by
+`ExtensionGalleryItemViewModel` to decide which install affordances to show.
 
-| `type` | Required field | Used for |
+| `type` | Required field | Behaviour |
 | --- | --- | --- |
-| `winget` | `id` | Install or update via the shared WinGet service. |
-| `msstore` | `id` | Open the Microsoft Store product page. |
-| `url` | `uri` | Open a website or repository link. |
+| `winget` | `id` | Enables the "Install via WinGet" button (uses the shared WinGet service), and joins in-flight install progress + installed/update status. |
+| `msstore` | `id` | Opens `ms-windows-store://pdp/?ProductId={id}`. |
+| `url` | `uri` | Shown as a "GitHub" or "Website" link depending on host. |
 
-Notes:
+An entry can declare any combination. Sources the runtime does not recognise
+are surfaced as an "unknown source" indicator.
 
-- `url` sources are surfaced as GitHub or Website links based on the URI host
-- a manifest can contain more than one install source
-- the WinGet id is also how the gallery joins shared install progress and package status updates
+## Fetching and caching
 
-## Detection metadata
+`ExtensionGalleryService` uses `ExtensionGalleryHttpClient`, which wraps
+`HttpCachingClient` over a file-system cache. Both the feed JSON and any
+cacheable icon URLs are cached.
 
-`detection.packageFamilyName` is optional metadata used by the gallery to recognize an already-installed extension package, even before WinGet metadata is queried.
+| Setting | Value | Defined in |
+| --- | --- | --- |
+| Cache root | `{AppCache}\GalleryCache\` | `ExtensionGalleryHttpClient.CacheDirectoryName` |
+| Feed TTL | 4 hours | `ExtensionGalleryHttpClient.DefaultTimeToLive` |
+| Icon TTL | 24 hours | `ExtensionGalleryService.IconCacheTtl` |
+| HTTP timeout | 30 s | `ExtensionGalleryHttpClient` |
+| `User-Agent` | `PowerToys-CmdPal/1.0` | `ExtensionGalleryHttpClient` |
 
-Example:
+`{AppCache}` resolves to `ApplicationData.Current.LocalCacheFolder` when
+CmdPal runs packaged, and to
+`%LOCALAPPDATA%\Microsoft\PowerToys\Microsoft.CmdPal\Cache\` when unpackaged
+(see `ApplicationInfoService.DetermineCacheDirectory`).
 
-```json
-"detection": {
-  "packageFamilyName": "Contoso.MyExtension_8wekyb3d8bbwe"
-}
-```
+### Fetch flow
 
-## Icons and companion files
+`GetExtensionsAsync` (normal load) and `RefreshAsync` (user-initiated
+refresh, `forceRefresh: true`) both go through `FetchWrappedFeedAsync`:
 
-- icon filenames are resolved relative to the extension folder
-- readme filenames are stored as metadata relative to the extension folder
+1. Resolve the feed URL (see above).
+2. If the URL is local, read it from disk. Otherwise hand it to
+   `HttpCachingClient.GetResourceAsync` which:
+   - Serves a fresh cached copy if one exists and TTL has not elapsed.
+   - Otherwise issues a conditional GET (ETag / `If-None-Match`). On `304
+     Not Modified` it refreshes the cache metadata and returns the cached
+     body.
+   - On network failure it returns the last-known cached body with
+     `UsedFallbackCache = true`, so the UI can show a "stale data" banner.
+3. Parse the JSON with the source-generated `GallerySerializationContext`
+   (strongly-typed `GalleryRemoteIndex` — no reflection, AOT-friendly).
+4. Drop entries with missing `id`, normalize relative `iconUrl` and
+   `screenshotUrls`, and resolve remote icon URIs through the same HTTP
+   cache so the UI binds to local `file://` URIs.
+5. On a successful forced refresh, `PruneCachedResources` deletes cache
+   entries that are no longer referenced by the current feed (old feed URL
+   and icon URLs that dropped out of the feed).
 
-## Validation
+### Fetch result flags
 
-This folder contains JSON schema files for authoring and validation:
+`GetExtensionsAsync` returns a `GalleryFetchResult` that the view model uses
+for UI hints:
 
-- `gallery-index.schema.json`
-- `gallery-manifest.schema.json`
+| Flag | Meaning |
+| --- | --- |
+| `FromCache` | The feed came from cache without hitting the network (TTL still valid). |
+| `UsedFallbackCache` | A network request was attempted and failed, and the cached copy was served as fallback. The UI shows a stale-data info bar. |
+| `RateLimited` | The origin returned `429 Too Many Requests` and no fallback was available. The UI shows a rate-limit error. |
 
-The local sample feed under `doc/extension-gallery/extensionGallery/` also includes:
+## Authoring
 
-- `extensionGallery/schema.json`
-- `extensionGallery/Validate-GalleryJson.ps1`
+- Entries for the production gallery are added to the feed repo
+  `microsoft/CmdPal-Extensions`.
+- Point an editor at `gallery-manifest.schema.json` in this folder (or the
+  schema served from the upstream repo) for inline validation of an
+  individual entry.
+- Keep `id` stable once an extension is published — users may have it
+  installed and the gallery keys install status by id.
+- Prefer providing a `winget` source when the extension ships through App
+  Installer; the gallery uses it both for status ("Installed" / "Update
+  available") and for the in-app install button.
+- `detection.packageFamilyName` lets the gallery recognise an
+  already-installed packaged extension before WinGet metadata resolves.
 
-If you are editing the sample gallery feed in this repo, keeping the manifest `$schema` field pointed at `../../schema.json` gives editor IntelliSense and validation without changing the existing sample layout.
-
-## Practical guidance
-
-- Prefer the wrapped `extensions.json` format
-- Keep `id` values stable once published
-- Include a `winget` source for extensions that can be installed through App Installer
-- Add `packageFamilyName` when you know the packaged extension identity
-- Use tags sparingly and consistently so search remains useful
