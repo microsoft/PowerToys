@@ -117,11 +117,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private bool IsDiscreteValueSupported(byte vcpCode, int value)
     {
         var vcpInfo = VcpCapabilitiesInfo;
-        if (vcpInfo != null &&
-            vcpInfo.SupportedVcpCodes.TryGetValue(vcpCode, out var codeInfo) &&
+        if (vcpInfo == null ||
+            !vcpInfo.SupportedVcpCodes.TryGetValue(vcpCode, out var codeInfo) ||
+            !codeInfo.HasDiscreteValues ||
             !codeInfo.SupportedValues.Contains(value))
         {
-            Logger.LogWarning($"[{Id}] VCP 0x{vcpCode:X2} value 0x{value:X2} not in supported values, skipping");
+            Logger.LogWarning($"[{Id}] VCP 0x{vcpCode:X2} value 0x{value:X2} not in reported supported values, skipping");
             return false;
         }
 
@@ -483,41 +484,23 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Standard MCCS color temperature presets (VCP 0x14 values) to use as fallback
-    /// when the monitor doesn't report discrete values in its capabilities string.
-    /// </summary>
-    private static readonly int[] StandardColorTemperaturePresets = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0A, 0x0B };
-
-    /// <summary>
-    /// Refresh the list of available color temperature presets based on monitor capabilities
+    /// Refresh the list of available color temperature presets based on monitor capabilities.
+    /// Only values explicitly reported in the capabilities string are exposed — no MCCS standard fallback.
     /// </summary>
     private void RefreshAvailableColorPresets()
     {
-        if (!SupportsColorTemperature)
+        var vcpInfo = VcpCapabilitiesInfo;
+        if (!SupportsColorTemperature ||
+            vcpInfo == null ||
+            !vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var colorTempInfo) ||
+            !colorTempInfo.HasDiscreteValues)
         {
             _availableColorPresets = null;
+            OnPropertyChanged(nameof(AvailableColorPresets));
             return;
         }
 
-        IEnumerable<int> presetValues;
-        var vcpInfo = VcpCapabilitiesInfo;
-
-        // Try to get discrete values from capabilities string
-        if (vcpInfo != null &&
-            vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var colorTempInfo) &&
-            colorTempInfo.HasDiscreteValues &&
-            colorTempInfo.SupportedValues.Count > 0)
-        {
-            // Use values from capabilities string
-            presetValues = colorTempInfo.SupportedValues;
-        }
-        else
-        {
-            // Fallback to standard MCCS presets when capabilities don't list discrete values
-            presetValues = StandardColorTemperaturePresets;
-        }
-
-        _availableColorPresets = presetValues.Select(value => new ColorTemperatureItem
+        _availableColorPresets = colorTempInfo.SupportedValues.Select(value => new ColorTemperatureItem
         {
             VcpValue = value,
             DisplayName = Common.Utils.VcpNames.GetValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) is string n ? $"{n} (0x{value:X2})" : $"0x{value:X2}",
