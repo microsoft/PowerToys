@@ -31,16 +31,6 @@ public interface IWinGetPackageManagerService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Searches WinGet for Command Palette extensions and returns metadata shaped for gallery-style consumption.
-    /// </summary>
-    /// <param name="resultLimit">The maximum number of results to return.</param>
-    /// <param name="cancellationToken">A token that cancels the search.</param>
-    /// <returns>A query result containing Command Palette extension metadata.</returns>
-    Task<WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>> SearchCommandPaletteExtensionsAsync(
-        uint resultLimit = 100,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Resolves packages by WinGet package id.
     /// </summary>
     /// <param name="packageIds">The package ids to resolve.</param>

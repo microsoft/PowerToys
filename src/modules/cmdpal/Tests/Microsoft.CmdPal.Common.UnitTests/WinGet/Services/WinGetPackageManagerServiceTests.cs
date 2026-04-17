@@ -25,20 +25,6 @@ public class WinGetPackageManagerServiceTests
     }
 
     [TestMethod]
-    public async Task SearchCommandPaletteExtensionsAsync_ReturnsUnavailableResult_WhenFactoryIsUnavailable()
-    {
-        var service = new WinGetPackageManagerService(() => null);
-
-        var result = await service.SearchCommandPaletteExtensionsAsync();
-
-        Assert.IsFalse(service.State.IsAvailable);
-        Assert.IsTrue(result.IsUnavailable);
-        Assert.IsFalse(result.IsSuccess);
-        Assert.IsNull(result.Value);
-        Assert.AreEqual(service.State.Message, result.ErrorMessage);
-    }
-
-    [TestMethod]
     public async Task RefreshCatalogsAsync_ReturnsFalse_WhenFactoryIsUnavailable()
     {
         var service = new WinGetPackageManagerService(() => null);

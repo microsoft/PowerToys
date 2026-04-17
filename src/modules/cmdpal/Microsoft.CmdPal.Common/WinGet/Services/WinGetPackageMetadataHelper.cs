@@ -174,24 +174,6 @@ internal static class WinGetPackageMetadataHelper
         return name ?? package.Id;
     }
 
-    public static WinGetExtensionCatalogEntry CreateExtensionCatalogEntry(CatalogPackage package)
-    {
-        var details = TryBuildPackageDetails(package);
-        var packageName = details?.Name ?? GetPackageDisplayName(package);
-
-        return new WinGetExtensionCatalogEntry(
-            PackageId: package.Id,
-            PackageName: packageName,
-            Summary: details?.Summary,
-            Description: details?.Description,
-            Publisher: details?.Publisher,
-            PublisherUrl: details?.PublisherUrl,
-            Author: details?.Author,
-            PackageUrl: details?.PackageUrl ?? details?.PublisherSupportUrl ?? details?.PublisherUrl,
-            IconUrl: details?.IconUrl,
-            Tags: details?.Tags ?? []);
-    }
-
     private static bool HasDetailsContent(WinGetPackageDetails details)
     {
         return !string.IsNullOrWhiteSpace(details.Name)

@@ -123,42 +123,6 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         }
     }
 
-    public async Task<WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>> SearchCommandPaletteExtensionsAsync(
-        uint resultLimit = 100,
-        CancellationToken cancellationToken = default)
-    {
-        var searchResult = await SearchPackagesAsync(
-            query: string.Empty,
-            tag: WinGetPackageTags.CommandPaletteExtension,
-            includeStoreCatalog: false,
-            resultLimit: resultLimit,
-            cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        if (!searchResult.IsSuccess)
-        {
-            return new WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>(
-                null,
-                searchResult.IsUnavailable,
-                searchResult.ErrorMessage);
-        }
-
-        if (searchResult.Value is null || searchResult.Value.Count == 0)
-        {
-            return new WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>([], false, null);
-        }
-
-        List<WinGetExtensionCatalogEntry> entries = new(searchResult.Value.Count);
-        for (var i = 0; i < searchResult.Value.Count; i++)
-        {
-            entries.Add(WinGetPackageMetadataHelper.CreateExtensionCatalogEntry(searchResult.Value[i]));
-        }
-
-        return new WinGetQueryResult<IReadOnlyList<WinGetExtensionCatalogEntry>>(
-            new ReadOnlyCollection<WinGetExtensionCatalogEntry>(entries),
-            false,
-            null);
-    }
-
     public async Task<WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>> GetPackagesByIdAsync(
         IEnumerable<string> packageIds,
         bool includeStoreCatalog = false,
