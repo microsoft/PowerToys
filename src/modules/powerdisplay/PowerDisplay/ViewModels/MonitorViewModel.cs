@@ -114,19 +114,28 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         await ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync);
     }
 
+    private bool IsDiscreteValueSupported(byte vcpCode, int value)
+    {
+        var vcpInfo = VcpCapabilitiesInfo;
+        if (vcpInfo != null &&
+            vcpInfo.SupportedVcpCodes.TryGetValue(vcpCode, out var codeInfo) &&
+            !codeInfo.SupportedValues.Contains(value))
+        {
+            Logger.LogWarning($"[{Id}] VCP 0x{vcpCode:X2} value 0x{value:X2} not in supported values, skipping");
+            return false;
+        }
+
+        return true;
+    }
+
     /// <summary>
     /// Unified method to apply color temperature with hardware update and state persistence.
     /// Always immediate (no debouncing for discrete preset values).
     /// </summary>
     public async Task SetColorTemperatureAsync(int colorTemperature)
     {
-        var vcpInfo = VcpCapabilitiesInfo;
-        if (vcpInfo != null &&
-            vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var codeInfo) &&
-            codeInfo.HasDiscreteValues &&
-            !codeInfo.SupportedValues.Contains(colorTemperature))
+        if (!IsDiscreteValueSupported(0x14, colorTemperature))
         {
-            Logger.LogWarning($"[{Id}] Color temperature 0x{colorTemperature:X2} not in supported values, skipping");
             return;
         }
 
@@ -600,6 +609,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetInputSourceAsync(int inputSource)
     {
+        if (!IsDiscreteValueSupported(0x60, inputSource))
+        {
+            return;
+        }
+
         try
         {
             var result = await _monitorManager.SetInputSourceAsync(Id, inputSource);
@@ -686,6 +700,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetPowerStateAsync(int powerState)
     {
+        if (!IsDiscreteValueSupported(0xD6, powerState))
+        {
+            return;
+        }
+
         try
         {
             var result = await _monitorManager.SetPowerStateAsync(Id, powerState);
