@@ -42,6 +42,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
+    public partial bool ShowBrightness { get; set; }
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAdvancedControls))]
     public partial bool ShowContrast { get; set; }
 
@@ -193,6 +196,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         _monitor.PropertyChanged += OnMonitorPropertyChanged;
 
         // Initialize Show properties based on hardware capabilities
+        ShowBrightness = monitor.SupportsBrightness;
         ShowContrast = monitor.SupportsContrast;
         ShowVolume = monitor.SupportsVolume;
         ShowInputSource = monitor.SupportsInputSource;
@@ -271,6 +275,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// Gets a value indicating whether this monitor supports contrast control via VCP 0x12
     /// </summary>
     public bool SupportsContrast => _monitor.SupportsContrast;
+
+    public bool SupportsBrightness => _monitor.SupportsBrightness;
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports volume control via VCP 0x62

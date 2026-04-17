@@ -479,8 +479,11 @@ namespace PowerDisplay.Common.Drivers.DDC
                     }
                 }
 
-                // Initialize brightness (always supported for DDC/CI monitors)
-                InitializeBrightness(monitor, candidate.Handle);
+                // Initialize brightness if supported
+                if (monitor.SupportsBrightness)
+                {
+                    InitializeBrightness(monitor, candidate.Handle);
+                }
 
                 monitors.Add(monitor);
                 newHandleMap[monitor.Id] = candidate.Handle;
@@ -586,6 +589,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void UpdateMonitorCapabilitiesFromVcp(Monitor monitor, VcpCapabilities vcpCaps)
         {
+            // Check for Brightness support (VCP 0x10)
+            if (vcpCaps.SupportsVcpCode(VcpCodeBrightness))
+            {
+                monitor.Capabilities |= MonitorCapabilities.Brightness;
+            }
+
             // Check for Contrast support (VCP 0x12)
             if (vcpCaps.SupportsVcpCode(VcpCodeContrast))
             {

@@ -17,25 +17,25 @@ namespace PowerDisplay.Common.Models
         /// Gets or sets the brightness level (0-100).
         /// </summary>
         [JsonPropertyName("brightness")]
-        public int Brightness { get; set; }
+        public int? Brightness { get; set; }
 
         /// <summary>
         /// Gets or sets the color temperature VCP value.
         /// </summary>
         [JsonPropertyName("colorTemperature")]
-        public int ColorTemperatureVcp { get; set; }
+        public int? ColorTemperatureVcp { get; set; }
 
         /// <summary>
         /// Gets or sets the contrast level (0-100).
         /// </summary>
         [JsonPropertyName("contrast")]
-        public int Contrast { get; set; }
+        public int? Contrast { get; set; }
 
         /// <summary>
         /// Gets or sets the volume level (0-100).
         /// </summary>
         [JsonPropertyName("volume")]
-        public int Volume { get; set; }
+        public int? Volume { get; set; }
 
         /// <summary>
         /// Gets or sets the raw capabilities string from DDC/CI.
