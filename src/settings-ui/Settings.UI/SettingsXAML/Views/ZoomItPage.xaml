@@ -1,4 +1,4 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ZoomItPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -38,12 +39,12 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
-                <controls:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="ZoomItToggleShowTrayIcon" x:Uid="ZoomIt_Toggle_ShowTrayIcon">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_ZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_ZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItZoomShortcut"
                         x:Uid="ZoomIt_Zoom_Shortcut"
@@ -74,8 +75,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_LiveZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_LiveZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItLiveZoomShortcut"
                         x:Uid="ZoomIt_LiveZoom_Shortcut"
@@ -90,8 +91,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_DrawGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_DrawGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItDrawShortcut"
                         x:Uid="ZoomIt_Draw_Shortcut"
@@ -106,8 +107,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_TypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_TypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItTypeTextFont"
                         x:Uid="ZoomIt_Type_TextFont"
@@ -131,8 +132,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_DemoTypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_DemoTypeGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItDemoTypeShortcut"
                         x:Uid="ZoomIt_DemoType_Shortcut"
@@ -165,8 +166,8 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_BreakGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_BreakGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItBreakShortcut"
                         x:Uid="ZoomIt_Break_Shortcut"
@@ -251,10 +252,10 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
 
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
 
-                <controls:SettingsGroup x:Uid="ZoomIt_RecordGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_RecordGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItRecordShortcut"
                         x:Uid="ZoomIt_Record_Shortcut"
@@ -312,8 +313,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItSnipShortcut"
                         x:Uid="ZoomIt_Snip_Shortcut"
@@ -335,8 +336,8 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_PanoramaGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="ZoomIt_PanoramaGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ZoomItPanoramaShortcut"
                         x:Uid="ZoomIt_Panorama_Shortcut"
@@ -344,7 +345,7 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

@@ -22,6 +22,7 @@
                 <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />
                 <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/ShortcutWithTextLabelControl/ShortcutWithTextLabelControl.xaml" />
                 <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/IsEnabledTextBlock/IsEnabledTextBlock.xaml" />
+                <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/SettingsGroup/SettingsGroup.xaml" />
                 <ResourceDictionary Source="ms-appx:///Dock/DockItemControl.xaml" />
                 <!--  Default theme dictionary  -->
                 <ResourceDictionary Source="ms-appx:///Styles/Theme.Normal.xaml" />

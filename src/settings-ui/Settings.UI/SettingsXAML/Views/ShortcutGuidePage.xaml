@@ -1,4 +1,4 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.ShortcutGuidePage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -22,7 +23,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard Name="ShortcutGuideActivationMethod" x:Uid="ShortcutGuide_ActivationMethod">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
                             <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut" />
@@ -73,9 +74,9 @@
                         IsOpen="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay}"
                         IsTabStop="True"
                         Severity="Warning" />
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="ColorModeHeader"
                         x:Uid="ColorModeHeader"
@@ -97,9 +98,9 @@
                             Minimum="0"
                             Value="{x:Bind ViewModel.OverlayOpacity, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ShortcutGuideDisabledApps"
                         x:Uid="ShortcutGuide_DisabledApps"
@@ -120,7 +121,7 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

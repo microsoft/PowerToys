@@ -1,4 +1,4 @@
-﻿<UserControl
+<UserControl
     x:Class="Microsoft.PowerToys.Settings.UI.Panels.MouseJumpPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,6 +6,7 @@
     xmlns:converters="using:Microsoft.PowerToys.Settings.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -21,7 +22,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <controls:SettingsGroup x:Uid="MouseUtils_MouseJump" AutomationProperties.AutomationId="MouseUtils_MouseJumpTestId">
+    <ptcontrols:SettingsGroup x:Uid="MouseUtils_MouseJump" AutomationProperties.AutomationId="MouseUtils_MouseJumpTestId">
         <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsJumpEnabledGpoConfigured, Mode=OneWay}">
             <tkcontrols:SettingsCard
                 x:Name="MouseUtilsEnableMouseJump"
@@ -221,5 +222,5 @@
                 </tkcontrols:SettingsCard>
             </tkcontrols:SettingsExpander.Items>
         </tkcontrols:SettingsExpander>
-    </controls:SettingsGroup>
+    </ptcontrols:SettingsGroup>
 </UserControl>

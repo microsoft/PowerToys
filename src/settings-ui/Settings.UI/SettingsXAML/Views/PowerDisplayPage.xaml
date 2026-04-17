@@ -1,4 +1,4 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerDisplayPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -42,7 +42,7 @@
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
 
-                <controls:SettingsGroup x:Uid="PowerDisplayGroupHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="PowerDisplayGroupHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerDisplayFlyoutHeader"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE770;}"
@@ -78,10 +78,10 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
                 <!--  Custom VCP Name Mappings  -->
-                <controls:SettingsGroup x:Uid="PowerDisplay_CustomVcpMappings_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="PowerDisplay_CustomVcpMappings_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerDisplay_CustomVcpMappings"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE70F;}"
@@ -118,9 +118,9 @@
                             </StackPanel>
                         </Button>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         x:Uid="PowerDisplay_QuickProfiles"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
@@ -169,9 +169,9 @@
                             </StackPanel>
                         </Button>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <!--  Empty state hint  -->
                     <TextBlock
                         x:Uid="PowerDisplay_NoMonitorsDetected"
@@ -305,7 +305,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

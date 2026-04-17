@@ -1,4 +1,4 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.MouseWithoutBordersPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -22,7 +22,7 @@
     <controls:SettingsPageControl x:Uid="MouseWithoutBorders" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseWithoutBorders.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel Orientation="Vertical">
-                <controls:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
+                <ptcontrols:SettingsGroup x:Uid="MouseWithoutBorders_ActivationSettings">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             Name="MouseWithoutBordersToggleEnable"
@@ -34,8 +34,8 @@
                                 IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup
                     x:Name="KeySettingsGroup"
                     x:Uid="MouseWithoutBorders_KeySettings"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -96,8 +96,8 @@
                             </Button>
                         </StackPanel>
                     </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup
                     x:Name="DeviceLayoutSettingsGroup"
                     x:Uid="MouseWithoutBorders_DeviceLayoutSettings"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -178,8 +178,8 @@
                     <tkcontrols:SettingsCard Name="MouseWithoutBordersMatrixOneRow" x:Uid="MouseWithoutBorders_MatrixOneRow">
                         <ToggleSwitch x:Uid="MouseWithoutBorders_MatrixOneRow_ToggleSwitch" IsOn="{x:Bind ViewModel.MatrixOneRow, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup
                     x:Name="ServiceSettingsGroup"
                     x:Uid="MouseWithoutBorders_ServiceSettings"
                     IsEnabled="{x:Bind ViewModel.CanToggleUseService, Mode=OneWay}">
@@ -214,10 +214,10 @@
                         IsOpen="{x:Bind ViewModel.ShowInfobarRunAsAdminText, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.ShowInfobarRunAsAdminText, Mode=OneWay}"
                         Severity="Informational" />
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
 
-                <controls:SettingsGroup
+                <ptcontrols:SettingsGroup
                     x:Name="BehaviorSettingsGroup"
                     x:Uid="MouseWithoutBorders_Settings"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -296,9 +296,9 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE91C;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowClipboardAndNetworkStatusMessages, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="MouseWithoutBorders_EasyMouseSettings_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="MouseWithoutBorders_EasyMouseSettings_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander x:Uid="MouseWithoutBorders_EasyMouseOption" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.EasyMouseOptionIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="MouseWithoutBorders_EasyMouseOption_Disabled" />
@@ -348,9 +348,9 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
-                <controls:SettingsGroup
+                <ptcontrols:SettingsGroup
                     Name="MouseWithoutBordersKeyboardShortcutsGroup"
                     x:Uid="MouseWithoutBorders_KeyboardShortcuts_Group"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -393,8 +393,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup
                     x:Name="AdvancedSettingsGroup"
                     x:Uid="MouseWithoutBorders_AdvancedSettings_Group"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -475,8 +475,8 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup
                     x:Name="TroubleshootingGroup"
                     x:Uid="MouseWithoutBorders_TroubleShooting"
                     IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -494,7 +494,7 @@
                             <ToggleSwitch x:Uid="MouseWithoutBorders_ShowOriginalUI_ToggleSwitch" IsOn="{x:Bind ViewModel.ShowOriginalUI, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

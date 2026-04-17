@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.LightSwitchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -35,7 +35,7 @@
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
 
-                    <controls:SettingsGroup x:Uid="LightSwitch_ShortcutsSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <ptcontrols:SettingsGroup x:Uid="LightSwitch_ShortcutsSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsCard x:Uid="LightSwitch_ThemeToggle_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
                             <controls:ShortcutControl
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -43,9 +43,9 @@
                                 AutomationProperties.AutomationId="Shortcut_LightSwitch"
                                 HotkeySettings="{x:Bind Path=ViewModel.ToggleThemeActivationShortcut, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
-                    </controls:SettingsGroup>
+                    </ptcontrols:SettingsGroup>
 
-                    <controls:SettingsGroup x:Uid="LightSwitch_ScheduleSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <ptcontrols:SettingsGroup x:Uid="LightSwitch_ScheduleSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander
                             x:Uid="LightSwitch_ModeSettingsExpander"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE823;}"
@@ -192,9 +192,9 @@
                             IsOpen="True"
                             Severity="Informational"
                             Visibility="Collapsed" />
-                    </controls:SettingsGroup>
+                    </ptcontrols:SettingsGroup>
 
-                    <controls:SettingsGroup x:Uid="LightSwitch_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <ptcontrols:SettingsGroup x:Uid="LightSwitch_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsExpander
                             x:Uid="LightSwitch_ApplyDarkModeExpander"
                             HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
@@ -266,7 +266,7 @@
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>-->
-                    </controls:SettingsGroup>
+                    </ptcontrols:SettingsGroup>
                     <!--  Force mode buttons  -->
                     <!--<tkcontrols:SettingsCard
         Header="Force mode now"

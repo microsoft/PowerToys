@@ -225,27 +225,27 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Command Palette settings</value>
     <comment>A section header for app-wide settings. "Command Palette" is the name of the app.</comment>
   </data>
-  <data name="AboutSettingsHeader.Text" xml:space="preserve">
+  <data name="AboutSettingsHeader.Header" xml:space="preserve">
     <value>About</value>
     <comment>A section header for information about the app</comment>
   </data>
-  <data name="ExtensionAboutHeader.Text" xml:space="preserve">
+  <data name="ExtensionAboutHeader.Header" xml:space="preserve">
     <value>About</value>
     <comment>A section header for information about the app</comment>
   </data>
-  <data name="ExtensionSettingsHeader.Text" xml:space="preserve">
+  <data name="ExtensionSettingsHeader.Header" xml:space="preserve">
     <value>Extension settings</value>
     <comment>A section header for extension-specific settings.</comment>
   </data>
-  <data name="ExtensionCommandsHeader.Text" xml:space="preserve">
+  <data name="ExtensionCommandsHeader.Header" xml:space="preserve">
     <value>Commands</value>
-    <comment>A section header for information about the app</comment>
+    <comment>A section header for the list of commands provided by this extension</comment>
   </data>
   <data name="ExtensionFallbackCommandsHeader.Text" xml:space="preserve">
     <value>Fallback commands</value>
     <comment>A section header for information about the commands presented to the user when the search text doesn't exactly match the name of a command.</comment>
   </data>
-  <data name="ExtensionDisabledHeader.Text" xml:space="preserve">
+  <data name="ExtensionDisabledHeader.Header" xml:space="preserve">
     <value>This extension is disabled</value>
     <comment>A header to inform the user that an extension is not currently active</comment>
   </data>
@@ -431,13 +431,13 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="SettingsButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Open Command Palette settings, shortcut Control plus comma</value>
   </data>
-  <data name="ActivationSettingsHeader.Text" xml:space="preserve">
+  <data name="ActivationSettingsHeader.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
-  <data name="BehaviorSettingsHeader.Text" xml:space="preserve">
+  <data name="BehaviorSettingsHeader.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>
-  <data name="DockAppearanceSettingsHeader.Text" xml:space="preserve">
+  <data name="DockAppearanceSettingsHeader.Header" xml:space="preserve">
     <value>Appearance</value>
   </data>
   <data name="DockBandsSettingsHeader.Text" xml:space="preserve">
@@ -520,7 +520,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_AllowExternalReload_SettingsCard.Description" xml:space="preserve">
     <value>Trigger reload of the extension externally with the x-cmdpal://reload command</value>
   </data>
-  <data name="ForDevelopersSettingsHeader.Text" xml:space="preserve">
+  <data name="ForDevelopersSettingsHeader.Header" xml:space="preserve">
     <value>For developers</value>
   </data>
   <data name="UntitledPageTitle" xml:space="preserve">

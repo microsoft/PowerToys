@@ -8,6 +8,7 @@
     xmlns:helpers="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ptControls="using:Microsoft.CmdPal.UI.Controls"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
     <Grid>
@@ -264,32 +265,33 @@
 
                     <!--  'Behavior' section  -->
 
-                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <ptcontrols:SettingsGroup x:Uid="BehaviorSettingsHeader">
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowAppDetails, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.ShowAppDetails, Mode=TwoWay}" />
+                        </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.BackspaceGoesBack, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.BackspaceGoesBack, Mode=TwoWay}" />
+                        </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE845;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EscapeKeyBehaviorIndex, Mode=TwoWay}">
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss" />
-                            <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide" />
-                        </ComboBox>
-                    </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE845;}">
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EscapeKeyBehaviorIndex, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack" />
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack" />
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss" />
+                                <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysHide" />
+                            </ComboBox>
+                        </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
+                        </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                        <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                    </ptcontrols:SettingsGroup>
                 </StackPanel>
             </Grid>
         </ScrollViewer>

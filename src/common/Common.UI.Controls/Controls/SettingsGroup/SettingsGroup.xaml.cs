@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 
-namespace Microsoft.PowerToys.Settings.UI.Controls
+namespace Microsoft.PowerToys.Common.UI.Controls
 {
     /// <summary>
     /// Represents a control that can contain multiple settings (or other) controls
@@ -19,8 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     public partial class SettingsGroup : ItemsControl
     {
         private const string PartDescriptionPresenter = "DescriptionPresenter";
-        private ContentPresenter _descriptionPresenter;
-        private SettingsGroup _settingsGroup;
+        private ContentPresenter? _descriptionPresenter;
+        private SettingsGroup? _settingsGroup;
 
         public SettingsGroup()
         {
@@ -80,7 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void Update()
         {
-            if (_settingsGroup == null)
+            if (_settingsGroup == null || _settingsGroup._descriptionPresenter == null)
             {
                 return;
             }

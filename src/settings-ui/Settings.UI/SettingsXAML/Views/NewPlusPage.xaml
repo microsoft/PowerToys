@@ -1,4 +1,4 @@
-﻿<helper:NavigablePage
+<helper:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.NewPlusPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,6 +7,7 @@
     xmlns:helper="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:local="clr-namespace:Microsoft.PowerToys.Settings.UI.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -29,7 +30,7 @@
                             IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
-                <controls:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="NewPlus_Templates" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="NewPlusTemplatesLocation"
                         x:Uid="NewPlus_Templates_Location"
@@ -56,8 +57,8 @@
                         IsOpen="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         IsTabStop="{x:Bind ViewModel.IsEnabled, Mode=OneWay}"
                         Severity="Informational" />
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                </ptcontrols:SettingsGroup>
+                <ptcontrols:SettingsGroup x:Uid="NewPlus_Display_Options" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHideFileExtSettingGPOConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             Name="NewPlusHideFileExtensionToggle"
@@ -88,9 +89,9 @@
                                 IsOn="{x:Bind ViewModel.HideBuiltInNew, Mode=TwoWay}" />
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="NewPlus_behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsReplaceVariablesSettingGPOConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
                             Name="NewPlusBehaviourReplaceVariablesToggle"
@@ -199,7 +200,7 @@
                             </tkcontrols:SettingsCard.Description>
                         </tkcontrols:SettingsCard>
                     </controls:GPOInfoControl>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 

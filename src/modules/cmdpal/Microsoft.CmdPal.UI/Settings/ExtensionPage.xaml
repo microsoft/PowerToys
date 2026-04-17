@@ -79,8 +79,8 @@
                         Value="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <controls:Case Value="True">
                             <StackPanel Orientation="Vertical">
-                                <TextBlock x:Uid="ExtensionCommandsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-                                <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
+                                <ptcontrols:SettingsGroup x:Uid="ExtensionCommandsHeader">
+                                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.TopLevelCommands, Mode=OneWay}" Layout="{StaticResource VerticalStackLayout}">
                                     <ItemsRepeater.ItemTemplate>
                                         <DataTemplate x:DataType="viewModels:TopLevelViewModel">
                                             <controls:SettingsExpander
@@ -123,6 +123,7 @@
                                         </DataTemplate>
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>
+                                </ptcontrols:SettingsGroup>
 
                                 <Grid Visibility="{x:Bind ViewModel.HasFallbackCommands}">
                                     <Grid.ColumnDefinitions>
@@ -187,66 +188,57 @@
                                     </ItemsRepeater.ItemTemplate>
                                 </ItemsRepeater>
 
-                                <TextBlock
-                                    x:Uid="ExtensionSettingsHeader"
-                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                                    Visibility="{x:Bind ViewModel.HasSettings}" />
+                                <ptcontrols:SettingsGroup x:Uid="ExtensionSettingsHeader" Visibility="{x:Bind ViewModel.HasSettings}">
+                                    <Frame
+                                        x:Name="SettingsFrame"
+                                        Background="{ThemeResource SettingsCardBackground}"
+                                        BorderBrush="{ThemeResource SettingsCardBorderBrush}"
+                                        BorderThickness="{ThemeResource SettingsCardBorderThickness}"
+                                        CornerRadius="{StaticResource ControlCornerRadius}">
+                                        <controls:SwitchPresenter
+                                            HorizontalAlignment="Stretch"
+                                            TargetType="x:Boolean"
+                                            Value="{x:Bind ViewModel.LoadingSettings, Mode=OneWay}">
+                                            <controls:Case Value="True">
+                                                <ProgressRing
+                                                    Width="36"
+                                                    Height="36"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    IsIndeterminate="True" />
+                                            </controls:Case>
+                                            <controls:Case Value="False">
+                                                <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
+                                            </controls:Case>
+                                        </controls:SwitchPresenter>
+                                    </Frame>
+                                </ptcontrols:SettingsGroup>
 
-                                <Frame
-                                    x:Name="SettingsFrame"
-                                    Background="{ThemeResource SettingsCardBackground}"
-                                    BorderBrush="{ThemeResource SettingsCardBorderBrush}"
-                                    BorderThickness="{ThemeResource SettingsCardBorderThickness}"
-                                    CornerRadius="{StaticResource ControlCornerRadius}"
-                                    Visibility="{x:Bind ViewModel.HasSettings}">
-                                    <controls:SwitchPresenter
-                                        HorizontalAlignment="Stretch"
-                                        TargetType="x:Boolean"
-                                        Value="{x:Bind ViewModel.LoadingSettings, Mode=OneWay}">
-                                        <controls:Case Value="True">
-                                            <ProgressRing
-                                                Width="36"
-                                                Height="36"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                IsIndeterminate="True" />
-                                        </controls:Case>
-                                        <controls:Case Value="False">
-                                            <cmdpalUI:ContentPage ViewModel="{x:Bind ViewModel.SettingsPage, Mode=OneWay}" />
-                                        </controls:Case>
-                                    </controls:SwitchPresenter>
-                                </Frame>
-
-                                <TextBlock
-                                    x:Uid="ExtensionAboutHeader"
-                                    Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                                    Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay}" />
-
-                                <controls:SettingsCard
-                                    Description="{x:Bind ViewModel.Extension.Publisher, Mode=OneWay}"
-                                    Header="{x:Bind ViewModel.Extension.PackageDisplayName, Mode=OneWay}"
-                                    Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay}">
-                                    <TextBlock
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        IsTextSelectionEnabled="True"
-                                        Text="{x:Bind ViewModel.ExtensionVersion}" />
-                                </controls:SettingsCard>
+                                <ptcontrols:SettingsGroup x:Uid="ExtensionAboutHeader" Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay}">
+                                    <controls:SettingsCard
+                                        Description="{x:Bind ViewModel.Extension.Publisher, Mode=OneWay}"
+                                        Header="{x:Bind ViewModel.Extension.PackageDisplayName, Mode=OneWay}">
+                                        <TextBlock
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            IsTextSelectionEnabled="True"
+                                            Text="{x:Bind ViewModel.ExtensionVersion}" />
+                                    </controls:SettingsCard>
+                                </ptcontrols:SettingsGroup>
                             </StackPanel>
                         </controls:Case>
 
                         <controls:Case Value="False">
-                            <StackPanel>
-                                <TextBlock x:Uid="ExtensionDisabledHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                            <ptcontrols:SettingsGroup x:Uid="ExtensionDisabledHeader">
                                 <TextBlock x:Uid="ExtensionDisabledDetails" />
-                            </StackPanel>
+                            </ptcontrols:SettingsGroup>
                         </controls:Case>
                     </controls:SwitchPresenter>
 
-                    <TextBlock
+                    <ptcontrols:SettingsGroup
                         x:Uid="ExtensionAboutHeader"
-                        Style="{StaticResource SettingsSectionHeaderTextBlockStyle}"
-                        Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
-                    <controls:SettingsCard x:Uid="Settings_ExtensionPage_Builtin_SettingsCard" Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}" />
+                        Visibility="{x:Bind ViewModel.IsFromExtension, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
+                        <controls:SettingsCard x:Uid="Settings_ExtensionPage_Builtin_SettingsCard" />
+                    </ptcontrols:SettingsGroup>
                 </StackPanel>
             </Grid>
         </ScrollViewer>

@@ -56,7 +56,7 @@
                     Spacing="8">
                     <ptcontrols:IsEnabledTextBlock
                         VerticalAlignment="Center"
-                        FontFamily="Segoe Fluent Icons"
+                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                         FontSize="12"
                         Text="&#xE710;" />
                     <ptcontrols:IsEnabledTextBlock

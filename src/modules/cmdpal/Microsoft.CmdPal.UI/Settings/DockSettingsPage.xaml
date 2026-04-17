@@ -49,10 +49,10 @@
                     </controls:SettingsCard>
 
                     <!--  Appearance Section  -->
-                    <TextBlock x:Uid="DockAppearanceSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+                    <ptcontrols:SettingsGroup x:Uid="DockAppearanceSettingsHeader" IsEnabled="{x:Bind ViewModel.EnableDock, Mode=OneWay}">
 
-                    <!--  Dock Position  -->
-                    <controls:SettingsCard x:Uid="DockAppearance_DockPosition_SettingsCard">
+                        <!--  Dock Position  -->
+                        <controls:SettingsCard x:Uid="DockAppearance_DockPosition_SettingsCard">
                         <controls:SettingsCard.HeaderIcon>
                             <SymbolIcon Symbol="MoveToFolder" />
                         </controls:SettingsCard.HeaderIcon>
@@ -67,7 +67,9 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
-                    <controls:SettingsCard x:Uid="DockAppearance_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
+                    <controls:SettingsCard
+                        x:Uid="DockAppearance_AppTheme_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ThemeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -94,7 +96,9 @@
                     </controls:SettingsCard>
 
                     <!--  Backdrop Style  -->
-                    <controls:SettingsCard x:Uid="DockAppearance_Backdrop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}">
+                    <controls:SettingsCard
+                        x:Uid="DockAppearance_Backdrop_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}">
                         <ComboBox
                             x:Name="BackdropComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -211,13 +215,16 @@
 
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
+                    </ptcontrols:SettingsGroup>
 
                     <!--  Behavior Section  -->
-                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
-
-                    <controls:SettingsCard x:Uid="DockBehavior_AlwaysOnTop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE840;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
-                    </controls:SettingsCard>
+                    <ptcontrols:SettingsGroup x:Uid="BehaviorSettingsHeader" IsEnabled="{x:Bind ViewModel.EnableDock, Mode=OneWay}">
+                        <controls:SettingsCard
+                            x:Uid="DockBehavior_AlwaysOnTop_SettingsCard"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE840;}">
+                            <ToggleSwitch IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
+                        </controls:SettingsCard>
+                    </ptcontrols:SettingsGroup>
 
                     <!--  Bands Section  -->
                     <!--  <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />

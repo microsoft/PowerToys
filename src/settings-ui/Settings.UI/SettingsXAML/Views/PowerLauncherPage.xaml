@@ -1,4 +1,4 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerLauncherPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -334,7 +334,7 @@
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EnablePowerLauncher, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
-                <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="ActivationShortcut"
                         x:Uid="Activation_Shortcut"
@@ -350,7 +350,7 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
                 <!--<Custom:HotkeySettingsControl x:Uid="PowerLauncher_OpenFileLocation"
                                           HorizontalAlignment="Left"
@@ -385,7 +385,7 @@
                       IsEnabled="False"
                       />-->
 
-                <controls:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="PowerLauncher_SearchResults" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
                         Name="PowerLauncherSearchQueryResultsWithDelay"
                         x:Uid="PowerLauncher_SearchQueryResultsWithDelay"
@@ -485,7 +485,7 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE91B;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.GenerateThumbnailsFromFiles, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
                 <!--<ComboBox x:Uid="PowerLauncher_SearchResultPreference"
                       MinWidth="320"
@@ -507,7 +507,7 @@
                       IsEnabled="False"
                       />-->
 
-                <controls:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="Run_PositionAppearance_GroupSettings" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="RunPositionHeader"
                         x:Uid="Run_PositionHeader"
@@ -573,9 +573,9 @@
                                 Text="A" />
                         </StackPanel>
                     </tkcontrols:SettingsCard>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
 
-                <controls:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
+                <ptcontrols:SettingsGroup x:Uid="PowerLauncher_Plugins" IsEnabled="{x:Bind ViewModel.EnablePowerLauncher, Mode=OneWay}">
 
                     <InfoBar
                         x:Uid="Run_ConflictingKeywordInfo"
@@ -796,7 +796,7 @@
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>
-                </controls:SettingsGroup>
+                </ptcontrols:SettingsGroup>
             </StackPanel>
 
         </controls:SettingsPageControl.ModuleContent>
