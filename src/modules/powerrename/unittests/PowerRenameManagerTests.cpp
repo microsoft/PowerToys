@@ -205,9 +205,9 @@ namespace PowerRenameManagerTests
             };
 
             rename_item items[] = {
-                { L"a_page.html", true },
-                { L"b_page.html", false },
-                { L"c_page.html", true }
+                { L"a_page.html" },
+                { L"b_page.html" },
+                { L"c_page.html" }
             };
 
             for (const auto& itemData : items)
