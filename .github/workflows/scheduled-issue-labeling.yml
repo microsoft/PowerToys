@@ -1,0 +1,230 @@
+name: Scheduled Issue Product Labeling
+
+on:
+  schedule:
+    - cron: "20 */6 * * *" # Every 6 hours at :20
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  models: read
+  issues: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  label-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label issues missing Product labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // ── Product label mapping ──────────────────────────────────
+            // Canonical list of Product-* labels used in this repo,
+            // derived from .github/skills/release-note-generation/references/step2-labeling.md
+            const PRODUCT_LABELS = [
+              "Product-Advanced Paste",
+              "Product-Always on Top",
+              "Product-Awake",
+              "Product-ColorPicker",
+              "Product-Command not found",
+              "Product-Command Palette",
+              "Product-CropAndLock",
+              "Product-Cursor Wrap",
+              "Product-Environment Variables",
+              "Product-FancyZones",
+              "Product-File Explorer",
+              "Product-File Locksmith",
+              "Product-Find My Mouse",
+              "Product-Hosts",
+              "Product-Image Resizer",
+              "Product-Keyboard Manager",
+              "Product-LightSwitch",
+              "Product-Mouse Highlighter",
+              "Product-Mouse Jump",
+              "Product-Mouse Pointer Crosshairs",
+              "Product-Mouse Without Borders",
+              "Product-New+",
+              "Product-Peek",
+              "Product-PowerRename",
+              "Product-PowerToys Run",
+              "Product-Quick Accent",
+              "Product-Registry Preview",
+              "Product-Screen Ruler",
+              "Product-Settings",
+              "Product-Shortcut Guide",
+              "Product-Text Extractor",
+              "Product-Workspaces",
+              "Product-ZoomIt",
+            ];
+
+            // Map from bug-report "Area(s) with issue?" dropdown values
+            // to Product-* labels (used as strong hints when the issue body
+            // contains the area dropdown answer).
+            const AREA_TO_LABEL = {
+              "Advanced Paste":        "Product-Advanced Paste",
+              "Always on Top":         "Product-Always on Top",
+              "Awake":                 "Product-Awake",
+              "ColorPicker":           "Product-ColorPicker",
+              "Command not found":     "Product-Command not found",
+              "Command Palette":       "Product-Command Palette",
+              "Crop and Lock":         "Product-CropAndLock",
+              "Environment Variables":  "Product-Environment Variables",
+              "FancyZones":            "Product-FancyZones",
+              "FancyZones Editor":     "Product-FancyZones",
+              "File Locksmith":        "Product-File Locksmith",
+              "File Explorer: Preview Pane": "Product-File Explorer",
+              "File Explorer: Thumbnail preview": "Product-File Explorer",
+              "Hosts File Editor":     "Product-Hosts",
+              "Image Resizer":         "Product-Image Resizer",
+              "Keyboard Manager":      "Product-Keyboard Manager",
+              "Light Switch":          "Product-LightSwitch",
+              "Mouse Utilities":       "Product-Find My Mouse",
+              "Mouse Without Borders": "Product-Mouse Without Borders",
+              "New+":                  "Product-New+",
+              "Peek":                  "Product-Peek",
+              "PowerRename":           "Product-PowerRename",
+              "PowerToys Run":         "Product-PowerToys Run",
+              "Quick Accent":          "Product-Quick Accent",
+              "Registry Preview":      "Product-Registry Preview",
+              "Screen ruler":          "Product-Screen Ruler",
+              "Shortcut Guide":        "Product-Shortcut Guide",
+              "TextExtractor":         "Product-Text Extractor",
+              "Workspaces":            "Product-Workspaces",
+              "ZoomIt":                "Product-ZoomIt",
+            };
+
+            // ── Helpers ────────────────────────────────────────────────
+            function hasProductLabel(labels) {
+              return labels.some((l) => l.name.startsWith("Product-"));
+            }
+
+            // Try to extract the area from the structured bug-report body
+            // (the "Area(s) with issue?" dropdown).
+            function extractAreaFromBody(body) {
+              if (!body) return null;
+              // The rendered issue body contains a heading followed by the selected values
+              const areaMatch = body.match(
+                /### Area\(s\) with issue\?\s*\n+(.+?)(?:\n###|\n\n|$)/s
+              );
+              if (!areaMatch) return null;
+              const areaText = areaMatch[1].trim();
+              if (areaText === "_No response_" || areaText === "General") return null;
+              // Could be comma-separated; take the first specific one
+              const areas = areaText.split(",").map((a) => a.trim());
+              for (const area of areas) {
+                if (AREA_TO_LABEL[area]) return AREA_TO_LABEL[area];
+              }
+              return null;
+            }
+
+            // Use GitHub Models to classify an issue when the dropdown area
+            // is not available or is "General".
+            async function classifyWithAI(title, body) {
+              const truncatedBody = (body || "").slice(0, 3000);
+              const labelList = PRODUCT_LABELS.join("\n- ");
+
+              const prompt = `You are a GitHub issue triager for the microsoft/PowerToys repository.
+
+            Given the issue title and body below, determine which ONE Product label best fits.
+            Reply with ONLY the label name (e.g. "Product-FancyZones") or "UNKNOWN" if you cannot determine it.
+
+            Available labels:
+            - ${labelList}
+
+            Issue title: ${title}
+
+            Issue body:
+            ${truncatedBody}`;
+
+              try {
+                const response = await fetch(
+                  "https://models.github.ai/inference/chat/completions",
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      model: "openai/gpt-4o-mini",
+                      messages: [{ role: "user", content: prompt }],
+                      max_tokens: 60,
+                      temperature: 0,
+                    }),
+                  }
+                );
+                if (!response.ok) {
+                  core.warning(`AI classification failed: ${response.status} ${response.statusText}`);
+                  return null;
+                }
+                const data = await response.json();
+                const answer = data.choices?.[0]?.message?.content?.trim();
+                if (!answer || answer === "UNKNOWN") return null;
+                // Validate the answer is a known label
+                if (PRODUCT_LABELS.includes(answer)) return answer;
+                // Try fuzzy match (the model may include extra text)
+                const found = PRODUCT_LABELS.find((l) => answer.includes(l));
+                return found || null;
+              } catch (err) {
+                core.warning(`AI classification error: ${err.message}`);
+                return null;
+              }
+            }
+
+            // ── Main ───────────────────────────────────────────────────
+            const MAX_ISSUES = 50; // Process up to 50 issues per run
+            let labeled = 0;
+            let skipped = 0;
+
+            core.info("Searching for open issues with Needs-Triage but no Product-* label...");
+
+            // Paginate through open issues labeled Needs-Triage
+            for await (const response of github.paginate.iterator(
+              github.rest.issues.listForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: "open",
+                labels: "Needs-Triage",
+                sort: "created",
+                direction: "desc",
+                per_page: 100,
+              }
+            )) {
+              for (const issue of response.data) {
+                if (labeled + skipped >= MAX_ISSUES) break;
+                // Skip pull requests (the API returns them too)
+                if (issue.pull_request) continue;
+                if (hasProductLabel(issue.labels)) continue;
+
+                core.info(`Processing #${issue.number}: ${issue.title}`);
+
+                // 1) Try structured area dropdown first (fast, no AI needed)
+                let label = extractAreaFromBody(issue.body);
+
+                // 2) Fall back to AI classification
+                if (!label) {
+                  label = await classifyWithAI(issue.title, issue.body);
+                }
+
+                if (label) {
+                  core.info(`  → Applying "${label}" to #${issue.number}`);
+                  await github.rest.issues.addLabels({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    labels: [label],
+                  });
+                  labeled++;
+                } else {
+                  core.info(`  → Could not determine product label for #${issue.number}, skipping.`);
+                  skipped++;
+                }
+              }
+              if (labeled + skipped >= MAX_ISSUES) break;
+            }
+
+            core.info(`Done. Labeled: ${labeled}, Skipped: ${skipped}`);
