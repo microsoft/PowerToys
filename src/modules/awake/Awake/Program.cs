@@ -34,6 +34,7 @@ namespace Awake
         private static readonly string[] _aliasesPidOption = ["--pid", "-p"];
         private static readonly string[] _aliasesExpireAtOption = ["--expire-at", "-e"];
         private static readonly string[] _aliasesParentPidOption = ["--use-parent-pid", "-u"];
+        private static readonly string[] _aliasesNoConsoleOption = ["--no-console", "-n"];
 
         private static readonly JsonSerializerOptions _serializerOptions = new() { IncludeFields = true };
         private static readonly ETWTrace _etwTrace = new();
@@ -176,6 +177,12 @@ namespace Awake
                 IsRequired = false,
             };
 
+            Option<bool> noConsoleOption = new(_aliasesNoConsoleOption, () => false, Resources.AWAKE_CMD_HELP_NO_CONSOLE_OPTION)
+            {
+                Arity = ArgumentArity.ZeroOrOne,
+                IsRequired = false,
+            };
+
             timeOption.AddValidator(result =>
             {
                 if (result.Tokens.Count != 0 && !uint.TryParse(result.Tokens[0].Value, out _))
@@ -214,10 +221,11 @@ namespace Awake
                 pidOption,
                 expireAtOption,
                 parentPidOption,
+                noConsoleOption,
             ];
 
             rootCommand.Description = Core.Constants.AppName;
-            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
+            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption, noConsoleOption);
 
             return rootCommand;
         }
@@ -300,13 +308,21 @@ namespace Awake
             }
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid, bool noConsole)
         {
             if (pid == 0 && !useParentPid)
             {
-                Logger.LogInfo("No PID specified. Allocating console...");
-                Bridge.FreeConsole();
-                AllocateLocalConsole();
+                if (!noConsole)
+                {
+                    Logger.LogInfo("No PID specified. Allocating console...");
+                    Bridge.FreeConsole();
+                    AllocateLocalConsole();
+                }
+                else
+                {
+                    Logger.LogInfo("No PID specified. Running without console (--no-console).");
+                    Bridge.FreeConsole();
+                }
             }
             else
             {
@@ -320,6 +336,7 @@ namespace Awake
             Logger.LogInfo($"The value for --pid is: {pid}");
             Logger.LogInfo($"The value for --expire-at is: {expireAt}");
             Logger.LogInfo($"The value for --use-parent-pid is: {useParentPid}");
+            Logger.LogInfo($"The value for --no-console is: {noConsole}");
 
             // Start the monitor thread that will be used to track the current state.
             Manager.StartMonitor();

@@ -51,6 +51,7 @@ Options:
   -p, --pid              Process ID to bind to
   -e, --expire-at        Expiration date/time
   -u, --use-parent-pid   Bind to parent process
+  -n, --no-console       Hide the console window (tray only)
 ```
 
 ### Examples
@@ -73,6 +74,11 @@ PowerToys.Awake.exe --expire-at "2024-12-31 23:59:59"
 Keep awake while another process is running:
 ```powershell
 PowerToys.Awake.exe --pid 1234
+```
+
+Keep awake indefinitely without showing the console window:
+```powershell
+PowerToys.Awake.exe --no-console
 ```
 
 ## Architecture

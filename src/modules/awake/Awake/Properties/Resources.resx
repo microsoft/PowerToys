@@ -194,6 +194,9 @@
   <data name="AWAKE_CMD_PARENT_PID_OPTION" xml:space="preserve">
     <value>Uses the parent process as the bound target - once the process terminates, Awake stops.</value>
   </data>
+  <data name="AWAKE_CMD_HELP_NO_CONSOLE_OPTION" xml:space="preserve">
+    <value>When set, the console window will not be shown and Awake will only appear in the system tray.</value>
+  </data>
   <data name="AWAKE_SCREEN_ON" xml:space="preserve">
     <value>On</value>
   </data>
