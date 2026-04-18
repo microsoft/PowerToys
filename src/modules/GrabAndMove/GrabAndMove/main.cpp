@@ -88,10 +88,12 @@ static ResizeHandle g_currentHandle = RESIZE_NONE;
 static const int MIN_WINDOW_WIDTH = 150;
 static const int MIN_WINDOW_HEIGHT = 50;
 
-static const ULONGLONG THROTTLE_INTERVAL_MS = 16; // min ms between SetWindowPos calls
-static ULONGLONG g_lastMoveTick = 0;              // tick of last applied move/resize
+// Minimum interval (ms) between move/resize updates.  Lower = snappier but
+// more CPU/GPU work.  0 = unlimited (every mouse event triggers an update).
+// 4 ms ≈ 240 Hz, 8 ms ≈ 120 Hz, 16 ms ≈ 60 Hz.
+static constexpr ULONGLONG THROTTLE_INTERVAL_MS = 16;
 
-// High-resolution millisecond timer using QueryPerformanceCounter
+// QPC helpers for throttle
 static ULONGLONG QpcMs()
 {
     static LARGE_INTEGER freq = {};
@@ -101,6 +103,17 @@ static ULONGLONG QpcMs()
     QueryPerformanceCounter(&now);
     return static_cast<ULONGLONG>(now.QuadPart * 1000 / freq.QuadPart);
 }
+static ULONGLONG g_lastMoveTick = 0;
+
+// Cached system cursors (loaded once at startup) – fix #6
+static HCURSOR g_curSizeAll = nullptr;
+static HCURSOR g_curSizeNWSE = nullptr;
+static HCURSOR g_curSizeNESW = nullptr;
+static HCURSOR g_curSizeNS = nullptr;
+static HCURSOR g_curSizeWE = nullptr;
+
+// IsExcluded result cache keyed by HWND (cleared on foreground change / settings reload) – fix #4
+static std::unordered_map<HWND, bool> g_excludedCache;
 
 static const wchar_t* const CLASS_NAME = L"GrabAndMove_MsgWnd";
 static const wchar_t* const OVERLAY_CLASS_NAME = L"GrabAndMove_Overlay";
@@ -114,8 +127,9 @@ static const wchar_t* const GRABANDMOVE_REFRESH_SETTINGS_EVENT =
 static const wchar_t* const GRABANDMOVE_EXIT_EVENT =
     L"Local\\PowerToysGrabAndMove-ExitEvent-b8c4d2e3-5f6a-7b8c-9d0e-1f2a3b4c5d6e";
 
-static std::vector<std::wstring> g_excludedApps;
-static std::mutex g_excludedAppsMutex;
+// Lock-free excluded apps list – readers use .load(), writer uses .store() (fix #5)
+static std::atomic<std::shared_ptr<const std::vector<std::wstring>>> g_excludedApps{
+    std::make_shared<const std::vector<std::wstring>>()};
 
 static HANDLE g_hReloadSettingsEvent = nullptr;
 static HANDLE g_hExitEvent = nullptr;
@@ -154,6 +168,9 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
     // the 'L' keyup before the session locks). Always reset the held-key counter so that
     // the next Alt/Win press is never blocked by a stale non-zero count.
     g_heldNonAltKeyCount = 0;
+
+    // Invalidate the IsExcluded cache on foreground change (fix #4)
+    g_excludedCache.clear();
 
     // Only validate modifier state when there is actually something to reset.
     // Skipping here when all flags are clear prevents spurious resets that would
@@ -271,10 +288,9 @@ static void LoadSettingsFromFile()
                 view.remove_prefix(pos);
             }
 
-            {
-                std::lock_guard<std::mutex> lock(g_excludedAppsMutex);
-                g_excludedApps = std::move(apps);
-            }
+            g_excludedApps.store(
+                std::make_shared<const std::vector<std::wstring>>(std::move(apps)));
+            g_excludedCache.clear();
         }
     }
     catch (...)
@@ -307,8 +323,13 @@ static void SettingsWatcherThread(DWORD mainThreadId)
 }
 
 // ---------------------------------------------------------------------------
-// Overlay window helpers
+// Overlay window helpers – persistent window, shown/hidden per interaction
 // ---------------------------------------------------------------------------
+// Tracks the last rendered overlay dimensions so we can skip re-rendering
+// when only the position changed (move-only path).
+static int g_overlayRenderedW = 0;
+static int g_overlayRenderedH = 0;
+
 // Renders the overlay surface using per-pixel alpha via UpdateLayeredWindow.
 // The white background is painted at ~40% opacity; the geometry label box is
 // painted fully opaque so it remains legible regardless of what is beneath.
@@ -392,63 +413,91 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
     DeleteObject(hDib);
     DeleteDC(memDC);
     ReleaseDC(nullptr, screenDC);
+
+    g_overlayRenderedW = cw;
+    g_overlayRenderedH = ch;
 }
 
-static void CreateOverlay(const RECT& rc, LPCWSTR cursorName)
+// Ensures the persistent overlay window exists (created once, reused).
+static void EnsureOverlayWindow()
 {
     if (g_hOverlay)
-    {
-        DestroyWindow(g_hOverlay);
-        g_hOverlay = nullptr;
-    }
-
-    int w = rc.right - rc.left;
-    int h = rc.bottom - rc.top;
+        return;
 
     g_hOverlay = CreateWindowExW(
         WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
         OVERLAY_CLASS_NAME,
         nullptr,
-        WS_POPUP | WS_VISIBLE,
-        rc.left,
-        rc.top,
-        w,
-        h,
+        WS_POPUP, // initially hidden (no WS_VISIBLE)
+        0, 0, 1, 1,
         nullptr,
         nullptr,
         g_hInstance,
         nullptr);
-    SetClassLongPtrW(g_hOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(LoadCursorW(nullptr, cursorName)));
-
-    if (g_hOverlay)
-    {
-        g_overlayInfoX = rc.left;
-        g_overlayInfoY = rc.top;
-        g_overlayInfoW = w;
-        g_overlayInfoH = h;
-        RenderOverlayContent(g_hOverlay, w, h);
-    }
 }
 
-static void MoveOverlay(int x, int y, int w, int h)
+static void ShowOverlay(const RECT& rc, HCURSOR hCursor)
+{
+    EnsureOverlayWindow();
+    if (!g_hOverlay)
+        return;
+
+    int w = rc.right - rc.left;
+    int h = rc.bottom - rc.top;
+
+    SetClassLongPtrW(g_hOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(hCursor));
+
+    g_overlayInfoX = rc.left;
+    g_overlayInfoY = rc.top;
+    g_overlayInfoW = w;
+    g_overlayInfoH = h;
+    g_overlayRenderedW = 0; // force re-render
+    g_overlayRenderedH = 0;
+
+    SetWindowPos(g_hOverlay, HWND_TOPMOST, rc.left, rc.top, w, h,
+                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    RenderOverlayContent(g_hOverlay, w, h);
+}
+
+// Repositions (and optionally re-renders) the overlay.
+// For move-only (size unchanged), skips the expensive RenderOverlayContent.
+// For resize (size changed), always re-renders so the layered surface matches.
+static HDWP RepositionOverlay(int x, int y, int w, int h, HDWP hdwp)
+{
+    if (!g_hOverlay)
+        return hdwp;
+
+    g_overlayInfoX = x;
+    g_overlayInfoY = y;
+    g_overlayInfoW = w;
+    g_overlayInfoH = h;
+
+    if (hdwp)
+    {
+        hdwp = DeferWindowPos(hdwp, g_hOverlay, HWND_TOPMOST, x, y, w, h,
+                       SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    }
+    else
+    {
+        SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h,
+                     SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    }
+
+    // Re-render only when the size changed or geometry text needs updating
+    bool sizeChanged = (w != g_overlayRenderedW || h != g_overlayRenderedH);
+    if (sizeChanged || g_showGeometry)
+    {
+        RenderOverlayContent(g_hOverlay, w, h);
+    }
+
+    return hdwp;
+}
+
+static void HideOverlay()
 {
     if (g_hOverlay)
     {
-        g_overlayInfoX = x;
-        g_overlayInfoY = y;
-        g_overlayInfoW = w;
-        g_overlayInfoH = h;
-        SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h, SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        RenderOverlayContent(g_hOverlay, w, h);
-    }
-}
-
-static void DestroyOverlay()
-{
-    if (g_hOverlay)
-    {
-        DestroyWindow(g_hOverlay);
-        g_hOverlay = nullptr;
+        ShowWindow(g_hOverlay, SW_HIDE);
     }
 }
 
@@ -457,7 +506,7 @@ static void StopDragging()
     g_dragging = false;
     g_dragFirstMove = false;
     g_dragTarget = nullptr;
-    DestroyOverlay();
+    HideOverlay();
 }
 
 static ResizeHandle GetClosestHandle(POINT pt, const RECT& rc)
@@ -497,24 +546,24 @@ static ResizeHandle GetClosestHandle(POINT pt, const RECT& rc)
     return closest;
 }
 
-static LPCWSTR CursorForHandle(ResizeHandle handle)
+static HCURSOR CursorForHandle(ResizeHandle handle)
 {
     switch (handle)
     {
     case RESIZE_TOP_LEFT:
     case RESIZE_BOTTOM_RIGHT:
-        return IDC_SIZENWSE;
+        return g_curSizeNWSE;
     case RESIZE_TOP_RIGHT:
     case RESIZE_BOTTOM_LEFT:
-        return IDC_SIZENESW;
+        return g_curSizeNESW;
     case RESIZE_TOP:
     case RESIZE_BOTTOM:
-        return IDC_SIZENS;
+        return g_curSizeNS;
     case RESIZE_LEFT:
     case RESIZE_RIGHT:
-        return IDC_SIZEWE;
+        return g_curSizeWE;
     default:
-        return IDC_ARROW;
+        return g_curSizeAll;
     }
 }
 
@@ -524,7 +573,7 @@ static void StopResizing()
     g_resizeFirstMove = false;
     g_resizeTarget = nullptr;
     g_currentHandle = RESIZE_NONE;
-    DestroyOverlay();
+    HideOverlay();
 }
 
 static void ReplayAbsorbedAlt()
@@ -590,22 +639,30 @@ static bool IsExcluded(HWND hwnd)
     if (IsSystemClass(hwnd))
         return true;
 
-    std::vector<std::wstring> excludedApps;
-    {
-        std::lock_guard<std::mutex> lock(g_excludedAppsMutex);
-        excludedApps = g_excludedApps;
-    }
-
-    if (excludedApps.empty())
+    auto apps = g_excludedApps.load();
+    if (!apps || apps->empty())
         return false;
 
-    std::wstring processPath = get_process_path(hwnd);
-    CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
+    // Check process-path exclusion (cached per HWND – fix #4)
+    bool pathExcluded = false;
+    auto it = g_excludedCache.find(hwnd);
+    if (it != g_excludedCache.end())
+    {
+        pathExcluded = it->second;
+    }
+    else
+    {
+        std::wstring processPath = get_process_path(hwnd);
+        CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
+        pathExcluded = find_app_name_in_path(processPath, *apps);
+        g_excludedCache[hwnd] = pathExcluded;
+    }
 
-    if (find_app_name_in_path(processPath, excludedApps))
+    if (pathExcluded)
         return true;
 
-    if (check_excluded_app_with_title(hwnd, excludedApps))
+    // Title-based exclusion is always evaluated live (titles can change)
+    if (check_excluded_app_with_title(hwnd, *apps))
         return true;
 
     return false;
@@ -829,6 +886,10 @@ static HWND ResolveTargetWindow(POINT pt)
     return hwnd;
 }
 
+// Forward declarations for helpers called from MouseProc
+static void HandleDragMove(POINT pt);
+static void HandleResizeMove(POINT pt);
+
 static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
     if (nCode >= 0)
@@ -845,9 +906,9 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             EndInteraction(true, true);
         }
 
-        if (!g_dragging && !g_resizing && g_hOverlay)
+        if (!g_dragging && !g_resizing && g_hOverlay && IsWindowVisible(g_hOverlay))
         {
-            DestroyOverlay();
+            HideOverlay();
         }
 
         // ----- Alt + Left Button Down: start drag -----
@@ -875,8 +936,8 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 g_dragStart = pt;
                 GetWindowRect(hwnd, &g_dragWndRect);
 
-                // Create the semi-transparent overlay on top of the target
-                CreateOverlay(g_dragWndRect, IDC_SIZEALL);
+                // Show the semi-transparent overlay on top of the target (persistent window – fix #9)
+                ShowOverlay(g_dragWndRect, g_curSizeAll);
 
                 // Swallow the click so the target window doesn't get it
                 TraceShortcutUse(true, GrabAndMoveShortcutAction::Move, L"started");
@@ -887,58 +948,13 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         // ----- Mouse Move while dragging -----
         if (wParam == WM_MOUSEMOVE && g_dragging && g_dragTarget)
         {
-            // On the first move, restore maximized windows
-            if (g_dragFirstMove)
-            {
-                g_dragFirstMove = false;
-                if (IsZoomed(g_dragTarget))
-                {
-                    // Remember the maximized width so we can place the
-                    // cursor proportionally on the restored window.
-                    RECT maxRect;
-                    GetWindowRect(g_dragTarget, &maxRect);
-                    int maxW = maxRect.right - maxRect.left;
-
-                    // Restore the window (uses its previous normal placement)
-                    ShowWindow(g_dragTarget, SW_RESTORE);
-
-                    // Re-read the restored size
-                    GetWindowRect(g_dragTarget, &g_dragWndRect);
-                    int restoredW = g_dragWndRect.right - g_dragWndRect.left;
-                    int restoredH = g_dragWndRect.bottom - g_dragWndRect.top;
-
-                    // Place the restored window so the cursor keeps the same
-                    // proportional X position and stays at the title bar.
-                    float ratio = (maxW > 0) ? static_cast<float>(g_dragStart.x - maxRect.left) / maxW : 0.5f;
-                    int newX = g_dragStart.x - static_cast<int>(restoredW * ratio);
-                    int newY = g_dragStart.y - (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) / 2);
-                    SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-
-                    // Reset drag baseline to current cursor / new window rect
-                    g_dragStart = ms->pt;
-                    g_dragWndRect = {newX, newY, newX + restoredW, newY + restoredH};
-                }
-            }
-
-            POINT pt = ms->pt;
-            int dx = pt.x - g_dragStart.x;
-            int dy = pt.y - g_dragStart.y;
-
-            int newX = g_dragWndRect.left + dx;
-            int newY = g_dragWndRect.top + dy;
-            int w = g_dragWndRect.right - g_dragWndRect.left;
-            int h = g_dragWndRect.bottom - g_dragWndRect.top;
-
-            // Throttle: skip expensive window ops if < THROTTLE_INTERVAL_MS
             ULONGLONG now = QpcMs();
             if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS)
             {
                 g_lastMoveTick = now;
-                SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-                MoveOverlay(newX, newY, w, h);
+                HandleDragMove(ms->pt);
             }
-
-            return 0; // let the move go through
+            return 0;
         }
 
         // ----- Left Button Up: end drag -----
@@ -988,7 +1004,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 GetWindowRect(hwnd, &g_resizeWndRect);
 
                 g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
-                CreateOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
+                ShowOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
 
                 TraceShortcutUse(true, GrabAndMoveShortcutAction::Resize, L"started");
                 return 1; // swallow the right button press
@@ -998,124 +1014,13 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
         // ----- Mouse Move while resizing -----
         if (wParam == WM_MOUSEMOVE && g_resizing && g_resizeTarget)
         {
-            // On the first resize, restore maximized windows, moved proportionally around the cursor position
-            if (g_resizeFirstMove)
-            {
-                g_resizeFirstMove = false;
-                if (IsZoomed(g_resizeTarget))
-                {
-                    POINT cur = ms->pt;
-                    RECT maxRect = g_resizeWndRect; // maximized rect
-                    int maxW = maxRect.right - maxRect.left;
-                    int maxH = maxRect.bottom - maxRect.top;
-
-                    // Cursor ratios relative to the maximized window edges
-                    float ratioL = (maxW > 0) ? static_cast<float>(cur.x - maxRect.left) / maxW : 0.5f;
-                    float ratioT = (maxH > 0) ? static_cast<float>(cur.y - maxRect.top) / maxH : 0.5f;
-
-                    ShowWindow(g_resizeTarget, SW_RESTORE);
-                    GetWindowRect(g_resizeTarget, &g_resizeWndRect);
-
-                    int newW = g_resizeWndRect.right - g_resizeWndRect.left;
-                    int newH = g_resizeWndRect.bottom - g_resizeWndRect.top;
-
-                    // Position the restored window so the cursor keeps the same ratios
-                    int newLeft = cur.x - static_cast<int>(ratioL * newW);
-                    int newTop = cur.y - static_cast<int>(ratioT * newH);
-                    SetWindowPos(g_resizeTarget, nullptr, newLeft, newTop, newW, newH, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-                    g_resizeWndRect = {newLeft, newTop, newLeft + newW, newTop + newH};
-
-                    g_resizeLast = cur;
-                    g_currentHandle = GetClosestHandle(cur, g_resizeWndRect);
-                }
-            }
-
-            POINT pt = ms->pt;
-            int dx = pt.x - g_resizeLast.x;
-            int dy = pt.y - g_resizeLast.y;
-
-            // Re-evaluate closest handle as the cursor moves
-            ResizeHandle newHandle = GetClosestHandle(pt, g_resizeWndRect);
-            if (newHandle != g_currentHandle)
-            {
-                g_currentHandle = newHandle;
-                HCURSOR hCur = LoadCursorW(nullptr, CursorForHandle(g_currentHandle));
-                SetClassLongPtrW(g_hOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(hCur));
-                SetCursor(hCur);
-            }
-
-            // Apply delta to the edges indicated by the current handle
-            RECT nr = g_resizeWndRect;
-            switch (g_currentHandle)
-            {
-            case RESIZE_TOP_LEFT:
-                nr.left += dx;
-                nr.top += dy;
-                break;
-            case RESIZE_TOP:
-                nr.top += dy;
-                break;
-            case RESIZE_TOP_RIGHT:
-                nr.right += dx;
-                nr.top += dy;
-                break;
-            case RESIZE_RIGHT:
-                nr.right += dx;
-                break;
-            case RESIZE_BOTTOM_RIGHT:
-                nr.right += dx;
-                nr.bottom += dy;
-                break;
-            case RESIZE_BOTTOM:
-                nr.bottom += dy;
-                break;
-            case RESIZE_BOTTOM_LEFT:
-                nr.left += dx;
-                nr.bottom += dy;
-                break;
-            case RESIZE_LEFT:
-                nr.left += dx;
-                break;
-            default:
-                break;
-            }
-
-            // Enforce minimum window size
-            bool leftMoving =
-                (g_currentHandle == RESIZE_TOP_LEFT || g_currentHandle == RESIZE_BOTTOM_LEFT || g_currentHandle == RESIZE_LEFT);
-            bool topMoving =
-                (g_currentHandle == RESIZE_TOP_LEFT || g_currentHandle == RESIZE_TOP || g_currentHandle == RESIZE_TOP_RIGHT);
-
-            if (nr.right - nr.left < MIN_WINDOW_WIDTH)
-            {
-                if (leftMoving)
-                    nr.left = nr.right - MIN_WINDOW_WIDTH;
-                else
-                    nr.right = nr.left + MIN_WINDOW_WIDTH;
-            }
-            if (nr.bottom - nr.top < MIN_WINDOW_HEIGHT)
-            {
-                if (topMoving)
-                    nr.top = nr.bottom - MIN_WINDOW_HEIGHT;
-                else
-                    nr.bottom = nr.top + MIN_WINDOW_HEIGHT;
-            }
-
-            g_resizeWndRect = nr;
-            g_resizeLast = pt;
-
-            // Throttle: skip expensive window ops if < THROTTLE_INTERVAL_MS
             ULONGLONG now = QpcMs();
             if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS)
             {
                 g_lastMoveTick = now;
-                int w = nr.right - nr.left;
-                int h = nr.bottom - nr.top;
-                SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-                MoveOverlay(nr.left, nr.top, w, h);
+                HandleResizeMove(ms->pt);
             }
-
-            return 0; // let the move go through
+            return 0;
         }
 
         // ----- Right Button Up: end resize -----
@@ -1136,8 +1041,145 @@ forward:
 }
 
 // ---------------------------------------------------------------------------
-// Message-only window procedure
+// Drag / resize move helpers – called directly from the LL mouse hook.
+// DeferWindowPos batches the target + overlay into one DWM composition pass.
 // ---------------------------------------------------------------------------
+static void HandleDragMove(POINT pt)
+{
+    if (!g_dragging || !g_dragTarget)
+        return;
+
+    // On the first move, restore maximized windows
+    if (g_dragFirstMove)
+    {
+        g_dragFirstMove = false;
+        if (IsZoomed(g_dragTarget))
+        {
+            RECT maxRect;
+            GetWindowRect(g_dragTarget, &maxRect);
+            int maxW = maxRect.right - maxRect.left;
+
+            ShowWindow(g_dragTarget, SW_RESTORE);
+
+            GetWindowRect(g_dragTarget, &g_dragWndRect);
+            int restoredW = g_dragWndRect.right - g_dragWndRect.left;
+            int restoredH = g_dragWndRect.bottom - g_dragWndRect.top;
+
+            float ratio = (maxW > 0) ? static_cast<float>(g_dragStart.x - maxRect.left) / maxW : 0.5f;
+            int newX = g_dragStart.x - static_cast<int>(restoredW * ratio);
+            int newY = g_dragStart.y - (GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CYCAPTION) / 2);
+            SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
+                         SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+
+            g_dragStart = pt;
+            g_dragWndRect = {newX, newY, newX + restoredW, newY + restoredH};
+        }
+    }
+
+    int dx = pt.x - g_dragStart.x;
+    int dy = pt.y - g_dragStart.y;
+    int newX = g_dragWndRect.left + dx;
+    int newY = g_dragWndRect.top + dy;
+    int w = g_dragWndRect.right - g_dragWndRect.left;
+    int h = g_dragWndRect.bottom - g_dragWndRect.top;
+
+    // Move target + overlay (separate SetWindowPos – DeferWindowPos doesn't
+    // work reliably for cross-process target windows)
+    SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
+                 SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+    RepositionOverlay(newX, newY, w, h, nullptr);
+}
+
+static void HandleResizeMove(POINT pt)
+{
+    if (!g_resizing || !g_resizeTarget)
+        return;
+
+    // On the first resize, restore maximized windows
+    if (g_resizeFirstMove)
+    {
+        g_resizeFirstMove = false;
+        if (IsZoomed(g_resizeTarget))
+        {
+            RECT maxRect = g_resizeWndRect;
+            int maxW = maxRect.right - maxRect.left;
+            int maxH = maxRect.bottom - maxRect.top;
+
+            float ratioL = (maxW > 0) ? static_cast<float>(pt.x - maxRect.left) / maxW : 0.5f;
+            float ratioT = (maxH > 0) ? static_cast<float>(pt.y - maxRect.top) / maxH : 0.5f;
+
+            ShowWindow(g_resizeTarget, SW_RESTORE);
+            GetWindowRect(g_resizeTarget, &g_resizeWndRect);
+
+            int newW = g_resizeWndRect.right - g_resizeWndRect.left;
+            int newH = g_resizeWndRect.bottom - g_resizeWndRect.top;
+
+            int newLeft = pt.x - static_cast<int>(ratioL * newW);
+            int newTop = pt.y - static_cast<int>(ratioT * newH);
+            SetWindowPos(g_resizeTarget, nullptr, newLeft, newTop, newW, newH,
+                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+            g_resizeWndRect = {newLeft, newTop, newLeft + newW, newTop + newH};
+
+            g_resizeLast = pt;
+            g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
+        }
+    }
+
+    int dx = pt.x - g_resizeLast.x;
+    int dy = pt.y - g_resizeLast.y;
+
+    // Re-evaluate closest handle as the cursor moves
+    ResizeHandle newHandle = GetClosestHandle(pt, g_resizeWndRect);
+    if (newHandle != g_currentHandle)
+    {
+        g_currentHandle = newHandle;
+        HCURSOR hCur = CursorForHandle(g_currentHandle);
+        SetClassLongPtrW(g_hOverlay, GCLP_HCURSOR, reinterpret_cast<LONG_PTR>(hCur));
+        SetCursor(hCur);
+    }
+
+    // Apply delta to the edges indicated by the current handle
+    RECT nr = g_resizeWndRect;
+    switch (g_currentHandle)
+    {
+    case RESIZE_TOP_LEFT:     nr.left += dx; nr.top += dy; break;
+    case RESIZE_TOP:          nr.top += dy; break;
+    case RESIZE_TOP_RIGHT:    nr.right += dx; nr.top += dy; break;
+    case RESIZE_RIGHT:        nr.right += dx; break;
+    case RESIZE_BOTTOM_RIGHT: nr.right += dx; nr.bottom += dy; break;
+    case RESIZE_BOTTOM:       nr.bottom += dy; break;
+    case RESIZE_BOTTOM_LEFT:  nr.left += dx; nr.bottom += dy; break;
+    case RESIZE_LEFT:         nr.left += dx; break;
+    default: break;
+    }
+
+    // Enforce minimum window size
+    bool leftMoving = (g_currentHandle == RESIZE_TOP_LEFT || g_currentHandle == RESIZE_BOTTOM_LEFT || g_currentHandle == RESIZE_LEFT);
+    bool topMoving = (g_currentHandle == RESIZE_TOP_LEFT || g_currentHandle == RESIZE_TOP || g_currentHandle == RESIZE_TOP_RIGHT);
+
+    if (nr.right - nr.left < MIN_WINDOW_WIDTH)
+    {
+        if (leftMoving) nr.left = nr.right - MIN_WINDOW_WIDTH;
+        else            nr.right = nr.left + MIN_WINDOW_WIDTH;
+    }
+    if (nr.bottom - nr.top < MIN_WINDOW_HEIGHT)
+    {
+        if (topMoving) nr.top = nr.bottom - MIN_WINDOW_HEIGHT;
+        else           nr.bottom = nr.top + MIN_WINDOW_HEIGHT;
+    }
+
+    g_resizeWndRect = nr;
+    g_resizeLast = pt;
+
+    int w = nr.right - nr.left;
+    int h = nr.bottom - nr.top;
+
+    // Move target + overlay (separate SetWindowPos – DeferWindowPos doesn't
+    // work reliably for cross-process target windows)
+    SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h,
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+    RepositionOverlay(nr.left, nr.top, w, h, nullptr);
+}
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
@@ -1253,6 +1295,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         return 1;
     }
 
+    // Pre-load system cursors (fix #6 – avoid LoadCursorW in hot path)
+    g_curSizeAll  = LoadCursorW(nullptr, IDC_SIZEALL);
+    g_curSizeNWSE = LoadCursorW(nullptr, IDC_SIZENWSE);
+    g_curSizeNESW = LoadCursorW(nullptr, IDC_SIZENESW);
+    g_curSizeWE   = LoadCursorW(nullptr, IDC_SIZEWE);
+    g_curSizeNS   = LoadCursorW(nullptr, IDC_SIZENS);
+
     // Install global low-level hooks
     g_hhkKeyboard = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
     g_hhkMouse = SetWindowsHookExW(WH_MOUSE_LL, MouseProc, hInstance, 0);
@@ -1311,6 +1360,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     if (g_hWinEventHook)
     {
         UnhookWinEvent(g_hWinEventHook);
+    }
+    // Destroy persistent overlay window (fix #9)
+    if (g_hOverlay)
+    {
+        DestroyWindow(g_hOverlay);
+        g_hOverlay = nullptr;
     }
     RemoveTrayIcon();
     TraceLoggingUnregister(g_hProvider);
