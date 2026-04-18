@@ -462,26 +462,18 @@ static void ShowOverlay(const RECT& rc, HCURSOR hCursor)
 // Repositions (and optionally re-renders) the overlay.
 // For move-only (size unchanged), skips the expensive RenderOverlayContent.
 // For resize (size changed), always re-renders so the layered surface matches.
-static HDWP RepositionOverlay(int x, int y, int w, int h, HDWP hdwp)
+static void RepositionOverlay(int x, int y, int w, int h)
 {
     if (!g_hOverlay)
-        return hdwp;
+        return;
 
     g_overlayInfoX = x;
     g_overlayInfoY = y;
     g_overlayInfoW = w;
     g_overlayInfoH = h;
 
-    if (hdwp)
-    {
-        hdwp = DeferWindowPos(hdwp, g_hOverlay, HWND_TOPMOST, x, y, w, h,
-                       SWP_NOACTIVATE | SWP_SHOWWINDOW);
-    }
-    else
-    {
-        SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h,
-                     SWP_NOACTIVATE | SWP_SHOWWINDOW);
-    }
+    SetWindowPos(g_hOverlay, HWND_TOPMOST, x, y, w, h,
+        SWP_NOACTIVATE | SWP_SHOWWINDOW);
 
     // Re-render only when the size changed or geometry text needs updating
     bool sizeChanged = (w != g_overlayRenderedW || h != g_overlayRenderedH);
@@ -489,8 +481,6 @@ static HDWP RepositionOverlay(int x, int y, int w, int h, HDWP hdwp)
     {
         RenderOverlayContent(g_hOverlay, w, h);
     }
-
-    return hdwp;
 }
 
 static void HideOverlay()
@@ -1087,7 +1077,7 @@ static void HandleDragMove(POINT pt)
     // work reliably for cross-process target windows)
     SetWindowPos(g_dragTarget, nullptr, newX, newY, 0, 0,
                  SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-    RepositionOverlay(newX, newY, w, h, nullptr);
+    RepositionOverlay(newX, newY, w, h);
 }
 
 static void HandleDragResize(POINT pt)
@@ -1178,7 +1168,7 @@ static void HandleDragResize(POINT pt)
     // work reliably for cross-process target windows)
     SetWindowPos(g_resizeTarget, nullptr, nr.left, nr.top, w, h,
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
-    RepositionOverlay(nr.left, nr.top, w, h, nullptr);
+    RepositionOverlay(nr.left, nr.top, w, h);
 }
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
