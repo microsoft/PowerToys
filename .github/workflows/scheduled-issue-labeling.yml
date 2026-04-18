@@ -122,8 +122,10 @@ jobs:
 
             // Use GitHub Models to classify an issue when the dropdown area
             // is not available or is "General".
+            const MAX_BODY_LENGTH = 3000; // Truncate body to stay within model token limits while keeping enough context
+            const MAX_COMPLETION_TOKENS = 60; // Enough for a Product-* label name with some margin
             async function classifyWithAI(title, body) {
-              const truncatedBody = (body || "").slice(0, 3000);
+              const truncatedBody = (body || "").slice(0, MAX_BODY_LENGTH);
               const labelList = PRODUCT_LABELS.join("\n- ");
 
               const prompt = `You are a GitHub issue triager for the microsoft/PowerToys repository.
@@ -151,7 +153,7 @@ jobs:
                     body: JSON.stringify({
                       model: "openai/gpt-4o-mini",
                       messages: [{ role: "user", content: prompt }],
-                      max_tokens: 60,
+                      max_tokens: MAX_COMPLETION_TOKENS,
                       temperature: 0,
                     }),
                   }
