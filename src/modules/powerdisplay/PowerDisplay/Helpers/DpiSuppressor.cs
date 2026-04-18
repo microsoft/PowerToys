@@ -17,7 +17,7 @@ namespace PowerDisplay.Helpers
     ///   var suppressor = new DpiSuppressor(window);
     ///   using (suppressor.Suppress())
     ///   {
-    ///       window.AppWindow.MoveAndResize(rect, displayArea);
+    ///       window.AppWindow.MoveAndResize(rect);
     ///   }
     /// </summary>
     internal sealed partial class DpiSuppressor : IDisposable

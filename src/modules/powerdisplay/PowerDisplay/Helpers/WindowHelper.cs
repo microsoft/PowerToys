@@ -174,6 +174,10 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Center a window within the specified display area's work area.
+        /// Uses absolute virtual-screen physical pixels with the single-arg
+        /// MoveAndResize overload (= SetWindowPos semantics), mirroring CmdPal /
+        /// AdvancedPaste / MeasureTool. This avoids the undocumented coordinate
+        /// semantics of MoveAndResize(rect, displayArea).
         /// </summary>
         public static void CenterWindowOnDisplay(
             WindowEx window,
@@ -185,12 +189,13 @@ namespace PowerDisplay.Helpers
             int w = ScaleToPhysicalPixels(widthDip, dpiScale);
             int h = ScaleToPhysicalPixels(heightDip, dpiScale);
 
-            // WorkArea relative to DisplayArea (accounts for taskbar position)
-            var rel = GetWorkAreaRelativeToDisplay(displayArea);
-            int x = rel.X + ((rel.Width - w) / 2);
-            int y = rel.Y + ((rel.Height - h) / 2);
+            // WorkArea.X/Y are absolute virtual-screen physical pixels
+            // (= Win32 MONITORINFO.rcWork). Taskbar offset is already baked in.
+            var workArea = displayArea.WorkArea;
+            int x = workArea.X + ((workArea.Width - w) / 2);
+            int y = workArea.Y + ((workArea.Height - h) / 2);
 
-            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, w, h), displayArea);
+            MoveAndResizeAbsolute(window, displayArea, x, y, w, h, dpiScale, widthDip, heightDip, nameof(CenterWindowOnDisplay));
         }
 
         private static void MoveWindowBottomRight(
@@ -207,29 +212,56 @@ namespace PowerDisplay.Helpers
             int marginRight = ScaleToPhysicalPixels(rightMarginDip, dpiScale);
             int marginBottom = ScaleToPhysicalPixels(bottomMarginDip, dpiScale);
 
-            // WorkArea relative to DisplayArea (accounts for taskbar position)
-            var rel = GetWorkAreaRelativeToDisplay(displayArea);
-            int x = rel.X + rel.Width - w - marginRight;
-            int y = rel.Y + rel.Height - h - marginBottom;
+            // WorkArea.X/Y are absolute virtual-screen physical pixels; taskbar
+            // offset is already baked in by WorkArea (vs OuterBounds).
+            var workArea = displayArea.WorkArea;
+            int x = workArea.X + workArea.Width - w - marginRight;
+            int y = workArea.Y + workArea.Height - h - marginBottom;
 
-            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, w, h), displayArea);
+            MoveAndResizeAbsolute(window, displayArea, x, y, w, h, dpiScale, widthDip, heightDip, nameof(MoveWindowBottomRight));
         }
 
         /// <summary>
-        /// Get the work area rectangle relative to the display area's origin.
-        /// MoveAndResize(rect, displayArea) expects coordinates relative to the DisplayArea,
-        /// but WorkArea.X/Y are in absolute screen coordinates, so we subtract the DisplayArea origin.
-        /// The resulting rect describes where the usable area is within the display (e.g., offset by taskbar).
+        /// Moves and resizes <paramref name="window"/> using the single-arg
+        /// <see cref="AppWindow.MoveAndResize(Windows.Graphics.RectInt32)"/>
+        /// overload (absolute virtual-screen physical pixels). Also emits a
+        /// debug log capturing everything needed to diagnose cross-DPI /
+        /// multi-monitor positioning issues: the source display metrics, the
+        /// target rect, and the window's actual position/size after the call.
         /// </summary>
-        private static Windows.Graphics.RectInt32 GetWorkAreaRelativeToDisplay(DisplayArea displayArea)
+        private static void MoveAndResizeAbsolute(
+            WindowEx window,
+            DisplayArea displayArea,
+            int x,
+            int y,
+            int w,
+            int h,
+            double dpiScale,
+            int widthDip,
+            int heightDip,
+            string caller)
         {
             var outer = displayArea.OuterBounds;
             var work = displayArea.WorkArea;
-            return new Windows.Graphics.RectInt32(
-                work.X - outer.X,
-                work.Y - outer.Y,
-                work.Width,
-                work.Height);
+            var beforePos = window.AppWindow.Position;
+            var beforeSize = window.AppWindow.Size;
+
+            window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, w, h));
+
+            var afterPos = window.AppWindow.Position;
+            var afterSize = window.AppWindow.Size;
+
+            // Single-line structured log so multi-monitor positioning can be
+            // diagnosed by grepping for "[FlyoutPos]" in PowerDisplay logs.
+            // Remove once cross-DPI positioning is confirmed stable.
+            ManagedCommon.Logger.LogDebug(
+                $"[FlyoutPos] {caller} " +
+                $"dip=({widthDip}x{heightDip}) scale={dpiScale:F2} " +
+                $"outer=({outer.X},{outer.Y},{outer.Width},{outer.Height}) " +
+                $"work=({work.X},{work.Y},{work.Width},{work.Height}) " +
+                $"target=({x},{y},{w},{h}) " +
+                $"before=({beforePos.X},{beforePos.Y},{beforeSize.Width},{beforeSize.Height}) " +
+                $"after=({afterPos.X},{afterPos.Y},{afterSize.Width},{afterSize.Height})");
         }
 
         internal static bool TryGetDisplayAreaAtCursor(out DisplayArea? displayArea)

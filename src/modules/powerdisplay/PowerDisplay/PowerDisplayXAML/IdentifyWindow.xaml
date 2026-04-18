@@ -9,6 +9,8 @@
     IsMinimizable="False"
     IsResizable="False"
     IsTitleBarVisible="False"
+    MinWidth="0"
+    MinHeight="0"
     mc:Ignorable="d">
     <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
         <Grid.Resources>
