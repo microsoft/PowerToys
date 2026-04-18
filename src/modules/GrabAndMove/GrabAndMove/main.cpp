@@ -888,7 +888,7 @@ static HWND ResolveTargetWindow(POINT pt)
 
 // Forward declarations for helpers called from MouseProc
 static void HandleDragMove(POINT pt);
-static void HandleResizeMove(POINT pt);
+static void HandleDragResize(POINT pt);
 
 static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -1018,7 +1018,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             if (now - g_lastMoveTick >= THROTTLE_INTERVAL_MS)
             {
                 g_lastMoveTick = now;
-                HandleResizeMove(ms->pt);
+                HandleDragResize(ms->pt);
             }
             return 0;
         }
@@ -1090,7 +1090,7 @@ static void HandleDragMove(POINT pt)
     RepositionOverlay(newX, newY, w, h, nullptr);
 }
 
-static void HandleResizeMove(POINT pt)
+static void HandleDragResize(POINT pt)
 {
     if (!g_resizing || !g_resizeTarget)
         return;
