@@ -51,6 +51,15 @@ if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contai
 }
 elseif ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contains("f45873b3-b655-43a6-b217-97c00aa0db58")))
 {
+  # Upgrade unconditional import to conditional to avoid crashes in non-interactive sessions (e.g. VS Code tasks)
+  if ($profileContent.Contains("Import-Module -Name Microsoft.WinGet.CommandNotFound") -and (-not $profileContent.Contains("GetCommandLineArgs")))
+  {
+    $conditionalImport = @'
+if (-not ([Environment]::GetCommandLineArgs() | Where-Object { $_ -in @('-Command','-c','-EncodedCommand','-e','-ec','-File','-f','-NonInteractive') })) { Import-Module -Name Microsoft.WinGet.CommandNotFound }
+'@
+    $profileContent = $profileContent.Replace("Import-Module -Name Microsoft.WinGet.CommandNotFound", $conditionalImport)
+    Set-Content -Path $PROFILE -Value $profileContent
+  }
   Write-Host "Command Not Found module is registered in the profile file."
   # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
 }

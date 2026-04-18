@@ -55,12 +55,18 @@ if (!(Test-Path $PROFILE))
 
 $profileContent = Get-Content -Path $PROFILE -Raw
 
+# Only import in interactive sessions to avoid crashes when PowerShell exits quickly (e.g. VS Code tasks).
+# Command Not Found is a feedback provider only useful in interactive sessions.
+$conditionalImport = @'
+if (-not ([Environment]::GetCommandLineArgs() | Where-Object { $_ -in @('-Command','-c','-EncodedCommand','-e','-ec','-File','-f','-NonInteractive') })) { Import-Module -Name Microsoft.WinGet.CommandNotFound }
+'@
+
 if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contains("34de4b3d-13a8-4540-b76d-b9e8d3851756")))
 {
   if ($profileContent.Contains("Import-Module `"$scriptPath\WinGetCommandNotFound.psd1`""))
   {
     $profileContent = $profileContent.Replace("Import-Module `"$scriptPath\WinGetCommandNotFound.psd1`"",
-                                              "Import-Module -Name Microsoft.WinGet.CommandNotFound")
+                                              $conditionalImport)
     $profileContent = $profileContent.Replace("34de4b3d-13a8-4540-b76d-b9e8d3851756",
                                               "f45873b3-b655-43a6-b217-97c00aa0db58")
     Set-Content -Path $PROFILE -Value $profileContent
@@ -70,13 +76,23 @@ if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contai
 }
 elseif ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contains("f45873b3-b655-43a6-b217-97c00aa0db58")))
 {
-  Write-Host "Module is already registered in the profile file."
-  # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
+  if ($profileContent.Contains("Import-Module -Name Microsoft.WinGet.CommandNotFound") -and (-not $profileContent.Contains("GetCommandLineArgs")))
+  {
+    $profileContent = $profileContent.Replace("Import-Module -Name Microsoft.WinGet.CommandNotFound", $conditionalImport)
+    Set-Content -Path $PROFILE -Value $profileContent
+    Write-Host "Module was successfully upgraded in the profile file."
+    # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
+  }
+  else
+  {
+    Write-Host "Module is already registered in the profile file."
+    # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
+  }
 }
 else
 {
   Add-Content -Path $PROFILE  -Value "`r`n#f45873b3-b655-43a6-b217-97c00aa0db58 PowerToys CommandNotFound module"
-  Add-Content -Path $PROFILE  -Value "`r`nImport-Module -Name Microsoft.WinGet.CommandNotFound"
+  Add-Content -Path $PROFILE  -Value "`r`nif (-not ([Environment]::GetCommandLineArgs() | Where-Object { `$_ -in @('-Command','-c','-EncodedCommand','-e','-ec','-File','-f','-NonInteractive') })) { Import-Module -Name Microsoft.WinGet.CommandNotFound }"
   Add-Content -Path $PROFILE  -Value "#f45873b3-b655-43a6-b217-97c00aa0db58"  
   Write-Host "Module was successfully registered in the profile file."
   # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.

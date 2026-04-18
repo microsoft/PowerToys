@@ -19,10 +19,15 @@ if ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Contai
   }
 
   # Replace old module with new one (and new GUID comment)
+  # Use conditional import to avoid crashes when PowerShell exits quickly (e.g. VS Code tasks)
+  $conditionalImport = @'
+if (-not ([Environment]::GetCommandLineArgs() | Where-Object { $_ -in @('-Command','-c','-EncodedCommand','-e','-ec','-File','-f','-NonInteractive') })) { Import-Module -Name Microsoft.WinGet.CommandNotFound }
+'@
   $regex = "Import-Module .*WinGetCommandNotFound.psd1`""
-  if ($profileContent -match $regex)
+  $match = [regex]::Match($profileContent, $regex)
+  if ($match.Success)
   {
-    $profileContent = $profileContent -replace $regex, "Import-Module -Name Microsoft.WinGet.CommandNotFound"
+    $profileContent = $profileContent.Replace($match.Value, $conditionalImport)
     $profileContent = $profileContent -replace $legacyGuid, "f45873b3-b655-43a6-b217-97c00aa0db58"
     Set-Content -Path $PROFILE -Value $profileContent
   }
