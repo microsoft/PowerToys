@@ -92,7 +92,7 @@ elseif ((-not [string]::IsNullOrEmpty($profileContent)) -and ($profileContent.Co
 else
 {
   Add-Content -Path $PROFILE  -Value "`r`n#f45873b3-b655-43a6-b217-97c00aa0db58 PowerToys CommandNotFound module"
-  Add-Content -Path $PROFILE  -Value "`r`nif (-not ([Environment]::GetCommandLineArgs() | Where-Object { `$_ -in @('-Command','-c','-EncodedCommand','-e','-ec','-File','-f','-NonInteractive') })) { Import-Module -Name Microsoft.WinGet.CommandNotFound }"
+  Add-Content -Path $PROFILE  -Value "`r`n$conditionalImport"
   Add-Content -Path $PROFILE  -Value "#f45873b3-b655-43a6-b217-97c00aa0db58"  
   Write-Host "Module was successfully registered in the profile file."
   # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
