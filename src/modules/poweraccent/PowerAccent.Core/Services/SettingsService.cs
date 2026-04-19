@@ -61,10 +61,30 @@ public class SettingsService
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
 
-                        SelectedLang = settings.Properties.SelectedLang.Value
+                        var rawLanguageStrings = settings.Properties.SelectedLang.Value
                             .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                            .Select(lang => Enum.TryParse(lang, out Language selectedLangValue) ? selectedLangValue : Language.SPECIAL)
+                            .Select(lang => lang.Trim())
                             .ToArray();
+
+                        if (rawLanguageStrings.Any(lang => string.Equals(lang, "ALL", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            SelectedLang = Enum.GetValues<Language>();
+                        }
+                        else
+                        {
+                            SelectedLang = rawLanguageStrings
+                                .Select(lang =>
+                                {
+                                    if (Enum.TryParse(lang, true, out Language selectedLangValue))
+                                    {
+                                        return selectedLangValue;
+                                    }
+
+                                    Logger.LogWarning($"Unknown QuickAccent language setting '{lang}', falling back to SPECIAL.");
+                                    return Language.SPECIAL;
+                                })
+                                .ToArray();
+                        }
 
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
