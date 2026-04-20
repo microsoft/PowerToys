@@ -73,7 +73,7 @@
 
             <Style x:Key="DockBandListViewItemStyle" TargetType="ListViewItem">
                 <Setter Property="Padding" Value="0" />
-                <Setter Property="Margin" Value="0,0,0,0" />
+                <Setter Property="Margin" Value="0" />
                 <Setter Property="MinHeight" Value="0" />
                 <Setter Property="MinWidth" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
