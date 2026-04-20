@@ -2,12 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
@@ -87,6 +89,8 @@ public sealed class SettingsService : ISettingsService
                     DeprecatedHotkeyGoesHomeKey,
                     (ref SettingsModel model, bool goesHome) => model = model with { AutoGoHomeInterval = goesHome ? TimeSpan.Zero : Timeout.InfiniteTimeSpan },
                     JsonSerializationContext.Default.Boolean);
+
+                migratedAny |= TryMigrateBandShowLabels(root, ref _settings);
             }
         }
         catch (Exception ex)
@@ -131,5 +135,107 @@ public sealed class SettingsService : ISettingsService
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Migrates per-band <c>ShowLabels</c> to <c>ShowTitles</c> and <c>ShowSubtitles</c>.
+    /// The old <c>ShowLabels</c> property on <see cref="DockBandSettings"/> was renamed to
+    /// <c>ShowTitles</c> (with <c>ShowSubtitles</c> added). Because the legacy property is
+    /// <c>[JsonIgnore]</c>, old JSON values are lost during deserialization. This migration
+    /// reads the raw JSON to recover them.
+    /// </summary>
+    private static bool TryMigrateBandShowLabels(JsonObject root, ref SettingsModel model)
+    {
+        try
+        {
+            if (root[nameof(SettingsModel.DockSettings)] is not JsonObject dockSettingsNode)
+            {
+                return false;
+            }
+
+            var migrated = false;
+            var ds = model.DockSettings;
+
+            var newStart = MigrateBandList(dockSettingsNode, nameof(DockSettings.StartBands), ds.StartBands, ref migrated);
+            var newCenter = MigrateBandList(dockSettingsNode, nameof(DockSettings.CenterBands), ds.CenterBands, ref migrated);
+            var newEnd = MigrateBandList(dockSettingsNode, nameof(DockSettings.EndBands), ds.EndBands, ref migrated);
+
+            if (migrated)
+            {
+                model = model with
+                {
+                    DockSettings = ds with
+                    {
+                        StartBands = newStart,
+                        CenterBands = newCenter,
+                        EndBands = newEnd,
+                    },
+                };
+            }
+
+            return migrated;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error during band ShowLabels migration.", ex);
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Scans a single band array in the raw JSON for <c>ShowLabels</c> entries that
+    /// need migrating to <c>ShowTitles</c> / <c>ShowSubtitles</c>.
+    /// </summary>
+    private static ImmutableList<DockBandSettings> MigrateBandList(
+        JsonObject dockSettingsNode,
+        string bandKey,
+        ImmutableList<DockBandSettings> bands,
+        ref bool anyMigrated)
+    {
+        if (dockSettingsNode[bandKey] is not JsonArray jsonBands)
+        {
+            return bands;
+        }
+
+        var builder = bands.ToBuilder();
+        var listChanged = false;
+
+        for (var i = 0; i < builder.Count && i < jsonBands.Count; i++)
+        {
+            if (jsonBands[i] is not JsonObject jsonBand)
+            {
+                continue;
+            }
+
+            // Only migrate if old key exists and new key does not
+            if (!jsonBand.ContainsKey("ShowLabels") || jsonBand.ContainsKey("ShowTitles"))
+            {
+                continue;
+            }
+
+            var showLabelsNode = jsonBand["ShowLabels"];
+            if (showLabelsNode is null)
+            {
+                continue;
+            }
+
+            var showLabels = showLabelsNode.GetValue<bool>();
+            var band = builder[i];
+            band = band with
+            {
+                ShowTitles = band.ShowTitles ?? showLabels,
+                ShowSubtitles = band.ShowSubtitles ?? showLabels,
+            };
+            builder[i] = band;
+            listChanged = true;
+        }
+
+        if (listChanged)
+        {
+            anyMigrated = true;
+            return builder.ToImmutable();
+        }
+
+        return bands;
     }
 }

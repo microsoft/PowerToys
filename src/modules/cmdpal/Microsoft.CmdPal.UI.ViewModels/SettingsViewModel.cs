@@ -5,7 +5,9 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -29,6 +31,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly IMonitorService? _monitorService;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -250,19 +253,25 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public ObservableCollection<FallbackSettingsViewModel> FallbackRankings { get; set; } = new();
 
+    public ObservableCollection<DockMonitorConfigViewModel> MonitorConfigs { get; } = new();
+
     public SettingsExtensionsViewModel Extensions { get; }
 
     public SettingsViewModel(
         TopLevelCommandManager topLevelCommandManager,
         TaskScheduler scheduler,
         IThemeService themeService,
-        ISettingsService settingsService)
+        ISettingsService settingsService,
+        IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
+        _monitorService = monitorService;
 
         Appearance = new AppearanceSettingsViewModel(themeService, settingsService);
         DockAppearance = new DockAppearanceSettingsViewModel(themeService, settingsService);
+
+        PopulateMonitorConfigs();
 
         var activeProviders = GetCommandProviders();
         var allProviderSettings = _settingsService.Settings.ProviderSettings;
@@ -331,5 +340,44 @@ public partial class SettingsViewModel : INotifyPropertyChanged
     {
         _settingsService.UpdateSettings(s => s with { FallbackRanks = FallbackRankings.Select(s2 => s2.Id).ToArray() });
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FallbackRankings)));
+    }
+
+    /// <summary>
+    /// Builds or refreshes the <see cref="MonitorConfigs"/> collection by reconciling
+    /// connected monitors with persisted per-monitor settings.
+    /// </summary>
+    public void PopulateMonitorConfigs()
+    {
+        if (_monitorService is null)
+        {
+            return;
+        }
+
+        var monitors = _monitorService.GetMonitors();
+        var currentSettings = _settingsService.Settings.DockSettings;
+
+        var reconciled = MonitorConfigReconciler.Reconcile(currentSettings.MonitorConfigs, monitors);
+
+        if (!reconciled.SequenceEqual(currentSettings.MonitorConfigs))
+        {
+            _settingsService.UpdateSettings(s => s with
+            {
+                DockSettings = s.DockSettings with { MonitorConfigs = reconciled },
+            });
+        }
+
+        MonitorConfigs.Clear();
+        foreach (var monitor in monitors)
+        {
+            var config = reconciled.FirstOrDefault(c =>
+                string.Equals(c.MonitorDeviceId, monitor.DeviceId, StringComparison.OrdinalIgnoreCase));
+
+            if (config is not null)
+            {
+                MonitorConfigs.Add(new DockMonitorConfigViewModel(config, monitor, _settingsService));
+            }
+        }
+
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MonitorConfigs)));
     }
 }

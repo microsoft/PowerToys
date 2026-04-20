@@ -2,12 +2,16 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text.Json;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
@@ -429,5 +433,144 @@ public class DockMultiMonitorTests
 
         Assert.IsTrue(allPinned.Exists(p => p.CommandId == "globalCmd"), "Global band should be included");
         Assert.IsFalse(allPinned.Exists(p => p.CommandId == "shouldNotAppear"), "Non-customized per-monitor band should NOT be included");
+    }
+
+    // --- DockMonitorConfigViewModel tests ---
+    [TestMethod]
+    public void DockMonitorConfigViewModel_IsEnabled_ReadsFromConfig()
+    {
+        var settings = CreateSettingsModelWithConfigs(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Enabled = false, IsPrimary = true });
+
+        var mockSettings = CreateMockSettingsService(settings);
+        var vm = new DockMonitorConfigViewModel(
+            settings.DockSettings.MonitorConfigs[0], PrimaryMonitor, mockSettings.Object);
+
+        Assert.IsFalse(vm.IsEnabled);
+    }
+
+    [TestMethod]
+    public void DockMonitorConfigViewModel_IsEnabled_PersistsChange()
+    {
+        var settings = CreateSettingsModelWithConfigs(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Enabled = true, IsPrimary = true });
+
+        var mockSettings = CreateMockSettingsService(settings);
+        var vm = new DockMonitorConfigViewModel(
+            settings.DockSettings.MonitorConfigs[0], PrimaryMonitor, mockSettings.Object);
+
+        vm.IsEnabled = false;
+
+        mockSettings.Verify(s => s.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()), Times.Once);
+    }
+
+    [TestMethod]
+    public void DockMonitorConfigViewModel_SideOverrideIndex_ReturnsZeroWhenNull()
+    {
+        var settings = CreateSettingsModelWithConfigs(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Side = null });
+
+        var mockSettings = CreateMockSettingsService(settings);
+        var vm = new DockMonitorConfigViewModel(
+            settings.DockSettings.MonitorConfigs[0], PrimaryMonitor, mockSettings.Object);
+
+        Assert.AreEqual(0, vm.SideOverrideIndex);
+        Assert.IsFalse(vm.HasSideOverride);
+    }
+
+    [TestMethod]
+    public void DockMonitorConfigViewModel_SideOverrideIndex_MapsCorrectly()
+    {
+        var settings = CreateSettingsModelWithConfigs(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Side = DockSide.Right });
+
+        var mockSettings = CreateMockSettingsService(settings);
+        var vm = new DockMonitorConfigViewModel(
+            settings.DockSettings.MonitorConfigs[0], PrimaryMonitor, mockSettings.Object);
+
+        Assert.AreEqual(3, vm.SideOverrideIndex);
+        Assert.IsTrue(vm.HasSideOverride);
+    }
+
+    [TestMethod]
+    public void DockMonitorConfigViewModel_DisplayInfo_ExposesMonitorProperties()
+    {
+        var settings = CreateSettingsModelWithConfigs(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, IsPrimary = true });
+
+        var mockSettings = CreateMockSettingsService(settings);
+        var vm = new DockMonitorConfigViewModel(
+            settings.DockSettings.MonitorConfigs[0], PrimaryMonitor, mockSettings.Object);
+
+        Assert.AreEqual("Display 1 (Primary)", vm.DisplayName);
+        Assert.AreEqual(PrimaryMonitor.DeviceId, vm.DeviceId);
+        Assert.IsTrue(vm.IsPrimary);
+        Assert.AreEqual("1920 \u00D7 1080", vm.Resolution);
+    }
+
+    [TestMethod]
+    public void Reconciler_EmptyConfigs_CreatesDefaultsForAllMonitors()
+    {
+        // Simulate upgrade: no per-monitor configs, 3 monitors connected
+        var tertiary = new MonitorInfo
+        {
+            DeviceId = @"\\.\DISPLAY3",
+            DisplayName = "Display 3",
+            Bounds = new ScreenRect(3840, 0, 5760, 1080),
+            WorkArea = new ScreenRect(3840, 0, 5760, 1040),
+            Dpi = 96,
+            IsPrimary = false,
+        };
+        var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor, tertiary };
+        var emptyConfigs = ImmutableList<DockMonitorConfig>.Empty;
+
+        var reconciled = MonitorConfigReconciler.Reconcile(emptyConfigs, monitors);
+
+        Assert.AreEqual(3, reconciled.Count, "Should create configs for all 3 monitors");
+
+        // All monitors should be enabled by default
+        foreach (var config in reconciled)
+        {
+            Assert.IsTrue(config.Enabled, $"Monitor {config.MonitorDeviceId} should be enabled");
+            Assert.IsFalse(config.IsCustomized, $"Monitor {config.MonitorDeviceId} should not be customized");
+            Assert.IsNull(config.Side, $"Monitor {config.MonitorDeviceId} should inherit global side");
+        }
+
+        // Primary should be flagged correctly
+        var primaryConfig = reconciled.Find(c => c.MonitorDeviceId == PrimaryMonitor.DeviceId);
+        Assert.IsNotNull(primaryConfig, "Primary monitor config should exist");
+        Assert.IsTrue(primaryConfig.IsPrimary, "Primary config should be marked as primary");
+
+        var secondaryConfig = reconciled.Find(c => c.MonitorDeviceId == SecondaryMonitor.DeviceId);
+        Assert.IsNotNull(secondaryConfig, "Secondary monitor config should exist");
+        Assert.IsFalse(secondaryConfig.IsPrimary, "Secondary config should not be marked as primary");
+    }
+
+    private static SettingsModel CreateSettingsModelWithConfigs(params DockMonitorConfig[] configs)
+    {
+        var dockSettings = CreateMinimalDockSettings() with
+        {
+            MonitorConfigs = ImmutableList.Create(configs),
+        };
+
+        var minimalJson = "{}";
+        var settingsModel = JsonSerializer.Deserialize(
+            minimalJson,
+            JsonSerializationContext.Default.SettingsModel) ?? new SettingsModel();
+
+        return settingsModel with { DockSettings = dockSettings };
+    }
+
+    private static Mock<ISettingsService> CreateMockSettingsService(SettingsModel settings)
+    {
+        var mock = new Mock<ISettingsService>();
+        mock.Setup(s => s.Settings).Returns(settings);
+        mock.Setup(s => s.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()))
+            .Callback<Func<SettingsModel, SettingsModel>, bool>((transform, _) =>
+            {
+                var updated = transform(settings);
+                mock.Setup(s => s.Settings).Returns(updated);
+            });
+        return mock;
     }
 }

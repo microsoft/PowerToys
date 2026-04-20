@@ -2,11 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Windows.Win32;
+using Windows.Win32.Devices.Display;
+using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.HiDpi;
 
 namespace Microsoft.CmdPal.UI.Services;
 
@@ -15,17 +18,11 @@ namespace Microsoft.CmdPal.UI.Services;
 /// </summary>
 public sealed class MonitorService : IMonitorService
 {
-    private const int PrimaryFlag = 0x00000001;
+    private const uint PrimaryFlag = 0x00000001;
 
     private readonly object _lock = new();
     private List<MonitorInfo>? _cachedMonitors;
     private IReadOnlyList<MonitorInfo>? _cachedSnapshot;
-
-    private delegate bool MonitorEnumProc(
-        IntPtr hMonitor,
-        IntPtr hdcMonitor,
-        IntPtr lprcMonitor,
-        IntPtr dwData);
 
     /// <inheritdoc/>
     public event EventHandler? MonitorsChanged;
@@ -91,43 +88,50 @@ public sealed class MonitorService : IMonitorService
         MonitorsChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private static List<MonitorInfo> EnumerateMonitors()
+    private static unsafe List<MonitorInfo> EnumerateMonitors()
     {
         var monitors = new List<MonitorInfo>();
+        var friendlyNames = BuildFriendlyNameMap();
 
-        EnumDisplayMonitors(
-            IntPtr.Zero,
-            IntPtr.Zero,
-            (hMonitor, hdcMonitor, lprcMonitor, dwData) =>
+        PInvoke.EnumDisplayMonitors(
+            HDC.Null,
+            (RECT*)null,
+            (HMONITOR hMonitor, HDC hdcMonitor, RECT* lprcMonitor, LPARAM dwData) =>
             {
-                var info = default(NativeMonitorInfoEx);
-                info.Size = Marshal.SizeOf<NativeMonitorInfoEx>();
-                if (GetMonitorInfo(hMonitor, ref info))
+                var infoEx = default(MONITORINFOEXW);
+                infoEx.monitorInfo.cbSize = (uint)sizeof(MONITORINFOEXW);
+                if (PInvoke.GetMonitorInfo(hMonitor, (MONITORINFO*)&infoEx))
                 {
-                    var hr = GetDpiForMonitor(hMonitor, 0, out var dpiX, out _);
-                    if (hr != 0 || dpiX == 0)
+                    var hr = PInvoke.GetDpiForMonitor(
+                        hMonitor,
+                        MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                        out var dpiX,
+                        out _);
+                    if (hr.Failed || dpiX == 0)
                     {
                         dpiX = 96;
                     }
 
-                    var isPrimary = (info.Flags & PrimaryFlag) != 0;
-                    var deviceName = info.DeviceName;
-                    var displayName = FormatDisplayName(deviceName, isPrimary);
+                    var isPrimary = (infoEx.monitorInfo.dwFlags & PrimaryFlag) != 0;
+                    var deviceName = new string(infoEx.szDevice.AsSpan()).TrimEnd('\0');
+                    var displayName = FormatDisplayName(deviceName, isPrimary, friendlyNames);
+                    var rcMonitor = infoEx.monitorInfo.rcMonitor;
+                    var rcWork = infoEx.monitorInfo.rcWork;
 
                     monitors.Add(new MonitorInfo
                     {
                         DeviceId = deviceName,
                         DisplayName = displayName,
                         Bounds = new ScreenRect(
-                            info.Monitor.Left,
-                            info.Monitor.Top,
-                            info.Monitor.Right,
-                            info.Monitor.Bottom),
+                            rcMonitor.left,
+                            rcMonitor.top,
+                            rcMonitor.right,
+                            rcMonitor.bottom),
                         WorkArea = new ScreenRect(
-                            info.Work.Left,
-                            info.Work.Top,
-                            info.Work.Right,
-                            info.Work.Bottom),
+                            rcWork.left,
+                            rcWork.top,
+                            rcWork.right,
+                            rcWork.bottom),
                         Dpi = dpiX,
                         IsPrimary = isPrimary,
                     });
@@ -135,19 +139,118 @@ public sealed class MonitorService : IMonitorService
 
                 return true;
             },
-            IntPtr.Zero);
+            0);
 
         return monitors;
     }
 
-    private static string FormatDisplayName(string deviceName, bool isPrimary)
+    /// <summary>
+    /// Builds a map from GDI device name (e.g. <c>\\.\DISPLAY1</c>) to the hardware
+    /// friendly name (e.g. <c>DELL U2723QE</c>) using the Display Configuration APIs.
+    /// Returns an empty dictionary on failure so callers can fall back gracefully.
+    /// </summary>
+    private static unsafe Dictionary<string, string> BuildFriendlyNameMap()
     {
-        // Convert "\\.\DISPLAY1" → "Display 1"
-        var name = deviceName;
-        if (name.StartsWith(@"\\.\DISPLAY", StringComparison.OrdinalIgnoreCase))
+        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        try
         {
-            var number = name.Substring(@"\\.\DISPLAY".Length);
+            var result = PInvoke.GetDisplayConfigBufferSizes(
+                QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+                out var pathCount,
+                out var modeCount);
+            if (result != WIN32_ERROR.NO_ERROR)
+            {
+                return map;
+            }
+
+            var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
+            var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+
+            fixed (DISPLAYCONFIG_PATH_INFO* pathsPtr = paths)
+            {
+                fixed (DISPLAYCONFIG_MODE_INFO* modesPtr = modes)
+                {
+                    result = PInvoke.QueryDisplayConfig(
+                        QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+                        ref pathCount,
+                        pathsPtr,
+                        ref modeCount,
+                        modesPtr,
+                        null);
+                    if (result != WIN32_ERROR.NO_ERROR)
+                    {
+                        return map;
+                    }
+                }
+            }
+
+            for (var i = 0; i < pathCount; i++)
+            {
+                var path = paths[i];
+
+                // Get the GDI device name from the source info
+                var sourceName = default(DISPLAYCONFIG_SOURCE_DEVICE_NAME);
+                sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+                sourceName.header.size = (uint)sizeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME);
+                sourceName.header.adapterId = path.sourceInfo.adapterId;
+                sourceName.header.id = path.sourceInfo.id;
+
+                if (PInvoke.DisplayConfigGetDeviceInfo(ref sourceName.header) != 0)
+                {
+                    continue;
+                }
+
+                var gdiName = new string(sourceName.viewGdiDeviceName.AsSpan()).TrimEnd('\0');
+                if (string.IsNullOrEmpty(gdiName))
+                {
+                    continue;
+                }
+
+                // Get the friendly name from the target info
+                var targetName = default(DISPLAYCONFIG_TARGET_DEVICE_NAME);
+                targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+                targetName.header.size = (uint)sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME);
+                targetName.header.adapterId = path.targetInfo.adapterId;
+                targetName.header.id = path.targetInfo.id;
+
+                if (PInvoke.DisplayConfigGetDeviceInfo(ref targetName.header) != 0)
+                {
+                    continue;
+                }
+
+                var friendly = new string(targetName.monitorFriendlyDeviceName.AsSpan()).TrimEnd('\0');
+                if (!string.IsNullOrEmpty(friendly))
+                {
+                    map.TryAdd(gdiName, friendly);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Logger.LogError($"BuildFriendlyNameMap failed: {ex.Message}");
+        }
+
+        return map;
+    }
+
+    private static string FormatDisplayName(string deviceName, bool isPrimary, Dictionary<string, string> friendlyNames)
+    {
+        string name;
+
+        if (friendlyNames.TryGetValue(deviceName, out var friendly))
+        {
+            name = friendly;
+        }
+        else if (deviceName.StartsWith(@"\\.\DISPLAY", StringComparison.OrdinalIgnoreCase))
+        {
+            // Fallback: convert "\\.\DISPLAY1" → "Display 1"
+            var number = deviceName.Substring(@"\\.\DISPLAY".Length);
             name = $"Display {number}";
+        }
+        else
+        {
+            name = deviceName;
         }
 
         if (isPrimary)
@@ -156,45 +259,5 @@ public sealed class MonitorService : IMonitorService
         }
 
         return name;
-    }
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool EnumDisplayMonitors(
-        IntPtr hdc,
-        IntPtr lprcClip,
-        MonitorEnumProc lpfnEnum,
-        IntPtr dwData);
-
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref NativeMonitorInfoEx lpmi);
-
-    [DllImport("shcore.dll")]
-    private static extern int GetDpiForMonitor(
-        IntPtr hMonitor,
-        int dpiType,
-        out uint dpiX,
-        out uint dpiY);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativeRect
-    {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-    private struct NativeMonitorInfoEx
-    {
-        public int Size;
-        public NativeRect Monitor;
-        public NativeRect Work;
-        public uint Flags;
-
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string DeviceName;
     }
 }

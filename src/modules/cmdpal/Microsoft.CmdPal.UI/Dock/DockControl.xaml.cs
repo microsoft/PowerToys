@@ -29,6 +29,12 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     internal DockViewModel ViewModel => _viewModel;
 
+    /// <summary>
+    /// The HWND of the parent DockWindow that owns this control.
+    /// Used to target palette-show messages to the correct DockWindow in multi-monitor setups.
+    /// </summary>
+    internal IntPtr OwnerHwnd { get; set; }
+
     public static readonly DependencyProperty ItemsOrientationProperty =
         DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal));
 
@@ -377,7 +383,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
             if (isPage)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, OwnerHwnd));
             }
         }
         catch (COMException e)

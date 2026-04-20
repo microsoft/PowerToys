@@ -135,6 +135,7 @@ public sealed partial class DockWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
         _hwnd = GetWindowHandle(this);
+        _dock.OwnerHwnd = (nint)_hwnd;
 
         // Subclass the window to intercept messages
         //
@@ -170,6 +171,11 @@ public sealed partial class DockWindow : WindowEx,
 
     private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         _settings = args.DockSettings;
         RefreshSideOverride();
         DispatcherQueue.TryEnqueue(UpdateSettingsOnUiThread);
@@ -196,6 +202,11 @@ public sealed partial class DockWindow : WindowEx,
 
     private void UpdateSettingsOnUiThread()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         this.viewModel.UpdateSettings(_settings);
         UpdateBackdrop();
 
@@ -711,6 +722,11 @@ public sealed partial class DockWindow : WindowEx,
 
     void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)
     {
+        if (_isDisposed || message.OwnerHwnd != (nint)_hwnd)
+        {
+            return;
+        }
+
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RequestShowPaletteOnUiThread(message.PosDips));
     }
 
@@ -919,7 +935,7 @@ internal static class ShowDesktop
 
 internal sealed record BringToTopMessage(bool BringToFront);
 
-internal sealed record RequestShowPaletteAtMessage(Point PosDips);
+internal sealed record RequestShowPaletteAtMessage(Point PosDips, IntPtr OwnerHwnd);
 
 internal sealed record ShowPaletteAtMessage(Point PosPixels, AnchorPoint Anchor);
 
