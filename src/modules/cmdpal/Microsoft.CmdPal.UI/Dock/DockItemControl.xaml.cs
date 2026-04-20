@@ -291,7 +291,6 @@ public sealed partial class DockItemControl : Control
     {
         if (sender is DockControl dock)
         {
-            // UpdateInnerMarginForDockSide(dock.DockSide);
             UpdateAlignment();
         }
     }
