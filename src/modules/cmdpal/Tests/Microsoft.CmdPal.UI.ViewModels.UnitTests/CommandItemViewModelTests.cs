@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -75,5 +76,65 @@ public class CommandItemViewModelTests
         Assert.IsTrue(viewModel.HasMoreCommands);
         Assert.IsNotNull(viewModel.SecondaryCommand);
         Assert.AreEqual("Secondary", viewModel.SecondaryCommand.Name);
+    }
+
+    [TestMethod]
+    public void LatePrimaryCommandCreation_AddsPrimaryToAllCommands()
+    {
+        // Reproduces issue where SlowInitializeProperties runs before a real primary command exists.
+        // The late-arriving command should still create the synthetic primary context item and prepend it to AllCommands.
+        var pageContext = new TestPageContext();
+        var item = new CommandItem()
+        {
+            Command = null,
+            MoreCommands =
+            [
+                new CommandContextItem(new NoOpCommand { Name = "Secondary" }),
+            ],
+        };
+
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.SlowInitializeProperties();
+
+        Assert.AreEqual(1, viewModel.AllCommands.Count);
+        Assert.AreEqual("Secondary", ((CommandContextItemViewModel)viewModel.AllCommands[0]).Name);
+
+        item.Command = new NoOpCommand { Name = "Primary" };
+
+        Assert.AreEqual(2, viewModel.AllCommands.Count);
+        Assert.AreEqual("Primary", ((CommandContextItemViewModel)viewModel.AllCommands[0]).Name);
+        Assert.AreEqual("Secondary", ((CommandContextItemViewModel)viewModel.AllCommands[1]).Name);
+        Assert.IsTrue(viewModel.HasMoreCommands);
+        Assert.AreEqual("Secondary", viewModel.SecondaryCommand?.Name);
+    }
+
+    [TestMethod]
+    public void SyntheticPrimaryContextItem_UpdatesSubtitleAndCachedSubtitleTarget()
+    {
+        // The synthetic primary context item copies subtitle state from the parent CommandItemViewModel.
+        // When subtitle changes later, both the exposed subtitle and its cached fuzzy-search target must refresh.
+        var pageContext = new TestPageContext();
+        var item = new CommandItem(new NoOpCommand { Name = "Primary" })
+        {
+            Subtitle = "before",
+            MoreCommands =
+            [
+                new CommandContextItem(new NoOpCommand { Name = "Secondary" }),
+            ],
+        };
+
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.SlowInitializeProperties();
+
+        var primaryContextItem = (CommandContextItemViewModel)viewModel.AllCommands[0];
+        var matcher = new PrecomputedFuzzyMatcher(new PrecomputedFuzzyMatcherOptions());
+
+        Assert.AreEqual("before", primaryContextItem.Subtitle);
+        Assert.AreEqual("before", primaryContextItem.GetSubtitleTarget(matcher).Original);
+
+        item.Subtitle = "after unique";
+
+        Assert.AreEqual("after unique", primaryContextItem.Subtitle);
+        Assert.AreEqual("after unique", primaryContextItem.GetSubtitleTarget(matcher).Original);
     }
 }

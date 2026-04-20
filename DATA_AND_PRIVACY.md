@@ -60,6 +60,10 @@ _If you want to find diagnostic data events in the source code, these two links 
     <td>Triggered when the PowerToys repair operation fails to complete successfully due to an error.</td>
   </tr>
   <tr>
+    <td>Microsoft.PowerToys.PowerToys_ModuleLaunchedFromSettings</td>
+    <td>Logs when a module editor is launched from the Settings UI or Quick Access panel, including which module was launched.</td>
+  </tr>
+  <tr>
     <td>Microsoft.PowerToys.Runner_Launch</td>
     <td>Indicates when the PowerToys Runner is launched.</td>
   </tr>
@@ -391,6 +395,10 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.CmdPal_SessionDuration</td>
     <td>Logs session metrics from launch to dismissal including duration, commands executed, pages visited, search queries, navigation depth, and errors.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.CmdPal_DockConfiguration</td>
+    <td>Tracks dock configuration at startup including whether the dock is enabled, dock side (top, bottom, left, or right), and the list of extension commands pinned to the start, center, and end sections of the dock.</td>
   </tr>
 </table>
 
@@ -855,6 +863,10 @@ _If you want to find diagnostic data events in the source code, these two links 
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_KeyToShortcutRemapInvoked</td>
     <td>Logs each instance of a key-to-shortcut remap being used.</td>
+  </tr>
+  <tr>
+    <td>Microsoft.PowerToys.KeyboardManager_LaunchEditor</td>
+    <td>Logs when the Keyboard Manager editor is launched, including whether it was opened via hotkey or through settings.</td>
   </tr>
   <tr>
     <td>Microsoft.PowerToys.KeyboardManager_OSLevelShortcutRemapCount</td>

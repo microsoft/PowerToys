@@ -20,10 +20,14 @@ public:
     void MinSize( int minSize ) { m_minSize = minSize; }
     int MinSize() const { return m_minSize; }
     RECT SelectedRect() const { return m_selectedRect; }
+    bool IsActive() const { return m_window != nullptr; }
 
     bool Start( HWND ownerWindow = nullptr, bool fullMonitor = false );
     void Stop();
     void UpdateOwner( HWND window );
+    void Hide() { if( m_window ) ShowWindow( m_window.get(), SW_HIDE ); }
+    void Show() { if( m_window ) ShowWindow( m_window.get(), SW_SHOWNA ); }
+    void SetExcludeFromCapture( bool exclude ) { if( m_window ) SetWindowDisplayAffinity( m_window.get(), exclude ? WDA_EXCLUDEFROMCAPTURE : WDA_NONE ); }
 
 private:
     BYTE m_alpha = 176;
@@ -36,6 +40,7 @@ private:
     RECT m_oldClipRect{};
     bool m_selected{ false };
     bool m_setClip{ false };
+    bool m_stopping{ false };
     POINT m_startPoint{};
     wil::unique_hwnd m_window;
 

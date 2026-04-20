@@ -707,7 +707,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             if (message.Pin)
             {
-                wrapper?.PinDockBand(message.CommandId, _serviceProvider, message.WithReload);
+                wrapper?.PinDockBand(message.CommandId, _serviceProvider, message.WithReload, message.Side, message.ShowTitles, message.ShowSubtitles);
             }
             else
             {

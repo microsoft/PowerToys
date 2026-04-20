@@ -27,7 +27,6 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
-using WindowExtensions = Microsoft.CmdPal.UI.Helpers.WindowExtensions;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -53,13 +52,18 @@ public sealed partial class DockWindow : WindowEx,
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
     private uint _callbackMessageId;
+    private bool _isWindowTopmost;
+    private bool _isFullScreenAppOpen;
 
     private DockSettings _settings;
     private DockViewModel viewModel;
     private DockControl _dock;
     private DesktopAcrylicController? _acrylicController;
     private SystemBackdropConfiguration? _configurationSource;
+    private bool _isUpdatingBackdrop;
+    private BackdropParameters? _lastAppliedAcrylicBackdrop;
     private DockSize _lastSize;
+    private bool _isDisposed;
 
     // Store the original WndProc
     private WNDPROC? _originalWndProc;
@@ -78,6 +82,7 @@ public sealed partial class DockWindow : WindowEx,
         viewModel = serviceProvider.GetService<DockViewModel>()!;
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
         _themeService.ThemeChanged += ThemeService_ThemeChanged;
+        InitializeBackdropSupport();
         _windowViewModel = new DockWindowViewModel(_themeService);
         _dock = new DockControl(viewModel);
 
@@ -127,6 +132,8 @@ public sealed partial class DockWindow : WindowEx,
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
 
         ShowDesktop.AddHook(this);
+        var userNotificationFlags = WindowHelper.GetUserNotificationFlags();
+        _isFullScreenAppOpen = userNotificationFlags.IsFullscreenState || userNotificationFlags.IsBusy;
         UpdateSettingsOnUiThread();
     }
 
@@ -145,6 +152,8 @@ public sealed partial class DockWindow : WindowEx,
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
         }
+
+        UpdateTopmostState();
     }
 
     private HWND GetWindowHandle(Window window)
@@ -156,16 +165,10 @@ public sealed partial class DockWindow : WindowEx,
     private void UpdateSettingsOnUiThread()
     {
         this.viewModel.UpdateSettings(_settings);
-
-        SystemBackdrop = DockSettingsToViews.GetSystemBackdrop(_settings.Backdrop);
-
-        // If the backdrop is acrylic, things are more complicated
-        if (_settings.Backdrop == DockBackdrop.Acrylic)
-        {
-            SetAcrylic();
-        }
+        UpdateBackdrop();
 
         _dock.UpdateSettings(_settings);
+
         var side = DockSettingsToViews.GetAppBarEdge(_settings.Side);
 
         if (_appBarData.hWnd != IntPtr.Zero)
@@ -174,6 +177,7 @@ public sealed partial class DockWindow : WindowEx,
             var sameSize = _lastSize == _settings.DockSize;
             if (sameEdge && sameSize)
             {
+                UpdateTopmostState();
                 return;
             }
 
@@ -181,33 +185,101 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         CreateAppBar(_hwnd);
+        UpdateTopmostState();
     }
 
-    // We want to use DesktopAcrylicKind.Thin and custom colors as this is the default material
-    // other Shell surfaces are using, this cannot be set in XAML however.
-    private void SetAcrylic()
+    private void InitializeBackdropSupport()
     {
         if (DesktopAcrylicController.IsSupported())
         {
-            // Hooking up the policy object.
             _configurationSource = new SystemBackdropConfiguration
             {
-                // Initial configuration state.
                 IsInputActive = true,
             };
-            UpdateAcrylic();
         }
     }
 
-    private void UpdateAcrylic()
+    private void UpdateBackdrop()
     {
-        if (_acrylicController != null)
+        // Prevent re-entrance when backdrop changes trigger theme refresh work.
+        if (_isUpdatingBackdrop)
+        {
+            return;
+        }
+
+        _isUpdatingBackdrop = true;
+
+        try
+        {
+            switch (_settings.Backdrop)
+            {
+                case DockBackdrop.Transparent:
+                    if (SystemBackdrop is not TransparentTintBackdrop)
+                    {
+                        CleanupBackdropControllers();
+                        SetupTransparentBackdrop();
+                    }
+
+                    break;
+
+                case DockBackdrop.Acrylic:
+                default:
+                    SetupDesktopAcrylic(_themeService.CurrentDockTheme.BackdropParameters);
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update dock backdrop", ex);
+        }
+        finally
+        {
+            _isUpdatingBackdrop = false;
+        }
+    }
+
+    private void SetupTransparentBackdrop()
+    {
+        if (SystemBackdrop is not TransparentTintBackdrop)
+        {
+            SystemBackdrop = new TransparentTintBackdrop();
+        }
+
+        _lastAppliedAcrylicBackdrop = null;
+    }
+
+    private void CleanupBackdropControllers()
+    {
+        if (_acrylicController is not null)
         {
             _acrylicController.RemoveAllSystemBackdropTargets();
             _acrylicController.Dispose();
+            _acrylicController = null;
         }
 
-        var backdrop = _themeService.CurrentDockTheme.BackdropParameters;
+        _lastAppliedAcrylicBackdrop = null;
+    }
+
+    private void SetupDesktopAcrylic(BackdropParameters backdrop)
+    {
+        var needsAcrylicUpdate = _acrylicController is null || _lastAppliedAcrylicBackdrop != backdrop;
+        if (!needsAcrylicUpdate)
+        {
+            return;
+        }
+
+        CleanupBackdropControllers();
+
+        // Fall back to the transparent backdrop if acrylic is not supported.
+        if (_configurationSource is null || !DesktopAcrylicController.IsSupported())
+        {
+            SetupTransparentBackdrop();
+            return;
+        }
+
+        // DesktopAcrylicController and SystemBackdrop can't be active simultaneously.
+        SystemBackdrop = null;
+
         _acrylicController = new DesktopAcrylicController
         {
             Kind = DesktopAcrylicKind.Thin,
@@ -221,29 +293,20 @@ public sealed partial class DockWindow : WindowEx,
         // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
         _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
         _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
+        _lastAppliedAcrylicBackdrop = backdrop;
     }
 
     private void DisposeAcrylic()
     {
-        if (_acrylicController is not null)
-        {
-            _acrylicController.Dispose();
-            _acrylicController = null!;
-            _configurationSource = null!;
-        }
+        CleanupBackdropControllers();
+        _configurationSource = null;
     }
 
     private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            // We only need to handle acrylic here.
-            // Transparent background is handled directly in XAML by binding to
-            // the DockWindowViewModel's ColorizationColor properties.
-            if (_settings.Backdrop == DockBackdrop.Acrylic)
-            {
-                UpdateAcrylic();
-            }
+            UpdateBackdrop();
 
             // ActualTheme / RequestedTheme sync,
             // as pilfered from WindowThemeSynchronizer
@@ -278,6 +341,41 @@ public sealed partial class DockWindow : WindowEx,
     {
         PInvoke.SHAppBarMessage(PInvoke.ABM_REMOVE, ref _appBarData);
         _appBarData = default;
+    }
+
+    private void UpdateTopmostState(bool bringToFront = false)
+    {
+        var shouldStayOnTop = _settings.AlwaysOnTop && !_isFullScreenAppOpen;
+        const SET_WINDOW_POS_FLAGS flags = SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE;
+
+        if (shouldStayOnTop)
+        {
+            if (_isWindowTopmost && !bringToFront)
+            {
+                return;
+            }
+
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, flags);
+            _isWindowTopmost = true;
+            return;
+        }
+
+        if (bringToFront)
+        {
+            // Win32 trick: briefly set HWND_TOPMOST then immediately clear it
+            // with HWND_NOTOPMOST. This brings the window to the foreground
+            // without permanently pinning it as topmost.
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, flags);
+        }
+
+        if (!_isWindowTopmost && !bringToFront)
+        {
+            return;
+        }
+
+        var zOrder = _isFullScreenAppOpen ? HWND.HWND_BOTTOM : HWND.HWND_NOTOPMOST;
+        PInvoke.SetWindowPos(_hwnd, zOrder, 0, 0, 0, 0, flags);
+        _isWindowTopmost = false;
     }
 
     private void UpdateWindowPosition()
@@ -505,6 +603,11 @@ public sealed partial class DockWindow : WindowEx,
             {
                 UpdateWindowPosition();
             }
+            else if (wParam.Value == PInvoke.ABN_FULLSCREENAPP)
+            {
+                _isFullScreenAppOpen = lParam != 0;
+                UpdateTopmostState();
+            }
         }
         else if (msg == WM_TASKBAR_RESTART)
         {
@@ -523,9 +626,7 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            var onTop = message.OnTop ? HWND.HWND_TOPMOST : HWND.HWND_NOTOPMOST;
-            PInvoke.SetWindowPos(_hwnd, onTop, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
-            PInvoke.SetWindowPos(_hwnd, HWND.HWND_NOTOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+            UpdateTopmostState(message.BringToFront);
         });
     }
 
@@ -617,18 +718,38 @@ public sealed partial class DockWindow : WindowEx,
 
     public void Dispose()
     {
-        DisposeAcrylic();
-        _windowViewModel.Dispose();
+        Cleanup();
+        GC.SuppressFinalize(this);
     }
 
     private void DockWindow_Closed(object sender, WindowEventArgs args)
     {
-        _settingsService.SettingsChanged -= SettingsChangedHandler;
+        Dispose();
+    }
+
+    private void Cleanup()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
+
+        _settingsService?.SettingsChanged -= SettingsChangedHandler;
+
+        Activated -= DockWindow_Activated;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
+        WeakReferenceMessenger.Default.UnregisterAll(this);
+
         DisposeAcrylic();
+        _windowViewModel.Dispose();
 
         // Remove our app bar registration
-        DestroyAppBar(_hwnd);
+        if (_appBarData.hWnd != IntPtr.Zero)
+        {
+            DestroyAppBar(_hwnd);
+        }
 
         // Unhook the window procedure
         ShowDesktop.RemoveHook();
@@ -697,18 +818,20 @@ internal static class ShowDesktop
         if (eventType == PInvoke.EVENT_SYSTEM_FOREGROUND)
         {
             var @class = GetWindowClass(hwnd);
-            if (string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal))
+            var bringToFront = string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal);
+            if (bringToFront)
             {
                 Logger.LogDebug("ShowDesktop invoked. Bring us back");
-                WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(true));
             }
+
+            WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(bringToFront));
         }
     }
 
     public static bool IsHooked { get; private set; }
 }
 
-internal sealed record BringToTopMessage(bool OnTop);
+internal sealed record BringToTopMessage(bool BringToFront);
 
 internal sealed record RequestShowPaletteAtMessage(Point PosDips);
 

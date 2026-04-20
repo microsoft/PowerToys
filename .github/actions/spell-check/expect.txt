@@ -35,6 +35,7 @@ Allman
 ALLOWUNDO
 ALLVIEW
 ALPHATYPE
+altkey
 AModifier
 amr
 ANDSCANS
@@ -52,6 +53,7 @@ Apm
 APPBARDATA
 APPEXECLINK
 APPLICATIONFRAMEHOST
+apphost
 appmanifest
 APPMODEL
 APPNAME
@@ -455,6 +457,9 @@ fdx
 FErase
 fesf
 FFFF
+fffffffzzz
+FInc
+FFh
 Figma
 FILEEXPLORER
 FILEFLAGS
@@ -576,6 +581,7 @@ HIBYTE
 hicon
 HIDEWINDOW
 Hif
+highcontrast
 highlightbackground
 highlightthickness
 HIMAGELIST
@@ -849,6 +855,8 @@ MDL
 mdtext
 mdtxt
 mdwn
+measuretool
+mccs
 meme
 memicmp
 MENUITEMINFO
@@ -892,6 +900,7 @@ MONITORINFOEX
 MONITORINFOEXW
 monitorinfof
 MOUSEACTIVATE
+mousecrosshairs
 MOUSEDATA
 MOUSEEVENTF
 MOUSEHWHEEL
@@ -923,6 +932,7 @@ mstsc
 msvcp
 MT
 MTND
+multimonitor
 MULTIPLEUSE
 multizone
 muxc
@@ -1016,6 +1026,9 @@ NORMALDISPLAY
 NORMALUSER
 NOSEARCH
 NOSENDCHANGING
+NOSIZE
+notdefault
+Nosize
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
@@ -1106,6 +1119,7 @@ PCIDLIST
 PCTSTR
 PCWSTR
 PDEVMODE
+PDFs
 pdisp
 PDLL
 pdo
@@ -1154,6 +1168,10 @@ Pokedex
 Popups
 POPUPWINDOW
 POSITIONITEM
+powerocr
+POWERBROADCAST
+powerdisplay
+POWERDISPLAYMODULEINTERFACE
 POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
@@ -1329,6 +1347,7 @@ rundll
 rungameid
 RUNLEVEL
 runtimeclass
+runtimeconfig
 runtimepack
 ruuid
 rvm
@@ -1516,6 +1535,9 @@ STYLECHANGING
 subkeys
 sublang
 SUBMODULEUPDATE
+subresource
+suntimes
+swp
 sug
 Superbar
 sut
@@ -1583,6 +1605,7 @@ TILEDWINDOW
 TILLSON
 timedate
 timediff
+timespan
 timeutil
 TITLEBARINFO
 Titlecase
@@ -1733,6 +1756,7 @@ wdm
 wdp
 wdupenv
 webbrowsers
+webdev
 webpage
 websites
 wekyb

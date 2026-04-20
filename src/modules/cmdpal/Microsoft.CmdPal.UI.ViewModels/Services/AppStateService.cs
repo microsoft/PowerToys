@@ -22,20 +22,35 @@ public sealed class AppStateService : IAppStateService
         _persistence = persistence;
         _appInfoService = appInfoService;
         _filePath = StateJsonPath();
-        State = _persistence.Load(_filePath, JsonSerializationContext.Default.AppStateModel);
+        _state = _persistence.Load(_filePath, JsonSerializationContext.Default.AppStateModel);
     }
 
+    private AppStateModel _state;
+
     /// <inheritdoc/>
-    public AppStateModel State { get; private set; }
+    public AppStateModel State => Volatile.Read(ref _state);
 
     /// <inheritdoc/>
     public event TypedEventHandler<IAppStateService, AppStateModel>? StateChanged;
 
     /// <inheritdoc/>
-    public void Save()
+    public void Save() => UpdateState(s => s);
+
+    /// <inheritdoc/>
+    public void UpdateState(Func<AppStateModel, AppStateModel> transform)
     {
-        _persistence.Save(State, _filePath, JsonSerializationContext.Default.AppStateModel);
-        StateChanged?.Invoke(this, State);
+        AppStateModel snapshot;
+        AppStateModel updated;
+        do
+        {
+            snapshot = Volatile.Read(ref _state);
+            updated = transform(snapshot);
+        }
+        while (Interlocked.CompareExchange(ref _state, updated, snapshot) != snapshot);
+
+        var newState = Volatile.Read(ref _state);
+        _persistence.Save(newState, _filePath, JsonSerializationContext.Default.AppStateModel);
+        StateChanged?.Invoke(this, newState);
     }
 
     private string StateJsonPath()

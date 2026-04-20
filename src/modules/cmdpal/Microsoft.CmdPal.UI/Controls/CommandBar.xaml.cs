@@ -52,6 +52,8 @@ public sealed partial class CommandBar : UserControl,
                 return;
             }
 
+            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+
             _ = DispatcherQueue.TryEnqueue(
                 () =>
                 {
@@ -67,6 +69,13 @@ public sealed partial class CommandBar : UserControl,
         else
         {
             // This is invoked from a specific element
+            if (!(ContextControl.ViewModel.SelectedItem?.CanOpenContextMenu ?? false))
+            {
+                return;
+            }
+
+            ContextControl.PrepareForOpen(message.ContextMenuFilterLocation);
+
             _ = DispatcherQueue.TryEnqueue(
             () =>
             {

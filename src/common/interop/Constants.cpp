@@ -300,10 +300,6 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT;
     }
-    hstring Constants::ToggleKeyboardManagerActiveEvent()
-    {
-        return CommonSharedConstants::TOGGLE_KEYBOARD_MANAGER_ACTIVE_EVENT;
-    }
     hstring Constants::KeyboardManagerEngineInstanceMutex()
     {
         return CommonSharedConstants::KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX;

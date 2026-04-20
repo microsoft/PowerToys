@@ -18,17 +18,30 @@ using Windows.System;
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContextMenu : UserControl,
-    IRecipient<OpenContextMenuMessage>,
     IRecipient<UpdateCommandBarMessage>,
     IRecipient<TryCommandKeybindingMessage>
 {
     public static readonly DependencyProperty ShowFilterBoxProperty =
         DependencyProperty.Register(nameof(ShowFilterBox), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true));
 
+    public static readonly DependencyProperty SubscribeToCommandBarProperty =
+        DependencyProperty.Register(nameof(SubscribeToCommandBar), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true, OnSubscribeToCommandBarChanged));
+
     public bool ShowFilterBox
     {
         get => (bool)GetValue(ShowFilterBoxProperty);
         set => SetValue(ShowFilterBoxProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this control listens to the command bar's
+    /// selection and keybinding messages. Set to false for standalone usage (e.g. dock)
+    /// where the caller manages selection and opening directly.
+    /// </summary>
+    public bool SubscribeToCommandBar
+    {
+        get => (bool)GetValue(SubscribeToCommandBarProperty);
+        set => SetValue(SubscribeToCommandBarProperty, value);
     }
 
     public ContextMenuViewModel ViewModel { get; }
@@ -40,15 +53,57 @@ public sealed partial class ContextMenu : UserControl,
         ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-        // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
-        WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
+        if (SubscribeToCommandBar)
+        {
+            HookCommandBar();
+        }
     }
 
-    public void Receive(OpenContextMenuMessage message)
+    private static void OnSubscribeToCommandBarChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        ViewModel.FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
+        if (d is ContextMenu control)
+        {
+            if (e.NewValue is true)
+            {
+                control.HookCommandBar();
+            }
+            else
+            {
+                control.UnhookCommandBar();
+            }
+        }
+    }
+
+    private void HookCommandBar()
+    {
+        var messenger = WeakReferenceMessenger.Default;
+
+        if (!messenger.IsRegistered<UpdateCommandBarMessage>(this))
+        {
+            messenger.Register<UpdateCommandBarMessage>(this);
+        }
+
+        if (!messenger.IsRegistered<TryCommandKeybindingMessage>(this))
+        {
+            messenger.Register<TryCommandKeybindingMessage>(this);
+        }
+
+        ViewModel.HookCommandBar();
+    }
+
+    private void UnhookCommandBar()
+    {
+        var messenger = WeakReferenceMessenger.Default;
+
+        messenger.Unregister<UpdateCommandBarMessage>(this);
+        messenger.Unregister<TryCommandKeybindingMessage>(this);
+
+        ViewModel.UnhookCommandBar();
+    }
+
+    internal void PrepareForOpen(ContextMenuFilterLocation filterLocation)
+    {
+        ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
         ViewModel.ResetContextMenu();
 
         UpdateUiForStackChange();

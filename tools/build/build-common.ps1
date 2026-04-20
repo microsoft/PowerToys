@@ -7,7 +7,7 @@ This file provides reusable helper functions used by the build scripts:
 - Get-BuildPaths: returns ScriptDir, OriginalCwd, RepoRoot (repo root detection)
 - RunMSBuild: wrapper around msbuild.exe (accepts optional Platform/Configuration)
 - RestoreThenBuild: performs restore and optionally builds the solution/project
-- BuildProjectsInDirectory: discovers and builds local .sln/.csproj/.vcxproj files
+- BuildProjectsInDirectory: discovers and builds local .slnx/.csproj/.vcxproj files
 - Ensure-VsDevEnvironment: initializes the Visual Studio developer environment when possible.
   It prefers the DevShell PowerShell module (Microsoft.VisualStudio.DevShell.dll / Enter-VsDevShell),
   falls back to running VsDevCmd.bat and importing its environment into the current PowerShell session,
@@ -113,7 +113,7 @@ function BuildProjectsInDirectory {
 
     $files = @()
     try {
-        $files = Get-ChildItem -Path (Join-Path $DirectoryPath '*') -Include *.sln,*.slnx,*.csproj,*.vcxproj -File -ErrorAction SilentlyContinue
+        $files = Get-ChildItem -Path (Join-Path $DirectoryPath '*') -Include *.sln,*.slnx,*.slnf,*.csproj,*.vcxproj -File -ErrorAction SilentlyContinue
     } catch {
         $files = @()
     }
@@ -130,7 +130,7 @@ function BuildProjectsInDirectory {
 
     foreach ($f in $files) {
         Write-Host ("[LOCAL BUILD] Building {0}" -f $f.FullName)
-        if ($f.Extension -eq '.sln') {
+        if ($f.Extension -eq '.sln' -or $f.Extension -eq '.slnx') {
             RestoreThenBuild $f.FullName $ExtraArgs $Platform $Configuration $RestoreOnly
         } else {
             $buildArgs = '/m'

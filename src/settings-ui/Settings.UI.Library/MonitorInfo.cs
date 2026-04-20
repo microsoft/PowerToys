@@ -8,14 +8,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
-using PowerDisplay.Common.Drivers;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Utils;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class MonitorInfo : Observable
     {
+        private const byte VcpCodeSelectColorPreset = 0x14;
+
         private string _name = string.Empty;
         private string _id = string.Empty;
         private string _communicationMethod = string.Empty;
@@ -532,7 +531,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     System.Globalization.NumberStyles.HexNumber,
                     System.Globalization.CultureInfo.InvariantCulture,
                     out int code) &&
-                code == NativeConstants.VcpCodeSelectColorPreset);
+                code == VcpCodeSelectColorPreset);
 
             // No VCP 0x14 or no values
             if (colorTempVcp == null || colorTempVcp.ValueList == null || colorTempVcp.ValueList.Count == 0)
@@ -556,9 +555,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 })
                 .Where(x => x.VcpValue > 0);
 
-            // Use shared helper to compute presets, then convert to nested type for XAML compatibility
-            var basePresets = ColorTemperatureHelper.ComputeColorPresets(colorTempValues);
-            var presetList = basePresets.Select(p => new ColorPresetItem(p.VcpValue, p.DisplayName));
+            // Compute presets inline (avoiding dependency on PowerDisplay.Lib's ColorTemperatureHelper)
+            var presetList = colorTempValues
+                .Select(item => new ColorPresetItem(item.VcpValue, !string.IsNullOrEmpty(item.Name) ? item.Name : "Manufacturer Defined"))
+                .OrderBy(p => p.VcpValue);
             return new ObservableCollection<ColorPresetItem>(presetList);
         }
 
@@ -598,8 +598,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     // Current value is not in the preset list - add it at the beginning
                     var displayList = new List<ColorPresetItem>();
 
-                    // Add current value with "Custom" indicator using shared helper
-                    var displayName = ColorTemperatureHelper.FormatCustomColorTemperatureDisplayName(_colorTemperatureVcp);
+                    // Add current value with "Custom" indicator
+                    var displayName = $"Custom (0x{_colorTemperatureVcp:X2})";
                     displayList.Add(new ColorPresetItem(_colorTemperatureVcp, displayName));
 
                     // Add all supported presets

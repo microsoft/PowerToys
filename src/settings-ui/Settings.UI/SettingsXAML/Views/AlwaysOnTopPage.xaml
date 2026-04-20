@@ -34,13 +34,13 @@
                         IsExpanded="True">
                         <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.Hotkey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <StackPanel Orientation="Vertical">
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.IncreaseOpacityShortcut, Mode=OneWay}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DecreaseOpacityShortcut, Mode=OneWay}" />
-                                    </StackPanel>
-                                </tkcontrols:SettingsCard.Description>
+                            <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                            <tkcontrols:SettingsCard Visibility="Collapsed" />
+                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_IncreaseOpacityShortcut">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.IncreaseOpacityHotkey, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_DecreaseOpacityShortcut">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.DecreaseOpacityHotkey, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="AlwaysOnTop_GameMode" IsChecked="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />

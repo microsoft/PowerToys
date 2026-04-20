@@ -6,12 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.CmdPal.Common;
 
 namespace CoreWidgetProvider.Helpers;
 
-internal sealed partial class NetworkStats : IDisposable
+internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisposable
 {
     private readonly Dictionary<string, List<PerformanceCounter>> _networkCounters = new();
+    private bool _networkCounterReadFailureLogged;
 
     private Dictionary<string, Data> NetworkUsages { get; set; } = new();
 
@@ -42,17 +44,44 @@ internal sealed partial class NetworkStats : IDisposable
 
     private void InitNetworkPerfCounters()
     {
-        var perfCounterCategory = new PerformanceCounterCategory("Network Interface");
-        var instanceNames = perfCounterCategory.GetInstanceNames();
-        foreach (var instanceName in instanceNames)
+        try
         {
-            var instanceCounters = new List<PerformanceCounter>();
-            instanceCounters.Add(new PerformanceCounter("Network Interface", "Bytes Sent/sec", instanceName));
-            instanceCounters.Add(new PerformanceCounter("Network Interface", "Bytes Received/sec", instanceName));
-            instanceCounters.Add(new PerformanceCounter("Network Interface", "Current Bandwidth", instanceName));
-            _networkCounters.Add(instanceName, instanceCounters);
-            NetChartValues.Add(instanceName, new List<float>());
-            NetworkUsages.Add(instanceName, new Data());
+            var perfCounterCategory = CreatePerformanceCounterCategory("Network Interface");
+            if (perfCounterCategory is null)
+            {
+                return;
+            }
+
+            var instanceNames = perfCounterCategory.GetInstanceNames();
+            foreach (var instanceName in instanceNames)
+            {
+                try
+                {
+                    var bytesSent = CreatePerformanceCounter("Network Interface", "Bytes Sent/sec", instanceName, logFailure: false);
+                    var bytesReceived = CreatePerformanceCounter("Network Interface", "Bytes Received/sec", instanceName, logFailure: false);
+                    var currentBandwidth = CreatePerformanceCounter("Network Interface", "Current Bandwidth", instanceName, logFailure: false);
+                    if (bytesSent is null || bytesReceived is null || currentBandwidth is null)
+                    {
+                        bytesSent?.Dispose();
+                        bytesReceived?.Dispose();
+                        currentBandwidth?.Dispose();
+                        continue;
+                    }
+
+                    var instanceCounters = new List<PerformanceCounter> { bytesSent, bytesReceived, currentBandwidth };
+                    _networkCounters.Add(instanceName, instanceCounters);
+                    NetChartValues.Add(instanceName, new List<float>());
+                    NetworkUsages.Add(instanceName, new Data());
+                }
+                catch (Exception)
+                {
+                    // Skip interfaces whose counters cannot be initialized.
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to initialize network performance counters.", ex);
         }
     }
 
@@ -88,9 +117,9 @@ internal sealed partial class NetworkStats : IDisposable
                     maxUsage = usage;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Log.Error(ex, "Error getting network data.");
+                LogFailureOnce(ref _networkCounterReadFailureLogged, "Failed while reading network performance counters.", ex);
             }
         }
     }

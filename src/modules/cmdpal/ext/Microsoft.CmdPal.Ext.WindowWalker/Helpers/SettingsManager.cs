@@ -45,7 +45,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         false);
 
     private readonly ToggleSetting _openAfterKillAndClose = new(
-        Namespaced(nameof(OpenAfterKillAndClose)),
+        Namespaced(nameof(KeepOpenAfterKillAndClose)),
         Resources.windowwalker_SettingOpenAfterKillAndClose,
         Resources.windowwalker_SettingOpenAfterKillAndClose_Description,
         false);
@@ -84,7 +84,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
 
     public bool KillProcessTree => _killProcessTree.Value;
 
-    public bool OpenAfterKillAndClose => _openAfterKillAndClose.Value;
+    public bool KeepOpenAfterKillAndClose => _openAfterKillAndClose.Value;
 
     public bool HideKillProcessOnElevatedProcesses => _hideKillProcessOnElevatedProcesses.Value;
 

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace CoreWidgetProvider.Helpers;
 
-internal sealed partial class GPUStats : IDisposable
+internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposable
 {
     // Performance counter category & counter names
     private const string GpuEngineCategoryName = "GPU Engine";
@@ -32,7 +32,7 @@ internal sealed partial class GPUStats : IDisposable
     private const string TemperatureUnavailable = "--";
 
     // Batch read via category - single kernel transition per tick
-    private readonly PerformanceCounterCategory _gpuEngineCategory = new(GpuEngineCategoryName);
+    private readonly PerformanceCounterCategory? _gpuEngineCategory;
 
     // Discovered physical GPU IDs
     private readonly HashSet<int> _knownPhysIds = [];
@@ -41,6 +41,8 @@ internal sealed partial class GPUStats : IDisposable
 
     // Previous raw samples for computing cooked (delta-based) values
     private Dictionary<string, CounterSample> _previousSamples = [];
+    private bool _gpuEnumerationFailureLogged;
+    private bool _gpuReadFailureLogged;
 
     public sealed class Data
     {
@@ -57,46 +59,60 @@ internal sealed partial class GPUStats : IDisposable
 
     public GPUStats()
     {
+        _gpuEngineCategory = CreatePerformanceCounterCategory(GpuEngineCategoryName);
+
         GetGPUPerfCounters();
         LoadGPUsFromCounters();
     }
 
     public void GetGPUPerfCounters()
     {
-        // There are really 4 different things we should be tracking the usage
-        // of. Similar to how the instance name ends with `3D`, the following
-        // suffixes are important.
-        //
-        // * `3D`
-        // * `VideoEncode`
-        // * `VideoDecode`
-        // * `VideoProcessing`
-        //
-        // We could totally put each of those sets of counters into their own
-        // set. That's what we should do, so that we can report the sum of those
-        // numbers as the total utilization, and then have them broken out in
-        // the card template and in the details metadata.
-        _knownPhysIds.Clear();
-
-        var instanceNames = _gpuEngineCategory.GetInstanceNames();
-
-        foreach (var instanceName in instanceNames)
+        if (_gpuEngineCategory is null)
         {
-            if (!instanceName.EndsWith(EngineType3D, StringComparison.InvariantCulture))
+            return;
+        }
+
+        try
+        {
+            // There are really 4 different things we should be tracking the usage
+            // of. Similar to how the instance name ends with `3D`, the following
+            // suffixes are important.
+            //
+            // * `3D`
+            // * `VideoEncode`
+            // * `VideoDecode`
+            // * `VideoProcessing`
+            //
+            // We could totally put each of those sets of counters into their own
+            // set. That's what we should do, so that we can report the sum of those
+            // numbers as the total utilization, and then have them broken out in
+            // the card template and in the details metadata.
+            _knownPhysIds.Clear();
+
+            var instanceNames = _gpuEngineCategory.GetInstanceNames();
+
+            foreach (var instanceName in instanceNames)
             {
-                continue;
+                if (!instanceName.EndsWith(EngineType3D, StringComparison.InvariantCulture))
+                {
+                    continue;
+                }
+
+                var counterKey = instanceName;
+
+                // skip these values
+                GetKeyValueFromCounterKey(KeyPid, ref counterKey);
+                GetKeyValueFromCounterKey(KeyLuid, ref counterKey);
+
+                if (int.TryParse(GetKeyValueFromCounterKey(KeyPhys, ref counterKey), out var phys))
+                {
+                    _knownPhysIds.Add(phys);
+                }
             }
-
-            var counterKey = instanceName;
-
-            // skip these values
-            GetKeyValueFromCounterKey(KeyPid, ref counterKey);
-            GetKeyValueFromCounterKey(KeyLuid, ref counterKey);
-
-            if (int.TryParse(GetKeyValueFromCounterKey(KeyPhys, ref counterKey), out var phys))
-            {
-                _knownPhysIds.Add(phys);
-            }
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce(ref _gpuEnumerationFailureLogged, "Failed while enumerating GPU performance counters.", ex);
         }
     }
 
@@ -119,6 +135,11 @@ internal sealed partial class GPUStats : IDisposable
 
     public void GetData()
     {
+        if (_gpuEngineCategory is null)
+        {
+            return;
+        }
+
         try
         {
             // Single batch read - one kernel transition for ALL GPU Engine instances
@@ -183,9 +204,9 @@ internal sealed partial class GPUStats : IDisposable
                 }
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Ignore errors from ReadCategory (e.g., category not available).
+            LogFailureOnce(ref _gpuReadFailureLogged, "Failed while reading GPU performance counters.", ex);
         }
     }
 

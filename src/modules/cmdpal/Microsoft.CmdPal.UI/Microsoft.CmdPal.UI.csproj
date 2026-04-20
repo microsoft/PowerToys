@@ -84,9 +84,12 @@
     <None Remove="Controls\CommandPalettePreview.xaml" />
     <None Remove="Controls\DevRibbon.xaml" />
     <None Remove="Controls\FallbackRankerDialog.xaml" />
+    <None Remove="Controls\ImageViewer.xaml" />
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\ScrollContainer.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
+    <None Remove="ExtViews\Controls\ImageContentViewer.xaml" />
+    <None Remove="ExtViews\Controls\PlainTextContentViewer.xaml" />
     <None Remove="ListDetailPage.xaml" />
     <None Remove="LoadingPage.xaml" />
     <None Remove="MainPage.xaml" />
@@ -103,8 +106,10 @@
   </ItemGroup>
 
 
+
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
@@ -311,6 +316,11 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Pages\Settings\GeneralPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ExtViews\Controls\PlainTextContentViewer.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
