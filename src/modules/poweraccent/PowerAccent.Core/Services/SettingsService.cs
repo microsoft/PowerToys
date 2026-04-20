@@ -61,10 +61,30 @@ public class SettingsService
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
 
-                        SelectedLang = settings.Properties.SelectedLang.Value
+                        var selectedLangEntries = settings.Properties.SelectedLang.Value
                             .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                            .Select(lang => Enum.TryParse(lang, out Language selectedLangValue) ? selectedLangValue : Language.SPECIAL)
+                            .Select(lang => lang.Trim())
                             .ToArray();
+
+                        // Either select all languages if "ALL" is specified, or parse
+                        // the specified languages while ignoring unrecognised values.
+                        SelectedLang = selectedLangEntries.Any(lang => lang.Equals("ALL", StringComparison.OrdinalIgnoreCase))
+                            ? Enum.GetValues<Language>()
+                            : selectedLangEntries
+                                .Select(lang =>
+                                {
+                                    if (Enum.TryParse(lang, ignoreCase: true, out Language parsedLang))
+                                    {
+                                        return (Language?)parsedLang;
+                                    }
+
+                                    // Skip unrecognised values.
+                                    Logger.LogWarning($"Unknown language value '{lang}' in settings, skipping.");
+                                    return null;
+                                })
+                                .Where(lang => lang.HasValue)
+                                .Select(lang => lang!.Value)
+                                .ToArray();
 
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
