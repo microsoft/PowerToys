@@ -213,12 +213,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     continue;
                 }
 
-                // TEMPORARILY_DISABLED: PowerDisplay
-                if (moduleType == ModuleType.PowerDisplay)
-                {
-                    continue;
-                }
-
                 GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {
@@ -508,6 +502,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
+                ModuleType.GrabAndMove => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),

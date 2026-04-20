@@ -217,7 +217,11 @@
             "PowerToys.PowerAccentModuleInterface.dll",
             "PowerToys.PowerAccentKeyboardService.dll",
 
+            "PowerToys.PowerDisplayModuleInterface.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.exe",
             "PowerDisplay.Lib.dll",
+            "PowerDisplay.Models.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
             "WinUI3Apps\\PowerToys.PowerRename.exe",
@@ -249,6 +253,9 @@
             "PowerToys.ZoomIt.exe",
             "PowerToys.ZoomItModuleInterface.dll",
             "PowerToys.ZoomItSettingsInterop.dll",
+
+            "PowerToys.GrabAndMove.exe",
+            "PowerToys.GrabAndMoveModuleInterface.dll",
 
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",

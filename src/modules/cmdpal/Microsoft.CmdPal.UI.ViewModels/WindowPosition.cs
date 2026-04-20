@@ -9,37 +9,37 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public sealed class WindowPosition
 {
     /// <summary>
-    /// Gets or sets left position in device pixels.
+    /// Gets the left position in device pixels.
     /// </summary>
     public int X { get; init; }
 
     /// <summary>
-    /// Gets or sets top position in device pixels.
+    /// Gets the top position in device pixels.
     /// </summary>
     public int Y { get; init; }
 
     /// <summary>
-    /// Gets or sets width in device pixels.
+    /// Gets the width in device pixels.
     /// </summary>
     public int Width { get; init; }
 
     /// <summary>
-    /// Gets or sets height in device pixels.
+    /// Gets the height in device pixels.
     /// </summary>
     public int Height { get; init; }
 
     /// <summary>
-    /// Gets or sets width of the screen in device pixels where the window is located.
+    /// Gets the width of the screen in device pixels where the window is located.
     /// </summary>
     public int ScreenWidth { get; init; }
 
     /// <summary>
-    /// Gets or sets height of the screen in device pixels where the window is located.
+    /// Gets the height of the screen in device pixels where the window is located.
     /// </summary>
     public int ScreenHeight { get; init; }
 
     /// <summary>
-    /// Gets or sets DPI (dots per inch) of the display where the window is located.
+    /// Gets the DPI (dots per inch) of the display where the window is located.
     /// </summary>
     public int Dpi { get; init; }
 

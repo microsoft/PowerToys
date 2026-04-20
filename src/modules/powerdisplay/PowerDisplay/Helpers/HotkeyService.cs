@@ -6,7 +6,6 @@ using System;
 using System.Runtime.InteropServices;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
-using WinRT.Interop;
 
 namespace PowerDisplay.Helpers
 {
@@ -23,10 +22,6 @@ namespace PowerDisplay.Helpers
         private readonly Action _hotkeyAction;
 
         private nint _hwnd;
-        private nint _originalWndProc;
-
-        // Must keep delegate reference to prevent GC collection
-        private WndProcDelegate? _hotkeyWndProc;
         private bool _isRegistered;
         private bool _disposed;
 
@@ -38,23 +33,35 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Initialize the hotkey service with a window handle.
-        /// Must be called after window is created.
+        /// Must be called after window is created and WndProcService is attached.
         /// </summary>
-        /// <param name="window">The WinUI window to attach to.</param>
-        public void Initialize(Microsoft.UI.Xaml.Window window)
+        public void Initialize(nint hwnd)
         {
-            _hwnd = WindowNative.GetWindowHandle(window);
-
-            // LOAD BEARING: If you don't stick the pointer to the WndProc into a
-            // member (and instead use a local), then the pointer we marshal
-            // into the WindowLongPtr will be useless after we leave this function,
-            // and our WndProc will explode.
-            _hotkeyWndProc = HotkeyWndProc;
-            var wndProcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
-            _originalWndProc = SetWindowLongPtrNative(_hwnd, GwlWndProc, wndProcPointer);
-
-            // Register hotkey based on current settings
+            _hwnd = hwnd;
             ReloadSettings();
+        }
+
+        /// <summary>
+        /// Handle WM_HOTKEY messages. Called by WndProcService.
+        /// </summary>
+        /// <returns>True if the message was handled.</returns>
+        public bool HandleMessage(uint uMsg, nuint wParam)
+        {
+            if (uMsg == WmHotkey && (int)wParam == HotkeyId)
+            {
+                try
+                {
+                    _hotkeyAction?.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"[HotkeyService] Hotkey action failed: {ex.Message}");
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -119,25 +126,6 @@ namespace PowerDisplay.Helpers
             _isRegistered = false;
         }
 
-        private nint HotkeyWndProc(nint hwnd, uint uMsg, nuint wParam, nint lParam)
-        {
-            if (uMsg == WmHotkey && (int)wParam == HotkeyId)
-            {
-                try
-                {
-                    _hotkeyAction?.Invoke();
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogError($"[HotkeyService] Hotkey action failed: {ex.Message}");
-                }
-
-                return 0;
-            }
-
-            return CallWindowProcNative(_originalWndProc, hwnd, uMsg, wParam, lParam);
-        }
-
         public void Dispose()
         {
             if (_disposed)
@@ -150,7 +138,6 @@ namespace PowerDisplay.Helpers
         }
 
         // P/Invoke constants
-        private const int GwlWndProc = -4;
         private const uint WmHotkey = 0x0312;
 
         // HOT_KEY_MODIFIERS flags
@@ -159,12 +146,6 @@ namespace PowerDisplay.Helpers
         private const uint ModShift = 0x0004;
         private const uint ModWin = 0x0008;
         private const uint ModNoRepeat = 0x4000;
-
-        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
-        private static partial nint SetWindowLongPtrNative(nint hWnd, int nIndex, nint dwNewLong);
-
-        [LibraryImport("user32.dll", EntryPoint = "CallWindowProcW")]
-        private static partial nint CallWindowProcNative(nint lpPrevWndFunc, nint hWnd, uint msg, nuint wParam, nint lParam);
 
         [LibraryImport("user32.dll", EntryPoint = "RegisterHotKey", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

@@ -47,6 +47,6 @@ public interface ISettingsFunctionData
     /// <summary>
     /// Gets the schema for the settings resource object.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The JSON schema string for the settings resource object.</returns>
     public string Schema();
 }
