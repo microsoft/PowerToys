@@ -62,6 +62,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 case "light": _themeIndex = 1; break;
                 case "system": _themeIndex = 2; break;
             }
+
+            switch (Settings.Properties.WindowPosition.Value)
+            {
+                case "right": _positionIndex = 1; break;
+                default: _positionIndex = 0; break;
+            }
         }
 
         private void InitializeEnabledValue()
@@ -93,6 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private int _themeIndex;
+        private int _positionIndex;
 
         public bool IsEnabled
         {
@@ -164,6 +171,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
 
                     _themeIndex = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int PositionIndex
+        {
+            get
+            {
+                return _positionIndex;
+            }
+
+            set
+            {
+                if (_positionIndex != value)
+                {
+                    switch (value)
+                    {
+                        case 1: Settings.Properties.WindowPosition.Value = "right"; break;
+                        default: Settings.Properties.WindowPosition.Value = "left"; break;
+                    }
+
+                    _positionIndex = value;
                     NotifyPropertyChanged();
                 }
             }

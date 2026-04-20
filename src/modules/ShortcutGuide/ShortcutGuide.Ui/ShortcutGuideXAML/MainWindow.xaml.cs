@@ -211,7 +211,11 @@ namespace ShortcutGuide
                 Height = MaxHeight;
             }
 
-            this.MoveAndResize((int)monitorRect.X, (int)monitorRect.Y, Width, Height);
+            int xPosition = App.ShortcutGuideProperties.WindowPosition.Value == "right"
+                ? (int)(monitorRect.X + monitorRect.Width) - (int)(Width * dpi)
+                : (int)monitorRect.X;
+
+            this.MoveAndResize(xPosition, (int)monitorRect.Y, Width, Height);
         }
 
         /*private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

@@ -1158,6 +1158,15 @@ opera.exe</value>
     <value>Shortcut Guide</value>
     <comment>do not loc the Product name. Do you want this feature on / off</comment>
   </data>
+  <data name="ShortcutGuide_WindowPosition.Header" xml:space="preserve">
+    <value>Window position</value>
+  </data>
+  <data name="ShortcutGuide_WindowPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="ShortcutGuide_WindowPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
+  </data>
   <data name="ShortcutGuide_DisabledApps.Header" xml:space="preserve">
     <value>Exclude apps</value>
   </data>

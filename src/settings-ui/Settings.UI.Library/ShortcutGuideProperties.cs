@@ -19,6 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DisabledApps = new StringProperty();
             OpenShortcutGuide = DefaultOpenShortcutGuide;
             FirstRun = new BoolProperty(true);
+            WindowPosition = new StringProperty("left");
         }
 
         [JsonPropertyName("open_shortcutguide")]
@@ -32,5 +33,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("first_run")]
         public BoolProperty FirstRun { get; set; }
+
+        [JsonPropertyName("window_position")]
+        public StringProperty WindowPosition { get; set; }
     }
 }

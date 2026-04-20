@@ -39,6 +39,12 @@
                             <ComboBoxItem x:Uid="Radio_Theme_Default" />
                         </ComboBox>
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="ShortcutGuide_WindowPosition" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PositionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="ShortcutGuide_WindowPosition_Left" />
+                            <ComboBoxItem x:Uid="ShortcutGuide_WindowPosition_Right" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
