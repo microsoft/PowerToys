@@ -1909,8 +1909,6 @@ norename
 norestart
 nosize
 notdefault
-notopmost
-NOTOPMOST
 Notupdated
 notwindows
 nowarn
