@@ -126,7 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 SelectedLanguageOptions = selectedLangEntries
                     .Select(l => Languages.Find(lang => lang.LanguageCode.Equals(l, StringComparison.OrdinalIgnoreCase)))
-                    .Where(l => l != null) // Unrecognised language codes (e.g. manual edits, removed languages) are skipped.
+                    .Where(l => l != null) // Unrecognized language codes (e.g. manual edits, removed languages) are skipped.
                     .ToArray();
             }
             else
