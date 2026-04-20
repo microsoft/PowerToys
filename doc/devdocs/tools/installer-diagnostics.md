@@ -49,8 +49,8 @@ In runner logs, look for the startup line:
 
 ### Step 2: Check UpdateState.json
 
-```json
-{"state": 3, "downloadedInstallerFilename": "powertoyssetup-0.98.1-x64.exe", ...}
+```jsonc
+{"state": 3, "downloadedInstallerFilename": "powertoyssetup-0.98.1-x64.exe" /* additional fields may be present */}
 ```
 
 - **state = 0 (upToDate)**: Cleanup should run at startup. If files are accumulating, check runner logs for "Failed to delete" warnings (Step 4).
@@ -87,7 +87,7 @@ Search for these patterns:
 | Root cause | Evidence | Fix |
 |---|---|---|
 | Running pre-v0.73.0 binary | `product_version` < v0.73.0 in runner log | Manually upgrade to latest |
-| State stuck at `readyToInstall` (pre-v0.73) | `state: 3` in UpdateState.json, no UpdateLogs | Manually upgrade to latest |
+| State stuck at `readyToInstall` (pre-v0.73) | `"state": 3` in UpdateState.json, no UpdateLogs | Manually upgrade to latest |
 | File lock preventing deletion | "Failed to delete ... Access is denied" in runner logs | Check AV software, reboot and retry |
 | Update installer never launched | No UpdateLogs directory | Check if update notifications are disabled by GPO or setting |
 | Install fails silently | UpdateLogs show init but no install activity | Check related issues: #46966, #46967, #46969 |
