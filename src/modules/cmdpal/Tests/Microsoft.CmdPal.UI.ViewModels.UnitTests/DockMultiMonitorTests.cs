@@ -564,8 +564,19 @@ public class DockMultiMonitorTests
         foreach (var config in reconciled)
         {
             Assert.IsTrue(config.Enabled, $"Monitor {config.MonitorDeviceId} should be enabled");
-            Assert.IsFalse(config.IsCustomized, $"Monitor {config.MonitorDeviceId} should not be customized");
             Assert.IsNull(config.Side, $"Monitor {config.MonitorDeviceId} should inherit global side");
+        }
+
+        // Primary inherits global bands (IsCustomized=false); secondary starts with
+        // empty bands (IsCustomized=true) so users choose what to pin per-monitor.
+        var primaryCfg = reconciled.Find(c => c.IsPrimary);
+        Assert.IsFalse(primaryCfg!.IsCustomized, "Primary should inherit global bands");
+        foreach (var config in reconciled)
+        {
+            if (!config.IsPrimary)
+            {
+                Assert.IsTrue(config.IsCustomized, $"Monitor {config.MonitorDeviceId} (secondary) should be customized with empty bands");
+            }
         }
 
         // Primary should be flagged correctly
