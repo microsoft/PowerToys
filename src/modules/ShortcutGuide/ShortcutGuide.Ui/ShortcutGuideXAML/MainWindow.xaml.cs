@@ -198,7 +198,13 @@ namespace ShortcutGuide
             var hwnd = WindowNative.GetWindowHandle(this);
             float dpi = DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-            if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X < AppWindow.Position.X + Width)
+            if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X < AppWindow.Position.X + Width && App.ShortcutGuideProperties.WindowPosition.Value == "left")
+            {
+                MaxHeight = (monitorRect.Height / dpi) - App.TaskBarWindow.AppWindow.Size.Height;
+                MinHeight = MaxHeight;
+                Height = MaxHeight;
+            }
+            else if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X + App.TaskBarWindow.AppWindow.Size.Width > AppWindow.Position.X && App.ShortcutGuideProperties.WindowPosition.Value == "right")
             {
                 MaxHeight = (monitorRect.Height / dpi) - App.TaskBarWindow.AppWindow.Size.Height;
                 MinHeight = MaxHeight;
