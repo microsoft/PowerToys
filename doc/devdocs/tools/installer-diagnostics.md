@@ -54,13 +54,13 @@ In runner logs, look for the startup line:
 ```
 
 - **state = 0 (upToDate)**: Cleanup should run at startup. If files are accumulating, check runner logs for "Failed to delete" warnings (Step 4).
-- **state = 3 (readyToInstall)**: An installer is downloaded but never installed. Cleanup at startup is skipped (by design, to preserve the pending installer). If this state persists across many update cycles, old files can accumulate on versions < v0.73.0.
-- **state = 1 (errorDownloading)**: A previous download or install failed. Cleanup should run at next startup (v0.73+).
-- **state = 2 or 4**: Transient states. Cleanup should run at next startup (v0.73+).
+- **state = 3 (readyToInstall)**: An installer is downloaded but never installed. Cleanup at startup is skipped (by design, to preserve the pending installer). On v0.73+, cleanup can still occur when a future update check triggers a new download (pre-download cleanup path).
+- **state = 1 (errorDownloading)**: A previous download or install failed. Startup cleanup is skipped (state is not `upToDate`). On v0.73+, cleanup runs before the next installer download is attempted.
+- **state = 2 or 4**: Startup cleanup is skipped. On v0.73+, cleanup runs before the next installer download is attempted.
 
 ### Step 3: Check if PowerToys.Update.exe has ever run
 
-- **UpdateLogs directory missing**: `PowerToys.Update.exe` was never launched. The user never triggered an install — either they dismissed all update notifications, or Stage 1 failed before Stage 2 could run.
+- **UpdateLogs directory missing**: This suggests `PowerToys.Update.exe` may never have been launched, or it did not progress far enough to create logs. The user may never have triggered an install, or Stage 1 may have failed before Stage 2 could run.
 - **UpdateLogs exist but show only "logger is initialized"**: The exe launched but the command-line argument didn't match any action (possible argument parsing issue).
 - **UpdateLogs show install activity**: The update process ran. Check for success/failure.
 
@@ -72,14 +72,13 @@ Search for these patterns:
 |---|---|
 | `Failed to delete installer file ... Access is denied` | File locked by AV, another process, or permissions issue |
 | `Failed to delete log file ...` | Same, for old log files |
-| `Failed to clean up old update files:` | Exception in cleanup (v0.73+ with exception handling) |
 | `Discovered new version` | Periodic update check ran |
 | `New version is already downloaded` | State is `readyToInstall` and filename matches — no re-download, no cleanup |
-| No cleanup-related entries at all | Cleanup was never called — likely state gate blocked it |
+| No cleanup-related entries at all | Inconclusive by itself — `cleanup_updates()` is silent on success. Corroborate with the Updates folder contents (Step 5) and the running version (Step 1). |
 
 ### Step 5: Check the Updates folder contents
 
-- **All different versions**: Cleanup never ran across multiple update cycles. Points to state gate issue or pre-v0.73 binary.
+- **All different versions**: Cleanup likely did not run across multiple update cycles. Confirm with the running version (Step 1) and update state before concluding a state gate issue.
 - **Duplicate filenames**: Unusual — would suggest repeated download without cleanup.
 - **Single file matching `downloadedInstallerFilename`**: Normal for `readyToInstall` state.
 
