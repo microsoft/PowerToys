@@ -84,12 +84,35 @@ public sealed partial class DockItemControl : Control
         set => SetValue(TextVisibilityProperty, value);
     }
 
+    public static readonly DependencyProperty IsCompactProperty =
+        DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnIsCompactPropertyChanged));
+
+    public bool IsCompact
+    {
+        get => (bool)GetValue(IsCompactProperty);
+        set => SetValue(IsCompactProperty, value);
+    }
+
+    private static void OnIsCompactPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateCompactState();
+        }
+    }
+
+    private void UpdateCompactState()
+    {
+        VisualStateManager.GoToState(this, IsCompact ? "Compact" : "DefaultLayout", true);
+    }
+
     private const string IconPresenterName = "IconPresenter";
 
     private FrameworkElement? _iconPresenter;
     private DockControl? _parentDock;
     private ToolTip? _toolTip;
     private long _dockSideCallbackToken = -1;
+    private long _dockSizeCallbackToken = -1;
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -192,6 +215,7 @@ public sealed partial class DockItemControl : Control
         UpdateIconVisibility();
         UpdateToolTip();
         UpdateAlignment();
+        UpdateCompactState();
     }
 
     private void UpdateToolTip()
@@ -257,10 +281,14 @@ public sealed partial class DockItemControl : Control
         {
             _parentDock = dock;
             UpdateInnerMarginForDockSide(dock.DockSide);
+            UpdateCompactFromParent(dock);
             UpdateAllVisibility();
             _dockSideCallbackToken = dock.RegisterPropertyChangedCallback(
                 DockControl.DockSideProperty,
                 OnParentDockSideChanged);
+            _dockSizeCallbackToken = dock.RegisterPropertyChangedCallback(
+                DockControl.DockSizeProperty,
+                OnParentDockSizeChanged);
         }
 
         UpdateToolTip();
@@ -274,12 +302,24 @@ public sealed partial class DockItemControl : Control
 
     private void DockItemControl_Unloaded(object sender, RoutedEventArgs e)
     {
-        if (_parentDock is not null && _dockSideCallbackToken >= 0)
+        if (_parentDock is not null)
         {
-            _parentDock.UnregisterPropertyChangedCallback(
-                DockControl.DockSideProperty,
-                _dockSideCallbackToken);
-            _dockSideCallbackToken = -1;
+            if (_dockSideCallbackToken >= 0)
+            {
+                _parentDock.UnregisterPropertyChangedCallback(
+                    DockControl.DockSideProperty,
+                    _dockSideCallbackToken);
+                _dockSideCallbackToken = -1;
+            }
+
+            if (_dockSizeCallbackToken >= 0)
+            {
+                _parentDock.UnregisterPropertyChangedCallback(
+                    DockControl.DockSizeProperty,
+                    _dockSizeCallbackToken);
+                _dockSizeCallbackToken = -1;
+            }
+
             _parentDock = null;
         }
 
@@ -294,6 +334,19 @@ public sealed partial class DockItemControl : Control
             // UpdateInnerMarginForDockSide(dock.DockSide);
             UpdateAlignment();
         }
+    }
+
+    private void OnParentDockSizeChanged(DependencyObject sender, DependencyProperty dp)
+    {
+        if (sender is DockControl dock)
+        {
+            UpdateCompactFromParent(dock);
+        }
+    }
+
+    private void UpdateCompactFromParent(DockControl dock)
+    {
+        IsCompact = dock.DockSize == DockSize.Compact;
     }
 
     private void UpdateInnerMarginForDockSide(DockSide side)
