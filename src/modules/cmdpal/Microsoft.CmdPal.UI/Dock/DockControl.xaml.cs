@@ -250,17 +250,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;
 
-        // Swap the band template to use the appropriate DockItemControl style
-        var templateKey = effectiveSize == DockSize.Compact
-            ? "CompactDockBandTemplate"
-            : "DockBandTemplate";
-        if (Resources.TryGetValue(templateKey, out var resource) && resource is DataTemplate template)
-        {
-            StartListView.ItemTemplate = template;
-            CenterListView.ItemTemplate = template;
-            EndListView.ItemTemplate = template;
-        }
-
         if (settings.Backdrop == DockBackdrop.Transparent)
         {
             RootGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);

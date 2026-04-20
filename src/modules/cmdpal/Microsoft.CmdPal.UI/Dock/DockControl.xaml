@@ -58,42 +58,6 @@
                 </ItemsRepeater>
             </DataTemplate>
 
-            <DataTemplate x:Key="CompactDockBandTemplate" x:DataType="dockVm:DockBandViewModel">
-                <ItemsRepeater
-                    ItemsSource="{x:Bind Items, Mode=OneWay}"
-                    Layout="{StaticResource ItemsOrientationLayout}"
-                    TabFocusNavigation="Local">
-                    <ItemsRepeater.Transitions>
-                        <TransitionCollection />
-                    </ItemsRepeater.Transitions>
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate x:DataType="dockVm:DockItemViewModel">
-                            <local:DockItemControl
-                                Title="{x:Bind Title, Mode=OneWay}"
-                                VerticalAlignment="Stretch"
-                                VerticalContentAlignment="Stretch"
-                                RightTapped="BandItem_RightTapped"
-                                Style="{StaticResource CompactDockItemControlStyle}"
-                                Subtitle="{x:Bind Subtitle, Mode=OneWay}"
-                                Tag="{x:Bind}"
-                                Tapped="BandItem_Tapped"
-                                ToolTip="{x:Bind Tooltip, Mode=OneWay}">
-                                <local:DockItemControl.Icon>
-                                    <cpcontrols:IconBox
-                                        x:Name="IconBorder"
-                                        Width="16"
-                                        VerticalAlignment="Center"
-                                        AutomationProperties.AccessibilityView="Raw"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested16}" />
-                                </local:DockItemControl.Icon>
-                            </local:DockItemControl>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </DataTemplate>
-
             <Style x:Key="DockBandListViewStyle" TargetType="ListView">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="Padding" Value="0" />
