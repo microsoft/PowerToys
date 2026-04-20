@@ -1641,6 +1641,7 @@ tracelogging
 tracerpt
 trackbar
 trafficmanager
+traies
 transicc
 TRAYMOUSEMESSAGE
 triaging
@@ -1661,6 +1662,7 @@ UBR
 UCallback
 ucrt
 ucrtd
+udit
 uefi
 uesc
 UFlags
@@ -2276,6 +2278,7 @@ THEMECHANGED
 thickframe
 Tianma
 tmain
+tontrager
 tskill
 tweakable
 UBreak
@@ -2341,3 +2344,9 @@ YTimer
 zamora
 zonability
 Zorder
+LLMHF
+RIGHTBUTTON
+SIZEALL
+grabandmove
+GRABANDMOVEMODULEINTERFACE
+INITCOMMONCONTROLSEX

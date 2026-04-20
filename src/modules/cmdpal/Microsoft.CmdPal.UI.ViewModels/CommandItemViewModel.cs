@@ -86,7 +86,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public CommandItemViewModel? SecondaryCommand => _secondaryMoreCommand;
 
-    public bool CanOpenContextMenu => AllCommands.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
+    public bool CanOpenContextMenu =>
+
+        // BEAR LOADING: A visible synthetic primary command makes the item
+        // context-openable immediately, even if out-of-proc MoreCommands are still
+        // hydrating. Without this fast path, the first open request can race slow
+        // menu initialization and get dropped.
+        _defaultCommandContextItemViewModel?.ShouldBeVisible == true ||
+        _moreCommandsSnapshot.Any(item => item is CommandItemViewModel command && command.ShouldBeVisible);
 
     public bool ShouldBeVisible => !string.IsNullOrEmpty(Name);
 
@@ -132,13 +139,15 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        Command = new(model.Command, PageContext);
+        var command = model.Command;
+        Command = new(command, PageContext);
         Command.FastInitializeProperties();
 
         _itemTitle = model.Title;
         Subtitle = model.Subtitle;
         _titleCache.Invalidate();
         _subtitleCache.Invalidate();
+        TryCreateDefaultCommandContextItem(command);
 
         Initialized |= InitializedState.FastInitialized;
     }
@@ -215,7 +224,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
         BuildAndInitMoreCommands();
 
-        TryCreateDefaultCommandContextItem(model);
+        TryCreateDefaultCommandContextItem(model.Command);
 
         lock (_moreCommandsLock)
         {
@@ -316,7 +325,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         {
             case nameof(Command):
                 Command.PropertyChanged -= Command_PropertyChanged;
-                Command = new(model.Command, PageContext);
+                var command = model.Command;
+                Command = new(command, PageContext);
                 Command.InitializeProperties();
                 Command.PropertyChanged += Command_PropertyChanged;
 
@@ -332,7 +342,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 }
                 else
                 {
-                    TryCreateDefaultCommandContextItem(model);
+                    TryCreateDefaultCommandContextItem(command);
                 }
 
                 UpdateProperty(nameof(Name));
@@ -407,7 +417,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 }
                 else
                 {
-                    TryCreateDefaultCommandContextItem(model);
+                    TryCreateDefaultCommandContextItem(model.Command);
                 }
 
                 break;
@@ -427,19 +437,22 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     /// When a new instance is created, the snapshot is refreshed and
     /// <see cref="AllCommands"/> is notified.
     /// </summary>
-    private void TryCreateDefaultCommandContextItem(ICommandItem model)
+    private void TryCreateDefaultCommandContextItem(ICommand? commandModel)
     {
         if (_defaultCommandContextItemViewModel is not null)
         {
             return;
         }
 
-        if (string.IsNullOrEmpty(model.Command?.Name))
+        // We only synthesize the primary entry when the command is already
+        // usable; a null/empty primary must still fall back to late
+        // MoreCommands-based opening.
+        if (string.IsNullOrEmpty(Command.Name) || commandModel is null)
         {
             return;
         }
 
-        _defaultCommandContextItemViewModel = new CommandContextItemViewModel(new CommandContextItem(model.Command!), PageContext)
+        _defaultCommandContextItemViewModel = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
         {
             _itemTitle = Name,
             Subtitle = Subtitle,

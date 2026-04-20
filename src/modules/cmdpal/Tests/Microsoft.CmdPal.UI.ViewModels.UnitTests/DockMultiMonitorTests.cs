@@ -220,6 +220,37 @@ public class DockMultiMonitorTests
     }
 
     [TestMethod]
+    public void Reconciler_NewPrimaryMonitor_InheritsGlobalBands()
+    {
+        // On first run / upgrade, the primary monitor should inherit global bands
+        var configs = ImmutableList<DockMonitorConfig>.Empty;
+        var monitors = new List<MonitorInfo> { PrimaryMonitor };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, monitors);
+
+        Assert.AreEqual(1, result.Count);
+        Assert.IsFalse(result[0].IsCustomized, "Primary monitor should inherit global bands (IsCustomized = false).");
+    }
+
+    [TestMethod]
+    public void Reconciler_NewSecondaryMonitor_StartsWithEmptyBands()
+    {
+        // On first run / upgrade with multi-monitor, secondary monitors should start
+        // with empty bands so users are not forced to manually unpin from every display.
+        var configs = ImmutableList<DockMonitorConfig>.Empty;
+        var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, monitors);
+
+        var secondary = result.Find(c => !c.IsPrimary);
+        Assert.IsNotNull(secondary, "A secondary monitor config should have been created.");
+        Assert.IsTrue(secondary!.IsCustomized, "Secondary monitor should be customized (IsCustomized = true).");
+        Assert.AreEqual(0, secondary.StartBands?.Count ?? 0, "Secondary monitor should start with empty StartBands.");
+        Assert.AreEqual(0, secondary.CenterBands?.Count ?? 0, "Secondary monitor should start with empty CenterBands.");
+        Assert.AreEqual(0, secondary.EndBands?.Count ?? 0, "Secondary monitor should start with empty EndBands.");
+    }
+
+    [TestMethod]
     public void Reconciler_FuzzyMatch_UpdatesPrimaryFlag()
     {
         // Config has old device ID but marked as primary
@@ -249,11 +280,12 @@ public class DockMultiMonitorTests
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
         // Primary keeps its config, stale secondary is orphaned (removed),
-        // new secondary gets a fresh default config instead of inheriting the stale one
+        // new secondary gets a fresh customized config with empty bands
         Assert.AreEqual(2, result.Count);
         Assert.AreEqual(@"\\.\DISPLAY1", result[0].MonitorDeviceId);
         Assert.AreEqual(@"\\.\DISPLAY2", result[1].MonitorDeviceId);
-        Assert.IsFalse(result[1].IsCustomized, "New secondary should get a default config, not inherit the stale one.");
+        Assert.IsTrue(result[1].IsCustomized, "New secondary should get an empty-bands customized config.");
+        Assert.AreEqual(0, result[1].StartBands?.Count ?? 0, "New secondary should start with empty bands.");
     }
 
     // --- JSON serialization round-trip ---

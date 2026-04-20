@@ -42,6 +42,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
+    public partial bool ShowBrightness { get; set; }
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAdvancedControls))]
     public partial bool ShowContrast { get; set; }
 
@@ -58,36 +61,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public partial bool ShowRotation { get; set; }
 
     private bool _showPowerState;
-
-    /// <summary>
-    /// Updates a property value directly without triggering hardware updates.
-    /// Used during initialization to update UI from saved state.
-    /// </summary>
-    internal void UpdatePropertySilently(string propertyName, int value)
-    {
-        switch (propertyName)
-        {
-            case nameof(Brightness):
-                _brightness = value;
-                OnPropertyChanged(nameof(Brightness));
-                break;
-            case nameof(Contrast):
-                _contrast = value;
-                OnPropertyChanged(nameof(Contrast));
-                OnPropertyChanged(nameof(ContrastPercent));
-                break;
-            case nameof(Volume):
-                _volume = value;
-                OnPropertyChanged(nameof(Volume));
-                break;
-            case nameof(ColorTemperature):
-                // Update underlying monitor model
-                _monitor.CurrentColorTemperature = value;
-                OnPropertyChanged(nameof(ColorTemperature));
-                OnPropertyChanged(nameof(ColorTemperaturePresetName));
-                break;
-        }
-    }
 
     /// <summary>
     /// Apply brightness with hardware update and state persistence.
@@ -141,12 +114,32 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         await ApplyPropertyToHardwareAsync(nameof(Volume), volume, _monitorManager.SetVolumeAsync);
     }
 
+    private bool IsDiscreteValueSupported(byte vcpCode, int value)
+    {
+        var vcpInfo = VcpCapabilitiesInfo;
+        if (vcpInfo == null ||
+            !vcpInfo.SupportedVcpCodes.TryGetValue(vcpCode, out var codeInfo) ||
+            !codeInfo.HasDiscreteValues ||
+            !codeInfo.SupportedValues.Contains(value))
+        {
+            Logger.LogWarning($"[{Id}] VCP 0x{vcpCode:X2} value 0x{value:X2} not in reported supported values, skipping");
+            return false;
+        }
+
+        return true;
+    }
+
     /// <summary>
     /// Unified method to apply color temperature with hardware update and state persistence.
     /// Always immediate (no debouncing for discrete preset values).
     /// </summary>
     public async Task SetColorTemperatureAsync(int colorTemperature)
     {
+        if (!IsDiscreteValueSupported(0x14, colorTemperature))
+        {
+            return;
+        }
+
         try
         {
             var result = await _monitorManager.SetColorTemperatureAsync(Id, colorTemperature);
@@ -223,6 +216,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         _monitor.PropertyChanged += OnMonitorPropertyChanged;
 
         // Initialize Show properties based on hardware capabilities
+        ShowBrightness = monitor.SupportsBrightness;
         ShowContrast = monitor.SupportsContrast;
         ShowVolume = monitor.SupportsVolume;
         ShowInputSource = monitor.SupportsInputSource;
@@ -301,6 +295,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// Gets a value indicating whether this monitor supports contrast control via VCP 0x12
     /// </summary>
     public bool SupportsContrast => _monitor.SupportsContrast;
+
+    public bool SupportsBrightness => _monitor.SupportsBrightness;
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports volume control via VCP 0x62
@@ -488,41 +484,23 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Standard MCCS color temperature presets (VCP 0x14 values) to use as fallback
-    /// when the monitor doesn't report discrete values in its capabilities string.
-    /// </summary>
-    private static readonly int[] StandardColorTemperaturePresets = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x08, 0x09, 0x0A, 0x0B };
-
-    /// <summary>
-    /// Refresh the list of available color temperature presets based on monitor capabilities
+    /// Refresh the list of available color temperature presets based on monitor capabilities.
+    /// Only values explicitly reported in the capabilities string are exposed — no MCCS standard fallback.
     /// </summary>
     private void RefreshAvailableColorPresets()
     {
-        if (!SupportsColorTemperature)
+        var vcpInfo = VcpCapabilitiesInfo;
+        if (!SupportsColorTemperature ||
+            vcpInfo == null ||
+            !vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var colorTempInfo) ||
+            !colorTempInfo.HasDiscreteValues)
         {
             _availableColorPresets = null;
+            OnPropertyChanged(nameof(AvailableColorPresets));
             return;
         }
 
-        IEnumerable<int> presetValues;
-        var vcpInfo = VcpCapabilitiesInfo;
-
-        // Try to get discrete values from capabilities string
-        if (vcpInfo != null &&
-            vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var colorTempInfo) &&
-            colorTempInfo.HasDiscreteValues &&
-            colorTempInfo.SupportedValues.Count > 0)
-        {
-            // Use values from capabilities string
-            presetValues = colorTempInfo.SupportedValues;
-        }
-        else
-        {
-            // Fallback to standard MCCS presets when capabilities don't list discrete values
-            presetValues = StandardColorTemperaturePresets;
-        }
-
-        _availableColorPresets = presetValues.Select(value => new ColorTemperatureItem
+        _availableColorPresets = colorTempInfo.SupportedValues.Select(value => new ColorTemperatureItem
         {
             VcpValue = value,
             DisplayName = Common.Utils.VcpNames.GetValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) is string n ? $"{n} (0x{value:X2})" : $"0x{value:X2}",
@@ -614,6 +592,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetInputSourceAsync(int inputSource)
     {
+        if (!IsDiscreteValueSupported(0x60, inputSource))
+        {
+            return;
+        }
+
         try
         {
             var result = await _monitorManager.SetInputSourceAsync(Id, inputSource);
@@ -700,6 +683,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetPowerStateAsync(int powerState)
     {
+        if (!IsDiscreteValueSupported(0xD6, powerState))
+        {
+            return;
+        }
+
         try
         {
             var result = await _monitorManager.SetPowerStateAsync(Id, powerState);

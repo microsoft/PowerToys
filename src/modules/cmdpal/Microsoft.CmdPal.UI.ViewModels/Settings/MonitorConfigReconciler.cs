@@ -101,7 +101,10 @@ public static class MonitorConfigReconciler
             }
         }
 
-        // Phase 3: Create defaults for new monitors with no matching config
+        // Phase 3: Create defaults for new monitors with no matching config.
+        // Primary monitors inherit global bands (IsCustomized = false) for a seamless
+        // upgrade path. Secondary monitors start with empty band lists so users don't
+        // have to manually unpin bands from every new display.
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
@@ -110,12 +113,30 @@ public static class MonitorConfigReconciler
                 continue;
             }
 
-            result.Add(new DockMonitorConfig
+            if (monitor.IsPrimary)
             {
-                MonitorDeviceId = monitor.DeviceId,
-                Enabled = true,
-                IsPrimary = monitor.IsPrimary,
-            });
+                // Primary: inherit global bands (IsCustomized = false)
+                result.Add(new DockMonitorConfig
+                {
+                    MonitorDeviceId = monitor.DeviceId,
+                    Enabled = true,
+                    IsPrimary = true,
+                });
+            }
+            else
+            {
+                // Secondary: start with empty bands so users choose what to pin per-monitor
+                result.Add(new DockMonitorConfig
+                {
+                    MonitorDeviceId = monitor.DeviceId,
+                    Enabled = true,
+                    IsPrimary = false,
+                    IsCustomized = true,
+                    StartBands = ImmutableList<DockBandSettings>.Empty,
+                    CenterBands = ImmutableList<DockBandSettings>.Empty,
+                    EndBands = ImmutableList<DockBandSettings>.Empty,
+                });
+            }
         }
 
         // Phase 4: Orphaned configs are not included in result (implicitly removed)

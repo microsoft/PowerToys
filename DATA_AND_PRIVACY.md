@@ -108,6 +108,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.AwakeIndefinitelyKeepAwakeEvent | Triggered when the system is set to stay awake indefinitely. |
 | Microsoft.PowerToys.AwakeNoKeepAwakeEvent | Occurs when Awake is turned off, allowing the computer to enter sleep mode. |
 | Microsoft.PowerToys.AwakeTimedKeepAwakeEvent | Triggered when the system is kept awake for a specified time duration. |
+| Microsoft.PowerToys.Awake_CLICommand | Triggered when an Awake CLI command is executed, logging the command name and success status. |
 
 ### Color Picker
 
@@ -204,6 +205,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.FileLocksmith_Invoked | Occurs when File Locksmith is invoked. |
 | Microsoft.PowerToys.FileLocksmith_InvokedRet | Triggered when File Locksmith invocation returns a result. |
 | Microsoft.PowerToys.FileLocksmith_QueryContextMenuError | Occurs when there is an error querying the context menu for File Locksmith. |
+| Microsoft.PowerToys.FileLocksmith_CLICommand | Triggered when a File Locksmith CLI command is executed, logging the operation mode (query, kill, query-wait, query-json, or help) and success status. |
 
 ### FileExplorerAddOns
 
@@ -258,6 +260,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.ImageResizer_Invoked | Occurs when Image Resizer is invoked by the user. |
 | Microsoft.PowerToys.ImageResizer_InvokedRet | Fires when the Image Resizer operation is completed and returns a result. |
 | Microsoft.PowerToys.ImageResizer_QueryContextMenuError | Triggered when there is an error querying the context menu for Image Resizer. |
+| Microsoft.PowerToys.ImageResizer_CLICommand | Triggered when an Image Resizer CLI command is executed, logging the command name and success status. |
 
 ### Keyboard Manager
 
