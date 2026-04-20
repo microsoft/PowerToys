@@ -471,10 +471,19 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         InitializeContrast(monitor, candidate.Handle);
                     }
+
+                    // Initialize volume if supported
+                    if (monitor.SupportsVolume)
+                    {
+                        InitializeVolume(monitor, candidate.Handle);
+                    }
                 }
 
-                // Initialize brightness (always supported for DDC/CI monitors)
-                InitializeBrightness(monitor, candidate.Handle);
+                // Initialize brightness if supported
+                if (monitor.SupportsBrightness)
+                {
+                    InitializeBrightness(monitor, candidate.Handle);
+                }
 
                 monitors.Add(monitor);
                 newHandleMap[monitor.Id] = candidate.Handle;
@@ -542,6 +551,18 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Initialize volume value for a monitor using VCP 0x62.
+        /// </summary>
+        private static void InitializeVolume(Monitor monitor, IntPtr handle)
+        {
+            if (TryGetVcpFeature(handle, VcpCodeVolume, monitor.Id, out uint current, out uint max))
+            {
+                var volumeInfo = new VcpFeatureValue((int)current, 0, (int)max);
+                monitor.CurrentVolume = volumeInfo.ToPercentage();
+            }
+        }
+
+        /// <summary>
         /// Wrapper for GetVCPFeatureAndVCPFeatureReply that logs errors on failure.
         /// </summary>
         /// <param name="handle">Physical monitor handle</param>
@@ -568,6 +589,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void UpdateMonitorCapabilitiesFromVcp(Monitor monitor, VcpCapabilities vcpCaps)
         {
+            // Check for Brightness support (VCP 0x10)
+            if (vcpCaps.SupportsVcpCode(VcpCodeBrightness))
+            {
+                monitor.Capabilities |= MonitorCapabilities.Brightness;
+            }
+
             // Check for Contrast support (VCP 0x12)
             if (vcpCaps.SupportsVcpCode(VcpCodeContrast))
             {
