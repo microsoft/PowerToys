@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -44,16 +44,33 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
         LoadBookmarksFromFile();
     }
 
+    // public BookmarkData Add(string name, string bookmark)
+    // {
+    //     var newBookmark = new BookmarkData(name, bookmark);
+    //     lock (_lock)
+    //     {
+    //         _bookmarksData.Data.Add(newBookmark);
+    //         _ = SaveChangesAsync();
+    //         BookmarkAdded?.Invoke(newBookmark);
+    //         return newBookmark;
+    //     }
+    // }
     public BookmarkData Add(string name, string bookmark)
+    {
+        var res = AddAsync(name, bookmark);
+        res.SaveTask.GetAwaiter().GetResult();
+        res.ReloadCallback();
+        return res.Bookmark;
+    }
+
+    public BookmarkAddResult AddAsync(string name, string bookmark)
     {
         var newBookmark = new BookmarkData(name, bookmark);
 
         lock (_lock)
         {
             _bookmarksData.Data.Add(newBookmark);
-            _ = SaveChangesAsync();
-            BookmarkAdded?.Invoke(newBookmark);
-            return newBookmark;
+            return new(newBookmark, SaveChangesAsync(), () => BookmarkAdded?.Invoke(newBookmark));
         }
     }
 
