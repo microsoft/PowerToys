@@ -47,7 +47,7 @@
             <Thickness x:Key="FlyoutSectionTopMargin">0,4,0,0</Thickness>
             <Thickness x:Key="FlyoutSectionContainerPadding">8,0,8,8</Thickness>
             <Thickness x:Key="FlyoutSeparatorMargin">8,8</Thickness>
-            <Thickness x:Key="FlyoutStatusBarMargin">4,0,4,0</Thickness>
+            <Thickness x:Key="FlyoutStatusBarMargin">8,-8,8,0</Thickness>
             <Thickness x:Key="MonitorHeaderOffsetMargin">10,0,0,0</Thickness>
             <Thickness x:Key="MonitorNameBaselineMargin">2,0,0,2</Thickness>
             <x:Double x:Key="FlyoutContextMenuMinWidth">240</x:Double>
