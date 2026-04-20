@@ -228,10 +228,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 // Format display text: single number for normal mode, "1|2" for mirror mode
                 var displayText = string.Join("|", monitorNumbers);
 
-                // Create and position identify window
+                // Create and position identify window.
+                // Position before Activate so the window appears directly at the target
+                // location — avoiding a visible flicker from the default spawn position
+                // and skipping a WM_DPICHANGED round-trip when crossing DPI monitors.
                 var identifyWindow = new IdentifyWindow(displayText);
-                identifyWindow.Activate();
                 identifyWindow.PositionOnDisplay(displayArea);
+                identifyWindow.Activate();
                 windowsCreated++;
             }
         }

@@ -35,13 +35,13 @@ namespace PowerDisplay.Common.Services
         /// </summary>
         private sealed class MonitorState
         {
-            public int Brightness { get; set; }
+            public int? Brightness { get; set; }
 
-            public int ColorTemperatureVcp { get; set; }
+            public int? ColorTemperatureVcp { get; set; }
 
-            public int Contrast { get; set; }
+            public int? Contrast { get; set; }
 
-            public int Volume { get; set; }
+            public int? Volume { get; set; }
 
             public string? CapabilitiesRaw { get; set; }
         }
@@ -128,7 +128,7 @@ namespace PowerDisplay.Common.Services
         /// </summary>
         /// <param name="monitorId">The monitor's unique Id (e.g., "DDC_GSM5C6D_1").</param>
         /// <returns>A tuple of (Brightness, ColorTemperatureVcp, Contrast, Volume) or null if not found.</returns>
-        public (int Brightness, int ColorTemperatureVcp, int Contrast, int Volume)? GetMonitorParameters(string monitorId)
+        public (int? Brightness, int? ColorTemperatureVcp, int? Contrast, int? Volume)? GetMonitorParameters(string monitorId)
         {
             if (string.IsNullOrEmpty(monitorId))
             {

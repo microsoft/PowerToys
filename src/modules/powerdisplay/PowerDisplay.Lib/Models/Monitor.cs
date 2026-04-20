@@ -166,6 +166,11 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
+        /// Gets a value indicating whether the monitor supports brightness adjustment
+        /// </summary>
+        public bool SupportsBrightness => Capabilities.HasFlag(MonitorCapabilities.Brightness);
+
+        /// <summary>
         /// Gets a value indicating whether the monitor supports contrast adjustment
         /// </summary>
         public bool SupportsContrast => Capabilities.HasFlag(MonitorCapabilities.Contrast);
