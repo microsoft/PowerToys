@@ -67,8 +67,10 @@ public class SettingsService
                             .ToArray();
 
                         // Either select all languages if "ALL" is specified, or parse
-                        // the specified languages while ignoring unrecognised values.
-                        SelectedLang = selectedLangEntries.Any(lang => lang.Equals("ALL", StringComparison.OrdinalIgnoreCase))
+                        // the specified languages while ignoring unrecognized values.
+                        bool isAllSelected = selectedLangEntries.Any(lang =>
+                            lang.Equals("ALL", StringComparison.OrdinalIgnoreCase));
+                        SelectedLang = isAllSelected
                             ? Enum.GetValues<Language>()
                             : selectedLangEntries
                                 .Select(lang =>
@@ -78,13 +80,16 @@ public class SettingsService
                                         return (Language?)parsedLang;
                                     }
 
-                                    // Skip unrecognised values.
+                                    // Skip unrecognized values.
                                     Logger.LogWarning($"Unknown language value '{lang}' in settings, skipping.");
                                     return null;
                                 })
                                 .Where(lang => lang.HasValue)
                                 .Select(lang => lang!.Value)
                                 .ToArray();
+
+                        Logger.LogInfo(
+                            $"Languages selected: {(isAllSelected ? "ALL" : string.Join(", ", SelectedLang))}");
 
                         switch (settings.Properties.ToolbarPosition.Value)
                         {
