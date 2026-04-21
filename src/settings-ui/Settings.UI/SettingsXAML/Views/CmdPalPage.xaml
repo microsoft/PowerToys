@@ -54,19 +54,23 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.Background>
-                                <ImageBrush ImageSource="C:\\Users\\nielslaute\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\TranscodedWallpaper" />
+                                <ImageBrush ImageSource="/Assets/Settings/CmdPal/Wallpaper.png" />
                             </Grid.Background>
-                            <Grid
-                                Height="28"
-                                Padding="4,0,4,0"
-                                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-                                RequestedTheme="Dark">
+                            <Grid Height="28" RequestedTheme="Dark">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Viewbox Height="20" HorizontalAlignment="Left">
+                                <Grid
+                                    Grid.ColumnSpan="3"
+                                    Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                                    Opacity="0.6" />
+
+                                <Viewbox
+                                    Height="20"
+                                    Margin="4,0,0,0"
+                                    HorizontalAlignment="Left">
                                     <Image Source="/Assets/Settings/CmdPal/Dock-Left.png" />
                                 </Viewbox>
 
@@ -77,6 +81,7 @@
                                 <Viewbox
                                     Grid.Column="2"
                                     Height="24"
+                                    Margin="0,0,4,0"
                                     HorizontalAlignment="Right">
                                     <Image Source="/Assets/Settings/CmdPal/Dock-Right.png" />
                                 </Viewbox>
@@ -84,37 +89,53 @@
                             <TextBlock
                                 x:Uid="CmdPal_HeroTitle"
                                 Grid.Row="1"
-                                Margin="0,24,0,12"
+                                Margin="0,24,0,4"
                                 HorizontalAlignment="Center"
                                 FontSize="36"
                                 FontWeight="Bold"
-                                Foreground="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
-                                <!--<TextBlock.Foreground>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Offset="0.0" Color="#FFB9EBFF" />
-                                        <GradientStop Offset="0.49" Color="#FF86CBFF" />
-                                        <GradientStop Offset="1.0" Color="#FFA1E7FF" />
+                                RequestedTheme="Dark">
+                                <TextBlock.Foreground>
+                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                        <GradientStop Offset="0" Color="#978D9B" />
+                                        <GradientStop Offset="1" Color="#415A69" />
                                     </LinearGradientBrush>
-                                </TextBlock.Foreground>-->
+                                </TextBlock.Foreground>
                             </TextBlock>
-                            <TextBlock
+                            <StackPanel
                                 Grid.Row="2"
-                                HorizontalAlignment="Center"
-                                Foreground="White"
-                                TextAlignment="Center"
-                                TextWrapping="Wrap">
-                                <Run x:Uid="CmdPal_Description" />
-                                <Hyperlink NavigateUri="">
-                                    <Run x:Uid="LearnMore_CmdPal.Text" Foreground="White" />
-                                </Hyperlink>
-                            </TextBlock>
-                            <Image
+                                Orientation="Vertical"
+                                Spacing="8">
+                                <TextBlock
+                                    x:Uid="CmdPal_Description"
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="#313131"
+                                    RequestedTheme="Dark"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+
+                                <HyperlinkButton
+                                    x:Uid="LearnMore_CmdPalContent"
+                                    Padding="0"
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    NavigateUri="https://aka.ms/PowerToysOverview_CmdPal" />
+                            </StackPanel>
+
+                            <Grid
                                 Grid.Row="3"
-                                Margin="0,16,0,0"
+                                Width="480"
+                                Margin="0,32,0,0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Top"
-                                Source="/Assets/Settings/Modules/CmdPal.png"
-                                Stretch="Uniform" />
+                                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                RequestedTheme="Dark">
+                                <Image Source="/Assets/Settings/CmdPal/CmdPal.png" Stretch="Uniform" />
+                            </Grid>
+
                         </Grid>
                     </tkcontrols:OpacityMaskView>
 
@@ -135,7 +156,7 @@
                         <FontIcon
                             HorizontalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Glyph="&#xEB3B;" />
+                            Glyph="&#xEA86;" />
                         <TextBlock
                             Grid.Row="1"
                             HorizontalAlignment="Center"
