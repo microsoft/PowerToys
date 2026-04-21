@@ -54,7 +54,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.Background>
-                                <ImageBrush ImageSource="/Assets/Settings/CmdPal/Wallpaper.png" />
+                                <ImageBrush ImageSource="/Assets/Settings/Modules/Wallpaper.png" />
                             </Grid.Background>
                             <Grid Height="28" RequestedTheme="Dark">
                                 <Grid.ColumnDefinitions>
