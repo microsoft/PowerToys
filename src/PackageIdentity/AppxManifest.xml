@@ -68,6 +68,16 @@
         AppListEntry="none">
       </uap:VisualElements>
     </Application>
+    <Application Id="PowerToys.KeyboardManagerEngine" Executable="KeyboardManagerEngine\PowerToys.KeyboardManagerEngine.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="PowerToys.KeyboardManagerEngine"
+        Description="PowerToys Keyboard Manager Engine"
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png"
+        AppListEntry="none">
+      </uap:VisualElements>
+    </Application>
     <Application Id="PowerToys.CmdPalExtension" Executable="Microsoft.CmdPal.Ext.PowerToys.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.CommandPaletteExtension"

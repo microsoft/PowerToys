@@ -28,6 +28,9 @@ namespace KeyboardManagerEditorUI.Helpers
             { ValidationErrorType.EmptyUrl, (ResourceHelper.GetString("Validation_EmptyUrl_Title"), ResourceHelper.GetString("Validation_EmptyUrl_Message")) },
             { ValidationErrorType.EmptyProgramPath, (ResourceHelper.GetString("Validation_EmptyProgramPath_Title"), ResourceHelper.GetString("Validation_EmptyProgramPath_Message")) },
             { ValidationErrorType.OneKeyMapping, (ResourceHelper.GetString("Validation_OneKeyMapping_Title"), ResourceHelper.GetString("Validation_OneKeyMapping_Message")) },
+            { ValidationErrorType.EmptyExpandAbbreviation, (ResourceHelper.GetString("Validation_EmptyExpandAbbreviation_Title"), ResourceHelper.GetString("Validation_EmptyExpandAbbreviation_Message")) },
+            { ValidationErrorType.EmptyExpandedText, (ResourceHelper.GetString("Validation_EmptyExpandedText_Title"), ResourceHelper.GetString("Validation_EmptyExpandedText_Message")) },
+            { ValidationErrorType.DuplicateExpandAbbreviation, (ResourceHelper.GetString("Validation_DuplicateExpandAbbreviation_Title"), ResourceHelper.GetString("Validation_DuplicateExpandAbbreviation_Message")) },
         };
 
         public static ValidationErrorType ValidateKeyMapping(
@@ -259,6 +262,34 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             return true;
+        }
+
+        public static ValidationErrorType ValidateExpandMapping(
+            string abbreviation,
+            string expandedText,
+            List<ExpandMapping> existingMappings,
+            bool isEditMode = false)
+        {
+            if (string.IsNullOrWhiteSpace(abbreviation))
+            {
+                return ValidationErrorType.EmptyExpandAbbreviation;
+            }
+
+            if (string.IsNullOrWhiteSpace(expandedText))
+            {
+                return ValidationErrorType.EmptyExpandedText;
+            }
+
+            int upperLimit = isEditMode ? 1 : 0;
+            int duplicateCount = existingMappings.Count(m =>
+                string.Equals(m.Abbreviation, abbreviation, StringComparison.OrdinalIgnoreCase));
+
+            if (duplicateCount > upperLimit)
+            {
+                return ValidationErrorType.DuplicateExpandAbbreviation;
+            }
+
+            return ValidationErrorType.NoError;
         }
 
         private static ValidationErrorType ValidateProgramOrUrlMapping(

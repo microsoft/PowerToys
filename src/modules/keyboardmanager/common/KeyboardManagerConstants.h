@@ -76,6 +76,15 @@ namespace KeyboardManagerConstants
     // Name of the property use to store the target application.
     inline const std::wstring TargetAppSettingName = L"targetApp";
 
+    // Name of the property used to store expand (abbreviation) mappings.
+    inline const std::wstring ExpandMappingsSettingName = L"expandMappings";
+
+    // Name of the property used to store the trigger key for expand mappings.
+    inline const std::wstring ExpandTriggerKeySettingName = L"triggerKey";
+
+    // Name of the property used to store the expanded text for expand mappings.
+    inline const std::wstring ExpandedTextSettingName = L"expandedText";
+
     // Name of the default configuration.
     inline const std::wstring DefaultConfiguration = L"default";
 

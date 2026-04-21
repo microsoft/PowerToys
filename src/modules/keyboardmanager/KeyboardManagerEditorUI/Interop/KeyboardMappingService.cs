@@ -253,6 +253,16 @@ namespace KeyboardManagerEditorUI.Interop
                 (int)shortcutKeyMapping.OperationType);
         }
 
+        public bool AddExpandMapping(string abbreviation, int triggerKey, string expandedText, string targetApp)
+        {
+            return KeyboardManagerInterop.AddExpandMapping(_configHandle, abbreviation, triggerKey, expandedText, targetApp);
+        }
+
+        public bool DeleteExpandMapping(string abbreviation, string targetApp)
+        {
+            return KeyboardManagerInterop.DeleteExpandMapping(_configHandle, abbreviation, targetApp);
+        }
+
         public bool SaveSettings()
         {
             return KeyboardManagerInterop.SaveMappingSettings(_configHandle);

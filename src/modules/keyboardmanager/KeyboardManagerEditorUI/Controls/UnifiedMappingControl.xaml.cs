@@ -43,6 +43,15 @@ namespace KeyboardManagerEditorUI.Controls
         private bool _textContentDirty;
         private bool _urlPathDirty;
         private bool _programPathDirty;
+        private bool _expandAbbreviationDirty;
+
+        // Expand trigger key tracking
+        private string _expandTriggerKey = "Space";
+        private bool _isCapturingExpandTriggerKey;
+
+        // Saved label/icon for restoring "Text" action item after Expand mode
+        private string? _savedTextLabel;
+        private string? _savedTextIconGlyph;
 
         public bool AllowChords { get; set; } = true;
 
@@ -66,6 +75,7 @@ namespace KeyboardManagerEditorUI.Controls
         {
             KeyOrShortcut,
             Mouse,
+            Expand,
         }
 
         /// <summary>
@@ -78,6 +88,7 @@ namespace KeyboardManagerEditorUI.Controls
             OpenUrl,
             OpenApp,
             MouseClick,
+            ReplaceWith,
             Disable,
         }
 
@@ -108,6 +119,7 @@ namespace KeyboardManagerEditorUI.Controls
                     return item.Tag?.ToString() switch
                     {
                         "Mouse" => TriggerType.Mouse,
+                        "Expand" => TriggerType.Expand,
                         _ => TriggerType.KeyOrShortcut,
                     };
                 }
@@ -123,6 +135,12 @@ namespace KeyboardManagerEditorUI.Controls
         {
             get
             {
+                // When in Expand trigger mode, the action is always ReplaceWith
+                if (CurrentTriggerType == TriggerType.Expand)
+                {
+                    return ActionType.ReplaceWith;
+                }
+
                 if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
                 {
                     return item.Tag?.ToString() switch
@@ -163,6 +181,12 @@ namespace KeyboardManagerEditorUI.Controls
                 RaiseValidationStateChanged();
             };
 
+            // Disable Text Expand option when TSF4 API is not available on this OS
+            if (!ManagedCommon.OSVersionHelper.IsTsf4Supported())
+            {
+                TriggerType_ExpandItem.IsEnabled = false;
+            }
+
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
 
@@ -200,13 +224,26 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 string? tag = item.Tag?.ToString();
 
-                // Cleanup keyboard hook when switching to mouse
-                if (tag == "Mouse")
+                // Cleanup keyboard hook when switching to mouse or expand
+                if (tag == "Mouse" || tag == "Expand")
                 {
                     CleanupKeyboardHook();
                     UncheckAllToggleButtons();
                 }
+
+                if (tag == "Expand")
+                {
+                    SwitchActionTypeToReplaceWith();
+                    HideAppSpecific();
+                }
+                else
+                {
+                    RestoreNormalActionTypes();
+                    ShowAppSpecific();
+                }
             }
+
+            RaiseValidationStateChanged();
         }
 
         private void TriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -247,6 +284,12 @@ namespace KeyboardManagerEditorUI.Controls
             if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
             {
                 string? tag = item.Tag?.ToString();
+
+                // Sync SwitchPresenter with the selected action type
+                if (tag != null && ActionSwitchPresenter != null)
+                {
+                    ActionSwitchPresenter.Value = tag;
+                }
 
                 // Cleanup keyboard hook when switching away from key/shortcut
                 if (tag != "KeyOrShortcut")
@@ -671,6 +714,25 @@ namespace KeyboardManagerEditorUI.Controls
 
         public void OnKeyDown(VirtualKey key, List<string> formattedKeys)
         {
+            // Expand trigger key capture: only accept a single key
+            if (_isCapturingExpandTriggerKey && formattedKeys.Count > 0)
+            {
+                _expandTriggerKey = formattedKeys[0];
+                if (ExpandTriggerKeyVisual != null)
+                {
+                    ExpandTriggerKeyVisual.Content = _expandTriggerKey;
+                }
+
+                // Auto-uncheck the toggle after capturing one key
+                if (ExpandTriggerKeyToggleBtn?.IsChecked == true)
+                {
+                    ExpandTriggerKeyToggleBtn.IsChecked = false;
+                }
+
+                RaiseValidationStateChanged();
+                return;
+            }
+
             if (_currentInputMode == KeyInputMode.OriginalKeys)
             {
                 _triggerKeys.Clear();
@@ -807,7 +869,14 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public bool IsInputComplete()
         {
-            // Trigger keys are always required
+            // Expand trigger: abbreviation + expanded text required (no trigger keys needed)
+            if (CurrentTriggerType == TriggerType.Expand)
+            {
+                return !string.IsNullOrWhiteSpace(ExpandAbbreviationBox?.Text)
+                    && !string.IsNullOrWhiteSpace(TextContentBox?.Text);
+            }
+
+            // Trigger keys are always required for other trigger types
             if (_triggerKeys.Count == 0)
             {
                 return false;
@@ -866,6 +935,12 @@ namespace KeyboardManagerEditorUI.Controls
         public void SetActionType(ActionType actionType)
         {
             if (ActionTypeComboBox == null)
+            {
+                return;
+            }
+
+            // ReplaceWith is handled by SwitchActionTypeToReplaceWith(), not by index
+            if (actionType == ActionType.ReplaceWith)
             {
                 return;
             }
@@ -1009,6 +1084,11 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 ActionKeyToggleBtn.IsChecked = false;
             }
+
+            if (ExpandTriggerKeyToggleBtn?.IsChecked == true)
+            {
+                ExpandTriggerKeyToggleBtn.IsChecked = false;
+            }
         }
 
         private static void SetDropDownsEnabled(ItemsControl itemsControl, bool enabled)
@@ -1090,6 +1170,21 @@ namespace KeyboardManagerEditorUI.Controls
                     }
 
                     break;
+
+                case ActionType.ReplaceWith:
+                    if (ExpandAbbreviationBox != null && _expandAbbreviationDirty && string.IsNullOrWhiteSpace(ExpandAbbreviationBox.Text))
+                    {
+                        ShowValidationErrorFromType(ValidationErrorType.EmptyExpandAbbreviation);
+                        return;
+                    }
+
+                    if (TextContentBox != null && _textContentDirty && string.IsNullOrWhiteSpace(TextContentBox.Text))
+                    {
+                        ShowValidationErrorFromType(ValidationErrorType.EmptyExpandedText);
+                        return;
+                    }
+
+                    break;
             }
 
             HideValidationMessage();
@@ -1111,6 +1206,24 @@ namespace KeyboardManagerEditorUI.Controls
             _textContentDirty = false;
             _urlPathDirty = false;
             _programPathDirty = false;
+            _expandAbbreviationDirty = false;
+
+            // Reset expand state
+            _expandTriggerKey = "Space";
+            _isCapturingExpandTriggerKey = false;
+
+            if (ExpandAbbreviationBox != null)
+            {
+                ExpandAbbreviationBox.Text = string.Empty;
+            }
+
+            if (ExpandTriggerKeyVisual != null)
+            {
+                ExpandTriggerKeyVisual.Content = "Space";
+            }
+
+            // Restore normal action types if currently in Expand mode
+            RestoreNormalActionTypes();
 
             // Hide any validation messages
             HideValidationMessage();
@@ -1168,6 +1281,7 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 AppSpecificCheckBox.IsChecked = false;
                 AppSpecificCheckBox.IsEnabled = false;
+                AppSpecificCheckBox.Visibility = Visibility.Visible;
             }
 
             // Reset app combo boxes
@@ -1287,6 +1401,167 @@ namespace KeyboardManagerEditorUI.Controls
         {
             AllowChords = AllowChordsCheckBox.IsChecked == true;
         }
+
+        #region Expand Trigger Handling
+
+        private void ExpandAbbreviationBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+        }
+
+        private void ExpandAbbreviationBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _expandAbbreviationDirty = true;
+            RaiseValidationStateChanged();
+        }
+
+        private void ExpandTriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ExpandTriggerKeyToggleBtn.IsChecked == true)
+            {
+                _isCapturingExpandTriggerKey = true;
+                _currentInputMode = KeyInputMode.OriginalKeys;
+
+                // Uncheck other toggles
+                UncheckAllToggleButtons();
+
+                KeyboardHookHelper.Instance.ActivateHook(this);
+            }
+        }
+
+        private void ExpandTriggerKeyToggleBtn_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (_isCapturingExpandTriggerKey)
+            {
+                _isCapturingExpandTriggerKey = false;
+                CleanupKeyboardHook();
+            }
+        }
+
+        private void HideAppSpecific()
+        {
+            if (AppSpecificCheckBox != null)
+            {
+                AppSpecificCheckBox.Visibility = Visibility.Collapsed;
+            }
+
+            if (AppNameTextBox != null)
+            {
+                AppNameTextBox.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void ShowAppSpecific()
+        {
+            if (AppSpecificCheckBox != null)
+            {
+                AppSpecificCheckBox.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void SwitchActionTypeToReplaceWith()
+        {
+            if (ActionTypeComboBox == null || ActionTypeTextItem == null)
+            {
+                return;
+            }
+
+            // Select the "Text" action item and override its label to "Replace with"
+            ActionTypeComboBox.SelectedItem = ActionTypeTextItem;
+            ActionTypeComboBox.IsEnabled = false;
+
+            if (ActionTypeTextLabel != null)
+            {
+                _savedTextLabel = ActionTypeTextLabel.Text;
+                ActionTypeTextLabel.Text = "Replace with";
+            }
+
+            if (ActionTypeTextIcon != null)
+            {
+                _savedTextIconGlyph = ActionTypeTextIcon.Glyph;
+                ActionTypeTextIcon.Glyph = "\uE8C8";
+            }
+        }
+
+        private void RestoreNormalActionTypes()
+        {
+            if (ActionTypeComboBox == null)
+            {
+                return;
+            }
+
+            // Restore original label and icon on the "Text" action item
+            if (ActionTypeTextLabel != null && _savedTextLabel != null)
+            {
+                ActionTypeTextLabel.Text = _savedTextLabel;
+                _savedTextLabel = null;
+            }
+
+            if (ActionTypeTextIcon != null && _savedTextIconGlyph != null)
+            {
+                ActionTypeTextIcon.Glyph = _savedTextIconGlyph;
+                _savedTextIconGlyph = null;
+            }
+
+            ActionTypeComboBox.SelectedIndex = 0;
+            ActionTypeComboBox.IsEnabled = true;
+        }
+
+        #endregion
+
+        #region Expand Public API - Getters
+
+        public string GetExpandAbbreviation() => ExpandAbbreviationBox?.Text ?? string.Empty;
+
+        public string GetExpandTriggerKey() => _expandTriggerKey;
+
+        public string GetExpandedText() => TextContentBox?.Text ?? string.Empty;
+
+        #endregion
+
+        #region Expand Public API - Setters
+
+        public void SetExpandAbbreviation(string abbreviation)
+        {
+            if (ExpandAbbreviationBox != null)
+            {
+                ExpandAbbreviationBox.Text = abbreviation;
+            }
+        }
+
+        public void SetExpandTriggerKey(string triggerKey)
+        {
+            _expandTriggerKey = triggerKey;
+            if (ExpandTriggerKeyVisual != null)
+            {
+                ExpandTriggerKeyVisual.Content = triggerKey;
+            }
+        }
+
+        public void SetExpandedText(string text)
+        {
+            if (TextContentBox != null)
+            {
+                TextContentBox.Text = text;
+            }
+        }
+
+        public void SetTriggerType(TriggerType triggerType)
+        {
+            int index = triggerType switch
+            {
+                TriggerType.Expand => 1,
+                _ => 0,
+            };
+
+            if (TriggerTypeComboBox != null)
+            {
+                TriggerTypeComboBox.SelectedIndex = index;
+            }
+        }
+
+        #endregion
     }
 }
 

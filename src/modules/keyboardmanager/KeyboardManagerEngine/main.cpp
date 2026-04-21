@@ -9,6 +9,7 @@
 #include <common/utils/gpo.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManager.h>
+#include <keyboardmanager/KeyboardManagerEngineLibrary/Tsf4TextReplacer.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
 #include <common/interop/shared_constants.h>
 
@@ -73,6 +74,9 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
         });
     }
 
+    // Initialize TSF4 text input provider on the main thread (before the message loop).
+    Tsf4TextReplacer::Initialize();
+
     auto kbm = KeyboardManager();
     if (kbm.HasRegisteredRemappings())
         kbm.StartLowlevelKeyboardHook();
@@ -84,6 +88,7 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
     run_message_loop({}, {}, { { KeyboardManager::StartHookMessageID, StartHookFunc } });
 
     kbm.StopLowlevelKeyboardHook();
+    Tsf4TextReplacer::Shutdown();
     Trace::UnregisterProvider();
 
     trace.Flush();

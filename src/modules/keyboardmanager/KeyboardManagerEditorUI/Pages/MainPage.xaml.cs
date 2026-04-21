@@ -81,6 +81,8 @@ namespace KeyboardManagerEditorUI.Pages
 
         public ObservableCollection<URLShortcut> UrlShortcuts { get; } = new();
 
+        public ObservableCollection<ExpandMapping> ExpandMappings { get; } = new();
+
         [DllImport("PowerToys.KeyboardManagerEditorLibraryWrapper.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         private static extern void GetKeyDisplayName(int keyCode, [Out] StringBuilder keyName, int maxLength);
 
@@ -92,6 +94,7 @@ namespace KeyboardManagerEditorUI.Pages
                 TextMapping,
                 ProgramShortcut,
                 UrlShortcut,
+                ExpandMapping,
             }
 
             public ItemType Type { get; set; }
@@ -305,6 +308,33 @@ namespace KeyboardManagerEditorUI.Pages
             await ShowRemappingDialog();
         }
 
+        private async void ExpandMappingsList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            if (e.ClickedItem is not ExpandMapping expandMapping)
+            {
+                return;
+            }
+
+            _isEditMode = true;
+            _editingItem = new EditingItem
+            {
+                Type = EditingItem.ItemType.ExpandMapping,
+                Item = expandMapping,
+                OriginalTriggerKeys = new List<string>(),
+                AppName = expandMapping.AppName,
+                IsAllApps = expandMapping.IsAllApps,
+            };
+
+            UnifiedMappingControl.Reset();
+            UnifiedMappingControl.SetTriggerType(UnifiedMappingControl.TriggerType.Expand);
+            UnifiedMappingControl.SetExpandAbbreviation(expandMapping.Abbreviation);
+            UnifiedMappingControl.SetExpandTriggerKey(expandMapping.TriggerKey);
+            UnifiedMappingControl.SetExpandedText(expandMapping.ExpandedText);
+            UnifiedMappingControl.SetAppSpecific(!expandMapping.IsAllApps, expandMapping.AppName);
+            RemappingDialog.Title = "Edit remapping";
+            await ShowRemappingDialog();
+        }
+
         private async System.Threading.Tasks.Task ShowRemappingDialog()
         {
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
@@ -367,7 +397,10 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
 
-                if (triggerKeys == null || triggerKeys.Count == 0)
+                // Expand trigger type does not use traditional trigger keys
+                bool isExpandMode = UnifiedMappingControl.CurrentTriggerType == UnifiedMappingControl.TriggerType.Expand;
+
+                if (!isExpandMode && (triggerKeys == null || triggerKeys.Count == 0))
                 {
                     UnifiedMappingControl.ShowValidationErrorFromType(ValidationErrorType.EmptyOriginalKeys);
                     args.Cancel = true;
@@ -394,6 +427,7 @@ namespace KeyboardManagerEditorUI.Pages
                     UnifiedMappingControl.ActionType.OpenUrl => SaveUrlMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.OpenApp => SaveProgramMapping(triggerKeys),
                     UnifiedMappingControl.ActionType.Disable => SaveDisableMapping(triggerKeys),
+                    UnifiedMappingControl.ActionType.ReplaceWith => SaveExpandMapping(),
                     UnifiedMappingControl.ActionType.MouseClick => throw new NotImplementedException("Mouse click remapping is not yet supported."),
                     _ => false,
                 };
@@ -439,6 +473,8 @@ namespace KeyboardManagerEditorUI.Pages
                     triggerKeys, UnifiedMappingControl.GetProgramPath(), isAppSpecific, appName, _mappingService!, _isEditMode),
                 UnifiedMappingControl.ActionType.Disable => ValidationHelper.ValidateDisableMapping(
                     triggerKeys, isAppSpecific, appName, _mappingService!, _isEditMode, editingRemapping),
+                UnifiedMappingControl.ActionType.ReplaceWith => ValidationHelper.ValidateExpandMapping(
+                    UnifiedMappingControl.GetExpandAbbreviation(), UnifiedMappingControl.GetExpandedText(), ExpandMappings.ToList(), _isEditMode),
                 _ => ValidationErrorType.NoError,
             };
         }
@@ -683,6 +719,44 @@ namespace KeyboardManagerEditorUI.Pages
             return saved;
         }
 
+        private bool SaveExpandMapping()
+        {
+            string abbreviation = UnifiedMappingControl.GetExpandAbbreviation();
+            string triggerKey = UnifiedMappingControl.GetExpandTriggerKey();
+            string expandedText = UnifiedMappingControl.GetExpandedText();
+
+            if (string.IsNullOrWhiteSpace(abbreviation) || string.IsNullOrWhiteSpace(expandedText))
+            {
+                return false;
+            }
+
+            string targetApp = UnifiedMappingControl.GetIsAppSpecific() ? UnifiedMappingControl.GetAppName() : string.Empty;
+
+            var shortcutKeyMapping = new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.ExpandText,
+                OriginalKeys = abbreviation,
+                TargetKeys = triggerKey,
+                TargetText = expandedText,
+                TargetApp = targetApp,
+            };
+
+            // Resolve trigger key name to VK code (e.g., "Space" → 0x20)
+            int triggerKeyVk = KeyboardManagerInterop.GetKeyCodeFromName(triggerKey);
+            if (triggerKeyVk == 0)
+            {
+                triggerKeyVk = 0x20; // Default to VK_SPACE
+            }
+
+            // Persist to engine config (default.json) via C++ interop
+            _mappingService?.AddExpandMapping(abbreviation, triggerKeyVk, expandedText, targetApp);
+            _mappingService?.SaveSettings();
+
+            // Also persist to editor settings for UI state
+            SettingsManager.AddShortcutKeyMappingToSettings(shortcutKeyMapping);
+            return true;
+        }
+
         #endregion
 
         #region Delete Handlers
@@ -739,6 +813,19 @@ namespace KeyboardManagerEditorUI.Pages
 
         private void HandleShortcutDelete(IToggleableShortcut shortcut)
         {
+            if (shortcut is ExpandMapping)
+            {
+                ShortcutKeyMapping skm = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+                if (shortcut.IsActive)
+                {
+                    _mappingService!.DeleteExpandMapping(skm.OriginalKeys, skm.TargetApp);
+                    _mappingService.SaveSettings();
+                }
+
+                SettingsManager.RemoveShortcutKeyMappingFromSettings(shortcut.Id);
+                return;
+            }
+
             bool deleted = shortcut.Shortcut.Count == 1
                 ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0]) // Remapping has its own handler, single key will always be text mapping
                 : DeleteMultiKeyShortcut(shortcut);
@@ -804,14 +891,34 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            if (shortcut is ExpandMapping expandMapping)
+            {
+                ShortcutKeyMapping skm = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+                int triggerKeyVk = KeyboardManagerInterop.GetKeyCodeFromName(skm.TargetKeys);
+                if (triggerKeyVk == 0)
+                {
+                    triggerKeyVk = 0x20;
+                }
+
+                bool saved = _mappingService!.AddExpandMapping(skm.OriginalKeys, triggerKeyVk, skm.TargetText, skm.TargetApp);
+                if (saved)
+                {
+                    shortcut.IsActive = true;
+                    SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                    _mappingService.SaveSettings();
+                }
+
+                return;
+            }
+
             ShortcutKeyMapping shortcutKeyMapping = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
-            bool saved = shortcut.Shortcut.Count == 1
+            bool saved2 = shortcut.Shortcut.Count == 1
                 ? _mappingService!.AddSingleKeyToTextMapping(_mappingService.GetKeyCodeFromName(shortcut.Shortcut[0]), shortcutKeyMapping.TargetText)
                 : shortcutKeyMapping.OperationType == ShortcutOperationType.RemapText
                     ? _mappingService!.AddShortcutMapping(shortcutKeyMapping.OriginalKeys, shortcutKeyMapping.TargetText, operationType: ShortcutOperationType.RemapText)
                     : _mappingService!.AddShortcutMapping(shortcutKeyMapping);
 
-            if (saved)
+            if (saved2)
             {
                 shortcut.IsActive = true;
                 SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
@@ -829,11 +936,25 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            bool deleted = shortcut.Shortcut.Count == 1
+            if (shortcut is ExpandMapping expandMapping)
+            {
+                ShortcutKeyMapping skm = SettingsManager.EditorSettings.ShortcutSettingsDictionary[shortcut.Id].Shortcut;
+                bool deleted = _mappingService!.DeleteExpandMapping(skm.OriginalKeys, skm.TargetApp);
+                if (deleted)
+                {
+                    shortcut.IsActive = false;
+                    SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
+                    _mappingService.SaveSettings();
+                }
+
+                return;
+            }
+
+            bool deleted2 = shortcut.Shortcut.Count == 1
                 ? DeleteSingleKeyToTextMapping(shortcut.Shortcut[0])
                 : DeleteMultiKeyMapping(shortcut.Shortcut, shortcut.AppName);
 
-            if (deleted)
+            if (deleted2)
             {
                 shortcut.IsActive = false;
                 SettingsManager.ToggleShortcutKeyMappingActiveState(shortcut.Id);
@@ -882,12 +1003,13 @@ namespace KeyboardManagerEditorUI.Pages
             LoadTextMappings();
             LoadProgramShortcuts();
             LoadUrlShortcuts();
+            LoadExpandMappings();
             UpdateHasAnyMappings();
         }
 
         private void UpdateHasAnyMappings()
         {
-            bool hasAny = RemappingList.Count > 0 || DisabledList.Count > 0 || TextMappings.Count > 0 || ProgramShortcuts.Count > 0 || UrlShortcuts.Count > 0;
+            bool hasAny = RemappingList.Count > 0 || DisabledList.Count > 0 || TextMappings.Count > 0 || ProgramShortcuts.Count > 0 || UrlShortcuts.Count > 0 || ExpandMappings.Count > 0;
             MappingState = hasAny ? "HasMappings" : "Empty";
         }
 
@@ -1020,6 +1142,35 @@ namespace KeyboardManagerEditorUI.Pages
                     IsActive = shortcutSettings.IsActive,
                     IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
                     AppName = mapping.TargetApp ?? string.Empty,
+                });
+            }
+        }
+
+        private void LoadExpandMappings()
+        {
+            SettingsManager.EditorSettings.ShortcutsByOperationType.TryGetValue(ShortcutOperationType.ExpandText, out var expandIds);
+
+            if (expandIds == null)
+            {
+                return;
+            }
+
+            ExpandMappings.Clear();
+
+            foreach (var id in expandIds)
+            {
+                ShortcutSettings shortcutSettings = SettingsManager.EditorSettings.ShortcutSettingsDictionary[id];
+                ShortcutKeyMapping mapping = shortcutSettings.Shortcut;
+
+                ExpandMappings.Add(new ExpandMapping
+                {
+                    Abbreviation = mapping.OriginalKeys,
+                    TriggerKey = mapping.TargetKeys,
+                    ExpandedText = mapping.TargetText,
+                    IsAllApps = string.IsNullOrEmpty(mapping.TargetApp),
+                    AppName = mapping.TargetApp ?? string.Empty,
+                    Id = shortcutSettings.Id,
+                    IsActive = shortcutSettings.IsActive,
                 });
             }
         }

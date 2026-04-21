@@ -38,10 +38,12 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="trace.h" />
+    <ClInclude Include="Tsf4TextReplacer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KeyboardEventHandlers.cpp" />
     <ClCompile Include="KeyboardManager.cpp" />
+    <ClCompile Include="Tsf4TextReplacer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
     </ClCompile>
@@ -55,6 +57,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <!-- TSF4 (Text Services Framework 4) WinMD for C++/WinRT projection generation -->
+  <ItemGroup>
+    <Reference Include="Windows.UI.Input.Preview.Text.PreviewTextContract">
+      <HintPath>$(WindowsSdkDir)References\10.0.26100.0\Windows.UI.Input.Preview.Text.PreviewTextContract\1.0.0.0\Windows.UI.Input.Preview.Text.PreviewTextContract.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(RepoRoot)deps\spdlog.props" />

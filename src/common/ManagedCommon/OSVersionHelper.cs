@@ -22,5 +22,14 @@ namespace ManagedCommon
         {
             return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build > 22000;
         }
+
+        /// <summary>
+        /// TSF4 (Text Services Framework 4) APIs require Windows 11 build 20000+.
+        /// TODO: Confirm the exact minimum build number once finalized.
+        /// </summary>
+        public static bool IsTsf4Supported()
+        {
+            return Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= 10000;
+        }
     }
 }

@@ -8,6 +8,7 @@
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
+#include "Tsf4TextReplacer.h"
 
 #include <TlHelp32.h>
 #include <thread>
@@ -1802,5 +1803,64 @@ namespace KeyboardEventHandlers
         Helpers::SendTextInput(*remapping);
 
         return 1;
+    }
+
+    // Function to handle text expansion (abbreviation → expanded text) via TSF4.
+    // When the trigger key is pressed, reads the last N characters from the focused
+    // text box. If they match an abbreviation, replaces them with the expanded text.
+    intptr_t HandleExpandTextEvent(LowlevelKeyboardEvent* data, State& state)
+    {
+        if (GeneratedByKBM(data))
+        {
+            return 0;
+        }
+
+        if (data->wParam != WM_KEYDOWN)
+        {
+            return 0;
+        }
+
+        if (!Tsf4TextReplacer::IsAvailable())
+        {
+            return 0;
+        }
+
+        DWORD vkCode = data->lParam->vkCode;
+
+        // Check if this key is a trigger key for any expand mapping.
+        // Also filter by the current application if app-specific.
+        std::wstring currentApp;
+        bool currentAppResolved = false;
+
+        for (const auto& mapping : state.expandMappings)
+        {
+            if (mapping.triggerKey != vkCode)
+            {
+                continue;
+            }
+
+            // Check app-specific filter
+            if (!mapping.appName.empty())
+            {
+                if (!currentAppResolved)
+                {
+                    currentApp = Helpers::GetCurrentApplication(false);
+                    currentAppResolved = true;
+                }
+
+                // Case-insensitive comparison
+                if (_wcsicmp(currentApp.c_str(), mapping.appName.c_str()) != 0)
+                {
+                    continue;
+                }
+            }
+
+            if (Tsf4TextReplacer::TryExpand(mapping.abbreviation, mapping.expandedText))
+            {
+                return 1; // Swallow the trigger key
+            }
+        }
+
+        return 0;
     }
 }

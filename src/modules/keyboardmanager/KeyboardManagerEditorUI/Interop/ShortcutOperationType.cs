@@ -16,5 +16,6 @@ namespace KeyboardManagerEditorUI.Interop
         RunProgram = 1,
         OpenUri = 2,
         RemapText = 3,
+        ExpandText = 4,
     }
 }
