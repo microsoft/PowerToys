@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;

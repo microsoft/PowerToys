@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation.Collections;

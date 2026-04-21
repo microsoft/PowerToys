@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.Common.Commands;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Commands;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -50,6 +50,13 @@ internal sealed partial class RunExeItem : FileItem
         _telemetryService = telemetryService;
 
         UpdateArgs(args);
+
+        var command = new AnonymousCommand(Run)
+        {
+            Name = ResourceLoaderInstance.GetString("generic_run_command"),
+            Result = CommandResult.Dismiss(),
+        };
+        Command = command;
 
         // Use a lazy to populate the MoreCommands for Run items
         _lazyMoreCommands = new Lazy<IContextItem[]>(() =>

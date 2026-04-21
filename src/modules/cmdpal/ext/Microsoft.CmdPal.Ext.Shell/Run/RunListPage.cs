@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -272,17 +272,24 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         }
 
         if (parseResult is ParseCommandlineResult res2
-            && _pathItems.Count == 0)
+            /*&& _pathItems.Count == 0*/)
         {
             var item = new RunExeItem(res2.FilePath, res2.Arguments, res2.FilePath, (s) => _historyService.AddRunHistoryItem(s), _telemetryService)
             {
-                Title = Path.GetFileName(res2.FilePath),
-
                 // TextToSuggest = res2.FilePath,
+                // Title = Path.GetFileName(res2.FilePath),
+                Title = "Run command",
+                Subtitle = newSearch,
             };
             _exeItem = item;
         }
 
+        // _exeItem = new ListItem()
+        // {
+        //    Title = "Run command",
+        //    Subtitle = newSearch,
+        //    Icon = this.Icon,
+        // };
         FilterHistoryItems(newSearch, searchText);
     }
 
