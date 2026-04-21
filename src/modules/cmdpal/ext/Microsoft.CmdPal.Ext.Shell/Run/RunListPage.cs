@@ -277,12 +277,13 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         // We however need to always have a command that will run the thing.
         if (parseResult is ParseCommandlineResult res2)
         {
-            var item = new RunExeItem(res2.FilePath, res2.Arguments, res2.FilePath, (s) => _historyService.AddRunHistoryItem(s), _telemetryService)
-            {
-                Title = "Run command",
-                Subtitle = newSearch,
-                TextToSuggest = newSearch,
-            };
+            // var item = new RunExeItem(res2.FilePath, res2.Arguments, res2.FilePath, (s) => _historyService.AddRunHistoryItem(s), _telemetryService)
+            // {
+            //    Title = "Run command",
+            //    Subtitle = newSearch,
+            //    TextToSuggest = newSearch,
+            // };
+            var item = new RunCommandLineItem(res2.FilePath, newSearch, (s) => _historyService.AddRunHistoryItem(s), _telemetryService);
             _exeItem = item;
         }
 
