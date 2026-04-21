@@ -55,12 +55,32 @@
                             </Grid.RowDefinitions>
                             <Grid.Background>
                                 <ImageBrush ImageSource="C:\\Users\\nielslaute\\AppData\\Roaming\\Microsoft\\Windows\\Themes\\TranscodedWallpaper" />
-
                             </Grid.Background>
                             <Grid
-                                Height="32"
+                                Height="28"
+                                Padding="4,0,4,0"
                                 Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
-                                RequestedTheme="Dark" />
+                                RequestedTheme="Dark">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Viewbox Height="20" HorizontalAlignment="Left">
+                                    <Image Source="/Assets/Settings/CmdPal/Dock-Left.png" />
+                                </Viewbox>
+
+                                <Viewbox Grid.Column="1" Height="24">
+                                    <Image Source="/Assets/Settings/CmdPal/Dock-Center.png" />
+                                </Viewbox>
+
+                                <Viewbox
+                                    Grid.Column="2"
+                                    Height="24"
+                                    HorizontalAlignment="Right">
+                                    <Image Source="/Assets/Settings/CmdPal/Dock-Right.png" />
+                                </Viewbox>
+                            </Grid>
                             <TextBlock
                                 x:Uid="CmdPal_HeroTitle"
                                 Grid.Row="1"
