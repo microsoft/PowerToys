@@ -5,6 +5,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Flyout;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -30,7 +32,7 @@ namespace PowerDisplay
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
         private HotkeyService? _hotkeyService;
-        private DpiSuppressor? _dpiSuppressor;
+        private WindowMessageHook? _messageHook;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
@@ -69,9 +71,9 @@ namespace PowerDisplay
                 _hotkeyService = new HotkeyService(_settingsUtils, ToggleWindow);
                 _hotkeyService.Initialize(hwnd);
 
-                // 6. Subclass WndProc for hotkey handling and DPI change suppression
-                Logger.LogTrace("MainWindow constructor: Setting up DpiSuppressor");
-                _dpiSuppressor = new DpiSuppressor(this, (uMsg, wParam, _) =>
+                // 6. Subclass WndProc to route WM_HOTKEY messages into HotkeyService.
+                Logger.LogTrace("MainWindow constructor: Setting up WindowMessageHook");
+                _messageHook = new WindowMessageHook(this, (uMsg, wParam, _) =>
                     _hotkeyService?.HandleMessage(uMsg, wParam) == true);
                 Logger.LogTrace("MainWindow constructor: HotkeyService initialized");
 
@@ -377,17 +379,14 @@ namespace PowerDisplay
                 var finalHeightDip = Math.Min(contentHeight, maxHeightDip);
                 Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, maxHeightDip={maxHeightDip}, finalHeightDip={finalHeightDip}");
 
-                // Suppress WM_DPICHANGED during MoveAndResize to prevent double-scaling
-                // when moving across monitors with different DPI settings.
-                using (_dpiSuppressor?.Suppress() ?? default)
-                {
-                    WindowHelper.PositionWindowBottomRight(
-                        this,
-                        AppConstants.UI.WindowWidthDip,
-                        finalHeightDip,
-                        AppConstants.UI.WindowRightMarginDip,
-                        AppConstants.UI.WindowBottomMarginDip);
-                }
+                // FlyoutWindowHelper handles cross-monitor DPI internally via a 1×1 teleport
+                // before the final move, so no WM_DPICHANGED suppression is required here.
+                FlyoutWindowHelper.PositionWindowBottomRight(
+                    this,
+                    AppConstants.UI.WindowWidthDip,
+                    finalHeightDip,
+                    AppConstants.UI.WindowRightMarginDip,
+                    AppConstants.UI.WindowBottomMarginDip);
             }
             catch (Exception ex)
             {
@@ -397,25 +396,25 @@ namespace PowerDisplay
 
         private static int GetAdaptiveWindowMaxHeightDip()
         {
-            if (!WindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            if (!FlyoutWindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
             {
                 return AppConstants.UI.WindowMaxHeightDip;
             }
 
-            double dpiScale = WindowHelper.GetDpiScale(displayArea);
-            int workAreaHeightDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Height, dpiScale);
+            double dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
+            int workAreaHeightDip = FlyoutWindowHelper.ScaleToDip(displayArea.WorkArea.Height, dpiScale);
             return (int)Math.Floor(workAreaHeightDip * AppConstants.UI.WindowMaxWorkAreaHeightRatio);
         }
 
         private static double GetAdaptiveFlyoutMaxWidthDip()
         {
-            if (!WindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            if (!FlyoutWindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
             {
                 return AppConstants.UI.FlyoutContextMenuMaxWidthDip;
             }
 
-            double dpiScale = WindowHelper.GetDpiScale(displayArea);
-            int workAreaWidthDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Width, dpiScale);
+            double dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
+            int workAreaWidthDip = FlyoutWindowHelper.ScaleToDip(displayArea.WorkArea.Width, dpiScale);
             double adaptiveMaxWidthDip = Math.Floor(workAreaWidthDip * AppConstants.UI.FlyoutContextMenuMaxWorkAreaWidthRatio);
 
             return Math.Max(
@@ -431,7 +430,7 @@ namespace PowerDisplay
                     ? (int)Math.Ceiling(this.Height)
                     : AppConstants.UI.WindowMinHeightDip;
 
-                WindowHelper.PositionWindowBottomRight(
+                FlyoutWindowHelper.PositionWindowBottomRight(
                     this,  // MainWindow inherits from WindowEx
                     AppConstants.UI.WindowWidthDip,
                     windowHeightDip,
@@ -500,7 +499,7 @@ namespace PowerDisplay
         public void Dispose()
         {
             _hotkeyService?.Dispose();
-            _dpiSuppressor?.Dispose();
+            _messageHook?.Dispose();
             _viewModel?.Dispose();
             GC.SuppressFinalize(this);
         }
