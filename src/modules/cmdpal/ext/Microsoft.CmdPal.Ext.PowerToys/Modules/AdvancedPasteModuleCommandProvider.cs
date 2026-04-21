@@ -21,7 +21,7 @@ internal sealed class AdvancedPasteModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new OpenAdvancedPasteCommand())
+            yield return new ListItem(new OpenAdvancedPasteCommand() { Id = "com.microsoft.powertoys.advancedPaste.open" })
             {
                 Title = Resources.AdvancedPaste_Open_Title,
                 Subtitle = Resources.AdvancedPaste_Open_Subtitle,
@@ -29,7 +29,7 @@ internal sealed class AdvancedPasteModuleCommandProvider : ModuleCommandProvider
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.advancedPaste.openSettings" })
         {
             Title = title,
             Subtitle = Resources.AdvancedPaste_Settings_Subtitle,

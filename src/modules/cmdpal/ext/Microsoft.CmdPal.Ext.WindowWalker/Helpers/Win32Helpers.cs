@@ -2,24 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Helpers;
 
 public static class Win32Helpers
 {
-    /// <summary>
-    /// Detects the type of system firmware which is equal to the boot type by calling the method <see cref="NativeMethods.GetFirmwareType"/>.
-    /// </summary>
-    /// <returns>Firmware type like Uefi or Bios.</returns>
-    public static FirmwareType GetSystemFirmwareType()
-    {
-        FirmwareType firmwareType = default;
-        _ = NativeMethods.GetFirmwareType(ref firmwareType);
-        return firmwareType;
-    }
-
     /// <summary>
     /// Returns the last Win32 Error code thrown by a native method if enabled for this method.
     /// </summary>
@@ -43,15 +31,5 @@ public static class Win32Helpers
         }
 
         return NativeMethods.CloseHandle(handle);
-    }
-
-    /// <summary>
-    /// Gets the description for an HRESULT error code.
-    /// </summary>
-    /// <param name="hr">The HRESULT number</param>
-    /// <returns>A string containing the description.</returns>
-    public static string MessageFromHResult(int hr)
-    {
-        return Marshal.GetExceptionForHR(hr)?.Message ?? string.Empty;
     }
 }

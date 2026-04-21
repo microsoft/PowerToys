@@ -39,6 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             DataContext = ViewModel;
 
             Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Unloaded += (s, e) => ViewModel?.Dispose();
         }
 
         public void RefreshEnabledState()
@@ -48,12 +49,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void WhatsNewButton_Click(object sender, RoutedEventArgs e)
         {
-            if (App.GetScoobeWindow() == null)
-            {
-                App.SetScoobeWindow(new ScoobeWindow());
-            }
-
-            App.GetScoobeWindow().Activate();
+            ((App)App.Current)!.OpenScoobe();
         }
 
         private void SortAlphabetical_Click(object sender, RoutedEventArgs e)

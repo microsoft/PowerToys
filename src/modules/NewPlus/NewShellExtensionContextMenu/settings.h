@@ -16,6 +16,8 @@ public:
     void SetReplaceVariables(const bool resolve_variables);
     std::wstring GetTemplateLocation() const;
     void SetTemplateLocation(const std::wstring template_location);
+    bool GetHideBuiltInNew();
+    void SetHideBuiltInNew(const bool hide_built_in_new);
 
     void Save();
     void Load();
@@ -29,6 +31,7 @@ private:
         bool hide_starting_digits{ true };
         bool replace_variables{ true };
         std::wstring template_location;
+        bool hide_built_in_new_preference{ false };
     };
 
     void RefreshEnabledState();

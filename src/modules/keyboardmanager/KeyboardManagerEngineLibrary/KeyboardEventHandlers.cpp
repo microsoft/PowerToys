@@ -538,7 +538,11 @@ namespace KeyboardEventHandlers
                         // Release original shortcut state (release in reverse order of shortcut to be accurate)
                         Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
-                        Helpers::SetTextKeyEvents(keyEventList, remapping);
+                        // Send modifier release events first, then send text directly
+                        // (SendTextInput handles multiline by flushing between chunks)
+                        ii.SendVirtualInput(keyEventList);
+                        keyEventList.clear();
+                        Helpers::SendTextInput(remapping);
                     }
 
                     it->second.isShortcutInvoked = true;
@@ -719,7 +723,9 @@ namespace KeyboardEventHandlers
                         else if (remapToText)
                         {
                             auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
-                            Helpers::SetTextKeyEvents(keyEventList, remapping);
+                            ii.SendVirtualInput(keyEventList);
+                            Helpers::SendTextInput(remapping);
+                            return 1;
                         }
 
                         ii.SendVirtualInput(keyEventList);
@@ -1793,9 +1799,7 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        std::vector<INPUT> keyEventList;
-        Helpers::SetTextKeyEvents(keyEventList, *remapping);
-        ii.SendVirtualInput(keyEventList);
+        Helpers::SendTextInput(*remapping);
 
         return 1;
     }

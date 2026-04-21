@@ -5,13 +5,14 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers.Analyzers;
 
 internal sealed class TextMetadataProvider : IClipboardMetadataProvider
 {
-    public string SectionTitle => "Text statistics";
+    public string SectionTitle => Resources.metadata_text_section_title;
 
     public bool CanHandle(ClipboardItem item) => item.IsText;
 
@@ -27,32 +28,32 @@ internal sealed class TextMetadataProvider : IClipboardMetadataProvider
 
         result.Add(new DetailsElement
         {
-            Key = "Characters",
+            Key = Resources.metadata_text_characters_key,
             Data = new DetailsLink(r.CharacterCount.ToString(CultureInfo.CurrentCulture)),
         });
         result.Add(new DetailsElement
         {
-            Key = "Words",
+            Key = Resources.metadata_text_words_key,
             Data = new DetailsLink(r.WordCount.ToString(CultureInfo.CurrentCulture)),
         });
         result.Add(new DetailsElement
         {
-            Key = "Sentences",
+            Key = Resources.metadata_text_sentences_key,
             Data = new DetailsLink(r.SentenceCount.ToString(CultureInfo.CurrentCulture)),
         });
         result.Add(new DetailsElement
         {
-            Key = "Lines",
+            Key = Resources.metadata_text_lines_key,
             Data = new DetailsLink(r.LineCount.ToString(CultureInfo.CurrentCulture)),
         });
         result.Add(new DetailsElement
         {
-            Key = "Paragraphs",
+            Key = Resources.metadata_text_paragraphs_key,
             Data = new DetailsLink(r.ParagraphCount.ToString(CultureInfo.CurrentCulture)),
         });
         result.Add(new DetailsElement
         {
-            Key = "Line Ending",
+            Key = Resources.metadata_text_line_ending_key,
             Data = new DetailsLink(r.LineEnding.ToString()),
         });
 

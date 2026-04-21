@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Controls;
+using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
@@ -19,6 +19,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Composition;
@@ -46,6 +47,7 @@ namespace Microsoft.CmdPal.UI;
 public sealed partial class MainWindow : WindowEx,
     IRecipient<DismissMessage>,
     IRecipient<ShowWindowMessage>,
+    IRecipient<ShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
     IRecipient<QuitMessage>,
     IRecipient<NavigateToPageMessage>,
@@ -71,7 +73,12 @@ public sealed partial class MainWindow : WindowEx,
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
+    private readonly List<long> _breakthroughTimestamps = [];
+
     private bool _ignoreHotKeyWhenFullScreen = true;
+    private bool _ignoreHotKeyWhenBusy;
+    private bool _allowBreakthroughShortcut;
+    private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
 
     // Session tracking for telemetry
@@ -91,6 +98,7 @@ public sealed partial class MainWindow : WindowEx,
     private WindowPosition _currentWindowPosition = new();
 
     private bool _preventHideWhenDeactivated;
+    private bool _isLoadedFromDock;
 
     private DevRibbon? _devRibbon;
 
@@ -127,14 +135,25 @@ public sealed partial class MainWindow : WindowEx,
 
         _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
 
+        WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
+
+        // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
+        // member (and instead like, use a local), then the pointer we marshal
+        // into the WindowLongPtr will be useless after we leave this function,
+        // and our **WindProc will explode**.
+        _hotkeyWndProc = HotKeyPrc;
+        var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
+        _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
+
         this.SetIcon();
         AppWindow.Title = RS_.GetString("AppName");
-        RestoreWindowPosition();
+        RestoreWindowPositionFromSavedSettings();
         UpdateWindowPositionInMemory();
 
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigateToPageMessage>(this);
         WeakReferenceMessenger.Default.Register<NavigationDepthMessage>(this);
@@ -153,19 +172,9 @@ public sealed partial class MainWindow : WindowEx,
         SizeChanged += WindowSizeChanged;
         RootElement.Loaded += RootElementLoaded;
 
-        WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
-
-        // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
-        // member (and instead like, use a local), then the pointer we marshal
-        // into the WindowLongPtr will be useless after we leave this function,
-        // and our **WindProc will explode**.
-        _hotkeyWndProc = HotKeyPrc;
-        var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_hotkeyWndProc);
-        _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
-
         // Load our settings, and then also wire up a settings changed handler
         HotReloadSettings();
-        App.Current.Services.GetService<SettingsModel>()!.SettingsChanged += SettingsChangedHandler;
+        App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged += SettingsChangedHandler;
 
         // Make sure that we update the acrylic theme when the OS theme changes
         RootElement.ActualThemeChanged += (s, e) => DispatcherQueue.TryEnqueue(UpdateBackdrop);
@@ -206,12 +215,20 @@ public sealed partial class MainWindow : WindowEx,
         }
     }
 
-    private void SettingsChangedHandler(SettingsModel sender, object? args) => HotReloadSettings();
+    private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
+    {
+        DispatcherQueue.TryEnqueue(HotReloadSettings);
+    }
 
     private void RootElementLoaded(object sender, RoutedEventArgs e)
     {
         // Now that our content has loaded, we can update our draggable regions
         UpdateRegionsForCustomTitleBar();
+
+        // Also update regions when DPI changes. SizeChanged only fires when the logical
+        // (DIP) size changes — a DPI change that scales the physical size while preserving
+        // the DIP size won't trigger it, leaving drag regions at the old physical coordinates.
+        RootElement.XamlRoot.Changed += XamlRoot_Changed;
 
         // Add dev ribbon if enabled
         if (!BuildInfo.IsCiBuild)
@@ -220,6 +237,8 @@ public sealed partial class MainWindow : WindowEx,
             RootElement.Children.Add(_devRibbon);
         }
     }
+
+    private void XamlRoot_Changed(XamlRoot sender, XamlRootChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
@@ -231,61 +250,131 @@ public sealed partial class MainWindow : WindowEx,
 
     private void PositionCentered(DisplayArea displayArea)
     {
-        var position = WindowPositionHelper.CalculateCenteredPosition(
-            displayArea,
-            AppWindow.Size,
-            (int)this.GetDpiForWindow());
+        // Use the saved window size when available so that a dock-resized HWND
+        // (hidden but not destroyed) doesn't dictate the size on normal reopen.
+        SizeInt32 windowSize;
+        int windowDpi;
 
-        if (position is not null)
+        if (_currentWindowPosition.IsSizeValid)
         {
-            // Use Move(), not MoveAndResize(). Windows auto-resizes on DPI change via WM_DPICHANGED;
-            // the helper already accounts for this when calculating the centered position.
-            AppWindow.Move((PointInt32)position);
+            windowSize = new SizeInt32(_currentWindowPosition.Width, _currentWindowPosition.Height);
+            windowDpi = _currentWindowPosition.Dpi;
+        }
+        else
+        {
+            windowSize = AppWindow.Size;
+            windowDpi = (int)this.GetDpiForWindow();
+        }
+
+        var rect = WindowPositionHelper.CenterOnDisplay(
+           displayArea,
+           windowSize,
+           windowDpi);
+
+        if (rect is not null)
+        {
+            MoveAndResizeDpiAware(rect.Value);
         }
     }
 
-    private void RestoreWindowPosition()
+    private void RestoreWindowPosition(WindowPosition? savedPosition)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>();
-        if (settings?.LastWindowPosition is not { Width: > 0, Height: > 0 } savedPosition)
+        if (savedPosition?.IsSizeValid != true)
         {
+            // don't try to restore if the saved position is invalid, just recenter
             PositionCentered();
             return;
         }
 
-        // MoveAndResize is safe here—we're restoring a saved state at startup,
-        // not moving a live window between displays.
         var newRect = WindowPositionHelper.AdjustRectForVisibility(
             savedPosition.ToPhysicalWindowRectangle(),
             new SizeInt32(savedPosition.ScreenWidth, savedPosition.ScreenHeight),
             savedPosition.Dpi);
 
-        AppWindow.MoveAndResize(newRect);
+        MoveAndResizeDpiAware(newRect);
+    }
+
+    private void RestoreWindowPositionFromSavedSettings()
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        RestoreWindowPosition(settings?.LastWindowPosition);
+    }
+
+    private void RestoreWindowPositionFromMemory()
+    {
+        RestoreWindowPosition(_currentWindowPosition);
+    }
+
+    /// <summary>
+    /// Moves and resizes the window while suppressing WM_DPICHANGED.
+    /// The caller is expected to provide a rect already scaled for the target display's DPI.
+    /// Without suppression, the framework would apply its own DPI scaling on top, double-scaling the window.
+    /// </summary>
+    private void MoveAndResizeDpiAware(RectInt32 rect)
+    {
+        var originalMinHeight = MinHeight;
+        var originalMinWidth = MinWidth;
+
+        _suppressDpiChange = true;
+
+        try
+        {
+            // WindowEx is uses current DPI to calculate the minimum window size
+            MinHeight = 0;
+            MinWidth = 0;
+            AppWindow.MoveAndResize(rect);
+        }
+        finally
+        {
+            MinHeight = originalMinHeight;
+            MinWidth = originalMinWidth;
+            _suppressDpiChange = false;
+        }
     }
 
     private void UpdateWindowPositionInMemory()
     {
+        var placement = new WINDOWPLACEMENT { length = (uint)Marshal.SizeOf<WINDOWPLACEMENT>() };
+        if (!PInvoke.GetWindowPlacement(_hwnd, ref placement))
+        {
+            return;
+        }
+
+        var rect = placement.rcNormalPosition;
         var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest) ?? DisplayArea.Primary;
+
+        // GetWindowPlacement returns rcNormalPosition in workspace coordinates for
+        // normal windows, but in screen coordinates for tool windows (WS_EX_TOOLWINDOW).
+        // HiddenOwnerWindowBehavior applies WS_EX_TOOLWINDOW to hide from taskbar/Alt+Tab,
+        // so we must check the current style before converting coordinates.
+        //
+        // To be on the safe side, we should consider the possibility that setting
+        // WS_EX_TOOLWINDOW failed or isn't applied while debugging.
+        var workArea = displayArea.WorkArea;
+        var isToolWindow = this.HasExtendedStyle(WINDOW_EX_STYLE.WS_EX_TOOLWINDOW);
+
         _currentWindowPosition = new WindowPosition
         {
-            X = AppWindow.Position.X,
-            Y = AppWindow.Position.Y,
-            Width = AppWindow.Size.Width,
-            Height = AppWindow.Size.Height,
+            X = rect.X + (isToolWindow ? 0 : workArea.X),
+            Y = rect.Y + (isToolWindow ? 0 : workArea.Y),
+            Width = rect.Width,
+            Height = rect.Height,
             Dpi = (int)this.GetDpiForWindow(),
-            ScreenWidth = displayArea.WorkArea.Width,
-            ScreenHeight = displayArea.WorkArea.Height,
+            ScreenWidth = workArea.Width,
+            ScreenHeight = workArea.Height,
         };
     }
 
     private void HotReloadSettings()
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         SetupHotkey(settings);
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
+        _ignoreHotKeyWhenBusy = settings.IgnoreShortcutWhenBusy;
+        _allowBreakthroughShortcut = settings.AllowBreakthroughShortcut;
 
         _autoGoHomeInterval = settings.AutoGoHomeInterval;
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
@@ -459,6 +548,78 @@ public sealed partial class MainWindow : WindowEx,
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
     {
+        var positionWindowForTargetMonitor = (HWND hwnd) =>
+        {
+            if (target == MonitorBehavior.ToLast)
+            {
+                var originalScreen = new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight);
+                var newRect = WindowPositionHelper.AdjustRectForVisibility(_currentWindowPosition.ToPhysicalWindowRectangle(), originalScreen, _currentWindowPosition.Dpi);
+                MoveAndResizeDpiAware(newRect);
+            }
+            else
+            {
+                var display = GetScreen(hwnd, target);
+                PositionCentered(display);
+            }
+        };
+        ShowHwnd(hwndValue, positionWindowForTargetMonitor);
+    }
+
+    private void ShowHwnd(IntPtr hwndValue, Point anchorInPixels, AnchorPoint anchorCorner)
+    {
+        var positionWindowForAnchor = (HWND hwnd) =>
+        {
+            PInvoke.GetWindowRect(hwnd, out var bounds);
+            var swpFlags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER;
+            switch (anchorCorner)
+            {
+                case AnchorPoint.TopLeft:
+                    PInvoke.SetWindowPos(
+                        hwnd,
+                        HWND.HWND_TOP,
+                        (int)anchorInPixels.X,
+                        (int)anchorInPixels.Y,
+                        0,
+                        0,
+                        swpFlags);
+                    break;
+                case AnchorPoint.TopRight:
+                    PInvoke.SetWindowPos(
+                        hwnd,
+                        HWND.HWND_TOP,
+                        (int)(anchorInPixels.X - bounds.Width),
+                        (int)anchorInPixels.Y,
+                        0,
+                        0,
+                        swpFlags);
+                    break;
+                case AnchorPoint.BottomLeft:
+                    PInvoke.SetWindowPos(
+                        hwnd,
+                        HWND.HWND_TOP,
+                        (int)anchorInPixels.X,
+                        (int)(anchorInPixels.Y - bounds.Height),
+                        0,
+                        0,
+                        swpFlags);
+                    break;
+                case AnchorPoint.BottomRight:
+                    PInvoke.SetWindowPos(
+                        hwnd,
+                        HWND.HWND_TOP,
+                        (int)(anchorInPixels.X - bounds.Width),
+                        (int)(anchorInPixels.Y - bounds.Height),
+                        0,
+                        0,
+                        swpFlags);
+                    break;
+            }
+        };
+        ShowHwnd(hwndValue, positionWindowForAnchor);
+    }
+
+    private void ShowHwnd(IntPtr hwndValue, Action<HWND>? positionWindow)
+    {
         StopAutoGoHome();
 
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
@@ -476,16 +637,9 @@ public sealed partial class MainWindow : WindowEx,
             PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_RESTORE);
         }
 
-        if (target == MonitorBehavior.ToLast)
+        if (positionWindow is not null)
         {
-            var originalScreen = new SizeInt32(_currentWindowPosition.ScreenWidth, _currentWindowPosition.ScreenHeight);
-            var newRect = WindowPositionHelper.AdjustRectForVisibility(_currentWindowPosition.ToPhysicalWindowRectangle(), originalScreen, _currentWindowPosition.Dpi);
-            AppWindow.MoveAndResize(newRect);
-        }
-        else
-        {
-            var display = GetScreen(hwnd, target);
-            PositionCentered(display);
+            positionWindow(hwnd);
         }
 
         // Check if the debugger is attached. If it is, we don't want to apply the tool window style,
@@ -557,7 +711,9 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ShowWindowMessage message)
     {
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
+        _isLoadedFromDock = false;
+
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         // Start session tracking
         _sessionStopwatch = Stopwatch.StartNew();
@@ -565,6 +721,18 @@ public sealed partial class MainWindow : WindowEx,
         _sessionPagesVisited = 0;
 
         ShowHwnd(message.Hwnd, settings.SummonOn);
+    }
+
+    internal void Receive(ShowPaletteAtMessage message)
+    {
+        _isLoadedFromDock = true;
+
+        // Reset the size in case users have resized a dock window.
+        // Ideally in the future, we'll have defined sizes that opening
+        // a dock window will adhere to, but alas, that's the future.
+        RestoreWindowPositionFromMemory();
+
+        ShowHwnd(HWND.Null, message.PosPixels, message.Anchor);
     }
 
     public void Receive(HideWindowMessage message)
@@ -677,6 +845,8 @@ public sealed partial class MainWindow : WindowEx,
             // Sure, it's not ideal, but at least it's not visible.
         }
 
+        WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
+
         // Start auto-go-home timer
         RestartAutoGoHome();
     }
@@ -732,23 +902,22 @@ public sealed partial class MainWindow : WindowEx,
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         var serviceProvider = App.Current.Services;
-        UpdateWindowPositionInMemory();
 
-        var settings = serviceProvider.GetService<SettingsModel>();
+        if (!_isLoadedFromDock)
+        {
+            UpdateWindowPositionInMemory();
+        }
+
+        var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
+        var settings = settingsService.Settings;
         if (settings is not null)
         {
-            settings.LastWindowPosition = new WindowPosition
+            // If we were last shown from the dock, _currentWindowPosition still holds
+            // the last non-dock placement because dock sessions intentionally skip updates.
+            if (_currentWindowPosition.IsSizeValid)
             {
-                X = _currentWindowPosition.X,
-                Y = _currentWindowPosition.Y,
-                Width = _currentWindowPosition.Width,
-                Height = _currentWindowPosition.Height,
-                Dpi = _currentWindowPosition.Dpi,
-                ScreenWidth = _currentWindowPosition.ScreenWidth,
-                ScreenHeight = _currentWindowPosition.ScreenHeight,
-            };
-
-            SettingsModel.SaveSettings(settings);
+                settingsService.UpdateSettings(s => s with { LastWindowPosition = _currentWindowPosition });
+            }
         }
 
         var extensionService = serviceProvider.GetService<IExtensionService>()!;
@@ -838,7 +1007,11 @@ public sealed partial class MainWindow : WindowEx,
         if (args.WindowActivationState == WindowActivationState.Deactivated)
         {
             // Save the current window position before hiding the window
-            UpdateWindowPositionInMemory();
+            // but not when opened from dock — preserve the pre-dock size.
+            if (!_isLoadedFromDock)
+            {
+                UpdateWindowPositionInMemory();
+            }
 
             // If there's a debugger attached...
             if (System.Diagnostics.Debugger.IsAttached)
@@ -913,7 +1086,7 @@ public sealed partial class MainWindow : WindowEx,
                         }
                         else if (uri.StartsWith("x-cmdpal://reload", StringComparison.OrdinalIgnoreCase))
                         {
-                            var settings = App.Current.Services.GetService<SettingsModel>();
+                            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                             if (settings?.AllowExternalReload == true)
                             {
                                 Logger.LogInfo("External Reload triggered");
@@ -1041,10 +1214,25 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HandleSummon(string commandId)
     {
-        if (_ignoreHotKeyWhenFullScreen)
+        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        if (isRootHotkey && IsPaletteVisibleToUser())
         {
-            // If we're in full screen mode, ignore the hotkey
-            if (WindowHelper.IsWindowFullscreen())
+            HandleSummonCore(commandId);
+            return;
+        }
+
+        var notificationFlags = WindowHelper.GetUserNotificationFlags();
+        var shouldSuppress =
+            (_ignoreHotKeyWhenFullScreen && notificationFlags.IsFullscreenState) ||
+            (_ignoreHotKeyWhenBusy && notificationFlags.IsBusy);
+
+        if (shouldSuppress)
+        {
+            if (_allowBreakthroughShortcut && IsBreakthroughTriggered())
+            {
+                // Rapid-press breakthrough: let it through
+            }
+            else
             {
                 return;
             }
@@ -1053,12 +1241,9 @@ public sealed partial class MainWindow : WindowEx,
         HandleSummonCore(commandId);
     }
 
-    private void HandleSummonCore(string commandId)
+    private bool IsPaletteVisibleToUser()
     {
-        var isRootHotkey = string.IsNullOrEmpty(commandId);
-        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
-
-        var isVisible = this.Visible;
+        var isVisible = Visible;
 
         unsafe
         {
@@ -1072,6 +1257,36 @@ public sealed partial class MainWindow : WindowEx,
                 isVisible = false;
             }
         }
+
+        return isVisible;
+    }
+
+    private bool IsBreakthroughTriggered()
+    {
+        const int requiredPresses = 3;
+        var windowTicks = 2 * Stopwatch.Frequency; // 2 seconds
+        var now = Stopwatch.GetTimestamp();
+
+        _breakthroughTimestamps.Add(now);
+
+        // Prune timestamps outside the window
+        _breakthroughTimestamps.RemoveAll(t => now - t > windowTicks);
+
+        if (_breakthroughTimestamps.Count >= requiredPresses)
+        {
+            _breakthroughTimestamps.Clear();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void HandleSummonCore(string commandId)
+    {
+        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
+
+        var isVisible = IsPaletteVisibleToUser();
 
         // Note to future us: the wParam will have the index of the hotkey we registered.
         // We can use that in the future to differentiate the hotkeys we've pressed
@@ -1089,6 +1304,7 @@ public sealed partial class MainWindow : WindowEx,
                 // but that's the price to pay for having the HWND not light-dismiss while we're debugging.
                 Cloak();
                 this.Hide();
+                WeakReferenceMessenger.Default.Send(new WindowHiddenMessage());
 
                 return;
             }
@@ -1108,6 +1324,13 @@ public sealed partial class MainWindow : WindowEx,
             // Prevent the window from maximizing when double-clicking the title bar area
             case PInvoke.WM_NCLBUTTONDBLCLK:
                 return (LRESULT)IntPtr.Zero;
+
+            // When restoring a saved position across monitors with different DPIs,
+            // MoveAndResize already sets the correctly-scaled size. Suppress the
+            // framework's automatic DPI resize to avoid double-scaling.
+            case PInvoke.WM_DPICHANGED when _suppressDpiChange:
+                return (LRESULT)IntPtr.Zero;
+
             case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
@@ -1138,6 +1361,8 @@ public sealed partial class MainWindow : WindowEx,
         _windowThemeSynchronizer.Dispose();
         DisposeAcrylic();
     }
+
+    void IRecipient<ShowPaletteAtMessage>.Receive(ShowPaletteAtMessage message) => Receive(message);
 
     public void Receive(ToggleDevRibbonMessage message)
     {

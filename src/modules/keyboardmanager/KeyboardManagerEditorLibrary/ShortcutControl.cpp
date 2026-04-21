@@ -198,7 +198,8 @@ ShortcutControl& ShortcutControl::AddNewShortcutControlRow(StackPanel& parent, s
     textInputMargin.Bottom = EditorConstants::ShortcutTableDropDownSpacing; // compensate for a collapsed UIElement
     unicodeTextKeysInput.Margin(textInputMargin);
 
-    unicodeTextKeysInput.AcceptsReturn(false);
+    unicodeTextKeysInput.AcceptsReturn(true);
+    unicodeTextKeysInput.TextWrapping(TextWrapping::Wrap);
     //unicodeTextKeysInput.Visibility(Visibility::Collapsed);
     unicodeTextKeysInput.Width(EditorConstants::TableDropDownHeight);
 

@@ -26,6 +26,11 @@
             "input": "pushd .\\ExtensionTemplate\\ ; git archive -o ..\\Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip HEAD -- .\\TemplateCmdPalExtension\\ ; popd",
             "name": "Update template project",
             "description": "zips up the ExtensionTemplate into our assets. Run this in the cmdpal/ directory."
+        },
+        {
+            "input": " .\\extensionsdk\\nuget\\BuildSDKHelper.ps1 -VersionOfSDK 0.0.1",
+            "name": "Build SDK",
+            "description": "Builds the SDK nuget package with the specified version."
         }
     ]
 }

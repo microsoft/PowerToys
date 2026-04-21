@@ -34,13 +34,15 @@ namespace winrt
     using namespace Windows::Devices::Enumeration;
 }
 
-AudioSampleGenerator::AudioSampleGenerator(bool captureMicrophone, bool captureSystemAudio)
+AudioSampleGenerator::AudioSampleGenerator(bool captureMicrophone, bool captureSystemAudio, bool micMonoMix)
     : m_captureMicrophone(captureMicrophone)
     , m_captureSystemAudio(captureSystemAudio)
+    , m_micMonoMix(micMonoMix)
 {
     OutputDebugStringA(("AudioSampleGenerator created, captureMicrophone=" +
         std::string(captureMicrophone ? "true" : "false") +
-        ", captureSystemAudio=" + std::string(captureSystemAudio ? "true" : "false") + "\n").c_str());
+        ", captureSystemAudio=" + std::string(captureSystemAudio ? "true" : "false") +
+        ", micMonoMix=" + std::string(micMonoMix ? "true" : "false") + "\n").c_str());
     m_audioEvent.create(wil::EventOptions::ManualReset);
     m_endEvent.create(wil::EventOptions::ManualReset);
     m_startEvent.create(wil::EventOptions::ManualReset);
@@ -630,6 +632,30 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
         // AudioGraph uses 10ms quantums by default
         uint32_t expectedSamplesPerQuantum = (m_graphSampleRate / 100) * m_graphChannels;
         uint32_t numMicSamples = audioBuffer.Length() / sizeof(float);
+
+        // Apply mono mixing to microphone audio if enabled
+        // This converts stereo mic input (with same signal on both channels) to true mono
+        // by averaging the channels and writing the result to both channels
+        if (m_micMonoMix && m_captureMicrophone && numMicSamples > 0 && m_graphChannels >= 2)
+        {
+            float* micData = reinterpret_cast<float*>(sampleBuffer.data());
+            uint32_t numFrames = numMicSamples / m_graphChannels;
+            for (uint32_t i = 0; i < numFrames; i++)
+            {
+                // Sum all channels for this frame
+                float sum = 0.0f;
+                for (uint32_t ch = 0; ch < m_graphChannels; ch++)
+                {
+                    sum += micData[i * m_graphChannels + ch];
+                }
+                // Power-preserving mix: divide by sqrt(N) to maintain perceived loudness
+                float mono = sum / std::sqrt(static_cast<float>(m_graphChannels));
+                for (uint32_t ch = 0; ch < m_graphChannels; ch++)
+                {
+                    micData[i * m_graphChannels + ch] = mono;
+                }
+            }
+        }
 
         // Drain loopback samples regardless of whether we have mic audio
         if (m_loopbackCapture)

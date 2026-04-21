@@ -51,40 +51,26 @@ void PowerDisplayProcessManager::stop()
 void PowerDisplayProcessManager::send_message(const std::wstring& message_type, const std::wstring& message_arg)
 {
     submit_task([this, message_type, message_arg] {
-        // Ensure process is running before sending message
-        // If process is not running, enable and start it - this allows Quick Access launch
-        // to work even when the module was not previously enabled
-        if (!is_process_running())
+        if (!m_enabled)
         {
-            m_enabled = true;
-            refresh();
-        }
-        send_named_pipe_message(message_type, message_arg);
-    });
-}
-
-void PowerDisplayProcessManager::bring_to_front()
-{
-    submit_task([this] {
-        if (!is_process_running())
-        {
+            Logger::warn(L"Ignoring '{}' message because PowerDisplay is disabled", message_type);
             return;
         }
 
-        const auto enum_windows = [](HWND hwnd, LPARAM param) -> BOOL {
-            const auto process_handle = reinterpret_cast<HANDLE>(param);
-            DWORD window_process_id = 0;
+        // If the process exited unexpectedly while the module is still enabled,
+        // bring it back before delivering the message.
+        if (!is_process_running())
+        {
+            refresh();
 
-            GetWindowThreadProcessId(hwnd, &window_process_id);
-            if (GetProcessId(process_handle) == window_process_id)
+            if (!is_process_running())
             {
-                SetForegroundWindow(hwnd);
-                return FALSE;
+                Logger::warn(L"PowerDisplay process is not running; '{}' message was not delivered", message_type);
+                return;
             }
-            return TRUE;
-        };
+        }
 
-        EnumWindows(enum_windows, reinterpret_cast<LPARAM>(m_hProcess));
+        send_named_pipe_message(message_type, message_arg);
     });
 }
 

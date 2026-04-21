@@ -18,6 +18,8 @@ namespace newplus::constants::non_localizable
     
     constexpr WCHAR settings_json_key_template_location[] = L"TemplateLocation";
 
+    constexpr WCHAR settings_json_key_hide_built_in_new[] = L"BuiltInNewHidePreference";
+
     constexpr WCHAR context_menu_package_name[] = L"NewPlusContextMenu";
 
     constexpr WCHAR msix_package_name[] = L"NewPlusPackage.msix";

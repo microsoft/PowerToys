@@ -17,10 +17,10 @@ $nonDirectoryAssetsItems = Get-ChildItem $targetAssetsDir -Attributes !Directory
 $directoryAssetsItems = Get-ChildItem $targetAssetsDir -Attributes Directory
 
 if ($directoryAssetsItems.Count -le 0) {
-    Write-Host -ForegroundColor Red "No directories detected in " $nonDirectoryAssetsItems ". Are you sure this is the right path?`r`n"
+    Write-Host -ForegroundColor Red "ERROR: No directories detected in " $nonDirectoryAssetsItems ". Are you sure this is the right path?`r`n"
     $totalFailures++;
 } elseif ($nonDirectoryAssetsItems.Count -gt 0) {
-    Write-Host -ForegroundColor Red "Detected " $nonDirectoryAssetsItems " files in " $targetAssetsDir "`r`n"
+    Write-Host -ForegroundColor Red "ERROR: Detected " $nonDirectoryAssetsItems " files in " $targetAssetsDir ". Each application should use a named subdirectory for assets.`r`n"
     $totalFailures++;
 } else {
     Write-Host -ForegroundColor Green "Only directories detected in " $targetAssetsDir "`r`n"
@@ -29,7 +29,7 @@ if ($directoryAssetsItems.Count -le 0) {
 # Make sure there's no resources.pri file. Each application should use a different name for their own resources file path.
 $resourcesPriFiles = Get-ChildItem $targetDir -Filter resources.pri
 if ($resourcesPriFiles.Count -gt 0) {
-    Write-Host -ForegroundColor Red "Detected a resources.pri file in " $targetDir "`r`n"
+    Write-Host -ForegroundColor Red "ERROR: Detected a resources.pri file in " $targetDir ". Each application should use a unique name for its resources file.`r`n"
     $totalFailures++;
 } else {
     Write-Host -ForegroundColor Green "No resources.pri file detected in " $targetDir "`r`n"
@@ -38,7 +38,7 @@ if ($resourcesPriFiles.Count -gt 0) {
 # Each application should have their XAML files in their own paths to avoid these conflicts.
 $resourcesPriFiles = Get-ChildItem $targetDir -Filter *.xbf
 if ($resourcesPriFiles.Count -gt 0) {
-    Write-Host -ForegroundColor Red "Detected a .xbf file in " $targetDir "`r`n"
+    Write-Host -ForegroundColor Red "ERROR: Detected a .xbf file in " $targetDir ". Ensure all XAML files are placed in a subdirectory in each application.`r`n"
     $totalFailures++;
 } else {
     Write-Host -ForegroundColor Green "No .xbf files detected in " $targetDir "`r`n"

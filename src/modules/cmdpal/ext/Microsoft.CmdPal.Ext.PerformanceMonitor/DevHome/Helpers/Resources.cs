@@ -4,7 +4,7 @@
 
 using System;
 using System.Text;
-using Microsoft.CmdPal.Core.Common;
+using Microsoft.CmdPal.Common;
 
 namespace CoreWidgetProvider.Helpers;
 

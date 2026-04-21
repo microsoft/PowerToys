@@ -171,17 +171,24 @@ public partial class InstallPackageListItem : ListItem
         {
             if (metadata.Tags.Count > 0)
             {
+                var tags = new ITag[metadata.Tags.Count];
+                for (var i = 0; i < metadata.Tags.Count; i++)
+                {
+                    var tag = new Tag(metadata.Tags[i]);
+                    tags[i] = tag;
+                }
+
                 DetailsElement pair = new()
                 {
                     Key = "Tags",
-                    Data = new DetailsTags() { Tags = metadata.Tags.Select(t => new Tag(t)).ToArray() },
+                    Data = new DetailsTags { Tags = tags },
                 };
                 detailsElements.Add(pair);
             }
         }
         catch (Exception ex)
         {
-            Logger.LogWarning($"Failed to retrieve tags from metadata: {ex.Message}");
+            Logger.LogWarning($"Failed to retrieve tags from metadata: {ex}");
         }
 
         return detailsElements;

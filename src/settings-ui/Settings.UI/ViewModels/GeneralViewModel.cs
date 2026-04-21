@@ -188,7 +188,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _updatingState = UpdatingSettingsConfig.State;
             _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
-            _updateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+            _updateCheckedDate = FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
 
             _newUpdatesToastIsGpoDisabled = GPOWrapper.GetDisableNewUpdateToastValue() == GpoRuleConfigured.Enabled;
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
@@ -226,7 +226,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Supported languages. Taken from Resources.wxs + default + en-US
         private Dictionary<string, string> langTagsAndIds = new Dictionary<string, string>
         {
-            { string.Empty, "Default_language" },
+            { string.Empty, "Default_Language" },
             { "ar-SA", "Arabic_Saudi_Arabia_Language" },
             { "cs-CZ", "Czech_Language" },
             { "de-DE", "German_Language" },
@@ -1383,7 +1383,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
                 else
                 {
-                    bool dateChanged = UpdateCheckedDate == UpdatingSettingsConfig.LastCheckedDateLocalized;
+                    bool dateChanged = UpdateCheckedDate == FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
                     bool fileDownloaded = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
                     IsNewVersionDownloading = !(dateChanged || fileDownloaded);
                 }
@@ -1391,7 +1391,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PowerToysUpdatingState = UpdatingSettingsConfig.State;
                 PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
                 PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
-                UpdateCheckedDate = UpdatingSettingsConfig.LastCheckedDateLocalized;
+                UpdateCheckedDate = FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
 
                 _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
                 NotifyPropertyChanged(nameof(IsNoNetwork));

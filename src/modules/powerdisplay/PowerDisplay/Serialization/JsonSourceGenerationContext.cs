@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Models;
 
 namespace PowerDisplay.Serialization
 {
@@ -16,7 +17,6 @@ namespace PowerDisplay.Serialization
     /// Note: MonitorStateFile and MonitorStateEntry are now in PowerDisplay.Lib
     /// and should be serialized using ProfileSerializationContext from the Lib.
     /// </summary>
-    [JsonSerializable(typeof(IpcMessageAction))]
     [JsonSerializable(typeof(PowerDisplaySettings))]
     [JsonSerializable(typeof(PowerDisplayProfiles))]
     [JsonSerializable(typeof(PowerDisplayProfile))]

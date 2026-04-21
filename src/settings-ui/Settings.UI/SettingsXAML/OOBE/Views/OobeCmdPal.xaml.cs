@@ -18,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeCmdPal()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.CmdPal]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.CmdPal);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(CmdPalPage));
+                OobeWindow.OpenMainWindowCallback(typeof(CmdPalPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

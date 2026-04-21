@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
         }
 
-        private static string GetVersionFromRelease(PowerToysReleaseInfo release)
+        internal static string GetVersionFromRelease(PowerToysReleaseInfo release)
         {
             // TagName is typically like "v0.96.0", Name might be "Release v0.96.0"
             string version = release.TagName ?? release.Name ?? "Unknown";

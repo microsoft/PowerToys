@@ -29,33 +29,35 @@
     </Page.Resources>
 
     <!--  Main layout container  -->
-    <Grid MaxWidth="1000">
-        <ScrollViewer Padding="0,0,0,0" VerticalScrollBarVisibility="Auto">
-            <Grid Margin="0,0,0,24">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <Image
-                    x:Name="HeroImageHolder"
-                    Height="186"
-                    HorizontalAlignment="Left"
-                    Stretch="UniformToFill" />
-                <Grid Grid.Row="1" Margin="24,16,24,24">
-                    <ProgressRing
-                        x:Name="LoadingProgressRing"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        IsIndeterminate="True"
-                        Visibility="Visible" />
-                    <tkcontrols:MarkdownTextBlock
-                        x:Name="ReleaseNotesMarkdown"
-                        Config="{StaticResource ReleaseNotesMarkdownConfig}"
-                        UseAutoLinks="True"
-                        UseEmphasisExtras="True"
-                        UseListExtras="True"
-                        UsePipeTables="True"
-                        UseTaskLists="True" />
+    <Grid>
+        <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid MaxWidth="960">
+                <Grid Margin="0,0,0,24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Image
+                        x:Name="HeroImageHolder"
+                        Height="186"
+                        HorizontalAlignment="Left"
+                        Stretch="UniformToFill" />
+                    <Grid Grid.Row="1" Margin="24,16,24,24">
+                        <ProgressRing
+                            x:Name="LoadingProgressRing"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsIndeterminate="True"
+                            Visibility="Visible" />
+                        <tkcontrols:MarkdownTextBlock
+                            x:Name="ReleaseNotesMarkdown"
+                            Config="{StaticResource ReleaseNotesMarkdownConfig}"
+                            UseAutoLinks="True"
+                            UseEmphasisExtras="True"
+                            UseListExtras="True"
+                            UsePipeTables="True"
+                            UseTaskLists="True" />
+                    </Grid>
                 </Grid>
             </Grid>
         </ScrollViewer>

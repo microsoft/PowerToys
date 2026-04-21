@@ -191,15 +191,6 @@ aka\.ms/[a-zA-Z0-9]+
 # #pragma lib
 ^\s*#pragma comment\(lib, ".*?"\)
 
-# UnitTests
-\[DataRow\(.*\)\]
-
-# AdditionalDependencies
-<AdditionalDependencies>.*<
-
-# the last line of mimetype="application/x-microsoft.net.object.bytearray.base64" things in .resx files
-^\s*[-a-zA-Z=;:/0-9+]*[-a-zA-Z;:/0-9+][-a-zA-Z=;:/0-9+]*=$
-
 RegExp\(@?([`'"]).*?\g{-1}\)|(?:escapes|regEx):\s*(?:/.*/|([`'"]).*?\g{-1})|return/.*?/
 
 # Questionably acceptable forms of `in to`
@@ -289,3 +280,6 @@ St&yle
 
 # Microsoft Store URLs and product IDs
 ms-windows-store://\S+
+
+# ANSI color codes
+(?:\\(?:u00|x)1[Bb]|\\03[1-7]|\x1b|\\u\{1[Bb]\})\[\d+(?:;\d+)*m

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="1.0.0.0" name="PowerToys.ImageResizer.app" />
-  <msix xmlns="urn:schemas-microsoft-com:msix.v1"
-        publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
-        packageName="Microsoft.PowerToys.SparseApp"
-        applicationId="PowerToys.ImageResizerUI" />
-</assembly>

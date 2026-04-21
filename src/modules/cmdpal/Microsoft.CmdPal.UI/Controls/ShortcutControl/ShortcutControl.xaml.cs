@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -35,6 +36,8 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
     public static readonly DependencyProperty HotkeySettingsProperty = DependencyProperty.Register("HotkeySettings", typeof(HotkeySettings), typeof(ShortcutControl), null);
 
     public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
+
+    private static ResourceLoader resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
 
     private static void OnAllowDisableChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e)
     {
@@ -96,8 +99,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
             {
                 hotkeySettings = value;
                 SetValue(HotkeySettingsProperty, value);
-                PreviewKeysControl.ItemsSource = HotkeySettings?.GetKeysList() ?? new List<object>();
-                AutomationProperties.SetHelpText(EditButton, HotkeySettings?.ToString() ?? string.Empty);
+                SetKeys();
                 c.Keys = HotkeySettings?.GetKeysList() ?? new List<object>();
             }
         }
@@ -107,8 +109,6 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
     {
         InitializeComponent();
         internalSettings = new HotkeySettings();
-
-        var resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
 
         // We create the Dialog in C# because doing it in XAML is giving WinUI/XAML Island bugs when using dark theme.
         shortcutDialog = new ContentDialog
@@ -186,7 +186,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
                     _ = _modifierKeysOnEntering.Remove(virtualKey);
                 }
 
-                internalSettings.Win = matchValue;
+                internalSettings = internalSettings with { Win = matchValue };
                 break;
             case VirtualKey.Control:
             case VirtualKey.LeftControl:
@@ -197,7 +197,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
                     _ = _modifierKeysOnEntering.Remove(VirtualKey.Control);
                 }
 
-                internalSettings.Ctrl = matchValue;
+                internalSettings = internalSettings with { Ctrl = matchValue };
                 break;
             case VirtualKey.Menu:
             case VirtualKey.LeftMenu:
@@ -208,7 +208,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
                     _ = _modifierKeysOnEntering.Remove(VirtualKey.Menu);
                 }
 
-                internalSettings.Alt = matchValue;
+                internalSettings = internalSettings with { Alt = matchValue };
                 break;
             case VirtualKey.Shift:
             case VirtualKey.LeftShift:
@@ -219,14 +219,14 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
                     _ = _modifierKeysOnEntering.Remove(VirtualKey.Shift);
                 }
 
-                internalSettings.Shift = matchValue;
+                internalSettings = internalSettings with { Shift = matchValue };
                 break;
             case VirtualKey.Escape:
                 internalSettings = new HotkeySettings();
                 shortcutDialog.IsPrimaryButtonEnabled = false;
                 return;
             default:
-                internalSettings.Code = matchValueCode;
+                internalSettings = internalSettings with { Code = matchValueCode };
                 break;
         }
     }
@@ -276,7 +276,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
             else if (internalSettings.Shift && !_modifierKeysOnEntering.Contains(VirtualKey.Shift) && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
             {
                 // This is to reset the shift key press within the control as it was not used within the control but rather was used to leave the hotkey.
-                internalSettings.Shift = false;
+                internalSettings = internalSettings with { Shift = false };
 
                 SendSingleKeyboardInput((short)VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyDown);
 
@@ -421,11 +421,9 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         hotkeySettings = null;
 
         SetValue(HotkeySettingsProperty, hotkeySettings);
-        PreviewKeysControl.ItemsSource = HotkeySettings?.GetKeysList() ?? new List<object>();
+        SetKeys();
 
         lastValidSettings = hotkeySettings;
-
-        AutomationProperties.SetHelpText(EditButton, HotkeySettings?.ToString() ?? string.Empty);
         shortcutDialog.Hide();
     }
 
@@ -436,8 +434,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
             HotkeySettings = lastValidSettings with { };
         }
 
-        PreviewKeysControl.ItemsSource = hotkeySettings?.GetKeysList() ?? new List<object>();
-        AutomationProperties.SetHelpText(EditButton, HotkeySettings?.ToString() ?? string.Empty);
+        SetKeys();
         shortcutDialog.Hide();
     }
 
@@ -450,9 +447,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
         var empty = new HotkeySettings();
         HotkeySettings = empty;
-
-        PreviewKeysControl.ItemsSource = HotkeySettings.GetKeysList();
-        AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+        SetKeys();
         shortcutDialog.Hide();
     }
 
@@ -507,5 +502,24 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+
+    private void SetKeys()
+    {
+        var keys = HotkeySettings?.GetKeysList();
+
+        if (keys != null && keys.Count > 0)
+        {
+            VisualStateManager.GoToState(this, "Configured", true);
+            PreviewKeysControl.ItemsSource = keys;
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+        }
+        else
+        {
+            VisualStateManager.GoToState(this, "Normal", true);
+            AutomationProperties.SetHelpText(EditButton, resourceLoader.GetString("ConfigureShortcut"));
+        }
     }
 }

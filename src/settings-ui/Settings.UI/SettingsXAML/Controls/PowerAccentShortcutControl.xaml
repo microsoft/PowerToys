@@ -5,6 +5,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     d:DesignHeight="300"
     d:DesignWidth="400"
@@ -27,7 +28,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <controls:KeyVisual
+                    <ptcontrols:KeyVisual
                         VerticalAlignment="Center"
                         AutomationProperties.AccessibilityView="Raw"
                         Content="{Binding}"

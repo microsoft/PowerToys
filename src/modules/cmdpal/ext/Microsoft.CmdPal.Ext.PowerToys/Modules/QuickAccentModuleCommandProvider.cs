@@ -18,7 +18,7 @@ internal sealed class QuickAccentModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.PowerAccent.ModuleDisplayName();
         var icon = SettingsWindow.PowerAccent.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerAccent, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerAccent, title) { Id = "com.microsoft.powertoys.quickAccent.openSettings" })
         {
             Title = title,
             Subtitle = Resources.QuickAccent_Settings_Subtitle,

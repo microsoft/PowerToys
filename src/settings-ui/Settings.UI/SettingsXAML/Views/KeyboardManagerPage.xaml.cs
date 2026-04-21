@@ -91,5 +91,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             ViewModel.RefreshEnabledState();
         }
+
+        private void GoBackClassic_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.UseNewEditor = false;
+        }
     }
 }

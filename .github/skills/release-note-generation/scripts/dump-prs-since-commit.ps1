@@ -42,30 +42,7 @@ param(
     [string]$OutputJson = "milestone_prs.json"
 )
 
-<#
-.SYNOPSIS
-    Dump merged PR information whose merge commits are reachable from EndCommit but not from StartCommit.
-.DESCRIPTION
-    Uses git rev-list to compute commits in the (StartCommit, EndCommit] range, extracts PR numbers from merge commit messages,
-    queries GitHub (gh CLI) for details, then outputs a CSV.
-
-    PR merge commit messages in PowerToys generally contain patterns like:
-        Merge pull request #12345 from ...
-
-.EXAMPLE
-    pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd -Branch stable
-
-.EXAMPLE
-    pwsh ./dump-prs-since-commit.ps1 -StartCommit 0123abcd -EndCommit 89ef7654 -OutputCsv changes.csv
-
-.NOTES
-    Requires: gh CLI authenticated; git available in working directory (must be inside PowerToys repo clone).
-    CopilotSummary behavior:
-      - Attempts to locate the latest GitHub Copilot authored review (preferred).
-      - If no review is found, lazily fetches PR comments to look for a Copilot-authored comment.
-      - Normalizes whitespace and strips newlines. Empty when no Copilot activity detected.
-      - Run with -Verbose to see whether the summary came from a 'review' or 'comment' source.
-#>
+# (See top-level synopsis above for full documentation)
 
 function Write-Info($msg) { Write-Host $msg -ForegroundColor Cyan }
 function Write-Warn($msg) { Write-Host $msg -ForegroundColor Yellow }
@@ -151,11 +128,11 @@ catch {
 }
 
 Write-Info "Collecting commits between $startSha..$endSha (excluding start, including end)."
-    # Get list of commits reachable from end but not from start.
-    # IMPORTANT: In PowerShell, the .. operator creates a numeric/char range. If $startSha and $endSha look like hex strings,
-    # `$startSha..$endSha` must be passed as a single string argument.
-    $rangeArg = "$startSha..$endSha"
-    $commitList = git rev-list $rangeArg
+# Get list of commits reachable from end but not from start.
+# IMPORTANT: In PowerShell, the .. operator creates a numeric/char range. If $startSha and $endSha look like hex strings,
+# `$startSha..$endSha` must be passed as a single string argument.
+$rangeArg = "$startSha..$endSha"
+$commitList = git rev-list $rangeArg
 
 # Normalize list (filter out empty strings)
 $normalizedCommits = $commitList | Where-Object { $_ -and $_.Trim() -ne '' }
@@ -209,6 +186,63 @@ if (-not $mergeCommits -or $mergeCommits.Count -eq 0) {
 $prNumbers = $mergeCommits | Select-Object -ExpandProperty Pr -Unique | Sort-Object
 Write-Info ("Found {0} unique PRs: {1}" -f $prNumbers.Count, ($prNumbers -join ', '))
 Write-DebugMsg ("Total merge commits examined: {0}" -f $mergeCommits.Count)
+
+# Build a map of PR number → list of commit SHAs (for co-author extraction)
+$prToCommits = @{}
+foreach ($mc in $mergeCommits) {
+    if (-not $prToCommits.ContainsKey($mc.Pr)) {
+        $prToCommits[$mc.Pr] = @()
+    }
+    $prToCommits[$mc.Pr] += $mc.Sha
+}
+
+<#
+.SYNOPSIS
+    Get all authors (including co-authors) for a set of commits via GitHub GraphQL API.
+.DESCRIPTION
+    Uses the Commit.authors field in GitHub's GraphQL API which natively includes
+    co-authors (from Co-authored-by trailers). Returns GitHub usernames (login)
+    without any email parsing — GitHub resolves the association for us.
+
+    NOTE: For squash merges this captures all co-authors correctly because GitHub
+    preserves Co-authored-by trailers in the squash commit. For traditional merge
+    commits, only the merger's author is returned — co-authors on individual PR
+    commits are not traversed. This is acceptable because PowerToys primarily uses
+    squash merging.
+#>
+function Get-CommitAuthors {
+    param(
+        [string[]]$CommitShas,
+        [string]$RepoFullName = "microsoft/PowerToys"
+    )
+    $parts = $RepoFullName -split '/'
+    $owner = $parts[0]
+    $repoName = $parts[1]
+    $allAuthors = @()
+
+    foreach ($sha in $CommitShas) {
+        try {
+            $query = "{ repository(owner: `"$owner`", name: `"$repoName`") { object(expression: `"$sha`") { ... on Commit { authors(first: 20) { nodes { user { login } name } } } } } }"
+            $result = gh api graphql -f query="$query" 2>$null | ConvertFrom-Json
+            $nodes = $result.data.repository.object.authors.nodes
+            if ($nodes) {
+                foreach ($node in $nodes) {
+                    if ($node.user -and $node.user.login) {
+                        $allAuthors += $node.user.login
+                    } else {
+                        # User without a GitHub account (rare) — use display name as fallback
+                        Write-DebugMsg "Commit $sha has an author without GitHub account: $($node.name)"
+                    }
+                }
+            }
+        }
+        catch {
+            Write-DebugMsg "GraphQL authors query failed for commit ${sha}: $_"
+        }
+    }
+
+    return $allAuthors | Select-Object -Unique
+}
 
 # Query GitHub for each PR
 $prDetails = @()
@@ -307,22 +341,45 @@ foreach ($pr in $prNumbers) {
         $bodyValue = if ($json.body) { ($json.body -replace "`r", '') -replace "`n", ' ' } else { '' }
         $bodyValue = $bodyValue -replace '\s+', ' '
 
-        # Determine if author needs thanks (not in member list)
+        # Collect all contributors: PR author + co-authors from commit messages
         $authorLogin = $json.author.login
-        $needThanks = $true
-        if ($memberList.Count -gt 0 -and $authorLogin) {
-            $needThanks = -not ($memberList -contains $authorLogin)
+        $allContributors = @($authorLogin)
+
+        # Extract all authors (including co-authors) from associated commits via GitHub GraphQL API
+        if ($prToCommits.ContainsKey([int]$pr)) {
+            $commitAuthors = Get-CommitAuthors -CommitShas $prToCommits[[int]$pr] -RepoFullName $Repo
+            if ($commitAuthors) {
+                $allContributors += $commitAuthors
+            }
         }
+
+        # Deduplicate contributors (case-insensitive)
+        $allContributors = $allContributors | Where-Object { $_ } | Sort-Object -Unique
+
+        # Filter to only external contributors (not in member list) for thanks
+        $externalContributors = @()
+        if ($memberList.Count -gt 0) {
+            $externalContributors = $allContributors | Where-Object { -not ($memberList -contains $_) }
+        } else {
+            $externalContributors = $allContributors
+        }
+
+        # Author column: all contributors (comma-separated)
+        $authorField = ($allContributors -join ', ')
+
+        # NeedThanks column: comma-separated list of external contributors who
+        # deserve thanks attribution. Empty string means no thanks needed.
+        $needThanksField = ($externalContributors -join ', ')
 
         $prDetails += [PSCustomObject]@{
             Id = $json.number
             Title = $json.title
             Labels = $labelNames
-            Author = $authorLogin
+            Author = $authorField
             Url = $json.url
             Body = $bodyValue
             CopilotSummary = $copilot.Summary
-            NeedThanks = $needThanks
+            NeedThanks = $needThanksField
         }
     }
     catch {

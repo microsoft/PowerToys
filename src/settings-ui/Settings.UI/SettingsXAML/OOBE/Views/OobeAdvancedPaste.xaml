@@ -5,6 +5,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     mc:Ignorable="d">
 
     <controls:OOBEPageControl x:Uid="Oobe_AdvancedPaste" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/AdvancedPaste.gif">
@@ -12,13 +13,13 @@
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
-                <controls:ShortcutWithTextLabelControl x:Name="AdvancedPasteUIHotkeyControl" x:Uid="Oobe_AdvancedPasteUI_HowToUse" />
-                <controls:ShortcutWithTextLabelControl x:Name="PasteAsPlainTextHotkeyControl" x:Uid="Oobe_AdvancedPastePlain_HowToUse" />
-                <controls:ShortcutWithTextLabelControl
+                <ptcontrols:ShortcutWithTextLabelControl x:Name="AdvancedPasteUIHotkeyControl" x:Uid="Oobe_AdvancedPasteUI_HowToUse" />
+                <ptcontrols:ShortcutWithTextLabelControl x:Name="PasteAsPlainTextHotkeyControl" x:Uid="Oobe_AdvancedPastePlain_HowToUse" />
+                <ptcontrols:ShortcutWithTextLabelControl
                     x:Name="PasteAsMarkdownHotkeyControl"
                     x:Uid="Oobe_AdvancedPasteMarkdown_HowToUse"
                     Visibility="Collapsed" />
-                <controls:ShortcutWithTextLabelControl
+                <ptcontrols:ShortcutWithTextLabelControl
                     x:Name="PasteAsJsonHotkeyControl"
                     x:Uid="Oobe_AdvancedPasteJson_HowToUse"
                     Visibility="Collapsed" />

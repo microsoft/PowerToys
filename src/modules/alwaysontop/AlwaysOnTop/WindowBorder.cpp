@@ -23,7 +23,7 @@ std::optional<RECT> GetFrameRect(HWND window)
         return std::nullopt;
     }
 
-    int border = AlwaysOnTopSettings::settings().frameThickness;
+    int border = AlwaysOnTopSettings::settings()->frameThickness;
     rect.top -= border;
     rect.left -= border;
     rect.right += border;
@@ -194,8 +194,9 @@ void WindowBorder::UpdateBorderProperties() const
 
     RECT frameRect{ 0, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top };
 
+    const auto settings = AlwaysOnTopSettings::settings();
     COLORREF color;
-    if (AlwaysOnTopSettings::settings().frameAccentColor)
+    if (settings->frameAccentColor)
     {
         winrt::Windows::UI::ViewManagement::UISettings settings;
         auto accentValue = settings.GetColorValue(winrt::Windows::UI::ViewManagement::UIColorType::Accent);
@@ -203,14 +204,14 @@ void WindowBorder::UpdateBorderProperties() const
     }
     else
     {
-        color = AlwaysOnTopSettings::settings().frameColor;
+        color = settings->frameColor;
     }
 
-    float opacity = AlwaysOnTopSettings::settings().frameOpacity / 100.0f;
+    float opacity = settings->frameOpacity / 100.0f;
     float scalingFactor = ScalingUtils::ScalingFactor(m_trackingWindow);
-    float thickness = AlwaysOnTopSettings::settings().frameThickness * scalingFactor;
+    float thickness = settings->frameThickness * scalingFactor;
     float cornerRadius = 0.0;
-    if (AlwaysOnTopSettings::settings().roundCornersEnabled)
+    if (settings->roundCornersEnabled)
     {
         cornerRadius = WindowCornerUtils::CornersRadius(m_trackingWindow) * scalingFactor;
     }
@@ -268,7 +269,7 @@ LRESULT WindowBorder::WndProc(UINT message, WPARAM wparam, LPARAM lparam) noexce
 
 void WindowBorder::SettingsUpdate(SettingId id)
 {
-    if (!AlwaysOnTopSettings::settings().enableFrame)
+    if (!AlwaysOnTopSettings::settings()->enableFrame)
     {
         return;
     }

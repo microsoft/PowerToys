@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -19,6 +18,10 @@ public partial class ContentTemplateSelector : DataTemplateSelector
 
     public DataTemplate? TreeTemplate { get; set; }
 
+    public DataTemplate? PlainTextTemplate { get; set; }
+
+    public DataTemplate? ImageTemplate { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item)
     {
         return item is ContentViewModel element
@@ -27,6 +30,8 @@ public partial class ContentTemplateSelector : DataTemplateSelector
                 ContentFormViewModel => FormTemplate,
                 ContentMarkdownViewModel => MarkdownTemplate,
                 ContentTreeViewModel => TreeTemplate,
+                ContentImageViewModel => ImageTemplate,
+                ContentPlainTextViewModel => PlainTextTemplate,
                 _ => null,
             }
             : null;

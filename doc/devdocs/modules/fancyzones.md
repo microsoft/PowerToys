@@ -152,7 +152,7 @@ FancyZones is divided into several projects:
 ## Development Environment Setup
 
 ### Prerequisites
-- Visual Studio 2022 or 2026: Required for building and debugging
+- Visual Studio 2026 (or 2022 17.4+): Required for building and debugging
 - Windows 10 SDK: Ensure the latest version is installed
 - PowerToys Repository: Clone from GitHub
 
@@ -183,7 +183,7 @@ FancyZones is divided into several projects:
 ## Debugging
 
 ### Setup for Debugging
-1. In Visual Studio 2022 or 2026, set FancyZonesEditor as the startup project
+1. In Visual Studio, set FancyZonesEditor as the startup project
 2. Set breakpoints in the code where needed
 3. Click Run to start debugging
 

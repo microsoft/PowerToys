@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels.Settings;
+
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
 /// <summary>
@@ -36,4 +38,9 @@ public interface IThemeService
     /// Gets the current theme settings.
     /// </summary>
     ThemeSnapshot Current { get; }
+
+    /// <summary>
+    /// Gets the current dock theme settings.
+    /// </summary>
+    DockThemeSnapshot CurrentDockTheme { get; }
 }

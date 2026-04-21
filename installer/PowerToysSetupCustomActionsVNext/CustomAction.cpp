@@ -1119,6 +1119,35 @@ LExit:
     return WcaFinalize(er);
 }
 
+UINT __stdcall RestoreBuiltInNewContextMenuCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    hr = WcaInitialize(hInstall, "RestoreBuiltInNewContextMenuCA");
+
+    constexpr wchar_t built_in_new_registry_path[] = LR"(Software\Classes\Directory\Background\ShellEx\ContextMenuHandlers\New)";
+
+    HKEY key{};
+
+    if (RegOpenKeyExW(HKEY_CURRENT_USER,
+        built_in_new_registry_path,
+        0,
+        KEY_ALL_ACCESS,
+        &key) != ERROR_SUCCESS)
+    {
+        return WcaFinalize(ERROR_SUCCESS);
+    }
+
+    if (RegDeleteValueW(key, nullptr) != ERROR_SUCCESS)
+    {
+        RegCloseKey(key);
+        return WcaFinalize(ERROR_SUCCESS);
+    }
+
+    RegCloseKey(key);
+
+    return WcaFinalize(ERROR_SUCCESS);
+}
+
 UINT __stdcall TelemetryLogInstallSuccessCA(MSIHANDLE hInstall)
 {
     HRESULT hr = S_OK;

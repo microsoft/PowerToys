@@ -409,9 +409,37 @@ public class Win32Program : IProgram
                         program.Description = info.FileDescription;
                     }
                 }
+
+                if (program.AppType is ApplicationType.GenericFile or ApplicationType.Folder)
+                {
+                    var includeNonAppsOnDesktop = AllAppsSettings.Instance.IncludeNonAppsOnDesktop;
+                    var includeNonAppsInStartMenu = AllAppsSettings.Instance.IncludeNonAppsInStartMenu;
+
+                    var lnk = program.LnkFilePath;
+                    if (!string.IsNullOrEmpty(lnk))
+                    {
+                        var isDesktop = StartsWithFolder(lnk, Environment.SpecialFolder.Desktop) ||
+                                        StartsWithFolder(lnk, Environment.SpecialFolder.CommonDesktopDirectory);
+
+                        var isStartMenu = StartsWithFolder(lnk, Environment.SpecialFolder.StartMenu) ||
+                                          StartsWithFolder(lnk, Environment.SpecialFolder.CommonStartMenu);
+
+                        if ((isDesktop && !includeNonAppsOnDesktop) || (isStartMenu && !includeNonAppsInStartMenu))
+                        {
+                            program.Enabled = false;
+                        }
+                    }
+                }
             }
 
             return program;
+
+            static bool StartsWithFolder(string path, Environment.SpecialFolder folder)
+            {
+                var folderPath = Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify);
+                return !string.IsNullOrEmpty(folderPath)
+                       && path.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase);
+            }
         }
         catch (System.IO.FileLoadException e)
         {

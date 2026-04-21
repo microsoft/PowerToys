@@ -18,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeFancyZones()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.FancyZones]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.FancyZones);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(FancyZonesPage));
+                OobeWindow.OpenMainWindowCallback(typeof(FancyZonesPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

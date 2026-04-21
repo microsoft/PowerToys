@@ -55,6 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Flag to prevent toggle operations during sorting to avoid race conditions.
         private bool _isSorting;
+        private bool _isDisposed;
 
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
 
@@ -123,6 +124,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsRepository,
                 new Microsoft.PowerToys.Settings.UI.Controls.QuickAccessLauncher(App.IsElevated),
                 moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Enabled,
                 resourceLoader);
 
             BuildModuleList();
@@ -132,8 +134,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             dispatcher.TryEnqueue(() =>
             {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
                 generalSettingsConfig = newSettings;
 
                 // Update local field and notify UI if sort order changed
@@ -149,8 +161,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             dispatcher.TryEnqueue(() =>
             {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
                 var allConflictData = e.Conflicts;
                 foreach (var inAppConflict in allConflictData.InAppConflicts)
                 {
@@ -199,7 +221,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = moduleType == ModuleType.CursorWrap || moduleType == ModuleType.PowerDisplay,
+                    IsNew = false,
                     DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
@@ -363,6 +385,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public void ModuleEnabledChangedOnSettingsPage()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             // Ignore if this was triggered by a UI change that we're already handling.
             if (_isUpdatingFromUI)
             {
@@ -391,6 +418,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void RefreshShortcutModules()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (!dispatcher.HasThreadAccess)
+            {
+                _ = dispatcher.TryEnqueue(DispatcherQueuePriority.Normal, RefreshShortcutModules);
+                return;
+            }
+
             ShortcutModules.Clear();
             ActionModules.Clear();
 
@@ -454,6 +492,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
+                ModuleType.KeyboardManager => GetModuleItemsKeyboardManager(),
                 ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
                 ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
@@ -463,6 +502,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
+                ModuleType.GrabAndMove => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
@@ -476,7 +516,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ActivationShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_IncreaseOpacityShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.IncreaseOpacityHotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_DecreaseOpacityShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.DecreaseOpacityHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -587,6 +629,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("Hosts_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("Hosts_LaunchButtonControl/Description"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/Hosts.png", ButtonClickHandler = HostLaunchClicked },
             };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsKeyboardManager()
+        {
+            ISettingsRepository<KeyboardManagerSettings> moduleSettingsRepository = SettingsRepository<KeyboardManagerSettings>.GetInstance(SettingsUtils.Default);
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>();
+
+            if (settings.Properties.UseNewEditor)
+            {
+                list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Dashboard_KeyboardManager_OpenEditor"), Shortcut = settings.Properties.EditorShortcut.GetKeysList() });
+            }
+
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
@@ -804,6 +860,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public override void Dispose()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
             base.Dispose();
             if (_settingsRepository != null)
             {

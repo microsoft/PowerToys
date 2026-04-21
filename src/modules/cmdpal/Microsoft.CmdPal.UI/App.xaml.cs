@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.Common.Text;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Logging;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
@@ -29,6 +29,7 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -77,7 +78,7 @@ public partial class App : Application, IDisposable
 
         Services = ConfigureServices(appInfoService);
 
-        IconCacheProvider.Initialize(Services);
+        IconProvider.Initialize(Services);
 
         this.InitializeComponent();
 
@@ -125,7 +126,9 @@ public partial class App : Application, IDisposable
         services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-        AddBuiltInCommands(services);
+        services.AddCmdPalLogging();
+
+        AddBuiltInCommands(services, appInfoService.ConfigDirectory);
 
         AddCoreServices(services, appInfoService);
 
@@ -134,8 +137,10 @@ public partial class App : Application, IDisposable
         return services.BuildServiceProvider();
     }
 
-    private static void AddBuiltInCommands(ServiceCollection services)
+    private static void AddBuiltInCommands(ServiceCollection services, string configDirectory)
     {
+        var providerLoadGuard = new ProviderLoadGuard(configDirectory);
+
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
         var files = new IndexerCommandsProvider();
@@ -166,8 +171,7 @@ public partial class App : Application, IDisposable
         }
         catch (Exception ex)
         {
-            Logger.LogError("Couldn't load winget");
-            Logger.LogError(ex.ToString());
+            Logger.LogError("Couldn't load winget", ex);
         }
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
@@ -178,16 +182,45 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
-        services.AddSingleton<ICommandProvider, PerformanceMonitorCommandsProvider>();
+
+        var performanceMonitorSoftDisabled = providerLoadGuard.IsProviderDisabled(PerformanceMonitorCommandsProvider.ProviderIdValue);
+        if (performanceMonitorSoftDisabled)
+        {
+            Logger.LogWarning("Performance monitor is temporarily disabled after repeated crashes. Loading placeholder pages instead of activating performance counters.");
+        }
+
+        if (!performanceMonitorSoftDisabled)
+        {
+            providerLoadGuard.Enter(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId, PerformanceMonitorCommandsProvider.ProviderIdValue);
+        }
+
+        try
+        {
+            var performanceMonitor = new PerformanceMonitorCommandsProvider(performanceMonitorSoftDisabled);
+            services.AddSingleton<ICommandProvider>(performanceMonitor);
+
+            if (!performanceMonitorSoftDisabled)
+            {
+                providerLoadGuard.Exit(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!performanceMonitorSoftDisabled)
+            {
+                providerLoadGuard.Exit(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId);
+            }
+
+            Logger.LogError("Couldn't load performance monitor", ex);
+        }
     }
 
     private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
     {
-        // Models
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
-        services.AddSingleton(state);
+        // Models & persistence services
+        services.AddSingleton<IPersistenceService, PersistenceService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IAppStateService, AppStateService>();
 
         // Services
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
@@ -221,6 +254,8 @@ public partial class App : Application, IDisposable
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<DockViewModel>();
+        services.AddSingleton<IContextMenuFactory, CommandPaletteContextMenuFactory>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
     }
 

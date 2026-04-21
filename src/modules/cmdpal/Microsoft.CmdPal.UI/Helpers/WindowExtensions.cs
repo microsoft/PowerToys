@@ -60,6 +60,16 @@ internal static class WindowExtensions
     }
 
     /// <summary>
+    /// Returns true if the specified extended window style flag(s) are currently set on the window.
+    /// </summary>
+    internal static bool HasExtendedStyle(this Window window, WINDOW_EX_STYLE style)
+    {
+        var hWnd = GetWindowHwnd(window);
+        var currentStyle = (WINDOW_EX_STYLE)PInvoke.GetWindowLong(hWnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
+        return (currentStyle & style) != 0;
+    }
+
+    /// <summary>
     /// Sets the window corner preference
     /// </summary>
     /// <param name="window">The window</param>

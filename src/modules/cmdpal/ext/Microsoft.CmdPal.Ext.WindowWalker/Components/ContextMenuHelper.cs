@@ -2,29 +2,29 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
-using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.CmdPal.Ext.WindowWalker.Pages;
 using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.WindowWalker.Components;
 
-internal sealed class ContextMenuHelper
+internal static class ContextMenuHelper
 {
     internal static List<CommandContextItem> GetContextMenuResults(in WindowWalkerListItem listItem)
     {
-        if (listItem?.Window is not Window windowData)
+        ArgumentNullException.ThrowIfNull(listItem);
+
+        if (listItem.Window is null)
         {
             return [];
         }
 
-        var contextMenu = new List<CommandContextItem>()
+        var windowData = listItem.Window;
+        var contextMenu = new List<CommandContextItem>
         {
             new(new CloseWindowCommand(windowData))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.F4, 0),
+                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.F4),
             },
         };
 
@@ -35,7 +35,7 @@ internal sealed class ContextMenuHelper
         {
             contextMenu.Add(new CommandContextItem(new EndTaskCommand(windowData))
             {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.Delete, 0),
+                RequestedShortcut = KeyChordHelpers.FromModifiers(true, false, false, false, (int)VirtualKey.Delete),
                 IsCritical = true,
             });
         }
