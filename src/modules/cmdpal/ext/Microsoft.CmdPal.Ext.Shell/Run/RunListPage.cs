@@ -271,25 +271,21 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             // run the command even if there's no selected item.
         }
 
-        if (parseResult is ParseCommandlineResult res2
-            /*&& _pathItems.Count == 0*/)
+        // This code is specific to CmdPal, not needed for run:
+        // Run doesn't actually invoke the item. It just runs the text in the box, always.
+        //
+        // We however need to always have a command that will run the thing.
+        if (parseResult is ParseCommandlineResult res2)
         {
             var item = new RunExeItem(res2.FilePath, res2.Arguments, res2.FilePath, (s) => _historyService.AddRunHistoryItem(s), _telemetryService)
             {
-                // TextToSuggest = res2.FilePath,
-                // Title = Path.GetFileName(res2.FilePath),
                 Title = "Run command",
                 Subtitle = newSearch,
+                TextToSuggest = newSearch,
             };
             _exeItem = item;
         }
 
-        // _exeItem = new ListItem()
-        // {
-        //    Title = "Run command",
-        //    Subtitle = newSearch,
-        //    Icon = this.Icon,
-        // };
         FilterHistoryItems(newSearch, searchText);
     }
 

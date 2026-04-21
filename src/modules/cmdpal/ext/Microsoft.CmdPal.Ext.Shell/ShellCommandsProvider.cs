@@ -5,19 +5,17 @@
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Run;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
-using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
 
-public partial class ShellCommandsProvider : CommandProvider
+public partial class ShellCommandsProvider : CommandProvider, IDisposable
 {
     private readonly CommandItem _shellPageItem;
 
     private readonly SettingsManager _settingsManager = new();
-    private readonly ShellListPage _shellListPage;
     private readonly RunListPage _runListPage;
     private readonly FallbackCommandItem _fallbackItem;
     private readonly IRunHistoryService _historyService;
@@ -34,8 +32,6 @@ public partial class ShellCommandsProvider : CommandProvider
         Settings = _settingsManager.Settings;
 
         _runListPage = new RunListPage(runHistoryService, telemetryService, true);
-
-        _shellListPage = new ShellListPage(_settingsManager, _historyService, _telemetryService);
 
         _fallbackItem = new FallbackExecuteItem(_historyService, _telemetryService);
 
@@ -54,4 +50,11 @@ public partial class ShellCommandsProvider : CommandProvider
     public override IFallbackCommandItem[]? FallbackCommands() => [_fallbackItem];
 
     public static bool SuppressFileFallbackIf(string query) => FallbackExecuteItem.SuppressFileFallbackIf(query);
+
+    public override void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        base.Dispose();
+        _runListPage.Dispose();
+    }
 }
