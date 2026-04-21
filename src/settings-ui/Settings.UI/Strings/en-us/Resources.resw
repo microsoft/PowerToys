@@ -4975,6 +4975,9 @@ The break timer font matches the text font.</value>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
     <value>Learn more about Command Palette</value>
   </data>
+	<data name="LearnMore_CmdPalContent.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
     <value>Command Palette</value>
     <comment>Product name: Navigation view item name for Command Palette</comment>
@@ -5822,7 +5825,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_Description.Text" xml:space="preserve">
-    <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
+    <value>Find files, launch apps, and do so much more with the most extensible launcher and dock.</value>
   </data>
   <data name="CmdPal.ModuleTitle" xml:space="preserve">
     <value>Command Palette</value>
@@ -5833,7 +5836,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
-    <value>Powerful extensions help you do more</value>
+    <value>Rich ecosystem of extensions help you do more</value>
   </data>
   <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
     <value>Extensible</value>
