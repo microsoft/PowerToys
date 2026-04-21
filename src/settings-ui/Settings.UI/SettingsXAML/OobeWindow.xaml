@@ -87,6 +87,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}"
                     Tag="FancyZones" />
                 <NavigationViewItem
+                    x:Uid="Shell_GrabAndMove"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}"
+                    Tag="GrabAndMove" />
+                <NavigationViewItem
                     x:Uid="Shell_FileLocksmith"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileLocksmith.png}"
                     Tag="FileLocksmith" />
