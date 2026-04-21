@@ -4975,6 +4975,9 @@ The break timer font matches the text font.</value>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
     <value>Learn more about Command Palette</value>
   </data>
+	<data name="LearnMore_CmdPalContent.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
     <value>Command Palette</value>
     <comment>Product name: Navigation view item name for Command Palette</comment>
@@ -5822,7 +5825,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_Description.Text" xml:space="preserve">
-    <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
+    <value>Find files, launch apps, and do so much more with the most extensible launcher and dock.</value>
   </data>
   <data name="CmdPal.ModuleTitle" xml:space="preserve">
     <value>Command Palette</value>
@@ -5833,7 +5836,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
-    <value>Powerful extensions help you do more</value>
+    <value>Rich ecosystem of extensions help you do more</value>
   </data>
   <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
     <value>Extensible</value>
@@ -5939,6 +5942,22 @@ Text uses the current drawing color.</value>
   </data>
   <data name="LearnMore_GrabAndMove.Text" xml:space="preserve">
     <value>Learn more about Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove.Title" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>Product name. Do not localize this string</comment>
+  </data>
+  <data name="Oobe_GrabAndMove.Description" xml:space="preserve">
+    <value>Grab And Move lets you move and resize windows by holding a modifier key and dragging anywhere inside the window, without needing to target the title bar or window edges.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove_HowToUse.Text" xml:space="preserve">
+    <value>Hold **Alt** and **left-click drag** anywhere inside a window to move it. Hold **Alt** and **right-click drag** to resize it from the nearest edge or corner.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove_TipsAndTricks.Text" xml:space="preserve">
+    <value>Grab And Move works on any window, including maximized windows — dragging a maximized window will automatically restore it first. You can customize the activation shortcut and excluded apps in the settings.</value>
     <comment>"Grab And Move" is the name of the utility</comment>
   </data>
   <data name="GrabAndMove_BehaviorSettingsGroup.Header" xml:space="preserve">

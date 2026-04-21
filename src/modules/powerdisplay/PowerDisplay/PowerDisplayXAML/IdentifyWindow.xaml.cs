@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using Microsoft.PowerToys.Common.UI.Controls.Flyout;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using PowerDisplay.Configuration;
-using PowerDisplay.Helpers;
 using WinUIEx;
 
 namespace PowerDisplay.PowerDisplayXAML
@@ -16,7 +16,6 @@ namespace PowerDisplay.PowerDisplayXAML
     /// </summary>
     public sealed partial class IdentifyWindow : WindowEx, IDisposable
     {
-        private DpiSuppressor? _dpiSuppressor;
         private DispatcherQueueTimer? _autoCloseTimer;
         private bool _disposed;
 
@@ -36,10 +35,7 @@ namespace PowerDisplay.PowerDisplayXAML
             // Configure window style
             ConfigureWindow();
 
-            // Subclass WndProc to suppress WM_DPICHANGED during cross-DPI positioning
-            _dpiSuppressor = new DpiSuppressor(this);
-
-            // Ensure DpiSuppressor is disposed when window closes
+            // Dispose timer when window closes
             this.Closed += (_, _) => Dispose();
 
             // Auto close after 3 seconds. DispatcherQueueTimer runs on the UI thread
@@ -71,25 +67,22 @@ namespace PowerDisplay.PowerDisplayXAML
         {
             var (windowWidthDip, windowHeightDip) = GetAdaptiveWindowSizeDip(displayArea);
 
-            // Suppress WM_DPICHANGED during MoveAndResize to prevent double-scaling
-            // when positioning on a monitor with different DPI than the primary.
-            using (_dpiSuppressor?.Suppress() ?? default)
-            {
-                WindowHelper.CenterWindowOnDisplay(this, displayArea, windowWidthDip, windowHeightDip);
-            }
+            // FlyoutWindowHelper handles cross-monitor DPI internally via a 1×1 teleport
+            // before the final move, so no WM_DPICHANGED suppression is required here.
+            FlyoutWindowHelper.CenterWindowOnDisplay(this, displayArea, windowWidthDip, windowHeightDip);
         }
 
         private static (int WidthDip, int HeightDip) GetAdaptiveWindowSizeDip(DisplayArea displayArea)
         {
             var workArea = displayArea.WorkArea;
-            double dpiScale = WindowHelper.GetDpiScale(displayArea);
+            double dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
 
             int maxWidthDip = Math.Max(
                 AppConstants.UI.IdentifyWindowMinWidthDip,
-                WindowHelper.ScaleToDip((int)Math.Floor(workArea.Width * AppConstants.UI.IdentifyWindowMaxWorkAreaRatio), dpiScale));
+                FlyoutWindowHelper.ScaleToDip((int)Math.Floor(workArea.Width * AppConstants.UI.IdentifyWindowMaxWorkAreaRatio), dpiScale));
             int maxHeightDip = Math.Max(
                 AppConstants.UI.IdentifyWindowMinHeightDip,
-                WindowHelper.ScaleToDip((int)Math.Floor(workArea.Height * AppConstants.UI.IdentifyWindowMaxWorkAreaRatio), dpiScale));
+                FlyoutWindowHelper.ScaleToDip((int)Math.Floor(workArea.Height * AppConstants.UI.IdentifyWindowMaxWorkAreaRatio), dpiScale));
 
             int widthDip = Math.Max(
                 AppConstants.UI.IdentifyWindowMinWidthDip,
@@ -112,7 +105,6 @@ namespace PowerDisplay.PowerDisplayXAML
 
             _autoCloseTimer?.Stop();
             _autoCloseTimer = null;
-            _dpiSuppressor?.Dispose();
         }
     }
 }
