@@ -84,7 +84,7 @@ private:
     bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
     bool m_disableOnSingleMonitor = false; // Default to false
     int m_wrapMode = 0; // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
-    int m_activationMode = 0; // 0=Always (default), 1=HoldingCtrl (disables wrap), 2=HoldingShift (disables wrap)
+    int m_activationMode = 0; // 0=Always (default), 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
     
     // Mouse hook
     HHOOK m_mouseHook = nullptr;
@@ -689,23 +689,23 @@ private:
             
             if (g_cursorWrapInstance && g_cursorWrapInstance->m_hookActive)
             {
-                // Check activation mode to determine if wrapping should be disabled
-                // 0=Always, 1=HoldingCtrl (disables wrap when Ctrl held), 2=HoldingShift (disables wrap when Shift held)
+                // Check activation mode to determine if wrapping should happen.
+                // 0=Always, 1=HoldingCtrl (wraps only when Ctrl held), 2=HoldingShift (wraps only when Shift held)
                 int activationMode = g_cursorWrapInstance->m_activationMode;
-                bool disableByKey = false;
+                bool shouldWrap = true;
                 
-                if (activationMode == 1) // HoldingCtrl - disable wrap when Ctrl is held
+                if (activationMode == 1) // HoldingCtrl - wrap only when Ctrl is held
                 {
-                    disableByKey = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+                    shouldWrap = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
                 }
-                else if (activationMode == 2) // HoldingShift - disable wrap when Shift is held
+                else if (activationMode == 2) // HoldingShift - wrap only when Shift is held
                 {
-                    disableByKey = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+                    shouldWrap = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
                 }
                 
-                if (disableByKey)
+                if (!shouldWrap)
                 {
-                    // Key is held, do not wrap - let normal behavior happen
+                    // Activation key is not held, do not wrap - let normal behavior happen.
                     return CallNextHookEx(nullptr, nCode, wParam, lParam);
                 }
                 

@@ -1241,7 +1241,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _cursorWrapAutoActivate;
         private bool _cursorWrapDisableWrapDuringDrag; // Will be initialized in constructor from settings
         private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
-        private int _cursorWrapActivationMode; // 0=Always, 1=HoldingCtrl (disables wrap), 2=HoldingShift (disables wrap)
+        private int _cursorWrapActivationMode; // 0=Always, 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
         private bool _cursorWrapDisableOnSingleMonitor; // Disable cursor wrap when only one monitor is connected
     }
 }

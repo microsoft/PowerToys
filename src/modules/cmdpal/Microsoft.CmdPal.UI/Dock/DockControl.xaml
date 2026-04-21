@@ -17,12 +17,9 @@
 
     <UserControl.Resources>
         <ResourceDictionary>
-            <StackLayout
-                x:Key="ItemsOrientationLayout"
-                Orientation="{x:Bind ItemsOrientation, Mode=OneWay}"
-                Spacing="4" />
+            <StackLayout x:Key="ItemsOrientationLayout" Orientation="{x:Bind ItemsOrientation, Mode=OneWay}" />
             <ItemsPanelTemplate x:Key="HorizontalItemsPanel">
-                <StackPanel Orientation="Horizontal" Spacing="4" />
+                <StackPanel Orientation="Horizontal" />
             </ItemsPanelTemplate>
             <ItemsPanelTemplate x:Key="VerticalItemsPanel">
                 <StackPanel Orientation="Vertical" Spacing="4" />
@@ -53,7 +50,7 @@
                                         AutomationProperties.AccessibilityView="Raw"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested16}" />
+                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested16}" />
                                 </local:DockItemControl.Icon>
                             </local:DockItemControl>
                         </DataTemplate>
@@ -76,7 +73,7 @@
 
             <Style x:Key="DockBandListViewItemStyle" TargetType="ListViewItem">
                 <Setter Property="Padding" Value="0" />
-                <Setter Property="Margin" Value="0,0,4,0" />
+                <Setter Property="Margin" Value="0" />
                 <Setter Property="MinHeight" Value="0" />
                 <Setter Property="MinWidth" Value="0" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -103,7 +100,7 @@
                 Opened="ContextMenuFlyout_Opened"
                 ShouldConstrainToRootBounds="False"
                 SystemBackdrop="{ThemeResource AcrylicBackgroundFillColorDefaultBackdrop}">
-                <cpcontrols:ContextMenu x:Name="ContextControl" />
+                <cpcontrols:ContextMenu x:Name="ContextControl" SubscribeToCommandBar="False" />
             </Flyout>
 
             <!--  Edit mode context menu for dock bands  -->
@@ -139,15 +136,18 @@
                 ShouldConstrainToRootBounds="False">
                 <StackPanel Width="320">
                     <TextBlock
+                        x:Uid="Dock_Bands_Header"
+                        Margin="8,8,8,12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock
                         x:Name="NoAvailableBandsText"
                         x:Uid="Dock_AddBand_NoCommandsAvailable"
-                        Padding="12"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        TextAlignment="Center"
+                        Margin="8,0,0,0"
                         Visibility="Collapsed" />
                     <ListView
                         x:Name="AddBandListView"
                         MaxHeight="300"
+                        Margin="-12,0,-12,0"
                         HorizontalAlignment="Stretch"
                         IsItemClickEnabled="True"
                         ItemClick="AddBandListView_ItemClick"
@@ -165,7 +165,7 @@
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         SourceKey="{x:Bind IconViewModel, Mode=OneWay}"
-                                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
+                                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
                                     <TextBlock
                                         Grid.Column="1"
                                         VerticalAlignment="Center"
@@ -175,6 +175,30 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                    <Rectangle
+                        Height="1"
+                        Margin="-16,24,-16,0"
+                        HorizontalAlignment="Stretch"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <Grid Margin="8,24,0,0" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon
+                            Margin="0,4,0,0"
+                            VerticalAlignment="Top"
+                            AutomationProperties.AccessibilityView="Raw"
+                            FontSize="11"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE946;" />
+                        <TextBlock
+                            x:Uid="Dock_Pin_Instruction"
+                            Grid.Column="1"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{ThemeResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap" />
+                    </Grid>
                 </StackPanel>
             </Flyout>
         </ResourceDictionary>
@@ -182,13 +206,13 @@
 
     <Grid
         x:Name="RootGrid"
+        Background="Transparent"
+        BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1"
         RightTapped="RootGrid_RightTapped">
         <!--  Dock content with Start / Center / End sections  -->
         <local:DockContentControl
             x:Name="ContentGrid"
-            Margin="4"
-            Background="Transparent"
             IsEditMode="{x:Bind IsEditMode, Mode=OneWay}"
             RightTapped="RootGrid_RightTapped">
             <local:DockContentControl.StartSource>
@@ -220,7 +244,6 @@
                     <FontIcon FontSize="12" Glyph="&#xE710;" />
                 </Button>
             </local:DockContentControl.StartActionButton>
-
             <local:DockContentControl.CenterSource>
                 <ListView
                     x:Name="CenterListView"
@@ -255,6 +278,8 @@
                 <ListView
                     x:Name="EndListView"
                     MinWidth="48"
+                    MinHeight="0"
+                    HorizontalContentAlignment="Stretch"
                     DragEnter="BandListView_DragEnter"
                     DragItemsCompleted="BandListView_DragItemsCompleted"
                     DragItemsStarting="BandListView_DragItemsStarting"
@@ -284,7 +309,6 @@
                 </Button>
             </local:DockContentControl.EndActionButton>
         </local:DockContentControl>
-
         <TeachingTip
             x:Name="EditButtonsTeachingTip"
             MinWidth="0"
@@ -317,7 +341,7 @@
                         <ui:IsEqualStateTrigger Value="{x:Bind DockSide, Mode=OneWay}" To="Top" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Target="ContentGrid.Margin" Value="4,0,4,4" />
+                        <Setter Target="ContentGrid.Margin" Value="4,0,4,0" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="DockOnBottom">
@@ -361,6 +385,25 @@
                         <Setter Target="StartListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                         <Setter Target="CenterListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
                         <Setter Target="EndListView.ItemsPanel" Value="{StaticResource VerticalItemsPanel}" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+
+            <!--
+                Compact overrides: zeroes margins/borders set by DockOrientation.
+                Declared after DockOrientation so its setters win when both groups
+                target the same property.
+            -->
+            <VisualStateGroup x:Name="DockSizeStates">
+                <VisualState x:Name="DefaultSize" />
+                <VisualState x:Name="CompactSize">
+                    <VisualState.StateTriggers>
+                        <ui:IsEqualStateTrigger Value="{x:Bind DockSize, Mode=OneWay}" To="Compact" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContentGrid.Margin" Value="0" />
+                        <Setter Target="ContentGrid.Padding" Value="0" />
+                        <Setter Target="RootGrid.BorderThickness" Value="0" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>

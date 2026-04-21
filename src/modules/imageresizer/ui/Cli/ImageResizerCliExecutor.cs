@@ -6,6 +6,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ImageResizer.Models;
 using ImageResizer.Properties;
@@ -18,6 +19,11 @@ namespace ImageResizer.Cli
     /// </summary>
     public class ImageResizerCliExecutor
     {
+        /// <summary>
+        /// Gets the name of the last CLI operation that was executed.
+        /// </summary>
+        public string CommandName { get; private set; } = "resize";
+
         /// <summary>
         /// Runs the CLI executor with the provided command-line arguments.
         /// </summary>
@@ -36,18 +42,21 @@ namespace ImageResizer.Cli
                 }
 
                 CliOptions.PrintUsage();
+                CommandName = "error";
                 return 1;
             }
 
             if (cliOptions.ShowHelp)
             {
                 CliOptions.PrintUsage();
+                CommandName = "help";
                 return 0;
             }
 
             if (cliOptions.ShowConfig)
             {
                 CliOptions.PrintConfig(Settings.Default);
+                CommandName = "show-config";
                 return 0;
             }
 
@@ -55,13 +64,14 @@ namespace ImageResizer.Cli
             {
                 Console.WriteLine(Resources.CLI_NoInputFiles);
                 CliOptions.PrintUsage();
+                CommandName = "error";
                 return 1;
             }
 
-            return RunSilentMode(cliOptions);
+            return RunSilentModeAsync(cliOptions).GetAwaiter().GetResult();
         }
 
-        private int RunSilentMode(CliOptions cliOptions)
+        private async Task<int> RunSilentModeAsync(CliOptions cliOptions)
         {
             var batch = ResizeBatch.FromCliOptions(Console.In, cliOptions);
             var settings = Settings.Default;
@@ -73,7 +83,7 @@ namespace ImageResizer.Cli
             bool useLineBasedProgress = cliOptions.ProgressLines ?? false;
             int lastReportedMilestone = -1;
 
-            var errors = batch.Process(
+            var errors = await batch.ProcessAsync(
                 (completed, total) =>
                 {
                     var progress = (int)((completed / total) * 100);

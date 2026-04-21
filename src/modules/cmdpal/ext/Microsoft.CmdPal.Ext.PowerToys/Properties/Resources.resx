@@ -462,6 +462,18 @@
   <data name="MouseWithoutBorders_Settings_Subtitle" xml:space="preserve">
     <value>Open Mouse Without Borders settings</value>
   </data>
+  <data name="MouseWithoutBorders_ToggleEasyMouse_Title" xml:space="preserve">
+    <value>Toggle Easy Mouse</value>
+  </data>
+  <data name="MouseWithoutBorders_ToggleEasyMouse_Subtitle" xml:space="preserve">
+    <value>Mouse Without Borders: Toggle Easy Mouse feature on/off</value>
+  </data>
+  <data name="MouseWithoutBorders_Reconnect_Title" xml:space="preserve">
+    <value>Reconnect</value>
+  </data>
+  <data name="MouseWithoutBorders_Reconnect_Subtitle" xml:space="preserve">
+    <value>Mouse Without Borders: Reconnect to all machines</value>
+  </data>
   <!-- New+ Module -->
   <data name="NewPlus_Settings_Subtitle" xml:space="preserve">
     <value>Open New+ settings</value>
@@ -640,3 +652,4 @@
     <value>N/A</value>
   </data>
 </root>
+

@@ -585,9 +585,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 // Then find all the top-level commands that belonged to that extension
                 List<TopLevelViewModel> commandsToRemove = [];
                 List<TopLevelViewModel> bandsToRemove = [];
-                lock (TopLevelCommands)
+                foreach (var extension in extensions)
                 {
-                    foreach (var extension in extensions)
+                    lock (TopLevelCommands)
                     {
                         foreach (var command in TopLevelCommands)
                         {
@@ -597,7 +597,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                                 commandsToRemove.Add(command);
                             }
                         }
+                    }
 
+                    lock (_dockBandsLock)
+                    {
                         foreach (var band in DockBands)
                         {
                             var host = band.ExtensionHost;
@@ -675,6 +678,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         return null;
     }
 
+    public List<TopLevelViewModel> GetDockBandsSnapshot()
+    {
+        lock (_dockBandsLock)
+        {
+            return [.. DockBands];
+        }
+    }
+
     public void Receive(ReloadCommandsMessage message) =>
         _ = ReloadAllCommandsAsync();
 
@@ -696,7 +707,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             if (message.Pin)
             {
-                wrapper?.PinDockBand(message.CommandId, _serviceProvider);
+                wrapper?.PinDockBand(message.CommandId, _serviceProvider, message.Side, message.ShowTitles, message.ShowSubtitles);
             }
             else
             {

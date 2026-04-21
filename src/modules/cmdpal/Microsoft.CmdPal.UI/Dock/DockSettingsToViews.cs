@@ -4,7 +4,6 @@
 
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Windows.Win32;
-using WinUIEx;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -14,9 +13,8 @@ internal static class DockSettingsToViews
     {
         return size switch
         {
-            DockSize.Small => 128,
-            DockSize.Medium => 192,
-            DockSize.Large => 256,
+            DockSize.Default => 86,
+            DockSize.Compact => 86,
             _ => throw new NotImplementedException(),
         };
     }
@@ -25,19 +23,8 @@ internal static class DockSettingsToViews
     {
         return size switch
         {
-            DockSize.Small => 38,
-            DockSize.Medium => 54,
-            DockSize.Large => 76,
-            _ => throw new NotImplementedException(),
-        };
-    }
-
-    public static Microsoft.UI.Xaml.Media.SystemBackdrop? GetSystemBackdrop(DockBackdrop backdrop)
-    {
-        return backdrop switch
-        {
-            DockBackdrop.Transparent => new TransparentTintBackdrop(),
-            DockBackdrop.Acrylic => null,
+            DockSize.Default => 38,
+            DockSize.Compact => 24,
             _ => throw new NotImplementedException(),
         };
     }

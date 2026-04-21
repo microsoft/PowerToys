@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
@@ -106,7 +105,8 @@ public sealed partial class CommandBarViewModel : ObservableObject,
     {
         switch (e.PropertyName)
         {
-            case nameof(SelectedItem.HasMoreCommands):
+            case nameof(SelectedItem.CanOpenContextMenu):
+            case nameof(SelectedItem.SecondaryCommand):
                 UpdateContextItems();
                 break;
         }
@@ -122,11 +122,7 @@ public sealed partial class CommandBarViewModel : ObservableObject,
         }
 
         SecondaryCommand = SelectedItem.SecondaryCommand;
-
-        var hasMoreThanOneContextItem = SelectedItem.MoreCommands.Count() > 1;
-        var hasMoreThanOneCommand = SelectedItem.MoreCommands.OfType<CommandContextItemViewModel>().Any();
-
-        ShouldShowContextMenu = hasMoreThanOneContextItem && hasMoreThanOneCommand;
+        ShouldShowContextMenu = SelectedItem.CanOpenContextMenu;
 
         OnPropertyChanged(nameof(HasSecondaryCommand));
         OnPropertyChanged(nameof(SecondaryCommand));

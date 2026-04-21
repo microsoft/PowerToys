@@ -214,7 +214,7 @@
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
-                        <InfoBar
+                        <!-- <InfoBar
                             x:Name="PowerDisplayDisabledWarningBar"
                             x:Uid="LightSwitch_PowerDisplayDisabledWarningBar"
                             Background="Transparent"
@@ -265,7 +265,7 @@
                                         SelectedItem="{x:Bind ViewModel.SelectedLightModeProfile, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
                             </tkcontrols:SettingsExpander.Items>
-                        </tkcontrols:SettingsExpander>
+                        </tkcontrols:SettingsExpander>-->
                     </controls:SettingsGroup>
                     <!--  Force mode buttons  -->
                     <!--<tkcontrols:SettingsCard

@@ -57,7 +57,10 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         var wrappedBand = new WrappedDockItem(
             [_bandItem],
             "com.microsoft.cmdpal.timedate.dockBand",
-            Resources.Microsoft_plugin_timedate_dock_band_title);
+            Resources.Microsoft_plugin_timedate_dock_band_title)
+        {
+            Icon = Icons.TimeDateExtIcon,
+        };
 
         return new ICommandItem[] { wrappedBand };
     }

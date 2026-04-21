@@ -218,6 +218,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -18,12 +18,13 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
 {
     public override IEnumerable<ListItem> BuildCommands()
     {
-        var title = SettingsWindow.KBM.ModuleDisplayName();
-        var icon = SettingsWindow.KBM.ModuleIcon();
+        var module = SettingsWindow.KBM;
+        var title = module.ModuleDisplayName();
+        var icon = module.ModuleIcon();
 
         if (IsUseNewEditorEnabled())
         {
-            yield return new ListItem(new OpenNewKeyboardManagerEditorCommand())
+            yield return new ListItem(new OpenNewKeyboardManagerEditorCommand() { Id = "com.microsoft.powertoys.keyboardManager.openNewEditor" })
             {
                 Title = Resources.KeyboardManager_OpenNewEditor_Title,
                 Subtitle = Resources.KeyboardManager_OpenNewEditor_Subtitle,
@@ -31,12 +32,17 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.KBM, title) { Id = "com.microsoft.powertoys.keyboardManager.openSettings" })
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.keyboardManager.openSettings" })
         {
             Title = title,
             Subtitle = Resources.KeyboardManager_Settings_Subtitle,
             Icon = icon,
         };
+    }
+
+    private static string GetResourceString(string resourceName, string fallback)
+    {
+        return Resources.ResourceManager.GetString(resourceName, Resources.Culture) ?? fallback;
     }
 
     private static bool IsUseNewEditorEnabled()

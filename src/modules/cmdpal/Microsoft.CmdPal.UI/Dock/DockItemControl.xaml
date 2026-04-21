@@ -43,7 +43,7 @@
 
     <CornerRadius x:Key="DockItemCornerRadius">4</CornerRadius>
     <Thickness x:Key="DockItemPadding">4,0,4,0</Thickness>
-
+    <Thickness x:Key="DockItemMargin">2,0,2,0</Thickness>
     <Style BasedOn="{StaticResource DefaultDockItemControlStyle}" TargetType="local:DockItemControl" />
 
     <Style x:Key="DefaultDockItemControlStyle" TargetType="local:DockItemControl">
@@ -60,12 +60,13 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="local:DockItemControl">
-                        <Grid x:Name="PART_HitTestGrid" Background="Transparent">
+                        <Grid
+                            x:Name="PART_RootGrid"
+                            Padding="{StaticResource DockItemMargin}"
+                            Background="Transparent">
                             <Grid
-                                x:Name="PART_RootGrid"
+                                x:Name="PART_BackPlate"
                                 MinWidth="32"
-                                MinHeight="30"
-                                Margin="{TemplateBinding InnerMargin}"
                                 Padding="{TemplateBinding Padding}"
                                 VerticalAlignment="Stretch"
                                 Background="{TemplateBinding Background}"
@@ -92,13 +93,14 @@
                                     <StackPanel
                                         x:Name="TextPanel"
                                         Grid.Column="1"
+                                        HorizontalAlignment="Stretch"
                                         VerticalAlignment="Center"
                                         Visibility="{TemplateBinding TextVisibility}">
                                         <TextBlock
                                             x:Name="TitleText"
                                             MinWidth="24"
                                             MaxWidth="100"
-                                            HorizontalAlignment="Left"
+                                            HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
                                             FontSize="12"
@@ -110,13 +112,13 @@
                                             x:Name="SubtitleText"
                                             MaxWidth="100"
                                             Margin="0,-2,0,0"
-                                            HorizontalAlignment="Left"
+                                            HorizontalAlignment="Stretch"
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
                                             FontSize="10"
                                             Foreground="{ThemeResource TextFillColorTertiary}"
                                             Text="{TemplateBinding Subtitle}"
-                                            TextAlignment="Center"
+                                            TextAlignment="Left"
                                             TextTrimming="CharacterEllipsis"
                                             TextWrapping="NoWrap" />
                                     </StackPanel>
@@ -127,20 +129,20 @@
                                     <VisualState x:Name="Normal" />
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
-                                            <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
+                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
+                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrushPointerOver}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
-                                            <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
+                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackgroundPointerOver}" />
+                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBorderBrushPressed}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Disabled">
                                         <VisualState.Setters>
-                                            <Setter Target="PART_RootGrid.Background" Value="{ThemeResource DockItemBackground}" />
-                                            <Setter Target="PART_RootGrid.BorderBrush" Value="{ThemeResource DockItemBackground}" />
+                                            <Setter Target="PART_BackPlate.Background" Value="{ThemeResource DockItemBackground}" />
+                                            <Setter Target="PART_BackPlate.BorderBrush" Value="{ThemeResource DockItemBackground}" />
                                             <Setter Target="IconPresenter.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="TitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
                                             <Setter Target="SubtitleText.Foreground" Value="{ThemeResource ButtonForegroundDisabled}" />
@@ -173,6 +175,31 @@
                                     <VisualState x:Name="IconHidden">
                                         <VisualState.Setters>
                                             <Setter Target="ContentGrid.ColumnSpacing" Value="0" />
+                                            <Setter Target="IconPresenter.Visibility" Value="Collapsed" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="TextAlignmentStates">
+                                    <VisualState x:Name="TextLeftAligned">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.TextAlignment" Value="Left" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Left" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="TextCentered">
+                                        <VisualState.Setters>
+                                            <Setter Target="TitleText.TextAlignment" Value="Center" />
+                                            <Setter Target="SubtitleText.TextAlignment" Value="Center" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CompactStates">
+                                    <VisualState x:Name="DefaultLayout" />
+                                    <VisualState x:Name="Compact">
+                                        <VisualState.Setters>
+                                            <Setter Target="PART_RootGrid.Padding" Value="0" />
+                                            <Setter Target="SubtitleText.Visibility" Value="Collapsed" />
+                                            <Setter Target="TitleText.Margin" Value="0,-1,0,0" />
                                         </VisualState.Setters>
                                     </VisualState>
                                 </VisualStateGroup>

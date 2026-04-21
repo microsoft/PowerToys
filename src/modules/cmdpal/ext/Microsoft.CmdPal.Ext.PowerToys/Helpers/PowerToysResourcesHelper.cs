@@ -9,11 +9,16 @@ namespace PowerToysExtension.Helpers;
 
 internal static class PowerToysResourcesHelper
 {
+    private const string AssetsRoot = "Assets\\";
     private const string SettingsIconRoot = "WinUI3Apps\\Assets\\Settings\\Icons\\";
 
     internal static IconInfo IconFromSettingsIcon(string fileName) => IconHelpers.FromRelativePath($"{SettingsIconRoot}{fileName}");
 
+#if DEBUG
+    public static IconInfo ProviderIcon() => IconFromSettingsIcon("PowerToys.dark.png");
+#else
     public static IconInfo ProviderIcon() => IconFromSettingsIcon("PowerToys.png");
+#endif
 
     public static IconInfo ModuleIcon(this SettingsWindow module)
     {

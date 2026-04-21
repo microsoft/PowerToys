@@ -261,8 +261,20 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
+        // Determine whether this is the root/home page navigation BEFORE
+        // computing providerContext. When navigating back to the root page we
+        // must use an empty provider context so that home-page list items don't
+        // inherit a pinning-capable context left over from the previous sub-page
+        // (which can happen e.g. when the window is hidden while on a sub-page).
+        // isMainPage must be evaluated here; if it were moved inside the
+        // "if (command is IPage)" block below, it would be too late to affect
+        // the providerContext that is passed to the new page view-model.
+        var isMainPage = command == _rootPage;
+
         var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
-        var providerContext = _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
+        var providerContext = isMainPage
+            ? CommandProviderContext.Empty
+            : _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
 
         _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
 
@@ -272,7 +284,6 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Navigating to page");
 
-                var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
                 _currentlyTransient = message.TransientPage;
 

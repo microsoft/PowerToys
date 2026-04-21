@@ -319,6 +319,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Indexer.UnitTests/Microsoft.CmdPal.Ext.Indexer.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.Registry.UnitTests/Microsoft.CmdPal.Ext.Registry.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -502,7 +506,7 @@
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngine/KeyboardManagerEngine.vcxproj" Id="ba661f5b-1d5a-4ffc-9bf1-fc39df280bdd" />
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEngineLibrary/KeyboardManagerEngineLibrary.vcxproj" Id="e496b7fc-1e99-4bab-849b-0e8367040b02" />
   </Folder>
-  <Folder Name="/modules/keyboardmanager/MouseUtils/">
+  <Folder Name="/modules/MouseUtils/">
     <Project Path="src/modules/MouseUtils/CursorWrap/CursorWrap.vcxproj" Id="48a1db8c-5df8-4fb3-9e14-2b67f3f2d8b5" />
     <Project Path="src/modules/MouseUtils/FindMyMouse/FindMyMouse.vcxproj" Id="e94fd11c-0591-456f-899f-efc0ca548336" />
     <Project Path="src/modules/MouseUtils/MouseHighlighter/MouseHighlighter.vcxproj" Id="782a61be-9d85-4081-b35c-1ccc9dcc1e88" />
@@ -517,7 +521,7 @@
     </Project>
     <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
   </Folder>
-  <Folder Name="/modules/keyboardmanager/MouseUtils/Tests/">
+  <Folder Name="/modules/MouseUtils/Tests/">
     <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -714,6 +718,10 @@
     </Project>
   </Folder>
   <Folder Name="/modules/PowerDisplay/">
+    <Project Path="src/modules/powerdisplay/PowerDisplay.Models/PowerDisplay.Models.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/powerdisplay/PowerDisplay.Lib/PowerDisplay.Lib.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1025,9 +1033,16 @@
     <File Path="src/modules/Workspaces/workspaces-common/WindowUtils.h" />
   </Folder>
   <Folder Name="/modules/ZoomIt/">
-    <Project Path="src/modules/ZoomIt/ZoomIt/ZoomIt.vcxproj" Id="0a84f764-3a88-44cd-aa96-41bdbd48627b" />
+    <Project Path="src/modules/ZoomIt/ZoomIt/ZoomIt.vcxproj" Id="0a84f764-3a88-44cd-aa96-41bdbd48627b">
+      <BuildDependency Project="src/modules/ZoomIt/ZoomItBreak/ZoomItBreak.vcxproj" />
+    </Project>
+    <Project Path="src/modules/ZoomIt/ZoomItBreak/ZoomItBreak.vcxproj" Id="94ba3051-c8d7-454a-9d46-1a7c78e228a3" />
     <Project Path="src/modules/ZoomIt/ZoomItModuleInterface/ZoomItModuleInterface.vcxproj" Id="e4585179-2ac1-4d5f-a3ff-cfc5392f694c" />
     <Project Path="src/modules/ZoomIt/ZoomItSettingsInterop/ZoomItSettingsInterop.vcxproj" Id="ca7d8106-30b9-4aec-9d05-b69b31b8c461" />
+  </Folder>
+  <Folder Name="/modules/GrabAndMove/">
+    <Project Path="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" Id="568c4c30-2e3c-4c2c-a691-007362073765" />
+    <Project Path="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" Id="2c3f7770-4e57-46b7-8dc1-7428a383d0db" />
   </Folder>
   <Folder Name="/settings-ui/">
     <Project Path="src/settings-ui/QuickAccess.UI/PowerToys.QuickAccess.csproj">
@@ -1094,6 +1109,8 @@
     <BuildDependency Project="src/modules/launcher/Microsoft.Launcher/Microsoft.Launcher.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchModuleInterface/LightSwitchModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/LightSwitch/LightSwitchService/LightSwitchService.vcxproj" />
+    <BuildDependency Project="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" />
+    <BuildDependency Project="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
     <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
     <BuildDependency Project="src/modules/previewpane/Common/PreviewHandlerCommon.csproj" />

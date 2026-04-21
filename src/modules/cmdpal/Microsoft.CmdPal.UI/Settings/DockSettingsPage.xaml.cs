@@ -28,11 +28,11 @@ public sealed partial class DockSettingsPage : Page
     {
         this.InitializeComponent();
 
-        var settings = App.Current.Services.GetService<SettingsModel>()!;
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
 
-        ViewModel = new SettingsViewModel(settings, topLevelCommandManager, _mainTaskScheduler, themeService);
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
 
         // Initialize UI state
         InitializeSettings();
@@ -42,7 +42,9 @@ public sealed partial class DockSettingsPage : Page
     {
         // Initialize UI controls to match current settings
         DockPositionComboBox.SelectedIndex = SelectedSideIndex;
+        DockSizeComboBox.SelectedIndex = SelectedDockSizeIndex;
         BackdropComboBox.SelectedIndex = SelectedBackdropIndex;
+        UpdateDockSizeCardVisibility();
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)
@@ -108,7 +110,11 @@ public sealed partial class DockSettingsPage : Page
     public int SelectedSideIndex
     {
         get => SideToSelectedIndex(ViewModel.Dock_Side);
-        set => ViewModel.Dock_Side = SelectedIndexToSide(value);
+        set
+        {
+            ViewModel.Dock_Side = SelectedIndexToSide(value);
+            UpdateDockSizeCardVisibility();
+        }
     }
 
     public int SelectedBackdropIndex
@@ -126,18 +132,16 @@ public sealed partial class DockSettingsPage : Page
     // Conversion methods for ComboBox bindings
     private static int DockSizeToSelectedIndex(DockSize size) => size switch
     {
-        DockSize.Small => 0,
-        DockSize.Medium => 1,
-        DockSize.Large => 2,
+        DockSize.Default => 0,
+        DockSize.Compact => 1,
         _ => 0,
     };
 
     private static DockSize SelectedIndexToDockSize(int index) => index switch
     {
-        0 => DockSize.Small,
-        1 => DockSize.Medium,
-        2 => DockSize.Large,
-        _ => DockSize.Small,
+        0 => DockSize.Default,
+        1 => DockSize.Compact,
+        _ => DockSize.Default,
     };
 
     private static int SideToSelectedIndex(DockSide side) => side switch
@@ -172,13 +176,20 @@ public sealed partial class DockSettingsPage : Page
         _ => DockBackdrop.Acrylic,
     };
 
+    private void UpdateDockSizeCardVisibility()
+    {
+        var side = ViewModel.Dock_Side;
+        var isTopOrBottom = side == DockSide.Top || side == DockSide.Bottom;
+        DockSizeSettingsCard.Visibility = isTopOrBottom ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     private List<TopLevelViewModel> GetAllBands()
     {
         var allBands = new List<TopLevelViewModel>();
 
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
 
-        foreach (var item in tlcManager.DockBands)
+        foreach (var item in tlcManager.GetDockBandsSnapshot())
         {
             if (item.IsDockBand)
             {
@@ -195,9 +206,10 @@ public sealed partial class DockSettingsPage : Page
 
         // var allBands = GetAllBands();
         var tlcManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        var settingsModel = App.Current.Services.GetService<SettingsModel>()!;
+        var settingsModel = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
         var dockViewModel = App.Current.Services.GetService<DockViewModel>()!;
-        var allBands = tlcManager.DockBands;
+        var allBands = tlcManager.GetDockBandsSnapshot();
         foreach (var band in allBands)
         {
             var setting = band.DockBandSettings;
@@ -208,7 +220,7 @@ public sealed partial class DockSettingsPage : Page
                     dockSettingsModel: setting,
                     topLevelAdapter: band,
                     bandViewModel: bandVm,
-                    settingsModel: settingsModel
+                    settingsService: settingsService
                 ));
             }
         }

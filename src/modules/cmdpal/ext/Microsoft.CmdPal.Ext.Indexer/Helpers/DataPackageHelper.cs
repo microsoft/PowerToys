@@ -38,9 +38,6 @@ internal static class DataPackageHelper
             },
         };
 
-        // Cheap + immediate.
-        dataPackage.SetText(capturedPath);
-
         // Expensive + only computed if the consumer asks for StorageItems.
         dataPackage.SetDataProvider(StandardDataFormats.StorageItems, async void (request) =>
         {
