@@ -55,7 +55,6 @@
                 </ItemsControl>
                 <TextBlock
                     VerticalAlignment="Center"
-                    Style="{StaticResource CaptionTextBlockStyle}"
                     Text="{x:Bind Label, Mode=OneWay}"
                     TextWrapping="WrapWholeWords" />
             </Grid>
