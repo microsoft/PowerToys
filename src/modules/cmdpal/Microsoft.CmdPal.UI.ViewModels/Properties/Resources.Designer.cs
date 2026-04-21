@@ -322,6 +322,15 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} command.
+        /// </summary>
+        public static string builtin_extension_subtext_singular {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_singular", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0}, {1}.
         /// </summary>
         public static string builtin_extension_subtext_disabled {
@@ -336,6 +345,33 @@ namespace Microsoft.CmdPal.UI.ViewModels.Properties {
         public static string builtin_extension_subtext_with_fallback {
             get {
                 return ResourceManager.GetString("builtin_extension_subtext_with_fallback", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} command, {2} fallback command.
+        /// </summary>
+        public static string builtin_extension_subtext_with_fallback_singular_both {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_with_fallback_singular_both", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} command, {2} fallback commands.
+        /// </summary>
+        public static string builtin_extension_subtext_with_fallback_singular_command {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_with_fallback_singular_command", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}, {1} commands, {2} fallback command.
+        /// </summary>
+        public static string builtin_extension_subtext_with_fallback_singular_fallback {
+            get {
+                return ResourceManager.GetString("builtin_extension_subtext_with_fallback_singular_fallback", resourceCulture);
             }
         }
         
