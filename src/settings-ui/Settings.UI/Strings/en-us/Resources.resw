@@ -5833,7 +5833,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
-    <value>Powerful extensions help you do more</value>
+    <value>Rich ecosystem of extensions help you do more</value>
   </data>
   <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
     <value>Extensible</value>
