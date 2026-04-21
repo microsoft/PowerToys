@@ -191,7 +191,7 @@ Generate-FileList -fileDepsJson "" -fileListName ImageResizerAssetsFiles -wxsFil
 Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PSScriptRoot\ImageResizer.wxs
 
 #KeyboardManager
-Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsFiles -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\KeyboardManager"
+Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsFiles -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\KeyboardManager"
 Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsWinUI3Files -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\KeyboardManagerEditor"
 Generate-FileComponents -fileListName "KeyboardManagerAssetsFiles" -wxsFilePath $PSScriptRoot\KeyboardManager.wxs
 Generate-FileComponents -fileListName "KeyboardManagerAssetsWinUI3Files" -wxsFilePath $PSScriptRoot\KeyboardManager.wxs
