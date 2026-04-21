@@ -5941,6 +5941,22 @@ Text uses the current drawing color.</value>
     <value>Learn more about Grab And Move</value>
     <comment>"Grab And Move" is the name of the utility</comment>
   </data>
+  <data name="Oobe_GrabAndMove.Title" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>Product name. Do not localize this string</comment>
+  </data>
+  <data name="Oobe_GrabAndMove.Description" xml:space="preserve">
+    <value>Grab And Move lets you move and resize windows by holding a modifier key and dragging anywhere inside the window, without needing to target the title bar or window edges.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove_HowToUse.Text" xml:space="preserve">
+    <value>Hold **Alt** and **left-click drag** anywhere inside a window to move it. Hold **Alt** and **right-click drag** to resize it from the nearest edge or corner.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove_TipsAndTricks.Text" xml:space="preserve">
+    <value>Grab And Move works on any window, including maximized windows — dragging a maximized window will automatically restore it first. You can customize the activation shortcut and excluded apps in the settings.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
   <data name="GrabAndMove_BehaviorSettingsGroup.Header" xml:space="preserve">
     <value>Behavior</value>
   </data>

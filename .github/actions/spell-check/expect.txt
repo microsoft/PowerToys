@@ -2278,6 +2278,7 @@ THEMECHANGED
 thickframe
 Tianma
 tmain
+tontrager
 tskill
 tweakable
 UBreak
