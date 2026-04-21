@@ -210,13 +210,16 @@ namespace PowerDisplay.Common.Drivers.WMI
                                     inParams,
                                     out WmiMethodParameters outParams);
 
-                                // Check return value (0 indicates success)
-                                if (result == 0)
+                                using (outParams)
                                 {
-                                    return MonitorOperationResult.Success();
-                                }
+                                    // Check return value (0 indicates success)
+                                    if (result == 0)
+                                    {
+                                        return MonitorOperationResult.Success();
+                                    }
 
-                                return MonitorOperationResult.Failure($"WMI method returned error code: {result}", (int)result);
+                                    return MonitorOperationResult.Failure($"WMI method returned error code: {result}", (int)result);
+                                }
                             }
                         }
 

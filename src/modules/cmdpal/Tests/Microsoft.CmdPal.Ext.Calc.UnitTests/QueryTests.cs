@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.Calc.Helper;
 using Microsoft.CmdPal.Ext.Calc.Pages;
@@ -14,6 +15,25 @@ namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
+    private CultureInfo originalCulture;
+    private CultureInfo originalUiCulture;
+
+    [TestInitialize]
+    public void Setup()
+    {
+        originalCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = new CultureInfo("en-us", false);
+        originalUiCulture = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
+    }
+
+    [TestCleanup]
+    public void CleanUp()
+    {
+        CultureInfo.CurrentCulture = originalCulture;
+        CultureInfo.CurrentUICulture = originalUiCulture;
+    }
+
     [DataTestMethod]
     [DataRow("2+2", "4")]
     [DataRow("5*3", "15")]
@@ -82,6 +102,40 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(result);
 
         Assert.IsTrue(result.Title.Contains(expected, System.StringComparison.Ordinal), $"Calc trigMode convert result isn't correct. Current result: {result.Title}");
+    }
+
+    [DataTestMethod]
+    [DataRow("sin(60)", "-0.30481", CalculateEngine.TrigMode.Radians, "de-DE")]
+    [DataRow("sin(60)", "0.866025", CalculateEngine.TrigMode.Degrees, "de-DE")]
+    [DataRow("sin(60)", "0.809016", CalculateEngine.TrigMode.Gradians, "de-DE")]
+    [DataRow("sin(60)", "-0.30481", CalculateEngine.TrigMode.Radians, "fr-FR")]
+    [DataRow("sin(60)", "0.866025", CalculateEngine.TrigMode.Degrees, "fr-FR")]
+    [DataRow("sin(60)", "0.809016", CalculateEngine.TrigMode.Gradians, "fr-FR")]
+    public void TrigModeSettingsTest_NonEnglishCulture(string input, string expected, CalculateEngine.TrigMode trigMode, string cultureName)
+    {
+        var previousCulture = CultureInfo.CurrentCulture;
+        var previousUiCulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo(cultureName, false);
+            CultureInfo.CurrentUICulture = new CultureInfo(cultureName, false);
+
+            var settings = new Settings(trigUnit: trigMode, outputUseEnglishFormat: true);
+
+            var page = new CalculatorListPage(settings);
+
+            page.UpdateSearchText(string.Empty, input);
+            var result = page.GetItems().FirstOrDefault();
+
+            Assert.IsNotNull(result);
+
+            Assert.IsTrue(result.Title.Contains(expected, System.StringComparison.Ordinal), $"Calc trigMode convert result isn't correct for culture '{cultureName}'. Current result: {result.Title}");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUiCulture;
+        }
     }
 
     [DataTestMethod]
