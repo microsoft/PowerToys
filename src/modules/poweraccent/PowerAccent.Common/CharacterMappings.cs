@@ -60,7 +60,7 @@ public static class CharacterMappings
             [LetterKey.VK_Z] = ["ʒ", "ǯ", "ℤ", "ᶻ"],
             [LetterKey.VK_COMMA] = ["∙", "₋", "⁻", "–", "√", "‟", "《", "》", "‛", "〈", "〉", "″", "‴", "⁗"], // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
             [LetterKey.VK_PERIOD] = ["…", "⁝", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C"],
-            [LetterKey.VK_MINUS] = ["~", "‐", "‑", "‒", "—", "―", "⁓", "−", "⸺", "⸻", "∓", "₋", "⁻"],
+            [LetterKey.VK_MINUS] = ["~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻", "∓", "₋", "⁻"],
             [LetterKey.VK_SLASH_] = ["÷", "√"],
             [LetterKey.VK_DIVIDE_] = ["÷", "√"],
             [LetterKey.VK_MULTIPLY_] = ["×", "⋅", "ˣ", "ₓ"],
@@ -134,7 +134,7 @@ public static class CharacterMappings
             [LetterKey.VK_U] = ["û", "ü", "ù", "ú"],
             [LetterKey.VK_Y] = ["ŷ", "ÿ", "ỳ", "ý"],
             [LetterKey.VK_W] = ["ŵ", "ẅ", "ẁ", "ẃ"],
-            [LetterKey.VK_COMMA] = ["‘", "’", "“", "“"],
+            [LetterKey.VK_COMMA] = ["‘", "’", "“", "”"],
         }),
 
         new(Language.CZ, "Czech", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -299,6 +299,7 @@ public static class CharacterMappings
             [LetterKey.VK_I] = ["í"],
             [LetterKey.VK_O] = ["ó", "ő", "ö"],
             [LetterKey.VK_U] = ["ú", "ű", "ü"],
+            [LetterKey.VK_Y] = ["ÿ", "ý"],
             [LetterKey.VK_COMMA] = ["„", "”", "»", "«"],
         }),
 
