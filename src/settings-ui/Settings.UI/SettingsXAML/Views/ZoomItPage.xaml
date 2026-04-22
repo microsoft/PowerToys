@@ -328,22 +328,20 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
-                    <tkcontrols:SettingsExpander
+                    <tkcontrols:SettingsCard
                         Name="ZoomItSnipOcrShortcut"
                         x:Uid="ZoomIt_SnipOcr_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}"
-                        IsExpanded="True">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsExpander>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_PanoramaGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander
+                    <tkcontrols:SettingsCard
                         Name="ZoomItPanoramaShortcut"
                         x:Uid="ZoomIt_Panorama_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}"
-                        IsExpanded="True">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsExpander>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>

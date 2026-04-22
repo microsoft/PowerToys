@@ -89,6 +89,7 @@
     <!-- Removed Common.UI dependency - SettingsDeepLink is now implemented locally -->
     <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
     <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <!-- Removed ManagedCsWin32 - using CsWin32 directly for TrayIcon APIs -->
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />

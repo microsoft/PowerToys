@@ -75,6 +75,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(RegistryPreviewSettings))]
     [JsonSerializable(typeof(ShortcutGuideSettings))]
     [JsonSerializable(typeof(WorkspacesSettings))]
+    [JsonSerializable(typeof(GrabAndMoveSettings))]
     [JsonSerializable(typeof(ZoomItSettings))]
 
     // Properties Classes
@@ -115,6 +116,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ShortcutConflictProperties))]
     [JsonSerializable(typeof(ShortcutGuideProperties))]
     [JsonSerializable(typeof(WorkspacesProperties))]
+    [JsonSerializable(typeof(GrabAndMoveProperties))]
     [JsonSerializable(typeof(ZoomItProperties))]
 
     // Base Property Types (used throughout settings)
