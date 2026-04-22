@@ -64,6 +64,11 @@ static bool g_useAltResize = true;      // This can be toggled from the settings
 // modifier key is pressed while another key is already down (e.g. Q held, then modifier pressed).
 static int g_heldNonAltKeyCount = 0;
 
+// Per-vkCode tracking for held keys. Only the initial press increments
+// g_heldNonAltKeyCount; auto-repeat keydowns are ignored. This avoids relying
+// on KF_REPEAT which is not available in KBDLLHOOKSTRUCT::flags.
+static bool g_keyHeld[256] = {};
+
 // Resize handle identifiers
 enum ResizeHandle
 {
@@ -114,6 +119,10 @@ static HCURSOR g_curSizeWE = nullptr;
 
 // IsExcluded result cache keyed by HWND (cleared on foreground change / settings reload) – fix #4
 static std::unordered_map<HWND, bool> g_excludedCache;
+
+// Custom message: posted from the settings thread to invalidate g_excludedCache
+// on the main thread (where all other accesses occur), avoiding a data race.
+static constexpr UINT WM_INVALIDATE_EXCLUDED_CACHE = WM_APP + 1;
 
 static const wchar_t* const CLASS_NAME = L"GrabAndMove_MsgWnd";
 static const wchar_t* const OVERLAY_CLASS_NAME = L"GrabAndMove_Overlay";
@@ -168,6 +177,7 @@ static void CALLBACK WinEventProc(HWINEVENTHOOK, DWORD, HWND hwnd, LONG, LONG, D
     // the 'L' keyup before the session locks). Always reset the held-key counter so that
     // the next Alt/Win press is never blocked by a stale non-zero count.
     g_heldNonAltKeyCount = 0;
+    memset(g_keyHeld, 0, sizeof(g_keyHeld));
 
     // Invalidate the IsExcluded cache on foreground change (fix #4)
     g_excludedCache.clear();
@@ -290,7 +300,10 @@ static void LoadSettingsFromFile()
 
             g_excludedApps.store(
                 std::make_shared<const std::vector<std::wstring>>(std::move(apps)));
-            g_excludedCache.clear();
+            // Invalidate the cache on the main thread to avoid a data race –
+            // g_excludedCache is an unordered_map accessed from the hook/main thread.
+            if (g_hMsgWnd)
+                PostMessage(g_hMsgWnd, WM_INVALIDATE_EXCLUDED_CACHE, 0, 0);
         }
     }
     catch (...)
@@ -805,19 +818,27 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
 
         // Track held non-modifier keys (used to suppress GrabAndMove when the modifier
         // is pressed while another key is already down). Applies to both Alt and Win modes.
-        // KF_REPEAT >> 8 (0x40) is set in KBDLLHOOKSTRUCT::flags for auto-repeat
-        // keydowns; only count the initial press to stay accurate.
+        // Use per-vkCode tracking to detect initial press vs auto-repeat, since
+        // KBDLLHOOKSTRUCT::flags does not carry the KF_REPEAT bit.
         if (!isAltKey && !isWinKey)
         {
+            BYTE vk = static_cast<BYTE>(kb->vkCode);
             if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)
             {
-                if (!(kb->flags & (KF_REPEAT >> 8)))
+                if (!g_keyHeld[vk])
+                {
+                    g_keyHeld[vk] = true;
                     ++g_heldNonAltKeyCount;
+                }
             }
             else if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
             {
-                if (g_heldNonAltKeyCount > 0)
-                    --g_heldNonAltKeyCount;
+                if (g_keyHeld[vk])
+                {
+                    g_keyHeld[vk] = false;
+                    if (g_heldNonAltKeyCount > 0)
+                        --g_heldNonAltKeyCount;
+                }
             }
         }
     }
@@ -1174,6 +1195,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 {
     switch (msg)
     {
+    case WM_INVALIDATE_EXCLUDED_CACHE:
+        g_excludedCache.clear();
+        return 0;
+
     case WM_TRAY_ICON:
         if (LOWORD(lParam) == WM_RBUTTONUP)
         {
