@@ -190,7 +190,7 @@
     <value>Exit</value>
   </data>
   <data name="ProfilesTooltip.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Quick apply profiles</value>
+    <value>Profiles</value>
   </data>
   <data name="IdentifyText.Text" xml:space="preserve">
     <value>Identify monitors</value>
