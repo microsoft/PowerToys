@@ -910,6 +910,12 @@ public:
         return powertoys_gpo::getConfiguredAdvancedPasteEnabledValue();
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
