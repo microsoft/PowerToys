@@ -5975,7 +5975,7 @@ Text uses the current drawing color.</value>
     <comment>The Alt key on the keyboard</comment>
   </data>
   <data name="GrabAndMove_ModifierKey_Win.Content" xml:space="preserve">
-    <value>Win</value>
+    <value>Windows key</value>
     <comment>The Windows key on the keyboard</comment>
   </data>
   <data name="GrabAndMove_ShouldAbsorbAlt.Header" xml:space="preserve">
