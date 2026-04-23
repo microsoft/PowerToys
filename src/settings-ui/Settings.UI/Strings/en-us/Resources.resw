@@ -5928,7 +5928,7 @@ Text uses the current drawing color.</value>
     <value>Sample</value>
   </data>
   <data name="GrabAndMove.ModuleDescription" xml:space="preserve">
-    <value>Move and resize windows with Alt+Drag. Left-click to move, right-click to resize.</value>
+    <value>Move and resize windows by holding a modifier key and dragging. Left-click to move, right-click to resize.</value>
     <comment>"Grab And Move" is the name of the utility</comment>
   </data>
   <data name="GrabAndMove.ModuleTitle" xml:space="preserve">
@@ -5956,7 +5956,7 @@ Text uses the current drawing color.</value>
     <comment>"Grab And Move" is the name of the utility</comment>
   </data>
   <data name="Oobe_GrabAndMove_HowToUse.Text" xml:space="preserve">
-    <value>Hold **Alt** and **left-click drag** anywhere inside a window to move it. Hold **Alt** and **right-click drag** to resize it from the nearest edge or corner.</value>
+    <value>Hold the **activation modifier key** and **left-click drag** anywhere inside a window to move it. Hold the **activation modifier key** and **right-click drag** to resize it from the nearest edge or corner.</value>
     <comment>"Grab And Move" is the name of the utility</comment>
   </data>
   <data name="Oobe_GrabAndMove_TipsAndTricks.Text" xml:space="preserve">
@@ -5997,17 +5997,17 @@ Text uses the current drawing color.</value>
     <value>Display the window position and size on the overlay during drag and resize operations</value>
   </data>
   <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
-    <value>Enable Alt + Right-click to resize</value>
-    <comment>When enabled, holding Alt and right-clicking allows resizing windows by dragging from the closest edge or corner.</comment>
+    <value>Enable modifier + right-click to resize</value>
+    <comment>When enabled, holding the activation modifier key and right-clicking allows resizing windows by dragging from the closest edge or corner.</comment>
   </data>
   <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
-    <value>Hold Alt and right-click to resize a window by dragging from the nearest edge or corner</value>
+    <value>Hold the activation modifier key and right-click to resize a window by dragging from the nearest edge or corner</value>
   </data>
   <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
   <data name="GrabAndMove_ExcludeApps.Description" xml:space="preserve">
-    <value>Excludes an application from being moved or resized with Alt+Drag - add one application name per line</value>
+    <value>Excludes an application from being moved or resized by Grab And Move - add one application name per line</value>
   </data>
   <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
     <value>Example: outlook.exe</value>
