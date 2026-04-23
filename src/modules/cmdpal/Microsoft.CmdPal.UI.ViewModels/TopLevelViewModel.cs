@@ -225,7 +225,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         IsFallback = topLevelType == TopLevelType.Fallback;
         IsDockBand = topLevelType == TopLevelType.DockBand;
         ExtensionHost = extensionHost;
-        if (IsFallback && commandItem is FallbackCommandItem fallback)
+        if (IsFallback && commandItem is IFallbackCommandItem2 fallback)
         {
             _fallbackId = fallback.Id;
         }
