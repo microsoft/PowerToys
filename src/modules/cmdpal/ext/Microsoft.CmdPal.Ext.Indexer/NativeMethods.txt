@@ -1,2 +1,3 @@
 DBID
 SHOW_WINDOW_CMD
+Windows.Win32.System.Search.ISearchCatalogManager
