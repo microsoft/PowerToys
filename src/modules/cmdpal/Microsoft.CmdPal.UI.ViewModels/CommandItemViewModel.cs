@@ -280,6 +280,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public bool SafeInitializeProperties()
     {
+        // If we've already been cleaned up, the underlying COM proxy may
+        // have been disconnected by the extension. Skip initialization to
+        // avoid a native AV through a stale RPC channel.
+        if (Initialized.HasFlag(InitializedState.CleanedUp))
+        {
+            return false;
+        }
+
         try
         {
             InitializeProperties();

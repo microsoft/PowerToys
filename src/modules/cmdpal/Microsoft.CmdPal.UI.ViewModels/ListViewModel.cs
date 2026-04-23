@@ -299,14 +299,36 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
         CancellationToken cancellationToken;
         int fetchGeneration;
+        Task? previousInitTask;
         lock (_fetchStateLock)
         {
             // Cancel any previous FetchItems operation
             CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
             _fetchItemsCancellationTokenSource = new CancellationTokenSource();
 
+            // Cancel the previous property-initialization task and capture a
+            // reference so we can wait for it outside the lock.  This MUST
+            // happen before GetItems() because the extension may release the
+            // old IListItem objects when it returns new results, tearing down
+            // the RPC channel.  If the old InitializeItemsTask is still
+            // iterating those items it would AV in rpcrt4/combase.
+            CancelAndDisposeTokenSource(ref _cancellationTokenSource);
+            previousInitTask = _initializeItemsTask;
+            _initializeItemsTask = null;
+
             cancellationToken = _fetchItemsCancellationTokenSource.Token;
             fetchGeneration = Interlocked.Increment(ref _latestFetchGeneration);
+        }
+
+        // Wait for the previous init task outside the lock to avoid
+        // blocking other code that needs _fetchStateLock.
+        try
+        {
+            previousInitTask?.Wait(TimeSpan.FromSeconds(10));
+        }
+        catch (AggregateException)
+        {
+            // Task may have faulted; we only care that it stopped.
         }
 
         // Declared outside try so catch blocks can reference them
@@ -407,9 +429,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 item?.SafeInitializeProperties();
             }
 
-            // Cancel any ongoing property initialization for the previous list.
-            CancelAndDisposeTokenSource(ref _cancellationTokenSource);
-
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             List<ListItemViewModel> removedItems;
@@ -429,6 +448,20 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     // you'll clean up list items that we've now transferred into
                     // .Items
                 }
+
+                // Create the new property-initialization task INSIDE the lock
+                // so that any subsequent FetchItems entering _fetchStateLock
+                // will see it and can cancel/wait for it before calling
+                // GetItems().
+                var initializeItemsCts = new CancellationTokenSource();
+                _cancellationTokenSource = initializeItemsCts;
+                var initializeItemsToken = initializeItemsCts.Token;
+
+                _initializeItemsTask = new Task(() =>
+                {
+                    InitializeItemsTask(initializeItemsToken);
+                });
+                _initializeItemsTask.Start();
             }
 
             itemsTransferredToList = true;
@@ -478,16 +511,6 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 UpdateEmptyContent();
             }
         }
-
-        var initializeItemsCts = new CancellationTokenSource();
-        _cancellationTokenSource = initializeItemsCts;
-        var initializeItemsToken = initializeItemsCts.Token;
-
-        _initializeItemsTask = new Task(() =>
-        {
-            InitializeItemsTask(initializeItemsToken);
-        });
-        _initializeItemsTask.Start();
 
         DoOnUiThread(
             () =>
@@ -559,6 +582,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
             if (ct.IsCancellationRequested)
             {
                 return;
+            }
+
+            // Check that the item hasn't already been cleaned up. Once
+            // SafeCleanup() runs, the underlying COM proxy/RPC channel may be
+            // torn down by the extension, so any subsequent property access
+            // would hit freed memory (AV in rpcrt4).
+            if (item.IsInErrorState || item.Initialized.HasFlag(InitializedState.CleanedUp))
+            {
+                continue;
             }
 
             // TODO: GH #502
