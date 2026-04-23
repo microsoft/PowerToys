@@ -16,6 +16,7 @@ using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
@@ -289,9 +290,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             };
             shortcutDialog.RightTapped += ShortcutDialog_Disable;
 
-            AutomationProperties.SetName(EditButton, resourceLoader.GetString("Activation_Shortcut_Title"));
+            UpdateAutomationName();
 
             OnAllowDisableChanged(this, null);
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer()
+        {
+            return new ShortcutControlAutomationPeer(this);
         }
 
         private void C_LearnMoreClick(object sender, RoutedEventArgs e)
@@ -368,6 +374,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             // Initialize tooltip when loaded
             UpdateTooltip();
+            UpdateAutomationName();
         }
 
         private void KeyEventHandler(int key, bool matchValue, int matchValueCode)
@@ -813,18 +820,50 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private void SetKeys()
         {
             var keys = HotkeySettings?.GetKeysList();
+            string helpText;
 
             if (keys != null && keys.Count > 0)
             {
                 VisualStateManager.GoToState(this, "Configured", true);
                 PreviewKeysControl.ItemsSource = keys;
-                AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+                helpText = HotkeySettings.ToString();
             }
             else
             {
                 VisualStateManager.GoToState(this, "Normal", true);
-                AutomationProperties.SetHelpText(EditButton, resourceLoader.GetString("ConfigureShortcut"));
+                helpText = resourceLoader.GetString("ConfigureShortcut");
             }
+
+            AutomationProperties.SetHelpText(EditButton, helpText);
+            AutomationProperties.SetHelpText(this, helpText);
+        }
+
+        internal void Invoke()
+        {
+            OpenDialogButton_Click(EditButton, new RoutedEventArgs());
+        }
+
+        internal string GetAutomationValue()
+        {
+            return HotkeySettings?.GetKeysList()?.Count > 0
+                ? HotkeySettings.ToString()
+                : resourceLoader.GetString("ConfigureShortcut");
+        }
+
+        internal string GetAutomationName()
+        {
+            var name = AutomationProperties.GetName(this);
+            return string.IsNullOrWhiteSpace(name) ? resourceLoader.GetString("Activation_Shortcut_Title") : name;
+        }
+
+        internal bool IsShortcutEnabled()
+        {
+            return EditButton?.IsEnabled ?? false;
+        }
+
+        private void UpdateAutomationName()
+        {
+            AutomationProperties.SetName(EditButton, GetAutomationName());
         }
     }
 }

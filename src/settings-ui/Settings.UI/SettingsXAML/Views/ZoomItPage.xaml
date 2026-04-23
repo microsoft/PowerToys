@@ -49,7 +49,9 @@
                         x:Uid="ZoomIt_Zoom_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE71E;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.ZoomToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            AutomationProperties.Name="{Binding ElementName=ZoomItZoomShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.ZoomToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItToggleAnimateZoom" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Toggle_AnimateZoom" IsChecked="{x:Bind ViewModel.AnimateZoom, Mode=TwoWay}" />
@@ -81,7 +83,9 @@
                         x:Uid="ZoomIt_LiveZoom_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE773;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            AutomationProperties.Name="{Binding ElementName=ZoomItLiveZoomShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
@@ -97,7 +101,9 @@
                         x:Uid="ZoomIt_Draw_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEE56;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.DrawToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            AutomationProperties.Name="{Binding ElementName=ZoomItDrawShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.DrawToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
@@ -138,7 +144,9 @@
                         x:Uid="ZoomIt_DemoType_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            AutomationProperties.Name="{Binding ElementName=ZoomItDemoTypeShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.DemoTypeToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItDemoTypeFile"
@@ -172,7 +180,9 @@
                         x:Uid="ZoomIt_Break_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.BreakTimerKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            AutomationProperties.Name="{Binding ElementName=ZoomItBreakShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.BreakTimerKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItBreakTimeout" x:Uid="ZoomIt_Break_Timeout">
                                 <NumberBox
@@ -260,7 +270,9 @@
                         x:Uid="ZoomIt_Record_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7C8;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.RecordToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            AutomationProperties.Name="{Binding ElementName=ZoomItRecordShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.RecordToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItRecordScaling" x:Uid="ZoomIt_Record_Scaling">
                                 <Slider
@@ -319,7 +331,9 @@
                         x:Uid="ZoomIt_Snip_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}"
                         IsExpanded="True">
-                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            AutomationProperties.Name="{Binding ElementName=ZoomItSnipShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard Name="ZoomItSnipShortcutSave">
                                 <tkcontrols:SettingsCard.Description>
@@ -332,7 +346,10 @@
                         Name="ZoomItSnipOcrShortcut"
                         x:Uid="ZoomIt_SnipOcr_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.Name="{Binding ElementName=ZoomItSnipOcrShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_PanoramaGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -340,7 +357,10 @@
                         Name="ZoomItPanoramaShortcut"
                         x:Uid="ZoomIt_Panorama_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.Name="{Binding ElementName=ZoomItPanoramaShortcut, Path=Header}"
+                            HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
