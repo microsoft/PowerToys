@@ -69,7 +69,7 @@ it. Focus is moved to the next parameter when the user presses Enter or tab.
 These are used when the `SelectValueCommand` is an `IInvokableCommand`.
 
 These are rendered as a button within the search box. The button text is
-`DisplayText` if it is set, otherwise it is `PlaceholderText`. If the user
+`DisplayText` if it is set. Otherwise, it is `PlaceholderText`. If the user
 clicks the button, we invoke the `SelectValueCommand` (and ignore the `CommandResult`).
 
 This is good for file pickers, date pickers, color pickers, etc. Anything that
