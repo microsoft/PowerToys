@@ -40,7 +40,7 @@ public partial interface ISearchCatalogManager
 
     uint NumberOfItems();
 
-    uint NumberOfItemsToIndex();
+    void NumberOfItemsToIndex(out uint plIncrementalCount, out uint plNotificationQueue, out uint plHighPriorityQueue);
 
     [return: MarshalAs(UnmanagedType.LPWStr)]
     string URLBeingIndexed();
