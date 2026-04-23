@@ -5,8 +5,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.Common.Messages;
+using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -264,6 +264,8 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
     private ListViewModel? _listViewModel;
     private CommandViewModel? _commandViewModel;
     private AppExtensionHost _extensionHost;
+    private ICommandProviderContext _providerContext;
+    private IContextMenuFactory _contextMenuFactory;
 
     public string DisplayText { get; set; } = string.Empty;
 
@@ -277,11 +279,13 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         set => SetSearchText(value);
     }
 
-    public CommandParameterRunViewModel(ICommandParameterRun commandRun, WeakReference<IPageContext> context, AppExtensionHost extensionHost)
+    public CommandParameterRunViewModel(ICommandParameterRun commandRun, WeakReference<IPageContext> context, AppExtensionHost extensionHost, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
         : base(commandRun, context)
     {
         _model = new(commandRun);
         _extensionHost = extensionHost;
+        _providerContext = providerContext;
+        _contextMenuFactory = contextMenuFactory;
     }
 
     public override void InitializeProperties()
@@ -311,7 +315,7 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         {
             if (PageContext.TryGetTarget(out var pageContext))
             {
-                _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost);
+                _listViewModel = new ListViewModel(list, pageContext.Scheduler, _extensionHost, _providerContext, _contextMenuFactory);
                 _listViewModel.InitializeProperties();
             }
         }
@@ -407,11 +411,14 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
     private readonly Lock _listLock = new();
 
-    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host)
-        : base(model, scheduler, host)
+    private readonly IContextMenuFactory _contextMenuFactory;
+
+    public ParametersPageViewModel(IParametersPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+        : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
-        Command = new(new(null), PageContext);
+        _contextMenuFactory = contextMenuFactory;
+        Command = new(new(null), PageContext, _contextMenuFactory);
     }
 
     private void Model_ItemsChanged(object sender, IItemsChangedEventArgs args) => FetchItems();
@@ -427,7 +434,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             return; // throw?
         }
 
-        Command = new(new(model.Command), PageContext);
+        Command = new(new(model.Command), PageContext, _contextMenuFactory);
         Command.SlowInitializeProperties();
 
         FetchItems();
@@ -448,7 +455,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 {
                     ILabelRun labelRun => new LabelRunViewModel(labelRun, PageContext),
                     IStringParameterRun stringRun => new StringParameterRunViewModel(stringRun, PageContext),
-                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext, this.ExtensionHost),
+                    ICommandParameterRun commandRun => new CommandParameterRunViewModel(commandRun, PageContext, this.ExtensionHost, this.ProviderContext, _contextMenuFactory),
                     _ => null,
                 };
                 var t = itemVm?.ToString() ?? "unknown";

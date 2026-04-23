@@ -4,8 +4,9 @@
 
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.ViewModels;
+using ManagedCommon;
+using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

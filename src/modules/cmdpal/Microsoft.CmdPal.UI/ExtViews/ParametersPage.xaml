@@ -47,7 +47,7 @@
                         Margin="8"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         SourceKey="{x:Bind ViewModel.Command.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested}" />
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
                     <TextBlock
                         Margin="0,4,0,0"
                         HorizontalAlignment="Center"
