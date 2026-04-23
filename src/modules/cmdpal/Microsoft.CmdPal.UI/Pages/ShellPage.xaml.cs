@@ -171,6 +171,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 {
                     ListViewModel => typeof(ListPage),
                     ContentPageViewModel => typeof(ContentPage),
+                    ParametersPageViewModel => typeof(ParametersPage),
                     _ => throw new NotSupportedException(),
                 },
                 new AsyncNavigationRequest(message.Page, message.CancellationToken),

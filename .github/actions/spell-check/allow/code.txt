@@ -310,6 +310,7 @@ onefuzz
 # NameInCode
 leilzh
 mengyuanchen
+contoso
 
 # DllName
 testhost
@@ -377,6 +378,12 @@ YYY
 
 # Unicode
 precomposed
+
+# names of characters
+zwsp
+
+# mermaid
+autonumber
 
 # GitHub issue/PR commands
 azp

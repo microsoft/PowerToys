@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Common.Messages;
@@ -11,6 +13,7 @@ using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.Views;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -21,9 +24,11 @@ using VirtualKey = Windows.System.VirtualKey;
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class SearchBar : UserControl,
+    INotifyPropertyChanged,
     IRecipient<GoHomeMessage>,
     IRecipient<FocusSearchBoxMessage>,
     IRecipient<UpdateSuggestionMessage>,
+    IRecipient<FocusParamMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -50,6 +55,8 @@ public sealed partial class SearchBar : UserControl,
     // 0.6+ suggestions
     private string? _textToSuggest;
 
+    private bool _tokenSearchEnabled;
+
     private SettingsModel Settings => App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
     public PageViewModel? CurrentPageViewModel
@@ -61,6 +68,8 @@ public sealed partial class SearchBar : UserControl,
     // Using a DependencyProperty as the backing store for CurrentPageViewModel.  This enables animation, styling, binding, etc...
     public static readonly DependencyProperty CurrentPageViewModelProperty =
         DependencyProperty.Register(nameof(CurrentPageViewModel), typeof(PageViewModel), typeof(SearchBar), new PropertyMetadata(null, OnCurrentPageViewModelChanged));
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -82,8 +91,29 @@ public sealed partial class SearchBar : UserControl,
             @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
 
             page.PropertyChanged += @this.Page_PropertyChanged;
+
+            if (page is ListViewModel listViewModel)
+            {
+                @this._tokenSearchEnabled = listViewModel.IsTokenSearch;
+            }
         }
+
+        @this?.PropertyChanged?.Invoke(@this, new(nameof(PageType)));
+        @this?.PropertyChanged?.Invoke(@this, new(nameof(Parameters)));
+
+        // Attempt to focus us again, once we evaluate what input is visible
+        @this?.Focus();
     }
+
+    public string PageType => CurrentPageViewModel switch
+    {
+        ListViewModel => "List",
+        ContentPageViewModel => "Content",
+        ParametersPageViewModel => "Parameters",
+        _ => string.Empty,
+    };
+
+    public ObservableCollection<ParameterRunViewModel> Parameters { get; } = new();
 
     public SearchBar()
     {
@@ -91,6 +121,7 @@ public sealed partial class SearchBar : UserControl,
         WeakReferenceMessenger.Default.Register<GoHomeMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
+        WeakReferenceMessenger.Default.Register<FocusParamMessage>(this);
     }
 
     public void ClearSearch()
@@ -184,6 +215,43 @@ public sealed partial class SearchBar : UserControl,
             {
                 // Mark backspace as held to handle continuous deletion
                 _isBackspaceHeld = true;
+
+                // Try to handle token deletion
+                if (_tokenSearchEnabled &&
+                    FilterBox.SelectionLength == 0)
+                {
+                    // Tokens are delimited by zero-width space characters
+                    // (ZWSP, U+200B).
+                    //
+                    // What we're gonna do here is check if the character we're
+                    // about to backspace is the _second_ ZWSP in a pair
+                    var lastCaretPosition = FilterBox.SelectionStart;
+                    var text = FilterBox.Text;
+
+                    // Look at the character before the caret. Is it a zwsp?
+                    if (lastCaretPosition > 0 &&
+                        text[lastCaretPosition - 1] == '\u200B')
+                    {
+                        // make sure that this is a pair. So, we'd need to see an odd number of zwsp's before this one.
+                        var zwspCount = 0;
+                        var previousZwspIndex = -1;
+                        for (var i = 0; i < lastCaretPosition - 1; i++)
+                        {
+                            if (text[i] == '\u200B')
+                            {
+                                zwspCount++;
+                                previousZwspIndex = i;
+                            }
+                        }
+
+                        if (zwspCount % 2 == 1 && previousZwspIndex != -1)
+                        {
+                            // We have a pair! Select the whole token for deletion
+                            FilterBox.Select(previousZwspIndex, lastCaretPosition - previousZwspIndex);
+                            e.Handled = true;
+                        }
+                    }
+                }
             }
         }
         else if (e.Key == VirtualKey.Up)
@@ -397,6 +465,27 @@ public sealed partial class SearchBar : UserControl,
                 SelectSearch();
             }
         }
+        else if (CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        {
+            if (property == nameof(ParametersPageViewModel.Items))
+            {
+                CoreLogger.LogDebug($"handling parameter items changed, {parametersPage.Items.Count} parameters");
+                this.DispatcherQueue.TryEnqueue(UpdateParameters);
+            }
+        }
+    }
+
+    private void UpdateParameters()
+    {
+        var newParams = GetParameters();
+        ListHelpers.InPlaceUpdateList(Parameters, newParams);
+    }
+
+    private List<ParameterRunViewModel> GetParameters()
+    {
+        var res = CurrentPageViewModel is ParametersPageViewModel page ? page.Items : null;
+        CoreLogger.LogDebug($"retrieving parameters, {res?.Count ?? 0} parameters");
+        return res ?? new();
     }
 
     public void Receive(GoHomeMessage message)
@@ -407,7 +496,18 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
-    public void Receive(FocusSearchBoxMessage message) => FilterBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+    public void Receive(FocusSearchBoxMessage message) => Focus();
+
+    private void Focus()
+    {
+        this.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        {
+            if (FocusManager.FindFirstFocusableElement(this) is DependencyObject focusable)
+            {
+                FocusManager.TryFocusAsync(focusable, FocusState.Keyboard).Wait();
+            }
+        });
+    }
 
     public void Receive(UpdateSuggestionMessage message)
     {
@@ -516,5 +616,46 @@ public sealed partial class SearchBar : UserControl,
         var env = System.Environment.GetEnvironmentVariable("CMDPAL_ENABLE_SUGGESTION_SELECTION");
         return !string.IsNullOrEmpty(env) &&
            (env == "1" || env.Equals("true", System.StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void StringParameter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is TextBox textBox && textBox.DataContext is StringParameterRunViewModel stringParam)
+        {
+            stringParam.SetTextFromUi(textBox.Text);
+        }
+    }
+
+    private void StringParameter_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (sender is TextBox textBox &&
+            textBox.DataContext is StringParameterRunViewModel stringParam &&
+            CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        {
+            if (e.Key == VirtualKey.Enter)
+            {
+                if (parametersPage.ShowCommand)
+                {
+                    parametersPage.TrySubmit();
+                }
+                else
+                {
+                    parametersPage.FocusNextParameter(stringParam);
+                }
+            }
+        }
+    }
+
+    public void Receive(FocusParamMessage message)
+    {
+        var parameter = message.Parameter;
+        if (parameter != null)
+        {
+            var container = ParametersBar.ContainerFromItem(parameter);
+            if (container is FrameworkElement element)
+            {
+                element.Focus(FocusState.Keyboard);
+            }
+        }
     }
 }
