@@ -322,7 +322,7 @@ namespace PowerDisplay
                 PositionWindowAtBottomRight();
 
                 // Set window title
-                this.AppWindow.Title = "PowerDisplay";
+                this.AppWindow.Title = "Power Display";
 
                 // Custom title bar - completely remove all buttons
                 var titleBar = this.AppWindow.TitleBar;
@@ -333,16 +333,6 @@ namespace PowerDisplay
 
                     // Completely remove title bar height
                     titleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
-
-                    // Set all button colors to transparent
-                    titleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonHoverForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonPressedForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
 
                     // Disable title bar interaction area
                     titleBar.SetDragRectangles(Array.Empty<Windows.Graphics.RectInt32>());
