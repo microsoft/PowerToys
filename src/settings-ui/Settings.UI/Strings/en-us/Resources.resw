@@ -5303,7 +5303,7 @@ The break timer font matches the text font.</value>
     <value>If any shortcut conflicts are detected, they’ll appear below. Conflicts can happen between PowerToys utilities or Windows system shortcuts, and may cause unexpected behavior. If everything works as expected, you can safely ignore the conflict.</value>
   </data>
   <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
-    <value>Conflicts found for</value>
+    <value>conflicts</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
     <value>System shortcut</value>
@@ -5431,10 +5431,10 @@ The break timer font matches the text font.</value>
     <value>Profiles</value>
   </data>
   <data name="PowerDisplay_QuickProfiles.Header" xml:space="preserve">
-    <value>Quick apply profiles</value>
+    <value>Profiles</value>
   </data>
   <data name="PowerDisplay_QuickProfiles.Description" xml:space="preserve">
-    <value>Click a profile button to quickly apply saved monitor settings</value>
+    <value>Click the profile button in the Power Display flyout to quickly apply saved monitor settings</value>
   </data>
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
     <value>Add profile</value>
