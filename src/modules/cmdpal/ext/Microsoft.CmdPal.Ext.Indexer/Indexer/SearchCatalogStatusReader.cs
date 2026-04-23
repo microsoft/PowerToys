@@ -10,7 +10,6 @@ using System.Threading;
 using ManagedCommon;
 using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
-using ISearchCatalogManager = Windows.Win32.System.Search.ISearchCatalogManager.Interface;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer;
 
@@ -25,7 +24,7 @@ internal static class SearchCatalogStatusReader
         try
         {
             var catalogManager = CreateCatalogManager();
-            var pendingItemsCount = catalogManager.NumberOfItemsToIndex();
+            catalogManager.NumberOfItemsToIndex(out var pendingItemsCount, out _, out _);
             ResetFailureLoggingState();
             return new SearchCatalogStatus(pendingItemsCount, null);
         }

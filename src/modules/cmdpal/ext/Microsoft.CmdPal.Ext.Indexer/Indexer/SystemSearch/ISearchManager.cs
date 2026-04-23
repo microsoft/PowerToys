@@ -5,14 +5,13 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
-using ISearchCatalogManager = Windows.Win32.System.Search.ISearchCatalogManager.Interface;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Indexer.SystemSearch;
 
 [Guid("AB310581-AC80-11D1-8DF3-00C04FB6EF69")]
 [GeneratedComInterface(StringMarshalling = StringMarshalling.Utf16)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:Element should begin with upper-case letter", Justification = "Please do not change the function name")]
-internal partial interface ISearchManager
+public partial interface ISearchManager
 {
     string GetIndexerVersionStr();
 
