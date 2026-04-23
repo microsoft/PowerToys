@@ -32,6 +32,7 @@
   <ItemGroup>
     <PackageReference Include="NLog" />
     <PackageReference Include="NLog.Extensions.Logging" />
+    <!-- TODO: Verify if this is still needed as LazyCache is no longer used. -->
     <!-- HACK: Microsoft.Extensions.Hosting is referenced, even if it is not used, to force dll versions to be the same as in other projects. Really only needed since OneNote uses the LazyCache and NLog dependencies, which references older assemblies. -->
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->

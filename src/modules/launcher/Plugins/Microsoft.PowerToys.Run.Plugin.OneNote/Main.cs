@@ -2,53 +2,42 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-
-using LazyCache;
-using ManagedCommon;
+using System.Windows.Controls;
+using Microsoft.PowerToys.Run.Plugin.OneNote.Components;
+using Microsoft.PowerToys.Run.Plugin.OneNote.Components.Search;
 using Microsoft.PowerToys.Run.Plugin.OneNote.Properties;
-using ScipBe.Common.Office.OneNote;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.UI.WindowsAndMessaging;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Wox.Plugin;
+using OneNoteApplication = LinqToOneNote.OneNote;
+using Timer = System.Timers.Timer;
 
 namespace Microsoft.PowerToys.Run.Plugin.OneNote
 {
     /// <summary>
     /// A power launcher plugin to search across time zones.
     /// </summary>
-    public class Main : IPlugin, IDelayedExecutionPlugin, IPluginI18n
+    public class Main : IPlugin, IDelayedExecutionPlugin, IPluginI18n, ISettingProvider, IContextMenu, IDisposable
     {
+        private readonly Timer _comObjectTimeout = new();
+
+        private readonly OneNoteSettings _settings = new();
+
         /// <summary>
         /// A value indicating if the OneNote interop library was able to successfully initialize.
         /// </summary>
         private bool _oneNoteInstalled;
 
         /// <summary>
-        /// LazyCache CachingService instance to speed up repeated queries.
-        /// </summary>
-        private CachingService? _cache;
-
-        /// <summary>
         /// The initial context for this plugin (contains API and meta-data)
         /// </summary>
         private PluginInitContext? _context;
 
-        /// <summary>
-        /// The path to the icon for each result
-        /// </summary>
-        private string _iconPath;
+        private SearchManager? _searchManager;
+        private IconProvider? _iconProvider;
+        private ResultCreator? _resultCreator;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Main"/> class.
-        /// </summary>
-        public Main()
-        {
-            UpdateIconPath(Theme.Light);
-        }
+        private bool _disposed;
 
         /// <summary>
         /// Gets the localized name.
@@ -65,6 +54,8 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// </summary>
         public static string PluginID => "0778F0C264114FEC8A3DF59447CF0A74";
 
+        public IEnumerable<PluginAdditionalOption> AdditionalOptions => _settings.AdditionalOptions;
+
         /// <summary>
         /// Initialize the plugin with the given <see cref="PluginInitContext"/>
         /// </summary>
@@ -72,14 +63,11 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         public void Init(PluginInitContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
-
             try
             {
-                _ = OneNoteProvider.PageItems.Any();
-                _oneNoteInstalled = true;
-
-                _cache = new CachingService();
-                _cache.DefaultCachePolicy.DefaultCacheDurationSeconds = (int)TimeSpan.FromDays(1).TotalSeconds;
+                OneNoteApplication.InitComObject();
+                _oneNoteInstalled = OneNoteApplication.HasComObject;
+                OneNoteApplication.ReleaseComObject();
             }
             catch (COMException)
             {
@@ -87,8 +75,13 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
                 _oneNoteInstalled = false;
             }
 
-            _context.API.ThemeChanged += OnThemeChanged;
-            UpdateIconPath(_context.API.GetCurrentTheme());
+            _comObjectTimeout.Elapsed += ComObjectTimer_Elapsed;
+            _comObjectTimeout.AutoReset = false;
+            _comObjectTimeout.Enabled = false;
+
+            _iconProvider = new IconProvider(_context, _settings);
+            _resultCreator = new ResultCreator(_context, _settings, _iconProvider);
+            _searchManager = new SearchManager(_context, _settings, _resultCreator);
         }
 
         /// <summary>
@@ -98,14 +91,29 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query)
         {
-            if (!_oneNoteInstalled || query is null || string.IsNullOrWhiteSpace(query.Search) || _cache is null)
+            if (_resultCreator is null)
             {
-                return new List<Result>(0);
+                return [];
             }
 
-            // If there's cached results for this query, return immediately; otherwise, wait for delayedExecution.
-            var results = _cache.Get<List<Result>>(query.Search);
-            return results ?? Query(query, false);
+            if (!_oneNoteInstalled)
+            {
+                return _resultCreator.OneNoteNotInstalled();
+            }
+
+            if (string.IsNullOrWhiteSpace(query.Search))
+            {
+                return _resultCreator.EmptyQuery(query);
+            }
+
+            // If a COM Object has been acquired results return faster
+            if (OneNoteApplication.HasComObject)
+            {
+                ResetTimeout();
+                return _searchManager is null ? [] : _searchManager.Query(query);
+            }
+
+            return [];
         }
 
         /// <summary>
@@ -116,29 +124,28 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// <returns>A filtered list, can be empty when nothing was found</returns>
         public List<Result> Query(Query query, bool delayedExecution)
         {
-            if (!delayedExecution || !_oneNoteInstalled || query is null || string.IsNullOrWhiteSpace(query.Search) || _cache is null)
+            if (_resultCreator is null)
             {
-                return new List<Result>(0);
+                return [];
             }
 
-            // Get results from cache if they already exist for this query; otherwise, query OneNote. Results will be cached for 1 day.
-            var results = _cache.GetOrAdd(query.Search, () =>
+            if (!_oneNoteInstalled)
             {
-                var pages = OneNoteProvider.FindPages(query.Search);
+                return _resultCreator.OneNoteNotInstalled();
+            }
 
-                return pages.Select(p => new Result
-                {
-                    IcoPath = _iconPath,
-                    Title = p.Name,
-                    QueryTextDisplay = p.Name,
-                    SubTitle = @$"{p.Notebook.Name}\{p.Section.Name}",
-                    Action = (_) => OpenPageInOneNote(p),
-                    ContextData = p,
-                    ToolTipData = new ToolTipData(Name, @$"{p.Notebook.Name}\{p.Section.Name}\{p.Name}"),
-                }).ToList();
-            });
+            if (string.IsNullOrWhiteSpace(query.Search))
+            {
+                return _resultCreator.EmptyQuery(query);
+            }
 
-            return results;
+            if (OneNoteApplication.HasComObject)
+            {
+                return [];
+            }
+
+            ResetTimeout();
+            return _searchManager is null ? [] : _searchManager.Query(query);
         }
 
         /// <summary>
@@ -153,48 +160,46 @@ namespace Microsoft.PowerToys.Run.Plugin.OneNote
         /// <returns>A translated plugin description.</returns>
         public string GetTranslatedPluginDescription() => Resources.PluginDescription;
 
-        private void OnThemeChanged(Theme currentTheme, Theme newTheme)
+        private void ComObjectTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
-            UpdateIconPath(newTheme);
+            OneNoteApplication.ReleaseComObject();
         }
 
-        [MemberNotNull(nameof(_iconPath))]
-        private void UpdateIconPath(Theme theme)
+        private void ResetTimeout()
         {
-            _iconPath = theme == Theme.Light || theme == Theme.HighContrastWhite ? "Images/oneNote.light.png" : "Images/oneNote.dark.png";
+            _comObjectTimeout.Interval = _settings.ComObjectTimeout;
+            _comObjectTimeout.Enabled = true;
         }
 
-        private bool OpenPageInOneNote(IOneNoteExtPage page)
+        public List<ContextMenuResult> LoadContextMenus(Result selectedResult)
         {
-            try
-            {
-                page.OpenInOneNote();
-                ShowOneNote();
-                return true;
-            }
-            catch (COMException)
-            {
-                // The page, section or even notebook may no longer exist, ignore and do nothing.
-                return false;
-            }
+            return _resultCreator is null ? [] : _resultCreator.LoadContextMenu(selectedResult);
         }
 
-        /// <summary>
-        /// Brings OneNote to the foreground and restores it if minimized.
-        /// </summary>
-        private void ShowOneNote()
+        public Control CreateSettingPanel() => throw new NotImplementedException();
+
+        public void UpdateSettings(PowerLauncherPluginSettings settings) => _settings.UpdateSettings(settings);
+
+        protected virtual void Dispose(bool disposing)
         {
-            using var process = Process.GetProcessesByName("onenote").FirstOrDefault();
-            if (process?.MainWindowHandle != null)
+            if (!_disposed)
             {
-                HWND handle = (HWND)process.MainWindowHandle;
-                if (PInvoke.IsIconic(handle))
+                if (disposing)
                 {
-                    PInvoke.ShowWindow(handle, SHOW_WINDOW_CMD.SW_RESTORE);
+                    _iconProvider?.Cleanup();
+                    _comObjectTimeout?.Dispose();
+                    OneNoteApplication.ReleaseComObject();
                 }
 
-                PInvoke.SetForegroundWindow(handle);
+                _disposed = true;
             }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
