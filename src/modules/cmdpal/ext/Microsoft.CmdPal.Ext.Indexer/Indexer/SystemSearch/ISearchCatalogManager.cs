@@ -30,13 +30,13 @@ public partial interface ISearchCatalogManager
 
     void ReindexSearchRoot(string pszRoot);
 
-    uint get_ConnectTimeout();
-
     void put_ConnectTimeout(uint dwTimeout);
 
-    uint get_DataTimeout();
+    uint get_ConnectTimeout();
 
     void put_DataTimeout(uint dwTimeout);
+
+    uint get_DataTimeout();
 
     uint NumberOfItems();
 
@@ -51,16 +51,20 @@ public partial interface ISearchCatalogManager
 
     void RegisterViewForNotification(string pszView, IntPtr pViewNotify, out uint pdwCookie);
 
-    IntPtr GetItemsChangedSink();
+    void GetItemsChangedSink(
+        IntPtr pISearchNotifyInlineSite,
+        in Guid riid,
+        out IntPtr ppv,
+        out Guid pGUIDCatalogResetSignature,
+        out Guid pGUIDCheckPointSignature,
+        out uint pdwLastCheckPointNumber);
 
     void UnregisterViewForNotification(uint dwCookie);
 
     void SetExtensionClusion(string pszExtension, [MarshalAs(UnmanagedType.Bool)] bool fExclude);
 
-    void EnumerateExcludedExtensions();
+    IntPtr EnumerateExcludedExtensions();
 
-    [return: MarshalAs(UnmanagedType.Interface)]
-    [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
     ISearchQueryHelper GetQueryHelper();
 
     [return: MarshalAs(UnmanagedType.Bool)]
