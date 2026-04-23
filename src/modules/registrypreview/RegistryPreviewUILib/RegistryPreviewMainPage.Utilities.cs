@@ -514,7 +514,7 @@ namespace RegistryPreviewUILib
                             {
                                 try
                                 {
-                                    // Hexes are usually two characters (00), it's invalid if more or less than 2
+                                    // Hexes are usually two characters (00), it's invalid if not 2
                                     var bytes = value.Split(',').Select(
                                         c => c.Length == 2 ? byte.Parse(c, NumberStyles.HexNumber, CultureInfo.InvariantCulture) : throw null);
                                     value = string.Join(' ', bytes.Select(b => b.ToString("x2", CultureInfo.CurrentCulture)));

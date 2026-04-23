@@ -10,7 +10,7 @@ MIcrosoftEdgeLauncherCsharp
 # x64
 (?:(?<=[a-df-z])x|(?<=[A-Z]X))64
 
-# reversed irreversible biomials
+# reversed irreversible binomials
 \b(?:mouse down and up|low and high)\b
 
 # marker to ignore all code on line
