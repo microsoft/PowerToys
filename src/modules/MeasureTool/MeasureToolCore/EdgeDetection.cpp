@@ -29,8 +29,9 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
             }
             else
             {
-                if (--x == 0)
+                if (x == 0)
                     break;
+                --x;
             }
         }
         else
@@ -42,8 +43,9 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
             }
             else
             {
-                if (--y == 0)
+                if (y == 0)
                     break;
+                --y;
             }
         }
 
