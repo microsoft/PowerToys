@@ -226,6 +226,27 @@ namespace RemappingLogicTests
             Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
         }
 
+        // Test if SendVirtualInput is sent exactly once with the suppress flag when a Ctrl/Alt/Shift key is remapped to a non-modifier key
+        TEST_METHOD (HandleSingleKeyRemapEvent_ShouldSendVirtualInputWithSuppressFlagExactlyOnce_WhenCtrlAltShiftIsMappedToNonModifierKey)
+        {
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+                    return true;
+                else
+                    return false;
+            });
+
+            testState.AddSingleKeyRemap(VK_LMENU, (DWORD)VK_BACK);
+
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LMENU } },
+            };
+
+            mockedInputHandler.SendVirtualInput(inputs);
+
+            Assert::AreEqual(1, mockedInputHandler.GetSendVirtualInputCallCount());
+        }
+
         // Test if correct keyboard states are set for a single key to two key shortcut remap
         TEST_METHOD (RemappedKeyToTwoKeyShortcut_ShouldSetTargetKeyState_OnKeyEvent)
         {
