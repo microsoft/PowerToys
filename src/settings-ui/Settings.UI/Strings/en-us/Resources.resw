@@ -5978,11 +5978,7 @@ Text uses the current drawing color.</value>
     <value>Windows key</value>
     <comment>The Windows key on the keyboard</comment>
   </data>
-  <data name="GrabAndMove_ShouldAbsorbAlt.Header" xml:space="preserve">
-    <value>Absorb Alt presses</value>
-    <comment>When enabled, Grab And Move absorbs the Alt keypress so it does not activate the window menu after a drag/resize.</comment>
-  </data>
-  <data name="GrabAndMove_ShouldAbsorbAlt.Description" xml:space="preserve">
+  <data name="GrabAndMove_ShouldAbsorbAlt.Content" xml:space="preserve">
     <value>Prevent Alt from activating the window menu after a drag or resize operation</value>
   </data>
   <data name="GrabAndMove_DoNotActivateOnGameMode.Header" xml:space="preserve">
@@ -5997,11 +5993,11 @@ Text uses the current drawing color.</value>
     <value>Display the window position and size on the overlay during drag and resize operations</value>
   </data>
   <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
-    <value>Enable modifier + right-click to resize</value>
-    <comment>When enabled, holding the activation modifier key and right-clicking allows resizing windows by dragging from the closest edge or corner.</comment>
+    <value>Resize windows with the modifier key + right-click</value>
+    <comment>Hold the modifier key and right-click, then drag from the nearest edge or corner to resize the window</comment>
   </data>
   <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
-    <value>Hold the activation modifier key and right-click to resize a window by dragging from the nearest edge or corner</value>
+    <value>Hold the modifier key and drag with the right mouse button from the nearest edge or corner to resize the window</value>
   </data>
   <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>

@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     AutomationProperties.LandmarkType="Main"
@@ -27,21 +28,20 @@
                 </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="GrabAndMove_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_ModifierKey" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                    <tkcontrols:SettingsExpander x:Uid="GrabAndMove_ModifierKey" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ModifierKey, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Alt" />
                             <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Win" />
                         </ComboBox>
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard
-                        x:Uid="GrabAndMove_ShouldAbsorbAlt"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}"
-                        IsEnabled="{x:Bind ViewModel.IsAltModifier, Mode=OneWay}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_UseAltResize" HeaderIcon="{ui:FontIcon Glyph=&#xE740;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.UseAltResize, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.IsAltModifier, Mode=OneWay}">
+                                <CheckBox x:Uid="GrabAndMove_ShouldAbsorbAlt" IsChecked="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GrabAndMove_UseAltResize" IsChecked="{x:Bind ViewModel.UseAltResize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_DoNotActivateOnGameMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
