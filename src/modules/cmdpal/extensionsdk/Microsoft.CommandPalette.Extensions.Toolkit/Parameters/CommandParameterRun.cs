@@ -6,41 +6,11 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class CommandParameterRun : ParameterValueRun, ICommandParameterRun
 {
-    private string? _displayText;
+    public virtual string? DisplayText { get; set => SetProperty(ref field, value); }
 
-    public virtual string? DisplayText
-    {
-        get => _displayText;
-        set
-        {
-            _displayText = value;
-            OnPropertyChanged(nameof(DisplayText));
-        }
-    }
+    public virtual ICommand? Command { get; set => SetProperty(ref field, value); }
 
-    private ICommand? _command;
-
-    public virtual ICommand? Command
-    {
-        get => _command;
-        set
-        {
-            _command = value;
-            OnPropertyChanged(nameof(Command));
-        }
-    }
-
-    private IIconInfo? _icon;
-
-    public virtual IIconInfo? Icon
-    {
-        get => _icon;
-        set
-        {
-            _icon = value;
-            OnPropertyChanged(nameof(Icon));
-        }
-    }
+    public virtual IIconInfo? Icon { get; set => SetProperty(ref field, value); }
 
     public override bool NeedsValue => Value == null;
 
@@ -62,9 +32,10 @@ public partial class CommandParameterRun : ParameterValueRun, ICommandParameterR
         get => _value;
         set
         {
-            _value = value;
-            OnPropertyChanged(nameof(Value));
-            OnPropertyChanged(nameof(NeedsValue));
+            if (SetProperty(ref _value, value))
+            {
+                OnPropertyChanged(nameof(NeedsValue));
+            }
         }
     }
 

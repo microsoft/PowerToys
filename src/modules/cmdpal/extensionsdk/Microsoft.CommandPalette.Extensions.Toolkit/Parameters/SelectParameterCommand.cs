@@ -10,21 +10,16 @@ public partial class SelectParameterCommand<T> : InvokableCommand
 {
     public event TypedEventHandler<object, T>? ValueSelected;
 
-    private T _value;
-
-    public T Value
-    {
-        get => _value; protected set { _value = value; }
-    }
+    public T Value { get; protected set; }
 
     public SelectParameterCommand(T value)
     {
-        _value = value;
+        Value = value;
     }
 
     public override ICommandResult Invoke()
     {
-        ValueSelected?.Invoke(this, _value);
+        ValueSelected?.Invoke(this, Value);
         return CommandResult.KeepOpen();
     }
 }

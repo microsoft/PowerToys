@@ -7,17 +7,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 #nullable enable
 public abstract partial class ParameterValueRun : BaseObservable, IParameterValueRun
 {
-    private string _placeholderText = string.Empty;
-
-    public virtual string PlaceholderText
-    {
-        get => _placeholderText;
-        set
-        {
-            _placeholderText = value;
-            OnPropertyChanged(nameof(PlaceholderText));
-        }
-    }
+    public virtual string PlaceholderText { get; set => SetProperty(ref field, value); } = string.Empty;
 
     private bool _needsValue = true;
 

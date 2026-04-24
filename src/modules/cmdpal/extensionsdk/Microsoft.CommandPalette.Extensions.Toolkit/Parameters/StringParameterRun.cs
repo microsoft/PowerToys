@@ -13,9 +13,10 @@ public partial class StringParameterRun : ParameterValueRun, IStringParameterRun
         get => _text;
         set
         {
-            _text = value;
-            OnPropertyChanged(nameof(Text));
-            OnPropertyChanged(nameof(NeedsValue));
+            if (SetProperty(ref _text, value))
+            {
+                OnPropertyChanged(nameof(NeedsValue));
+            }
         }
     }
 
