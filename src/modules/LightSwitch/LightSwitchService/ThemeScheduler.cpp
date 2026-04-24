@@ -14,17 +14,13 @@ SunTimes CalculateSunriseSunset(double latitude, double longitude, int year, int
         double t = sunrise ? N + ((6 - lngHour) / 24) : N + ((18 - lngHour) / 24);
 
         double M = (0.9856 * t) - 3.289;
-        double L = M + (1.916 * sin(deg2rad(M))) + (0.020 * sin(2 * deg2rad(M))) + 282.634;
+        double L = fmod(M + (1.916 * sin(deg2rad(M))) + (0.020 * sin(2 * deg2rad(M))) + 282.634, 360.0);
         if (L < 0)
             L += 360;
-        if (L > 360)
-            L -= 360;
 
-        double RA = rad2deg(atan(0.91764 * tan(deg2rad(L))));
+        double RA = fmod(rad2deg(atan(0.91764 * tan(deg2rad(L)))), 360.0);
         if (RA < 0)
             RA += 360;
-        if (RA > 360)
-            RA -= 360;
 
         double Lquadrant = floor(L / 90) * 90;
         double RAquadrant = floor(RA / 90) * 90;
