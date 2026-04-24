@@ -28,7 +28,10 @@
                 </controls:GPOInfoControl>
 
                 <controls:SettingsGroup x:Uid="GrabAndMove_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander x:Uid="GrabAndMove_ModifierKey" HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="GrabAndMove_ModifierKey"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}"
+                        IsExpanded="True">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ModifierKey, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Alt" />
                             <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Win" />
