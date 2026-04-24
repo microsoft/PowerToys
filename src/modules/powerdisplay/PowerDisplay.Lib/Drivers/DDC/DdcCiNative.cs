@@ -189,7 +189,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             // EDID manufacturer ID requires byte order swap first
             manufacturerId = (ushort)(((manufacturerId & 0xff00) >> 8) | ((manufacturerId & 0x00ff) << 8));
 
-            // Extract 3 5-bit characters (each character is A-Z, where A=1, B=2, ..., Z=26)
+            // Extract three 5-bit characters (each character is A-Z, where A=1, B=2, ..., Z=26)
             var char1 = (char)('A' - 1 + ((manufacturerId >> 0) & 0x1f));
             var char2 = (char)('A' - 1 + ((manufacturerId >> 5) & 0x1f));
             var char3 = (char)('A' - 1 + ((manufacturerId >> 10) & 0x1f));
