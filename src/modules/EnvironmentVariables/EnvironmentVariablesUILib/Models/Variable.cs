@@ -109,6 +109,24 @@ namespace EnvironmentVariablesUILib.Models
             return new ObservableCollection<ValuesListItem>(values.Split(';').Select(x => new ValuesListItem { Text = x }));
         }
 
+        /// <summary>
+        /// Removes duplicate entries from a semicolon-separated values string (case-insensitive).
+        /// Preserves the first occurrence of each entry and maintains original order.
+        /// </summary>
+        internal static string RemoveDuplicateValues(string values)
+        {
+            if (string.IsNullOrEmpty(values))
+            {
+                return values;
+            }
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var unique = values.Split(';')
+                               .Where(entry => !string.IsNullOrWhiteSpace(entry) && seen.Add(entry.Trim()))
+                               .ToList();
+            return string.Join(";", unique);
+        }
+
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)
         {
             bool nameChanged = Name != edited.Name;
