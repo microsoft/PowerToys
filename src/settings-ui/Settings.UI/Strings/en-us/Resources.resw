@@ -6010,7 +6010,7 @@ Text uses the current drawing color.</value>
     <value>Excludes an application from being moved or resized by Grab And Move - add one application name per line</value>
   </data>
   <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
-    <value>Example: outlook.exe</value>
-    <comment>{Locked="outlook.exe"}</comment>
+    <value>Example: outlook</value>
+    <comment>{Locked="outlook"}</comment>
   </data>
 </root>
