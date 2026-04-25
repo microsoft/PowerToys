@@ -46,17 +46,16 @@ Each macro is one JSON file:
 ```json
 {
   "id": "a3f1c2d4-0000-0000-0000-000000000000",
-  "name": "Paste as plain text",
-  "description": "Strip formatting and paste",
-  "hotkey": "Ctrl+Shift+V",
-  "app_scope": "WINWORD.EXE",
+  "name": "Insert signature",
+  "description": "Type email signature and move to next field",
+  "hotkey": "Ctrl+Shift+S",
+  "app_scope": "OUTLOOK.EXE",
   "steps": [
-    { "type": "press_key", "key": "Ctrl+C" },
+    { "type": "type_text", "text": "Regards,\nKavin" },
     { "type": "wait",      "ms": 100 },
-    { "type": "press_key", "key": "Ctrl+Shift+V" },
-    { "type": "type_text", "text": "Hello World" },
+    { "type": "press_key", "key": "Tab" },
     { "type": "repeat",    "count": 3, "steps": [
-        { "type": "press_key", "key": "Tab" }
+        { "type": "press_key", "key": "Down" }
     ]}
   ]
 }
@@ -115,7 +114,7 @@ Step handlers use P/Invoke `SendInput`:
 `MacroEditor.exe` — WinUI3 app, launched from PowerToys Settings.
 
 ### Toolbar
-Macro name field · Hotkey picker · App scope picker (process name or "All apps") · **Visual / JSON** toggle · Save · Delete
+Macro name field · Hotkey picker · App scope picker (dropdown of running processes + "All apps" option; refreshes on open) · **Visual / JSON** toggle · Save · Delete
 
 ### Visual View (Flowchart)
 
@@ -143,13 +142,13 @@ Vertical chain of step cards connected by arrows:
 
 ### Record Mode
 
-1. User clicks **Record** → editor minimizes, floating "Recording…" pill appears on screen
-2. Low-level keyboard hook captures keystrokes + inter-keystroke timing
+1. User clicks **Record** → engine temporarily unregisters all macro hotkeys to prevent re-triggering during capture; editor minimizes, floating "Recording…" pill appears on screen
+2. Editor installs `WH_KEYBOARD_LL` hook via P/Invoke to capture keystrokes + inter-keystroke timing
 3. Conversion rules:
    - Key combos → `press_key`
-   - Gaps > 200ms → `wait` (rounded to nearest 50ms)
+   - Gaps ≥ 200ms → `wait` (rounded to nearest 50ms); gaps < 200ms dropped
    - Consecutive printable characters → merged into single `type_text`
-4. User clicks **Stop** → editor restores, captured steps populate flowchart
+4. User clicks **Stop** → hook removed, engine re-registers hotkeys, editor restores, captured steps populate flowchart
 5. User reviews, edits, saves
 
 ### JSON View
