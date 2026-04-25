@@ -245,7 +245,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         // Compact mode is only supported for Top/Bottom positions
         var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
-        var effectiveSize = isHorizontal ? settings.DockSize : DockSize.Default;
+        var effectiveSize = isHorizontal ? settings.BandSize : DockSize.Default;
         DockSize = effectiveSize;
 
         ItemsOrientation = isHorizontal ? Orientation.Horizontal : Orientation.Vertical;

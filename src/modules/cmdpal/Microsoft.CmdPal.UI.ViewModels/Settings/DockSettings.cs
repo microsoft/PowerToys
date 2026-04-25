@@ -18,7 +18,7 @@ public record DockSettings
 {
     public DockSide Side { get; init; } = DockSide.Top;
 
-    public DockSize DockSize { get; init; } = DockSize.Default;
+    public DockSize BandSize { get; init; } = DockSize.Default;
 
     public bool AlwaysOnTop { get; set; } = true;
 

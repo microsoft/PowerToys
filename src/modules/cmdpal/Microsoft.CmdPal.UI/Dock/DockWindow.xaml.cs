@@ -449,7 +449,7 @@ public sealed partial class DockWindow : WindowEx,
     private static DockSize EffectiveDockSize(DockSettings settings)
     {
         var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
-        return isHorizontal ? settings.DockSize : DockSize.Default;
+        return isHorizontal ? settings.BandSize : DockSize.Default;
     }
 
     private void UpdateAppBarDataForEdge(DockSide side, DockSize size, double scaleFactor)

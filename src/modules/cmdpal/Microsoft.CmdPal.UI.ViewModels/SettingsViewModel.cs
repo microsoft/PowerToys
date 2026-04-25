@@ -201,10 +201,10 @@ public partial class SettingsViewModel : INotifyPropertyChanged
 
     public DockSize Dock_DockSize
     {
-        get => _settingsService.Settings.DockSettings.DockSize;
+        get => _settingsService.Settings.DockSettings.BandSize;
         set
         {
-            _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { DockSize = value } });
+            _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { BandSize = value } });
         }
     }
 
