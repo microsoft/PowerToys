@@ -7235,29 +7235,29 @@ LRESULT APIENTRY MainWndProc(
 
             if( g_ToggleKey && !RegisterHotKey( hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF)) {
 
-                MessageBox( hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
-                    APPNAME, MB_ICONERROR );
+                    MessageBox( hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
+                        APPNAME, MB_ICONERROR );
                 showOptions = TRUE;
 
             } else if( g_LiveZoomToggleKey &&
                 (!RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
                     !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF))) {
 
-                MessageBox( hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
-                    APPNAME, MB_ICONERROR );
+                    MessageBox( hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
+                        APPNAME, MB_ICONERROR );
                 showOptions = TRUE;
 
             } else if( g_DrawToggleKey && !RegisterHotKey( hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF )) {
 
-                MessageBox( hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.",
-                    APPNAME, MB_ICONERROR );
+                    MessageBox( hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.",
+                        APPNAME, MB_ICONERROR );
                 showOptions = TRUE;
 
             }
             else if (g_BreakToggleKey && !RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF)) {
 
-                MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.",
-                    APPNAME, MB_ICONERROR);
+                    MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.",
+                        APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
             }
@@ -7265,8 +7265,8 @@ LRESULT APIENTRY MainWndProc(
                 (!RegisterHotKey( hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF ) ||
                  !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF))) {
 
-                MessageBox( hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.",
-                    APPNAME, MB_ICONERROR );
+                    MessageBox( hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.",
+                        APPNAME, MB_ICONERROR );
                 showOptions = TRUE;
 
             }
@@ -9784,7 +9784,10 @@ LRESULT APIENTRY MainWndProc(
         {
             if (!RegisterHotKey(hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -9793,7 +9796,10 @@ LRESULT APIENTRY MainWndProc(
             if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomToggleMod ^ MOD_SHIFT, g_LiveZoomToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -9801,7 +9807,10 @@ LRESULT APIENTRY MainWndProc(
         {
             if (!RegisterHotKey(hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -9809,7 +9818,10 @@ LRESULT APIENTRY MainWndProc(
         {
             if (!RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -9818,7 +9830,10 @@ LRESULT APIENTRY MainWndProc(
             if (!RegisterHotKey(hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -9827,7 +9842,10 @@ LRESULT APIENTRY MainWndProc(
             if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -9837,7 +9855,10 @@ LRESULT APIENTRY MainWndProc(
             if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -9845,7 +9866,10 @@ LRESULT APIENTRY MainWndProc(
         {
             if (!RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -9855,7 +9879,10 @@ LRESULT APIENTRY MainWndProc(
                 !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
