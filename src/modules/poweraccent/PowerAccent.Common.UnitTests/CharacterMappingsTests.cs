@@ -25,6 +25,48 @@ public sealed class CharacterMappingsTests
         }
     }
 
+    // Every Language enum value must appear in DisplayOrder exactly once. If a value is
+    // missing, its characters will be silently omitted from the popup. If it appears more
+    // than once, Collect will emit its characters twice (before Distinct removes them).
+    [TestMethod]
+    public void DisplayOrder_ContainsEveryLanguageEnumValue_ExactlyOnce()
+    {
+        foreach (Language lang in Enum.GetValues<Language>())
+        {
+            var count = CharacterMappings.DisplayOrder.Count(l => l == lang);
+            Assert.AreEqual(
+                1,
+                count,
+                $"Language.{lang} appears {count} time(s) in CharacterMappings.DisplayOrder - expected exactly 1.");
+        }
+    }
+
+    // Every LanguageGroup enum value must appear in GroupDisplayOrder exactly once.
+    [TestMethod]
+    public void GroupDisplayOrder_ContainsEveryLanguageGroupValue_ExactlyOnce()
+    {
+        foreach (LanguageGroup group in Enum.GetValues<LanguageGroup>())
+        {
+            var count = CharacterMappings.GroupDisplayOrder.Count(g => g == group);
+            Assert.AreEqual(
+                1,
+                count,
+                $"LanguageGroup.{group} appears {count} time(s) in CharacterMappings.GroupDisplayOrder - expected exactly 1.");
+        }
+    }
+
+    // LanguageLookup must contain an entry for every Language enum value, derived from All.
+    [TestMethod]
+    public void LanguageLookup_ContainsEveryLanguageEnumValue()
+    {
+        foreach (Language lang in Enum.GetValues<Language>())
+        {
+            Assert.IsTrue(
+                CharacterMappings.LanguageLookup.ContainsKey(lang),
+                $"Language.{lang} is missing from CharacterMappings.LanguageLookup.");
+        }
+    }
+
     // Every entry in All must have a non-empty Identifier. A blank identifier would
     // produce a malformed resource key (e.g. "QuickAccent_SelectedLanguage_") that
     // silently resolves to an empty string in the Settings UI.
@@ -132,6 +174,36 @@ public sealed class CharacterMappingsTests
             expected,
             result,
             $"GetCharacters for Language.{langInfo.Id} / LetterKey.{key} did not match the mapped characters.");
+    }
+
+    // GetCharacters must throw KeyNotFoundException when passed a Language value that is
+    // not in LanguageLookup (i.e. not in All). This is deliberate fail-fast behaviour:
+    // an unknown language is a programming error, not a recoverable condition. The cast
+    // produces a valid enum value that was never registered in All.
+    [TestMethod]
+    public void GetCharacters_UnknownLanguage_ThrowsKeyNotFoundException()
+    {
+        var unknown = (Language)(-1);
+        Assert.ThrowsExactly<KeyNotFoundException>(
+            () => CharacterMappings.GetCharacters(LetterKey.VK_A, [unknown]),
+            "Expected KeyNotFoundException when a Language value absent from LanguageLookup is passed to GetCharacters.");
+    }
+
+    // Collect sorts by _languageOrder[m.Id], so every entry in All must appear in
+    // DisplayOrder. Adding to All without updating DisplayOrder will throw
+    // KeyNotFoundException at the first GetCharacters call that exercises that language.
+    // This test verifies the invariant directly so the failure is caught at test time
+    // rather than at runtime.
+    [TestMethod]
+    public void All_EveryEntry_ExistsInDisplayOrder()
+    {
+        var displayOrderSet = CharacterMappings.DisplayOrder.ToHashSet();
+        foreach (var entry in CharacterMappings.All)
+        {
+            Assert.IsTrue(
+                displayOrderSet.Contains(entry.Id),
+                $"Language.{entry.Id} is in All but missing from DisplayOrder. Add it to DisplayOrder to prevent a KeyNotFoundException at runtime.");
+        }
     }
 
     // GetCharacters for a key that is not mapped in a given language should return empty.

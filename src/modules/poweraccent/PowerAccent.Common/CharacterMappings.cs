@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,15 +8,30 @@ namespace PowerAccent.Common;
 
 /// <summary>
 /// Single source of truth for all Quick Accent character data.
-/// Each entry in <see cref="All"/> defines a language's identity, group, resource
-/// identifier and character mappings. Adding a new language requires only one new
-/// entry here, plus the matching <see cref="Language"/> enum value and resx string.
+/// <para>
+/// <see cref="All"/> is the canonical registry of every language: its identity, group,
+/// resource identifier, and character mappings. The Settings UI derives its language
+/// list from this collection.
+/// </para>
+/// <para>
+/// <see cref="DisplayOrder"/> and <see cref="GroupDisplayOrder"/> control the order
+/// in which characters appear in the Quick Accent popup. These are intentionally
+/// separate from <see cref="All"/> so that popup ordering is explicit and not an
+/// accidental consequence of declaration order.
+/// </para>
+/// <para>
+/// When adding a new language: add a <see cref="Language"/> enum value, a
+/// <see cref="LanguageInfo"/> entry to <see cref="All"/>, a position in
+/// <see cref="DisplayOrder"/>, and a resx string.
+/// </para>
 /// </summary>
 public static class CharacterMappings
 {
     /// <summary>
-    /// All registered languages, in the order they are defined.
-    /// The Settings UI derives its language list from this collection.
+    /// The canonical registry of all languages. Each entry defines the language's
+    /// identity, group, resource identifier, and character mappings.
+    /// Declaration order here does not affect the popup or settings display order;
+    /// see <see cref="DisplayOrder"/> and <see cref="GroupDisplayOrder"/> for that.
     /// </summary>
     public static readonly IReadOnlyList<LanguageInfo> All =
     [
@@ -451,6 +466,8 @@ public static class CharacterMappings
             [LetterKey.VK_COMMA] = ["“", "”", "‘", "’", "「", "」", "『", "』"],
         }),
 
+        // Proto-Indo-European. This is a "special" language group as it's not a spoken
+        // language, but rather a reconstructed ancestor of many languages.
         new(Language.PIE, "Proto_Indo_European", LanguageGroup.Special,  new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["ā"],
@@ -619,11 +636,95 @@ public static class CharacterMappings
         }),
     ];
 
+    /// <summary>
+    /// O(1) lookup from <see cref="Language"/> to its <see cref="LanguageInfo"/>.
+    /// Use this instead of searching <see cref="All"/> when you have a language identity.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<Language, LanguageInfo> LanguageLookup =
+        All.ToDictionary(x => x.Id);
+
+    /// <summary>
+    /// The order in which language groups appear in the Quick Accent popup.
+    /// Groups listed first have their characters shown first.
+    /// This is intentionally separate from the <see cref="LanguageGroup"/> enum order.
+    /// </summary>
+    public static readonly IReadOnlyList<LanguageGroup> GroupDisplayOrder =
+    [
+        LanguageGroup.UserDefined,
+        LanguageGroup.Language,
+        LanguageGroup.Special,
+    ];
+
+    /// <summary>
+    /// The order in which individual languages appear within their group in the Quick
+    /// Accent popup. Position in this list is the display order; position in
+    /// <see cref="All"/> is irrelevant for popup ordering.
+    /// Entries are sorted alphabetically by <see cref="Language"/> enum name.
+    /// When adding a new language, insert it in alphabetical order.
+    /// </summary>
+    public static readonly IReadOnlyList<Language> DisplayOrder =
+    [
+
+        // Spoken languages.
+        Language.BG,
+        Language.CA,
+        Language.CRH,
+        Language.CY,
+        Language.CZ,
+        Language.DE,
+        Language.DK,
+        Language.EL,
+        Language.EPO,
+        Language.EST,
+        Language.FI,
+        Language.FR,
+        Language.GA,
+        Language.GD,
+        Language.HE,
+        Language.HR,
+        Language.HU,
+        Language.IS,
+        Language.IT,
+        Language.KU,
+        Language.LT,
+        Language.MI,
+        Language.MK,
+        Language.MT,
+        Language.NL,
+        Language.NO,
+        Language.PI,
+        Language.PL,
+        Language.PT,
+        Language.RO,
+        Language.SK,
+        Language.SL,
+        Language.SP,
+        Language.SR,
+        Language.SR_CYRL,
+        Language.SV,
+        Language.TK,
+        Language.VI,
+
+        // Symbols and non-language-specific characters.
+        Language.CUR,
+        Language.IPA,
+        Language.PIE,
+        Language.ROM,
+        Language.SPECIAL,
+    ];
+
+    // O(1) sort-key lookups derived from the display order lists above.
+    private static readonly Dictionary<LanguageGroup, int> _groupOrder =
+        GroupDisplayOrder.Select((g, i) => (g, i)).ToDictionary(x => x.g, x => x.i);
+
+    private static readonly Dictionary<Language, int> _languageOrder =
+        DisplayOrder.Select((l, i) => (l, i)).ToDictionary(x => x.l, x => x.i);
+
     private static readonly ConcurrentDictionary<LetterKey, string[]> _allLanguagesCache = new();
 
     /// <summary>
     /// Returns the deduplicated set of characters for the given key across the specified
-    /// languages.
+    /// languages, ordered by <see cref="GroupDisplayOrder"/> then <see cref="DisplayOrder"/>.
     /// </summary>
     public static string[] GetCharacters(LetterKey letter, Language[] langs)
     {
@@ -637,13 +738,15 @@ public static class CharacterMappings
             return _allLanguagesCache.GetOrAdd(letter, key => Collect(key, All));
         }
 
-        return Collect(letter, All.Where(langInfo => langs.Contains(langInfo.Id)));
+        return Collect(letter, langs.Select(lang => LanguageLookup[lang]));
     }
 
     private static string[] Collect(LetterKey letter, IEnumerable<LanguageInfo> maps)
     {
         var result = new List<string>();
-        foreach (var map in maps)
+        foreach (var map in maps
+            .OrderBy(m => _groupOrder[m.Group])
+            .ThenBy(m => _languageOrder[m.Id]))
         {
             if (map.Characters.TryGetValue(letter, out var chars))
             {

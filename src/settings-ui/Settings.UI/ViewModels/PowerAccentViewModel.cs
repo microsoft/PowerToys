@@ -24,6 +24,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly SettingsUtils _settingsUtils;
 
+        /// <summary>
+        /// Maps each <see cref="LanguageGroup"/> to its resx resource key so that group
+        /// header strings can be looked up by the Settings UI. Every value defined in
+        /// <see cref="LanguageGroup"/> must have an entry here.
+        /// </summary>
         private static readonly Dictionary<LanguageGroup, string> _groupResourceKeys = new()
         {
             [LanguageGroup.Language] = "QuickAccent_Group_Language",
@@ -31,14 +36,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             [LanguageGroup.UserDefined] = "QuickAccent_Group_UserDefined",
         };
 
-        public List<PowerAccentLanguageModel> Languages { get; } =
-            CharacterMappings.All
-                .Select(lang => new PowerAccentLanguageModel(
-                    lang.Id.ToString(),
-                    $"QuickAccent_SelectedLanguage_{lang.Identifier}",
-                    _groupResourceKeys[lang.Group]))
-                .ToList();
+        /// <summary>
+        /// Gets the flat list of all available languages, derived from
+        /// <see cref="CharacterMappings.All"/>. In the Settings UI, this list is sorted
+        /// alphabetically by the localised display name and arranged into groups based on
+        /// the <see cref="LanguageGroup"/>. Populated by <see cref="InitializeLanguages"/>.
+        /// </summary>
+        public List<PowerAccentLanguageModel> Languages { get; private set; }
 
+        /// <summary>
+        /// Gets the languages arranged into display groups, in the order defined by
+        /// <see cref="CharacterMappings.GroupDisplayOrder"/>. Bound to the Settings UI
+        /// list.
+        /// </summary>
         public PowerAccentLanguageGroupModel[] LanguageGroups { get; private set; }
 
         private readonly string[] _toolbarOptions =
@@ -123,20 +133,47 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Resolves localised display names for each language, sorts by name, and splits
-        /// languages into groups for the settings UI.
+        /// Builds the Settings UI language models. This resolves localized display names
+        /// for each language, sorts by name within each group, and arranges groups in the
+        /// order defined by <see cref="CharacterMappings.GroupDisplayOrder"/>. The
+        /// resulting list of languages and groups is stored in the
+        /// <see cref="Languages"/> and <see cref="LanguageGroups"/> properties, which are
+        /// bound to the Settings UI.
         /// </summary>
         private void InitializeLanguages()
         {
-            foreach (var item in Languages)
+            // Build the flat list and resolve localized display names.
+            Languages = CharacterMappings.All.Select(lang =>
             {
-                item.Language = ResourceLoaderInstance.ResourceLoader.GetString(item.LanguageResourceID);
-            }
+                string languageResourceId = $"QuickAccent_SelectedLanguage_{lang.Identifier}";
 
+                var model = new PowerAccentLanguageModel(
+                    lang.Id.ToString(),
+                    languageResourceId,
+                    _groupResourceKeys[lang.Group]);
+
+                model.Language = ResourceLoaderInstance.ResourceLoader.GetString(languageResourceId);
+                return model;
+            }).ToList();
+
+            // Sort the flat list alphabetically by the localized display name.
             Languages.Sort((x, y) => string.Compare(x.Language, y.Language, StringComparison.Ordinal));
-            LanguageGroups = Languages
-                .GroupBy(language => language.GroupResourceID)
-                .Select(grp => new PowerAccentLanguageGroupModel(grp.ToList(), ResourceLoaderInstance.ResourceLoader.GetString(grp.Key)))
+
+            // Group them in the explicit order defined by the core library. Note:
+            // PowerAccentLanguageModel does not hold a direct dependency on the
+            // LanguageGroup enum. Instead, we use the stable GroupResourceID as a
+            // decoupled key to map the core groups to the Settings UI models.
+            LanguageGroups = CharacterMappings.GroupDisplayOrder
+                .Select(group =>
+                {
+                    string groupResourceId = _groupResourceKeys[group];
+                    var groupedLanguages = Languages.Where(lang => lang.GroupResourceID == groupResourceId).ToList();
+
+                    return groupedLanguages.Count > 0
+                        ? new PowerAccentLanguageGroupModel(groupedLanguages, ResourceLoaderInstance.ResourceLoader.GetString(groupResourceId))
+                        : null; // Skip groups with no languages.
+                })
+                .OfType<PowerAccentLanguageGroupModel>()
                 .ToArray();
         }
 
