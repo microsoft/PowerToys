@@ -504,10 +504,12 @@ public sealed partial class SettingsWindow : WindowEx,
         bool startConnectedAnimation)
     {
         _currentScreenshotSet = screenshots;
-        _currentScreenshot = screenshot;
         UpdateScreenshotViewerBindings();
         UpdateScreenshotViewerPopupSize();
         ScreenshotViewerFlipView.ItemsSource = screenshots;
+
+        // _currentScreenshot has to be set after ItemsSource for the FlipView to update to the correct index
+        _currentScreenshot = screenshot;
         ScreenshotViewerFlipView.SelectedIndex = GetCurrentScreenshotIndex();
         ScreenshotViewerPopup.IsOpen = true;
 
