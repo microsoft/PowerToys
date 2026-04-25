@@ -242,7 +242,7 @@ public sealed class CharacterMappingsTests
         CollectionAssert.AreEqual(
             expectedOrder,
             result,
-            "GetCharacters did not return characters in the expected order based on GroupoDisplayOrder and DisplayOrder.");
+            "GetCharacters did not return characters in the expected order based on GroupDisplayOrder and DisplayOrder.");
     }
 
     // Collect sorts by _languageOrder[m.Id], so every entry in All must appear in
