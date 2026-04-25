@@ -4,9 +4,9 @@ This document describes how to build, sign, register, and consume the shared spa
 
 ## Package overview
 
-The sparse package lives under `src/PackageIdentity`. It produces a payload-free MSIX whose `Identity` matches `Microsoft.PowerToys.SparseApp`. The manifest contains one entry per Win32 surface that should run with identity (for example Settings, PowerOCR, Image Resizer).
+The sparse package lives under `src/PackageIdentity`. It produces a payload-free MSIX whose `Identity` matches `Microsoft.PowerToys.SparseApp`. The manifest contains one entry per Win32 surface that should run with identity (for example Settings, Image Resizer, CmdPal Extension).
 
-> The MSIX contains only metadata. When the package is registered you must point `-ExternalLocation` to the output folder that hosts the Win32 binaries (for example `x64\Release`).
+> The MSIX contains only metadata. When the package is registered you must point `-ExternalLocation` to the `WinUI3Apps` subfolder of the output folder that hosts the Win32 binaries (for example `x64\Release\WinUI3Apps`). This isolates the DACL changes that MSIX registration applies on Windows 23H2/24H2 to the `WinUI3Apps` folder, keeping the root install folder clean for preview handler DLLs.
 
 ## Building the sparse package locally
 
@@ -53,16 +53,17 @@ After `PowerToysSparse.msix` is generated:
 # First time registration
 $repoRoot = "C:/git/PowerToys"
 $outputRoot = Join-Path $repoRoot "x64/Release"
-Add-AppxPackage -Path (Join-Path $outputRoot "PowerToysSparse.msix") -ExternalLocation $outputRoot
+$externalLocation = Join-Path $outputRoot "WinUI3Apps"
+Add-AppxPackage -Path (Join-Path $outputRoot "PowerToysSparse.msix") -ExternalLocation $externalLocation
 
 # Re-register after manifest tweaks only
-Add-AppxPackage -Register (Join-Path $repoRoot "src/PackageIdentity/AppxManifest.xml") -ExternalLocation $outputRoot -ForceApplicationShutdown
+Add-AppxPackage -Register (Join-Path $repoRoot "src/PackageIdentity/AppxManifest.xml") -ExternalLocation $externalLocation -ForceApplicationShutdown
 
 # Remove the sparse identity
 Get-AppxPackage -Name Microsoft.PowerToys.SparseApp | Remove-AppxPackage
 ```
 
-`-ExternalLocation` should match the output folder that contains the Win32 executables declared in the manifest. Re-run registration whenever the manifest or executable layout changes.
+`-ExternalLocation` should match the `WinUI3Apps` subfolder that contains the Win32 executables declared in the manifest. Re-run registration whenever the manifest or executable layout changes.
 
 ## CI-specific guidance
 
@@ -72,7 +73,7 @@ Get-AppxPackage -Name Microsoft.PowerToys.SparseApp | Remove-AppxPackage
 
 ## Consuming the identity from other components
 
-1. Add a new `<Application>` entry inside `src/PackageIdentity/AppxManifest.xml`. Use a unique `Id` (for example `PowerToys.MyModuleUI`) and set `Executable` to the Win32 binary relative to the `-ExternalLocation` root.
+1. Add a new `<Application>` entry inside `src/PackageIdentity/AppxManifest.xml`. Use a unique `Id` (for example `PowerToys.MyModuleUI`) and set `Executable` to the Win32 binary relative to the `-ExternalLocation` (`WinUI3Apps` subfolder).
 2. Ensure the binary is copied into the platform/configuration output folder (`x64\Release`, `ARM64\Debug`, etc.) so the sparse package can locate it.
 3. Embed a sparse identity manifest in the Win32 binary so it binds to the MSIX identity at runtime. The manifest must declare an `<msix>` element with `packageName="Microsoft.PowerToys.SparseApp"`, `applicationId` matching the `<Application Id>`, and a `publisher` that matches the sparse package. Keep the manifest’s publisher in sync with `src/PackageIdentity/.user/PowerToysSparse.publisher.txt` (emitted by `BuildSparsePackage.ps1`). See `src/modules/imageresizer/ui/ImageResizerUI.csproj` for an example that points `ApplicationManifest` to `ImageResizerUI.dev.manifest` for local builds and switches to `ImageResizerUI.prod.manifest` when `$(CIBuild)` is `true`.
 4. Register or re-register the sparse package so Windows learns about the new application Id.

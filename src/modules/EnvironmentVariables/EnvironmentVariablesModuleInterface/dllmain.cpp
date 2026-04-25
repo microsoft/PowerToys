@@ -226,6 +226,12 @@ public:
         return powertoys_gpo::getConfiguredEnvironmentVariablesEnabledValue();
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     virtual bool get_config(wchar_t* /*buffer*/, int* /*buffer_size*/) override
     {
         return false;

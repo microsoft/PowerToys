@@ -15,7 +15,7 @@ namespace PowerDisplay.Common.Serialization
     /// </summary>
     [JsonSourceGenerationOptions(
         WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         IncludeFields = true)]
     [JsonSerializable(typeof(MonitorStateFile))]
     [JsonSerializable(typeof(MonitorStateEntry))]
