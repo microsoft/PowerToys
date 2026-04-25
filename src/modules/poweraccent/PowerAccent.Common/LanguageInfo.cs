@@ -6,7 +6,7 @@ namespace PowerAccent.Common;
 
 /// <summary>
 /// Describes a single language entry: its enum identity, the resource key identifier
-/// used to look up its localised display name, which group it belongs to, and its
+/// used to look up its localized display name, which group it belongs to, and its
 /// character mappings.
 /// </summary>
 /// <param name="Id">The <see cref="Language"/> enum value for this entry.</param>

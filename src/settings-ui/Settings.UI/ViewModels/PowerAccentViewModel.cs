@@ -39,7 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// <summary>
         /// Gets the flat list of all available languages, derived from
         /// <see cref="CharacterMappings.All"/>. In the Settings UI, this list is sorted
-        /// alphabetically by the localised display name and arranged into groups based on
+        /// alphabetically by the localized display name and arranged into groups based on
         /// the <see cref="LanguageGroup"/>. Populated by <see cref="InitializeLanguages"/>.
         /// </summary>
         public List<PowerAccentLanguageModel> Languages { get; private set; }
