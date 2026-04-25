@@ -23,12 +23,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                     string filePath = args[0];
                     uint cx = Convert.ToUInt32(args[1], 10);
 
-                    _thumbnailProvider = new StlThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
-                    if (thumbnail != null)
+                    using (_thumbnailProvider = new StlThumbnailProvider(filePath))
                     {
-                        filePath = filePath.Replace(".stl", ".bmp");
-                        thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                        Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                        if (thumbnail != null)
+                        {
+                            filePath = filePath.Replace(".stl", ".bmp");
+                            thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                        }
                     }
                 }
                 else

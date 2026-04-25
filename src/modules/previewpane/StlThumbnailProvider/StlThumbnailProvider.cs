@@ -18,8 +18,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
     /// <summary>
     /// Stl Thumbnail Provider.
     /// </summary>
-    public class StlThumbnailProvider
+    public class StlThumbnailProvider : IDisposable
     {
+        private bool _disposed;
         public StlThumbnailProvider(string filePath)
         {
             FilePath = filePath;
@@ -167,6 +168,27 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                     // Assume default color value.
                     return Color.FromRgb(255, 201, 36);
                 }
+            }
+        }
+        /// <summary>
+        /// Releases resources used by this instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    Stream?.Dispose();
+                }
+
+                _disposed = true;
             }
         }
     }

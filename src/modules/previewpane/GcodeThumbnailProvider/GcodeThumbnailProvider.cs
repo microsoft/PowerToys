@@ -11,8 +11,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
     /// <summary>
     /// G-code Thumbnail Provider.
     /// </summary>
-    public class GcodeThumbnailProvider
+    public class GcodeThumbnailProvider : IDisposable
     {
+        private bool _disposed;
         public GcodeThumbnailProvider(string filePath)
         {
             FilePath = filePath;
@@ -141,6 +142,27 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
             }
 
             return null;
+        }
+        /// <summary>
+        /// Releases resources used by this instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    Stream?.Dispose();
+                }
+
+                _disposed = true;
+            }
         }
     }
 }

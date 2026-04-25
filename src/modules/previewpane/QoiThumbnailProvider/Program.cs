@@ -24,12 +24,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
                     string filePath = args[0];
                     uint cx = Convert.ToUInt32(args[1], 10);
 
-                    _thumbnailProvider = new QoiThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
-                    if (thumbnail != null)
+                    using (_thumbnailProvider = new QoiThumbnailProvider(filePath))
                     {
-                        filePath = filePath.Replace(".qoi", ".bmp");
-                        thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                        Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                        if (thumbnail != null)
+                        {
+                            filePath = filePath.Replace(".qoi", ".bmp");
+                            thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                        }
                     }
                 }
                 else

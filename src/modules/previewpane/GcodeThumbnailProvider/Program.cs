@@ -24,12 +24,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
                     string filePath = args[0];
                     uint cx = Convert.ToUInt32(args[1], 10);
 
-                    _thumbnailProvider = new GcodeThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
-                    if (thumbnail != null)
+                    using (_thumbnailProvider = new GcodeThumbnailProvider(filePath))
                     {
-                        filePath = filePath.Replace(".gcode", ".bmp");
-                        thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                        Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                        if (thumbnail != null)
+                        {
+                            filePath = filePath.Replace(".gcode", ".bmp");
+                            thumbnail.Save(filePath, System.Drawing.Imaging.ImageFormat.Bmp);
+                        }
                     }
                 }
                 else

@@ -11,8 +11,9 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
     /// <summary>
     /// Qoi Thumbnail Provider.
     /// </summary>
-    public class QoiThumbnailProvider
+    public class QoiThumbnailProvider : IDisposable
     {
+        private bool _disposed;
         public QoiThumbnailProvider(string filePath)
         {
             FilePath = filePath;
@@ -135,6 +136,27 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Qoi
             }
 
             return null;
+        }
+        /// <summary>
+        /// Releases resources used by this instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    Stream?.Dispose();
+                }
+
+                _disposed = true;
+            }
         }
     }
 }
