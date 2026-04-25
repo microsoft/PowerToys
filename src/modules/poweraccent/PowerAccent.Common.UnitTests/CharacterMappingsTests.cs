@@ -25,6 +25,35 @@ public sealed class CharacterMappingsTests
         }
     }
 
+    /// <summary>
+    /// The Characters dictionary for each entry in All must not contain null or empty
+    /// mappings.
+    /// </summary>
+    [TestMethod]
+    public void All_Characters_ContainsNoNullOrEmptyEntries()
+    {
+        foreach (var entry in CharacterMappings.All)
+        {
+            foreach (var kvp in entry.Characters)
+            {
+                var key = kvp.Key;
+                var mappings = kvp.Value;
+
+                Assert.IsNotNull(
+                    mappings,
+                    $"Language.{entry.Id} has a null mappings array for key {key}.");
+
+                Assert.IsTrue(
+                    mappings.Length > 0,
+                    $"Language.{entry.Id} has an empty mappings array for key {key}.");
+
+                Assert.IsFalse(
+                    mappings.Any(c => string.IsNullOrEmpty(c)),
+                    $"Language.{entry.Id} has null or empty string(s) in its mappings array for key {key}.");
+            }
+        }
+    }
+
     // Every Language enum value must appear in DisplayOrder exactly once. If a value is
     // missing, its characters will be silently omitted from the popup. If it appears more
     // than once, Collect will emit its characters twice (before Distinct removes them).
@@ -189,6 +218,33 @@ public sealed class CharacterMappingsTests
             "Expected KeyNotFoundException when a Language value absent from LanguageLookup is passed to GetCharacters.");
     }
 
+    /// <summary>
+    /// GetCharacters must return characters sorted strictly by GroupDisplayOrder and
+    /// then DisplayOrder, regardless of the sequence of languages passed in.
+    /// </summary>
+    [TestMethod]
+    public void GetCharacters_SortsOutput_AccordingToDisplayOrder()
+    {
+        // Input in the wrong order.
+        Language[] input = [Language.SPECIAL, Language.PI, Language.FR];
+
+        var result = CharacterMappings.GetCharacters(LetterKey.VK_A, input);
+
+        // Derive correct order.
+        var expectedOrder = CharacterMappings.All
+            .Where(lang => input.Contains(lang.Id))
+            .OrderBy(lang => CharacterMappings.GroupDisplayOrder.ToList().IndexOf(lang.Group))
+            .ThenBy(lang => CharacterMappings.DisplayOrder.ToList().IndexOf(lang.Id))
+            .SelectMany(lang => lang.Characters.TryGetValue(LetterKey.VK_A, out var chars) ? chars : [])
+            .Distinct()
+            .ToArray();
+
+        CollectionAssert.AreEqual(
+            expectedOrder,
+            result,
+            "GetCharacters did not return characters in the expected order based on GroupoDisplayOrder and DisplayOrder.");
+    }
+
     // Collect sorts by _languageOrder[m.Id], so every entry in All must appear in
     // DisplayOrder. Adding to All without updating DisplayOrder will throw
     // KeyNotFoundException at the first GetCharacters call that exercises that language.
@@ -222,5 +278,25 @@ public sealed class CharacterMappingsTests
             0,
             result.Length,
             $"Expected empty result for Language.{langInfo.Id} / LetterKey.{absentKey}, which has no mapping.");
+    }
+
+    /// <summary>
+    /// Spoken languages in DisplayOrder should be sorted alphabetically by their enum
+    /// names to remain culturally neutral.
+    /// </summary>
+    [TestMethod]
+    public void DisplayOrder_SpokenLanguages_AreSortedAlphabeticallyByDisplayName()
+    {
+        var spokenLangs = CharacterMappings.DisplayOrder
+            .Where(lang => CharacterMappings.LanguageLookup[lang].Group == LanguageGroup.Language)
+            .Select(lang => lang.ToString())
+            .ToList();
+
+        var sorted = spokenLangs.OrderBy(l => l, StringComparer.OrdinalIgnoreCase).ToList();
+
+        CollectionAssert.AreEqual(
+            sorted,
+            spokenLangs,
+            "Spoken languages in DisplayOrder should be sorted alphabetically by their enum names.");
     }
 }
