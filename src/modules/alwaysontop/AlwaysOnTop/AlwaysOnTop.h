@@ -60,6 +60,15 @@ private:
         bool usedColorKey = false;
         COLORREF colorKey = 0;
     };
+    struct WindowDodgeAnimation
+    {
+        POINT start{};
+        POINT target{};
+        ULONGLONG startTick = 0;
+    };
+    std::map<HWND, ULONGLONG> m_lastDodgeTicks{};
+    std::map<HWND, WindowDodgeAnimation> m_dodgeAnimations{};
+    std::map<HWND, int> m_previousDodgeCorners{};
     std::map<HWND, WindowLayeredState> m_windowOriginalLayeredState{};
     
     HANDLE m_hPinEvent;
@@ -96,6 +105,11 @@ private:
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignBorder(HWND window);
     void RefreshBorders();
+    void UpdateCursorDodgeTimerInterval() const;
+    void PollCursorDodge();
+    void UpdateDodgeAnimations();
+    void StartDodgeAnimation(HWND window, const RECT& windowRect, const POINT& target);
+    bool TryDodgeWindow(HWND window, const POINT& cursorPos);
 
     // Transparency methods
     HWND ResolveTransparencyTargetWindow(HWND window);
