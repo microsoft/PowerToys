@@ -23,7 +23,7 @@ internal sealed partial class AddBookmarkPage : ContentPage
         var name = bookmark?.Name ?? string.Empty;
         var url = bookmark?.Bookmark ?? string.Empty;
 
-        Icon = Icons.BookmarkIcon;
+        Icon = Icons.AddBookmarkIcon;
         var isAdd = string.IsNullOrEmpty(name) && string.IsNullOrEmpty(url);
         Title = isAdd ? Resources.bookmarks_add_title : Resources.bookmarks_edit_name;
         Name = isAdd ? Resources.bookmarks_add_name : Resources.bookmarks_edit_name;

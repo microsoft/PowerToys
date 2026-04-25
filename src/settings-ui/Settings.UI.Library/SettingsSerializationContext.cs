@@ -78,6 +78,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(RegistryPreviewSettings))]
     [JsonSerializable(typeof(ShortcutGuideSettings))]
     [JsonSerializable(typeof(WorkspacesSettings))]
+    [JsonSerializable(typeof(GrabAndMoveSettings))]
     [JsonSerializable(typeof(ZoomItSettings))]
 
     // Properties Classes
@@ -118,6 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ShortcutConflictProperties))]
     [JsonSerializable(typeof(ShortcutGuideProperties))]
     [JsonSerializable(typeof(WorkspacesProperties))]
+    [JsonSerializable(typeof(GrabAndMoveProperties))]
     [JsonSerializable(typeof(ZoomItProperties))]
 
     // Base Property Types (used throughout settings)
@@ -160,13 +162,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(PasteAIConfiguration))]
     [JsonSerializable(typeof(PasteAIProviderDefinition))]
     [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
-
-    // PowerDisplay Profile Types (for AOT compatibility)
-    [JsonSerializable(typeof(PowerDisplayProfile))]
-    [JsonSerializable(typeof(List<PowerDisplayProfile>))]
-    [JsonSerializable(typeof(PowerDisplayProfiles))]
-    [JsonSerializable(typeof(ProfileMonitorSetting))]
-    [JsonSerializable(typeof(List<ProfileMonitorSetting>))]
 
     // IPC Send Message Wrapper Classes (Snd*)
     [JsonSerializable(typeof(SndAwakeSettings))]

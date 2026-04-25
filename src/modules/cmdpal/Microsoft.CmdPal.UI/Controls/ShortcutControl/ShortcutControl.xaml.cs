@@ -186,7 +186,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
                     _ = _modifierKeysOnEntering.Remove(virtualKey);
                 }
 
-                internalSettings.Win = matchValue;
+                internalSettings = internalSettings with { Win = matchValue };
                 break;
             case VirtualKey.Control:
             case VirtualKey.LeftControl:
@@ -197,7 +197,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
                     _ = _modifierKeysOnEntering.Remove(VirtualKey.Control);
                 }
 
-                internalSettings.Ctrl = matchValue;
+                internalSettings = internalSettings with { Ctrl = matchValue };
                 break;
             case VirtualKey.Menu:
             case VirtualKey.LeftMenu:
@@ -208,7 +208,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
                     _ = _modifierKeysOnEntering.Remove(VirtualKey.Menu);
                 }
 
-                internalSettings.Alt = matchValue;
+                internalSettings = internalSettings with { Alt = matchValue };
                 break;
             case VirtualKey.Shift:
             case VirtualKey.LeftShift:
@@ -219,14 +219,14 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
                     _ = _modifierKeysOnEntering.Remove(VirtualKey.Shift);
                 }
 
-                internalSettings.Shift = matchValue;
+                internalSettings = internalSettings with { Shift = matchValue };
                 break;
             case VirtualKey.Escape:
                 internalSettings = new HotkeySettings();
                 shortcutDialog.IsPrimaryButtonEnabled = false;
                 return;
             default:
-                internalSettings.Code = matchValueCode;
+                internalSettings = internalSettings with { Code = matchValueCode };
                 break;
         }
     }
@@ -276,7 +276,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
             else if (internalSettings.Shift && !_modifierKeysOnEntering.Contains(VirtualKey.Shift) && !internalSettings.Win && !internalSettings.Alt && !internalSettings.Ctrl)
             {
                 // This is to reset the shift key press within the control as it was not used within the control but rather was used to leave the hotkey.
-                internalSettings.Shift = false;
+                internalSettings = internalSettings with { Shift = false };
 
                 SendSingleKeyboardInput((short)VirtualKey.Shift, (uint)NativeKeyboardHelper.KeyEventF.KeyDown);
 

@@ -1,0 +1,1293 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using KeyboardManagerEditorUI.Helpers;
+using KeyboardManagerEditorUI.Interop;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Storage;
+using Windows.Storage.Pickers;
+using Windows.System;
+using WinRT.Interop;
+using static KeyboardManagerEditorUI.Interop.ShortcutKeyMapping;
+
+#pragma warning disable SA1124 // Do not use regions
+
+namespace KeyboardManagerEditorUI.Controls
+{
+    /// <summary>
+    /// Unified control that consolidates all mapping input types:
+    /// - Key/Shortcut remapping (InputControl)
+    /// - Text output (TextPageInputControl)
+    /// - URL opening (UrlPageInputControl)
+    /// - App launching (AppPageInputControl)
+    /// </summary>
+    public sealed partial class UnifiedMappingControl : UserControl, IDisposable, IKeyboardHookTarget
+    {
+        #region Fields
+
+        private readonly ObservableCollection<string> _triggerKeys = new();
+        private readonly ObservableCollection<string> _actionKeys = new();
+
+        private bool _disposed;
+        private bool _internalUpdate;
+
+        private KeyInputMode _currentInputMode = KeyInputMode.OriginalKeys;
+
+        // Dirty tracking: marks fields that have had content then were cleared
+        private bool _textContentDirty;
+        private bool _urlPathDirty;
+        private bool _programPathDirty;
+
+        public bool AllowChords { get; set; } = true;
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Raised whenever the validation state of the control changes (inputs filled/cleared).
+        /// </summary>
+        public event EventHandler? ValidationStateChanged;
+
+        #endregion
+
+        #region Enums
+
+        /// <summary>
+        /// Defines the type of trigger for the mapping.
+        /// </summary>
+        public enum TriggerType
+        {
+            KeyOrShortcut,
+            Mouse,
+        }
+
+        /// <summary>
+        /// Defines the type of action to perform.
+        /// </summary>
+        public enum ActionType
+        {
+            KeyOrShortcut,
+            Text,
+            OpenUrl,
+            OpenApp,
+            MouseClick,
+            Disable,
+        }
+
+        /// <summary>
+        /// Defines the mouse button options.
+        /// </summary>
+        public enum MouseButton
+        {
+            LeftMouse,
+            RightMouse,
+            ScrollUp,
+            ScrollDown,
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the current trigger type.
+        /// </summary>
+        public TriggerType CurrentTriggerType
+        {
+            get
+            {
+                if (TriggerTypeComboBox?.SelectedItem is ComboBoxItem item)
+                {
+                    return item.Tag?.ToString() switch
+                    {
+                        "Mouse" => TriggerType.Mouse,
+                        _ => TriggerType.KeyOrShortcut,
+                    };
+                }
+
+                return TriggerType.KeyOrShortcut;
+            }
+        }
+
+        /// <summary>
+        /// Gets the current action type.
+        /// </summary>
+        public ActionType CurrentActionType
+        {
+            get
+            {
+                if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
+                {
+                    return item.Tag?.ToString() switch
+                    {
+                        "Text" => ActionType.Text,
+                        "OpenUrl" => ActionType.OpenUrl,
+                        "OpenApp" => ActionType.OpenApp,
+                        "MouseClick" => ActionType.MouseClick,
+                        "Disable" => ActionType.Disable,
+                        _ => ActionType.KeyOrShortcut,
+                    };
+                }
+
+                return ActionType.KeyOrShortcut;
+            }
+        }
+
+        #endregion
+
+        #region Constructor
+
+        public UnifiedMappingControl()
+        {
+            this.InitializeComponent();
+
+            TriggerKeys.ItemsSource = _triggerKeys;
+            ActionKeys.ItemsSource = _actionKeys;
+
+            _triggerKeys.CollectionChanged += (_, _) =>
+            {
+                UpdatePlaceholderVisibility();
+                RaiseValidationStateChanged();
+            };
+
+            _actionKeys.CollectionChanged += (_, _) =>
+            {
+                UpdatePlaceholderVisibility();
+                RaiseValidationStateChanged();
+            };
+
+            this.Unloaded += UnifiedMappingControl_Unloaded;
+        }
+
+        #endregion
+
+        #region Lifecycle Events
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Set up event handlers for app-specific checkbox
+            AppSpecificCheckBox.Checked += AppSpecificCheckBox_Changed;
+            AppSpecificCheckBox.Unchecked += AppSpecificCheckBox_Changed;
+
+            // Activate keyboard hook for the trigger input
+            if (TriggerKeyToggleBtn.IsChecked == true)
+            {
+                _currentInputMode = KeyInputMode.OriginalKeys;
+                KeyboardHookHelper.Instance.ActivateHook(this);
+            }
+        }
+
+        private void UnifiedMappingControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Reset();
+            CleanupKeyboardHook();
+        }
+
+        #endregion
+
+        #region Trigger Type Handling
+
+        private void TriggerTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TriggerTypeComboBox?.SelectedItem is ComboBoxItem item)
+            {
+                string? tag = item.Tag?.ToString();
+
+                // Cleanup keyboard hook when switching to mouse
+                if (tag == "Mouse")
+                {
+                    CleanupKeyboardHook();
+                    UncheckAllToggleButtons();
+                }
+            }
+        }
+
+        private void TriggerKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            if (TriggerKeyToggleBtn.IsChecked == true)
+            {
+                _currentInputMode = KeyInputMode.OriginalKeys;
+
+                // Uncheck action toggle if checked
+                if (ActionKeyToggleBtn?.IsChecked == true)
+                {
+                    ActionKeyToggleBtn.IsChecked = false;
+                }
+
+                // Disable dropdowns during recording
+                SetDropDownsEnabled(TriggerKeys, false);
+
+                KeyboardHookHelper.Instance.ActivateHook(this);
+            }
+        }
+
+        private void TriggerKeyToggleBtn_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (_currentInputMode == KeyInputMode.OriginalKeys)
+            {
+                CleanupKeyboardHook();
+            }
+
+            SetDropDownsEnabled(TriggerKeys, true);
+        }
+
+        #endregion
+
+        #region Action Type Handling
+
+        private void ActionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
+            {
+                string? tag = item.Tag?.ToString();
+
+                // Cleanup keyboard hook when switching away from key/shortcut
+                if (tag != "KeyOrShortcut")
+                {
+                    if (_currentInputMode == KeyInputMode.RemappedKeys)
+                    {
+                        CleanupKeyboardHook();
+                    }
+
+                    if (ActionKeyToggleBtn?.IsChecked == true)
+                    {
+                        ActionKeyToggleBtn.IsChecked = false;
+                    }
+                }
+            }
+
+            HideValidationMessage();
+            RaiseValidationStateChanged();
+        }
+
+        private void ActionKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ActionKeyToggleBtn.IsChecked == true)
+            {
+                _currentInputMode = KeyInputMode.RemappedKeys;
+
+                // Uncheck trigger toggle if checked
+                if (TriggerKeyToggleBtn?.IsChecked == true)
+                {
+                    TriggerKeyToggleBtn.IsChecked = false;
+                }
+
+                // Disable dropdowns during recording
+                SetDropDownsEnabled(ActionKeys, false);
+
+                KeyboardHookHelper.Instance.ActivateHook(this);
+            }
+        }
+
+        private void ActionKeyToggleBtn_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (_currentInputMode == KeyInputMode.RemappedKeys)
+            {
+                CleanupKeyboardHook();
+            }
+
+            SetDropDownsEnabled(ActionKeys, true);
+        }
+
+        #endregion
+
+        #region Key Dropdown Handling
+
+        private void TriggerKeyDropDown_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                // Ensure we do not accumulate multiple subscriptions when Loaded fires repeatedly.
+                dropDown.KeyChanged -= TriggerKeyDropDown_KeyChanged;
+                dropDown.KeyChanged += TriggerKeyDropDown_KeyChanged;
+
+                // Use a named Unloaded handler so we can detach it and avoid accumulating handlers.
+                dropDown.Unloaded -= TriggerKeyDropDown_Unloaded;
+                dropDown.Unloaded += TriggerKeyDropDown_Unloaded;
+            }
+        }
+
+        private void TriggerKeyDropDown_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                dropDown.KeyChanged -= TriggerKeyDropDown_KeyChanged;
+                dropDown.Unloaded -= TriggerKeyDropDown_Unloaded;
+            }
+        }
+
+        private void ActionKeyDropDown_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                // Ensure we do not accumulate multiple subscriptions when Loaded fires repeatedly.
+                dropDown.KeyChanged -= ActionKeyDropDown_KeyChanged;
+                dropDown.KeyChanged += ActionKeyDropDown_KeyChanged;
+
+                // Use a named Unloaded handler so we can detach it and avoid accumulating handlers.
+                dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
+                dropDown.Unloaded += ActionKeyDropDown_Unloaded;
+            }
+        }
+
+        private void ActionKeyDropDown_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                dropDown.KeyChanged -= ActionKeyDropDown_KeyChanged;
+                dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
+            }
+        }
+
+        private void TriggerKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                int index = GetDropDownIndex(TriggerKeys, dropDown);
+                if (index >= 0 && index < _triggerKeys.Count)
+                {
+                    // KeyCode 0 means "None" — treat as invalid selection and do not update.
+                    if (e.NewKeyCode == 0)
+                    {
+                        RevertKeySelection(_triggerKeys, index);
+                        return;
+                    }
+
+                    string? validationError = ValidateDropDownSelection(_triggerKeys, index, e.NewKeyCode, e.NewKeyName);
+                    if (validationError != null)
+                    {
+                        RevertKeySelection(_triggerKeys, index);
+                        ShowNotificationTip(validationError);
+                        return;
+                    }
+
+                    _triggerKeys[index] = e.NewKeyName;
+                    HandleAutoGrowShrink(_triggerKeys, index, e.NewKeyCode);
+                }
+            }
+        }
+
+        private void ActionKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                int index = GetDropDownIndex(ActionKeys, dropDown);
+                if (index >= 0 && index < _actionKeys.Count)
+                {
+                    // KeyCode 0 means "None" — treat as invalid selection and do not update.
+                    if (e.NewKeyCode == 0)
+                    {
+                        RevertKeySelection(_actionKeys, index);
+                        return;
+                    }
+
+                    string? validationError = ValidateDropDownSelection(_actionKeys, index, e.NewKeyCode, e.NewKeyName);
+                    if (validationError != null)
+                    {
+                        RevertKeySelection(_actionKeys, index);
+                        ShowNotificationTip(validationError);
+                        return;
+                    }
+
+                    _actionKeys[index] = e.NewKeyName;
+                    HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reverts a key selection by re-inserting the current value via the bound ObservableCollection,
+        /// which forces the binding to refresh without breaking the binding expression.
+        /// </summary>
+        private static void RevertKeySelection(ObservableCollection<string> keys, int index)
+        {
+            string current = keys[index];
+            keys.RemoveAt(index);
+            keys.Insert(index, current);
+        }
+
+        private static int GetDropDownIndex(ItemsControl itemsControl, KeyDropDownButton dropDown)
+        {
+            for (int i = 0; i < itemsControl.Items.Count; i++)
+            {
+                var container = itemsControl.ContainerFromIndex(i) as ContentPresenter;
+                if (container != null)
+                {
+                    // Walk the visual tree to find the KeyDropDownButton
+                    var child = FindChild<KeyDropDownButton>(container);
+                    if (child == dropDown)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        private static T? FindChild<T>(Microsoft.UI.Xaml.DependencyObject parent)
+            where T : Microsoft.UI.Xaml.DependencyObject
+        {
+            int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T result)
+                {
+                    return result;
+                }
+
+                var descendant = FindChild<T>(child);
+                if (descendant != null)
+                {
+                    return descendant;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Validates a key selection from a dropdown before it is applied.
+        /// Returns null if valid, or an error message string if invalid.
+        /// </summary>
+        private static string? ValidateDropDownSelection(ObservableCollection<string> keys, int changedIndex, int newKeyCode, string newKeyName)
+        {
+            const int maxShortcutSize = 5;
+
+            // KeyType: 0=Win, 1=Ctrl, 2=Alt, 3=Shift, 4=Action
+            int newKeyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
+            bool isModifier = newKeyType < 4;
+
+            // Count only non-empty (real) entries to determine effective shortcut size.
+            int nonEmptyCount = keys.Count(k => !string.IsNullOrEmpty(k));
+
+            // Rule: action key at position 0 in multi-key shortcut (shortcut must start with modifier)
+            if (!isModifier && changedIndex == 0 && nonEmptyCount > 1)
+            {
+                return ResourceHelper.GetString("Warning_ShortcutStartWithModifier");
+            }
+
+            // Rule: no repeated modifier types (skip empty placeholder slots)
+            if (isModifier)
+            {
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    if (i == changedIndex || string.IsNullOrEmpty(keys[i]))
+                    {
+                        continue;
+                    }
+
+                    int existingKeyCode = KeyboardManagerInterop.GetKeyCodeFromName(keys[i]);
+                    int existingKeyType = KeyboardManagerInterop.GetKeyType(existingKeyCode);
+
+                    if (existingKeyType == newKeyType)
+                    {
+                        return ResourceHelper.GetString("Warning_RepeatedModifier");
+                    }
+                }
+            }
+
+            // Rule: modifier at last position when already at max size
+            if (isModifier && changedIndex == keys.Count - 1 && nonEmptyCount >= maxShortcutSize)
+            {
+                return ResourceHelper.GetString("Warning_MaxShortcutSize");
+            }
+
+            return null;
+        }
+
+        private void HandleAutoGrowShrink(ObservableCollection<string> keys, int changedIndex, int newKeyCode)
+        {
+            const int maxShortcutSize = 5;
+
+            int keyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
+            bool isModifier = keyType < 4;
+
+            if (isModifier && changedIndex == keys.Count - 1 && keys.Count < maxShortcutSize)
+            {
+                // Modifier at last position — auto-grow: add placeholder for next key
+                keys.Add(string.Empty);
+            }
+            else if (!isModifier)
+            {
+                // Action key — trim any trailing entries after this one
+                while (keys.Count > changedIndex + 1)
+                {
+                    keys.RemoveAt(keys.Count - 1);
+                }
+            }
+        }
+
+        #endregion
+
+        #region App-Specific Handling
+
+        private void AppSpecificCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_internalUpdate)
+            {
+                return;
+            }
+
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+
+            AppNameTextBox.Visibility = AppSpecificCheckBox.IsChecked == true
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void UpdateAppSpecificCheckBoxState()
+        {
+            // Only enable app-specific remapping for shortcuts (multiple keys).
+            bool isShortcut = _triggerKeys.Count > 1;
+            bool alreadyChecked = AppSpecificCheckBox.IsChecked == true;
+
+            try
+            {
+                _internalUpdate = true;
+
+                AppSpecificCheckBox.IsEnabled = isShortcut || alreadyChecked;
+                if (!isShortcut && !alreadyChecked)
+                {
+                    AppSpecificCheckBox.IsChecked = false;
+                    AppNameTextBox.Visibility = Visibility.Collapsed;
+                }
+            }
+            finally
+            {
+                _internalUpdate = false;
+            }
+        }
+
+        #endregion
+
+        #region TextBox Focus Handlers
+
+        private void AppNameTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+        }
+
+        private void TextContentBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+        }
+
+        private void TextContentBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _textContentDirty = true;
+            RaiseValidationStateChanged();
+        }
+
+        private void UrlPathInput_GotFocus(object sender, RoutedEventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+        }
+
+        private void UrlPathInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _urlPathDirty = true;
+            RaiseValidationStateChanged();
+        }
+
+        private void ProgramPathInput_GotFocus(object sender, RoutedEventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+        }
+
+        private void ProgramPathInput_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _programPathDirty = true;
+            RaiseValidationStateChanged();
+        }
+
+        private void ProgramArgsInput_GotFocus(object sender, RoutedEventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+        }
+
+        private void StartInPathInput_GotFocus(object sender, RoutedEventArgs e)
+        {
+            CleanupKeyboardHook();
+            UncheckAllToggleButtons();
+        }
+
+        #endregion
+
+        #region File/Folder Pickers
+
+        private async void ProgramPathSelectButton_Click(object sender, RoutedEventArgs e)
+        {
+            var picker = new FileOpenPicker();
+
+            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+            InitializeWithWindow.Initialize(picker, hwnd);
+
+            picker.FileTypeFilter.Add(".exe");
+
+            StorageFile file = await picker.PickSingleFileAsync();
+
+            if (file != null)
+            {
+                ProgramPathInput.Text = file.Path;
+                RaiseValidationStateChanged();
+            }
+        }
+
+        private async void StartInSelectButton_Click(object sender, RoutedEventArgs e)
+        {
+            var picker = new FolderPicker();
+
+            var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+            InitializeWithWindow.Initialize(picker, hwnd);
+
+            picker.FileTypeFilter.Add("*");
+
+            StorageFolder folder = await picker.PickSingleFolderAsync();
+
+            if (folder != null)
+            {
+                StartInPathInput.Text = folder.Path;
+            }
+        }
+
+        #endregion
+
+        #region IKeyboardHookTarget Implementation
+
+        public void OnKeyDown(VirtualKey key, List<string> formattedKeys)
+        {
+            if (_currentInputMode == KeyInputMode.OriginalKeys)
+            {
+                _triggerKeys.Clear();
+                foreach (var keyName in formattedKeys)
+                {
+                    _triggerKeys.Add(keyName);
+                }
+
+                UpdateAppSpecificCheckBoxState();
+            }
+            else if (_currentInputMode == KeyInputMode.RemappedKeys)
+            {
+                _actionKeys.Clear();
+                foreach (var keyName in formattedKeys)
+                {
+                    _actionKeys.Add(keyName);
+                }
+            }
+        }
+
+        public void ClearKeys()
+        {
+            if (_currentInputMode == KeyInputMode.OriginalKeys)
+            {
+                _triggerKeys.Clear();
+            }
+            else
+            {
+                _actionKeys.Clear();
+            }
+        }
+
+        public void OnInputLimitReached()
+        {
+            ShowNotificationTip(ResourceHelper.GetString("Warning_InputLimitReached"));
+        }
+
+        #endregion
+
+        #region Public API - Getters
+
+        /// <summary>
+        /// Gets the trigger keys.
+        /// </summary>
+        public List<string> GetTriggerKeys() => _triggerKeys.Where(k => !string.IsNullOrEmpty(k)).ToList();
+
+        /// <summary>
+        /// Gets the action keys (for Key/Shortcut action type).
+        /// </summary>
+        public List<string> GetActionKeys() => _actionKeys.Where(k => !string.IsNullOrEmpty(k)).ToList();
+
+        /// <summary>
+        /// Gets the selected mouse trigger.
+        /// </summary>
+        public MouseButton? GetMouseTrigger()
+        {
+            if (MouseTriggerComboBox?.SelectedItem is ComboBoxItem item)
+            {
+                return item.Tag?.ToString() switch
+                {
+                    "LeftMouse" => MouseButton.LeftMouse,
+                    "RightMouse" => MouseButton.RightMouse,
+                    "ScrollUp" => MouseButton.ScrollUp,
+                    "ScrollDown" => MouseButton.ScrollDown,
+                    _ => null,
+                };
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the text content (for Text action type).
+        /// </summary>
+        public string GetTextContent() => TextContentBox?.Text ?? string.Empty;
+
+        /// <summary>
+        /// Gets the URL (for OpenUrl action type).
+        /// </summary>
+        public string GetUrl() => UrlPathInput?.Text ?? string.Empty;
+
+        /// <summary>
+        /// Gets the program path (for OpenApp action type).
+        /// </summary>
+        public string GetProgramPath() => ProgramPathInput?.Text ?? string.Empty;
+
+        /// <summary>
+        /// Gets the program arguments (for OpenApp action type).
+        /// </summary>
+        public string GetProgramArgs() => ProgramArgsInput?.Text ?? string.Empty;
+
+        /// <summary>
+        /// Gets the start-in directory (for OpenApp action type).
+        /// </summary>
+        public string GetStartInDirectory() => StartInPathInput?.Text ?? string.Empty;
+
+        /// <summary>
+        /// Gets whether the mapping is app-specific.
+        /// </summary>
+        public bool GetIsAppSpecific()
+        {
+            return AppSpecificCheckBox?.IsChecked ?? false;
+        }
+
+        /// <summary>
+        /// Gets the app name for app-specific mappings.
+        /// </summary>
+        public string GetAppName()
+        {
+            return GetIsAppSpecific() ? (AppNameTextBox?.Text ?? string.Empty) : string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the elevation level (for OpenApp action type).
+        /// </summary>
+        public ElevationLevel GetElevationLevel() => (ElevationLevel)(ElevationComboBox?.SelectedIndex ?? 0);
+
+        /// <summary>
+        /// Gets the window visibility (for OpenApp action type).
+        /// </summary>
+        public StartWindowType GetVisibility() => (StartWindowType)(VisibilityComboBox?.SelectedIndex ?? 0);
+
+        /// <summary>
+        /// Gets the if-running action (for OpenApp action type).
+        /// </summary>
+        public ProgramAlreadyRunningAction GetIfRunningAction() => (ProgramAlreadyRunningAction)(IfRunningComboBox?.SelectedIndex ?? 0);
+
+        #endregion
+
+        #region Public API - Validation
+
+        /// <summary>
+        /// Returns true when all required fields for the current action type are filled.
+        /// </summary>
+        public bool IsInputComplete()
+        {
+            // Trigger keys are always required
+            if (_triggerKeys.Count == 0)
+            {
+                return false;
+            }
+
+            return CurrentActionType switch
+            {
+                ActionType.KeyOrShortcut => _actionKeys.Count > 0,
+                ActionType.Text => !string.IsNullOrEmpty(TextContentBox?.Text),
+                ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
+                ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
+                ActionType.Disable => true,
+                _ => false,
+            };
+        }
+
+        #endregion
+
+        #region Public API - Setters
+
+        /// <summary>
+        /// Sets the trigger keys.
+        /// </summary>
+        public void SetTriggerKeys(List<string> keys)
+        {
+            _triggerKeys.Clear();
+            if (keys != null)
+            {
+                foreach (var key in keys)
+                {
+                    _triggerKeys.Add(key);
+                }
+            }
+
+            UpdateAppSpecificCheckBoxState();
+        }
+
+        /// <summary>
+        /// Sets the action keys.
+        /// </summary>
+        public void SetActionKeys(List<string> keys)
+        {
+            _actionKeys.Clear();
+            if (keys != null)
+            {
+                foreach (var key in keys)
+                {
+                    _actionKeys.Add(key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the action type.
+        /// </summary>
+        public void SetActionType(ActionType actionType)
+        {
+            if (ActionTypeComboBox == null)
+            {
+                return;
+            }
+
+            string tag = actionType switch
+            {
+                ActionType.Text => "Text",
+                ActionType.OpenUrl => "OpenUrl",
+                ActionType.OpenApp => "OpenApp",
+                ActionType.Disable => "Disable",
+                ActionType.MouseClick => "MouseClick",
+                _ => "KeyOrShortcut",
+            };
+
+            foreach (var item in ActionTypeComboBox.Items)
+            {
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string itemTag && itemTag == tag)
+                {
+                    ActionTypeComboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the text content (for Text action type).
+        /// </summary>
+        public void SetTextContent(string text)
+        {
+            if (TextContentBox != null)
+            {
+                TextContentBox.Text = text;
+            }
+        }
+
+        /// <summary>
+        /// Sets the URL (for OpenUrl action type).
+        /// </summary>
+        public void SetUrl(string url)
+        {
+            if (UrlPathInput != null)
+            {
+                UrlPathInput.Text = url;
+            }
+        }
+
+        /// <summary>
+        /// Sets the program path (for OpenApp action type).
+        /// </summary>
+        public void SetProgramPath(string path)
+        {
+            if (ProgramPathInput != null)
+            {
+                ProgramPathInput.Text = path;
+            }
+        }
+
+        /// <summary>
+        /// Sets the program arguments (for OpenApp action type).
+        /// </summary>
+        public void SetProgramArgs(string args)
+        {
+            if (ProgramArgsInput != null)
+            {
+                ProgramArgsInput.Text = args;
+            }
+        }
+
+        /// <summary>
+        /// Sets the start-in directory (for OpenApp action type).
+        /// </summary>
+        public void SetStartInDirectory(string path)
+        {
+            if (StartInPathInput != null)
+            {
+                StartInPathInput.Text = path;
+            }
+        }
+
+        /// <summary>
+        /// Sets the elevation level (for OpenApp action type).
+        /// </summary>
+        public void SetElevationLevel(ElevationLevel elevationLevel)
+        {
+            if (ElevationComboBox != null)
+            {
+                ElevationComboBox.SelectedIndex = (int)elevationLevel;
+            }
+        }
+
+        /// <summary>
+        /// Sets the window visibility (for OpenApp action type).
+        /// </summary>
+        public void SetVisibility(StartWindowType visibility)
+        {
+            if (VisibilityComboBox != null)
+            {
+                VisibilityComboBox.SelectedIndex = (int)visibility;
+            }
+        }
+
+        /// <summary>
+        /// Sets the if-already-running action (for OpenApp action type).
+        /// </summary>
+        public void SetIfRunningAction(ProgramAlreadyRunningAction ifRunningAction)
+        {
+            if (IfRunningComboBox != null)
+            {
+                IfRunningComboBox.SelectedIndex = (int)ifRunningAction;
+            }
+        }
+
+        /// <summary>
+        /// Sets whether the mapping is app-specific.
+        /// </summary>
+        public void SetAppSpecific(bool isAppSpecific, string appName)
+        {
+            if (AppSpecificCheckBox != null)
+            {
+                AppSpecificCheckBox.IsChecked = isAppSpecific;
+                if (isAppSpecific && AppNameTextBox != null)
+                {
+                    AppNameTextBox.Text = appName;
+                    AppNameTextBox.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private void UncheckAllToggleButtons()
+        {
+            if (TriggerKeyToggleBtn?.IsChecked == true)
+            {
+                TriggerKeyToggleBtn.IsChecked = false;
+            }
+
+            if (ActionKeyToggleBtn?.IsChecked == true)
+            {
+                ActionKeyToggleBtn.IsChecked = false;
+            }
+        }
+
+        private static void SetDropDownsEnabled(ItemsControl itemsControl, bool enabled)
+        {
+            for (int i = 0; i < itemsControl.Items.Count; i++)
+            {
+                var container = itemsControl.ContainerFromIndex(i) as ContentPresenter;
+                if (container != null)
+                {
+                    var dropDown = FindChild<KeyDropDownButton>(container);
+                    if (dropDown != null)
+                    {
+                        dropDown.IsEnabled = enabled;
+                    }
+                }
+            }
+        }
+
+        private void CleanupKeyboardHook()
+        {
+            KeyboardHookHelper.Instance.CleanupHook();
+        }
+
+        private void UpdatePlaceholderVisibility()
+        {
+            if (TriggerKeyPlaceholder != null)
+            {
+                TriggerKeyPlaceholder.Visibility = _triggerKeys.Count == 0
+                    ? Microsoft.UI.Xaml.Visibility.Visible
+                    : Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+
+            if (ActionKeyPlaceholder != null)
+            {
+                ActionKeyPlaceholder.Visibility = _actionKeys.Count == 0
+                    ? Microsoft.UI.Xaml.Visibility.Visible
+                    : Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+        }
+
+        private void RaiseValidationStateChanged()
+        {
+            UpdateInlineValidation();
+            ValidationStateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Shows or hides the inline validation InfoBar based on the current state.
+        /// Only shows errors for output fields that have been interacted with (had content then cleared).
+        /// </summary>
+        private void UpdateInlineValidation()
+        {
+            // Only validate the active action type's output field
+            switch (CurrentActionType)
+            {
+                case ActionType.Text:
+                    if (TextContentBox != null && _textContentDirty && string.IsNullOrWhiteSpace(TextContentBox.Text))
+                    {
+                        ShowValidationErrorFromType(ValidationErrorType.EmptyTargetText);
+                        return;
+                    }
+
+                    break;
+
+                case ActionType.OpenUrl:
+                    if (UrlPathInput != null && _urlPathDirty && string.IsNullOrWhiteSpace(UrlPathInput.Text))
+                    {
+                        ShowValidationErrorFromType(ValidationErrorType.EmptyUrl);
+                        return;
+                    }
+
+                    break;
+
+                case ActionType.OpenApp:
+                    if (ProgramPathInput != null && _programPathDirty && string.IsNullOrWhiteSpace(ProgramPathInput.Text))
+                    {
+                        ShowValidationErrorFromType(ValidationErrorType.EmptyProgramPath);
+                        return;
+                    }
+
+                    break;
+            }
+
+            HideValidationMessage();
+        }
+
+        /// <summary>
+        /// Resets all inputs to their default state.
+        /// </summary>
+        public void Reset()
+        {
+            _triggerKeys.Clear();
+            _actionKeys.Clear();
+
+            UncheckAllToggleButtons();
+
+            _currentInputMode = KeyInputMode.OriginalKeys;
+
+            // Reset dirty tracking
+            _textContentDirty = false;
+            _urlPathDirty = false;
+            _programPathDirty = false;
+
+            // Hide any validation messages
+            HideValidationMessage();
+
+            // Reset combo boxes
+            if (TriggerTypeComboBox != null)
+            {
+                TriggerTypeComboBox.SelectedIndex = 0;
+            }
+
+            if (ActionTypeComboBox != null)
+            {
+                ActionTypeComboBox.SelectedIndex = 0;
+            }
+
+            if (MouseTriggerComboBox != null)
+            {
+                MouseTriggerComboBox.SelectedIndex = -1;
+            }
+
+            // Reset text inputs
+            if (TextContentBox != null)
+            {
+                TextContentBox.Text = string.Empty;
+            }
+
+            if (UrlPathInput != null)
+            {
+                UrlPathInput.Text = string.Empty;
+            }
+
+            if (ProgramPathInput != null)
+            {
+                ProgramPathInput.Text = string.Empty;
+            }
+
+            if (ProgramArgsInput != null)
+            {
+                ProgramArgsInput.Text = string.Empty;
+            }
+
+            if (StartInPathInput != null)
+            {
+                StartInPathInput.Text = string.Empty;
+            }
+
+            if (AppNameTextBox != null)
+            {
+                AppNameTextBox.Text = string.Empty;
+                AppNameTextBox.Visibility = Visibility.Collapsed;
+            }
+
+            // Reset checkboxes
+            if (AppSpecificCheckBox != null)
+            {
+                AppSpecificCheckBox.IsChecked = false;
+                AppSpecificCheckBox.IsEnabled = false;
+            }
+
+            // Reset app combo boxes
+            if (ElevationComboBox != null)
+            {
+                ElevationComboBox.SelectedIndex = 0;
+            }
+
+            if (IfRunningComboBox != null)
+            {
+                IfRunningComboBox.SelectedIndex = 0;
+            }
+
+            if (VisibilityComboBox != null)
+            {
+                VisibilityComboBox.SelectedIndex = 0;
+            }
+
+            HideValidationMessage();
+        }
+
+        /// <summary>
+        /// Resets only the toggle buttons without clearing the key displays.
+        /// </summary>
+        public void ResetToggleButtons()
+        {
+            UncheckAllToggleButtons();
+        }
+
+        #endregion
+
+        #region Notifications
+
+        /// <summary>
+        /// Shows a warning notification in the InfoBar.
+        /// </summary>
+        public void ShowNotificationTip(string message)
+        {
+            ShowValidationMessage(ResourceHelper.GetString("Warning_Title"), message, InfoBarSeverity.Warning);
+        }
+
+        /// <summary>
+        /// Shows an error in the InfoBar with title and message.
+        /// </summary>
+        public void ShowValidationError(string title, string message)
+        {
+            ShowValidationMessage(title, message, InfoBarSeverity.Error);
+        }
+
+        /// <summary>
+        /// Shows a validation error based on the error type.
+        /// </summary>
+        public void ShowValidationErrorFromType(ValidationErrorType errorType)
+        {
+            if (ValidationHelper.ValidationMessages.TryGetValue(errorType, out var messageInfo))
+            {
+                ShowValidationError(messageInfo.Title, messageInfo.Message);
+            }
+            else
+            {
+                ShowValidationError(ResourceHelper.GetString("Error_UnknownValidation_Title"), ResourceHelper.GetString("Error_UnknownValidation_Message"));
+            }
+        }
+
+        /// <summary>
+        /// Shows a message in the InfoBar with the specified severity.
+        /// </summary>
+        private void ShowValidationMessage(string title, string message, InfoBarSeverity severity)
+        {
+            if (ValidationInfoBar != null)
+            {
+                ValidationInfoBar.Title = title;
+                ValidationInfoBar.Message = message;
+                ValidationInfoBar.Severity = severity;
+                ValidationInfoBar.IsOpen = true;
+            }
+        }
+
+        /// <summary>
+        /// Hides the validation InfoBar.
+        /// </summary>
+        public void HideValidationMessage()
+        {
+            if (ValidationInfoBar != null)
+            {
+                ValidationInfoBar.IsOpen = false;
+            }
+        }
+
+        #endregion
+
+        #region IDisposable
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    CleanupKeyboardHook();
+                    HideValidationMessage();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        #endregion
+
+        private void AllowChordsCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            AllowChords = AllowChordsCheckBox.IsChecked == true;
+        }
+    }
+}
+
+#pragma warning restore SA1124 // Do not use regions

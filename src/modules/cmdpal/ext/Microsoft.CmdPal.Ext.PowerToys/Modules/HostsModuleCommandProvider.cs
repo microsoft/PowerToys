@@ -21,14 +21,14 @@ internal sealed class HostsModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new OpenHostsEditorCommand())
+            yield return new ListItem(new OpenHostsEditorCommand() { Id = "com.microsoft.powertoys.hosts.open" })
             {
                 Title = Resources.Hosts_Open_Title,
                 Subtitle = Resources.Hosts_Open_Subtitle,
                 Icon = icon,
             };
 
-            yield return new ListItem(new OpenHostsEditorAdminCommand())
+            yield return new ListItem(new OpenHostsEditorAdminCommand() { Id = "com.microsoft.powertoys.hosts.openAdmin" })
             {
                 Title = Resources.Hosts_OpenAdmin_Title,
                 Subtitle = Resources.Hosts_OpenAdmin_Subtitle,
@@ -36,7 +36,7 @@ internal sealed class HostsModuleCommandProvider : ModuleCommandProvider
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.hosts.openSettings" })
         {
             Title = title,
             Subtitle = Resources.Hosts_Settings_Subtitle,

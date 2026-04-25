@@ -18,7 +18,7 @@ internal sealed class AlwaysOnTopModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.AlwaysOnTop.ModuleDisplayName();
         var icon = SettingsWindow.AlwaysOnTop.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.AlwaysOnTop, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.AlwaysOnTop, title) { Id = "com.microsoft.powertoys.alwaysOnTop.openSettings" })
         {
             Title = title,
             Subtitle = Resources.AlwaysOnTop_Settings_Subtitle,

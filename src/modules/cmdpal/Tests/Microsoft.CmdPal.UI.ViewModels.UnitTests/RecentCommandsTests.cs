@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CmdPal.Core.Common.Text;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.UnitTestBase;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CommandPalette.Extensions;
@@ -26,7 +26,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         {
             foreach (var item in commandIds)
             {
-                history.AddHistoryItem(item);
+                history = history.WithHistoryItem(item);
             }
         }
 
@@ -54,7 +54,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var history = CreateHistory();
 
         // Act
-        history.AddHistoryItem("com.microsoft.cmdpal.shell");
+        history = history.WithHistoryItem("com.microsoft.cmdpal.shell");
 
         // Assert
         Assert.IsTrue(history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell") > 0);
@@ -121,7 +121,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var history = new RecentCommandsManager();
         foreach (var item in items)
         {
-            history.AddHistoryItem(item.Id);
+            history = history.WithHistoryItem(item.Id);
         }
 
         return history;
@@ -417,7 +417,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         // Add extra uses of VS Code to try and push it above Terminal
         for (var i = 0; i < 10; i++)
         {
-            history.AddHistoryItem(items[1].Id);
+            history = history.WithHistoryItem(items[1].Id);
         }
 
         var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
@@ -446,7 +446,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var vsCodeId = items[1].Id;
         for (var i = 0; i < 10; i++)
         {
-            history.AddHistoryItem(vsCodeId);
+            history = history.WithHistoryItem(vsCodeId);
 
             var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, item, history, fuzzyMatcher)).ToList();
             var weightedMatches = GetMatches(items, weightedScores).ToList();

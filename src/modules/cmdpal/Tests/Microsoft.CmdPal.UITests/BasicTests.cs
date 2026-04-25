@@ -22,7 +22,7 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("files");
 
         var searchFileItem = this.Find<NavigationViewItem>("Search files");
-        Assert.AreEqual(searchFileItem.Name, "Search files");
+        Assert.AreEqual("Search files", searchFileItem.Name);
         searchFileItem.DoubleClick();
 
         SetFilesExtensionSearchBox("AppData");
@@ -36,7 +36,7 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("calculator");
 
         var searchFileItem = this.Find<NavigationViewItem>("Calculator");
-        Assert.AreEqual(searchFileItem.Name, "Calculator");
+        Assert.AreEqual("Calculator", searchFileItem.Name);
         searchFileItem.DoubleClick();
 
         SetCalculatorExtensionSearchBox("1+2");
@@ -50,7 +50,7 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("time and date");
 
         var searchFileItem = this.Find<NavigationViewItem>("Time and date");
-        Assert.AreEqual(searchFileItem.Name, "Time and date");
+        Assert.AreEqual("Time and date", searchFileItem.Name);
         searchFileItem.DoubleClick();
 
         SetTimeAndDaterExtensionSearchBox("year");
@@ -64,7 +64,7 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("Windows Terminal");
 
         var searchFileItem = this.Find<NavigationViewItem>("Open Windows Terminal profiles");
-        Assert.AreEqual(searchFileItem.Name, "Open Windows Terminal profiles");
+        Assert.AreEqual("Open Windows Terminal profiles", searchFileItem.Name);
         searchFileItem.DoubleClick();
 
         // SetSearchBox("PowerShell");
@@ -77,7 +77,7 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("Windows settings");
 
         var searchFileItem = this.Find<NavigationViewItem>("Windows settings");
-        Assert.AreEqual(searchFileItem.Name, "Windows settings");
+        Assert.AreEqual("Windows settings", searchFileItem.Name);
         searchFileItem.DoubleClick();
 
         SetSearchBox("power");
@@ -91,7 +91,7 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("Registry");
 
         var searchFileItem = this.Find<NavigationViewItem>("Registry");
-        Assert.AreEqual(searchFileItem.Name, "Registry");
+        Assert.AreEqual("Registry", searchFileItem.Name);
         searchFileItem.DoubleClick();
 
         // Type the string will cause strange behavior.so comment it out for now.
@@ -105,7 +105,7 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("Windows Services");
 
         var searchFileItem = this.Find<NavigationViewItem>("Windows Services");
-        Assert.AreEqual(searchFileItem.Name, "Windows Services");
+        Assert.AreEqual("Windows Services", searchFileItem.Name);
         searchFileItem.DoubleClick();
 
         SetSearchBox("hyper-v");
@@ -119,11 +119,11 @@ public class BasicTests : CommandPaletteTestBase
         SetSearchBox("Windows System Commands");
 
         var searchFileItem = this.Find<NavigationViewItem>("Windows System Commands");
-        Assert.AreEqual(searchFileItem.Name, "Windows System Commands");
+        Assert.AreEqual("Windows System Commands", searchFileItem.Name);
         searchFileItem.DoubleClick();
 
         SetSearchBox("Sleep");
 
-        Assert.IsNotNull(this.Find<NavigationViewItem>("Sleep"));
+        Assert.IsNotNull(this.Find<NavigationViewItem>("Put computer to sleep"));
     }
 }

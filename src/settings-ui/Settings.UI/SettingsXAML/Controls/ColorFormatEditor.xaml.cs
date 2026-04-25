@@ -66,7 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 new ColorFormatParameter() { Parameter = "%Na", Description = resourceLoader.GetString("Help_color_name") },
             };
 
-            ColorParametersItemsControl.ItemsSource = new List<ColorFormatParameter>
+            RGBAColorParametersItemsControl.ItemsSource = new List<ColorFormatParameter>
             {
                 new ColorFormatParameter() { Parameter = "b", Description = resourceLoader.GetString("Help_byte") },
                 new ColorFormatParameter() { Parameter = "h", Description = resourceLoader.GetString("Help_hexL1") },
@@ -75,6 +75,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 new ColorFormatParameter() { Parameter = "X", Description = resourceLoader.GetString("Help_hexU2") },
                 new ColorFormatParameter() { Parameter = "f", Description = resourceLoader.GetString("Help_floatWith") },
                 new ColorFormatParameter() { Parameter = "F", Description = resourceLoader.GetString("Help_floatWithout") },
+            };
+
+            CIELabColorParametersItemsControl.ItemsSource = new List<ColorFormatParameter>
+            {
+                new ColorFormatParameter() { Parameter = "i", Description = resourceLoader.GetString("Help_integer") },
             };
         }
 

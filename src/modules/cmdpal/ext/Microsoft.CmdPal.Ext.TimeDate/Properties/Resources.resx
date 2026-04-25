@@ -432,4 +432,16 @@
   <data name="Microsoft_plugin_timedate_SettingEnableFallbackItems_Description" xml:space="preserve">
     <value>Show time and date results when typing keywords like "week", "year", "now", "time", or "date"</value>
   </data>
+  <data name="Microsoft_plugin_timedate_dock_band_title" xml:space="preserve">
+    <value>Clock</value>
+    <comment>Title for the time and date dock band</comment>
+  </data>
+  <data name="timedate_copy_time_command_name" xml:space="preserve">
+    <value>Copy time</value>
+    <comment>Name of a command to copy the current time to the clipboard</comment>
+  </data>
+  <data name="timedate_copy_date_command_name" xml:space="preserve">
+    <value>Copy date</value>
+    <comment>Name of a command to copy the current date to the clipboard</comment>
+  </data>
 </root>

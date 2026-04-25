@@ -18,7 +18,7 @@ internal sealed class FileLocksmithModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.FileLocksmith.ModuleDisplayName();
         var icon = SettingsWindow.FileLocksmith.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.FileLocksmith, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.FileLocksmith, title) { Id = "com.microsoft.powertoys.fileLocksmith.openSettings" })
         {
             Title = title,
             Subtitle = Resources.FileLocksmith_Settings_Subtitle,

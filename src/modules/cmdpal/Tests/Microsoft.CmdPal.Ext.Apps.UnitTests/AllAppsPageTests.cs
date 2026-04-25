@@ -73,25 +73,4 @@ public class AllAppsPageTests : AppsTestBase
         Assert.IsTrue(items.Any(i => i.Title == "Notepad"));
         Assert.IsTrue(items.Any(i => i.Title == "Calculator"));
     }
-
-    [TestMethod]
-    public async Task AllAppsPage_GetPinnedApps_ReturnsEmptyWhenNoAppsArePinned()
-    {
-        // Arrange
-        var mockCache = new MockAppCache();
-        var app = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
-        mockCache.AddWin32Program(app);
-
-        var page = new AllAppsPage(mockCache);
-
-        // Wait a bit for initialization to complete
-        await Task.Delay(100);
-
-        // Act
-        var pinnedApps = page.GetPinnedApps();
-
-        // Assert
-        Assert.IsNotNull(pinnedApps);
-        Assert.AreEqual(0, pinnedApps.Length);
-    }
 }

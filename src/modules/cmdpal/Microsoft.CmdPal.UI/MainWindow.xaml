@@ -10,8 +10,8 @@
     xmlns:winuiex="using:WinUIEx"
     Width="800"
     Height="480"
-    MinWidth="320"
-    MinHeight="240"
+    MinWidth="640"
+    MinHeight="420"
     Activated="MainWindow_Activated"
     Closed="MainWindow_Closed"
     mc:Ignorable="d">

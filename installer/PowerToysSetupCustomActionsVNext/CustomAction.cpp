@@ -639,7 +639,7 @@ UINT __stdcall InstallPackageIdentityMSIXCA(MSIHANDLE hInstall)
         try
         {
             
-            std::wstring externalLocation = installFolderPath; // External content location (PowerToys install folder)
+            std::wstring externalLocation = installFolderPath + L"WinUI3Apps\\"; // External content location (WinUI3Apps subfolder to isolate DACL changes from preview handler DLLs)
             Uri externalUri{ externalLocation };               // External location URI for sparse package content
             Uri packageUri{ msixPath };                        // The MSIX file URI
             
@@ -1117,6 +1117,35 @@ LExit:
 
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
+}
+
+UINT __stdcall RestoreBuiltInNewContextMenuCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    hr = WcaInitialize(hInstall, "RestoreBuiltInNewContextMenuCA");
+
+    constexpr wchar_t built_in_new_registry_path[] = LR"(Software\Classes\Directory\Background\ShellEx\ContextMenuHandlers\New)";
+
+    HKEY key{};
+
+    if (RegOpenKeyExW(HKEY_CURRENT_USER,
+        built_in_new_registry_path,
+        0,
+        KEY_ALL_ACCESS,
+        &key) != ERROR_SUCCESS)
+    {
+        return WcaFinalize(ERROR_SUCCESS);
+    }
+
+    if (RegDeleteValueW(key, nullptr) != ERROR_SUCCESS)
+    {
+        RegCloseKey(key);
+        return WcaFinalize(ERROR_SUCCESS);
+    }
+
+    RegCloseKey(key);
+
+    return WcaFinalize(ERROR_SUCCESS);
 }
 
 UINT __stdcall TelemetryLogInstallSuccessCA(MSIHANDLE hInstall)

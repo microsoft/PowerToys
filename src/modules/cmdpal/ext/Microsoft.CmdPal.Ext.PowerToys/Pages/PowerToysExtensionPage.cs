@@ -14,7 +14,7 @@ internal sealed partial class PowerToysExtensionPage : ListPage
 {
     public PowerToysExtensionPage()
     {
-        Icon = Helpers.PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
+        Icon = Helpers.PowerToysResourcesHelper.ProviderIcon();
         Title = Resources.PowerToys_DisplayName;
         Name = Resources.PowerToysExtension_CommandsName;
     }

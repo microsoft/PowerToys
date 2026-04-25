@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Interop.Tests</RootNamespace>
     <AssemblyName>Microsoft.Interop.Tests</AssemblyName>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

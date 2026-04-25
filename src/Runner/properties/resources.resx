@@ -150,4 +150,7 @@
   <data name="UpdateNotification_UpdateNow" xml:space="preserve">
     <value>Update now</value>
   </data>
+  <data name="UPDATE_AVAILABLE_MENU_TEXT" xml:space="preserve">
+    <value>Update available</value>
+  </data>
 </root>

@@ -123,7 +123,71 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update time test operation
+        /// Performs common test cleanup: close LightSwitch task
+        /// </summary>
+        /// <param name="testBase">The test base instance</param>
+        public static void CleanupTest(UITestBase testBase)
+        {
+            CloseLightSwitch(testBase);
+
+            // Ensure we're attached to settings after cleanup
+            try
+            {
+                testBase.Session.Attach(PowerToysModule.PowerToysSettings);
+            }
+            catch
+            {
+                // Ignore attachment errors - this is just cleanup
+            }
+        }
+
+        /// <summary>
+        /// Switch to white/light theme for both system and apps
+        /// </summary>
+        /// <param name="testBase">The test base instance</param>
+        public static void CloseLightSwitch(UITestBase testBase)
+        {
+            // Kill LightSwitch process before setting themes
+            KillLightSwitchProcess();
+
+            // Set both themes to light (white)
+            SetSystemTheme(true);
+            SetAppsTheme(true);
+        }
+
+        /// <summary>
+        /// Kill the LightSwitch service process if it's running
+        /// </summary>
+        private static void KillLightSwitchProcess()
+        {
+            try
+            {
+                var processes = System.Diagnostics.Process.GetProcessesByName("PowerToys.LightSwitchService");
+                foreach (var process in processes)
+                {
+                    try
+                    {
+                        process.Kill();
+                        process.WaitForExit(2000);
+                    }
+                    catch
+                    {
+                        // Ignore errors killing individual processes
+                    }
+                    finally
+                    {
+                        process.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore errors enumerating processes
+            }
+        }
+
+        /// <summary>
+        /// Perform an update time test operation
         /// </summary>
         public static void PerformUpdateTimeTest(UITestBase testBase)
         {
@@ -179,7 +243,7 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update manual location test operation
+        /// Perform an update manual location test operation
         /// </summary>
         public static void PerformUserSelectedLocationTest(UITestBase testBase)
         {
@@ -222,7 +286,7 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update geolocation test operation
+        /// Perform an update geolocation test operation
         /// </summary>
         public static void PerformGeolocationTest(UITestBase testBase)
         {
@@ -257,7 +321,7 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update time test operation
+        /// Perform an update time test operation
         /// </summary>
         public static void PerformOffsetTest(UITestBase testBase)
         {

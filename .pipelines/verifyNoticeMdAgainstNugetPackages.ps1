@@ -93,7 +93,8 @@ if ($noticeMatch.Success) {
 # Test-only packages that are allowed to be in NOTICE.md but not in the build
 # (e.g., when BuildTests=false, these packages won't appear in the NuGet list)
 $allowedExtraPackages = @(
-	"- Moq"
+	"- Moq",
+	"- MSTest"
 )
 
 if (!$noticeFile.Trim().EndsWith($returnList.Trim()))

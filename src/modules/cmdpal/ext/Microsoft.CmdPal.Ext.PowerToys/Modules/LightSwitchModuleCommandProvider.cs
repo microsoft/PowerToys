@@ -23,7 +23,7 @@ internal sealed class LightSwitchModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            items.Add(new ListItem(new ToggleLightSwitchCommand())
+            items.Add(new ListItem(new ToggleLightSwitchCommand() { Id = "com.microsoft.powertoys.lightSwitch.toggle" })
             {
                 Title = Resources.LightSwitch_Toggle_Title,
                 Subtitle = Resources.LightSwitch_Toggle_Subtitle,
@@ -31,7 +31,7 @@ internal sealed class LightSwitchModuleCommandProvider : ModuleCommandProvider
             });
         }
 
-        items.Add(new ListItem(new OpenInSettingsCommand(module, title))
+        items.Add(new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.lightSwitch.openSettings" })
         {
             Title = title,
             Subtitle = Resources.LightSwitch_Settings_Subtitle,

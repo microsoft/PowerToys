@@ -25,6 +25,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("wrap_mode")]
         public IntProperty WrapMode { get; set; }
 
+        [JsonPropertyName("activation_mode")]
+        public IntProperty ActivationMode { get; set; }
+
         [JsonPropertyName("disable_cursor_wrap_on_single_monitor")]
         public BoolProperty DisableCursorWrapOnSingleMonitor { get; set; }
 
@@ -34,6 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AutoActivate = new BoolProperty(false);
             DisableWrapDuringDrag = new BoolProperty(true);
             WrapMode = new IntProperty(0); // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
+            ActivationMode = new IntProperty(0); // 0=Always (default), 1=HoldingCtrl, 2=HoldingShift
             DisableCursorWrapOnSingleMonitor = new BoolProperty(false);
         }
     }

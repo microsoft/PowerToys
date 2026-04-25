@@ -57,6 +57,12 @@
     <ClCompile Include="GifRecordingSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PanoramaCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ZoomItBreak\BreakTimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Registry.h">
@@ -102,6 +108,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GifRecordingSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PanoramaCapture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ZoomItBreak\BreakTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

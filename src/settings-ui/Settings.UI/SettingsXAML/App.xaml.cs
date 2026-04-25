@@ -356,6 +356,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 scoobeWindow.Closed += (_, _) =>
                 {
                     scoobeWindow = null;
+                    settingsWindow?.CloseHiddenWindow();
                 };
 
                 scoobeWindow.Activate();
@@ -377,6 +378,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 oobeWindow.Closed += (_, _) =>
                 {
                     oobeWindow = null;
+                    settingsWindow?.CloseHiddenWindow();
                 };
 
                 oobeWindow.Activate();
@@ -396,6 +398,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 shortcutConflictWindow.Closed += (_, _) =>
                 {
                     shortcutConflictWindow = null;
+                    settingsWindow?.CloseHiddenWindow();
                 };
 
                 shortcutConflictWindow.Activate();
@@ -444,6 +447,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "Workspaces": return typeof(WorkspacesPage);
                 case "CmdPal": return typeof(CmdPalPage);
                 case "ZoomIt": return typeof(ZoomItPage);
+                case "GrabAndMove": return typeof(GrabAndMovePage);
                 default:
                     // Fallback to Dashboard
                     Debug.Assert(false, "Unexpected SettingsWindow argument value");

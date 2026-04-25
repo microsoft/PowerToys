@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
@@ -199,8 +199,15 @@ public partial class ExtensionService : IExtensionService, IDisposable
                 var extensions = await GetInstalledAppExtensionsAsync();
                 foreach (var extension in extensions)
                 {
-                    var wrappers = await CreateWrappersForExtension(extension);
-                    UpdateExtensionsListsFromWrappers(wrappers);
+                    try
+                    {
+                        var wrappers = await CreateWrappersForExtension(extension);
+                        UpdateExtensionsListsFromWrappers(wrappers);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Failed to load extension '{extension.DisplayName}': {ex.Message}");
+                    }
                 }
             }
 
@@ -245,8 +252,15 @@ public partial class ExtensionService : IExtensionService, IDisposable
         List<ExtensionWrapper> wrappers = [];
         foreach (var classId in classIds)
         {
-            var extensionWrapper = CreateExtensionWrapper(extension, cmdPalProvider, classId);
-            wrappers.Add(extensionWrapper);
+            try
+            {
+                var extensionWrapper = CreateExtensionWrapper(extension, cmdPalProvider, classId);
+                wrappers.Add(extensionWrapper);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to create wrapper for extension '{extension.DisplayName}' classId '{classId}': {ex.Message}");
+            }
         }
 
         return wrappers;

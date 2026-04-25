@@ -7,6 +7,7 @@ EXPORTS
 	ApplyModulesRegistryChangeSetsCA
 	DetectPrevInstallPathCA
 	RemoveScheduledTasksCA
+	RestoreBuiltInNewContextMenuCA
 	TelemetryLogInstallSuccessCA
 	TelemetryLogInstallCancelCA
 	TelemetryLogInstallFailCA

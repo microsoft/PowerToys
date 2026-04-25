@@ -18,7 +18,7 @@ internal sealed class PowerRenameModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.PowerRename.ModuleDisplayName();
         var icon = SettingsWindow.PowerRename.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerRename, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerRename, title) { Id = "com.microsoft.powertoys.powerRename.openSettings" })
         {
             Title = title,
             Subtitle = Resources.PowerRename_Settings_Subtitle,

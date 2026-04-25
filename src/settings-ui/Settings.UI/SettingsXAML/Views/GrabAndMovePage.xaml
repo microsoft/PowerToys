@@ -1,0 +1,88 @@
+﻿<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.GrabAndMovePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <controls:SettingsPageControl
+        x:Uid="GrabAndMove"
+        IsTabStop="False"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/GrabAndMove.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="GrabAndMoveEnableToggleControlHeaderText"
+                        x:Uid="GrabAndMove_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+
+                <controls:SettingsGroup x:Uid="GrabAndMove_BehaviorSettingsGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        x:Uid="GrabAndMove_ModifierKey"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}"
+                        IsExpanded="True">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.ModifierKey, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Alt" />
+                            <ComboBoxItem x:Uid="GrabAndMove_ModifierKey_Win" />
+                        </ComboBox>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.IsAltModifier, Mode=OneWay}">
+                                <CheckBox x:Uid="GrabAndMove_ShouldAbsorbAlt" IsChecked="{x:Bind ViewModel.ShouldAbsorbAlt, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl x:Uid="GrabAndMove_UseAltResize" IsChecked="{x:Bind ViewModel.UseAltResize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_DoNotActivateOnGameMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7FC;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.DoNotActivateOnGameMode, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_ShowGeometry" HeaderIcon="{ui:FontIcon Glyph=&#xE809;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowGeometry, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander
+                        Name="GrabAndMoveExcludeApps"
+                        x:Uid="GrabAndMove_ExcludeApps"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        IsExpanded="True">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                Name="GrabAndMoveExcludeAppsTextBoxControl"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="GrabAndMove_ExcludeApps_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind ViewModel.ExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink x:Uid="LearnMore_GrabAndMove" Link="https://aka.ms/PowerToysOverview_GrabAndMove" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

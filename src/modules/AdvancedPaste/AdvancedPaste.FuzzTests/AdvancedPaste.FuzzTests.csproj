@@ -6,6 +6,12 @@
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<OutputType>Exe</OutputType>
+
+		<!-- exit code 8 means no tests ran. -->
+		<!-- Doc: https://learn.microsoft.com/dotnet/core/testing/unit-testing-platform-exit-codes -->
+		<!-- This test project doesn't seem to contain any tests. -->
+	    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
 	</PropertyGroup>
 	<PropertyGroup>
 		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\AdvancedPaste.FuzzTests\</OutputPath>

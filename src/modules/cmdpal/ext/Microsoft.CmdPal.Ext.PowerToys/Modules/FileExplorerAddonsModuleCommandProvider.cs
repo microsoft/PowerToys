@@ -18,7 +18,7 @@ internal sealed class FileExplorerAddonsModuleCommandProvider : ModuleCommandPro
         var title = SettingsWindow.FileExplorer.ModuleDisplayName();
         var icon = SettingsWindow.FileExplorer.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.FileExplorer, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.FileExplorer, title) { Id = "com.microsoft.powertoys.fileExplorerAddons.openSettings" })
         {
             Title = title,
             Subtitle = Resources.FileExplorerAddons_Settings_Subtitle,

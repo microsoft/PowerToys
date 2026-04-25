@@ -4,7 +4,7 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;

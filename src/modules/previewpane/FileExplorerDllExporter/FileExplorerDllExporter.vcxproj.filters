@@ -24,6 +24,9 @@
     <ClInclude Include="PreviewHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Trace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>

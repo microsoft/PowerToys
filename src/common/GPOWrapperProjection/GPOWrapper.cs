@@ -76,5 +76,10 @@ namespace PowerToys.GPOWrapperProjection
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetDisableShowWhatsNewAfterUpdatesValue();
         }
+
+        public static GpoRuleConfigured GetConfiguredGrabAndMoveEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredGrabAndMoveEnabledValue();
+        }
     }
 }

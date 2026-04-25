@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Constants
         internal const string FirstPart = "HKEY";
 
         /// <summary>
-        /// The first name part of each base key follow by a underscore
+        /// The first name part of each base key follow by an underscore
         /// </summary>
         internal const string FirstPartUnderscore = "HKEY_";
 

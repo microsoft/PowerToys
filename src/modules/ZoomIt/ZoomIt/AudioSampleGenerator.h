@@ -5,7 +5,7 @@
 class AudioSampleGenerator
 {
 public:
-    AudioSampleGenerator(bool captureMicrophone = true, bool captureSystemAudio = true);
+    AudioSampleGenerator(bool captureMicrophone = true, bool captureSystemAudio = true, bool micMonoMix = false);
     ~AudioSampleGenerator();
 
     winrt::Windows::Foundation::IAsyncAction InitializeAsync();
@@ -70,4 +70,5 @@ private:
     std::atomic<bool> m_started = false;
     bool m_captureMicrophone = true;
     bool m_captureSystemAudio = true;
+    bool m_micMonoMix = false;
 };

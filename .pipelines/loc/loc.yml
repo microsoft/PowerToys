@@ -9,7 +9,7 @@ schedules:
     always: false # only run if there's code changes!
 
 pool:
-  vmImage: windows-2019
+  vmImage: windows-latest
 
 resources:
   repositories:

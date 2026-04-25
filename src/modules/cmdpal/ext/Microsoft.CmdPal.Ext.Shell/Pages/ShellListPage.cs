@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -339,7 +339,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     internal static ListItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory, ITelemetryService? telemetryService)
     {
-        // PathToListItem will return a RunExeItem if it can find a executable.
+        // PathToListItem will return a RunExeItem if it can find an executable.
         // It will ALSO add the file search commands to the RunExeItem.
         return PathToListItem(fullExePath, exe, args, addToHistory, telemetryService);
     }
