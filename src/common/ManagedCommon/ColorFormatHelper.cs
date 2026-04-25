@@ -627,9 +627,9 @@ namespace ManagedCommon
                 case "CIELAB": return "CIELab(%Lc, %Ca, %Cb)";
                 case "Oklab": return "oklab(%Lo, %Oa, %Ob)";
                 case "Oklch": return "oklch(%Lo, %Oc, %Oh)";
-                case "VEC4": return "(%Reff, %Grff, %Blff, 1f)";
+                case "VEC4": return "(%Reff, %Grff, %Blff, %Alff)";
                 case "Decimal": return "%Dv";
-                case "HEX Int": return "0xFF%ReX%GrX%BlX";
+                case "HEX Int": return "0x%AlX%ReX%GrX%BlX";
                 default: return string.Empty;
             }
         }
