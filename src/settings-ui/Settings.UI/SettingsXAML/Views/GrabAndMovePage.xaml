@@ -18,6 +18,13 @@
         ModuleImageSource="ms-appx:///Assets/Settings/Modules/GrabAndMove.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+
+                <InfoBar
+                    x:Uid="GrabAndMove_TouchpadInfoBar"
+                    IsClosable="False"
+                    IsOpen="True"
+                    Severity="Informational" />
+
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         Name="GrabAndMoveEnableToggleControlHeaderText"
