@@ -141,6 +141,7 @@ BLENDFUNCTION
 blittable
 Blockquotes
 blt
+Blx
 bluelightreduction
 bluelightreductionstate
 BLURBEHIND
@@ -364,8 +365,7 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTSIZE
-defaulttonearest
-DEFAULTTONULL
+DEFAULTTOLAYOUT
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
@@ -540,6 +540,7 @@ fdw
 fdx
 fesf
 FFFF
+FFFFFF
 fffffffzzz
 FFh
 Figma
