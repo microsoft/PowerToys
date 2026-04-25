@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
     Title="CmdPal Taskbar"
-    IsAlwaysOnTop="True"
+    IsAlwaysOnTop="False"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>

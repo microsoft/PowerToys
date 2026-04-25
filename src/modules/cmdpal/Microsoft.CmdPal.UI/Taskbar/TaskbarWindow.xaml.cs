@@ -114,6 +114,27 @@ public sealed partial class TaskbarWindow : WindowEx,
             return;
         }
 
+        // Detect auto-hide: if the taskbar has slid off-screen, hide
+        // our window so it doesn't float alone on the desktop.
+        var shellTray = PInvoke.FindWindow("Shell_TrayWnd", null);
+        if (!shellTray.IsNull)
+        {
+            PInvoke.GetWindowRect(shellTray, out var taskbarRect);
+            var isTaskbarVisible = taskbarRect.Height > 2;
+
+            if (!isTaskbarVisible)
+            {
+                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+                return;
+            }
+            else if (!PInvoke.IsWindowVisible(_hwnd))
+            {
+                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+                MoveToTaskbar();
+                return;
+            }
+        }
+
         _updateLayoutDebouncer.Debounce(
             () => ClipWindow().ConfigureAwait(false),
             interval: TimeSpan.FromMilliseconds(250),
@@ -174,19 +195,21 @@ public sealed partial class TaskbarWindow : WindowEx,
         var taskbarWindow = PInvoke.FindWindow("Shell_TrayWnd", null);
         var reBarWindow = PInvoke.FindWindowEx(taskbarWindow, HWND.Null, "ReBarWindow32", null);
 
+        // Owner (not parent) — Z-order linkage without message-loop coupling.
         var oldStyle = (WINDOW_STYLE)PInvoke.GetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
-        var newStyle = (oldStyle & ~WINDOW_STYLE.WS_POPUP) | WINDOW_STYLE.WS_CHILD;
+        var newStyle = (oldStyle & ~WINDOW_STYLE.WS_CHILD) | WINDOW_STYLE.WS_POPUP;
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)newStyle);
-        PInvoke.SetParent(_hwnd, taskbarWindow);
+        PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_HWNDPARENT, (nint)taskbarWindow.Value);
 
         PInvoke.GetWindowRect(taskbarWindow, out var taskbarRect);
         PInvoke.GetWindowRect(reBarWindow, out var reBarRect);
 
+        // Absolute screen coordinates (popup window, not child).
         RECT newWindowRect = default;
         newWindowRect.left = taskbarRect.left;
-        newWindowRect.top = reBarRect.top - taskbarRect.top;
-        newWindowRect.right = newWindowRect.left + (taskbarRect.right - taskbarRect.left);
-        newWindowRect.bottom = newWindowRect.top + (reBarRect.bottom - reBarRect.top);
+        newWindowRect.top = reBarRect.top;
+        newWindowRect.right = taskbarRect.right;
+        newWindowRect.bottom = reBarRect.bottom;
 
         // Don't clear the window region — leave the previous clip in
         // place until ClipWindow applies the updated one. Clearing it

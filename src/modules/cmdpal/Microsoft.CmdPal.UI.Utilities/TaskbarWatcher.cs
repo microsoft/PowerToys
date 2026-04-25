@@ -59,6 +59,7 @@ public sealed unsafe partial class TaskbarWatcher : IDisposable
             PInvoke.EVENT_OBJECT_CREATE,
             PInvoke.EVENT_OBJECT_DESTROY,
             PInvoke.EVENT_OBJECT_NAMECHANGE,
+            PInvoke.EVENT_OBJECT_LOCATIONCHANGE,
         ];
         foreach (var evt in events)
         {
