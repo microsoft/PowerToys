@@ -5944,10 +5944,10 @@ Text uses the current drawing color.</value>
     <comment>"Grab And Move" is the name of the utility</comment>
   </data>
   <data name="GrabAndMove_TouchpadInfoBar.Title" xml:space="preserve">
-    <value>Known limitation</value>
+    <value>Touchpad support</value>
   </data>
   <data name="GrabAndMove_TouchpadInfoBar.Message" xml:space="preserve">
-    <value>Grab And Move might not work as expected with some touchpads. This is a known limitation; for the best experience, use a physical mouse.</value>
+    <value>Grab And Move may not work reliably with some touchpads. For the best experience, use a physical mouse.</value>
     <comment>"Grab And Move" is the name of the utility</comment>
   </data>
   <data name="LearnMore_GrabAndMove.Text" xml:space="preserve">
