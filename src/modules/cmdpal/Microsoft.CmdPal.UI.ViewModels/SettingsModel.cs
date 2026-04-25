@@ -92,6 +92,14 @@ public record SettingsModel
     // </Theme settings>
 
     // Extension Gallery settings
+
+    /// <summary>
+    /// Gets the URL of the custom gallery feed <strong>for development only</strong>. This feed is currently only enabled in
+    /// development builds and is used for testing purposes. <strong>It is not used in CI builds.</strong>
+    /// </summary>
+    /// <remarks>
+    /// We do not want to allow this to be changed in retail builds to prevent the injection of a malicious feed.
+    /// </remarks>
     public string? GalleryFeedUrl { get; init; }
 
     // </Gallery settings>
