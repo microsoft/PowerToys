@@ -15,6 +15,10 @@ public interface IAppScopeChecker
 
 internal sealed class AppScopeChecker : IAppScopeChecker
 {
+    internal static bool ProcessNamesMatch(string scopeProcessName, string foregroundProcessName) =>
+        Path.GetFileNameWithoutExtension(scopeProcessName)
+            .Equals(foregroundProcessName, StringComparison.OrdinalIgnoreCase);
+
     public bool IsForegroundAppMatch(string processName)
     {
         HWND hwnd = PInvoke.GetForegroundWindow();
@@ -27,8 +31,7 @@ internal sealed class AppScopeChecker : IAppScopeChecker
             try
             {
                 using var proc = Process.GetProcessById((int)processId);
-                var nameToMatch = Path.GetFileNameWithoutExtension(processName);
-                return proc.ProcessName.Equals(nameToMatch, StringComparison.OrdinalIgnoreCase);
+                return ProcessNamesMatch(processName, proc.ProcessName);
             }
             catch (ArgumentException)
             {
