@@ -443,6 +443,7 @@ DString
 DSVG
 dto
 DUMMYUNIONNAME
+dumpbin
 dutil
 DVASPECT
 DVASPECTINFO
@@ -1026,6 +1027,7 @@ Metadatas
 metafile
 metapackage
 mfc
+mfcm
 Mgmt
 Microwaved
 middleclickaction
