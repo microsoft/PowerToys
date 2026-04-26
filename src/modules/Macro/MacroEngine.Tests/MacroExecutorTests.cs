@@ -92,4 +92,75 @@ public sealed class MacroExecutorTests
         await Assert.ThrowsExceptionAsync<InvalidOperationException>(
             () => _executor.ExecuteAsync(macro, CancellationToken.None));
     }
+
+    [TestMethod]
+    public async Task ExecuteAsync_TypeText_MissingText_Throws()
+    {
+        var macro = new MacroDefinition
+        {
+            Steps = [new MacroStep { Type = StepType.TypeText }],
+        };
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            () => _executor.ExecuteAsync(macro, CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_Wait_MissingMs_Throws()
+    {
+        var macro = new MacroDefinition
+        {
+            Steps = [new MacroStep { Type = StepType.Wait }],
+        };
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            () => _executor.ExecuteAsync(macro, CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_NestedRepeat_RunsCorrectly()
+    {
+        var macro = new MacroDefinition
+        {
+            Steps =
+            [
+                new MacroStep
+                {
+                    Type = StepType.Repeat,
+                    Count = 2,
+                    Steps =
+                    [
+                        new MacroStep
+                        {
+                            Type = StepType.Repeat,
+                            Count = 3,
+                            Steps = [new MacroStep { Type = StepType.PressKey, Key = "X" }],
+                        },
+                    ],
+                },
+            ],
+        };
+        await _executor.ExecuteAsync(macro, CancellationToken.None);
+        Assert.AreEqual(6, _input.KeyCombos.Count); // 2 × 3
+        Assert.IsTrue(_input.KeyCombos.All(k => k == "X"));
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_CancellationToken_StopsExecution_Deterministic()
+    {
+        using var cts = new CancellationTokenSource();
+        var macro = new MacroDefinition
+        {
+            Steps =
+            [
+                new MacroStep { Type = StepType.PressKey, Key = "A" },
+                new MacroStep { Type = StepType.Wait, Ms = int.MaxValue },
+                new MacroStep { Type = StepType.PressKey, Key = "B" },
+            ],
+        };
+        var task = _executor.ExecuteAsync(macro, cts.Token);
+        // Let "A" execute (synchronous, completes immediately), then cancel before Wait finishes
+        await Task.Yield();
+        cts.Cancel();
+        await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => task);
+        Assert.AreEqual(1, _input.KeyCombos.Count);
+    }
 }

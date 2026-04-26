@@ -6,12 +6,19 @@ using PowerToys.MacroCommon.Models;
 
 namespace PowerToys.MacroEngine;
 
-internal sealed class MacroExecutor(ISendInputHelper input)
+internal sealed class MacroExecutor
 {
-    private readonly ISendInputHelper _input = input;
+    private readonly ISendInputHelper _input;
+
+    internal MacroExecutor(ISendInputHelper input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        _input = input;
+    }
 
     public async Task ExecuteAsync(MacroDefinition macro, CancellationToken ct)
     {
+        ArgumentNullException.ThrowIfNull(macro);
         foreach (var step in macro.Steps)
         {
             ct.ThrowIfCancellationRequested();
@@ -19,42 +26,47 @@ internal sealed class MacroExecutor(ISendInputHelper input)
         }
     }
 
-    private async Task ExecuteStepAsync(MacroStep step, CancellationToken ct)
-    {
-        switch (step.Type)
+    private Task ExecuteStepAsync(MacroStep step, CancellationToken ct) =>
+        step.Type switch
         {
-            case StepType.PressKey:
-                _input.PressKeyCombo(step.Key
-                    ?? throw new InvalidOperationException("PressKey step missing Key."));
-                break;
+            StepType.PressKey  => ExecutePressKey(step),
+            StepType.TypeText  => ExecuteTypeText(step),
+            StepType.Wait      => ExecuteWait(step, ct),
+            StepType.Repeat    => ExecuteRepeat(step, ct),
+            _                  => throw new InvalidOperationException($"Unknown step type: {step.Type}"),
+        };
 
-            case StepType.TypeText:
-                _input.TypeText(step.Text
-                    ?? throw new InvalidOperationException("TypeText step missing Text."));
-                break;
+    private Task ExecutePressKey(MacroStep step)
+    {
+        _input.PressKeyCombo(step.Key
+            ?? throw new InvalidOperationException("PressKey step missing Key."));
+        return Task.CompletedTask;
+    }
 
-            case StepType.Wait:
-                await Task.Delay(step.Ms
-                    ?? throw new InvalidOperationException("Wait step missing Ms."), ct);
-                break;
+    private Task ExecuteTypeText(MacroStep step)
+    {
+        _input.TypeText(step.Text
+            ?? throw new InvalidOperationException("TypeText step missing Text."));
+        return Task.CompletedTask;
+    }
 
-            case StepType.Repeat:
-                int count = step.Count
-                    ?? throw new InvalidOperationException("Repeat step missing Count.");
-                var subSteps = step.Steps
-                    ?? throw new InvalidOperationException("Repeat step missing Steps.");
-                for (int i = 0; i < count; i++)
-                {
-                    foreach (var sub in subSteps)
-                    {
-                        ct.ThrowIfCancellationRequested();
-                        await ExecuteStepAsync(sub, ct);
-                    }
-                }
-                break;
+    private static Task ExecuteWait(MacroStep step, CancellationToken ct) =>
+        Task.Delay(step.Ms ?? throw new InvalidOperationException("Wait step missing Ms."), ct);
 
-            default:
-                throw new InvalidOperationException($"Unknown step type: {step.Type}");
+    private async Task ExecuteRepeat(MacroStep step, CancellationToken ct)
+    {
+        int count = step.Count
+            ?? throw new InvalidOperationException("Repeat step missing Count.");
+        var subSteps = step.Steps
+            ?? throw new InvalidOperationException("Repeat step missing Steps.");
+        for (int i = 0; i < count; i++)
+        {
+            ct.ThrowIfCancellationRequested();
+            foreach (var sub in subSteps)
+            {
+                ct.ThrowIfCancellationRequested();
+                await ExecuteStepAsync(sub, ct);
+            }
         }
     }
 }
