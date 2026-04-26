@@ -7,9 +7,14 @@ namespace PowerToys.MacroCommon.Models;
 public sealed record MacroDefinition
 {
     public string Id { get; init; } = Guid.NewGuid().ToString();
+
     public string Name { get; init; } = string.Empty;
+
     public string? Description { get; init; }
+
     public string? Hotkey { get; init; }
+
     public string? AppScope { get; init; }
+
     public List<MacroStep> Steps { get; init; } = [];
 }
