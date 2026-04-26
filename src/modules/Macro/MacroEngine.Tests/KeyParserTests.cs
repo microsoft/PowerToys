@@ -60,4 +60,55 @@ public sealed class KeyParserTests
     {
         KeyParser.ParseKey("XYZ123");
     }
+
+    [TestMethod]
+    public void ParseHotkey_LowercaseModifiers_Works()
+    {
+        var (mods, vk) = KeyParser.ParseHotkey("ctrl+shift+v");
+        Assert.AreEqual(KeyParser.ModControl | KeyParser.ModShift | KeyParser.ModNoRepeat, mods);
+        Assert.AreEqual((ushort)'V', vk);
+    }
+
+    [TestMethod]
+    public void ParseKeyCombo_MultipleModifiers_ReturnsAll()
+    {
+        var (mods, main) = KeyParser.ParseKeyCombo("Ctrl+Shift+S");
+        Assert.AreEqual(2, mods.Count);
+        Assert.IsTrue(mods.Contains((ushort)0xA2)); // VK_LCONTROL
+        Assert.IsTrue(mods.Contains((ushort)0xA0)); // VK_LSHIFT
+        Assert.AreEqual((ushort)'S', main);
+    }
+
+    [TestMethod]
+    public void ParseKey_DigitChar_ReturnsAsciiCode()
+    {
+        Assert.AreEqual((ushort)'5', KeyParser.ParseKey("5"));
+    }
+
+    [TestMethod]
+    public void ParseKey_Alias_Esc_Works()
+    {
+        Assert.AreEqual((ushort)0x1B, KeyParser.ParseKey("Esc"));
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void ParseHotkey_NullInput_Throws()
+    {
+        KeyParser.ParseHotkey(null!);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void ParseKey_EmptyString_Throws()
+    {
+        KeyParser.ParseKey(string.Empty);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void ParseKeyCombo_NullInput_Throws()
+    {
+        KeyParser.ParseKeyCombo(null!);
+    }
 }
