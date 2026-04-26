@@ -89,9 +89,14 @@ Function Generate-FileComponents() {
             [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fileList',
             Justification = 'variable is used in another scope')]
 
-            $fileList = $matches[2] -split ';'
+            $fileList = $matches[2] -split ';' | Where-Object { $_ -ne '' }
             return
         }
+    }
+
+    if ($null -eq $fileList -or $fileList.Count -eq 0) {
+        # No files to generate components for — leave placeholder intact
+        return
     }
 
     $componentId = "$($fileListName)_Component"
@@ -158,6 +163,67 @@ Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSSc
 
 #WinUI3Applications
 Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
+
+# Deduplicate: Remove files from WinUI3Apps that are identical to root (same name + same hash).
+# These will be re-created as plain file copies at install time by CreateWinAppSDKHardlinksCA.
+# (The CA's name is historical: it now uses fs::copy_file rather than CreateHardLinkW to avoid
+# DACL contamination across the shared inode -- see CustomAction.cpp for details.)
+$rootPath = "$PSScriptRoot..\..\..\$platform\Release"
+$winui3Path = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
+$winui3WxsPath = "$PSScriptRoot\WinUI3Applications.wxs"
+$winui3Wxs = Get-Content $winui3WxsPath -Raw
+$manifestPath = Join-Path $winui3Path "hardlinks.txt"
+
+if ($winui3Wxs -match "\<\?define WinUI3ApplicationsFiles=([^?]*)\?\>") {
+    $winui3FileList = $matches[1] -split ';' | Where-Object { $_ -ne '' }
+    $hardlinkFiles = @()
+
+    # Read the BaseApplications WXS file list so we only deduplicate files that the MSI
+    # is actually deploying to the install root. If a file was stripped from BaseApplications
+    # by an earlier step (e.g., the ImageResizer leaked-apphost workaround above), the
+    # install-time CA's source would be missing and both copies would disappear.
+    $baseAppsWxs = Get-Content $baseAppWxsPath -Raw
+    $baseAppsFileList = @()
+    if ($baseAppsWxs -match "\<\?define BaseApplicationsFiles=([^?]*)\?\>") {
+        $baseAppsFileList = $matches[1] -split ';' | Where-Object { $_ -ne '' }
+    }
+
+    foreach ($file in $winui3FileList) {
+        # Skip files that were intentionally not deployed to root by the build
+        if ($baseAppsFileList -notcontains $file) { continue }
+
+        $rootFile = Join-Path $rootPath $file
+        $winui3File = Join-Path $winui3Path $file
+        if ((Test-Path $rootFile) -and (Test-Path $winui3File)) {
+            $rootHash = (Get-FileHash $rootFile -Algorithm SHA256).Hash
+            $winui3Hash = (Get-FileHash $winui3File -Algorithm SHA256).Hash
+            if ($rootHash -eq $winui3Hash) {
+                $hardlinkFiles += $file
+            }
+        }
+    }
+
+    if ($hardlinkFiles.Count -gt 0) {
+        # Remove deduplicated files from WinUI3Apps file list
+        $remainingFiles = $winui3FileList | Where-Object { $_ -notin $hardlinkFiles }
+        if ($remainingFiles.Count -eq 0) {
+            # All files are duplicates — keep at least a dummy entry won't be emitted
+            # Generate-FileComponents handles empty defines by producing no <File> entries
+            $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=?>"
+        } else {
+            $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=$($remainingFiles -join ';')?>"
+        }
+        Set-Content -Path $winui3WxsPath -Value $winui3Wxs
+        Write-Host "Deduplicated $($hardlinkFiles.Count) files from WinUI3Apps (will be copied at install time)"
+    }
+
+    # Always write hardlinks.txt (may be empty — CA handles that gracefully)
+    # Write as UTF-8 without BOM so the install-time CA can read it via std::ifstream
+    # + MultiByteToWideChar(CP_UTF8) without dealing with PS-version-dependent default
+    # encodings or a leading BOM.
+    [System.IO.File]::WriteAllLines($manifestPath, [string[]]$hardlinkFiles, (New-Object System.Text.UTF8Encoding($false)))
+}
+
 Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
 #AdvancedPaste
