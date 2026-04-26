@@ -15,6 +15,7 @@ internal sealed class HotkeyManager : IDisposable
     private Thread? _thread;
     private readonly Dictionary<int, string> _idToMacroId = [];
     private int _nextId = 1;
+    private int _disposed;
 
     public event EventHandler<string>? HotkeyTriggered;
 
@@ -43,14 +44,18 @@ internal sealed class HotkeyManager : IDisposable
     public void RegisterHotkey(string hotkey, string macroId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(hotkey, nameof(hotkey));
-        ArgumentNullException.ThrowIfNull(macroId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(macroId, nameof(macroId));
+
+        if (_window is null)
+        {
+            throw new InvalidOperationException("Call Start() before RegisterHotkey().");
+        }
 
         var (mods, vk) = KeyParser.ParseHotkey(hotkey);
-        int id = _nextId++;
-        _idToMacroId[id] = macroId;
 
-        _window!.Invoke(() =>
+        _window.Invoke(() =>
         {
+            int id = _nextId++;
             if (!PInvoke.RegisterHotKey(
                     (HWND)_window.Handle,
                     id,
@@ -60,6 +65,8 @@ internal sealed class HotkeyManager : IDisposable
                 throw new InvalidOperationException(
                     $"RegisterHotKey failed for '{hotkey}'. It may conflict with another application.");
             }
+
+            _idToMacroId[id] = macroId;
         });
     }
 
@@ -76,20 +83,27 @@ internal sealed class HotkeyManager : IDisposable
             {
                 PInvoke.UnregisterHotKey((HWND)_window.Handle, id);
             }
+
+            _idToMacroId.Clear();
+            _nextId = 1;
         });
-        _idToMacroId.Clear();
-        _nextId = 1;
     }
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
         UnregisterAll();
-        _window?.Invoke(() => Application.ExitThread());
+        _window?.BeginInvoke(() => Application.ExitThread());
         _thread?.Join(timeout: TimeSpan.FromSeconds(2));
     }
 
     private sealed class HotkeyWindow : Form
     {
+        // Windows message posted when a registered hotkey fires.
         private const int WmHotkey = 0x0312;
         public event EventHandler<int>? HotkeyPressed;
 
