@@ -4404,22 +4404,22 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="NewPlus.ModuleTitle" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus.ModuleDescription" xml:space="preserve">
     <value>Create files and folders from a personalized set of templates</value>
   </data>
   <data name="NewPlus_Product_Name.Content" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_Learn_More.Text" xml:space="preserve">
     <value>Learn more about New+</value>
-    <comment>New+ learn more link. Localize product name in accordance with Windows New</comment>
+    <comment>New+ learn more link. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_Enable_Toggle.Header" xml:space="preserve">
     <value>New+</value>
-    <comment>Localize product name in accordance with Windows New</comment>
+    <comment>Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="NewPlus_TemplatesNotBackupAndRestoreWarning.Title" xml:space="preserve">
     <value>PowerToys "Back up and Restore" feature doesn't take templates into account at this moment. If you use that feature, templates will have to be copied manually.</value>
@@ -4506,7 +4506,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Oobe_NewPlus.Title" xml:space="preserve">
     <value>New+</value>
-    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New</comment>
+    <comment>New+ is the name of the utility. Localize product name in accordance with Windows New. e.g. French would be Nouveau+ (not Nouveauté+)</comment>
   </data>
   <data name="Oobe_NewPlus.Description" xml:space="preserve">
     <value>Create files and folders from a personalized set of templates.</value>
