@@ -7,6 +7,8 @@
     <AssemblyName>PowerToys.MacroEngine.Tests</AssemblyName>
     <RootNamespace>PowerToys.MacroEngine.Tests</RootNamespace>
     <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>

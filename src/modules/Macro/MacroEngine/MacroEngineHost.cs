@@ -12,7 +12,9 @@ internal sealed class MacroEngineHost : IDisposable
     private static readonly string MacrosDirectory =
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "Microsoft", "PowerToys", "Macros");
+            "Microsoft",
+            "PowerToys",
+            "Macros");
 
     private readonly HotkeyManager _hotkeyManager = new();
     private readonly MacroLoader _loader;
@@ -23,7 +25,9 @@ internal sealed class MacroEngineHost : IDisposable
     private CancellationTokenSource? _currentMacro;
 
     public MacroEngineHost()
-        : this(new SendInputHelper(), new AppScopeChecker()) { }
+        : this(new SendInputHelper(), new AppScopeChecker())
+    {
+    }
 
     internal MacroEngineHost(ISendInputHelper input, IAppScopeChecker scopeChecker)
     {
@@ -50,7 +54,9 @@ internal sealed class MacroEngineHost : IDisposable
         {
             await ReloadAsync(CancellationToken.None);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+        }
         catch (Exception ex)
         {
             Logger.LogError("MacroEngine: Macro reload failed.", ex);
@@ -107,7 +113,9 @@ internal sealed class MacroEngineHost : IDisposable
         {
             await _executor.ExecuteAsync(macro, ct);
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        {
+        }
     }
 
     private void RegisterAllHotkeys()

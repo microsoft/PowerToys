@@ -7,8 +7,11 @@ namespace PowerToys.MacroCommon.Ipc;
 public interface IMacroEngineRpc
 {
     Task ExecuteMacroAsync(string macroId, CancellationToken ct);
+
     Task SuspendHotkeysAsync(CancellationToken ct);
+
     Task ResumeHotkeysAsync(CancellationToken ct);
+
     Task<IReadOnlyList<string>> GetMacroIdsAsync(CancellationToken ct);
 }
 

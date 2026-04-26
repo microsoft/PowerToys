@@ -8,12 +8,6 @@ using Windows.Win32.UI.Input.KeyboardAndMouse;
 
 namespace PowerToys.MacroEngine;
 
-public interface ISendInputHelper
-{
-    void PressKeyCombo(string combo);
-    void TypeText(string text);
-}
-
 internal sealed class SendInputHelper : ISendInputHelper
 {
     private static readonly int InputSize = Marshal.SizeOf<INPUT>();

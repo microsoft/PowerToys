@@ -92,7 +92,7 @@ public sealed class KeyParserTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
+    [ExpectedException(typeof(ArgumentNullException))]
     public void ParseHotkey_NullInput_Throws()
     {
         KeyParser.ParseHotkey(null!);
@@ -106,7 +106,7 @@ public sealed class KeyParserTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
+    [ExpectedException(typeof(ArgumentNullException))]
     public void ParseKeyCombo_NullInput_Throws()
     {
         KeyParser.ParseKeyCombo(null!);

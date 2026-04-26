@@ -29,11 +29,11 @@ internal sealed class MacroExecutor
     private Task ExecuteStepAsync(MacroStep step, CancellationToken ct) =>
         step.Type switch
         {
-            StepType.PressKey  => ExecutePressKey(step),
-            StepType.TypeText  => ExecuteTypeText(step),
-            StepType.Wait      => ExecuteWait(step, ct),
-            StepType.Repeat    => ExecuteRepeat(step, ct),
-            _                  => throw new InvalidOperationException($"Unknown step type: {step.Type}"),
+            StepType.PressKey => ExecutePressKey(step),
+            StepType.TypeText => ExecuteTypeText(step),
+            StepType.Wait => ExecuteWait(step, ct),
+            StepType.Repeat => ExecuteRepeat(step, ct),
+            _ => throw new InvalidOperationException($"Unknown step type: {step.Type}"),
         };
 
     private Task ExecutePressKey(MacroStep step)

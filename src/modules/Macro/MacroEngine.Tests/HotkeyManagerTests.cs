@@ -23,6 +23,7 @@ public sealed class HotkeyManagerTests
     public void HotkeyManager_Dispose_DoesNotThrow()
     {
         using var mgr = new HotkeyManager();
+
         // Dispose before Start should be safe (no STA thread running)
     }
 }
