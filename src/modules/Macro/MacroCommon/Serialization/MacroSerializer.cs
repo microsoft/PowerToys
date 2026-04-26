@@ -9,6 +9,10 @@ namespace PowerToys.MacroCommon.Serialization;
 
 public static class MacroSerializer
 {
+    /// <remarks>
+    /// This options object is bound to <see cref="MacroJsonContext"/> and only supports types
+    /// registered in that context. Do not use it with arbitrary types outside MacroCommon.
+    /// </remarks>
     public static readonly JsonSerializerOptions Options = MacroJsonContext.Default.Options;
 
     public static MacroDefinition Deserialize(string json) =>
