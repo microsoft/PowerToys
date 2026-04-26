@@ -4,6 +4,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
@@ -327,7 +329,7 @@ public class ExtensionGalleryItemViewModelTests
                 details));
 
         Assert.IsTrue(viewModel.HasSourceMetadataDetails);
-        GallerySourceInfo? wingetSource = null;
+        GallerySourceViewModel? wingetSource = null;
         for (var i = 0; i < viewModel.Sources.Count; i++)
         {
             if (string.Equals(viewModel.Sources[i].Kind, "winget", StringComparison.OrdinalIgnoreCase))
@@ -339,11 +341,48 @@ public class ExtensionGalleryItemViewModelTests
 
         Assert.IsNotNull(wingetSource);
         var sourceDetails = wingetSource!.Details;
-        Assert.IsNotNull(sourceDetails);
-        Assert.AreEqual("Summary", sourceDetails.Summary);
-        Assert.AreEqual("1.2.3", sourceDetails.Version);
-        Assert.IsTrue(sourceDetails.Items.Count > 0);
-        Assert.IsTrue(sourceDetails.Tags.Count > 0);
+        Assert.IsTrue(sourceDetails.Count > 0);
+        CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "Summary");
+        CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "1.2.3");
+        CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "utility, productivity");
+    }
+
+    [TestMethod]
+    public void ApplyWinGetPackageInfo_RaisesHasDetailsChanged_WhenMetadataIsAdded()
+    {
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "winget-details-notification-extension",
+            Title = "WinGet details notification extension",
+            Description = "WinGet details notification extension description",
+            Author = new GalleryAuthor { Name = "Author" },
+            InstallSources =
+            [
+                new GalleryInstallSource { Type = "winget", Id = "Contoso.Extension" },
+            ],
+        };
+
+        var viewModel = CreateViewModel(entry);
+        var wingetSource = viewModel.Sources.First(source => string.Equals(source.Kind, "winget", StringComparison.OrdinalIgnoreCase));
+        List<string> propertyNames = [];
+        ((INotifyPropertyChanged)wingetSource).PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName is not null)
+            {
+                propertyNames.Add(args.PropertyName);
+            }
+        };
+
+        viewModel.ApplyWinGetPackageInfo(
+            new WinGetPackageInfo(
+                new WinGetPackageStatus(
+                    IsInstalled: true,
+                    IsInstalledStateKnown: true,
+                    IsUpdateAvailable: true,
+                    IsUpdateStateKnown: true),
+                CreatePackageDetails()));
+
+        CollectionAssert.Contains(propertyNames, nameof(GallerySourceViewModel.HasDetails));
     }
 
     [TestMethod]
@@ -536,5 +575,33 @@ public class ExtensionGalleryItemViewModelTests
             winGetPackageManagerService,
             winGetPackageStatusService,
             winGetOperationTrackerService);
+    }
+
+    private static WinGetPackageDetails CreatePackageDetails()
+    {
+        return new WinGetPackageDetails(
+            Name: "Contoso Extension",
+            Version: "1.2.3",
+            Summary: "Summary",
+            Description: "Description",
+            Publisher: "Contoso",
+            PublisherUrl: "https://contoso.example/publisher",
+            PublisherSupportUrl: "https://contoso.example/support",
+            Author: "Contoso Team",
+            License: "MIT",
+            LicenseUrl: "https://contoso.example/license",
+            PackageUrl: "https://contoso.example/package",
+            ReleaseNotes: "Release notes",
+            ReleaseNotesUrl: "https://contoso.example/release-notes",
+            IconUrl: "https://contoso.example/iconUrl.png",
+            DocumentationLinks:
+            [
+                new WinGetNamedLink("Docs", "https://contoso.example/docs"),
+            ],
+            Tags:
+            [
+                "utility",
+                "productivity",
+            ]);
     }
 }

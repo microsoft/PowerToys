@@ -78,17 +78,15 @@
                         <InfoBadge Style="{StaticResource NewInfoBadge}" />
                     </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
-                <NavigationViewItemHeader Content="Extensions" />
-                <!--  x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"  -->
+                <NavigationViewItemHeader x:Uid="Settings_GeneralPage_NavigationViewItemHeader_Extensions" />
                 <NavigationViewItem
                     x:Name="ExtensionPageNavItem"
-                    Content="Installed"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Extensions"
                     Icon="{ui:FontIcon Glyph=&#xEA86;}"
                     Tag="Extensions" />
-                <!--  x:Uid="Settings_GeneralPage_NavigationViewItem_Gallery"  -->
                 <NavigationViewItem
                     x:Name="GalleryPageNavItem"
-                    Content="Gallery"
+                    x:Uid="Settings_GeneralPage_NavigationViewItem_Gallery"
                     Icon="{ui:FontIcon Glyph=&#xE719;}"
                     Tag="Gallery" />
                 <!--  xF596 is HolePunchLandscapeTop  -->
@@ -150,13 +148,13 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Button
+                    x:Uid="SettingsWindow_CloseScreenshotViewerButton"
                     Width="48"
                     Height="48"
                     Margin="16,48,32,0"
                     HorizontalAlignment="Right"
                     Click="CloseScreenshotViewerButton_Click"
-                    Style="{StaticResource SubtleButtonStyle}"
-                    ToolTipService.ToolTip="Close screenshot viewer">
+                    Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon FontSize="18" Glyph="&#xE711;" />
                 </Button>
 

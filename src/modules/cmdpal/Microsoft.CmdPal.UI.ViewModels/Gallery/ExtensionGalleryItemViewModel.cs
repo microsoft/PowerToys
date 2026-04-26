@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.CmdPal.Common.ExtensionGallery.Models;
 using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
+using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml.Media;
@@ -45,7 +46,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     private readonly IWinGetOperationTrackerService? _winGetOperationTrackerService;
     private readonly IWinGetPackageStatusService? _winGetPackageStatusService;
     private readonly IReadOnlyDictionary<string, GalleryInstallSource> _installSourcesByType;
-    private readonly IReadOnlyDictionary<string, GallerySourceInfo> _sourcesByKind;
+    private readonly IReadOnlyDictionary<string, GallerySourceViewModel> _sourcesByKind;
 
     public ExtensionGalleryItemViewModel(
         GalleryExtensionEntry entry,
@@ -75,7 +76,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string Description => _entry.Description;
 
-    public string DisplayDescription => !string.IsNullOrWhiteSpace(Description) ? Description : "No description available.";
+    public string DisplayDescription => !string.IsNullOrWhiteSpace(Description) ? Description : Resources.gallery_item_no_description;
 
     public string? ShortDescription => _entry.ShortDescription;
 
@@ -83,7 +84,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string AuthorName => _entry.Author?.Name ?? string.Empty;
 
-    public string DisplayAuthorName => !string.IsNullOrWhiteSpace(AuthorName) ? AuthorName : "Unknown author";
+    public string DisplayAuthorName => !string.IsNullOrWhiteSpace(AuthorName) ? AuthorName : Resources.gallery_item_unknown_author;
 
     public IReadOnlyList<string> Tags => _entry.Tags ?? EmptyTags;
 
@@ -107,7 +108,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool HasScreenshots => Screenshots.Count > 0;
 
-    public IReadOnlyList<GallerySourceInfo> Sources { get; }
+    public IReadOnlyList<GallerySourceViewModel> Sources { get; }
 
     public bool HasWinGetSource => HasSource(SourceTypeWinGet);
 
@@ -127,11 +128,11 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool HasAnySourceDetails => Sources.Count > 0;
 
-    public List<GallerySourceInfo> SourcesWithDetails
+    public List<GallerySourceViewModel> SourcesWithDetails
     {
         get
         {
-            List<GallerySourceInfo> withDetails = [];
+            List<GallerySourceViewModel> withDetails = [];
             for (var i = 0; i < Sources.Count; i++)
             {
                 if (Sources[i].HasDetails)
@@ -155,12 +156,12 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     public bool ShowNoSourceDetails => !HasActionableSourceDetails;
 
     public string UnknownSourceTooltip => HasUnknownSource
-        ? "This extension has source metadata with an unsupported source type."
-        : "Source metadata is not available yet.";
+        ? Resources.gallery_item_unknown_source_unsupported_tooltip
+        : Resources.gallery_item_unknown_source_unavailable_tooltip;
 
-    public string NoSourceMenuText => "Source metadata not available";
+    public string NoSourceMenuText => Resources.gallery_item_no_source_menu_text;
 
-    public string NoSourceDetailsText => "This extension does not currently expose install or link metadata in the gallery feed.";
+    public string NoSourceDetailsText => Resources.gallery_item_no_source_details_text;
 
     public string? WinGetId => GetSource(SourceTypeWinGet)?.Id;
 
@@ -172,21 +173,29 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool CanCopyWinGetInstallCommand => !string.IsNullOrWhiteSpace(WinGetInstallCommand);
 
-    public string WinGetTooltip => !string.IsNullOrWhiteSpace(WinGetId) ? $"WinGet package: {WinGetId}" : "Available on WinGet";
+    public string WinGetTooltip => !string.IsNullOrWhiteSpace(WinGetId)
+        ? FormatResource(Resources.gallery_item_winget_tooltip_with_id, WinGetId)
+        : Resources.gallery_item_winget_tooltip;
 
-    public string StoreTooltip => !string.IsNullOrWhiteSpace(StoreId) ? $"Microsoft Store product: {StoreId}" : "Available on Microsoft Store";
+    public string StoreTooltip => !string.IsNullOrWhiteSpace(StoreId)
+        ? FormatResource(Resources.gallery_item_store_tooltip_with_id, StoreId)
+        : Resources.gallery_item_store_tooltip;
 
-    public string GitHubTooltip => GetSource(SourceTypeGitHub)?.Uri ?? "GitHub source";
+    public string GitHubTooltip => GetSource(SourceTypeGitHub)?.Uri ?? Resources.gallery_item_github_source;
 
-    public string WebsiteTooltip => GetSource(SourceTypeWebsite)?.Uri ?? Homepage ?? "Website source";
+    public string WebsiteTooltip => GetSource(SourceTypeWebsite)?.Uri ?? Homepage ?? Resources.gallery_item_website_source;
 
-    public string WinGetMenuText => !string.IsNullOrWhiteSpace(WinGetId) ? $"WinGet: {WinGetId}" : "WinGet";
+    public string WinGetMenuText => !string.IsNullOrWhiteSpace(WinGetId)
+        ? FormatResource(Resources.gallery_item_winget_menu_text_with_id, WinGetId)
+        : Resources.gallery_item_winget_menu_text;
 
-    public string StoreMenuText => !string.IsNullOrWhiteSpace(StoreId) ? $"Microsoft Store: {StoreId}" : "Microsoft Store";
+    public string StoreMenuText => !string.IsNullOrWhiteSpace(StoreId)
+        ? FormatResource(Resources.gallery_item_store_menu_text_with_id, StoreId)
+        : Resources.gallery_item_store_menu_text;
 
-    public string GitHubMenuText => "GitHub source";
+    public string GitHubMenuText => Resources.gallery_item_github_source;
 
-    public string WebsiteMenuText => "Website source";
+    public string WebsiteMenuText => Resources.gallery_item_website_source;
 
     public string? PackageFamilyName => _entry.Detection?.PackageFamilyName;
 
@@ -200,7 +209,9 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool CanInstallViaWinGet => ShowInstallViaWinGetButton && IsWinGetAvailable && !IsWinGetActionInProgress;
 
-    public string InstallViaWinGetText => IsUpdateAvailable ? "Update" : "Install";
+    public string InstallViaWinGetText => IsUpdateAvailable
+        ? Resources.gallery_item_update_action
+        : Resources.gallery_item_install_action;
 
     public bool ShowCancelWinGetActionButton => IsWinGetActionInProgress && CanCancelWinGetAction;
 
@@ -245,23 +256,23 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string InstallStatusText =>
         IsUpdateAvailable
-            ? "Update available"
+            ? Resources.gallery_item_install_status_update_available
             : IsInstalled
-                ? "Installed"
+                ? Resources.gallery_item_install_status_installed
                 : IsInstalledStateKnown
-                    ? "Not installed"
-                    : "Install status unavailable";
+                    ? Resources.gallery_item_install_status_not_installed
+                    : Resources.gallery_item_install_status_unavailable;
 
     public string WinGetStatusText =>
         !HasWinGetSource
             ? string.Empty
             : IsUpdateAvailable
-                ? "Installed, update available."
+                ? Resources.gallery_item_winget_status_update_available
                 : IsInstalled
-                    ? "Installed."
+                    ? Resources.gallery_item_winget_status_installed
                     : IsInstalledStateKnown
-                        ? "Not installed."
-                        : "WinGet status unavailable.";
+                        ? Resources.gallery_item_winget_status_not_installed
+                        : Resources.gallery_item_winget_status_unavailable;
 
     public bool ShowWinGetStatusDetails => HasWinGetSource && !AreStatusTextsEquivalent(InstallStatusText, WinGetStatusText);
 
@@ -346,27 +357,29 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         IsWinGetActionInProgress = true;
         IsWinGetActionIndeterminate = true;
         WinGetActionProgressValue = 0;
-        WinGetActionMessage = IsUpdateAvailable ? "Updating with WinGet..." : "Installing with WinGet...";
+        WinGetActionMessage = IsUpdateAvailable
+            ? Resources.gallery_item_winget_action_updating
+            : Resources.gallery_item_winget_action_installing;
 
         try
         {
             var packagesResult = await _winGetPackageManagerService.GetPackagesByIdAsync([WinGetId], includeStoreCatalog: false);
             if (!packagesResult.IsSuccess)
             {
-                WinGetActionMessage = packagesResult.ErrorMessage ?? "WinGet couldn't resolve this package.";
+                WinGetActionMessage = packagesResult.ErrorMessage ?? Resources.gallery_item_winget_action_resolve_failed;
                 return;
             }
 
             if (packagesResult.Value is null || !packagesResult.Value.TryGetValue(WinGetId, out var package))
             {
-                WinGetActionMessage = "The WinGet package couldn't be found.";
+                WinGetActionMessage = Resources.gallery_item_winget_action_package_not_found;
                 return;
             }
 
             var installResult = await _winGetPackageManagerService.InstallPackageAsync(package, skipDependencies: true);
             if (!installResult.Succeeded)
             {
-                WinGetActionMessage = installResult.ErrorMessage ?? "The WinGet install failed.";
+                WinGetActionMessage = installResult.ErrorMessage ?? Resources.gallery_item_winget_action_install_failed;
             }
         }
         catch (Exception ex)
@@ -420,59 +433,61 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
                 IsWinGetActionIndeterminate = true;
                 WinGetActionProgressValue = 0;
                 WinGetActionMessage = operation.Kind == WinGetPackageOperationKind.Uninstall
-                    ? "Queued for WinGet uninstall..."
+                    ? Resources.gallery_item_winget_action_queued_uninstall
                     : treatAsUpdate
-                        ? "Queued for WinGet update..."
-                        : "Queued for WinGet install...";
+                        ? Resources.gallery_item_winget_action_queued_update
+                        : Resources.gallery_item_winget_action_queued_install;
                 break;
             case WinGetPackageOperationState.Downloading:
                 IsWinGetActionInProgress = true;
                 IsWinGetActionIndeterminate = !operation.ProgressPercent.HasValue;
                 WinGetActionProgressValue = operation.ProgressPercent ?? 0;
                 WinGetActionMessage = operation.ProgressPercent is uint progressPercent
-                    ? $"Downloading with WinGet... {progressPercent}%"
-                    : "Downloading with WinGet...";
+                    ? FormatResource(Resources.gallery_item_winget_action_downloading_with_progress, progressPercent)
+                    : Resources.gallery_item_winget_action_downloading;
                 break;
             case WinGetPackageOperationState.Installing:
                 IsWinGetActionInProgress = true;
                 IsWinGetActionIndeterminate = true;
                 WinGetActionProgressValue = 0;
-                WinGetActionMessage = treatAsUpdate ? "Updating with WinGet..." : "Installing with WinGet...";
+                WinGetActionMessage = treatAsUpdate
+                    ? Resources.gallery_item_winget_action_updating
+                    : Resources.gallery_item_winget_action_installing;
                 break;
             case WinGetPackageOperationState.Uninstalling:
                 IsWinGetActionInProgress = true;
                 IsWinGetActionIndeterminate = true;
                 WinGetActionProgressValue = 0;
-                WinGetActionMessage = "Uninstalling with WinGet...";
+                WinGetActionMessage = Resources.gallery_item_winget_action_uninstalling;
                 break;
             case WinGetPackageOperationState.PostProcessing:
                 IsWinGetActionInProgress = true;
                 IsWinGetActionIndeterminate = true;
                 WinGetActionProgressValue = 0;
-                WinGetActionMessage = "Finishing WinGet operation...";
+                WinGetActionMessage = Resources.gallery_item_winget_action_finishing;
                 break;
             case WinGetPackageOperationState.Succeeded:
                 IsWinGetActionInProgress = false;
                 IsWinGetActionIndeterminate = false;
                 WinGetActionProgressValue = 100;
                 WinGetActionMessage = operation.Kind == WinGetPackageOperationKind.Uninstall
-                    ? "Extension uninstalled with WinGet."
+                    ? Resources.gallery_item_winget_action_succeeded_uninstall
                     : treatAsUpdate
-                        ? "Extension updated with WinGet."
-                        : "Extension installed with WinGet.";
+                        ? Resources.gallery_item_winget_action_succeeded_update
+                        : Resources.gallery_item_winget_action_succeeded_install;
                 ApplyOptimisticTrackedCompletion(operation.Kind);
                 break;
             case WinGetPackageOperationState.Canceled:
                 IsWinGetActionInProgress = false;
                 IsWinGetActionIndeterminate = false;
                 WinGetActionProgressValue = 0;
-                WinGetActionMessage = "The WinGet operation was canceled.";
+                WinGetActionMessage = Resources.gallery_item_winget_action_canceled;
                 break;
             case WinGetPackageOperationState.Failed:
                 IsWinGetActionInProgress = false;
                 IsWinGetActionIndeterminate = false;
                 WinGetActionProgressValue = 0;
-                WinGetActionMessage = operation.ErrorMessage ?? "The WinGet operation failed.";
+                WinGetActionMessage = operation.ErrorMessage ?? Resources.gallery_item_winget_action_failed;
                 break;
         }
     }
@@ -527,7 +542,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         return screenshots;
     }
 
-    private GallerySourceInfo? GetSource(string sourceKind)
+    private GallerySourceViewModel? GetSource(string sourceKind)
     {
         return _sourcesByKind.TryGetValue(sourceKind, out var source) ? source : null;
     }
@@ -559,26 +574,26 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         return lookup;
     }
 
-    private static (IReadOnlyList<GallerySourceInfo> SourceList, IReadOnlyDictionary<string, GallerySourceInfo> SourceByKind) BuildSourceInfos(
+    private static (IReadOnlyList<GallerySourceViewModel> SourceList, IReadOnlyDictionary<string, GallerySourceViewModel> SourceByKind) BuildSourceInfos(
         IReadOnlyDictionary<string, GalleryInstallSource> installSourcesByType,
         string? homepage)
     {
-        Dictionary<string, GallerySourceInfo> sourcesByKind = new(OrdinalIgnoreCase);
+        Dictionary<string, GallerySourceViewModel> sourcesByKind = new(OrdinalIgnoreCase);
 
         foreach (var installSource in installSourcesByType.Values)
         {
-            var sourceInfo = CreateSourceInfoFromInstallSource(installSource);
-            if (sourceInfo is null)
+            var source = CreateSourceFromInstallSource(installSource);
+            if (source is null)
             {
                 continue;
             }
 
-            UpsertSourceInfo(sourcesByKind, sourceInfo);
+            UpsertSource(sourcesByKind, source);
         }
 
-        if (TryCreateSourceInfoFromUri(homepage, out var homepageSource))
+        if (TryCreateSourceFromUri(homepage, out var homepageSource))
         {
-            UpsertSourceInfo(sourcesByKind, homepageSource);
+            UpsertSource(sourcesByKind, homepageSource);
         }
 
         var orderedSources = sourcesByKind
@@ -603,30 +618,43 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         };
     }
 
-    private static void UpsertSourceInfo(IDictionary<string, GallerySourceInfo> sourcesByKind, GallerySourceInfo sourceInfo)
+    private static void UpsertSource(IDictionary<string, GallerySourceViewModel> sourcesByKind, GallerySourceViewModel source)
     {
-        if (sourcesByKind.TryGetValue(sourceInfo.Kind, out var existing))
+        if (sourcesByKind.TryGetValue(source.Kind, out var existing))
         {
-            sourcesByKind[sourceInfo.Kind] = MergeSourceInfo(existing, sourceInfo);
+            sourcesByKind[source.Kind] = MergeSource(existing, source);
             return;
         }
 
-        sourcesByKind[sourceInfo.Kind] = sourceInfo;
+        sourcesByKind[source.Kind] = source;
     }
 
-    private static GallerySourceInfo MergeSourceInfo(GallerySourceInfo existing, GallerySourceInfo incoming)
+    private static GallerySourceViewModel MergeSource(GallerySourceViewModel existing, GallerySourceViewModel incoming)
     {
-        return new GallerySourceInfo
-        {
-            Kind = existing.Kind,
-            DisplayName = existing.DisplayName,
-            Id = !string.IsNullOrWhiteSpace(existing.Id) ? existing.Id : incoming.Id,
-            Uri = !string.IsNullOrWhiteSpace(existing.Uri) ? existing.Uri : incoming.Uri,
-            IsKnown = existing.IsKnown || incoming.IsKnown,
-        };
+        return new GallerySourceViewModel(
+            existing.Kind,
+            existing.DisplayName,
+            !string.IsNullOrWhiteSpace(existing.Id) ? existing.Id : incoming.Id,
+            !string.IsNullOrWhiteSpace(existing.Uri) ? existing.Uri : incoming.Uri,
+            existing.IsKnown || incoming.IsKnown);
     }
 
-    private static GallerySourceInfo? CreateSourceInfoFromInstallSource(GalleryInstallSource installSource)
+    private static GallerySourceViewModel CreateSourceViewModel(
+        string kind,
+        string displayName,
+        string? id,
+        string? uri,
+        bool isKnown)
+    {
+        return new GallerySourceViewModel(
+            kind,
+            displayName,
+            id,
+            uri,
+            isKnown);
+    }
+
+    private static GallerySourceViewModel? CreateSourceFromInstallSource(GalleryInstallSource installSource)
     {
         var normalizedType = NormalizeSourceType(installSource.Type);
         if (normalizedType is null)
@@ -636,63 +664,57 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
         return normalizedType switch
         {
-            SourceTypeWinGet => new GallerySourceInfo
-            {
-                Kind = SourceTypeWinGet,
-                DisplayName = "WinGet",
-                Id = installSource.Id,
-                IsKnown = true,
-            },
-            SourceTypeStore => new GallerySourceInfo
-            {
-                Kind = SourceTypeStore,
-                DisplayName = "Microsoft Store",
-                Id = installSource.Id,
-                IsKnown = true,
-            },
-            SourceTypeUrl => CreateSourceInfoFromUrl(installSource.Uri),
-            _ => new GallerySourceInfo
-            {
-                Kind = SourceTypeUnknown,
-                DisplayName = $"Source: {normalizedType}",
-                Id = installSource.Id,
-                Uri = installSource.Uri,
-                IsKnown = false,
-            },
+            SourceTypeWinGet => CreateSourceViewModel(
+                SourceTypeWinGet,
+                Resources.gallery_item_source_name_winget,
+                installSource.Id,
+                uri: null,
+                isKnown: true),
+            SourceTypeStore => CreateSourceViewModel(
+                SourceTypeStore,
+                Resources.gallery_item_source_name_store,
+                installSource.Id,
+                uri: null,
+                isKnown: true),
+            SourceTypeUrl => CreateSourceFromUrl(installSource.Uri),
+            _ => CreateSourceViewModel(
+                SourceTypeUnknown,
+                FormatResource(Resources.gallery_item_source_name_unknown, normalizedType),
+                installSource.Id,
+                installSource.Uri,
+                isKnown: false),
         };
     }
 
-    private static GallerySourceInfo CreateSourceInfoFromUrl(string? url)
+    private static GallerySourceViewModel CreateSourceFromUrl(string? url)
     {
         if (IsGitHubUri(url))
         {
-            return new GallerySourceInfo
-            {
-                Kind = SourceTypeGitHub,
-                DisplayName = "GitHub",
-                Uri = url,
-                IsKnown = true,
-            };
+            return CreateSourceViewModel(
+                SourceTypeGitHub,
+                Resources.gallery_item_source_name_github,
+                id: null,
+                uri: url,
+                isKnown: true);
         }
 
-        return new GallerySourceInfo
-        {
-            Kind = SourceTypeWebsite,
-            DisplayName = "Website",
-            Uri = url,
-            IsKnown = true,
-        };
+        return CreateSourceViewModel(
+            SourceTypeWebsite,
+            Resources.gallery_item_source_name_website,
+            id: null,
+            uri: url,
+            isKnown: true);
     }
 
-    private static bool TryCreateSourceInfoFromUri(string? uriValue, out GallerySourceInfo sourceInfo)
+    private static bool TryCreateSourceFromUri(string? uriValue, out GallerySourceViewModel source)
     {
-        sourceInfo = default!;
+        source = default!;
         if (string.IsNullOrWhiteSpace(uriValue) || !Uri.TryCreate(uriValue, UriKind.Absolute, out _))
         {
             return false;
         }
 
-        sourceInfo = CreateSourceInfoFromUrl(uriValue);
+        source = CreateSourceFromUrl(uriValue);
         return true;
     }
 
@@ -706,54 +728,45 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
         return sourceType.Trim().ToLowerInvariant();
     }
 
-    private void ApplySourceDetails(string sourceKind, GallerySourceDetails details)
+    private void ApplySourceDetails(string sourceKind, IReadOnlyList<GallerySourceDetailItemViewModel> details)
     {
         if (!_sourcesByKind.TryGetValue(sourceKind, out var source))
         {
             return;
         }
 
-        source.Details = details;
+        source.SetDetails(details);
         OnPropertyChanged(nameof(SourcesWithDetails));
         OnPropertyChanged(nameof(HasSourceMetadataDetails));
     }
 
-    private static GallerySourceDetails CreateSourceDetails(WinGetPackageDetails details)
+    private static List<GallerySourceDetailItemViewModel> CreateSourceDetails(WinGetPackageDetails details)
     {
-        GallerySourceDetails sourceDetails = new()
-        {
-            Summary = details.Summary,
-            Description = details.Description,
-            Version = details.Version,
-        };
+        List<GallerySourceDetailItemViewModel> rows = [];
 
-        AddDetail(sourceDetails.Items, "Package", details.Name, uri: null);
-        AddDetail(sourceDetails.Items, "Publisher", details.Publisher, details.PublisherUrl);
-        AddDetail(sourceDetails.Items, "Author", details.Author, uri: null);
-        AddDetail(sourceDetails.Items, "License", details.License, details.LicenseUrl);
-        AddDetail(sourceDetails.Items, "Support", null, details.PublisherSupportUrl);
-        AddDetail(sourceDetails.Items, "Package page", null, details.PackageUrl);
-        AddDetail(sourceDetails.Items, "Release notes", details.ReleaseNotes, details.ReleaseNotesUrl);
+        AddDetail(rows, Resources.gallery_source_detail_summary_label, details.Summary, uri: null);
+        AddDetail(rows, Resources.gallery_source_detail_description_label, details.Description, uri: null);
+        AddDetail(rows, Resources.gallery_source_detail_version_label, details.Version, uri: null);
+        AddDetail(rows, Resources.gallery_source_detail_package_label, details.Name, uri: null);
+        AddDetail(rows, Resources.gallery_source_detail_publisher_label, details.Publisher, details.PublisherUrl);
+        AddDetail(rows, Resources.gallery_source_detail_author_label, details.Author, uri: null);
+        AddDetail(rows, Resources.gallery_source_detail_license_label, details.License, details.LicenseUrl);
+        AddDetail(rows, Resources.gallery_source_detail_support_label, null, details.PublisherSupportUrl);
+        AddDetail(rows, Resources.gallery_source_detail_package_page_label, null, details.PackageUrl);
+        AddDetail(rows, Resources.gallery_source_detail_release_notes_label, details.ReleaseNotes, details.ReleaseNotesUrl);
 
         for (var i = 0; i < details.DocumentationLinks.Count; i++)
         {
             var link = details.DocumentationLinks[i];
-            AddDetail(sourceDetails.Items, link.Label, null, link.Url);
+            AddDetail(rows, link.Label, null, link.Url);
         }
 
-        for (var i = 0; i < details.Tags.Count; i++)
-        {
-            var tag = details.Tags[i];
-            if (!string.IsNullOrWhiteSpace(tag))
-            {
-                sourceDetails.Tags.Add(tag);
-            }
-        }
+        AddDetail(rows, Resources.gallery_source_detail_tags_label, BuildTagsText(details.Tags), uri: null);
 
-        return sourceDetails;
+        return rows;
     }
 
-    private static void AddDetail(ICollection<GallerySourceDetailItem> target, string label, string? value, string? uri)
+    private static void AddDetail(ICollection<GallerySourceDetailItemViewModel> target, string label, string? value, string? uri)
     {
         var normalizedValue = ToNullIfWhiteSpace(value);
         var normalizedUri = TryCreateUri(uri);
@@ -762,12 +775,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
             return;
         }
 
-        target.Add(new GallerySourceDetailItem
-        {
-            Label = label,
-            Value = normalizedValue ?? normalizedUri!.AbsoluteUri,
-            LinkUri = normalizedUri,
-        });
+        target.Add(new GallerySourceDetailItemViewModel(label, normalizedValue ?? normalizedUri!.AbsoluteUri, normalizedUri));
     }
 
     private static Uri? TryCreateUri(string? value)
@@ -830,6 +838,11 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     private static bool AreStatusTextsEquivalent(string first, string second)
     {
         return string.Equals(NormalizeStatusText(first), NormalizeStatusText(second), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string FormatResource(string format, params object?[] args)
+    {
+        return string.Format(System.Globalization.CultureInfo.CurrentCulture, format, args);
     }
 
     private static string NormalizeStatusText(string value)

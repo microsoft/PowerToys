@@ -422,8 +422,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_NavigationViewItem_General.Content" xml:space="preserve">
     <value>General</value>
   </data>
-  <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
+  <data name="Settings_GeneralPage_NavigationViewItemHeader_Extensions.Content" xml:space="preserve">
     <value>Extensions</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Extensions.Content" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="Settings_GeneralPage_NavigationViewItem_Gallery.Content" xml:space="preserve">
+    <value>Gallery</value>
   </data>
   <data name="Settings_GeneralPage_NavigationViewItem_Dock.Content" xml:space="preserve">
     <value>Dock (Preview)</value>
@@ -562,10 +568,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Microsoft Store</value>
   </data>
-  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Find extensions on WinGet</value>
-  </data>
-  <data name="Settings_ExtensionsPage_FindExtensions_WinGet.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="Settings_ExtensionsPage_FindExtensions_MicrosoftStore_Text.Text" xml:space="preserve">
     <value>Microsoft Store</value>
   </data>
   <data name="Settings_ExtensionsPage_SearchBox_Placeholder.PlaceholderText" xml:space="preserve">
@@ -1173,23 +1176,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Right</value>
     <comment>Right section label in pin to dock dialog (code access, horizontal end)</comment>
   </data>
-  <data name="Settings_GeneralPage_NavigationViewItem_Gallery.Content" xml:space="preserve">
-    <value>Extension Gallery</value>
-  </data>
   <data name="Settings_GalleryPage_Banner_Header.Text" xml:space="preserve">
     <value>Extension Gallery</value>
-  </data>
-  <data name="Settings_GalleryPage_Banner_Description.Text" xml:space="preserve">
-    <value>Discover extensions for Command Palette built by the community.</value>
   </data>
   <data name="Settings_GalleryPage_Hero_Subtitle.Text" xml:space="preserve">
     <value>Discover, install and manage community-built extensions</value>
   </data>
   <data name="Settings_GalleryPage_Hero_CreateLink.Content" xml:space="preserve">
     <value>Learn how to create and publish your extension</value>
-  </data>
-  <data name="Settings_GalleryPage_Banner_SubmitLink.Content" xml:space="preserve">
-    <value>Submit your extension</value>
   </data>
   <data name="Settings_GalleryPage_SearchBox.PlaceholderText" xml:space="preserve">
     <value>Search extensions...</value>
@@ -1218,15 +1212,6 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GalleryPage_Loading_Text.Text" xml:space="preserve">
     <value>Loading extensions...</value>
   </data>
-  <data name="Settings_GalleryPage_Error_InfoBar.Title" xml:space="preserve">
-    <value>Failed to load extensions</value>
-  </data>
-  <data name="Settings_GalleryPage_RateLimit_Primary.Text" xml:space="preserve">
-    <value>The gallery is taking a breather</value>
-  </data>
-  <data name="Settings_GalleryPage_RateLimit_Secondary.Text" xml:space="preserve">
-    <value>We hit the extension gallery rate limit. Please try again in a little while.</value>
-  </data>
   <data name="Settings_GalleryPage_Cache_InfoBar.Title" xml:space="preserve">
     <value>Showing cached data</value>
   </data>
@@ -1254,21 +1239,50 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GalleryItemPage_Uninstall_Link.Content" xml:space="preserve">
     <value>Uninstall</value>
   </data>
-  <data name="Settings_GalleryPage_StoreButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Install from Microsoft Store</value>
+  <data name="Settings_GalleryItemPage_WinGetDialog.Title" xml:space="preserve">
+    <value>Install via WinGet</value>
   </data>
-  <data name="Settings_GalleryPage_StoreButton_Text.Text" xml:space="preserve">
-    <value>Store</value>
+  <data name="Settings_GalleryItemPage_WinGetDialog.CloseButtonText" xml:space="preserve">
+    <value>Close</value>
   </data>
-  <data name="Settings_GalleryPage_DownloadButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Download</value>
+  <data name="Settings_GalleryItemPage_CancelWinGetActionButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Cancel WinGet operation</value>
   </data>
-  <data name="Settings_GalleryPage_DownloadButton_Text.Text" xml:space="preserve">
-    <value>Download</value>
+  <data name="Settings_GalleryItemPage_WinGetDialog_RunCommandText.Text" xml:space="preserve">
+    <value>or run this command in the Terminal:</value>
   </data>
-  <data name="Settings_GalleryPage_ByAuthor.Text" xml:space="preserve">
-    <value>by </value>
-    <comment>Prefix before author name, e.g. "by Microsoft"</comment>
+  <data name="Settings_GalleryItemPage_CopyInstallCommandButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Copy install command</value>
+  </data>
+  <data name="Settings_GalleryItemPage_AuthorLink.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="Settings_GalleryItemPage_ViewRepository_Text.Text" xml:space="preserve">
+    <value>View repository</value>
+  </data>
+  <data name="Settings_GalleryItemPage_InstallButton.Content" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="Settings_GalleryItemPage_Store_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="Settings_GalleryItemPage_WinGet_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>WinGet</value>
+  </data>
+  <data name="Settings_GalleryItemPage_Website_MenuFlyoutItem.Text" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="Settings_GalleryItemPage_Screenshots_Header.Text" xml:space="preserve">
+    <value>Screenshots</value>
+  </data>
+  <data name="Settings_GalleryItemPage_Description_Header.Text" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Settings_GalleryItemPage_ThirdParty_Disclaimer.Text" xml:space="preserve">
+    <value>Extensions listed here are created and maintained by third parties under their own terms. Review each extension's source and terms before installing or using it. Microsoft does not control third-party extension behavior and is not responsible for their content or actions.</value>
+  </data>
+  <data name="SettingsWindow_CloseScreenshotViewerButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Close screenshot viewer</value>
   </data>
   <data name="WinGetOperationsButton_Root.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Show WinGet download and install progress</value>

@@ -5,7 +5,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:galleryModels="using:Microsoft.CmdPal.Common.ExtensionGallery.Models"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels.Gallery"
@@ -28,10 +27,7 @@
     </Page.Resources>
 
     <Grid>
-        <ContentDialog
-            x:Name="WinGetDialog"
-            Title="Install via WinGet"
-            CloseButtonText="Close">
+        <ContentDialog x:Name="WinGetDialog" x:Uid="Settings_GalleryItemPage_WinGetDialog">
             <StackPanel MinWidth="360" Spacing="8">
                 <Grid ColumnSpacing="8" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowWinGetActionControls), Mode=OneWay, FallbackValue=Collapsed}">
                     <Grid.ColumnDefinitions>
@@ -47,22 +43,22 @@
                         IsEnabled="{x:Bind ViewModel.CanInstallViaWinGet, Mode=OneWay}"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstallViaWinGetButton), Mode=OneWay, FallbackValue=Collapsed}" />
                     <Button
+                        x:Uid="Settings_GalleryItemPage_CancelWinGetActionButton"
                         Grid.Column="2"
                         Width="32"
                         Height="32"
                         Padding="0"
                         Command="{x:Bind ViewModel.CancelWinGetActionCommand, Mode=OneWay}"
                         Style="{StaticResource SubtleButtonStyle}"
-                        ToolTipService.ToolTip="Cancel WinGet operation"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowCancelWinGetActionButton), Mode=OneWay, FallbackValue=Collapsed}">
                         <FontIcon FontSize="12" Glyph="&#xE711;" />
                     </Button>
                 </Grid>
 
                 <TextBlock
+                    x:Uid="Settings_GalleryItemPage_WinGetDialog_RunCommandText"
                     Margin="0,8,0,8"
                     HorizontalAlignment="Center"
-                    Text="or run this command in the Terminal:"
                     TextAlignment="Center" />
                 <Grid
                     Padding="8,4,0,4"
@@ -81,6 +77,7 @@
                         Text="{x:Bind ViewModel.WinGetInstallCommand, Mode=OneWay}"
                         TextWrapping="WrapWholeWords" />
                     <Button
+                        x:Uid="Settings_GalleryItemPage_CopyInstallCommandButton"
                         Grid.Column="1"
                         Width="28"
                         Height="28"
@@ -88,8 +85,7 @@
                         VerticalAlignment="Center"
                         Command="{x:Bind ViewModel.CopyWinGetInstallCommand, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.CanCopyWinGetInstallCommand, Mode=OneWay}"
-                        Style="{StaticResource SubtleButtonStyle}"
-                        ToolTipService.ToolTip="Copy install command">
+                        Style="{StaticResource SubtleButtonStyle}">
                         <FontIcon FontSize="12" Glyph="&#xE8C8;" />
                     </Button>
                 </Grid>
@@ -122,16 +118,16 @@
 
                     <ItemsControl Margin="0,16,0,0" ItemsSource="{x:Bind ViewModel.SourcesWithDetails, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="galleryModels:GallerySourceInfo">
+                            <DataTemplate x:DataType="viewModels:GallerySourceViewModel">
                                 <StackPanel Spacing="8">
                                     <TextBlock
                                         FontSize="10"
                                         FontWeight="SemiBold"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{x:Bind DisplayName}" />
-                                    <ItemsControl ItemsSource="{x:Bind Details.FlattenedItems}">
+                                    <ItemsControl ItemsSource="{x:Bind Details}">
                                         <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="galleryModels:GallerySourceDetailItem">
+                                            <DataTemplate x:DataType="viewModels:GallerySourceDetailItemViewModel">
                                                 <Grid Margin="0,2" ColumnSpacing="12">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="80" />
@@ -218,9 +214,9 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <!--  Repo URL  -->
                             <HyperlinkButton
+                                x:Uid="Settings_GalleryItemPage_AuthorLink"
                                 Padding="0"
                                 Command="{x:Bind ViewModel.OpenAuthorPageCommand, Mode=OneWay}"
-                                ToolTipService.ToolTip="Author"
                                 Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasAuthorUrl), Mode=OneWay, FallbackValue=Collapsed}">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <FontIcon FontSize="10" Glyph="&#xE77B;" />
@@ -236,7 +232,7 @@
                                 Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasHomepage), Mode=OneWay, FallbackValue=Collapsed}">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <FontIcon FontSize="10" Glyph="&#xE774;" />
-                                    <TextBlock Text="View repository" />
+                                    <TextBlock x:Uid="Settings_GalleryItemPage_ViewRepository_Text" />
                                 </StackPanel>
                             </HyperlinkButton>
                         </StackPanel>
@@ -261,34 +257,34 @@
 
                     <DropDownButton
                         x:Name="InstallBtn"
+                        x:Uid="Settings_GalleryItemPage_InstallButton"
                         MinWidth="172"
                         Padding="12"
                         HorizontalContentAlignment="Left"
-                        Content="Install"
                         FontWeight="SemiBold"
                         IsEnabled="{x:Bind ViewModel.ShowInstallButton, Mode=OneWay}"
                         Style="{StaticResource AccentDropDownButtonStyle}">
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
                                 <MenuFlyoutItem
+                                    x:Uid="Settings_GalleryItemPage_Store_MenuFlyoutItem"
                                     Click="StoreMenuItem_Click"
-                                    Text="Microsoft Store"
                                     Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasStoreSource), Mode=OneWay, FallbackValue=Collapsed}">
                                     <MenuFlyoutItem.Icon>
                                         <ImageIcon Source="{ThemeResource StoreLogoSource}" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem
+                                    x:Uid="Settings_GalleryItemPage_WinGet_MenuFlyoutItem"
                                     Click="WinGetMenuItem_Click"
-                                    Text="WinGet"
                                     Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasWinGetSource), Mode=OneWay, FallbackValue=Collapsed}">
                                     <MenuFlyoutItem.Icon>
                                         <ImageIcon Source="ms-appx:///Assets/WinGetLogo.svg" />
                                     </MenuFlyoutItem.Icon>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem
+                                    x:Uid="Settings_GalleryItemPage_Website_MenuFlyoutItem"
                                     Click="WebMenuItem_Click"
-                                    Text="Website"
                                     Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasUrlSource), Mode=OneWay, FallbackValue=Collapsed}">
                                     <MenuFlyoutItem.Icon>
                                         <FontIcon Glyph="&#xE774;" />
@@ -334,9 +330,9 @@
                             </Grid.RowDefinitions>
 
                             <TextBlock
+                                x:Uid="Settings_GalleryItemPage_Screenshots_Header"
                                 Margin="16,12,16,12"
-                                FontWeight="SemiBold"
-                                Text="Screenshots" />
+                                FontWeight="SemiBold" />
                             <Rectangle
                                 Grid.Row="1"
                                 Height="1"
@@ -398,9 +394,9 @@
                                     <RowDefinition Height="Auto" />
                                 </Grid.RowDefinitions>
                                 <TextBlock
+                                    x:Uid="Settings_GalleryItemPage_Description_Header"
                                     Margin="16,12,16,12"
-                                    FontWeight="SemiBold"
-                                    Text="Description" />
+                                    FontWeight="SemiBold" />
                                 <Rectangle
                                     Grid.Row="1"
                                     Height="1"
@@ -436,13 +432,13 @@
                                 FontSize="10"
                                 Glyph="&#xE946;" />
                             <TextBlock
+                                x:Uid="Settings_GalleryItemPage_ThirdParty_Disclaimer"
                                 Grid.Column="1"
                                 Margin="0,-4,0,0"
                                 VerticalAlignment="Top"
                                 FontSize="10"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="Extensions listed here are created and maintained by third parties under their own terms. Review each extension's source and terms before installing or using it. Microsoft does not control third-party extension behavior and is not responsible for their content or actions."
                                 TextWrapping="WrapWholeWords" />
                         </Grid>
                     </StackPanel>

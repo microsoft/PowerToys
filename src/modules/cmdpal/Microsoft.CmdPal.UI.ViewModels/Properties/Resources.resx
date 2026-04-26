@@ -322,6 +322,193 @@
   <data name="gallery_error_rate_limited_message" xml:space="preserve">
     <value>We hit the extension gallery rate limit. Please try again in a little while.</value>
   </data>
+  <data name="gallery_item_no_description" xml:space="preserve">
+    <value>No description available.</value>
+  </data>
+  <data name="gallery_item_unknown_author" xml:space="preserve">
+    <value>Unknown author</value>
+  </data>
+  <data name="gallery_item_unknown_source_unsupported_tooltip" xml:space="preserve">
+    <value>This extension has source metadata with an unsupported source type.</value>
+  </data>
+  <data name="gallery_item_unknown_source_unavailable_tooltip" xml:space="preserve">
+    <value>Source metadata is not available yet.</value>
+  </data>
+  <data name="gallery_item_no_source_menu_text" xml:space="preserve">
+    <value>Source metadata not available</value>
+  </data>
+  <data name="gallery_item_no_source_details_text" xml:space="preserve">
+    <value>This extension does not currently expose install or link metadata in the gallery feed.</value>
+  </data>
+  <data name="gallery_item_winget_tooltip_with_id" xml:space="preserve">
+    <value>WinGet package: {0}</value>
+    <comment>{0}=WinGet package identifier</comment>
+  </data>
+  <data name="gallery_item_winget_tooltip" xml:space="preserve">
+    <value>Available on WinGet</value>
+  </data>
+  <data name="gallery_item_store_tooltip_with_id" xml:space="preserve">
+    <value>Microsoft Store product: {0}</value>
+    <comment>{0}=Microsoft Store product identifier</comment>
+  </data>
+  <data name="gallery_item_store_tooltip" xml:space="preserve">
+    <value>Available on Microsoft Store</value>
+  </data>
+  <data name="gallery_item_github_source" xml:space="preserve">
+    <value>GitHub source</value>
+  </data>
+  <data name="gallery_item_website_source" xml:space="preserve">
+    <value>Website source</value>
+  </data>
+  <data name="gallery_item_winget_menu_text_with_id" xml:space="preserve">
+    <value>WinGet: {0}</value>
+    <comment>{0}=WinGet package identifier</comment>
+  </data>
+  <data name="gallery_item_winget_menu_text" xml:space="preserve">
+    <value>WinGet</value>
+  </data>
+  <data name="gallery_item_store_menu_text_with_id" xml:space="preserve">
+    <value>Microsoft Store: {0}</value>
+    <comment>{0}=Microsoft Store product identifier</comment>
+  </data>
+  <data name="gallery_item_store_menu_text" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="gallery_item_update_action" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="gallery_item_install_action" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="gallery_item_install_status_update_available" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="gallery_item_install_status_installed" xml:space="preserve">
+    <value>Installed</value>
+  </data>
+  <data name="gallery_item_install_status_not_installed" xml:space="preserve">
+    <value>Not installed</value>
+  </data>
+  <data name="gallery_item_install_status_unavailable" xml:space="preserve">
+    <value>Install status unavailable</value>
+  </data>
+  <data name="gallery_item_winget_status_update_available" xml:space="preserve">
+    <value>Installed, update available.</value>
+  </data>
+  <data name="gallery_item_winget_status_installed" xml:space="preserve">
+    <value>Installed.</value>
+  </data>
+  <data name="gallery_item_winget_status_not_installed" xml:space="preserve">
+    <value>Not installed.</value>
+  </data>
+  <data name="gallery_item_winget_status_unavailable" xml:space="preserve">
+    <value>WinGet status unavailable.</value>
+  </data>
+  <data name="gallery_item_winget_action_updating" xml:space="preserve">
+    <value>Updating with WinGet...</value>
+  </data>
+  <data name="gallery_item_winget_action_installing" xml:space="preserve">
+    <value>Installing with WinGet...</value>
+  </data>
+  <data name="gallery_item_winget_action_resolve_failed" xml:space="preserve">
+    <value>WinGet couldn't resolve this package.</value>
+  </data>
+  <data name="gallery_item_winget_action_package_not_found" xml:space="preserve">
+    <value>The WinGet package couldn't be found.</value>
+  </data>
+  <data name="gallery_item_winget_action_install_failed" xml:space="preserve">
+    <value>The WinGet install failed.</value>
+  </data>
+  <data name="gallery_item_winget_action_queued_uninstall" xml:space="preserve">
+    <value>Queued for WinGet uninstall...</value>
+  </data>
+  <data name="gallery_item_winget_action_queued_update" xml:space="preserve">
+    <value>Queued for WinGet update...</value>
+  </data>
+  <data name="gallery_item_winget_action_queued_install" xml:space="preserve">
+    <value>Queued for WinGet install...</value>
+  </data>
+  <data name="gallery_item_winget_action_downloading_with_progress" xml:space="preserve">
+    <value>Downloading with WinGet... {0}%</value>
+    <comment>{0}=download percent</comment>
+  </data>
+  <data name="gallery_item_winget_action_downloading" xml:space="preserve">
+    <value>Downloading with WinGet...</value>
+  </data>
+  <data name="gallery_item_winget_action_uninstalling" xml:space="preserve">
+    <value>Uninstalling with WinGet...</value>
+  </data>
+  <data name="gallery_item_winget_action_finishing" xml:space="preserve">
+    <value>Finishing WinGet operation...</value>
+  </data>
+  <data name="gallery_item_winget_action_succeeded_uninstall" xml:space="preserve">
+    <value>Extension uninstalled with WinGet.</value>
+  </data>
+  <data name="gallery_item_winget_action_succeeded_update" xml:space="preserve">
+    <value>Extension updated with WinGet.</value>
+  </data>
+  <data name="gallery_item_winget_action_succeeded_install" xml:space="preserve">
+    <value>Extension installed with WinGet.</value>
+  </data>
+  <data name="gallery_item_winget_action_canceled" xml:space="preserve">
+    <value>The WinGet operation was canceled.</value>
+  </data>
+  <data name="gallery_item_winget_action_failed" xml:space="preserve">
+    <value>The WinGet operation failed.</value>
+  </data>
+  <data name="gallery_item_source_name_winget" xml:space="preserve">
+    <value>WinGet</value>
+  </data>
+  <data name="gallery_item_source_name_store" xml:space="preserve">
+    <value>Microsoft Store</value>
+  </data>
+  <data name="gallery_item_source_name_github" xml:space="preserve">
+    <value>GitHub</value>
+  </data>
+  <data name="gallery_item_source_name_website" xml:space="preserve">
+    <value>Website</value>
+  </data>
+  <data name="gallery_item_source_name_unknown" xml:space="preserve">
+    <value>Source: {0}</value>
+    <comment>{0}=unsupported source type name from the gallery feed</comment>
+  </data>
+  <data name="gallery_source_detail_summary_label" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="gallery_source_detail_description_label" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="gallery_source_detail_version_label" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="gallery_source_detail_tags_label" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="gallery_source_detail_package_label" xml:space="preserve">
+    <value>Package</value>
+  </data>
+  <data name="gallery_source_detail_publisher_label" xml:space="preserve">
+    <value>Publisher</value>
+  </data>
+  <data name="gallery_source_detail_author_label" xml:space="preserve">
+    <value>Author</value>
+  </data>
+  <data name="gallery_source_detail_license_label" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="gallery_source_detail_support_label" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="gallery_source_detail_package_page_label" xml:space="preserve">
+    <value>Package page</value>
+  </data>
+  <data name="gallery_source_detail_release_notes_label" xml:space="preserve">
+    <value>Release notes</value>
+  </data>
+  <data name="gallery_screenshot_display_name" xml:space="preserve">
+    <value>Screenshot {0}</value>
+    <comment>{0}=screenshot number</comment>
+  </data>
   <data name="winget_operation_detail_progress" xml:space="preserve">
     <value>{0} of {1}</value>
     <comment>{0}=downloaded size, {1}=total size</comment>
