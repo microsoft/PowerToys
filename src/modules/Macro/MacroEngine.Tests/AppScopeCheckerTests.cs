@@ -11,15 +11,16 @@ namespace PowerToys.MacroEngine.Tests;
 public sealed class AppScopeCheckerTests
 {
     [TestMethod]
-    public void IsForegroundAppMatch_StripsDotExeExtension()
+    public void ProcessNamesMatch_StripsDotExeExtension()
     {
-        Assert.AreEqual("notepad", Path.GetFileNameWithoutExtension("notepad.exe"));
-        Assert.AreEqual("NOTEPAD", Path.GetFileNameWithoutExtension("NOTEPAD.EXE"));
+        Assert.IsTrue(AppScopeChecker.ProcessNamesMatch("notepad.exe", "notepad"));
+        Assert.IsTrue(AppScopeChecker.ProcessNamesMatch("NOTEPAD.EXE", "notepad"));
     }
 
     [TestMethod]
-    public void IsForegroundAppMatch_CaseInsensitive()
+    public void ProcessNamesMatch_CaseInsensitive()
     {
-        Assert.IsTrue("notepad".Equals("NOTEPAD", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(AppScopeChecker.ProcessNamesMatch("notepad.exe", "NOTEPAD"));
+        Assert.IsFalse(AppScopeChecker.ProcessNamesMatch("notepad.exe", "chrome"));
     }
 }
