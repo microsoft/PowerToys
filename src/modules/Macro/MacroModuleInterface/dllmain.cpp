@@ -61,13 +61,14 @@ public:
         sei.lpFile = L"PowerToys.MacroEngine.exe";
         sei.nShow = SW_HIDE;
         sei.lpParameters = args.data();
-        if (ShellExecuteExW(&sei))
+        if (ShellExecuteExW(&sei) && sei.hProcess)
         {
             m_hProcess = sei.hProcess;
             Logger::info("MacroEngine started");
         }
         else
         {
+            m_enabled = false;
             Logger::error(L"MacroEngine failed to start. {}", get_last_error_or_default(GetLastError()));
         }
     }
@@ -78,8 +79,14 @@ public:
         m_enabled = false;
         if (m_hProcess)
         {
-            TerminateProcess(m_hProcess, 0);
-            CloseHandle(m_hProcess);
+            if (!TerminateProcess(m_hProcess, 0))
+            {
+                Logger::warn(L"TerminateProcess failed: {}", get_last_error_or_default(GetLastError()));
+            }
+            if (!CloseHandle(m_hProcess))
+            {
+                Logger::warn(L"CloseHandle failed: {}", get_last_error_or_default(GetLastError()));
+            }
             m_hProcess = nullptr;
         }
     }
@@ -102,11 +109,6 @@ public:
     }
 
 private:
-    bool is_process_running() const
-    {
-        return m_hProcess && WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
-    }
-
     std::wstring app_name;
     std::wstring app_key;
     bool m_enabled = false;
