@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using PowerToys.MacroCommon.Models;
 
 namespace PowerToys.MacroEngine;
@@ -17,6 +18,7 @@ internal sealed class MacroEngineHost : IDisposable
     private readonly MacroLoader _loader;
     private readonly MacroExecutor _executor;
     private readonly IAppScopeChecker _scopeChecker;
+    private readonly SemaphoreSlim _reloadLock = new(1, 1);
     private bool _hotkeysActive = true;
     private CancellationTokenSource? _currentMacro;
 
@@ -33,13 +35,26 @@ internal sealed class MacroEngineHost : IDisposable
     public async Task StartAsync(CancellationToken ct)
     {
         await _loader.LoadAllAsync(ct);
-        _loader.MacrosChanged += async (_, _) => await ReloadAsync(ct);
+        _loader.MacrosChanged += OnMacrosChanged;
         _loader.StartWatching();
 
         _hotkeyManager.HotkeyTriggered += OnHotkeyTriggered;
         _hotkeyManager.Start();
 
         RegisterAllHotkeys();
+    }
+
+    private async void OnMacrosChanged(object? sender, EventArgs e)
+    {
+        try
+        {
+            await ReloadAsync(CancellationToken.None);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            Logger.LogError("MacroEngine: Macro reload failed.", ex);
+        }
     }
 
     public async Task ExecuteMacroByIdAsync(string macroId, CancellationToken ct)
@@ -79,8 +94,10 @@ internal sealed class MacroEngineHost : IDisposable
             return;
         }
 
-        _currentMacro?.Cancel();
-        _currentMacro = new CancellationTokenSource();
+        var old = Interlocked.Exchange(ref _currentMacro, new CancellationTokenSource());
+        old?.Cancel();
+        old?.Dispose();
+
         _ = ExecuteMacroAsync(macro, _currentMacro.Token);
     }
 
@@ -105,7 +122,7 @@ internal sealed class MacroEngineHost : IDisposable
                 }
                 catch (InvalidOperationException ex)
                 {
-                    System.Diagnostics.Trace.WriteLine($"[MacroEngine] Hotkey conflict for '{macro.Name}': {ex.Message}");
+                    Logger.LogWarning($"MacroEngine: Hotkey conflict for '{macro.Name}': {ex.Message}");
                 }
             }
         }
@@ -113,19 +130,34 @@ internal sealed class MacroEngineHost : IDisposable
 
     private async Task ReloadAsync(CancellationToken ct)
     {
-        _hotkeyManager.UnregisterAll();
-        await _loader.LoadAllAsync(ct);
-        if (_hotkeysActive)
+        if (!await _reloadLock.WaitAsync(0, ct))
         {
-            RegisterAllHotkeys();
+            return;
+        }
+
+        try
+        {
+            _hotkeyManager.UnregisterAll();
+            await _loader.LoadAllAsync(ct);
+            if (_hotkeysActive)
+            {
+                RegisterAllHotkeys();
+            }
+        }
+        finally
+        {
+            _reloadLock.Release();
         }
     }
 
     public void Dispose()
     {
-        _currentMacro?.Cancel();
-        _currentMacro?.Dispose();
-        _hotkeyManager.Dispose();
+        _loader.MacrosChanged -= OnMacrosChanged;
         _loader.Dispose();
+        _hotkeyManager.Dispose();
+        var old = Interlocked.Exchange(ref _currentMacro, null);
+        old?.Cancel();
+        old?.Dispose();
+        _reloadLock.Dispose();
     }
 }

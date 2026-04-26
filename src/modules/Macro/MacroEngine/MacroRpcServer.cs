@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO.Pipes;
+using ManagedCommon;
 using PowerToys.MacroCommon.Ipc;
 using StreamJsonRpc;
 
@@ -43,24 +44,37 @@ internal sealed class MacroRpcServer : IMacroEngineRpc
                 PipeTransmissionMode.Byte,
                 PipeOptions.Asynchronous);
 
+            bool connected = false;
             try
             {
                 await pipe.WaitForConnectionAsync(ct);
+                connected = true;
             }
             catch (OperationCanceledException)
             {
                 pipe.Dispose();
                 break;
             }
-
-            _ = Task.Run(async () =>
+            catch (Exception ex)
             {
-                using (pipe)
+                Logger.LogError("MacroEngine: Named pipe accept failed.", ex);
+                pipe.Dispose();
+                continue;
+            }
+
+            if (connected)
+            {
+                _ = Task.Run(async () =>
                 {
-                    var rpc = JsonRpc.Attach(pipe, new MacroRpcServer(host));
-                    await rpc.Completion;
-                }
-            }, ct);
+                    using (pipe)
+                    {
+                        var rpc = JsonRpc.Attach(pipe, new MacroRpcServer(host));
+                        await rpc.Completion;
+                    }
+                }, ct).ContinueWith(
+                    t => Logger.LogError("MacroEngine: RPC client session faulted.", t.Exception!.InnerException),
+                    TaskContinuationOptions.OnlyOnFaulted);
+            }
         }
     }
 }
