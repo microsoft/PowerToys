@@ -8,11 +8,6 @@ using Windows.Win32.Foundation;
 
 namespace PowerToys.MacroEngine;
 
-public interface IAppScopeChecker
-{
-    bool IsForegroundAppMatch(string processName);
-}
-
 internal sealed class AppScopeChecker : IAppScopeChecker
 {
     internal static bool ProcessNamesMatch(string? scopeProcessName, string? foregroundProcessName)

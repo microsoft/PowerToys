@@ -40,6 +40,7 @@ internal sealed class MacroLoader : IDisposable
                 System.Diagnostics.Trace.WriteLine($"[MacroEngine] Skipping malformed macro file '{path}': {ex.Message}");
             }
         }
+
         // Atomic swap: _macros is only replaced on full successful completion
         _macros = fresh;
     }

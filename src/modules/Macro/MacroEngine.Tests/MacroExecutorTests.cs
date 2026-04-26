@@ -11,6 +11,9 @@ namespace PowerToys.MacroEngine.Tests;
 [TestClass]
 public sealed class MacroExecutorTests
 {
+    private static readonly string[] SingleCtrlC = ["Ctrl+C"];
+    private static readonly string[] SingleHello = ["Hello"];
+
     private FakeSendInputHelper _input = null!;
     private MacroExecutor _executor = null!;
 
@@ -29,7 +32,7 @@ public sealed class MacroExecutorTests
             Steps = [new MacroStep { Type = StepType.PressKey, Key = "Ctrl+C" }],
         };
         await _executor.ExecuteAsync(macro, CancellationToken.None);
-        CollectionAssert.AreEqual(new[] { "Ctrl+C" }, _input.KeyCombos);
+        CollectionAssert.AreEqual(SingleCtrlC, _input.KeyCombos);
     }
 
     [TestMethod]
@@ -40,7 +43,7 @@ public sealed class MacroExecutorTests
             Steps = [new MacroStep { Type = StepType.TypeText, Text = "Hello" }],
         };
         await _executor.ExecuteAsync(macro, CancellationToken.None);
-        CollectionAssert.AreEqual(new[] { "Hello" }, _input.Texts);
+        CollectionAssert.AreEqual(SingleHello, _input.Texts);
     }
 
     [TestMethod]
@@ -77,7 +80,7 @@ public sealed class MacroExecutorTests
             ],
         };
         cts.CancelAfter(50);
-        await Assert.ThrowsExceptionAsync<OperationCanceledException>(
+        await Assert.ThrowsExceptionAsync<TaskCanceledException>(
             () => _executor.ExecuteAsync(macro, cts.Token));
         Assert.AreEqual(1, _input.KeyCombos.Count);
     }
@@ -157,10 +160,11 @@ public sealed class MacroExecutorTests
             ],
         };
         var task = _executor.ExecuteAsync(macro, cts.Token);
+
         // Let "A" execute (synchronous, completes immediately), then cancel before Wait finishes
         await Task.Yield();
         cts.Cancel();
-        await Assert.ThrowsExceptionAsync<OperationCanceledException>(() => task);
+        await Assert.ThrowsExceptionAsync<TaskCanceledException>(() => task);
         Assert.AreEqual(1, _input.KeyCombos.Count);
     }
 }

@@ -64,14 +64,17 @@ internal sealed class MacroRpcServer : IMacroEngineRpc
 
             if (connected)
             {
-                _ = Task.Run(async () =>
-                {
-                    using (pipe)
+                var session = Task.Run(
+                    async () =>
                     {
-                        var rpc = JsonRpc.Attach(pipe, new MacroRpcServer(host));
-                        await rpc.Completion;
-                    }
-                }, ct).ContinueWith(
+                        using (pipe)
+                        {
+                            var rpc = JsonRpc.Attach(pipe, new MacroRpcServer(host));
+                            await rpc.Completion;
+                        }
+                    },
+                    ct);
+                _ = session.ContinueWith(
                     t => Logger.LogError("MacroEngine: RPC client session faulted.", t.Exception!.InnerException),
                     TaskContinuationOptions.OnlyOnFaulted);
             }

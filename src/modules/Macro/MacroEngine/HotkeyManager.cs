@@ -11,9 +11,9 @@ namespace PowerToys.MacroEngine;
 
 internal sealed class HotkeyManager : IDisposable
 {
+    private readonly Dictionary<int, string> _idToMacroId = [];
     private HotkeyWindow? _window;
     private Thread? _thread;
-    private readonly Dictionary<int, string> _idToMacroId = [];
     private int _nextId = 1;
     private int _disposed;
 
@@ -105,6 +105,7 @@ internal sealed class HotkeyManager : IDisposable
     {
         // Windows message posted when a registered hotkey fires.
         private const int WmHotkey = 0x0312;
+
         public event EventHandler<int>? HotkeyPressed;
 
         public HotkeyWindow()
