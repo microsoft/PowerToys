@@ -13,6 +13,12 @@ internal static class KeyParser
     internal const uint ModWin      = 0x0008;
     internal const uint ModNoRepeat = 0x4000;
 
+    // VK_L* codes used by SendInput (left-hand variants)
+    private const ushort VkLControl = 0xA2;
+    private const ushort VkLMenu    = 0xA4; // Alt
+    private const ushort VkLShift   = 0xA0;
+    private const ushort VkLWin     = 0x5B;
+
     private static readonly Dictionary<string, ushort> NameToVk =
         new(StringComparer.OrdinalIgnoreCase)
     {
@@ -42,6 +48,8 @@ internal static class KeyParser
     /// <summary>Parses "Ctrl+Shift+V" → (modifiers, vk) for RegisterHotKey.</summary>
     internal static (uint modifiers, ushort vk) ParseHotkey(string hotkey)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(hotkey, nameof(hotkey));
+
         uint modifiers = 0;
         ushort vk = 0;
 
@@ -68,6 +76,8 @@ internal static class KeyParser
     /// <summary>Parses a single key name or character → VK code for SendInput.</summary>
     internal static ushort ParseKey(string keyName)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(keyName, nameof(keyName));
+
         if (NameToVk.TryGetValue(keyName, out var vk))
         {
             return vk;
@@ -75,6 +85,7 @@ internal static class KeyParser
 
         if (keyName.Length == 1)
         {
+            // A–Z and 0–9 have VK codes matching their ASCII/Unicode values.
             var c = char.ToUpperInvariant(keyName[0]);
             if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
             {
@@ -86,8 +97,10 @@ internal static class KeyParser
     }
 
     /// <summary>Parses "Ctrl+C" → list of modifier VK codes + main VK for SendInput key-combo.</summary>
-    internal static (List<ushort> modifierVks, ushort mainVk) ParseKeyCombo(string combo)
+    internal static (IReadOnlyList<ushort> modifierVks, ushort mainVk) ParseKeyCombo(string combo)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(combo, nameof(combo));
+
         var modifierVks = new List<ushort>();
         ushort mainVk = 0;
 
@@ -95,11 +108,11 @@ internal static class KeyParser
         {
             switch (part.ToUpperInvariant())
             {
-                case "CTRL" or "CONTROL": modifierVks.Add(0xA2); break; // VK_LCONTROL
-                case "ALT":               modifierVks.Add(0xA4); break; // VK_LMENU
-                case "SHIFT":             modifierVks.Add(0xA0); break; // VK_LSHIFT
-                case "WIN":               modifierVks.Add(0x5B); break; // VK_LWIN
-                default:                  mainVk = ParseKey(part); break;
+                case "CTRL" or "CONTROL": modifierVks.Add(VkLControl); break;
+                case "ALT":               modifierVks.Add(VkLMenu);    break;
+                case "SHIFT":             modifierVks.Add(VkLShift);   break;
+                case "WIN":               modifierVks.Add(VkLWin);     break;
+                default:                  mainVk = ParseKey(part);     break;
             }
         }
 
