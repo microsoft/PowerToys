@@ -1,0 +1,6 @@
+GetForegroundWindow
+GetWindowThreadProcessId
+SendInput
+RegisterHotKey
+UnregisterHotKey
+PostQuitMessage

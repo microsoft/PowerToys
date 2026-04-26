@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>PowerToys.MacroEngine</AssemblyName>
+    <RootNamespace>PowerToys.MacroEngine</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" />
+    <PackageReference Include="StreamJsonRpc" />
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MacroCommon\MacroCommon.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\common\ManagedCommon\ManagedCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PowerToys.MacroEngine.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

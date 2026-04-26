@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>PowerToys.MacroEngine.Tests</AssemblyName>
+    <RootNamespace>PowerToys.MacroEngine.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\MacroEngine.Tests\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MacroEngine\MacroEngine.csproj" />
+  </ItemGroup>
+</Project>
