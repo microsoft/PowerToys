@@ -9,6 +9,8 @@ namespace PowerToys.MacroCommon.Serialization;
 
 public static class MacroSerializer
 {
+    public static readonly JsonSerializerOptions Options = MacroJsonContext.Default.Options;
+
     public static MacroDefinition Deserialize(string json) =>
         JsonSerializer.Deserialize(json, MacroJsonContext.Default.MacroDefinition)
         ?? throw new InvalidOperationException("Deserialized macro was null.");
