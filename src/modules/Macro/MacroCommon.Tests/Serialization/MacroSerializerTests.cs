@@ -51,6 +51,8 @@ public sealed class MacroSerializerTests
         Assert.AreEqual("Hello", restored.Steps[2].Text);
         Assert.AreEqual(3, restored.Steps[3].Count);
         Assert.AreEqual(1, restored.Steps[3].Steps?.Count);
+        Assert.AreEqual(original.Description, restored.Description);
+        Assert.AreEqual("Tab", restored.Steps[3].Steps![0].Key);
     }
 
     [TestMethod]
@@ -90,5 +92,12 @@ public sealed class MacroSerializerTests
     public void Deserialize_NullJson_Throws()
     {
         MacroSerializer.Deserialize("null");
+    }
+
+    [TestMethod]
+    public void Deserialize_MalformedJson_ThrowsJsonException()
+    {
+        Assert.ThrowsException<System.Text.Json.JsonException>(
+            () => MacroSerializer.Deserialize("{ not valid"));
     }
 }
