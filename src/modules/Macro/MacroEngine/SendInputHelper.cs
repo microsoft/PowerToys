@@ -16,6 +16,8 @@ public interface ISendInputHelper
 
 internal sealed class SendInputHelper : ISendInputHelper
 {
+    private static readonly int InputSize = Marshal.SizeOf<INPUT>();
+
     public void PressKeyCombo(string combo)
     {
         var (modifierVks, mainVk) = KeyParser.ParseKeyCombo(combo);
@@ -39,6 +41,8 @@ internal sealed class SendInputHelper : ISendInputHelper
 
     public void TypeText(string text)
     {
+        ArgumentNullException.ThrowIfNull(text);
+
         var inputs = new List<INPUT>(text.Length * 2);
         foreach (char c in text)
         {
@@ -49,10 +53,14 @@ internal sealed class SendInputHelper : ISendInputHelper
         Send(inputs);
     }
 
-    private static unsafe void Send(IList<INPUT> inputs)
+    private static unsafe void Send(List<INPUT> inputs)
     {
-        var arr = inputs.ToArray();
-        PInvoke.SendInput(arr, Marshal.SizeOf<INPUT>());
+        var span = CollectionsMarshal.AsSpan(inputs);
+        uint sent = PInvoke.SendInput(span, InputSize);
+        if (sent < (uint)inputs.Count)
+        {
+            System.Diagnostics.Trace.WriteLine($"[MacroEngine] SendInput: {sent}/{inputs.Count} events injected.");
+        }
     }
 
     private static INPUT KeyDown(ushort vk) => new()
