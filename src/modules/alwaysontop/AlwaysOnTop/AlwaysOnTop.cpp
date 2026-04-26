@@ -252,11 +252,13 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     }
 
     Sound::Type soundType = Sound::Type::Off;
+    bool stateChanged = false;
     bool topmost = IsTopmost(window);
     if (topmost)
     {
         if (UnpinTopmostWindow(window))
         {
+            stateChanged = true;
             auto iter = m_topmostWindows.find(window);
             if (iter != m_topmostWindows.end())
             {
@@ -274,6 +276,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
     {
         if (PinTopmostWindow(window))
         {
+            stateChanged = true;
             soundType = Sound::Type::On;
             AssignBorder(window);
             
@@ -281,7 +284,7 @@ void AlwaysOnTop::ProcessCommand(HWND window)
         }
     }
 
-    if (AlwaysOnTopSettings::settings()->enableSound)
+    if (stateChanged && AlwaysOnTopSettings::settings()->enableSound)
     {
         m_sound.Play(soundType);    
     }

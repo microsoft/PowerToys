@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
@@ -19,10 +20,13 @@ internal sealed class RunHistoryService : IRunHistoryService
 
     public IReadOnlyList<string> GetRunHistory()
     {
-        if (_appStateService.State.RunHistory.Count == 0)
+        if (_appStateService.State.RunHistory.IsEmpty)
         {
             var history = Microsoft.Terminal.UI.RunHistory.CreateRunHistory();
-            _appStateService.State.RunHistory.AddRange(history);
+            _appStateService.UpdateState(state => state with
+            {
+                RunHistory = history.ToImmutableList(),
+            });
         }
 
         return _appStateService.State.RunHistory;
@@ -30,22 +34,24 @@ internal sealed class RunHistoryService : IRunHistoryService
 
     public void ClearRunHistory()
     {
-        _appStateService.State.RunHistory.Clear();
+        _appStateService.UpdateState(state => state with
+        {
+            RunHistory = ImmutableList<string>.Empty,
+        });
     }
 
     public void AddRunHistoryItem(string item)
     {
-        // insert at the beginning of the list
         if (string.IsNullOrWhiteSpace(item))
         {
-            return; // Do not add empty or whitespace items
+            return;
         }
 
-        _appStateService.State.RunHistory.Remove(item);
-
-        // Add the item to the front of the history
-        _appStateService.State.RunHistory.Insert(0, item);
-
-        _appStateService.Save();
+        _appStateService.UpdateState(state => state with
+        {
+            RunHistory = state.RunHistory
+                .Remove(item)
+                .Insert(0, item),
+        });
     }
 }

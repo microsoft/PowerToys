@@ -19,6 +19,7 @@ OLIVEGREEN
 PALEBLUE
 PArgb
 Pbgra
+SRGBTo
 WHITEONBLACK
 
 
@@ -48,7 +49,6 @@ nupkg
 petabyte
 resw
 resx
-runtimeconfig
 srt
 Stereolithography
 terabyte
@@ -127,6 +127,7 @@ HOLDSPACE
 HOLDBACKSPACE
 IDIGNORE
 KBDLLHOOKSTRUCT
+keydowns
 keyevent
 LAlt
 LBUTTON
@@ -332,13 +333,40 @@ REGSTR
 INVOKEIDLIST
 MEMORYSTATUSEX
 ABE
+Mdt
 HTCAPTION
 POSCHANGED
+QPC
 QUERYPOS
 SETAUTOHIDEBAR
+ULW
 WINDOWPOS
 WINEVENTPROC
 WORKERW
+FULLSCREENAPP
+
+# COM/WinRT interface prefixes and type fragments
+BAlt
+BShift
+Cmanifest
+Cmodule
+Cuuid
+Dng
+IApplication
+IDisposable
+IEnum
+IFolder
+IInitialize
+IMemory
+IOle
+ipreview
+IProperty
+IShell
+ithumbnail
+IVirtual
+
+# Test frameworks
+MSTEST
 
 # PowerRename metadata pattern abbreviations (used in tests and regex patterns)
 DDDD

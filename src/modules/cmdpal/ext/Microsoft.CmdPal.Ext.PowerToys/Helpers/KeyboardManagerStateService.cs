@@ -43,21 +43,6 @@ internal static class KeyboardManagerStateService
         return false;
     }
 
-    internal static bool TryToggleListening()
-    {
-        try
-        {
-            using var evt = EventWaitHandle.OpenExisting(Constants.ToggleKeyboardManagerActiveEvent());
-            var signaled = evt.Set();
-            PollStatus();
-            return signaled;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private static void PollStatus()
     {
         var isListening = IsListening();

@@ -109,7 +109,7 @@
                             IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
                             IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToDownload}"
                             Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
-                            Severity="Informational">
+                            Severity="Warning">
 
                             <InfoBar.Content>
                                 <StackPanel Spacing="16">
@@ -150,13 +150,14 @@
                             IsOpen="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
                             IsTabStop="{x:Bind ViewModel.PowerToysUpdatingState, Mode=OneWay, Converter={StaticResource UpdateStateToBoolConverter}, ConverterParameter=ReadyToInstall}"
                             Message="{x:Bind ViewModel.PowerToysNewAvailableVersion, Mode=OneWay}"
-                            Severity="Success">
+                            Severity="Warning">
                             <InfoBar.Content>
                                 <Button
                                     x:Uid="General_InstallNow"
                                     Margin="0,0,0,16"
                                     Command="{Binding UpdateNowButtonEventHandler}"
-                                    IsEnabled="{Binding IsDownloadAllowed}" />
+                                    IsEnabled="{Binding IsDownloadAllowed}"
+                                    Style="{StaticResource AccentButtonStyle}" />
                             </InfoBar.Content>
                             <InfoBar.ActionButton>
                                 <HyperlinkButton
@@ -342,9 +343,11 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBlock
                                         x:Name="pathTextBlock"
+                                        MaxWidth="286"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         IsTextSelectionEnabled="True"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
                                         Text="{x:Bind ViewModel.SettingsBackupAndRestoreDir, Mode=TwoWay}"
                                         TextWrapping="Wrap">
                                         <ToolTipService.ToolTip>

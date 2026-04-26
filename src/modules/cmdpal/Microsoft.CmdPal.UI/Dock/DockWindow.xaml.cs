@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -51,6 +52,8 @@ public sealed partial class DockWindow : WindowEx,
     private HWND _hwnd = HWND.Null;
     private APPBARDATA _appBarData;
     private uint _callbackMessageId;
+    private bool _isWindowTopmost;
+    private bool _isFullScreenAppOpen;
 
     private DockSettings _settings;
     private DockViewModel viewModel;
@@ -74,7 +77,7 @@ public sealed partial class DockWindow : WindowEx,
         _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         _settingsService.SettingsChanged += SettingsChangedHandler;
         _settings = mainSettings.DockSettings;
-        _lastSize = _settings.DockSize;
+        _lastSize = EffectiveDockSize(_settings);
 
         viewModel = serviceProvider.GetService<DockViewModel>()!;
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
@@ -94,6 +97,10 @@ public sealed partial class DockWindow : WindowEx,
             overlappedPresenter.IsResizable = false;
         }
 
+        // immediately when we're created: make sure to remove our window frame
+        // and shadow. We don't _always_ get an Activated when we're first
+        // created.
+        UpdateWindowFrame();
         this.Activated += DockWindow_Activated;
 
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
@@ -129,6 +136,8 @@ public sealed partial class DockWindow : WindowEx,
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
 
         ShowDesktop.AddHook(this);
+        var userNotificationFlags = WindowHelper.GetUserNotificationFlags();
+        _isFullScreenAppOpen = userNotificationFlags.IsFullscreenState || userNotificationFlags.IsBusy;
         UpdateSettingsOnUiThread();
     }
 
@@ -139,6 +148,12 @@ public sealed partial class DockWindow : WindowEx,
     }
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
+    {
+        UpdateWindowFrame();
+        UpdateTopmostState();
+    }
+
+    private void UpdateWindowFrame()
     {
         // These are used for removing the very subtle shadow/border that we get from Windows 11
         HwndExtensions.ToggleWindowStyle(_hwnd, false, WindowStyle.TiledWindow);
@@ -161,14 +176,16 @@ public sealed partial class DockWindow : WindowEx,
         UpdateBackdrop();
 
         _dock.UpdateSettings(_settings);
+
         var side = DockSettingsToViews.GetAppBarEdge(_settings.Side);
 
         if (_appBarData.hWnd != IntPtr.Zero)
         {
             var sameEdge = _appBarData.uEdge == side;
-            var sameSize = _lastSize == _settings.DockSize;
+            var sameSize = _lastSize == EffectiveDockSize(_settings);
             if (sameEdge && sameSize)
             {
+                UpdateTopmostState();
                 return;
             }
 
@@ -176,6 +193,7 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         CreateAppBar(_hwnd);
+        UpdateTopmostState();
     }
 
     private void InitializeBackdropSupport()
@@ -322,7 +340,7 @@ public sealed partial class DockWindow : WindowEx,
 
         // Stash the last size we created the bar at, so we know when to hot-
         // reload it
-        _lastSize = _settings.DockSize;
+        _lastSize = EffectiveDockSize(_settings);
 
         UpdateWindowPosition();
     }
@@ -333,21 +351,50 @@ public sealed partial class DockWindow : WindowEx,
         _appBarData = default;
     }
 
+    private void UpdateTopmostState(bool bringToFront = false)
+    {
+        var shouldStayOnTop = _settings.AlwaysOnTop && !_isFullScreenAppOpen;
+        const SET_WINDOW_POS_FLAGS flags = SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE;
+
+        if (shouldStayOnTop)
+        {
+            if (_isWindowTopmost && !bringToFront)
+            {
+                return;
+            }
+
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, flags);
+            _isWindowTopmost = true;
+            return;
+        }
+
+        if (bringToFront)
+        {
+            // Win32 trick: briefly set HWND_TOPMOST then immediately clear it
+            // with HWND_NOTOPMOST. This brings the window to the foreground
+            // without permanently pinning it as topmost.
+            PInvoke.SetWindowPos(_hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, flags);
+        }
+
+        if (!_isWindowTopmost && !bringToFront)
+        {
+            return;
+        }
+
+        var zOrder = _isFullScreenAppOpen ? HWND.HWND_BOTTOM : HWND.HWND_NOTOPMOST;
+        PInvoke.SetWindowPos(_hwnd, zOrder, 0, 0, 0, 0, flags);
+        _isWindowTopmost = false;
+    }
+
     private void UpdateWindowPosition()
     {
         Logger.LogDebug("UpdateWindowPosition");
 
         var dpi = PInvoke.GetDpiForWindow(_hwnd);
 
-        var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
-
-        // Get system border metrics
-        var borderWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXBORDER);
-        var edgeWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXEDGE);
-        var frameWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXFRAME);
-
         var scaleFactor = dpi / 96.0;
-        UpdateAppBarDataForEdge(_settings.Side, _settings.DockSize, scaleFactor);
+        var effectiveSize = EffectiveDockSize(_settings);
+        UpdateAppBarDataForEdge(_settings.Side, effectiveSize, scaleFactor);
 
         // Query and set position
         PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
@@ -361,16 +408,16 @@ public sealed partial class DockWindow : WindowEx,
         switch (_settings.Side)
         {
             case DockSide.Top:
-                _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Bottom:
-                _appBarData.rc.top = _appBarData.rc.bottom - (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.top = _appBarData.rc.bottom - (int)(DockSettingsToViews.HeightForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Left:
-                _appBarData.rc.right = _appBarData.rc.left + (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.right = _appBarData.rc.left + (int)(DockSettingsToViews.WidthForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Right:
-                _appBarData.rc.left = _appBarData.rc.right - (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.left = _appBarData.rc.right - (int)(DockSettingsToViews.WidthForSize(effectiveSize) * scaleFactor);
                 break;
         }
 
@@ -383,21 +430,26 @@ public sealed partial class DockWindow : WindowEx,
         //   PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
         //   PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
 
-        // Account for system borders when moving the window
-        // Adjust position to account for window frame/border
-        var adjustedLeft = _appBarData.rc.left - frameWidth;
-        var adjustedTop = _appBarData.rc.top - frameWidth;
-        var adjustedWidth = (_appBarData.rc.right - _appBarData.rc.left) + (2 * frameWidth);
-        var adjustedHeight = (_appBarData.rc.bottom - _appBarData.rc.top) + (2 * frameWidth);
-
-        // Move the actual window
+        // The dock window is borderless (SetBorderAndTitleBar(false, false),
+        // IsResizable = false) so no frame compensation is needed — the
+        // app bar rect matches the window rect exactly.
         PInvoke.MoveWindow(
             _hwnd,
-            adjustedLeft,
-            adjustedTop,
-            adjustedWidth,
-            adjustedHeight,
+            _appBarData.rc.left,
+            _appBarData.rc.top,
+            _appBarData.rc.right - _appBarData.rc.left,
+            _appBarData.rc.bottom - _appBarData.rc.top,
             true);
+    }
+
+    /// <summary>
+    /// Compact mode is only supported for Top/Bottom dock positions.
+    /// For Left/Right, always use Default size.
+    /// </summary>
+    private static DockSize EffectiveDockSize(DockSettings settings)
+    {
+        var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        return isHorizontal ? settings.DockSize : DockSize.Default;
     }
 
     private void UpdateAppBarDataForEdge(DockSide side, DockSize size, double scaleFactor)
@@ -542,11 +594,21 @@ public sealed partial class DockWindow : WindowEx,
             }
         }
 
-        // Handle WM_GETMINMAXINFO to control window size limits
+        // Handle WM_GETMINMAXINFO to allow the dock to be smaller than
+        // the default minimum window size (SM_CYMINTRACK ~36px).
         else if (msg == PInvoke.WM_GETMINMAXINFO)
         {
-            // We can modify the min/max tracking info here if needed
-            // For now, let it pass through but we could restrict max size
+            // Call the original WndProc first so it fills default values,
+            // then override the minimum tracking size.
+            var result = PInvoke.CallWindowProc(_originalWndProc, hwnd, msg, wParam, lParam);
+            unsafe
+            {
+                var minMaxInfo = (MINMAXINFO*)lParam.Value;
+                minMaxInfo->ptMinTrackSize.X = 1;
+                minMaxInfo->ptMinTrackSize.Y = 1;
+            }
+
+            return result;
         }
 
         // Handle the AppBarMessage message
@@ -557,6 +619,11 @@ public sealed partial class DockWindow : WindowEx,
             if (wParam.Value == PInvoke.ABN_POSCHANGED)
             {
                 UpdateWindowPosition();
+            }
+            else if (wParam.Value == PInvoke.ABN_FULLSCREENAPP)
+            {
+                _isFullScreenAppOpen = lParam != 0;
+                UpdateTopmostState();
             }
         }
         else if (msg == WM_TASKBAR_RESTART)
@@ -576,9 +643,7 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            var onTop = message.OnTop ? HWND.HWND_TOPMOST : HWND.HWND_NOTOPMOST;
-            PInvoke.SetWindowPos(_hwnd, onTop, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
-            PInvoke.SetWindowPos(_hwnd, HWND.HWND_NOTOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+            UpdateTopmostState(message.BringToFront);
         });
     }
 
@@ -770,18 +835,20 @@ internal static class ShowDesktop
         if (eventType == PInvoke.EVENT_SYSTEM_FOREGROUND)
         {
             var @class = GetWindowClass(hwnd);
-            if (string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal))
+            var bringToFront = string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal);
+            if (bringToFront)
             {
                 Logger.LogDebug("ShowDesktop invoked. Bring us back");
-                WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(true));
             }
+
+            WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(bringToFront));
         }
     }
 
     public static bool IsHooked { get; private set; }
 }
 
-internal sealed record BringToTopMessage(bool OnTop);
+internal sealed record BringToTopMessage(bool BringToFront);
 
 internal sealed record RequestShowPaletteAtMessage(Point PosDips);
 

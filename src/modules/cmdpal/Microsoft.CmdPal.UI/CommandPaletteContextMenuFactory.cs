@@ -92,7 +92,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var providerId = providerContext.ProviderId;
             if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
             {
-                var providerSettings = _settingsService.Settings.GetProviderSettings(provider);
+                var (_, providerSettings) = _settingsService.Settings.GetProviderSettings(provider);
 
                 var alreadyPinnedToTopLevel = providerSettings.PinnedCommandIds.Contains(itemId);
 
@@ -159,7 +159,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         var providerId = providerContext.ProviderId;
         if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper provider)
         {
-            var providerSettings = _settingsService.Settings.GetProviderSettings(provider);
+            var (_, providerSettings) = _settingsService.Settings.GetProviderSettings(provider);
 
             var isPinnedSubCommand = providerSettings.PinnedCommandIds.Contains(itemId);
             if (isPinnedSubCommand)

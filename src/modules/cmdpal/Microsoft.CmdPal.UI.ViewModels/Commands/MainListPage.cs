@@ -679,9 +679,10 @@ public sealed partial class MainListPage : DynamicListPage,
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var history = _appStateService.State.RecentCommands;
-        history.AddHistoryItem(id);
-        _appStateService.Save();
+        _appStateService.UpdateState(state => state with
+        {
+            RecentCommands = state.RecentCommands.WithHistoryItem(id),
+        });
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)

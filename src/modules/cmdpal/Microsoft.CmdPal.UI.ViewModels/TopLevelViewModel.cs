@@ -121,7 +121,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
             {
                 if (Alias is CommandAlias a)
                 {
-                    a.Alias = value;
+                    Alias = a with { Alias = value };
                 }
                 else
                 {
@@ -146,7 +146,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         {
             if (Alias is CommandAlias a)
             {
-                a.IsDirect = value;
+                Alias = a with { IsDirect = value };
             }
 
             HandleChangeAlias();
@@ -225,7 +225,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
         IsFallback = topLevelType == TopLevelType.Fallback;
         IsDockBand = topLevelType == TopLevelType.DockBand;
         ExtensionHost = extensionHost;
-        if (IsFallback && commandItem is FallbackCommandItem fallback)
+        if (IsFallback && commandItem is IFallbackCommandItem2 fallback)
         {
             _fallbackId = fallback.Id;
         }

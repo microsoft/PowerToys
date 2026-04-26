@@ -3,7 +3,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <strsafe.h>
-#include <hIdUsage.h>
 #include <shellapi.h>
 
 #include <thread>

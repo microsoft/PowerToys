@@ -22,9 +22,10 @@ public partial class ProviderSettingsViewModel : ObservableObject
     private static readonly CompositeFormat ExtensionSubtextDisabledFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_disabled);
 
     private readonly CommandProviderWrapper _provider;
-    private readonly ProviderSettings _providerSettings;
     private readonly ISettingsService _settingsService;
     private readonly Lock _initializeSettingsLock = new();
+
+    private ProviderSettings _providerSettings;
 
     private Task? _initializeSettingsTask;
 
@@ -71,8 +72,13 @@ public partial class ProviderSettingsViewModel : ObservableObject
         {
             if (value != _providerSettings.IsEnabled)
             {
-                _providerSettings.IsEnabled = value;
-                Save();
+                var newSettings = _providerSettings with { IsEnabled = value };
+                _settingsService.UpdateSettings(s => s with
+                {
+
+                    ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newSettings),
+                });
+                _providerSettings = newSettings;
                 WeakReferenceMessenger.Default.Send<ReloadCommandsMessage>(new());
                 OnPropertyChanged(nameof(IsEnabled));
                 OnPropertyChanged(nameof(ExtensionSubtext));
@@ -191,7 +197,20 @@ public partial class ProviderSettingsViewModel : ObservableObject
         FallbackCommands = fallbackViewModels;
     }
 
-    private void Save() => _settingsService.Save();
+    internal void UpdateFallbackSettings(string id, FallbackSettings settings)
+    {
+        var newProviderSettings = _providerSettings with
+        {
+            FallbackCommands = _providerSettings.FallbackCommands.SetItem(id, settings),
+        };
+        _providerSettings = newProviderSettings;
+        _settingsService.UpdateSettings(
+            s => s with
+            {
+                ProviderSettings = s.ProviderSettings.SetItem(_provider.ProviderId, newProviderSettings),
+            },
+            hotReload: false);
+    }
 
     private void InitializeSettingsPage()
     {

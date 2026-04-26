@@ -11,36 +11,28 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class HotkeyManager : ObservableObject
 {
     private readonly TopLevelCommandManager _topLevelCommandManager;
-    private readonly List<TopLevelHotkey> _commandHotkeys;
+    private readonly ISettingsService _settingsService;
 
     public HotkeyManager(TopLevelCommandManager tlcManager, ISettingsService settingsService)
     {
         _topLevelCommandManager = tlcManager;
-        _commandHotkeys = settingsService.Settings.CommandHotkeys;
+        _settingsService = settingsService;
     }
 
     public void UpdateHotkey(string commandId, HotkeySettings? hotkey)
     {
-        // If any of the commands were already bound to this hotkey, remove that
-        foreach (var item in _commandHotkeys)
+        _settingsService.UpdateSettings(s =>
         {
-            if (item.Hotkey == hotkey)
+            // Remove any command already bound to this hotkey, and remove old binding for this command
+            var hotkeys = s.CommandHotkeys
+                .RemoveAll(item => item.Hotkey == hotkey || item.CommandId == commandId);
+
+            if (hotkey is not null)
             {
-                item.Hotkey = null;
+                hotkeys = hotkeys.Add(new(hotkey, commandId));
             }
-        }
 
-        _commandHotkeys.RemoveAll(item => item.Hotkey is null);
-
-        foreach (var item in _commandHotkeys)
-        {
-            if (item.CommandId == commandId)
-            {
-                _commandHotkeys.Remove(item);
-                break;
-            }
-        }
-
-        _commandHotkeys.Add(new(hotkey, commandId));
+            return s with { CommandHotkeys = hotkeys };
+        });
     }
 }

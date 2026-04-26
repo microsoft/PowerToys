@@ -60,7 +60,7 @@
                             Width="16"
                             Height="16"
                             VerticalAlignment="Center"
-                            SourceRequested="{x:Bind help:IconCacheProvider.SourceRequested20}" />
+                            SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
 
                         <!--  Text  -->
                         <StackPanel
