@@ -165,6 +165,18 @@ public sealed partial class TaskbarWindow : WindowEx,
                 MoveToTaskbar();
                 return;
             }
+
+            // Re-assert topmost so we stay above the taskbar even after
+            // the user clicks on it (both windows are HWND_TOPMOST;
+            // whichever is activated last goes on top within that band).
+            PInvoke.SetWindowPos(
+                _hwnd,
+                HWND.HWND_TOPMOST,
+                0,
+                0,
+                0,
+                0,
+                SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
         }
 
         _updateLayoutDebouncer.Debounce(
@@ -244,7 +256,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         // would flash the window across the full taskbar width.
         PInvoke.SetWindowPos(
             _hwnd,
-            HWND.Null,
+            HWND.HWND_TOPMOST,
             newWindowRect.left,
             newWindowRect.top,
             newWindowRect.Width,
@@ -481,10 +493,17 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                 // Re-apply layout from cached metrics
                 var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
-                var buttonsInDips = _taskbarMetrics.ButtonsWidthInPixels / scaleFactor;
+                double buttonsInDips = _taskbarMetrics.ButtonsWidthInPixels / scaleFactor;
                 var trayInDips = _taskbarMetrics.TrayWidthInPixels / scaleFactor;
                 PInvoke.GetWindowRect(_hwnd, out var winRect);
                 var available = winRect.Width / (double)scaleFactor;
+
+                // Same overlap handling as UpdateTaskbarButtonsAsync
+                if (buttonsInDips + trayInDips > available)
+                {
+                    buttonsInDips = 0;
+                }
+
                 var forContent = available - buttonsInDips - trayInDips;
 
                 TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
@@ -505,16 +524,9 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                 _lastContentSpace = forContent;
 
-                // Re-apply clip from cached metrics (synchronous, no UIA)
-                var clipLeft = _taskbarMetrics.ButtonsWidthInPixels;
-                var clipRight = winRect.Width - _taskbarMetrics.TrayWidthInPixels;
-                var clipBottom = (int)(Root.ActualHeight * scaleFactor);
-
-                if (clipRight > clipLeft && clipBottom > 0)
-                {
-                    var hrgn = PInvoke.CreateRectRgn(clipLeft, 0, clipRight, clipBottom);
-                    _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
-                }
+                // Delegate clip to ClipWindow which handles content-
+                // based clipping correctly. Don't duplicate the logic.
+                ClipWindow().ConfigureAwait(false);
             },
             interval: TimeSpan.FromMilliseconds(500),
             immediate: false);
