@@ -9,10 +9,12 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.Utilities;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.Win32;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
@@ -37,6 +39,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private readonly WNDPROC? _originalWndProc;
     private readonly WNDPROC? _customWndProc;
+    private readonly IThemeService _themeService;
 
     private readonly DispatcherQueueTimer _updateLayoutDebouncer;
 
@@ -49,10 +52,14 @@ public sealed partial class TaskbarWindow : WindowEx,
     {
         var serviceProvider = App.Current.Services;
         var viewModel = serviceProvider.GetRequiredService<DockViewModel>();
+        _themeService = serviceProvider.GetRequiredService<IThemeService>();
 
         _bandsControl = new TaskbarBandControl(viewModel);
 
         InitializeComponent();
+
+        ApplySystemTheme();
+        _themeService.ThemeChanged += ThemeService_ThemeChanged;
 
         Activated += TaskbarWindow_Activated;
         UpdateFrame();
@@ -513,10 +520,33 @@ public sealed partial class TaskbarWindow : WindowEx,
             immediate: false);
     }
 
+    private static ElementTheme GetSystemTheme()
+    {
+        const string keyPath = @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+        var value = Registry.GetValue(keyPath, "SystemUsesLightTheme", 1);
+        return value is int i && i == 0 ? ElementTheme.Dark : ElementTheme.Light;
+    }
+
+    private void ApplySystemTheme()
+    {
+        var target = GetSystemTheme();
+
+        // LOAD BEARING: Cycling Dark→Light→target forces XAML to refresh.
+        Root.RequestedTheme = ElementTheme.Dark;
+        Root.RequestedTheme = ElementTheme.Light;
+        Root.RequestedTheme = target;
+    }
+
+    private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
+    {
+        DispatcherQueue.TryEnqueue(ApplySystemTheme);
+    }
+
     public void Dispose()
     {
         if (!_disposed)
         {
+            _themeService.ThemeChanged -= ThemeService_ThemeChanged;
             _updateLayoutDebouncer?.Stop();
             _taskbarWatcher.Changed -= OnTaskbarChanged;
             _taskbarWatcher.Dispose();
