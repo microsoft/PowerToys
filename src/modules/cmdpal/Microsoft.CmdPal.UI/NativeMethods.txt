@@ -118,4 +118,5 @@ FindWindowEx
 SetParent
 CreateRectRgn
 SetWindowRgn
+IsWindowVisible
 WM_DESTROY

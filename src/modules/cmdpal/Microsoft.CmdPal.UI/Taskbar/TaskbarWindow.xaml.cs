@@ -59,6 +59,11 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         _hwnd = new HWND(WindowNative.GetWindowHandle(this));
 
+        // Hide from alt-tab. Must be set early, before WinUI manages
+        // the window, to avoid fighting with the framework.
+        var exStyle = (WINDOW_EX_STYLE)PInvoke.GetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
+        _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, (int)(exStyle | WINDOW_EX_STYLE.WS_EX_TOOLWINDOW));
+
         _updateLayoutDebouncer = DispatcherQueue.CreateTimer();
 
         MainContent.SizeChanged += MainContent_SizeChanged;
@@ -195,16 +200,12 @@ public sealed partial class TaskbarWindow : WindowEx,
         var taskbarWindow = PInvoke.FindWindow("Shell_TrayWnd", null);
         var reBarWindow = PInvoke.FindWindowEx(taskbarWindow, HWND.Null, "ReBarWindow32", null);
 
-        // Owner (not parent) — Z-order linkage without message-loop coupling.
-        var oldStyle = (WINDOW_STYLE)PInvoke.GetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE);
-        var newStyle = (oldStyle & ~WINDOW_STYLE.WS_CHILD) | WINDOW_STYLE.WS_POPUP;
-        _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)newStyle);
-        PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_HWNDPARENT, (nint)taskbarWindow.Value);
-
+        // No parent/child/owner relationship — fully independent window.
+        // IsAlwaysOnTop (WS_EX_TOPMOST) keeps us above the taskbar.
+        // Auto-hide sync via TaskbarWatcher + EVENT_OBJECT_LOCATIONCHANGE.
         PInvoke.GetWindowRect(taskbarWindow, out var taskbarRect);
         PInvoke.GetWindowRect(reBarWindow, out var reBarRect);
 
-        // Absolute screen coordinates (popup window, not child).
         RECT newWindowRect = default;
         newWindowRect.left = taskbarRect.left;
         newWindowRect.top = reBarRect.top;
@@ -230,6 +231,13 @@ public sealed partial class TaskbarWindow : WindowEx,
         {
             var clipLeft = _taskbarMetrics.ButtonsWidthInPixels;
             var clipRight = newWindowRect.Width - _taskbarMetrics.TrayWidthInPixels;
+
+            // Cap if buttons + tray exceed window width.
+            if (clipLeft > clipRight && clipRight > 0)
+            {
+                clipLeft = clipRight;
+            }
+
             if (clipRight > clipLeft)
             {
                 var hrgn = PInvoke.CreateRectRgn(clipLeft, 0, clipRight, newWindowRect.Height);
@@ -268,13 +276,29 @@ public sealed partial class TaskbarWindow : WindowEx,
             {
                 var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
 
-                var buttonsInDips = buttonsPixels / scaleFactor;
-                TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
-
+                double buttonsInDips = buttonsPixels / scaleFactor;
                 var trayInDips = trayPixels / scaleFactor;
+
+                // Cap buttons so they don't extend past the tray boundary.
+                // Without being a child of Shell_TrayWnd, the taskbar's native
+                // buttons may fill all available space, overlapping the tray.
+                // Reserve space for our content by shrinking the buttons column.
+                PInvoke.GetWindowRect(_hwnd, out var winRect);
+                var available = winRect.Width / (double)scaleFactor;
+
+                // Ensure content gets at least some space by capping buttons.
+                // The content area = available - buttons - tray. For content
+                // to be visible, buttons must be ≤ available - tray - minContent.
+                const double minContentDips = 48;
+                var maxButtonsDips = Math.Max(0, available - trayInDips - minContentDips);
+                if (buttonsInDips > maxButtonsDips)
+                {
+                    buttonsInDips = maxButtonsDips;
+                }
+
+                TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
                 TrayIcons.Width = new GridLength(trayInDips);
 
-                var available = this.Bounds.Width;
                 var forContent = available - buttonsInDips - trayInDips;
 
                 if (_lastContentSpace == forContent)
@@ -355,11 +379,26 @@ public sealed partial class TaskbarWindow : WindowEx,
             {
                 var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
 
+                // Use GetWindowRect for the pixel width — this.Bounds
+                // may not be updated yet for standalone (non-child) windows.
+                PInvoke.GetWindowRect(_hwnd, out var winRect);
+
                 // The clip region must always stay between the taskbar
                 // buttons and the tray — never overlapping either one.
                 var clipLeft = _taskbarMetrics.ButtonsWidthInPixels;
-                var clipRight = (int)(this.Bounds.Width * scaleFactor) - _taskbarMetrics.TrayWidthInPixels;
+                var clipRight = winRect.Width - _taskbarMetrics.TrayWidthInPixels;
                 var clipBottom = (int)(Root.ActualHeight * scaleFactor);
+
+                // If buttons + tray exceed window width (overlap), cap
+                // clipLeft so we still have a visible content area.
+                if (clipLeft > clipRight && clipRight > 0)
+                {
+                    clipLeft = clipRight;
+                }
+
+                Logger.LogDebug($"ClipWindow: winRect=({winRect.left},{winRect.top},{winRect.right},{winRect.bottom}) W={winRect.Width} H={winRect.Height}");
+                Logger.LogDebug($"ClipWindow: buttons={_taskbarMetrics.ButtonsWidthInPixels}px tray={_taskbarMetrics.TrayWidthInPixels}px scale={scaleFactor}");
+                Logger.LogDebug($"ClipWindow: clipLeft={clipLeft} clipRight={clipRight} clipBottom={clipBottom} Root.ActualHeight={Root.ActualHeight}");
 
                 // If MainContent has laid out, further constrain to its
                 // actual position so we don't show empty space.
@@ -370,17 +409,20 @@ public sealed partial class TaskbarWindow : WindowEx,
                     var contentLeft = (int)(position.X * scaleFactor);
                     var contentRight = (int)((position.X + clipToElement.ActualWidth) * scaleFactor);
 
+                    Logger.LogDebug($"ClipWindow: MainContent pos=({position.X},{position.Y}) actualW={clipToElement.ActualWidth} contentLeft={contentLeft} contentRight={contentRight}");
+
                     // Clamp: content must stay within the buttons/tray bounds
                     clipLeft = Math.Max(clipLeft, contentLeft);
                     clipRight = Math.Min(clipRight, contentRight);
                 }
 
+                Logger.LogDebug($"ClipWindow: FINAL clipLeft={clipLeft} clipRight={clipRight} → {(clipRight > clipLeft ? "VISIBLE" : "ZERO-AREA CLIP")}");
+
                 if (clipRight <= clipLeft || clipBottom <= 0)
                 {
-                    // No space for content — hide entirely by applying
-                    // a zero-area region outside the visible area.
-                    var hrgn = PInvoke.CreateRectRgn(0, 0, 0, 0);
-                    _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
+                    // No space for content — clear the region so the
+                    // window stays visible rather than hiding entirely.
+                    _ = PInvoke.SetWindowRgn(_hwnd, HRGN.Null, true);
                 }
                 else
                 {
@@ -425,7 +467,8 @@ public sealed partial class TaskbarWindow : WindowEx,
                 var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
                 var buttonsInDips = _taskbarMetrics.ButtonsWidthInPixels / scaleFactor;
                 var trayInDips = _taskbarMetrics.TrayWidthInPixels / scaleFactor;
-                var available = this.Bounds.Width;
+                PInvoke.GetWindowRect(_hwnd, out var winRect);
+                var available = winRect.Width / (double)scaleFactor;
                 var forContent = available - buttonsInDips - trayInDips;
 
                 TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
@@ -448,7 +491,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                 // Re-apply clip from cached metrics (synchronous, no UIA)
                 var clipLeft = _taskbarMetrics.ButtonsWidthInPixels;
-                var clipRight = (int)(available * scaleFactor) - _taskbarMetrics.TrayWidthInPixels;
+                var clipRight = winRect.Width - _taskbarMetrics.TrayWidthInPixels;
                 var clipBottom = (int)(Root.ActualHeight * scaleFactor);
 
                 if (clipRight > clipLeft && clipBottom > 0)

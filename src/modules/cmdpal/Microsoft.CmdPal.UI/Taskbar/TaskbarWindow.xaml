@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:winuiex="using:WinUIEx"
     Title="CmdPal Taskbar"
-    IsAlwaysOnTop="False"
+    IsAlwaysOnTop="True"
     mc:Ignorable="d">
 
     <Window.SystemBackdrop>
@@ -20,7 +20,7 @@
         Height="44"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
-        Background="Transparent">
+        Background="White">
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="WindowsLogo" Width="60" />
@@ -31,11 +31,11 @@
         </Grid.ColumnDefinitions>
 
         <!--  Debug: color each column so we can see layout  -->
-        <!-- <Border Grid.Column="0" Background="#40FF0000" /> -->
-        <!-- <Border Grid.Column="1" Background="#400000FF" /> -->
-        <!-- <Border Grid.Column="2" Background="#4000FF00" /> -->
-        <!-- <Border Grid.Column="3" Background="#40FF00FF" /> -->
-        <!-- <Border Grid.Column="4" Background="#40FFFF00" /> -->
+        <Border Grid.Column="0" Background="#80FF0000" />
+        <Border Grid.Column="1" Background="#8000FF00" />
+        <Border Grid.Column="2" Background="#800000FF" />
+        <Border Grid.Column="3" Background="#8000FFFF" />
+        <Border Grid.Column="4" Background="#80FF00FF" />
 
         <ContentControl
             x:Name="MainContent"
