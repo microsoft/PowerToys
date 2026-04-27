@@ -17,9 +17,8 @@
 
     <Grid
         x:Name="Root"
-        Height="44"
         HorizontalAlignment="Stretch"
-        VerticalAlignment="Top"
+        VerticalAlignment="Stretch"
         Background="Transparent">
 
         <Grid.ColumnDefinitions>
@@ -61,6 +60,7 @@
             x:Name="MainContent"
             Grid.Column="3"
             HorizontalAlignment="Right"
+            VerticalAlignment="Center"
             SizeChanged="MainContent_SizeChanged" />
     </Grid>
 </winuiex:WindowEx>
