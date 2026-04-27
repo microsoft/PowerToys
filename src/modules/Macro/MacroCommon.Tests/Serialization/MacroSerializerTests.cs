@@ -53,6 +53,7 @@ public sealed class MacroSerializerTests
         Assert.AreEqual(1, restored.Steps[3].Steps?.Count);
         Assert.AreEqual(original.Description, restored.Description);
         Assert.AreEqual("Tab", restored.Steps[3].Steps![0].Key);
+        Assert.IsTrue(restored.IsEnabled);
     }
 
     [TestMethod]
@@ -102,7 +103,17 @@ public sealed class MacroSerializerTests
     }
 
     [TestMethod]
-    public void IsEnabled_DefaultsToTrue()
+    public void Serialize_IsEnabled_UsesSnakeCaseKey()
+    {
+        var macro = new MacroDefinition { Name = "T", IsEnabled = false };
+        var json = MacroSerializer.Serialize(macro);
+        StringAssert.Contains(json, "\"is_enabled\"");
+        Assert.IsFalse(json.Contains("\"IsEnabled\""));
+        Assert.IsFalse(json.Contains("\"isEnabled\""));
+    }
+
+    [TestMethod]
+    public void MacroDefinition_IsEnabled_DefaultsToTrue()
     {
         var macro = new MacroDefinition { Name = "T" };
         Assert.IsTrue(macro.IsEnabled);
