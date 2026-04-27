@@ -65,7 +65,7 @@ internal sealed class MacroEngineHost : IDisposable
 
     public async Task ExecuteMacroByIdAsync(string macroId, CancellationToken ct)
     {
-        if (!_loader.Macros.TryGetValue(macroId, out var macro))
+        if (!_loader.Macros.TryGetValue(macroId, out var macro) || !macro.IsEnabled)
         {
             return;
         }
