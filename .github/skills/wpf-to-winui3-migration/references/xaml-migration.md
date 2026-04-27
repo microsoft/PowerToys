@@ -223,7 +223,8 @@ This is the standard pattern in PowerToys (e.g., FileLocksmith, EnvironmentVaria
 > **Tip:** The `CommunityToolkit.WinUI` package provides many controls and helpers familiar to WPF developers that are missing from WinUI 3 out of the box. Before writing custom replacements, check whether CommunityToolkit already provides what you need.
 
 Key packages (XAML namespace is `using:CommunityToolkit.WinUI.Controls` for the `Controls.*` family):
-- **`CommunityToolkit.WinUI.Controls.Primitives`** — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox`, `HeaderedContentControl`
+- **`CommunityToolkit.WinUI.Controls.Primitives`** — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox`, `SwitchPresenter`
+- **`CommunityToolkit.WinUI.Controls.HeaderedControls`** — `HeaderedContentControl`, `HeaderedItemsControl`, `HeaderedTreeView`
 - **`CommunityToolkit.WinUI.Controls.SettingsControls`** — `SettingsCard`, `SettingsExpander`
 - **`CommunityToolkit.WinUI.Controls.Sizers`** — `GridSplitter`, `PropertySizer`, `ContentSizer`
 - **`CommunityToolkit.WinUI.UI.Controls.DataGrid`** — legacy v7 `DataGrid` (no longer maintained); prefer [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) for new work

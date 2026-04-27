@@ -121,15 +121,23 @@ These WPF controls have no direct counterpart and require a different control or
 | `DocumentViewer` | `WebView2` | Render PDFs/XPS inside WebView2 |
 | `FlowDocument` | `RichTextBlock` | Partial replacement only |
 | `RichTextBox` | `RichEditBox` | Rich text editing |
-| `WrapPanel` | `WrapPanel` | NuGet: `CommunityToolkit.WinUI.Controls.Primitives` |
-| `UniformGrid` | `UniformGrid` | NuGet: `CommunityToolkit.WinUI.Controls.Primitives` |
-| `DockPanel` | `DockPanel` | NuGet: `CommunityToolkit.WinUI.Controls.Primitives` |
-| `GroupBox` | `Expander` or custom `HeaderedContentControl` | No GroupBox in WinUI |
+| `GroupBox` | `Expander` (built-in) or `HeaderedContentControl` (Toolkit) | See [Layout & Header Controls from CommunityToolkit.WinUI](#layout--header-controls-from-communitytoolkitwinui) below |
 | `Label` | `TextBlock` | WPF `Label` is a `ContentControl`; use `TextBlock` + `AccessKey` |
 | `TreeView` | `TreeView` (native) | Available natively, but data binding model differs significantly |
 | `MessageBox` | `ContentDialog` | Must set `XamlRoot` before `ShowAsync()` |
 | `MediaElement` | `MediaPlayerElement` | Different API |
 | `AccessText` | Not available | Use `AccessKey` property on target control |
+
+### Layout & Header Controls from CommunityToolkit.WinUI
+
+These WPF controls have no built-in WinUI 3 equivalent — install the corresponding CommunityToolkit package. **The NuGet package id and the XAML namespace differ intentionally**: package names end in `.Primitives` / `.HeaderedControls`, but the registered XAML namespace is the shorter `CommunityToolkit.WinUI.Controls` (confirmed in the [official Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/5746230/why-does-communitytoolkit-uwp-controls-primitive-u)).
+
+| WPF Control | WinUI 3 Replacement | NuGet Package | XAML Namespace |
+|-------------|---------------------|---------------|----------------|
+| `WrapPanel` | `WrapPanel` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `UniformGrid` | `UniformGrid` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `DockPanel` | `DockPanel` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `GroupBox` (alt.) | `HeaderedContentControl` | `CommunityToolkit.WinUI.Controls.HeaderedControls` | `using:CommunityToolkit.WinUI.Controls` |
 
 ### No Equivalent — Requires Architectural Rework
 
@@ -206,7 +214,8 @@ These WPF features have no WinUI counterpart and require redesign, not find-and-
 | (none) | `Microsoft.Windows.SDK.BuildTools` | Required |
 | (none) | `WinUIEx` | Optional, window helpers |
 | (none) | `CommunityToolkit.WinUI.Converters` | Optional |
-| (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `HeaderedContentControl` |
+| (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox` |
+| (none) | `CommunityToolkit.WinUI.Controls.HeaderedControls` | Optional — `HeaderedContentControl`, `HeaderedItemsControl`, `HeaderedTreeView` |
 | (none) | `CommunityToolkit.WinUI.Controls.SettingsControls` | Optional — `SettingsCard`, `SettingsExpander` |
 | (none) | `CommunityToolkit.WinUI.Controls.Sizers` | Optional — `GridSplitter` |
 | (none) | `CommunityToolkit.WinUI.UI.Controls.DataGrid` | Legacy v7 — only for migrating existing `DataGrid` code; prefer `WinUI.TableView` |

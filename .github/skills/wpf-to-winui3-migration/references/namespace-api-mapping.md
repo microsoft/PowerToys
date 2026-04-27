@@ -58,7 +58,7 @@ These controls exist in both frameworks with the same name — change `System.Wi
 | `TabControl` | `TabView` | Different API |
 | `Menu` | `MenuBar` | Different API |
 | `StatusBar` | Custom `StackPanel` layout | No built-in equivalent |
-| `ListBox` | `ListView` (or `ItemsView`) | `ListBox` exists but is discouraged in WinUI 3; prefer `ListView`, or `ItemsView` (WinUI 1.5+) for modern collection scenarios |
+| `ListBox` | `ListView` (or `ItemsView`) | **Deprecated in WinUI 3 — do not use.** Prefer `ListView`, or `ItemsView` (WinUI 1.5+) for modern collection scenarios |
 | `AccessText` | Not available | Use `AccessKey` property on target control |
 
 ### WPF-UI (Lepo) to Native WinUI 3
@@ -132,13 +132,23 @@ These controls exist in WPF but require a different control, third-party library
 | `DocumentViewer` | `WebView2` | `Microsoft.Web.WebView2` — render PDFs/XPS |
 | `FlowDocument` | `RichTextBlock` | Partial replacement only |
 | `RichTextBox` | `RichEditBox` | Rich text editing |
-| `WrapPanel` | `WrapPanel` | `CommunityToolkit.WinUI.Controls.Primitives` (XAML ns: `using:CommunityToolkit.WinUI.Controls`) |
-| `UniformGrid` | `UniformGrid` | `CommunityToolkit.WinUI.Controls.Primitives` (XAML ns: `using:CommunityToolkit.WinUI.Controls`) |
-| `DockPanel` | `DockPanel` | `CommunityToolkit.WinUI.Controls.Primitives` (XAML ns: `using:CommunityToolkit.WinUI.Controls`) |
-| `GroupBox` | `Expander` or custom `HeaderedContentControl` | No GroupBox in WinUI |
+| `GroupBox` | `Expander` (built-in) or `HeaderedContentControl` (Toolkit) | See [Layout & Header Controls from CommunityToolkit.WinUI](#layout--header-controls-from-communitytoolkitwinui) below |
 | `Label` | `TextBlock` | WPF `Label` is a `ContentControl`; use `TextBlock` + `AccessKey` |
 | `TreeView` | `TreeView` (native) | Available natively, but data binding model differs significantly |
 | `MediaElement` | `MediaPlayerElement` | Different API |
+
+## Layout & Header Controls from CommunityToolkit.WinUI
+
+These WPF layout/header controls have no built-in WinUI 3 equivalent — install the corresponding CommunityToolkit package. **The NuGet package id and the XAML namespace differ intentionally**: package names end in `.Primitives` / `.HeaderedControls`, but both packages register their controls in the shorter `CommunityToolkit.WinUI.Controls` XAML namespace (confirmed in the [official Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/5746230/why-does-communitytoolkit-uwp-controls-primitive-u): *"all controls live under `CommunityToolkit.WinUI.Controls` … This is intentional"*).
+
+| WPF Control | WinUI 3 Replacement | NuGet Package | XAML Namespace |
+|-------------|---------------------|---------------|----------------|
+| `WrapPanel` | `WrapPanel` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `UniformGrid` | `UniformGrid` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `DockPanel` | `DockPanel` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `GroupBox` (alt.) | `HeaderedContentControl` | `CommunityToolkit.WinUI.Controls.HeaderedControls` | `using:CommunityToolkit.WinUI.Controls` |
+
+Other primitives in `Primitives`: `ConstrainedBox`, `SwitchPresenter`, `WrapLayout`, `StaggeredPanel`. Other Headered controls in `HeaderedControls`: `HeaderedItemsControl`, `HeaderedTreeView`.
 
 ## NuGet Package Migration
 
@@ -154,7 +164,8 @@ These controls exist in WPF but require a different control, third-party library
 | (none) | `WinUIEx` | Optional, window helpers |
 | (none) | `CommunityToolkit.WinUI.Converters` | Optional |
 | (none) | `CommunityToolkit.WinUI.Extensions` | Optional |
-| (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox`, `HeaderedContentControl` |
+| (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox`, `SwitchPresenter` |
+| (none) | `CommunityToolkit.WinUI.Controls.HeaderedControls` | Optional — `HeaderedContentControl`, `HeaderedItemsControl`, `HeaderedTreeView` |
 | (none) | `CommunityToolkit.WinUI.Controls.SettingsControls` | Optional — `SettingsCard`, `SettingsExpander` |
 | (none) | `CommunityToolkit.WinUI.Controls.Sizers` | Optional — `GridSplitter`, `PropertySizer` |
 | (none) | `CommunityToolkit.WinUI.UI.Controls.DataGrid` | Legacy v7 — only if migrating existing `DataGrid` code; prefer [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) for new work |
