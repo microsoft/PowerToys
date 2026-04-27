@@ -16,5 +16,7 @@ public sealed record MacroDefinition
 
     public string? AppScope { get; init; }
 
+    public bool IsEnabled { get; init; } = true;
+
     public List<MacroStep> Steps { get; init; } = [];
 }

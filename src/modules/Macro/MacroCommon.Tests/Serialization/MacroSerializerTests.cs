@@ -100,4 +100,29 @@ public sealed class MacroSerializerTests
         Assert.ThrowsException<System.Text.Json.JsonException>(
             () => MacroSerializer.Deserialize("{ not valid"));
     }
+
+    [TestMethod]
+    public void IsEnabled_DefaultsToTrue()
+    {
+        var macro = new MacroDefinition { Name = "T" };
+        Assert.IsTrue(macro.IsEnabled);
+    }
+
+    [TestMethod]
+    public void IsEnabled_False_RoundTrips()
+    {
+        var macro = new MacroDefinition { Name = "T", IsEnabled = false };
+        var json = MacroSerializer.Serialize(macro);
+        var restored = MacroSerializer.Deserialize(json);
+        Assert.IsFalse(restored.IsEnabled);
+    }
+
+    [TestMethod]
+    public void IsEnabled_True_RoundTrips()
+    {
+        var macro = new MacroDefinition { Name = "T", IsEnabled = true };
+        var json = MacroSerializer.Serialize(macro);
+        var restored = MacroSerializer.Deserialize(json);
+        Assert.IsTrue(restored.IsEnabled);
+    }
 }

@@ -122,7 +122,7 @@ internal sealed class MacroEngineHost : IDisposable
     {
         foreach (var macro in _loader.Macros.Values)
         {
-            if (macro.Hotkey is not null)
+            if (macro.Hotkey is not null && macro.IsEnabled)
             {
                 try
                 {
