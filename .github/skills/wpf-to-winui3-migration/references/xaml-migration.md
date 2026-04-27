@@ -222,8 +222,11 @@ This is the standard pattern in PowerToys (e.g., FileLocksmith, EnvironmentVaria
 
 > **Tip:** The `CommunityToolkit.WinUI` package provides many controls and helpers familiar to WPF developers that are missing from WinUI 3 out of the box. Before writing custom replacements, check whether CommunityToolkit already provides what you need.
 
-Key packages:
-- **`CommunityToolkit.WinUI.Controls`** — `DataGrid`, `WrapPanel`, `DockPanel`, `UniformGrid`, `TokenizingTextBox`, `HeaderedContentControl`, and more
+Key packages (XAML namespace is `using:CommunityToolkit.WinUI.Controls` for the `Controls.*` family):
+- **`CommunityToolkit.WinUI.Controls.Primitives`** — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox`, `HeaderedContentControl`
+- **`CommunityToolkit.WinUI.Controls.SettingsControls`** — `SettingsCard`, `SettingsExpander`
+- **`CommunityToolkit.WinUI.Controls.Sizers`** — `GridSplitter`, `PropertySizer`, `ContentSizer`
+- **`CommunityToolkit.WinUI.UI.Controls.DataGrid`** — legacy v7 `DataGrid` (no longer maintained); prefer [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) for new work
 - **`CommunityToolkit.WinUI.Converters`** — Common value converters (`BoolToVisibilityConverter`, `StringFormatConverter`, etc.)
 - **`CommunityToolkit.WinUI.Behaviors`** — XAML behaviors for animations and interactions
 - **`CommunityToolkit.WinUI.Extensions`** — Extension methods for WinUI types
@@ -547,19 +550,25 @@ Both are available. Prefer `{x:Bind}` for compile-time safety and performance.
 | Performance | Reflection-based | Compiled |
 | Function binding | No | Yes |
 
-### WPF-Specific Binding Features to Remove
+### Binding Differences from WPF
+
+These WPF binding patterns behave differently in WinUI 3 — review on a case-by-case basis rather than mechanically removing.
 
 ```xml
-<!-- These WPF-only features must be removed or rewritten -->
+<!-- UpdateSourceTrigger: limited support in WinUI 3 -->
 <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}" />
-<!-- WinUI 3: UpdateSourceTrigger not needed; TextBox uses PropertyChanged by default -->
+<!-- WinUI 3: UpdateSourceTrigger=LostFocus does NOT exist; PropertyChanged is the TextBox default.
+     Prefer x:Bind, which binds with PropertyChanged semantics by default for TwoWay. -->
 <TextBox Text="{x:Bind ViewModel.Value, Mode=TwoWay}" />
 
-{Binding RelativeSource={RelativeSource Self}, ...}
-<!-- WinUI 3: Use x:Bind which binds to the page itself, or use ElementName -->
+<!-- RelativeSource: Self and TemplatedParent ARE supported in WinUI 3 -->
+<TextBlock Text="{Binding Tag, RelativeSource={RelativeSource Self}}" />
+<!-- Works in WinUI 3. FindAncestor mode is NOT supported — use ElementName, x:Bind,
+     or the CommunityToolkit FrameworkElementExtensions.Ancestor attached property to reach ancestors. -->
 
+<!-- {Binding} empty path: works in WinUI 3 (binds to the current DataContext) -->
 <ItemsControl ItemsSource="{Binding}" />
-<!-- WinUI 3: Must specify explicit path -->
+<!-- This is valid. Note: x:Bind requires an explicit path — there is no empty-path x:Bind. -->
 <ItemsControl ItemsSource="{x:Bind ViewModel.Items}" />
 ```
 
@@ -595,10 +604,13 @@ Use this table for mechanical batch translation. Apply these rules consistently 
 |------|-------------|---------|
 | `ContextMenu=` | `ContextFlyout=` | On any UIElement |
 | `{DynamicResource ` | `{ThemeResource ` | Theme-responsive references |
-| `{x:Static ` | `{x:Bind ` | Static member references |
+| `{x:Static prefix:Resources.Key}` | `x:Uid="Key"` (with `.resw`) | Resource string — most common WPF case; mechanical `{x:Bind}` will NOT compile here |
+| `{x:Static prefix:Type.Member}` | `{x:Bind prefix:Type.Member}` | Static field/property reference (function binding) |
 | `Visibility="Hidden"` | `Visibility="Collapsed"` | Or use `Opacity="0"` for layout |
 | `MouseLeftButtonDown` | `PointerPressed` | Event handlers |
 | `MouseLeftButtonUp` | `PointerReleased` | Event handlers |
+| `MouseRightButtonDown` | `RightTapped` | Or `PointerPressed` + check `IsRightButtonPressed` |
+| `MouseRightButtonUp` | `PointerReleased` + check `IsRightButtonPressed` | No direct WinUI event; use `RightTapped` only for context-menu-open semantics |
 | `MouseEnter` | `PointerEntered` | Event handlers |
 | `MouseLeave` | `PointerExited` | Event handlers |
 | `MouseMove` | `PointerMoved` | Event handlers |

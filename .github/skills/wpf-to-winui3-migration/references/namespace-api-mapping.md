@@ -47,7 +47,7 @@ Complete reference for mapping WPF types to WinUI 3 equivalents, based on the Im
 
 These controls exist in both frameworks with the same name — change `System.Windows.Controls` to `Microsoft.UI.Xaml.Controls`:
 
-`Button`, `TextBox`, `TextBlock`, `ComboBox`, `CheckBox`, `ListBox`, `ListView`, `Image`, `StackPanel`, `Grid`, `Border`, `ScrollViewer`, `ContentControl`, `UserControl`, `Page`, `Frame`, `Slider`, `ProgressBar`, `ToolTip`, `RadioButton`, `ToggleButton`
+`Button`, `TextBox`, `TextBlock`, `ComboBox`, `CheckBox`, `ListView`, `Image`, `StackPanel`, `Grid`, `Border`, `ScrollViewer`, `ContentControl`, `UserControl`, `Page`, `Frame`, `Slider`, `ProgressBar`, `ToolTip`, `RadioButton`, `ToggleButton`
 
 ### Controls With Different Names or Behavior
 
@@ -58,6 +58,7 @@ These controls exist in both frameworks with the same name — change `System.Wi
 | `TabControl` | `TabView` | Different API |
 | `Menu` | `MenuBar` | Different API |
 | `StatusBar` | Custom `StackPanel` layout | No built-in equivalent |
+| `ListBox` | `ListView` (or `ItemsView`) | `ListBox` exists but is discouraged in WinUI 3; prefer `ListView`, or `ItemsView` (WinUI 1.5+) for modern collection scenarios |
 | `AccessText` | Not available | Use `AccessKey` property on target control |
 
 ### WPF-UI (Lepo) to Native WinUI 3
@@ -121,8 +122,8 @@ These controls exist in WPF but require a different control, third-party library
 
 | WPF Control | WinUI 3 Replacement | Package / Notes |
 |-------------|---------------------|-----------------|
-| `DataGrid` | `DataGrid` | `CommunityToolkit.WinUI.UI.Controls` — similar API, not identical |
-| `Ribbon` | `CommandBar` or `NavigationView` | No Ribbon in WinUI |
+| `DataGrid` | [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) | Community library; the Toolkit `DataGrid` is no longer maintained. PowerToys legacy modules may still pin v7 `CommunityToolkit.WinUI.UI.Controls.DataGrid` 7.1.2 — prefer `WinUI.TableView` for new work. |
+| `Ribbon` | `CommandBar` / `NavigationView`, or [Toolkit Labs Ribbon](https://github.com/CommunityToolkit/Labs-Windows/tree/main/components/Ribbon) | No first-party Ribbon in WinUI; the Labs component is experimental and partial |
 | `Menu` / `MenuItem` | `MenuBar` / `MenuBarItem` / `MenuFlyoutItem` | `MenuBar` for classic menu, `MenuFlyout` for context |
 | `ContextMenu` | `MenuFlyout` | Assign to `ContextFlyout` property |
 | `ToolBar` / `ToolBarTray` | `CommandBar` + `AppBarButton` | |
@@ -131,9 +132,9 @@ These controls exist in WPF but require a different control, third-party library
 | `DocumentViewer` | `WebView2` | `Microsoft.Web.WebView2` — render PDFs/XPS |
 | `FlowDocument` | `RichTextBlock` | Partial replacement only |
 | `RichTextBox` | `RichEditBox` | Rich text editing |
-| `WrapPanel` | `WrapPanel` | `CommunityToolkit.WinUI.UI.Controls` |
-| `UniformGrid` | `UniformGrid` | `CommunityToolkit.WinUI.UI.Controls` |
-| `DockPanel` | `DockPanel` | `CommunityToolkit.WinUI.UI.Controls` |
+| `WrapPanel` | `WrapPanel` | `CommunityToolkit.WinUI.Controls.Primitives` (XAML ns: `using:CommunityToolkit.WinUI.Controls`) |
+| `UniformGrid` | `UniformGrid` | `CommunityToolkit.WinUI.Controls.Primitives` (XAML ns: `using:CommunityToolkit.WinUI.Controls`) |
+| `DockPanel` | `DockPanel` | `CommunityToolkit.WinUI.Controls.Primitives` (XAML ns: `using:CommunityToolkit.WinUI.Controls`) |
 | `GroupBox` | `Expander` or custom `HeaderedContentControl` | No GroupBox in WinUI |
 | `Label` | `TextBlock` | WPF `Label` is a `ContentControl`; use `TextBlock` + `AccessKey` |
 | `TreeView` | `TreeView` (native) | Available natively, but data binding model differs significantly |
@@ -153,6 +154,10 @@ These controls exist in WPF but require a different control, third-party library
 | (none) | `WinUIEx` | Optional, window helpers |
 | (none) | `CommunityToolkit.WinUI.Converters` | Optional |
 | (none) | `CommunityToolkit.WinUI.Extensions` | Optional |
+| (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox`, `HeaderedContentControl` |
+| (none) | `CommunityToolkit.WinUI.Controls.SettingsControls` | Optional — `SettingsCard`, `SettingsExpander` |
+| (none) | `CommunityToolkit.WinUI.Controls.Sizers` | Optional — `GridSplitter`, `PropertySizer` |
+| (none) | `CommunityToolkit.WinUI.UI.Controls.DataGrid` | Legacy v7 — only if migrating existing `DataGrid` code; prefer [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) for new work |
 | (none) | `Microsoft.Web.WebView2` | If using WebView |
 
 ## Project File Changes
@@ -196,8 +201,9 @@ These controls exist in WPF but require a different control, third-party library
 Key changes:
 - `UseWPF` → `UseWinUI`
 - TFM: `net8.0-windows` → `net8.0-windows10.0.19041.0`
-- Add `WindowsPackageType=None` for unpackaged desktop apps
-- Add `SelfContained=true` + `WindowsAppSDKSelfContained=true`
+- **CRITICAL: Add `WindowsPackageType=None`** — marks the app as unpackaged (no MSIX). Without this, the build produces an MSIX-style package that won't run as a standalone PowerToys module.
+- **CRITICAL: Add `WindowsAppSDKSelfContained=true`** — bundles the Windows App SDK runtime DLLs (e.g. `Microsoft.UI.Xaml.dll`) into the output directory. Without this, the app throws `COMException: ClassFactory cannot supply requested class` at startup because the WinUI 3 COM classes cannot be found.
+- Add `SelfContained=true` (usually via `Common.SelfContained.props`)
 - Add `DISABLE_XAML_GENERATED_MAIN` if using custom `Program.cs` entry point
 - Set `ProjectPriFileName` to match your module's assembly name
 - Move icon from `Resources/` to `Assets/<Module>/`

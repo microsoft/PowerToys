@@ -55,7 +55,8 @@ These rules capture human judgment and must be applied consistently across every
 - **Do NOT overwrite `App.xaml` / `App.xaml.cs`** — WinUI 3 has different lifecycle boilerplate. Merge resources and init code into the generated WinUI 3 App class.
 - **Do NOT create Exe→WinExe `ProjectReference`** — Extract shared code to a Library project. Causes phantom build artifacts.
 - **Do NOT instantiate services directly** — Use DI and CommunityToolkit.Mvvm patterns.
-- **Do NOT create new `Window` classes** — PowerToys modules use a single Window with content navigation.
+- **Do NOT create a `Window` subclass for every dialog or sub-page** — use `ContentDialog` for in-app dialogs and `Frame`/`Page` navigation for sub-views. Separate `Window` classes are reserved for distinct top-level surfaces (e.g., FancyZones editor, OOBE).
+- **Do NOT omit `WindowsPackageType=None` and `WindowsAppSDKSelfContained=true`** — Both are mandatory in the csproj for every WinUI 3 module in PowerToys. Without them the app crashes at startup with `COMException: ClassFactory cannot supply requested class` because the WinUI 3 runtime DLLs are not found.
 
 **XAML prohibitions:**
 - **Do NOT use `{DynamicResource}`** — Replace with `{ThemeResource}` (theme-reactive) or `{StaticResource}`.
@@ -110,8 +111,8 @@ These WPF controls have no direct counterpart and require a different control or
 
 | WPF Control | WinUI 3 Replacement | Notes |
 |-------------|---------------------|-------|
-| `DataGrid` | Community Toolkit `DataGrid` | `CommunityToolkit.WinUI.UI.Controls` — similar API, not identical |
-| `Ribbon` | `CommandBar` or `NavigationView` | No Ribbon in WinUI |
+| `DataGrid` | [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) | Community library; the Toolkit `DataGrid` is no longer maintained. Legacy code may still pin v7 `CommunityToolkit.WinUI.UI.Controls.DataGrid` 7.1.2 |
+| `Ribbon` | `CommandBar` / `NavigationView`, or [Toolkit Labs Ribbon](https://github.com/CommunityToolkit/Labs-Windows/tree/main/components/Ribbon) | No first-party Ribbon in WinUI; Labs component is experimental/partial |
 | `Menu` / `MenuItem` | `MenuBar` / `MenuBarItem` / `MenuFlyout` | `MenuBar` for classic menu, `MenuFlyout` for context |
 | `ContextMenu` | `MenuFlyout` | Assign to `ContextFlyout` property |
 | `ToolBar` / `ToolBarTray` | `CommandBar` + `AppBarButton` | |
@@ -120,9 +121,9 @@ These WPF controls have no direct counterpart and require a different control or
 | `DocumentViewer` | `WebView2` | Render PDFs/XPS inside WebView2 |
 | `FlowDocument` | `RichTextBlock` | Partial replacement only |
 | `RichTextBox` | `RichEditBox` | Rich text editing |
-| `WrapPanel` | Community Toolkit `WrapPanel` | Not in WinUI by default |
-| `UniformGrid` | Community Toolkit `UniformGrid` | Not in WinUI by default |
-| `DockPanel` | Community Toolkit `DockPanel` | Not in WinUI by default |
+| `WrapPanel` | `WrapPanel` | NuGet: `CommunityToolkit.WinUI.Controls.Primitives` |
+| `UniformGrid` | `UniformGrid` | NuGet: `CommunityToolkit.WinUI.Controls.Primitives` |
+| `DockPanel` | `DockPanel` | NuGet: `CommunityToolkit.WinUI.Controls.Primitives` |
 | `GroupBox` | `Expander` or custom `HeaderedContentControl` | No GroupBox in WinUI |
 | `Label` | `TextBlock` | WPF `Label` is a `ContentControl`; use `TextBlock` + `AccessKey` |
 | `TreeView` | `TreeView` (native) | Available natively, but data binding model differs significantly |
@@ -205,7 +206,10 @@ These WPF features have no WinUI counterpart and require redesign, not find-and-
 | (none) | `Microsoft.Windows.SDK.BuildTools` | Required |
 | (none) | `WinUIEx` | Optional, window helpers |
 | (none) | `CommunityToolkit.WinUI.Converters` | Optional |
-| (none) | `CommunityToolkit.WinUI.UI.Controls` | DataGrid, WrapPanel, DockPanel, UniformGrid |
+| (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `HeaderedContentControl` |
+| (none) | `CommunityToolkit.WinUI.Controls.SettingsControls` | Optional — `SettingsCard`, `SettingsExpander` |
+| (none) | `CommunityToolkit.WinUI.Controls.Sizers` | Optional — `GridSplitter` |
+| (none) | `CommunityToolkit.WinUI.UI.Controls.DataGrid` | Legacy v7 — only for migrating existing `DataGrid` code; prefer `WinUI.TableView` |
 
 ### XAML Syntax Changes
 
@@ -274,6 +278,8 @@ Read only the section relevant to your current task:
 | JPEG quality value wrong after migration | WPF: int 1-100; WinRT: float 0.0-1.0 |
 | MSIX packaging fails in PreBuildEvent | Move to PostBuildEvent; artifacts not ready at PreBuild time |
 | RC file icon path with forward slashes | Use double-backslash escaping: `..\\ui\\Assets\\icon.ico` |
+| `COMException: ClassFactory cannot supply requested class` at startup | Missing `<WindowsPackageType>None</WindowsPackageType>` and/or `<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>` in csproj. Without these, the app tries to locate the Windows App SDK framework package (not installed) instead of using bundled runtime DLLs. **Both properties are mandatory for every WinUI 3 module in PowerToys.** |
+| `CombinedGeometry` not available in WinUI 3 | WinUI 3 `UIElement.Clip` only accepts `RectangleGeometry`. For overlay hole effects (exclude region), use a `Path` element with `GeometryGroup FillRule="EvenOdd"` containing two `RectangleGeometry` children — the EvenOdd rule creates a transparent hole where geometries overlap. |
 
 ## Troubleshooting
 
@@ -286,3 +292,4 @@ Read only the section relevant to your current task:
 | NuGet restore failures | Run `build-essentials.cmd` after adding `Microsoft.WindowsAppSDK` package |
 | `Parallel.ForEach` compilation error | Migrate to `Parallel.ForEachAsync` for async imaging operations |
 | Signing check fails on leaked artifacts | Run `generateAllFileComponents.ps1`; verify only `WinUI3Apps\\` paths in signing config |
+| `COMException` / `ClassFactory` error at app launch | Ensure csproj has `<WindowsPackageType>None</WindowsPackageType>` and `<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>`. These are required for all unpackaged WinUI 3 apps in PowerToys — without them the WinUI 3 COM runtime cannot be found. |
