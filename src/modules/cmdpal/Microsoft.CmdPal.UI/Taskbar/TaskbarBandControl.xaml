@@ -185,9 +185,10 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
+    <!--  "#ffFF8800"  -->
     <StackPanel
         HorizontalAlignment="Right"
-        Background="#ffFF8800"
+        Background="Transparent"
         Orientation="Horizontal"
         RightTapped="RootPanel_RightTapped">
         <ListView

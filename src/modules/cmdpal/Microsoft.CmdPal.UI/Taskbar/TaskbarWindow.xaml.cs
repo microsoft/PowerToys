@@ -15,6 +15,7 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT.Interop;
@@ -52,6 +53,9 @@ public sealed partial class TaskbarWindow : WindowEx,
         _bandsControl = new TaskbarBandControl(viewModel);
 
         InitializeComponent();
+
+        Activated += TaskbarWindow_Activated;
+        UpdateFrame();
 
         MainContent.Content = _bandsControl;
 
@@ -97,6 +101,22 @@ public sealed partial class TaskbarWindow : WindowEx,
         }
 
         MoveToTaskbar();
+    }
+
+    private void TaskbarWindow_Activated(object sender, WindowActivatedEventArgs args)
+    {
+        UpdateFrame();
+    }
+
+    private void UpdateFrame()
+    {
+        // These are used for removing the very subtle shadow/border that we get from Windows 11
+        HwndExtensions.ToggleWindowStyle(_hwnd, false, WindowStyle.TiledWindow);
+        unsafe
+        {
+            BOOL value = false;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
+        }
     }
 
     private void MainContent_SizeChanged(object sender, SizeChangedEventArgs e)
