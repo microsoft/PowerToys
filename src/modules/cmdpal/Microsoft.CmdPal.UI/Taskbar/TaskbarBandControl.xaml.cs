@@ -136,6 +136,16 @@ public sealed partial class TaskbarBandControl : UserControl,
         UpdateEditMode(true, showFlyout);
     }
 
+    /// <summary>
+    /// Sets the preferred placement of the edit mode teaching tip.
+    /// Should be the opposite of the taskbar edge (e.g. Top for a
+    /// bottom taskbar, Bottom for a top taskbar).
+    /// </summary>
+    internal void SetTeachingTipPlacement(Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode placement)
+    {
+        EditButtonsTeachingTip.PreferredPlacement = placement;
+    }
+
     internal void ExitEditMode()
     {
         _isEditMode = false;

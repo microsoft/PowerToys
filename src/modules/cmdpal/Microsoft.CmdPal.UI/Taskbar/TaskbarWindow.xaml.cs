@@ -263,6 +263,30 @@ public sealed partial class TaskbarWindow : WindowEx,
             newWindowRect.Height,
             SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE);
 
+        // Detect which screen edge the taskbar is on and set the
+        // teaching tip placement to the opposite direction.
+        var monitorHandle = PInvoke.MonitorFromWindow(_hwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+        var monitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
+        PInvoke.GetMonitorInfo(monitorHandle, ref monitorInfo);
+        var screen = monitorInfo.rcMonitor;
+
+        if (taskbarRect.top <= screen.top)
+        {
+            _bandsControl.SetTeachingTipPlacement(Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Bottom);
+        }
+        else if (taskbarRect.bottom >= screen.bottom)
+        {
+            _bandsControl.SetTeachingTipPlacement(Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Top);
+        }
+        else if (taskbarRect.left <= screen.left)
+        {
+            _bandsControl.SetTeachingTipPlacement(Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Right);
+        }
+        else
+        {
+            _bandsControl.SetTeachingTipPlacement(Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Left);
+        }
+
         // Apply an immediate clip using pre-loaded metrics so the window
         // never flashes across the full taskbar width. The async ClipWindow
         // call will refine this once XAML layout has settled.
