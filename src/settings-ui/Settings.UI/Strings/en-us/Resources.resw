@@ -4526,6 +4526,50 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Workspaces_ShortDescription" xml:space="preserve">
     <value>Open editor</value>
   </data>
+  <data name="Shell_Macro.Content" xml:space="preserve">
+    <value>Macro</value>
+    <comment>Product name: Navigation view item name for Macro</comment>
+  </data>
+  <data name="MacroPage_Header.Title" xml:space="preserve">
+    <value>Macro</value>
+    <comment>Settings page header title for Macro module</comment>
+  </data>
+  <data name="MacroPage_Header.Description" xml:space="preserve">
+    <value>Create and manage keyboard macros with multiple steps</value>
+    <comment>Settings page header description for Macro module</comment>
+  </data>
+  <data name="Macro_NewMacroButton.Content" xml:space="preserve">
+    <value>New macro</value>
+    <comment>Button label to create a new macro</comment>
+  </data>
+  <data name="Macro_MacrosGroup.Header" xml:space="preserve">
+    <value>Macros</value>
+    <comment>Settings group header listing all macros</comment>
+  </data>
+  <data name="MacroEdit_NameLabel.Header" xml:space="preserve">
+    <value>Name</value>
+    <comment>Label for macro name field in edit dialog</comment>
+  </data>
+  <data name="MacroEdit_HotkeyLabel.Header" xml:space="preserve">
+    <value>Hotkey</value>
+    <comment>Label for macro hotkey field in edit dialog</comment>
+  </data>
+  <data name="MacroEdit_AppScopeLabel.Header" xml:space="preserve">
+    <value>App scope (process name)</value>
+    <comment>Label for app scope field in edit dialog. Leave blank for global.</comment>
+  </data>
+  <data name="MacroEdit_StepsGroup.Header" xml:space="preserve">
+    <value>Steps</value>
+    <comment>Header for the steps section in macro edit dialog</comment>
+  </data>
+  <data name="MacroEdit_AddStep.Content" xml:space="preserve">
+    <value>+ Add step</value>
+    <comment>Button label to add a step to a macro</comment>
+  </data>
+  <data name="MacroEdit_AddSubStep.Content" xml:space="preserve">
+    <value>+ Add sub-step</value>
+    <comment>Button label to add a sub-step inside a Repeat step</comment>
+  </data>
   <data name="Shell_ZoomIt.Content" xml:space="preserve">
     <value>ZoomIt</value>
     <comment>{Locked="ZoomIt"}</comment>
