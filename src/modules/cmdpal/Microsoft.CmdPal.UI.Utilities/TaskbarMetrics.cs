@@ -223,8 +223,14 @@ public sealed unsafe class TaskbarMetrics : IDisposable
             return 0;
         }
 
-        PInvoke.GetWindowRect(tray, out var rect);
-        return rect.Width;
+        // Measure from the tray's left edge to the taskbar's right edge.
+        // TrayNotifyWnd alone doesn't cover the full tray area — the
+        // clock, date, and action center extend beyond it on Windows 11.
+        PInvoke.GetWindowRect(taskbarHwnd, out var taskbarRect);
+        PInvoke.GetWindowRect(tray, out var trayRect);
+        var result = taskbarRect.right - trayRect.left;
+        System.Diagnostics.Debug.WriteLine($"MeasureTray: taskbar=({taskbarRect.left},{taskbarRect.top},{taskbarRect.right},{taskbarRect.bottom}) tray=({trayRect.left},{trayRect.top},{trayRect.right},{trayRect.bottom}) trayNotifyWidth={trayRect.Width} RESULT={result}");
+        return result;
     }
 
     private void EnsureAutomation()

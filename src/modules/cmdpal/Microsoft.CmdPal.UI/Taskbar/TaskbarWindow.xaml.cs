@@ -252,10 +252,13 @@ public sealed partial class TaskbarWindow : WindowEx,
             var clipLeft = _taskbarMetrics.ButtonsWidthInPixels;
             var clipRight = newWindowRect.Width - _taskbarMetrics.TrayWidthInPixels;
 
-            // Cap if buttons + tray exceed window width.
-            if (clipLeft > clipRight && clipRight > 0)
+            // Reserve minimum content space.
+            var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+            var minContentPixels = (int)(48 * scaleFactor);
+            var maxClipLeft = Math.Max(0, clipRight - minContentPixels);
+            if (clipLeft > maxClipLeft)
             {
-                clipLeft = clipRight;
+                clipLeft = maxClipLeft;
             }
 
             if (clipRight > clipLeft)
@@ -409,11 +412,15 @@ public sealed partial class TaskbarWindow : WindowEx,
                 var clipRight = winRect.Width - _taskbarMetrics.TrayWidthInPixels;
                 var clipBottom = (int)(Root.ActualHeight * scaleFactor);
 
-                // If buttons + tray exceed window width (overlap), cap
-                // clipLeft so we still have a visible content area.
-                if (clipLeft > clipRight && clipRight > 0)
+                // Reserve minimum content space (same cap as the layout).
+                // Without being a child window, buttons + tray can exceed
+                // the window width. Cap clipLeft so the clip region has
+                // at least minContentPixels of visible area.
+                var minContentPixels = (int)(48 * scaleFactor);
+                var maxClipLeft = Math.Max(0, clipRight - minContentPixels);
+                if (clipLeft > maxClipLeft)
                 {
-                    clipLeft = clipRight;
+                    clipLeft = maxClipLeft;
                 }
 
                 Logger.LogDebug($"ClipWindow: winRect=({winRect.left},{winRect.top},{winRect.right},{winRect.bottom}) W={winRect.Width} H={winRect.Height}");

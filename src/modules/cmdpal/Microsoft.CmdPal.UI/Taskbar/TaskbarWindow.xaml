@@ -20,22 +20,42 @@
         Height="44"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
-        Background="White">
+        Background="Transparent">
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="WindowsLogo" Width="60" />
+            <!-- <ColumnDefinition x:Name="WindowsLogo" Width="60" /> -->
+            <ColumnDefinition x:Name="WindowsLogo" Width="0" />
             <ColumnDefinition x:Name="TaskbarButtons" Width="0" />
             <ColumnDefinition x:Name="Mid" Width="*" />
             <ColumnDefinition x:Name="ContentColumn" Width="Auto" />
             <ColumnDefinition x:Name="TrayIcons" Width="400" />
         </Grid.ColumnDefinitions>
 
-        <!--  Debug: color each column so we can see layout  -->
+        <!--  Debug: color each column so we can see layout
         <Border Grid.Column="0" Background="#80FF0000" />
         <Border Grid.Column="1" Background="#8000FF00" />
         <Border Grid.Column="2" Background="#800000FF" />
         <Border Grid.Column="3" Background="#8000FFFF" />
         <Border Grid.Column="4" Background="#80FF00FF" />
+        -->
+
+        <Border Grid.Column="0" />
+        <Border
+            Grid.Column="1"
+            BorderBrush="#8000FF00"
+            BorderThickness="2" />
+        <Border
+            Grid.Column="2"
+            BorderBrush="#800000FF"
+            BorderThickness="2" />
+        <Border
+            Grid.Column="3"
+            BorderBrush="#8000FFFF"
+            BorderThickness="2" />
+        <Border
+            Grid.Column="4"
+            BorderBrush="#80FF00FF"
+            BorderThickness="2" />
 
         <ContentControl
             x:Name="MainContent"

@@ -189,6 +189,8 @@
     <StackPanel
         HorizontalAlignment="Right"
         Background="Transparent"
+        BorderBrush="Red"
+        BorderThickness="2"
         Orientation="Horizontal"
         RightTapped="RootPanel_RightTapped">
         <ListView
