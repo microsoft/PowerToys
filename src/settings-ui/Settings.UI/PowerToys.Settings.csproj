@@ -140,6 +140,12 @@
 		<NoWarn>VSTHRD002;VSTHRD110;VSTHRD100;VSTHRD200;VSTHRD101</NoWarn>
 	</PropertyGroup>
 
+	<ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>Settings.UI.UnitTests</_Parameter1>
+		</AssemblyAttribute>
+	</ItemGroup>
+
 	<!-- Removed hard-coded resource exclusion. -->
 
 	<ItemGroup>
