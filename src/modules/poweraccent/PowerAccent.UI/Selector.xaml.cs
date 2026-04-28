@@ -118,6 +118,10 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
                 characters.ScrollIntoView(characters.Items[_selectedIndex]);
                 this.UpdateLayout(); // Re-layout after scrolling
             }
+            else
+            {
+                characterName.Text = string.Empty;
+            }
 
             SetWindowPosition();
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new PowerAccent.Core.Telemetry.PowerAccentShowAccentMenuEvent());
