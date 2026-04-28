@@ -251,8 +251,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         get => _settingsService.Settings.EnableTaskbar;
         set
         {
-            _settingsService.Settings.EnableTaskbar = value;
-            Save();
+            _settingsService.UpdateSettings(s => s with { EnableTaskbar = value });
             WeakReferenceMessenger.Default.Send(new ShowHideTaskbarMessage(value));
         }
     }

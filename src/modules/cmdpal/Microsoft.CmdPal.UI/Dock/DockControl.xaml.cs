@@ -90,7 +90,8 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
