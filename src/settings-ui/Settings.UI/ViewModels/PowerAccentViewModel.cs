@@ -25,15 +25,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly SettingsUtils _settingsUtils;
 
         /// <summary>
-        /// Maps each <see cref="LanguageGroup"/> to its resx resource key so that group
-        /// header strings can be looked up by the Settings UI. Every value defined in
-        /// <see cref="LanguageGroup"/> must have an entry here.
+        /// Maps each currently supported <see cref="LanguageGroup"/> to its resx
+        /// resource key so that group header strings can be looked up by the Settings UI.
+        /// Only groups that already have corresponding Settings UI resources should be
+        /// listed here.
         /// </summary>
         private static readonly Dictionary<LanguageGroup, string> _groupResourceKeys = new()
         {
             [LanguageGroup.Language] = "QuickAccent_Group_Language",
             [LanguageGroup.Special] = "QuickAccent_Group_Special",
-            [LanguageGroup.UserDefined] = "QuickAccent_Group_UserDefined",
         };
 
         /// <summary>
@@ -143,7 +143,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void InitializeLanguages()
         {
             // Build the flat list and resolve localized display names.
-            Languages = CharacterMappings.All.Select(lang =>
+            Languages = CharacterMappings.All
+                .Where(lang => _groupResourceKeys.ContainsKey(lang.Group))
+                .Select(lang =>
             {
                 string languageResourceId = $"QuickAccent_SelectedLanguage_{lang.Identifier}";
 
@@ -164,6 +166,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // LanguageGroup enum. Instead, we use the stable GroupResourceID as a
             // decoupled key to map the core groups to the Settings UI models.
             LanguageGroups = CharacterMappings.GroupDisplayOrder
+                .Where(group => _groupResourceKeys.ContainsKey(group))
                 .Select(group =>
                 {
                     string groupResourceId = _groupResourceKeys[group];
