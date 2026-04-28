@@ -203,6 +203,7 @@
                     </Grid>
                 </StackPanel>
             </Flyout>
+            <Thickness x:Key="DebugBorderThickness">0</Thickness>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -212,7 +213,7 @@
         HorizontalAlignment="Right"
         Background="Transparent"
         BorderBrush="Red"
-        BorderThickness="2"
+        BorderThickness="{StaticResource DebugBorderThickness}"
         Orientation="Horizontal"
         RightTapped="RootPanel_RightTapped">
         <ListView
