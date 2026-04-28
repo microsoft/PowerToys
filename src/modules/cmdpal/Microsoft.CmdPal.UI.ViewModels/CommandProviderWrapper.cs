@@ -400,11 +400,6 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     private ICommandItem[] LoadPinnedCommands(ICommandProvider4 model, ProviderSettings providerSettings)
     {
-        if (providerSettings is null || providerSettings.PinnedCommandIds is null)
-        {
-            return [];
-        }
-
         var pinnedItems = new List<ICommandItem>();
 
         foreach (var pinnedId in providerSettings.PinnedCommandIds)
@@ -448,7 +443,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var providerSettings = GetProviderSettings(settingsService.Settings);
 
-        if (providerSettings.PinnedCommandIds is null || !providerSettings.PinnedCommandIds.Contains(commandId))
+        if (!providerSettings.PinnedCommandIds.Contains(commandId))
         {
             settingsService.UpdateSettings(
                 s =>
