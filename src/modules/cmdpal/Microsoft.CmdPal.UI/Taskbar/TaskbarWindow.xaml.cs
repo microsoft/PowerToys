@@ -352,12 +352,18 @@ public sealed partial class TaskbarWindow : WindowEx,
 
             if (_taskbarMetrics.IsHorizontal)
             {
+                Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 3);
+                Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 1);
+                MainContent.HorizontalAlignment = HorizontalAlignment.Right;
                 MainContent.VerticalAlignment = VerticalAlignment.Center;
                 MainContent.Margin = new Thickness(0);
                 MainContent.MaxHeight = double.PositiveInfinity;
             }
             else
             {
+                Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 0);
+                Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 5);
+                MainContent.HorizontalAlignment = HorizontalAlignment.Center;
                 MainContent.VerticalAlignment = VerticalAlignment.Bottom;
                 MainContent.Margin = new Thickness(0, 0, 0, trayInDips);
                 MainContent.MaxHeight = double.PositiveInfinity;
@@ -458,6 +464,9 @@ public sealed partial class TaskbarWindow : WindowEx,
                     TrayIcons.Width = new GridLength(trayInDips);
 
                     // Restore horizontal layout properties.
+                    Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 3);
+                    Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 1);
+                    MainContent.HorizontalAlignment = HorizontalAlignment.Right;
                     MainContent.VerticalAlignment = VerticalAlignment.Center;
                     MainContent.Margin = new Thickness(0);
                     MainContent.MaxHeight = double.PositiveInfinity;
@@ -473,6 +482,9 @@ public sealed partial class TaskbarWindow : WindowEx,
                     TaskbarButtons.Width = new GridLength(0);
                     TrayIcons.Width = new GridLength(0);
 
+                    Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 0);
+                    Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 5);
+                    MainContent.HorizontalAlignment = HorizontalAlignment.Center;
                     MainContent.VerticalAlignment = VerticalAlignment.Bottom;
                     MainContent.Margin = new Thickness(0, 0, 0, trayInDips);
                     MainContent.MaxHeight = double.PositiveInfinity;
@@ -682,6 +694,9 @@ public sealed partial class TaskbarWindow : WindowEx,
                     TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
                     TrayIcons.Width = new GridLength(trayInDips);
 
+                    Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 3);
+                    Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 1);
+                    MainContent.HorizontalAlignment = HorizontalAlignment.Right;
                     MainContent.VerticalAlignment = VerticalAlignment.Center;
                     MainContent.Margin = new Thickness(0);
                     MainContent.MaxHeight = double.PositiveInfinity;
@@ -691,6 +706,9 @@ public sealed partial class TaskbarWindow : WindowEx,
                     TaskbarButtons.Width = new GridLength(0);
                     TrayIcons.Width = new GridLength(0);
 
+                    Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 0);
+                    Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 5);
+                    MainContent.HorizontalAlignment = HorizontalAlignment.Center;
                     MainContent.VerticalAlignment = VerticalAlignment.Bottom;
                     MainContent.Margin = new Thickness(0, 0, 0, trayInDips);
                     MainContent.MaxHeight = double.PositiveInfinity;
