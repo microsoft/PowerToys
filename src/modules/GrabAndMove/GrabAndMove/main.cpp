@@ -650,6 +650,11 @@ static bool IsSystemClass(HWND hwnd)
     if (wcscmp(cls, L"tooltips_class32") == 0)
         return true;
 
+    // Task View (Win+Tab)
+    if (wcscmp(cls, L"MultitaskingViewFrame") == 0 ||
+        wcscmp(cls, L"XamlExplorerHostIslandWindow") == 0)
+        return true;
+
     return false;
 }
 
