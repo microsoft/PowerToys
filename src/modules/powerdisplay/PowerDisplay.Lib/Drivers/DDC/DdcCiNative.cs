@@ -77,14 +77,31 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var parseResult = Utils.MccsCapabilitiesParser.Parse(capsString);
                 var capabilities = parseResult.Capabilities;
 
-                if (capabilities == null || capabilities.SupportedVcpCodes.Count == 0)
+                if (capabilities == null)
                 {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - parsed capabilities have no VCP codes (parseErrors={parseResult.Errors.Count})");
-                    return DdcCiValidationResult.Invalid;
+                    capabilities = new Models.VcpCapabilities { Raw = capsString };
                 }
 
-                // Check if brightness (VCP 0x10) is supported - determines DDC/CI validity
                 bool supportsBrightness = capabilities.SupportsVcpCode(NativeConstants.VcpCodeBrightness);
+
+                if (!supportsBrightness)
+                {
+                    if (TryProbeBrightness(hPhysicalMonitor, readVcpFeature, handleHex, ScenarioCapMissingBrightness))
+                    {
+                        capabilities.SupportedVcpCodes[NativeConstants.VcpCodeBrightness] =
+                            new Models.VcpCodeInfo(NativeConstants.VcpCodeBrightness, "Brightness");
+                        supportsBrightness = true;
+                        Logger.LogInfo($"DDC: Monitor rescued via brightness probe (handle={handleHex}, scenario={ScenarioCapMissingBrightness})");
+                    }
+                    else
+                    {
+                        Logger.LogDebug(
+                            $"DDC: Monitor ignored (handle={handleHex}) - brightness (VCP 0x10) not advertised " +
+                            $"and probe failed (parseErrors={parseResult.Errors.Count}, vcpCount={capabilities.SupportedVcpCodes.Count})");
+                        return DdcCiValidationResult.Invalid;
+                    }
+                }
+
                 bool supportsContrast = capabilities.SupportsVcpCode(NativeConstants.VcpCodeContrast);
                 bool supportsColorTemperature = capabilities.SupportsVcpCode(NativeConstants.VcpCodeSelectColorPreset);
                 bool supportsVolume = capabilities.SupportsVcpCode(NativeConstants.VcpCodeVolume);
@@ -93,11 +110,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     $"DDC: Capabilities parsed (handle={handleHex}) - " +
                     $"Brightness={supportsBrightness} Contrast={supportsContrast} " +
                     $"ColorTemperature={supportsColorTemperature} Volume={supportsVolume}");
-
-                if (!supportsBrightness)
-                {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - brightness (VCP 0x10) not advertised in capabilities");
-                }
 
                 return new DdcCiValidationResult(supportsBrightness, capsString, capabilities);
             }

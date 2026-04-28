@@ -99,4 +99,94 @@ public class DdcCiNativeFetchCapabilitiesTests
 
         Assert.IsFalse(result.IsValid, "max=0 must not be treated as supported");
     }
+
+    private const string CapsWithoutBrightness =
+        "(prot(monitor)type(lcd)model(TestMonitor)vcp(12 14)mccs_ver(2.2))";
+
+    // Cap string non-empty but parses to no usable VCP codes.
+    // If this string ends up with capabilities==null or 1+ VCP entries in the parser,
+    // change to "(prot(monitor)mccs_ver(2.1))".
+    private const string CapsParsesToZeroVcpCodes = "(garbage)";
+
+    [TestMethod]
+    public void FetchCapabilities_CapsMissingBrightness_ProbeSucceeds_InjectsBrightness()
+    {
+        bool ProbeReader(IntPtr h, byte code, out uint cur, out uint max)
+        {
+            Assert.AreEqual((byte)0x10, code);
+            cur = 75;
+            max = 100;
+            return true;
+        }
+
+        var result = DdcCiNative.FetchCapabilitiesForTest(
+            FakeHandle,
+            readCapsString: _ => CapsWithoutBrightness,
+            readVcpFeature: ProbeReader);
+
+        Assert.IsTrue(result.IsValid);
+        Assert.AreEqual(CapsWithoutBrightness, result.CapabilitiesString);
+        Assert.IsNotNull(result.VcpCapabilitiesInfo);
+        Assert.IsTrue(result.VcpCapabilitiesInfo!.SupportsVcpCode(0x10));
+
+        // Existing VCP entries from the cap string must remain intact
+        Assert.IsTrue(result.VcpCapabilitiesInfo.SupportsVcpCode(0x12));
+        Assert.IsTrue(result.VcpCapabilitiesInfo.SupportsVcpCode(0x14));
+    }
+
+    [TestMethod]
+    public void FetchCapabilities_CapsMissingBrightness_ProbeFails_ReturnsInvalid()
+    {
+        bool ProbeReader(IntPtr h, byte code, out uint cur, out uint max)
+        {
+            cur = 0;
+            max = 0;
+            return false;
+        }
+
+        var result = DdcCiNative.FetchCapabilitiesForTest(
+            FakeHandle,
+            readCapsString: _ => CapsWithoutBrightness,
+            readVcpFeature: ProbeReader);
+
+        Assert.IsFalse(result.IsValid);
+    }
+
+    [TestMethod]
+    public void FetchCapabilities_CapsParseToZeroVcp_ProbeSucceeds_RescuesWithSynthesized()
+    {
+        bool ProbeReader(IntPtr h, byte code, out uint cur, out uint max)
+        {
+            cur = 50;
+            max = 100;
+            return true;
+        }
+
+        var result = DdcCiNative.FetchCapabilitiesForTest(
+            FakeHandle,
+            readCapsString: _ => CapsParsesToZeroVcpCodes,
+            readVcpFeature: ProbeReader);
+
+        Assert.IsTrue(result.IsValid);
+        Assert.IsNotNull(result.VcpCapabilitiesInfo);
+        Assert.IsTrue(result.VcpCapabilitiesInfo!.SupportsVcpCode(0x10));
+    }
+
+    [TestMethod]
+    public void FetchCapabilities_CapsParseToZeroVcp_ProbeFails_ReturnsInvalid()
+    {
+        bool ProbeReader(IntPtr h, byte code, out uint cur, out uint max)
+        {
+            cur = 0;
+            max = 0;
+            return false;
+        }
+
+        var result = DdcCiNative.FetchCapabilitiesForTest(
+            FakeHandle,
+            readCapsString: _ => CapsParsesToZeroVcpCodes,
+            readVcpFeature: ProbeReader);
+
+        Assert.IsFalse(result.IsValid);
+    }
 }
