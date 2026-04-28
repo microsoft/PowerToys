@@ -50,18 +50,18 @@ But to get started quickly, choose one of the installation methods below:
 Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), select **Assets** to reveal the installation files, and choose the one that matches your architecture and install scope. For most devices, that would be _x64 per-user_.
 
 <!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.99%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysUserSetup-0.98.1-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysUserSetup-0.98.1-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysSetup-0.98.1-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.98.1/PowerToysSetup-0.98.1-arm64.exe
+[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.100%22
+[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.99.0/PowerToysUserSetup-0.99.0-x64.exe
+[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.99.0/PowerToysUserSetup-0.99.0-arm64.exe
+[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.99.0/PowerToysSetup-0.99.0-x64.exe
+[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.99.0/PowerToysSetup-0.99.0-arm64.exe
 
 | Description | Filename |
 | --- | --- |
-| Per user - x64       | [PowerToysUserSetup-0.98.1-x64.exe][ptUserX64] |
-| Per user - ARM64     | [PowerToysUserSetup-0.98.1-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.98.1-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.98.1-arm64.exe][ptMachineArm64] |
+| Per user - x64       | [PowerToysUserSetup-0.99.0-x64.exe][ptUserX64] |
+| Per user - ARM64     | [PowerToysUserSetup-0.99.0-arm64.exe][ptUserArm64] |
+| Machine wide - x64   | [PowerToysSetup-0.99.0-x64.exe][ptMachineX64] |
+| Machine wide - ARM64 | [PowerToysSetup-0.99.0-arm64.exe][ptMachineArm64] |
 
 </details>
 
@@ -106,11 +106,11 @@ There are [community driven install methods](https://learn.microsoft.com/windows
 
 [![What's new image](doc/images/readme/Release-Banner.png)](https://github.com/microsoft/PowerToys/releases)
 
-To see what's new, check out the [release notes](https://github.com/microsoft/PowerToys/releases/tag/v0.98.1).
+To see what's new, check out the [release notes](https://github.com/microsoft/PowerToys/releases/tag/v0.99.0).
 
 ## 🛣️ Roadmap
 
-We are planning some nice new features and improvements for the next releases – PowerDisplay, Command Palette improvements and a brand-new Shortcut Guide experience! Stay tuned for [v0.99][github-next-release-work]!
+We are planning some nice new features and improvements for the next releases – a brand-new Shortcut Guide experience, ensuring it's easier to find and install Command Palette extensions and so much more! Stay tuned for [v0.100][github-next-release-work]!
 
 ## ❤️ PowerToys Community
 
