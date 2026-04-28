@@ -19,9 +19,40 @@
                 x:Key="HorizontalItemsLayout"
                 Orientation="Horizontal"
                 Spacing="4" />
+            <StackLayout
+                x:Key="VerticalItemsLayout"
+                Orientation="Vertical"
+                Spacing="4" />
+
+            <ItemsPanelTemplate x:Key="HorizontalBandsPanel">
+                <StackPanel Orientation="Horizontal" Spacing="4" />
+            </ItemsPanelTemplate>
+            <ItemsPanelTemplate x:Key="VerticalBandsPanel">
+                <StackPanel Orientation="Vertical" Spacing="4" />
+            </ItemsPanelTemplate>
+
+            <Style x:Key="HorizontalBandListViewItemStyle" TargetType="ListViewItem">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0,0,4,0" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="IsTabStop" Value="False" />
+            </Style>
+            <Style x:Key="VerticalBandListViewItemStyle" TargetType="ListViewItem">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0,0,0,4" />
+                <Setter Property="MinHeight" Value="0" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                <Setter Property="IsTabStop" Value="False" />
+            </Style>
 
             <DataTemplate x:Key="TaskbarBandTemplate" x:DataType="dockVm:DockBandViewModel">
                 <ItemsRepeater
+                    x:Name="BandItemsRepeater"
                     ItemsSource="{x:Bind Items, Mode=OneWay}"
                     Layout="{StaticResource HorizontalItemsLayout}"
                     TabFocusNavigation="Local">
@@ -52,16 +83,6 @@
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
             </DataTemplate>
-
-            <Style x:Key="TaskbarBandListViewItemStyle" TargetType="ListViewItem">
-                <Setter Property="Padding" Value="0" />
-                <Setter Property="Margin" Value="0,0,4,0" />
-                <Setter Property="MinHeight" Value="0" />
-                <Setter Property="MinWidth" Value="0" />
-                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                <Setter Property="VerticalContentAlignment" Value="Stretch" />
-                <Setter Property="IsTabStop" Value="False" />
-            </Style>
 
             <Style
                 x:Name="ContextMenuFlyoutStyle"
@@ -187,6 +208,7 @@
 
     <!--  "#ffFF8800"  -->
     <StackPanel
+        x:Name="RootPanel"
         HorizontalAlignment="Right"
         Background="Transparent"
         BorderBrush="Red"
@@ -206,15 +228,10 @@
             DragOver="BandsListView_DragOver"
             Drop="BandsListView_Drop"
             IsItemClickEnabled="False"
-            ItemContainerStyle="{StaticResource TaskbarBandListViewItemStyle}"
+            ItemContainerStyle="{StaticResource HorizontalBandListViewItemStyle}"
             ItemTemplate="{StaticResource TaskbarBandTemplate}"
-            SelectionMode="None">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Spacing="4" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-        </ListView>
+            ItemsPanel="{StaticResource HorizontalBandsPanel}"
+            SelectionMode="None" />
 
         <Button
             x:Name="AddBandButton"
@@ -241,7 +258,7 @@
                         HorizontalAlignment="Left"
                         VerticalAlignment="Top"
                         IsItemClickEnabled="False"
-                        ItemContainerStyle="{StaticResource TaskbarBandListViewItemStyle}"
+                        ItemContainerStyle="{StaticResource HorizontalBandListViewItemStyle}"
                         ItemTemplate="{StaticResource TaskbarBandTemplate}"
                         SelectionMode="None">
                         <ListView.ItemsPanel>

@@ -301,6 +301,11 @@ public sealed partial class TaskbarWindow : WindowEx,
             _bandsControl.SetTeachingTipPlacement(Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode.Left);
         }
 
+        // Switch band layout orientation to match the taskbar edge.
+        _bandsControl.SetOrientation(_taskbarMetrics.IsHorizontal
+            ? Microsoft.UI.Xaml.Controls.Orientation.Horizontal
+            : Microsoft.UI.Xaml.Controls.Orientation.Vertical);
+
         // Apply an immediate clip using pre-loaded metrics so the window
         // never flashes across the full taskbar width. The async ClipWindow
         // call will refine this once XAML layout has settled.

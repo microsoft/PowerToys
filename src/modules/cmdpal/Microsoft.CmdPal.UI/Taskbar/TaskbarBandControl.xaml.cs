@@ -146,6 +146,73 @@ public sealed partial class TaskbarBandControl : UserControl,
         EditButtonsTeachingTip.PreferredPlacement = placement;
     }
 
+    /// <summary>
+    /// Switches the band layout between horizontal (for top/bottom
+    /// taskbars) and vertical (for left/right taskbars).  Swaps the
+    /// ListView ItemsPanel, item container style, and each band's
+    /// inner ItemsRepeater layout so every level stacks correctly.
+    /// </summary>
+    internal void SetOrientation(Orientation orientation)
+    {
+        var isVertical = orientation == Orientation.Vertical;
+
+        RootPanel.Orientation = orientation;
+
+        // Swap the BandsListView items panel template and container style.
+        BandsListView.ItemsPanel = (ItemsPanelTemplate)Resources[
+            isVertical ? "VerticalBandsPanel" : "HorizontalBandsPanel"];
+        BandsListView.ItemContainerStyle = (Style)Resources[
+            isVertical ? "VerticalBandListViewItemStyle" : "HorizontalBandListViewItemStyle"];
+
+        // Swap the Layout on every band's inner ItemsRepeater.
+        var layout = (Microsoft.UI.Xaml.Controls.Layout)Resources[
+            isVertical ? "VerticalItemsLayout" : "HorizontalItemsLayout"];
+        foreach (var item in _viewModel.TaskbarItems)
+        {
+            if (BandsListView.ContainerFromItem(item) is ListViewItem container)
+            {
+                var repeater = FindDescendant<ItemsRepeater>(container);
+                if (repeater != null)
+                {
+                    repeater.Layout = layout;
+                }
+            }
+        }
+
+        if (isVertical)
+        {
+            RootPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
+            RootPanel.VerticalAlignment = VerticalAlignment.Bottom;
+        }
+        else
+        {
+            RootPanel.HorizontalAlignment = HorizontalAlignment.Right;
+            RootPanel.VerticalAlignment = VerticalAlignment.Stretch;
+        }
+    }
+
+    private static T? FindDescendant<T>(DependencyObject parent)
+        where T : DependencyObject
+    {
+        var count = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+            if (child is T match)
+            {
+                return match;
+            }
+
+            var result = FindDescendant<T>(child);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        return null;
+    }
+
     internal void ExitEditMode()
     {
         _isEditMode = false;
