@@ -141,11 +141,11 @@ BLENDFUNCTION
 blittable
 Blockquotes
 blt
-Blx
 bluelightreduction
 bluelightreductionstate
 BLURBEHIND
 BLURREGION
+Blx
 bmi
 BODGY
 BOOTSTRAPPERINSTALLFOLDER
