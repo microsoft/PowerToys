@@ -15,7 +15,7 @@ namespace PowerDisplay.Configuration
         public static class UI
         {
             // Main flyout dimensions in device-independent pixels (DIP)
-            public const int WindowWidthDip = 362;
+            public const int WindowWidthDip = 348;
             public const int WindowMinHeightDip = 100;
             public const int WindowMaxHeightDip = 650;
             public const int WindowRightMarginDip = 12;

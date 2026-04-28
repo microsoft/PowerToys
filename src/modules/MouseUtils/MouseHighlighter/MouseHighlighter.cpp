@@ -368,7 +368,7 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
                 }
                 instance->AddDrawingPoint(MouseButton::Right);
                 instance->m_rightButtonPressed = true;
-                // same as for the left button, start a timer for reposition ourselves to topmost position
+                // same as for the left button, start a timer to reposition ourselves to topmost position
                 if (instance->m_timer_id == 0)
                 {
                     instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);

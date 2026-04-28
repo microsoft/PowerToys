@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Windows.UI;
 
@@ -135,10 +136,50 @@ public enum DockSide
     Bottom = 3,
 }
 
+[JsonConverter(typeof(DockSizeJsonConverter))]
 public enum DockSize
 {
     Default,
     Compact,
+}
+
+/// <summary>
+/// Custom converter for <see cref="DockSize"/> that preserves backward
+/// compatibility with previously-persisted values. Earlier builds shipped a
+/// <c>Small</c>/<c>Medium</c>/<c>Large</c> enum; those values are migrated to
+/// <see cref="DockSize.Default"/> so existing settings.json files continue to
+/// load instead of failing the entire deserialization.
+/// </summary>
+internal sealed class DockSizeJsonConverter : JsonConverter<DockSize>
+{
+    public override DockSize Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            var value = reader.GetString();
+            if (Enum.TryParse<DockSize>(value, ignoreCase: true, out var parsed))
+            {
+                return parsed;
+            }
+
+            // Legacy values from the original Small/Medium/Large enum, or any
+            // other unknown string — fall back to Default so the user's
+            // settings file remains loadable after upgrading.
+            return DockSize.Default;
+        }
+
+        if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out var number))
+        {
+            return Enum.IsDefined(typeof(DockSize), number) ? (DockSize)number : DockSize.Default;
+        }
+
+        return DockSize.Default;
+    }
+
+    public override void Write(Utf8JsonWriter writer, DockSize value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString());
+    }
 }
 
 public enum DockBackdrop

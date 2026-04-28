@@ -97,6 +97,10 @@ public sealed partial class DockWindow : WindowEx,
             overlappedPresenter.IsResizable = false;
         }
 
+        // immediately when we're created: make sure to remove our window frame
+        // and shadow. We don't _always_ get an Activated when we're first
+        // created.
+        UpdateWindowFrame();
         this.Activated += DockWindow_Activated;
 
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
@@ -145,6 +149,12 @@ public sealed partial class DockWindow : WindowEx,
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        UpdateWindowFrame();
+        UpdateTopmostState();
+    }
+
+    private void UpdateWindowFrame()
+    {
         // These are used for removing the very subtle shadow/border that we get from Windows 11
         HwndExtensions.ToggleWindowStyle(_hwnd, false, WindowStyle.TiledWindow);
         unsafe
@@ -152,8 +162,6 @@ public sealed partial class DockWindow : WindowEx,
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
         }
-
-        UpdateTopmostState();
     }
 
     private HWND GetWindowHandle(Window window)

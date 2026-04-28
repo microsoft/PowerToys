@@ -390,8 +390,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.SnipPanoramaToggleKey.Value = value ?? ZoomItProperties.DefaultSnipPanoramaToggleKey;
                     OnPropertyChanged(nameof(SnipPanoramaToggleKey));
+                    OnPropertyChanged(nameof(SnipPanoramaToggleKeySave));
                     NotifySettingsChanged();
                 }
+            }
+        }
+
+        public HotkeySettings SnipPanoramaToggleKeySave
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.SnipPanoramaToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    baseKey.Alt,
+                    !baseKey.Shift, // Toggle Shift: if Shift is present, remove it; if absent, add it
+                    baseKey.Code);
             }
         }
 
