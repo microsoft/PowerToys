@@ -268,7 +268,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                         },
                     },
                 },
-                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_ColorTemperature_EnableButton"),
+                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Enable"),
                 CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
             };

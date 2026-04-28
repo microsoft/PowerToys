@@ -5501,7 +5501,7 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable color temperature control for this monitor?</value>
   </data>
-  <data name="PowerDisplay_ColorTemperature_EnableButton" xml:space="preserve">
+  <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>
   <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
