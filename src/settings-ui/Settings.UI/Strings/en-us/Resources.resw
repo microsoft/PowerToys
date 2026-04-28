@@ -5518,6 +5518,23 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable power state control for this monitor?</value>
   </data>
+  <data name="PowerDisplay_InputSource_WarningTitle" xml:space="preserve">
+    <value>Confirm Input Source Control</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningDescription" xml:space="preserve">
+    <value>Switching input sources may cause unintended results, including:</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningList" xml:space="preserve">
+    <value>• Monitor going black if the new input has no signal
+• Loss of software control until you switch back via the monitor's physical buttons
+• Some monitors may not enumerate or expose all input sources reliably</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
+    <value>Do you want to enable input source control for this monitor?</value>
+  </data>
   <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>

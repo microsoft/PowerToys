@@ -229,6 +229,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 (monitor, value) => monitor.EnablePowerState = value);
         }
 
+        private async void EnableInputSource_Click(object sender, RoutedEventArgs e)
+        {
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_InputSource",
+                (monitor, value) => monitor.EnableInputSource = value);
+        }
+
         private async Task HandleDangerousFeatureClickAsync(
             object sender,
             string resourceKeyPrefix,

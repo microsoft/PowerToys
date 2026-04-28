@@ -211,7 +211,11 @@
                                             <CheckBox x:Uid="PowerDisplay_Monitor_EnableVolume" IsChecked="{x:Bind EnableVolume, Mode=TwoWay}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsInputSource, Mode=OneWay}">
-                                            <CheckBox x:Uid="PowerDisplay_Monitor_EnableInputSource" IsChecked="{x:Bind EnableInputSource, Mode=TwoWay}" />
+                                            <CheckBox
+                                                x:Uid="PowerDisplay_Monitor_EnableInputSource"
+                                                Click="EnableInputSource_Click"
+                                                IsChecked="{x:Bind EnableInputSource, Mode=TwoWay}"
+                                                Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
                                             <CheckBox x:Uid="PowerDisplay_Monitor_EnableRotation" IsChecked="{x:Bind EnableRotation, Mode=TwoWay}" />
