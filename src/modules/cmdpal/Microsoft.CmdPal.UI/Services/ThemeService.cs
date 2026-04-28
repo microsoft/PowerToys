@@ -149,8 +149,10 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         // Atomic swap
         Interlocked.Exchange(ref _currentState, newState);
 
-        // Compute DockThemeSnapshot from DockSettings
-        var dockSettings = _settingsService.Settings.DockSettings;
+        // Compute DockThemeSnapshot from DockSettings. Defend against a null
+        // DockSettings on a settings.json that predates the dock-settings
+        // change — otherwise Initialize() throws here on first activation.
+        var dockSettings = _settingsService.Settings.DockSettings ?? new DockSettings();
         var dockIntensity = Math.Clamp(dockSettings.CustomThemeColorIntensity, 0, 100);
         IThemeProvider dockProvider = dockIntensity > 0 && dockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
                 ? _colorfulThemeProvider
