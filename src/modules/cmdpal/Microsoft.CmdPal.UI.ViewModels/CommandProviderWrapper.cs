@@ -153,8 +153,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         settingsService.UpdateSettings(
             s =>
             {
-                var providerSettings = s.ProviderSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
-                if (!providerSettings.TryGetValue(ProviderId, out var ps))
+                var allProviderSettings = s.ProviderSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+                if (!allProviderSettings.TryGetValue(ProviderId, out var ps))
                 {
                     ps = new ProviderSettings();
                 }
@@ -163,7 +163,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
                 return s with
                 {
-                    ProviderSettings = providerSettings.SetItem(ProviderId, newPs),
+                    ProviderSettings = allProviderSettings.SetItem(ProviderId, newPs),
                 };
             },
             hotReload: false);
@@ -242,8 +242,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         catch (Exception e)
         {
             // Note: Extension is null for in-proc built-in providers, so this
-            // log line MUST stay null-safe. Otherwise the catch itself NREs and
-            // takes down LoadBuiltinsAsync / shell startup.
+            // log line MUST stay null-safe; otherwise the catch itself NREs
+            // and takes down LoadBuiltinsAsync / shell startup.
             var providerLabel = Extension?.PackageFamilyName ?? ProviderId;
             Logger.LogError($"Failed to load commands from {providerLabel}", e);
 

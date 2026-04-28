@@ -1224,6 +1224,7 @@ NPH
 npmjs
 NPU
 NResize
+NREs
 NTAPI
 ntdll
 ntfs
