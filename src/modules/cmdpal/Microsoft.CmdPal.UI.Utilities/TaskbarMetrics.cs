@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.Win32;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
@@ -51,6 +52,20 @@ public sealed unsafe class TaskbarMetrics : IDisposable
     public bool IsHorizontal => Edge is TaskbarEdge.Bottom or TaskbarEdge.Top;
 
     /// <summary>
+    /// <summary>
+    /// True when the Windows taskbar is in compact/small mode.
+    /// Detected via UseCompactMode registry key, with TaskbarSi
+    /// and height-based heuristic as fallbacks.
+    /// </summary>
+    public bool IsCompact { get; private set; }
+
+    /// <summary>
+    /// Width (horizontal) or height (vertical) of the rebar area in physical pixels.
+    /// Used to detect narrow vertical taskbars (icon-only mode).
+    /// </summary>
+    public int RebarThicknessInPixels { get; private set; }
+
+    /// <summary>
     /// Re-measures the primary taskbar. Returns true if any value changed.
     /// Thread-safe — can be called from any thread.
     /// </summary>
@@ -68,6 +83,8 @@ public sealed unsafe class TaskbarMetrics : IDisposable
 
         var newButtons = MeasureButtons(taskbarHwnd, out var newCount);
         var newTray = MeasureTray(taskbarHwnd);
+        var newRebarThickness = MeasureRebarThickness(taskbarHwnd);
+        var newIsCompact = DetectCompactMode(taskbarHwnd, newRebarThickness);
 
         // Skip transient error states (e.g. right-click context menu open)
         if (newCount == 0 && ButtonCount > 0)
@@ -77,13 +94,17 @@ public sealed unsafe class TaskbarMetrics : IDisposable
 
         if (newButtons == ButtonsWidthInPixels &&
             newTray == TrayWidthInPixels &&
-            newCount == ButtonCount)
+            newCount == ButtonCount &&
+            newRebarThickness == RebarThicknessInPixels &&
+            newIsCompact == IsCompact)
         {
             return false;
         }
 
         ButtonsWidthInPixels = newButtons;
         TrayWidthInPixels = newTray;
+        RebarThicknessInPixels = newRebarThickness;
+        IsCompact = newIsCompact;
         ButtonCount = newCount;
         return true;
     }
@@ -287,6 +308,52 @@ public sealed unsafe class TaskbarMetrics : IDisposable
         {
             Edge = taskbarRect.left <= screen.left ? TaskbarEdge.Left : TaskbarEdge.Right;
         }
+    }
+
+    /// <summary>
+    /// Detects whether the Windows taskbar is in compact mode using
+    /// TaskbarSi registry key (Win11 21H2-24H2) with a height-based
+    /// heuristic as fallback for newer Windows builds.
+    /// </summary>
+    private bool DetectCompactMode(HWND taskbarHwnd, int rebarThickness)
+    {
+        const string keyPath = @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced";
+
+        // Primary: TaskbarSi (Win11 21H2-24H2) — 0=Small, 1=Medium, 2=Large
+        var taskbarSi = Registry.GetValue(keyPath, "TaskbarSi", null);
+        if (taskbarSi is int si)
+        {
+            return si == 0;
+        }
+
+        // Fallback: height-based heuristic for newer builds where
+        // TaskbarSi no longer exists. Standard rebar at 100% DPI is
+        // ~48px; compact is ~32px.
+        if (rebarThickness > 0 && IsHorizontal)
+        {
+            var dpi = PInvoke.GetDpiForWindow(taskbarHwnd);
+            var rebarDips = rebarThickness * 96.0 / dpi;
+            return rebarDips < 42;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Measures the rebar's cross-axis thickness in physical pixels.
+    /// For horizontal taskbars this is the rebar height;
+    /// for vertical taskbars this is the rebar width.
+    /// </summary>
+    private int MeasureRebarThickness(HWND taskbarHwnd)
+    {
+        var rebar = PInvoke.FindWindowEx(taskbarHwnd, HWND.Null, "ReBarWindow32", null);
+        if (rebar.IsNull)
+        {
+            return 0;
+        }
+
+        PInvoke.GetWindowRect(rebar, out var rebarRect);
+        return IsHorizontal ? rebarRect.Height : rebarRect.Width;
     }
 
     private void EnsureAutomation()

@@ -347,6 +347,9 @@ public sealed partial class TaskbarWindow : WindowEx,
             ? Microsoft.UI.Xaml.Controls.Orientation.Horizontal
             : Microsoft.UI.Xaml.Controls.Orientation.Vertical);
 
+        // Apply compact mode based on taskbar settings and dimensions.
+        ApplyCompactMode();
+
         // Reset MainContent layout immediately so the XAML state matches
         // the new orientation before ClipWindow runs asynchronously.
         {
@@ -526,6 +529,10 @@ public sealed partial class TaskbarWindow : WindowEx,
                 }
 
                 _lastContentSpace = forContent;
+
+                // Reapply compact mode — metrics may have changed.
+                ApplyCompactMode();
+
                 tcs.TrySetResult(true);
             }
             catch (Exception ex)
@@ -734,6 +741,9 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                 _lastContentSpace = forContent;
 
+                // Reapply compact mode after edit mode exits.
+                ApplyCompactMode();
+
                 // Delegate clip to ClipWindow which handles content-
                 // based clipping correctly. Don't duplicate the logic.
                 ClipWindow().ConfigureAwait(false);
@@ -838,5 +848,35 @@ public sealed partial class TaskbarWindow : WindowEx,
             WeakReferenceMessenger.Default.UnregisterAll(this);
             _disposed = true;
         }
+    }
+
+    /// <summary>
+    /// Determines whether the taskbar is in compact mode and whether
+    /// text should be hidden, then propagates to the band control.
+    /// </summary>
+    private void ApplyCompactMode()
+    {
+        var isCompact = _taskbarMetrics.IsCompact;
+        var hideText = false;
+
+        if (!_taskbarMetrics.IsHorizontal)
+        {
+            // For vertical taskbars, detect narrow/icon-only mode by
+            // measuring the rebar width. If the rebar is narrow,
+            // hide text and force compact.
+            var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+            var rebarWidthDips = _taskbarMetrics.RebarThicknessInPixels / scaleFactor;
+
+            // Threshold: a vertical taskbar in icon-only mode is typically
+            // ~62px at 100% DPI. With labels, it's ~150px+.
+            if (rebarWidthDips < 90)
+            {
+                hideText = true;
+                isCompact = true;
+            }
+        }
+
+        Logger.LogDebug($"ApplyCompactMode: isCompact={isCompact} hideText={hideText} rebarPx={_taskbarMetrics.RebarThicknessInPixels} edge={_taskbarMetrics.Edge}");
+        _bandsControl.SetCompactMode(isCompact, hideText);
     }
 }

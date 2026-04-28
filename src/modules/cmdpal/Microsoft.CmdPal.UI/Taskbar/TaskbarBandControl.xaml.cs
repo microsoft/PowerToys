@@ -191,6 +191,10 @@ public sealed partial class TaskbarBandControl : UserControl,
             RootPanel.VerticalAlignment = VerticalAlignment.Stretch;
             BandsListView.HorizontalAlignment = HorizontalAlignment.Stretch;
         }
+
+        // Reapply compact mode after orientation change since containers
+        // may have been re-realized.
+        ApplyCompactModeToAllItems();
     }
 
     private static T? FindDescendant<T>(DependencyObject parent)
@@ -213,6 +217,73 @@ public sealed partial class TaskbarBandControl : UserControl,
         }
 
         return null;
+    }
+
+    private static void FindAllDescendants<T>(DependencyObject parent, List<T> results)
+        where T : DependencyObject
+    {
+        var count = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+            if (child is T match)
+            {
+                results.Add(match);
+            }
+
+            FindAllDescendants(child, results);
+        }
+    }
+
+    private bool _isCompact;
+    private bool _hideText;
+    private bool _compactApplied;
+
+    /// <summary>
+    /// Sets compact mode on all realized DockItemControl instances.
+    /// Stores the state so it can be reapplied when items are re-realized.
+    /// </summary>
+    internal void SetCompactMode(bool isCompact, bool hideText)
+    {
+        if (_isCompact == isCompact && _hideText == hideText && _compactApplied)
+        {
+            return;
+        }
+
+        _isCompact = isCompact;
+        _hideText = hideText;
+        ApplyCompactModeToAllItems();
+    }
+
+    private void ApplyCompactModeToAllItems()
+    {
+        var items = new List<DockItemControl>();
+        foreach (var band in _viewModel.TaskbarItems)
+        {
+            if (BandsListView.ContainerFromItem(band) is ListViewItem container)
+            {
+                FindAllDescendants(container, items);
+            }
+        }
+
+        Logger.LogDebug($"ApplyCompactModeToAllItems: isCompact={_isCompact} hideText={_hideText} itemCount={items.Count} bandCount={_viewModel.TaskbarItems.Count}");
+
+        // Don't consider the state "applied" until we've found items
+        // to apply it to. This ensures we retry when items are realized.
+        _compactApplied = items.Count > 0;
+
+        foreach (var item in items)
+        {
+            item.IsCompact = _isCompact;
+            if (_hideText)
+            {
+                item.TextVisibility = Visibility.Collapsed;
+            }
+            else
+            {
+                item.TextVisibility = Visibility.Visible;
+            }
+        }
     }
 
     internal void ExitEditMode()
