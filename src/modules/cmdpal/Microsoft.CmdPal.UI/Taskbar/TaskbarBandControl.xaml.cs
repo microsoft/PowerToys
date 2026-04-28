@@ -338,7 +338,7 @@ public sealed partial class TaskbarBandControl : UserControl,
             var isPage = command.Model.Unsafe is not IInvokableCommand;
             if (isPage)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, this));
             }
         }
         catch (COMException e)

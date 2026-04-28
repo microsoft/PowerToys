@@ -305,7 +305,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
             if (isPage)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, this));
             }
         }
         catch (COMException e)

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Utilities;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -29,6 +30,7 @@ public sealed partial class TaskbarWindow : WindowEx,
     IRecipient<QuitMessage>,
     IRecipient<EnterEditModeMessage>,
     IRecipient<ExitEditModeMessage>,
+    IRecipient<RequestShowPaletteAtMessage>,
     IDisposable
 {
     private readonly uint wMTASKBARRESTART;
@@ -83,6 +85,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<ExitEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
 
         _taskbarMetrics = metrics;
 
@@ -759,6 +762,68 @@ public sealed partial class TaskbarWindow : WindowEx,
     private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
         DispatcherQueue.TryEnqueue(ApplySystemTheme);
+    }
+
+    void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)
+    {
+        // Only handle messages originating from our own TaskbarBandControl.
+        if (message.Source is not null && !ReferenceEquals(message.Source, _bandsControl))
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RequestShowPaletteOnUiThread(message.PosDips));
+    }
+
+    private void RequestShowPaletteOnUiThread(global::Windows.Foundation.Point posDips)
+    {
+        // Convert click position from root-relative DIPs to screen pixels.
+        var rootPosDips = MainContent.TransformToVisual(null).TransformPoint(new global::Windows.Foundation.Point(0, 0));
+        var screenPosDips = new global::Windows.Foundation.Point(rootPosDips.X + posDips.X, rootPosDips.Y + posDips.Y);
+
+        var dpi = PInvoke.GetDpiForWindow(_hwnd);
+        var scaleFactor = dpi / 96.0;
+        var screenPosPixels = new global::Windows.Foundation.Point(screenPosDips.X * scaleFactor, screenPosDips.Y * scaleFactor);
+
+        var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
+        var screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+
+        var onTopHalf = screenPosPixels.Y < screenHeight / 2;
+        var onLeftHalf = screenPosPixels.X < screenWidth / 2;
+
+        // Map TaskbarEdge → AnchorPoint (mirrors DockWindow logic for DockSide).
+        var edge = _taskbarMetrics.Edge;
+        var anchorPoint = edge switch
+        {
+            TaskbarEdge.Top => onLeftHalf ? AnchorPoint.TopLeft : AnchorPoint.TopRight,
+            TaskbarEdge.Bottom => onLeftHalf ? AnchorPoint.BottomLeft : AnchorPoint.BottomRight,
+            TaskbarEdge.Left => onTopHalf ? AnchorPoint.TopLeft : AnchorPoint.BottomLeft,
+            TaskbarEdge.Right => onTopHalf ? AnchorPoint.TopRight : AnchorPoint.BottomRight,
+            _ => AnchorPoint.TopLeft,
+        };
+
+        // Offset the position away from the taskbar edge.
+        var paddingDips = 8;
+        var paddingPixels = paddingDips * scaleFactor;
+        PInvoke.GetWindowRect(_hwnd, out var ourRect);
+
+        switch (edge)
+        {
+            case TaskbarEdge.Top:
+                screenPosPixels = new global::Windows.Foundation.Point(screenPosPixels.X, ourRect.bottom + paddingPixels);
+                break;
+            case TaskbarEdge.Bottom:
+                screenPosPixels = new global::Windows.Foundation.Point(screenPosPixels.X, ourRect.top - paddingPixels);
+                break;
+            case TaskbarEdge.Left:
+                screenPosPixels = new global::Windows.Foundation.Point(ourRect.right + paddingPixels, screenPosPixels.Y);
+                break;
+            case TaskbarEdge.Right:
+                screenPosPixels = new global::Windows.Foundation.Point(ourRect.left - paddingPixels, screenPosPixels.Y);
+                break;
+        }
+
+        WeakReferenceMessenger.Default.Send<ShowPaletteAtMessage>(new(screenPosPixels, anchorPoint));
     }
 
     public void Dispose()

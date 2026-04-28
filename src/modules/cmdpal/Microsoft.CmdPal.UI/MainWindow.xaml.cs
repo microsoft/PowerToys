@@ -36,6 +36,7 @@ using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
@@ -565,49 +566,65 @@ public sealed partial class MainWindow : WindowEx,
         {
             PInvoke.GetWindowRect(hwnd, out var bounds);
             var swpFlags = SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER;
+
+            int x, y;
             switch (anchorCorner)
             {
                 case AnchorPoint.TopLeft:
-                    PInvoke.SetWindowPos(
-                        hwnd,
-                        HWND.HWND_TOP,
-                        (int)anchorInPixels.X,
-                        (int)anchorInPixels.Y,
-                        0,
-                        0,
-                        swpFlags);
+                    x = (int)anchorInPixels.X;
+                    y = (int)anchorInPixels.Y;
                     break;
                 case AnchorPoint.TopRight:
-                    PInvoke.SetWindowPos(
-                        hwnd,
-                        HWND.HWND_TOP,
-                        (int)(anchorInPixels.X - bounds.Width),
-                        (int)anchorInPixels.Y,
-                        0,
-                        0,
-                        swpFlags);
+                    x = (int)(anchorInPixels.X - bounds.Width);
+                    y = (int)anchorInPixels.Y;
                     break;
                 case AnchorPoint.BottomLeft:
-                    PInvoke.SetWindowPos(
-                        hwnd,
-                        HWND.HWND_TOP,
-                        (int)anchorInPixels.X,
-                        (int)(anchorInPixels.Y - bounds.Height),
-                        0,
-                        0,
-                        swpFlags);
+                    x = (int)anchorInPixels.X;
+                    y = (int)(anchorInPixels.Y - bounds.Height);
                     break;
                 case AnchorPoint.BottomRight:
-                    PInvoke.SetWindowPos(
-                        hwnd,
-                        HWND.HWND_TOP,
-                        (int)(anchorInPixels.X - bounds.Width),
-                        (int)(anchorInPixels.Y - bounds.Height),
-                        0,
-                        0,
-                        swpFlags);
+                default:
+                    x = (int)(anchorInPixels.X - bounds.Width);
+                    y = (int)(anchorInPixels.Y - bounds.Height);
                     break;
             }
+
+            // Clamp to the work area of the monitor containing the anchor point.
+            var pt = new System.Drawing.Point((int)anchorInPixels.X, (int)anchorInPixels.Y);
+            var monitor = PInvoke.MonitorFromPoint(pt, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+            var monitorInfo = new MONITORINFO { cbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf<MONITORINFO>() };
+            PInvoke.GetMonitorInfo(monitor, ref monitorInfo);
+            var work = monitorInfo.rcWork;
+
+            // Clamp so the window stays within the work area.
+            if (x + bounds.Width > work.right)
+            {
+                x = work.right - bounds.Width;
+            }
+
+            if (y + bounds.Height > work.bottom)
+            {
+                y = work.bottom - bounds.Height;
+            }
+
+            if (x < work.left)
+            {
+                x = work.left;
+            }
+
+            if (y < work.top)
+            {
+                y = work.top;
+            }
+
+            PInvoke.SetWindowPos(
+                hwnd,
+                HWND.HWND_TOP,
+                x,
+                y,
+                0,
+                0,
+                swpFlags);
         };
         ShowHwnd(hwndValue, positionWindowForAnchor);
     }

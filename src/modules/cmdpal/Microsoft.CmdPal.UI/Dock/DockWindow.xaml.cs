@@ -541,6 +541,12 @@ public sealed partial class DockWindow : WindowEx,
 
     void IRecipient<RequestShowPaletteAtMessage>.Receive(RequestShowPaletteAtMessage message)
     {
+        // Only handle messages originating from our own DockControl.
+        if (message.Source is not null && !ReferenceEquals(message.Source, _dock))
+        {
+            return;
+        }
+
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RequestShowPaletteOnUiThread(message.PosDips));
     }
 
@@ -710,7 +716,7 @@ internal static class ShowDesktop
 
 internal sealed record BringToTopMessage(bool OnTop);
 
-internal sealed record RequestShowPaletteAtMessage(Point PosDips);
+internal sealed record RequestShowPaletteAtMessage(Point PosDips, object? Source = null);
 
 internal sealed record ShowPaletteAtMessage(Point PosPixels, AnchorPoint Anchor);
 
