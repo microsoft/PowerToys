@@ -52,7 +52,7 @@
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"
             Background="Transparent"
-            ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto"
             Focusable="False"
             IsHitTestVisible="False">
             <ListBox.ItemContainerStyle>
