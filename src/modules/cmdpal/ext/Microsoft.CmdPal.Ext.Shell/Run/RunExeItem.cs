@@ -201,16 +201,6 @@ internal sealed partial class RunCommandCommand : InvokableCommand
 
     public override ICommandResult Invoke()
     {
-        // var t = _runAs switch
-        // {
-        //     RunType.Normal => ShellRunAsType.None,
-        //     RunType.AsAdmin => ShellRunAsType.Administrator,
-        //     RunType.AsOtherUser => ShellRunAsType.OtherUser,
-        //     _ => throw new InvalidOperationException(),
-        // };
-
-        // // TODO! REPLACE MY BODY
-        // var success = OpenInShell(_commandline, string.Empty, runAs: t);
         var hr = RunHistory.ExecuteCommandline(
             commandLine: _commandline,
             workingDirectory: string.Empty,
@@ -258,7 +248,7 @@ internal sealed partial class RunCommandLineItem : FileItem
             return RunExeItem.BuildContextMenu(
                 fullExePath,
                 new RunCommandCommand(commandline, RunType.AsAdmin, _addToHistory, _telemetryService),
-                null/*new RunCommandCommand(commandline, RunType.AsOtherUser, _addToHistory, _telemetryService)*/);
+                null);
         });
     }
 }
