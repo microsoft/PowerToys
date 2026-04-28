@@ -13,6 +13,15 @@ using static PowerDisplay.Common.Drivers.PInvoke;
 namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
+    /// Test seam delegate for reading a VCP feature.
+    /// </summary>
+    internal delegate bool VcpFeatureReader(
+        IntPtr hPhysicalMonitor,
+        byte vcpCode,
+        out uint currentValue,
+        out uint maxValue);
+
+    /// <summary>
     /// DDC/CI native API wrapper
     /// </summary>
     public static class DdcCiNative
@@ -25,6 +34,15 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <param name="hPhysicalMonitor">Physical monitor handle</param>
         /// <returns>Validation result with capabilities data (or failure status)</returns>
         public static DdcCiValidationResult FetchCapabilities(IntPtr hPhysicalMonitor)
+            => FetchCapabilitiesForTest(
+                hPhysicalMonitor,
+                TryGetCapabilitiesString,
+                DefaultReadVcpFeature);
+
+        internal static DdcCiValidationResult FetchCapabilitiesForTest(
+            IntPtr hPhysicalMonitor,
+            Func<IntPtr, string?> readCapsString,
+            VcpFeatureReader readVcpFeature)
         {
             if (hPhysicalMonitor == IntPtr.Zero)
             {
@@ -37,7 +55,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             try
             {
                 // Try to get capabilities string (slow I2C operation)
-                var capsString = TryGetCapabilitiesString(hPhysicalMonitor);
+                var capsString = readCapsString(hPhysicalMonitor);
                 if (string.IsNullOrEmpty(capsString))
                 {
                     Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - empty capabilities string from DDC/CI");
@@ -80,6 +98,14 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return DdcCiValidationResult.Invalid;
             }
         }
+
+        private static bool DefaultReadVcpFeature(
+            IntPtr hPhysicalMonitor,
+            byte vcpCode,
+            out uint currentValue,
+            out uint maxValue)
+            => GetVCPFeatureAndVCPFeatureReply(
+                hPhysicalMonitor, vcpCode, IntPtr.Zero, out currentValue, out maxValue);
 
         /// <summary>
         /// Try to get capabilities string from a physical monitor handle.
