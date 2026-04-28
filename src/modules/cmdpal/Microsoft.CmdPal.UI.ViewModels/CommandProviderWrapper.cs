@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Models;
@@ -127,7 +128,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     private ProviderSettings GetProviderSettings(SettingsModel settings)
     {
-        if (!settings.ProviderSettings.TryGetValue(ProviderId, out var ps))
+        var providerSettings = settings.ProviderSettings;
+        if (providerSettings is null || !providerSettings.TryGetValue(ProviderId, out var ps))
         {
             ps = new ProviderSettings();
         }
@@ -151,7 +153,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         settingsService.UpdateSettings(
             s =>
             {
-                if (!s.ProviderSettings.TryGetValue(ProviderId, out var ps))
+                var providerSettings = s.ProviderSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+                if (!providerSettings.TryGetValue(ProviderId, out var ps))
                 {
                     ps = new ProviderSettings();
                 }
@@ -160,7 +163,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
                 return s with
                 {
-                    ProviderSettings = s.ProviderSettings.SetItem(ProviderId, newPs),
+                    ProviderSettings = providerSettings.SetItem(ProviderId, newPs),
                 };
             },
             hotReload: false);
@@ -238,7 +241,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
         catch (Exception e)
         {
-            Logger.LogError($"Failed to load commands from extension {Extension!.PackageFamilyName}", e);
+            // Note: Extension is null for in-proc built-in providers, so this
+            // log line MUST stay null-safe. Otherwise the catch itself NREs and
+            // takes down LoadBuiltinsAsync / shell startup.
+            var providerLabel = Extension?.PackageFamilyName ?? ProviderId;
+            Logger.LogError($"Failed to load commands from {providerLabel}", e);
 
             if (!displayInfoInitialized)
             {
@@ -320,7 +327,11 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             }
         }
 
-        var dockSettings = settings.DockSettings;
+        // DockSettings can be null when loading a settings.json that was
+        // produced by a CmdPal version older than the dock-settings change
+        // (e.g. an in-place upgrade from 0.97.x). Fall back to defaults so
+        // built-in providers can still load instead of NRE-ing on startup.
+        var dockSettings = settings.DockSettings ?? new DockSettings();
         var allPinnedCommands = dockSettings.AllPinnedCommands;
         var pinnedBandsForThisProvider = allPinnedCommands.Where(c => c.ProviderId == ProviderId);
 
