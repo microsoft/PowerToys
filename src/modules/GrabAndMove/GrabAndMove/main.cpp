@@ -632,15 +632,47 @@ static void ShowTrayMenu(HWND hwnd)
 
 static bool IsSystemClass(HWND hwnd)
 {
-    wchar_t cls[64] = {};
-    GetClassNameW(hwnd, cls, 64);
-    return (wcscmp(cls, L"Progman") == 0 || wcscmp(cls, L"Shell_TrayWnd") == 0);
+    wchar_t cls[256] = {};
+    GetClassNameW(hwnd, cls, ARRAYSIZE(cls));
+
+    // Desktop and primary/secondary taskbars
+    if (wcscmp(cls, L"Progman") == 0 ||
+        wcscmp(cls, L"Shell_TrayWnd") == 0 ||
+        wcscmp(cls, L"Shell_SecondaryTrayWnd") == 0)
+        return true;
+
+    // System tray / notification area popups and overflow
+    if (wcscmp(cls, L"NotifyIconOverflowWindow") == 0 ||
+        wcscmp(cls, L"TopLevelWindowForOverflowXamlIsland") == 0)
+        return true;
+
+    // Tooltips (e.g. "Show hidden icons" tooltip)
+    if (wcscmp(cls, L"tooltips_class32") == 0)
+        return true;
+
+    return false;
 }
 
 static bool IsExcluded(HWND hwnd)
 {
     if (IsSystemClass(hwnd))
         return true;
+
+    // Shell experience windows: Start menu, Notifications (Win+N), Search.
+    // These use the generic Windows.UI.Core.CoreWindow class, so filter by process.
+    {
+        wchar_t cls[256] = {};
+        GetClassNameW(hwnd, cls, ARRAYSIZE(cls));
+        if (wcscmp(cls, L"Windows.UI.Core.CoreWindow") == 0)
+        {
+            std::wstring processPath = get_process_path(hwnd);
+            CharUpperBuffW(processPath.data(), static_cast<DWORD>(processPath.length()));
+            if (processPath.find(L"STARTMENUEXPERIENCEHOST.EXE") != std::wstring::npos ||
+                processPath.find(L"SHELLEXPERIENCEHOST.EXE") != std::wstring::npos ||
+                processPath.find(L"SEARCHHOST.EXE") != std::wstring::npos)
+                return true;
+        }
+    }
 
     auto apps = g_excludedApps.load();
     if (!apps || apps->empty())
