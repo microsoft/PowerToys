@@ -3,9 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading.Tasks;
+using Microsoft.PowerToys.Common.UI.Controls.Flyout;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
-using Windows.Graphics;
+using PowerDisplay.Configuration;
 using WinUIEx;
 
 namespace PowerDisplay.PowerDisplayXAML
@@ -13,13 +14,10 @@ namespace PowerDisplay.PowerDisplayXAML
     /// <summary>
     /// Interaction logic for IdentifyWindow.xaml
     /// </summary>
-    public sealed partial class IdentifyWindow : WindowEx
+    public sealed partial class IdentifyWindow : WindowEx, IDisposable
     {
-        // Window size in device-independent units (DIU)
-        private const int WindowWidthDiu = 300;
-        private const int WindowHeightDiu = 280;
-
-        private double _dpiScale = 1.0;
+        private DispatcherQueueTimer? _autoCloseTimer;
+        private bool _disposed;
 
         public IdentifyWindow(string displayText)
         {
@@ -33,32 +31,32 @@ namespace PowerDisplay.PowerDisplayXAML
             {
                 // WinUI will throw if explorer is not running, safely ignore
             }
-            catch (Exception)
-            {
-            }
 
             // Configure window style
             ConfigureWindow();
 
-            // Auto close after 3 seconds
-            Task.Delay(3000).ContinueWith(_ =>
+            // Dispose timer when window closes
+            this.Closed += (_, _) => Dispose();
+
+            // Auto close after 3 seconds. DispatcherQueueTimer runs on the UI thread
+            // and can be deterministically cancelled on Dispose, unlike a detached Task.Delay.
+            _autoCloseTimer = DispatcherQueue.CreateTimer();
+            _autoCloseTimer.Interval = TimeSpan.FromSeconds(3);
+            _autoCloseTimer.IsRepeating = false;
+            _autoCloseTimer.Tick += (_, _) =>
             {
-                DispatcherQueue.TryEnqueue(() =>
+                if (!_disposed)
                 {
                     Close();
-                });
-            });
+                }
+            };
+            _autoCloseTimer.Start();
         }
 
         private void ConfigureWindow()
         {
-            _dpiScale = this.GetDpiForWindow() / 96.0;
-
-            // Set window size scaled for DPI
-            // AppWindow.Resize expects physical pixels
-            int physicalWidth = (int)(WindowWidthDiu * _dpiScale);
-            int physicalHeight = (int)(WindowHeightDiu * _dpiScale);
-            this.AppWindow.Resize(new SizeInt32 { Width = physicalWidth, Height = physicalHeight });
+            // Set a preferred size in DIP. PositionOnDisplay will clamp it for the target monitor.
+            this.SetWindowSize(AppConstants.UI.IdentifyWindowPreferredWidthDip, AppConstants.UI.IdentifyWindowPreferredHeightDip);
             this.IsAlwaysOnTop = true;
         }
 
@@ -67,18 +65,46 @@ namespace PowerDisplay.PowerDisplayXAML
         /// </summary>
         public void PositionOnDisplay(DisplayArea displayArea)
         {
+            var (windowWidthDip, windowHeightDip) = GetAdaptiveWindowSizeDip(displayArea);
+
+            // FlyoutWindowHelper handles cross-monitor DPI internally via a 1×1 teleport
+            // before the final move, so no WM_DPICHANGED suppression is required here.
+            FlyoutWindowHelper.CenterWindowOnDisplay(this, displayArea, windowWidthDip, windowHeightDip);
+        }
+
+        private static (int WidthDip, int HeightDip) GetAdaptiveWindowSizeDip(DisplayArea displayArea)
+        {
             var workArea = displayArea.WorkArea;
+            double dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
 
-            // Window size in physical pixels (already scaled for DPI)
-            int physicalWidth = (int)(WindowWidthDiu * _dpiScale);
-            int physicalHeight = (int)(WindowHeightDiu * _dpiScale);
+            int maxWidthDip = Math.Max(
+                AppConstants.UI.IdentifyWindowMinWidthDip,
+                FlyoutWindowHelper.ScaleToDip((int)Math.Floor(workArea.Width * AppConstants.UI.IdentifyWindowMaxWorkAreaRatio), dpiScale));
+            int maxHeightDip = Math.Max(
+                AppConstants.UI.IdentifyWindowMinHeightDip,
+                FlyoutWindowHelper.ScaleToDip((int)Math.Floor(workArea.Height * AppConstants.UI.IdentifyWindowMaxWorkAreaRatio), dpiScale));
 
-            // Calculate center position (WorkArea coordinates are in physical pixels)
-            int x = workArea.X + ((workArea.Width - physicalWidth) / 2);
-            int y = workArea.Y + ((workArea.Height - physicalHeight) / 2);
+            int widthDip = Math.Max(
+                AppConstants.UI.IdentifyWindowMinWidthDip,
+                Math.Min(AppConstants.UI.IdentifyWindowPreferredWidthDip, maxWidthDip));
+            int heightDip = Math.Max(
+                AppConstants.UI.IdentifyWindowMinHeightDip,
+                Math.Min(AppConstants.UI.IdentifyWindowPreferredHeightDip, maxHeightDip));
 
-            // Use WindowEx's AppWindow property
-            this.AppWindow.Move(new PointInt32(x, y));
+            return (widthDip, heightDip);
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            _autoCloseTimer?.Stop();
+            _autoCloseTimer = null;
         }
     }
 }

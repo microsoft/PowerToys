@@ -365,9 +365,9 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var globalFallbacks = _settingsService.Settings.GetGlobalFallbacks();
-            var specialFallbacks = new List<TopLevelViewModel>(globalFallbacks.Length);
-            var commonFallbacks = new List<TopLevelViewModel>(commands.Count - globalFallbacks.Length);
+            var configuredGlobalFallbackIds = _settingsService.Settings.GetGlobalFallbacks();
+            var specialFallbacks = new List<TopLevelViewModel>(configuredGlobalFallbackIds.Length);
+            var commonFallbacks = new List<TopLevelViewModel>(Math.Max(commands.Count - configuredGlobalFallbackIds.Length, 0));
 
             foreach (var s in commands)
             {
@@ -376,7 +376,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     continue;
                 }
 
-                if (globalFallbacks.Contains(s.Id))
+                if (configuredGlobalFallbackIds.Contains(s.Id))
                 {
                     specialFallbacks.Add(s);
                 }
@@ -509,7 +509,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && globalFallbacks.Contains(s.Id));
+            IEnumerable<IListItem> newFallbacksForScoring = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id));
             _scoredFallbackItems = InternalListHelpers.FilterListWithScores(newFallbacksForScoring, searchQuery, _scoringFunction);
 
             if (token.IsCancellationRequested)
@@ -679,9 +679,10 @@ public sealed partial class MainListPage : DynamicListPage,
     public void UpdateHistory(IListItem topLevelOrAppItem)
     {
         var id = IdForTopLevelOrAppItem(topLevelOrAppItem);
-        var history = _appStateService.State.RecentCommands;
-        history.AddHistoryItem(id);
-        _appStateService.Save();
+        _appStateService.UpdateState(state => state with
+        {
+            RecentCommands = state.RecentCommands.WithHistoryItem(id),
+        });
     }
 
     private static string IdForTopLevelOrAppItem(IListItem topLevelOrAppItem)

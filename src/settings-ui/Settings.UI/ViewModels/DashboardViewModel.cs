@@ -213,12 +213,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     continue;
                 }
 
-                // TEMPORARILY_DISABLED: PowerDisplay
-                if (moduleType == ModuleType.PowerDisplay)
-                {
-                    continue;
-                }
-
                 GpoRuleConfigured gpo = ModuleGpoHelper.GetModuleGpoConfiguration(moduleType);
                 var newItem = new DashboardListItem()
                 {
@@ -508,6 +502,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
+                ModuleType.GrabAndMove => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
@@ -521,7 +516,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ActivationShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_IncreaseOpacityShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.IncreaseOpacityHotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_DecreaseOpacityShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.DecreaseOpacityHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }

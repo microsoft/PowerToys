@@ -6,11 +6,11 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public class FallbackSettings
+public record FallbackSettings
 {
-    public bool IsEnabled { get; set; } = true;
+    public bool IsEnabled { get; init; } = true;
 
-    public bool IncludeInGlobalResults { get; set; }
+    public bool IncludeInGlobalResults { get; init; }
 
     public FallbackSettings()
     {

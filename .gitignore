@@ -361,7 +361,12 @@ src/common/Telemetry/*.etl
 installer/*/*.wxs.bk
 /src/modules/awake/.claude
 
+# Claude AI local settings - local-only, not committed
+**/.claude/settings.local.json
+
 # Squad / Copilot agents — local-only, not committed
-.squad/
+.copilot
+.squad
 .squad-workstream
-.github/agents/
+.github/agents/**squad**.md
+.github/workflows/**squad**.yml

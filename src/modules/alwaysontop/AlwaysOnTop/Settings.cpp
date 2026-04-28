@@ -13,6 +13,8 @@ namespace NonLocalizable
     const static wchar_t* SettingsFileName = L"settings.json";
 
     const static wchar_t* HotkeyID = L"hotkey";
+    const static wchar_t* IncreaseOpacityHotkeyID = L"increase-opacity-hotkey";
+    const static wchar_t* DecreaseOpacityHotkeyID = L"decrease-opacity-hotkey";
     const static wchar_t* SoundEnabledID = L"sound-enabled";
     const static wchar_t* ShowInSystemMenuID = L"show-in-system-menu";
     const static wchar_t* FrameEnabledID = L"frame-enabled";
@@ -100,16 +102,21 @@ void AlwaysOnTopSettings::LoadSettings()
         const auto currentSettings = AlwaysOnTopSettings::settings();
         auto updatedSettings = std::make_shared<Settings>(*currentSettings);
         std::vector<SettingId> changedSettings;
-
-        if (const auto jsonVal = values.get_json(NonLocalizable::HotkeyID))
-        {
-            auto val = PowerToysSettings::HotkeyObject::from_json(*jsonVal);
-            if (updatedSettings->hotkey.get_modifiers() != val.get_modifiers() || updatedSettings->hotkey.get_key() != val.get_key() || updatedSettings->hotkey.get_code() != val.get_code())
+        const auto updateHotkeySetting = [&](const wchar_t* hotkeyName, auto& currentHotkey, SettingId settingId) {
+            if (const auto jsonVal = values.get_json(hotkeyName))
             {
-                updatedSettings->hotkey = val;
-                changedSettings.push_back(SettingId::Hotkey);
+                auto val = PowerToysSettings::HotkeyObject::from_json(*jsonVal);
+                if (currentHotkey.get_modifiers() != val.get_modifiers() || currentHotkey.get_key() != val.get_key() || currentHotkey.get_code() != val.get_code())
+                {
+                    currentHotkey = val;
+                    changedSettings.push_back(settingId);
+                }
             }
-        }
+        };
+
+        updateHotkeySetting(NonLocalizable::HotkeyID, updatedSettings->hotkey, SettingId::Hotkey);
+        updateHotkeySetting(NonLocalizable::IncreaseOpacityHotkeyID, updatedSettings->increaseOpacityHotkey, SettingId::IncreaseOpacityHotkey);
+        updateHotkeySetting(NonLocalizable::DecreaseOpacityHotkeyID, updatedSettings->decreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey);
         
         if (const auto jsonVal = values.get_bool_value(NonLocalizable::SoundEnabledID))
         {

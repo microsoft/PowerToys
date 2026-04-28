@@ -339,7 +339,7 @@ internal sealed partial class ShellListPage : DynamicListPage, IDisposable
 
     internal static ListItem CreateExeItem(string exe, string args, string fullExePath, Action<string>? addToHistory, ITelemetryService? telemetryService)
     {
-        // PathToListItem will return a RunExeItem if it can find a executable.
+        // PathToListItem will return a RunExeItem if it can find an executable.
         // It will ALSO add the file search commands to the RunExeItem.
         return PathToListItem(fullExePath, exe, args, addToHistory, telemetryService);
     }

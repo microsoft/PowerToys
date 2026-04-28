@@ -214,6 +214,7 @@ public partial class ListItemViewModel : CommandItemViewModel
             if (addedCommand)
             {
                 UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
+                UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
             }
         }
     }
@@ -252,6 +253,7 @@ public partial class ListItemViewModel : CommandItemViewModel
             oldCommand?.SafeCleanup();
 
             UpdateProperty(nameof(MoreCommands), nameof(AllCommands));
+            UpdateProperty(nameof(SecondaryCommand), nameof(SecondaryCommandName), nameof(HasMoreCommands));
         }
     }
 

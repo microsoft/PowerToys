@@ -16,7 +16,7 @@ public interface ISettingsInterface
 
     public bool KillProcessTree { get; }
 
-    public bool OpenAfterKillAndClose { get; }
+    public bool KeepOpenAfterKillAndClose { get; }
 
     public bool HideKillProcessOnElevatedProcesses { get; }
 

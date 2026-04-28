@@ -368,6 +368,7 @@ public partial class PowerAccent : IDisposable
                 case "ı\u0307\u0304": result.Add("İ\u0304"); break;
                 case "ı": result.Add("İ"); break;
                 case "ᵛ": result.Add("ⱽ"); break;
+                case "ⁿ": result.Add("ᴺ"); break;
                 case "ϑ": break;
                 default: result.Add(array[i].ToUpper(CultureInfo.InvariantCulture)); break;
             }

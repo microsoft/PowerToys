@@ -639,7 +639,7 @@ UINT __stdcall InstallPackageIdentityMSIXCA(MSIHANDLE hInstall)
         try
         {
             
-            std::wstring externalLocation = installFolderPath; // External content location (PowerToys install folder)
+            std::wstring externalLocation = installFolderPath + L"WinUI3Apps\\"; // External content location (WinUI3Apps subfolder to isolate DACL changes from preview handler DLLs)
             Uri externalUri{ externalLocation };               // External location URI for sparse package content
             Uri packageUri{ msixPath };                        // The MSIX file URI
             
@@ -1594,6 +1594,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.PowerRename.exe",
         L"PowerToys.ImageResizer.exe",
         L"PowerToys.LightSwitchService.exe",
+        L"PowerToys.PowerDisplay.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
         L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",

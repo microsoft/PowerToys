@@ -208,7 +208,7 @@ namespace PreviewHandlerCommonUnitTests
                 var actualPosition = streamWrapper.Seek(0, SeekOrigin.Begin);
 
                 // Assert
-                Assert.AreEqual(actualPosition, position);
+                Assert.AreEqual(position, actualPosition);
             }
         }
 

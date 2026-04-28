@@ -11,7 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using PowerDisplay.Common.Models;
+using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {

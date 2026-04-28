@@ -367,6 +367,54 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public HotkeySettings SnipOcrToggleKey
+        {
+            get => _zoomItSettings.Properties.SnipOcrToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipOcrToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipOcrToggleKey.Value = value ?? ZoomItProperties.DefaultSnipOcrToggleKey;
+                    OnPropertyChanged(nameof(SnipOcrToggleKey));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings SnipPanoramaToggleKey
+        {
+            get => _zoomItSettings.Properties.SnipPanoramaToggleKey.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.SnipPanoramaToggleKey.Value != value)
+                {
+                    _zoomItSettings.Properties.SnipPanoramaToggleKey.Value = value ?? ZoomItProperties.DefaultSnipPanoramaToggleKey;
+                    OnPropertyChanged(nameof(SnipPanoramaToggleKey));
+                    OnPropertyChanged(nameof(SnipPanoramaToggleKeySave));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public HotkeySettings SnipPanoramaToggleKeySave
+        {
+            get
+            {
+                var baseKey = _zoomItSettings.Properties.SnipPanoramaToggleKey.Value;
+                if (baseKey == null)
+                {
+                    return null;
+                }
+
+                return new HotkeySettings(
+                    baseKey.Win,
+                    baseKey.Ctrl,
+                    baseKey.Alt,
+                    !baseKey.Shift, // Toggle Shift: if Shift is present, remove it; if absent, add it
+                    baseKey.Code);
+            }
+        }
+
         public HotkeySettings BreakTimerKey
         {
             get => _zoomItSettings.Properties.BreakTimerKey.Value;
@@ -778,6 +826,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.BreakBackgroundStretch.Value = value;
                     OnPropertyChanged(nameof(BreakBackgroundStretch));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool BreakLockWorkstation
+        {
+            get => _zoomItSettings.Properties.BreakLockWorkstation.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.BreakLockWorkstation.Value != value)
+                {
+                    _zoomItSettings.Properties.BreakLockWorkstation.Value = value;
+                    OnPropertyChanged(nameof(BreakLockWorkstation));
                     NotifySettingsChanged();
                 }
             }
