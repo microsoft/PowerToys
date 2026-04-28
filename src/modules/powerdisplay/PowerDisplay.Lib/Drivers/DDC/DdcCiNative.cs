@@ -58,7 +58,16 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var capsString = readCapsString(hPhysicalMonitor);
                 if (string.IsNullOrEmpty(capsString))
                 {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - empty capabilities string from DDC/CI");
+                    if (TryProbeBrightness(hPhysicalMonitor, readVcpFeature, handleHex, "empty cap"))
+                    {
+                        Logger.LogInfo($"DDC: Monitor rescued via brightness probe (handle={handleHex}, scenario=empty cap)");
+                        return new DdcCiValidationResult(
+                            isValid: true,
+                            capabilitiesString: string.Empty,
+                            vcpCapabilitiesInfo: CreateBrightnessOnlyCapabilities());
+                    }
+
+                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - empty capabilities string from DDC/CI and brightness probe failed");
                     return DdcCiValidationResult.Invalid;
                 }
 
@@ -106,6 +115,51 @@ namespace PowerDisplay.Common.Drivers.DDC
             out uint maxValue)
             => GetVCPFeatureAndVCPFeatureReply(
                 hPhysicalMonitor, vcpCode, IntPtr.Zero, out currentValue, out maxValue);
+
+        /// <summary>
+        /// Probes VCP 0x10 (brightness) directly to determine whether the monitor responds.
+        /// Used as a fallback when the cap string is empty or omits brightness.
+        /// </summary>
+        /// <returns>True if the monitor answered with a non-zero max value.</returns>
+        private static bool TryProbeBrightness(
+            IntPtr hPhysicalMonitor,
+            VcpFeatureReader readVcpFeature,
+            string handleHex,
+            string scenarioTag)
+        {
+            try
+            {
+                if (readVcpFeature(hPhysicalMonitor, NativeConstants.VcpCodeBrightness, out uint current, out uint max)
+                    && max > 0)
+                {
+                    Logger.LogInfo(
+                        $"DDC: Brightness probe succeeded (handle={handleHex}, scenario={scenarioTag}, current={current}, max={max})");
+                    return true;
+                }
+
+                var lastError = Marshal.GetLastWin32Error();
+                Logger.LogWarning(
+                    $"DDC: Brightness probe failed (handle={handleHex}, scenario={scenarioTag}, max={max}, lastError={lastError})");
+                return false;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogWarning($"DDC: Brightness probe threw (handle={handleHex}, scenario={scenarioTag}): {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Builds a minimal VcpCapabilities containing only VCP 0x10 (brightness) with a continuous range.
+        /// Used when the monitor has no cap string but responds to a brightness probe.
+        /// </summary>
+        private static Models.VcpCapabilities CreateBrightnessOnlyCapabilities()
+        {
+            var caps = new Models.VcpCapabilities { Raw = string.Empty };
+            caps.SupportedVcpCodes[NativeConstants.VcpCodeBrightness] =
+                new Models.VcpCodeInfo(NativeConstants.VcpCodeBrightness, "Brightness");
+            return caps;
+        }
 
         /// <summary>
         /// Try to get capabilities string from a physical monitor handle.
