@@ -4,11 +4,21 @@
 
 using Windows.Win32;
 using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.System.Com;
 using Windows.Win32.System.Variant;
 using Windows.Win32.UI.Accessibility;
 
 namespace Microsoft.CmdPal.UI.Utilities;
+
+/// <summary>Identifies which screen edge the taskbar is docked to.</summary>
+public enum TaskbarEdge
+{
+    Bottom,
+    Top,
+    Left,
+    Right,
+}
 
 /// <summary>
 /// Measures the taskbar button area and tray area widths using
@@ -34,6 +44,12 @@ public sealed unsafe class TaskbarMetrics : IDisposable
     /// <summary>Number of buttons found on the taskbar.</summary>
     public int ButtonCount { get; private set; }
 
+    /// <summary>Which screen edge the taskbar is docked to.</summary>
+    public TaskbarEdge Edge { get; private set; }
+
+    /// <summary>True when the taskbar is on the top or bottom edge.</summary>
+    public bool IsHorizontal => Edge is TaskbarEdge.Bottom or TaskbarEdge.Top;
+
     /// <summary>
     /// Re-measures the primary taskbar. Returns true if any value changed.
     /// Thread-safe — can be called from any thread.
@@ -47,6 +63,8 @@ public sealed unsafe class TaskbarMetrics : IDisposable
         {
             return false;
         }
+
+        DetectEdge(taskbarHwnd);
 
         var newButtons = MeasureButtons(taskbarHwnd, out var newCount);
         var newTray = MeasureTray(taskbarHwnd);
@@ -96,14 +114,29 @@ public sealed unsafe class TaskbarMetrics : IDisposable
                 return 0;
             }
 
-            // Determine the right boundary: buttons stop where the tray begins.
+            // Determine the boundary: buttons stop where the tray begins.
+            // For horizontal taskbars this is the tray's left edge;
+            // for vertical taskbars it's the tray's top edge.
             PInvoke.GetWindowRect(taskbarHwnd, out var taskbarRect);
             var trayHwnd = PInvoke.FindWindowEx(taskbarHwnd, HWND.Null, "TrayNotifyWnd", null);
-            var rightBoundary = taskbarRect.right;
-            if (!trayHwnd.IsNull)
+            int boundary;
+            if (IsHorizontal)
             {
-                PInvoke.GetWindowRect(trayHwnd, out var trayRect);
-                rightBoundary = trayRect.left;
+                boundary = taskbarRect.right;
+                if (!trayHwnd.IsNull)
+                {
+                    PInvoke.GetWindowRect(trayHwnd, out var trayRect);
+                    boundary = trayRect.left;
+                }
+            }
+            else
+            {
+                boundary = taskbarRect.bottom;
+                if (!trayHwnd.IsNull)
+                {
+                    PInvoke.GetWindowRect(trayHwnd, out var trayRect);
+                    boundary = trayRect.top;
+                }
             }
 
             // Enumerate all UIA descendants of the taskbar.
@@ -158,24 +191,26 @@ public sealed unsafe class TaskbarMetrics : IDisposable
                         var psa = varRect.Anonymous.Anonymous.Anonymous.parray;
                         if (psa != null)
                         {
-                            double x = 0, w = 0;
-                            int idx = 0;
-                            PInvoke.SafeArrayGetElement(psa, &idx, &x);
-                            idx = 2;
-                            PInvoke.SafeArrayGetElement(psa, &idx, &w);
+                            // Horizontal: X (0) + Width (2)
+                            // Vertical:   Y (1) + Height (3)
+                            int posIdx = IsHorizontal ? 0 : 1;
+                            int sizeIdx = IsHorizontal ? 2 : 3;
+                            double pos = 0, size = 0;
+                            PInvoke.SafeArrayGetElement(psa, &posIdx, &pos);
+                            PInvoke.SafeArrayGetElement(psa, &sizeIdx, &size);
 
-                            var btnLeft = (int)x;
-                            var btnRight = (int)(x + w);
+                            var btnStart = (int)pos;
+                            var btnEnd = (int)(pos + size);
 
-                            // Count buttons to the left of the tray area.
+                            // Count buttons before the tray area.
                             // CmdPal's own controls are UserControls, not
                             // UIA buttons, so the typeId==50000 filter above
                             // already excludes them.
-                            if (btnLeft < rightBoundary)
+                            if (btnStart < boundary)
                             {
-                                if (btnRight > maxRight)
+                                if (btnEnd > maxRight)
                                 {
-                                    maxRight = btnRight;
+                                    maxRight = btnEnd;
                                 }
 
                                 buttonCount++;
@@ -199,7 +234,8 @@ public sealed unsafe class TaskbarMetrics : IDisposable
                 return 0;
             }
 
-            return maxRight > taskbarRect.left ? maxRight - taskbarRect.left : 0;
+            var taskbarStart = IsHorizontal ? taskbarRect.left : taskbarRect.top;
+            return maxRight > taskbarStart ? maxRight - taskbarStart : 0;
         }
         finally
         {
@@ -215,7 +251,7 @@ public sealed unsafe class TaskbarMetrics : IDisposable
         }
     }
 
-    private static int MeasureTray(HWND taskbarHwnd)
+    private int MeasureTray(HWND taskbarHwnd)
     {
         var tray = PInvoke.FindWindowEx(taskbarHwnd, HWND.Null, "TrayNotifyWnd", null);
         if (tray.IsNull)
@@ -223,14 +259,34 @@ public sealed unsafe class TaskbarMetrics : IDisposable
             return 0;
         }
 
-        // Measure from the tray's left edge to the taskbar's right edge.
-        // TrayNotifyWnd alone doesn't cover the full tray area — the
-        // clock, date, and action center extend beyond it on Windows 11.
+        // Measure from the tray's near edge to the taskbar's far edge.
+        // For horizontal: tray left → taskbar right (width).
+        // For vertical:   tray top  → taskbar bottom (height).
         PInvoke.GetWindowRect(taskbarHwnd, out var taskbarRect);
         PInvoke.GetWindowRect(tray, out var trayRect);
-        var result = taskbarRect.right - trayRect.left;
-        System.Diagnostics.Debug.WriteLine($"MeasureTray: taskbar=({taskbarRect.left},{taskbarRect.top},{taskbarRect.right},{taskbarRect.bottom}) tray=({trayRect.left},{trayRect.top},{trayRect.right},{trayRect.bottom}) trayNotifyWidth={trayRect.Width} RESULT={result}");
+        var result = IsHorizontal
+            ? taskbarRect.right - trayRect.left
+            : taskbarRect.bottom - trayRect.top;
+        System.Diagnostics.Debug.WriteLine($"MeasureTray: taskbar=({taskbarRect.left},{taskbarRect.top},{taskbarRect.right},{taskbarRect.bottom}) tray=({trayRect.left},{trayRect.top},{trayRect.right},{trayRect.bottom}) edge={Edge} RESULT={result}");
         return result;
+    }
+
+    private void DetectEdge(HWND taskbarHwnd)
+    {
+        PInvoke.GetWindowRect(taskbarHwnd, out var taskbarRect);
+        var monitor = PInvoke.MonitorFromWindow(taskbarHwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+        var monitorInfo = new MONITORINFO { cbSize = (uint)sizeof(MONITORINFO) };
+        PInvoke.GetMonitorInfo(monitor, ref monitorInfo);
+        var screen = monitorInfo.rcMonitor;
+
+        if (taskbarRect.Width >= screen.Width)
+        {
+            Edge = taskbarRect.top <= screen.top ? TaskbarEdge.Top : TaskbarEdge.Bottom;
+        }
+        else
+        {
+            Edge = taskbarRect.left <= screen.left ? TaskbarEdge.Left : TaskbarEdge.Right;
+        }
     }
 
     private void EnsureAutomation()
