@@ -47,6 +47,7 @@ public sealed partial class TaskbarWindow : WindowEx,
     private int _clipVersion;
     private bool _clipSuspended;
     private bool _disposed;
+    private TaskbarEdge _lastKnownEdge;
 
     internal TaskbarWindow(TaskbarMetrics metrics)
     {
@@ -146,13 +147,17 @@ public sealed partial class TaskbarWindow : WindowEx,
             return;
         }
 
-        // Detect auto-hide: if the taskbar has slid off-screen, hide
-        // our window so it doesn't float alone on the desktop.
         var shellTray = PInvoke.FindWindow("Shell_TrayWnd", null);
         if (!shellTray.IsNull)
         {
             PInvoke.GetWindowRect(shellTray, out var taskbarRect);
-            var isTaskbarVisible = _taskbarMetrics.IsHorizontal
+
+            // Detect the current edge cheaply (no UIA/COM) by comparing
+            // the taskbar rect to the monitor rect.
+            var currentEdge = DetectEdgeFromRect(shellTray, taskbarRect);
+            var isHorizontal = currentEdge is TaskbarEdge.Bottom or TaskbarEdge.Top;
+
+            var isTaskbarVisible = isHorizontal
                 ? taskbarRect.Height > 2
                 : taskbarRect.Width > 2;
 
@@ -164,6 +169,15 @@ public sealed partial class TaskbarWindow : WindowEx,
             else if (!PInvoke.IsWindowVisible(_hwnd))
             {
                 PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+                MoveToTaskbar();
+                return;
+            }
+
+            // If the taskbar moved to a different edge, reposition now.
+            if (currentEdge != _lastKnownEdge)
+            {
+                _lastKnownEdge = currentEdge;
+                _lastContentSpace = 0; // force layout recalculation
                 MoveToTaskbar();
                 return;
             }
@@ -187,6 +201,27 @@ public sealed partial class TaskbarWindow : WindowEx,
             immediate: false);
     }
 
+    /// <summary>
+    /// Lightweight edge detection using only Win32 rect comparisons.
+    /// No UIA/COM — safe to call on the UI thread in hot paths.
+    /// </summary>
+    private static TaskbarEdge DetectEdgeFromRect(HWND taskbarHwnd, RECT taskbarRect)
+    {
+        var monitor = PInvoke.MonitorFromWindow(taskbarHwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+        var monitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
+        PInvoke.GetMonitorInfo(monitor, ref monitorInfo);
+        var screen = monitorInfo.rcMonitor;
+
+        if (taskbarRect.Width >= screen.Width)
+        {
+            return taskbarRect.top <= screen.top ? TaskbarEdge.Top : TaskbarEdge.Bottom;
+        }
+        else
+        {
+            return taskbarRect.left <= screen.left ? TaskbarEdge.Left : TaskbarEdge.Right;
+        }
+    }
+
     private LRESULT CustomWndProc(HWND hwnd, uint uMsg, WPARAM wParam, LPARAM lParam)
     {
         if (uMsg == PInvoke.WM_DISPLAYCHANGE)
@@ -197,7 +232,10 @@ public sealed partial class TaskbarWindow : WindowEx,
         {
             if (wParam == (uint)SYSTEM_PARAMETERS_INFO_ACTION.SPI_SETWORKAREA)
             {
-                DispatcherQueue.TryEnqueue(TriggerDebouncedLayoutUpdate);
+                // Work area changed — taskbar moved, resized, or changed
+                // edge. Call MoveToTaskbar directly (not debounced) so
+                // the window repositions immediately.
+                DispatcherQueue.TryEnqueue(() => MoveToTaskbar());
             }
         }
         else if (uMsg == PInvoke.WM_DESTROY)
@@ -306,6 +344,26 @@ public sealed partial class TaskbarWindow : WindowEx,
             ? Microsoft.UI.Xaml.Controls.Orientation.Horizontal
             : Microsoft.UI.Xaml.Controls.Orientation.Vertical);
 
+        // Reset MainContent layout immediately so the XAML state matches
+        // the new orientation before ClipWindow runs asynchronously.
+        {
+            var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
+            var trayInDips = _taskbarMetrics.TrayWidthInPixels / scaleFactor;
+
+            if (_taskbarMetrics.IsHorizontal)
+            {
+                MainContent.VerticalAlignment = VerticalAlignment.Center;
+                MainContent.Margin = new Thickness(0);
+                MainContent.MaxHeight = double.PositiveInfinity;
+            }
+            else
+            {
+                MainContent.VerticalAlignment = VerticalAlignment.Bottom;
+                MainContent.Margin = new Thickness(0, 0, 0, trayInDips);
+                MainContent.MaxHeight = double.PositiveInfinity;
+            }
+        }
+
         // Apply an immediate clip using pre-loaded metrics so the window
         // never flashes across the full taskbar width. The async ClipWindow
         // call will refine this once XAML layout has settled.
@@ -346,6 +404,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         }
 
         ClipWindow().ConfigureAwait(false);
+        _lastKnownEdge = _taskbarMetrics.Edge;
     }
 
     private async Task<bool> UpdateTaskbarButtonsAsync()
