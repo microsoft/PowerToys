@@ -55,7 +55,7 @@ public record DockSettings
         {
             ProviderId = "WinGet",
             CommandId = "com.microsoft.cmdpal.winget",
-            ShowLabels = false,
+            ShowTitles = false,
         });
 
     public ImmutableList<DockBandSettings> CenterBands { get; init; } = ImmutableList<DockBandSettings>.Empty;
@@ -110,16 +110,6 @@ public record DockBandSettings
     /// If null, falls back to dock-wide ShowLabels setting.
     /// </summary>
     public bool? ShowSubtitles { get; init; }
-
-    /// <summary>
-    /// Gets a value for backward compatibility. Maps to ShowTitles.
-    /// </summary>
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool? ShowLabels
-    {
-        get => ShowTitles;
-        init => ShowTitles = value;
-    }
 
     /// <summary>
     /// Resolves the effective value of <see cref="ShowTitles"/> for this band.

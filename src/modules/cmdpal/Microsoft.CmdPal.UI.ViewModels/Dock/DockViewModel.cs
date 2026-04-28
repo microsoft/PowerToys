@@ -618,7 +618,7 @@ public sealed partial class DockViewModel
         }
 
         // Create settings for the new band
-        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId, ShowLabels = null };
+        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId };
         var dockSettings = _settings;
 
         // Create the band view model
