@@ -36,12 +36,15 @@ Note the SHA — it goes into the initial commit message.
 
 (Out-of-band manual step; assume the GitHub repo exists, empty.)
 
-- [ ] **Step 3: Initialize empty local repo**
+- [ ] **Step 3: Initialize empty local repo and ensure default branch is `main`**
+
+`git init` may default to `master` depending on local config. Force `main` immediately so the rename isn't forgotten before push. Add the remote only when the GitHub repo exists (skip in local-only mode).
 
 ```bash
 mkdir PowerToysRun && cd PowerToysRun
 git init
-git remote add origin https://github.com/microsoft/PowerToysRun.git
+git branch -M main 2>/dev/null || true   # idempotent: ok if already main
+git remote add origin https://github.com/microsoft/PowerToysRun.git   # skip in local-only mode
 ```
 
 - [ ] **Step 4: Copy launcher subtree from PT (excluding deleted/dropped pieces)**
@@ -71,7 +74,13 @@ Expected output: `Plugins  PowerLauncher  Wox.Infrastructure  Wox.Plugin  Wox.Te
 ls src/Plugins/ | wc -l
 ```
 
-Expected: 19 (the `Microsoft.PowerToys.Run.Plugin.PowerToys` is gone).
+Expected: 31 (19 plugin source dirs + 11 `*.UnitTest(s)` sibling dirs + 1 `DynamicPlugin.props` file; `Microsoft.PowerToys.Run.Plugin.PowerToys` is gone).
+
+Verify the deleted plugin is absent specifically:
+```bash
+ls src/Plugins/ | grep -i "PowerToys.Run.Plugin.PowerToys$" || echo "correctly absent"
+```
+Expected: `correctly absent`.
 
 - [ ] **Step 6: Create empty stub directories that will be filled in later phases**
 
@@ -82,7 +91,10 @@ mkdir -p winget/manifest
 mkdir -p doc
 mkdir -p tools
 mkdir -p .github/workflows
-touch src/Common/.gitkeep installer/PowerToysRunSetup/.gitkeep winget/manifest/.gitkeep doc/.gitkeep tools/.gitkeep
+# .gitkeep in each leaf empty dir so it survives clone (Common subdirs need their own .gitkeep,
+# not just src/Common — git only tracks files, empty parent dirs don't propagate trackedness).
+touch src/Common/ManagedCommon/.gitkeep src/Common/Common.UI/.gitkeep src/Common/Settings.Library/.gitkeep
+touch installer/PowerToysRunSetup/.gitkeep winget/manifest/.gitkeep doc/.gitkeep tools/.gitkeep
 ```
 
 - [ ] **Step 7: Create initial commit (clean slate)**
@@ -105,14 +117,13 @@ History from microsoft/PowerToys is intentionally not preserved.
 Authors of original code: see microsoft/PowerToys git log for the source paths above."
 ```
 
-- [ ] **Step 8: Push to remote**
+- [ ] **Step 8: Push to remote** (skip in local-only mode)
 
 ```bash
-git branch -M main
 git push -u origin main
 ```
 
-Expected: push succeeds.
+Expected: push succeeds. Skip if no remote configured (local-only mode).
 
 ### Task 0.2: Add LICENSE, README, and .gitignore at root
 
