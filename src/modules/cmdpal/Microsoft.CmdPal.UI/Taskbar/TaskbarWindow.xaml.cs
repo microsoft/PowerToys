@@ -432,7 +432,11 @@ public sealed partial class TaskbarWindow : WindowEx,
         // even if the metrics didn't change (they were pre-loaded).
         if (!changed && _lastContentSpace != 0)
         {
-            dispatcher.TryEnqueue(() => _bandsControl.SetMaxAvailableWidth(_lastContentSpace));
+            dispatcher.TryEnqueue(() =>
+            {
+                _bandsControl.SetMaxAvailableWidth(_lastContentSpace);
+                ApplyCompactMode();
+            });
             return false;
         }
 
@@ -501,6 +505,7 @@ public sealed partial class TaskbarWindow : WindowEx,
                 if (_lastContentSpace == forContent)
                 {
                     _bandsControl.SetMaxAvailableWidth(forContent);
+                    ApplyCompactMode();
                     tcs.TrySetResult(false);
                     return;
                 }

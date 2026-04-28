@@ -237,7 +237,6 @@ public sealed partial class TaskbarBandControl : UserControl,
 
     private bool _isCompact;
     private bool _hideText;
-    private bool _compactApplied;
 
     /// <summary>
     /// Sets compact mode on all realized DockItemControl instances.
@@ -245,11 +244,6 @@ public sealed partial class TaskbarBandControl : UserControl,
     /// </summary>
     internal void SetCompactMode(bool isCompact, bool hideText)
     {
-        if (_isCompact == isCompact && _hideText == hideText && _compactApplied)
-        {
-            return;
-        }
-
         _isCompact = isCompact;
         _hideText = hideText;
         ApplyCompactModeToAllItems();
@@ -265,12 +259,6 @@ public sealed partial class TaskbarBandControl : UserControl,
                 FindAllDescendants(container, items);
             }
         }
-
-        Logger.LogDebug($"ApplyCompactModeToAllItems: isCompact={_isCompact} hideText={_hideText} itemCount={items.Count} bandCount={_viewModel.TaskbarItems.Count}");
-
-        // Don't consider the state "applied" until we've found items
-        // to apply it to. This ensures we retry when items are realized.
-        _compactApplied = items.Count > 0;
 
         foreach (var item in items)
         {
