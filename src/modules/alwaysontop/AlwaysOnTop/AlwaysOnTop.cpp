@@ -173,13 +173,13 @@ namespace
         return PtInRect(&triggerRect, cursorPos);
     }
 
-    double EaseOutCubic(double progress) noexcept
+    constexpr double EaseOutCubic(double progress) noexcept
     {
         const double inverted = 1.0 - progress;
         return 1.0 - (inverted * inverted * inverted);
     }
 
-    int Interpolate(int start, int end, double progress) noexcept
+    constexpr int Interpolate(int start, int end, double progress) noexcept
     {
         return start + static_cast<int>((end - start) * progress);
     }
@@ -212,7 +212,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
-    SettingsObserver({ SettingId::FrameEnabled, SettingId::Hotkey, SettingId::IncreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu, SettingId::CursorDodgeAnimationInterval }),
+    SettingsObserver({ SettingId::FrameEnabled, SettingId::Hotkey, SettingId::IncreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu, SettingId::CursorDodgeEnabled, SettingId::CursorDodgeAnimationInterval }),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
     m_mainThreadId(mainThreadId),
@@ -278,8 +278,6 @@ bool AlwaysOnTop::InitMainWindow()
         return false;
     }
 
-    SetTimer(m_window, NonLocalizable::CURSOR_DODGE_TIMER_ID, GetCursorDodgeTimerIntervalMs(), nullptr);
-
     return true;
 }
 
@@ -294,6 +292,7 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
         RegisterHotkey();
     }
     break;
+    case SettingId::CursorDodgeEnabled:
     case SettingId::CursorDodgeAnimationInterval:
     {
         UpdateCursorDodgeTimerInterval();
@@ -803,12 +802,43 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
     return (iter != m_topmostWindows.end());
 }
 
-void AlwaysOnTop::UpdateCursorDodgeTimerInterval() const
+void AlwaysOnTop::UpdateCursorDodgeTimerInterval()
 {
-    if (m_window)
+    if (!m_window)
     {
-        SetTimer(m_window, NonLocalizable::CURSOR_DODGE_TIMER_ID, GetCursorDodgeTimerIntervalMs(), nullptr);
+        return;
     }
+
+    const auto settings = AlwaysOnTopSettings::settings();
+    if (!settings || !settings->enableCursorDodge)
+    {
+        // Ensure windows do not get stuck at an in-between position if dodge is disabled mid-animation.
+        for (const auto& [window, animation] : m_dodgeAnimations)
+        {
+            if (!window || !IsWindow(window) || !IsWindowVisible(window) || !IsPinned(window) || IsIconic(window) || IsZoomed(window))
+            {
+                continue;
+            }
+
+            if (!SetWindowPos(window, HWND_TOPMOST, animation.target.x, animation.target.y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE))
+            {
+                Logger::warn(L"Failed to finalize pinned window dodge, {}", get_last_error_or_default(GetLastError()));
+                continue;
+            }
+
+            auto topmostIter = m_topmostWindows.find(window);
+            if (topmostIter != m_topmostWindows.end() && topmostIter->second)
+            {
+                topmostIter->second->UpdateBorderPosition();
+            }
+        }
+
+        m_dodgeAnimations.clear();
+        KillTimer(m_window, NonLocalizable::CURSOR_DODGE_TIMER_ID);
+        return;
+    }
+
+    SetTimer(m_window, NonLocalizable::CURSOR_DODGE_TIMER_ID, GetCursorDodgeTimerIntervalMs(), nullptr);
 }
 
 void AlwaysOnTop::PollCursorDodge()
@@ -816,7 +846,6 @@ void AlwaysOnTop::PollCursorDodge()
     const auto settings = AlwaysOnTopSettings::settings();
     if (!settings->enableCursorDodge)
     {
-        m_dodgeAnimations.clear();
         return;
     }
 

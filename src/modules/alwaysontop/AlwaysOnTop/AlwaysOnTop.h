@@ -105,7 +105,7 @@ private:
     bool UnpinTopmostWindow(HWND window) const noexcept;
     bool AssignBorder(HWND window);
     void RefreshBorders();
-    void UpdateCursorDodgeTimerInterval() const;
+    void UpdateCursorDodgeTimerInterval();
     void PollCursorDodge();
     void UpdateDodgeAnimations();
     void StartDodgeAnimation(HWND window, const RECT& windowRect, const POINT& target);
