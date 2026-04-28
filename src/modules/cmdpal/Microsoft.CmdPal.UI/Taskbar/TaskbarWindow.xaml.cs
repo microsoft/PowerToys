@@ -396,7 +396,11 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                 if (clipRight > clipLeft)
                 {
-                    var hrgn = PInvoke.CreateRectRgn(clipLeft, 0, clipRight, newWindowRect.Height);
+                    // Clip to the overlap between our window and the taskbar.
+                    // The window may start below the taskbar's top (rebar offset).
+                    var clipTop = Math.Max(0, taskbarRect.top - newWindowRect.top);
+                    var clipH = Math.Min(newWindowRect.Height, taskbarRect.bottom - newWindowRect.top);
+                    var hrgn = PInvoke.CreateRectRgn(clipLeft, clipTop, clipRight, clipH);
                     _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
                 }
             }
@@ -560,10 +564,20 @@ public sealed partial class TaskbarWindow : WindowEx,
                 if (isHorizontal)
                 {
                     // Horizontal: clip left/right to exclude buttons and tray.
+                    // The window may start below the taskbar's top edge (rebar
+                    // offset) and WinUI may enforce a minimum height. Clip to
+                    // the actual overlap between our window and the taskbar.
+                    var taskbarHwnd = PInvoke.FindWindow("Shell_TrayWnd", null);
+                    PInvoke.GetWindowRect(taskbarHwnd, out var tbRect);
+
+                    // Window-relative: how much of our window overlaps the taskbar
+                    var overlapTop = Math.Max(0, tbRect.top - winRect.top);
+                    var overlapBottom = Math.Max(0, tbRect.bottom - winRect.top);
+
                     clipLeft = 0;
-                    clipTop = 0;
+                    clipTop = overlapTop;
                     clipRight = winRect.Width - _taskbarMetrics.TrayWidthInPixels;
-                    clipBottom = winRect.Height;
+                    clipBottom = Math.Min(winRect.Height, overlapBottom);
 
                     FrameworkElement clipToElement = MainContent;
                     if (clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
@@ -887,5 +901,30 @@ public sealed partial class TaskbarWindow : WindowEx,
 
         Logger.LogDebug($"ApplyCompactMode: isCompact={isCompact} hideText={hideText} rebarPx={_taskbarMetrics.RebarThicknessInPixels} edge={_taskbarMetrics.Edge}");
         _bandsControl.SetCompactMode(isCompact, hideText);
+
+        // When compact, WinUI enforces a minimum window size larger than
+        // the taskbar. Anchor the Root Grid to the taskbar edge so content
+        // aligns with the visible clip region instead of centering in the
+        // oversized window.
+        if (isCompact)
+        {
+            Root.VerticalAlignment = _taskbarMetrics.Edge switch
+            {
+                TaskbarEdge.Top => VerticalAlignment.Top,
+                TaskbarEdge.Bottom => VerticalAlignment.Bottom,
+                _ => VerticalAlignment.Stretch,
+            };
+            Root.HorizontalAlignment = _taskbarMetrics.Edge switch
+            {
+                TaskbarEdge.Left => HorizontalAlignment.Left,
+                TaskbarEdge.Right => HorizontalAlignment.Right,
+                _ => HorizontalAlignment.Stretch,
+            };
+        }
+        else
+        {
+            Root.VerticalAlignment = VerticalAlignment.Stretch;
+            Root.HorizontalAlignment = HorizontalAlignment.Stretch;
+        }
     }
 }
