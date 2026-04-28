@@ -803,6 +803,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 if (g_altAbsorbed && !g_dragConsumedAlt)
                 {
                     g_altAbsorbed = false;
+                    g_altPressed = false;
                     ReplayAbsorbedAlt();
                 }
             }
