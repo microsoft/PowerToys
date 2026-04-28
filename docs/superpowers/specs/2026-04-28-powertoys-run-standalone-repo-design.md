@@ -41,7 +41,7 @@
 | Q8 | 品牌命名 | **保留 "PowerToys Run"**；repo 名 `microsoft/PowerToysRun` | 显示名、命名空间、exe 名都不变 |
 | Q9 | Telemetry | **完全去掉** | 删 PowerLauncher.Telemetry 全部 |
 | 路径 | 执行节奏 | **一次性大爆炸**：新 repo 一次性建成 | 与 PT 主仓不耦合时序 |
-| Git | 历史保留 | **`git filter-repo` 保留历史** | 保留作者归属、git blame |
+| Git | 历史保留 | **Clean slate（不保留历史）** | 单个 initial commit；丢弃 PT 历史与作者归属 |
 
 ---
 
@@ -94,8 +94,9 @@ PowerToysRun/
 ```
 
 **复制策略**：
-- 用 `git filter-repo` 抽 `src/modules/launcher/{PowerLauncher,Wox.Plugin,Wox.Infrastructure,Plugins,Wox.Test}` 子树连带历史一次性导出，作为新 repo 的初始 commits
-- 保留作者归属，便于 `git blame` 追溯
+- **Clean slate**：直接 `cp -r` 把 `src/modules/launcher/{PowerLauncher,Wox.Plugin,Wox.Infrastructure,Plugins,Wox.Test}` 这 5 个子目录拷贝到新 repo，**不保留 PT 历史**
+- 新 repo 从一个 "Initial commit from PowerToys main repo (snapshot 2026-04-28)" 开始；commit message 注明源 commit SHA 以便追溯
+- 不保留作者归属（git blame 全部归到这次的初始 commit）
 - **不复制**：`Microsoft.Launcher/`（C++ 模块 DLL）、`PowerLauncher.Telemetry/`、`Plugins/Microsoft.PowerToys.Run.Plugin.PowerToys/`
 
 **复制后修改**（仅在新 repo 内）：

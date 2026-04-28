@@ -16,51 +16,48 @@
 
 ## Phase 0: Repository Bootstrap
 
-### Task 0.1: Create new repo from launcher subtree using git filter-repo
+### Task 0.1: Bootstrap new repo from launcher snapshot (clean slate, no history)
 
 **Files:**
-- Create: `<PTRUN>` (entire new repo via git filter-repo)
+- Create: `<PTRUN>` (entire new repo as a fresh git init)
 
-- [ ] **Step 1: Install git-filter-repo if not present**
+- [ ] **Step 1: Identify the source commit SHA in PT for traceability**
 
-```bash
-pip install git-filter-repo
-git filter-repo --version
-```
-
-Expected: prints version (>=2.38).
-
-- [ ] **Step 2: Clone PT main repo to a working directory**
+From a checkout of PT main repo:
 
 ```bash
-git clone https://github.com/microsoft/PowerToys.git PowerToysRun-bootstrap
-cd PowerToysRun-bootstrap
+cd <PT>
+git rev-parse HEAD
 ```
 
-- [ ] **Step 3: Run filter-repo to keep only launcher subtree paths**
+Note the SHA — it goes into the initial commit message.
+
+- [ ] **Step 2: Create new GitHub repo `microsoft/PowerToysRun`**
+
+(Out-of-band manual step; assume the GitHub repo exists, empty.)
+
+- [ ] **Step 3: Initialize empty local repo**
 
 ```bash
-git filter-repo \
-  --path src/modules/launcher/PowerLauncher/ \
-  --path src/modules/launcher/Wox.Plugin/ \
-  --path src/modules/launcher/Wox.Infrastructure/ \
-  --path src/modules/launcher/Plugins/ \
-  --path src/modules/launcher/Wox.Test/ \
-  --path src/modules/launcher/LICENSE \
-  --invert-paths --path src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.PowerToys/
+mkdir PowerToysRun && cd PowerToysRun
+git init
+git remote add origin https://github.com/microsoft/PowerToysRun.git
 ```
 
-Note: the second `--invert-paths` removes the to-be-deleted `Microsoft.PowerToys.Run.Plugin.PowerToys` plugin from history.
-
-Expected: filter-repo rewrites history. Repo size should drop dramatically (from ~GBs to ~hundreds of MBs).
-
-- [ ] **Step 4: Move launcher contents up to repo root**
+- [ ] **Step 4: Copy launcher subtree from PT (excluding deleted/dropped pieces)**
 
 ```bash
-git filter-repo --path-rename src/modules/launcher/:src/
-```
+mkdir -p src
+cp -r <PT>/src/modules/launcher/PowerLauncher src/
+cp -r <PT>/src/modules/launcher/Wox.Plugin src/
+cp -r <PT>/src/modules/launcher/Wox.Infrastructure src/
+cp -r <PT>/src/modules/launcher/Plugins src/
+cp -r <PT>/src/modules/launcher/Wox.Test src/
+cp <PT>/src/modules/launcher/LICENSE .
 
-After this, the layout is `src/PowerLauncher/`, `src/Wox.Plugin/`, etc.
+# Remove the to-be-deleted plugin
+rm -rf src/Plugins/Microsoft.PowerToys.Run.Plugin.PowerToys
+```
 
 - [ ] **Step 5: Verify resulting layout**
 
@@ -68,7 +65,13 @@ After this, the layout is `src/PowerLauncher/`, `src/Wox.Plugin/`, etc.
 ls src/
 ```
 
-Expected output: `LICENSE  Plugins  PowerLauncher  Wox.Infrastructure  Wox.Plugin  Wox.Test`
+Expected output: `Plugins  PowerLauncher  Wox.Infrastructure  Wox.Plugin  Wox.Test`
+
+```bash
+ls src/Plugins/ | wc -l
+```
+
+Expected: 19 (the `Microsoft.PowerToys.Run.Plugin.PowerToys` is gone).
 
 - [ ] **Step 6: Create empty stub directories that will be filled in later phases**
 
@@ -82,24 +85,34 @@ mkdir -p .github/workflows
 touch src/Common/.gitkeep installer/PowerToysRunSetup/.gitkeep winget/manifest/.gitkeep doc/.gitkeep tools/.gitkeep
 ```
 
-- [ ] **Step 7: Create new GitHub repo `microsoft/PowerToysRun` and push**
+- [ ] **Step 7: Create initial commit (clean slate)**
 
-(Out-of-band manual step; assume the GitHub repo exists.)
+Replace `<SHA>` with the source commit SHA from Step 1.
 
 ```bash
-git remote remove origin
-git remote add origin https://github.com/microsoft/PowerToysRun.git
+git add -A
+git commit -m "Initial commit: snapshot from microsoft/PowerToys at <SHA>
+
+Source paths:
+  src/modules/launcher/{PowerLauncher,Wox.Plugin,Wox.Infrastructure,Plugins,Wox.Test}
+
+Excluded from snapshot:
+  - src/modules/launcher/Microsoft.Launcher/ (C++ module DLL — no runner)
+  - src/modules/launcher/PowerLauncher.Telemetry/ (telemetry dropped)
+  - src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.PowerToys/ (PT-utilities plugin removed)
+
+History from microsoft/PowerToys is intentionally not preserved.
+Authors of original code: see microsoft/PowerToys git log for the source paths above."
+```
+
+- [ ] **Step 8: Push to remote**
+
+```bash
+git branch -M main
 git push -u origin main
 ```
 
 Expected: push succeeds.
-
-- [ ] **Step 8: Commit stub directories**
-
-```bash
-git add src/Common/.gitkeep installer/PowerToysRunSetup/.gitkeep winget/manifest/.gitkeep doc/.gitkeep tools/.gitkeep .github/workflows/
-git commit -m "chore: scaffold top-level directories for standalone repo"
-```
 
 ### Task 0.2: Add LICENSE, README, and .gitignore at root
 
