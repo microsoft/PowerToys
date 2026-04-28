@@ -418,7 +418,7 @@ public partial class MainViewModel
             // Default Enable* for new monitors (first-time setup):
             // - Contrast / Volume: enabled if the monitor advertises the VCP code (low-risk features).
             // - InputSource / ColorTemperature / PowerState: always disabled by default. These can leave
-            //   the monitor in a state recoverable only via physical buttons; users opt in via the
+            //   the monitor in a state recoverable only via physical buttons; users opt-in via the
             //   Settings UI checkbox, which raises a confirmation dialog (HandleDangerousFeatureClickAsync).
             // ApplyPreservedUserSettings will override these with saved user preferences if they exist.
             EnableContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
