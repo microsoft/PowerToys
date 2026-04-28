@@ -21,43 +21,30 @@
         VerticalAlignment="Stretch"
         Background="Transparent">
 
-        <Grid.ColumnDefinitions>
-            <!-- <ColumnDefinition x:Name="WindowsLogo" Width="60" /> -->
-            <ColumnDefinition x:Name="WindowsLogo" Width="0" />
-            <ColumnDefinition x:Name="TaskbarButtons" Width="0" />
-            <ColumnDefinition x:Name="Mid" Width="*" />
-            <ColumnDefinition x:Name="ContentColumn" Width="Auto" />
-            <ColumnDefinition x:Name="TrayIcons" Width="400" />
-        </Grid.ColumnDefinitions>
-
-        <!--  Debug: color each column so we can see layout
-        <Border Grid.Column="0" Background="#80FF0000" />
-        <Border Grid.Column="1" Background="#8000FF00" />
-        <Border Grid.Column="2" Background="#800000FF" />
-        <Border Grid.Column="3" Background="#8000FFFF" />
-        <Border Grid.Column="4" Background="#80FF00FF" />
+        <!--
+            Horizontal layout uses columns: Logo | Buttons | Mid(*) | Content | Tray
+            Vertical layout uses rows:    Buttons | Mid(*) | Content | Tray
+            The inactive axis collapses to a single stretch dimension.
+            Code-behind calls ApplyOrientation() to switch.
         -->
-
-        <Border Grid.Column="0" />
-        <Border
-            Grid.Column="1"
-            BorderBrush="#8000FF00"
-            BorderThickness="2" />
-        <Border
-            Grid.Column="2"
-            BorderBrush="#800000FF"
-            BorderThickness="2" />
-        <Border
-            Grid.Column="3"
-            BorderBrush="#8000FFFF"
-            BorderThickness="2" />
-        <Border
-            Grid.Column="4"
-            BorderBrush="#80FF00FF"
-            BorderThickness="2" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="WindowsLogoCol" Width="0" />
+            <ColumnDefinition x:Name="ButtonsCol" Width="0" />
+            <ColumnDefinition x:Name="MidCol" Width="*" />
+            <ColumnDefinition x:Name="ContentCol" Width="Auto" />
+            <ColumnDefinition x:Name="TrayCol" Width="400" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="ButtonsRow" Height="0" />
+            <RowDefinition x:Name="MidRow" Height="*" />
+            <RowDefinition x:Name="ContentRow" Height="Auto" />
+            <RowDefinition x:Name="TrayRow" Height="0" />
+        </Grid.RowDefinitions>
 
         <ContentControl
             x:Name="MainContent"
+            Grid.Row="0"
+            Grid.RowSpan="4"
             Grid.Column="3"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"

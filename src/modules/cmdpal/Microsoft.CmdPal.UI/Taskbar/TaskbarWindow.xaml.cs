@@ -288,6 +288,24 @@ public sealed partial class TaskbarWindow : WindowEx,
         PInvoke.GetWindowRect(taskbarWindow, out var taskbarRect);
         PInvoke.GetWindowRect(reBarWindow, out var reBarRect);
 
+        Logger.LogDebug($"MoveToTaskbar: taskbar=({taskbarRect.left},{taskbarRect.top},{taskbarRect.right},{taskbarRect.bottom}) rebar=({reBarRect.left},{reBarRect.top},{reBarRect.right},{reBarRect.bottom}) rebarExists={!reBarWindow.IsNull}");
+
+        // If the rebar doesn't exist, fall back to the taskbar rect.
+        if (reBarWindow.IsNull)
+        {
+            reBarRect = taskbarRect;
+        }
+        else
+        {
+            // Clamp the rebar rect to the taskbar boundaries. On compact
+            // vertical taskbars, the rebar can extend beyond the visible
+            // taskbar area (e.g. 170px wide rebar on a 60px taskbar).
+            reBarRect.left = Math.Max(reBarRect.left, taskbarRect.left);
+            reBarRect.top = Math.Max(reBarRect.top, taskbarRect.top);
+            reBarRect.right = Math.Min(reBarRect.right, taskbarRect.right);
+            reBarRect.bottom = Math.Min(reBarRect.bottom, taskbarRect.bottom);
+        }
+
         RECT newWindowRect;
         if (_taskbarMetrics.IsHorizontal)
         {
@@ -350,30 +368,15 @@ public sealed partial class TaskbarWindow : WindowEx,
         // Apply compact mode based on taskbar settings and dimensions.
         ApplyCompactMode();
 
-        // Reset MainContent layout immediately so the XAML state matches
+        // Reset layout immediately so the XAML state matches
         // the new orientation before ClipWindow runs asynchronously.
         {
             var scaleFactor = PInvoke.GetDpiForWindow(_hwnd) / 96.0f;
             var trayInDips = _taskbarMetrics.TrayWidthInPixels / scaleFactor;
-
-            if (_taskbarMetrics.IsHorizontal)
-            {
-                Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 3);
-                Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 1);
-                MainContent.HorizontalAlignment = HorizontalAlignment.Right;
-                MainContent.VerticalAlignment = VerticalAlignment.Center;
-                MainContent.Margin = new Thickness(0);
-                MainContent.MaxHeight = double.PositiveInfinity;
-            }
-            else
-            {
-                Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 0);
-                Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 5);
-                MainContent.HorizontalAlignment = HorizontalAlignment.Center;
-                MainContent.VerticalAlignment = VerticalAlignment.Bottom;
-                MainContent.Margin = new Thickness(0, 0, 0, trayInDips);
-                MainContent.MaxHeight = double.PositiveInfinity;
-            }
+            var forContent = _taskbarMetrics.IsHorizontal
+                ? (newWindowRect.Width / (double)scaleFactor) - trayInDips
+                : newWindowRect.Width / (double)scaleFactor;
+            ApplyGridLayout(_taskbarMetrics.IsHorizontal, 0, trayInDips, forContent);
         }
 
         // Apply an immediate clip using pre-loaded metrics so the window
@@ -402,6 +405,11 @@ public sealed partial class TaskbarWindow : WindowEx,
                 var clipTop = _taskbarMetrics.ButtonsWidthInPixels;
                 var clipBottom = newWindowRect.Height - _taskbarMetrics.TrayWidthInPixels;
 
+                // WinUI enforces minimum window width, so clip to actual
+                // taskbar width for narrow vertical taskbars.
+                var taskbarCross = _taskbarMetrics.RebarThicknessInPixels;
+                var clipRight = taskbarCross > 0 ? Math.Min(newWindowRect.Width, taskbarCross) : newWindowRect.Width;
+
                 if (clipTop > clipBottom)
                 {
                     clipTop = Math.Max(0, clipBottom);
@@ -409,7 +417,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
                 if (clipBottom > clipTop)
                 {
-                    var hrgn = PInvoke.CreateRectRgn(0, clipTop, newWindowRect.Width, clipBottom);
+                    var hrgn = PInvoke.CreateRectRgn(0, clipTop, clipRight, clipBottom);
                     _ = PInvoke.SetWindowRgn(_hwnd, hrgn, true);
                 }
             }
@@ -470,70 +478,24 @@ public sealed partial class TaskbarWindow : WindowEx,
                         buttonsInDips = 0;
                     }
 
-                    TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
-                    TrayIcons.Width = new GridLength(trayInDips);
-
-                    // Restore horizontal layout properties.
-                    Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 3);
-                    Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 1);
-                    MainContent.HorizontalAlignment = HorizontalAlignment.Right;
-                    MainContent.VerticalAlignment = VerticalAlignment.Center;
-                    MainContent.Margin = new Thickness(0);
-                    MainContent.MaxHeight = double.PositiveInfinity;
-
                     forContent = available - buttonsInDips - trayInDips;
                 }
                 else
                 {
-                    // Vertical: buttons at top, tray at bottom.
-                    // The tray measurement (from TrayNotifyWnd) is reliable.
-                    // Button measurement (UIA) often over-reports, so anchor
-                    // content from the bottom — just above the tray.
-                    TaskbarButtons.Width = new GridLength(0);
-                    TrayIcons.Width = new GridLength(0);
-
-                    Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 0);
-                    Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 5);
-                    MainContent.HorizontalAlignment = HorizontalAlignment.Center;
-                    MainContent.VerticalAlignment = VerticalAlignment.Bottom;
-                    MainContent.Margin = new Thickness(0, 0, 0, trayInDips);
-                    MainContent.MaxHeight = double.PositiveInfinity;
-
                     forContent = winRect.Width / (double)scaleFactor;
                 }
 
                 if (_lastContentSpace == forContent)
                 {
-                    _bandsControl.SetMaxAvailableWidth(forContent);
+                    // Even if content space didn't change, ensure the
+                    // grid layout matches the current orientation.
+                    ApplyGridLayout(isHorizontal, buttonsInDips, trayInDips, forContent);
                     ApplyCompactMode();
                     tcs.TrySetResult(false);
                     return;
                 }
 
-                if (forContent > 0)
-                {
-                    // In edit mode, take the full available width so
-                    // bands don't collapse while being reordered.
-                    if (_bandsControl.IsEditMode)
-                    {
-                        ContentColumn.MaxWidth = forContent;
-                    }
-                    else
-                    {
-                        ContentColumn.MaxWidth = Root.ActualWidth == 0 ? double.MaxValue : forContent;
-                    }
-
-                    ContentColumn.Width = GridLength.Auto;
-                    _bandsControl.SetMaxAvailableWidth(forContent);
-                }
-                else
-                {
-                    ContentColumn.MaxWidth = 0;
-                    ContentColumn.Width = new GridLength(0);
-                    _bandsControl.SetMaxAvailableWidth(0);
-                }
-
-                _lastContentSpace = forContent;
+                ApplyGridLayout(isHorizontal, buttonsInDips, trayInDips, forContent);
 
                 // Reapply compact mode — metrics may have changed.
                 ApplyCompactMode();
@@ -601,7 +563,7 @@ public sealed partial class TaskbarWindow : WindowEx,
                     clipLeft = 0;
                     clipTop = 0;
                     clipRight = winRect.Width - _taskbarMetrics.TrayWidthInPixels;
-                    clipBottom = (int)(Root.ActualHeight * scaleFactor);
+                    clipBottom = winRect.Height;
 
                     FrameworkElement clipToElement = MainContent;
                     if (clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
@@ -619,11 +581,13 @@ public sealed partial class TaskbarWindow : WindowEx,
                 else
                 {
                     // Vertical: content is bottom-aligned above the tray.
-                    // Clip to content's actual position — the tray boundary
-                    // is the hard limit at the bottom.
+                    // WinUI enforces a minimum window width (~170px) that
+                    // can exceed the taskbar width (e.g. 60px compact).
+                    // Clip to the actual taskbar width so the excess is hidden.
+                    var taskbarCrossAxis = _taskbarMetrics.RebarThicknessInPixels;
                     clipLeft = 0;
                     clipTop = 0;
-                    clipRight = (int)(Root.ActualWidth * scaleFactor);
+                    clipRight = taskbarCrossAxis > 0 ? Math.Min(winRect.Width, taskbarCrossAxis) : winRect.Width;
                     clipBottom = winRect.Height - _taskbarMetrics.TrayWidthInPixels;
 
                     FrameworkElement clipToElement = MainContent;
@@ -697,56 +661,19 @@ public sealed partial class TaskbarWindow : WindowEx,
                 if (isHorizontal)
                 {
                     var available = winRect.Width / (double)scaleFactor;
-
-                    // Same overlap handling as UpdateTaskbarButtonsAsync
                     if (buttonsInDips + trayInDips > available)
                     {
                         buttonsInDips = 0;
                     }
 
                     forContent = available - buttonsInDips - trayInDips;
-
-                    TaskbarButtons.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogo.Width.Value));
-                    TrayIcons.Width = new GridLength(trayInDips);
-
-                    Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 3);
-                    Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 1);
-                    MainContent.HorizontalAlignment = HorizontalAlignment.Right;
-                    MainContent.VerticalAlignment = VerticalAlignment.Center;
-                    MainContent.Margin = new Thickness(0);
-                    MainContent.MaxHeight = double.PositiveInfinity;
                 }
                 else
                 {
-                    TaskbarButtons.Width = new GridLength(0);
-                    TrayIcons.Width = new GridLength(0);
-
-                    Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 0);
-                    Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 5);
-                    MainContent.HorizontalAlignment = HorizontalAlignment.Center;
-                    MainContent.VerticalAlignment = VerticalAlignment.Bottom;
-                    MainContent.Margin = new Thickness(0, 0, 0, trayInDips);
-                    MainContent.MaxHeight = double.PositiveInfinity;
-
                     forContent = winRect.Width / (double)scaleFactor;
                 }
 
-                if (forContent > 0)
-                {
-                    ContentColumn.MaxWidth = forContent;
-                    ContentColumn.Width = GridLength.Auto;
-                    _bandsControl.SetMaxAvailableWidth(forContent);
-                }
-                else
-                {
-                    ContentColumn.MaxWidth = 0;
-                    ContentColumn.Width = new GridLength(0);
-                    _bandsControl.SetMaxAvailableWidth(0);
-                }
-
-                _lastContentSpace = forContent;
-
-                // Reapply compact mode after edit mode exits.
+                ApplyGridLayout(isHorizontal, buttonsInDips, trayInDips, forContent);
                 ApplyCompactMode();
 
                 // Delegate clip to ClipWindow which handles content-
@@ -853,6 +780,83 @@ public sealed partial class TaskbarWindow : WindowEx,
             WeakReferenceMessenger.Default.UnregisterAll(this);
             _disposed = true;
         }
+    }
+
+    /// <summary>
+    /// Switches the root Grid between column-based (horizontal) and
+    /// row-based (vertical) layout, positions MainContent accordingly,
+    /// and sets the available content space on the band control.
+    /// </summary>
+    private void ApplyGridLayout(bool isHorizontal, double buttonsInDips, double trayInDips, double forContent)
+    {
+        if (isHorizontal)
+        {
+            // Columns active: Logo | Buttons | Mid(*) | Content(Auto) | Tray
+            WindowsLogoCol.Width = new GridLength(0);
+            ButtonsCol.Width = new GridLength(Math.Max(0, buttonsInDips - WindowsLogoCol.Width.Value));
+            MidCol.Width = new GridLength(1, GridUnitType.Star);
+            ContentCol.Width = GridLength.Auto;
+            TrayCol.Width = new GridLength(trayInDips);
+
+            // Collapse rows — single effective row
+            ButtonsRow.Height = new GridLength(0);
+            MidRow.Height = new GridLength(0);
+            ContentRow.Height = new GridLength(1, GridUnitType.Star);
+            TrayRow.Height = new GridLength(0);
+
+            // MainContent in its column, spanning all rows
+            Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 3);
+            Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 1);
+            Microsoft.UI.Xaml.Controls.Grid.SetRow(MainContent, 0);
+            Microsoft.UI.Xaml.Controls.Grid.SetRowSpan(MainContent, 4);
+            MainContent.HorizontalAlignment = HorizontalAlignment.Right;
+            MainContent.VerticalAlignment = VerticalAlignment.Center;
+            MainContent.Margin = new Thickness(0);
+
+            if (forContent > 0)
+            {
+                ContentCol.MaxWidth = _bandsControl.IsEditMode
+                    ? forContent
+                    : (Root.ActualWidth == 0 ? double.MaxValue : forContent);
+                ContentCol.Width = GridLength.Auto;
+                _bandsControl.SetMaxAvailableWidth(forContent);
+            }
+            else
+            {
+                ContentCol.MaxWidth = 0;
+                ContentCol.Width = new GridLength(0);
+                _bandsControl.SetMaxAvailableWidth(0);
+            }
+        }
+        else
+        {
+            // Collapse columns — single effective column
+            WindowsLogoCol.Width = new GridLength(0);
+            ButtonsCol.Width = new GridLength(0);
+            MidCol.Width = new GridLength(0);
+            ContentCol.Width = new GridLength(1, GridUnitType.Star);
+            ContentCol.MaxWidth = double.PositiveInfinity;
+            TrayCol.Width = new GridLength(0);
+
+            // Rows active: Buttons(0) | Mid(*) | Content(Auto) | Tray
+            ButtonsRow.Height = new GridLength(0);
+            MidRow.Height = new GridLength(1, GridUnitType.Star);
+            ContentRow.Height = GridLength.Auto;
+            TrayRow.Height = new GridLength(trayInDips);
+
+            // MainContent in ContentRow, filling the single column
+            Microsoft.UI.Xaml.Controls.Grid.SetColumn(MainContent, 0);
+            Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(MainContent, 5);
+            Microsoft.UI.Xaml.Controls.Grid.SetRow(MainContent, 2);
+            Microsoft.UI.Xaml.Controls.Grid.SetRowSpan(MainContent, 1);
+            MainContent.HorizontalAlignment = HorizontalAlignment.Stretch;
+            MainContent.VerticalAlignment = VerticalAlignment.Bottom;
+            MainContent.Margin = new Thickness(0);
+
+            _bandsControl.SetMaxAvailableWidth(forContent);
+        }
+
+        _lastContentSpace = forContent;
     }
 
     /// <summary>

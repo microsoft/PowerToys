@@ -181,9 +181,9 @@ public sealed partial class TaskbarBandControl : UserControl,
 
         if (isVertical)
         {
-            RootPanel.HorizontalAlignment = HorizontalAlignment.Center;
+            RootPanel.HorizontalAlignment = HorizontalAlignment.Stretch;
             RootPanel.VerticalAlignment = VerticalAlignment.Bottom;
-            BandsListView.HorizontalAlignment = HorizontalAlignment.Center;
+            BandsListView.HorizontalAlignment = HorizontalAlignment.Stretch;
         }
         else
         {
