@@ -208,6 +208,17 @@ git commit -m "chore: add LICENSE, README, .gitignore"
     <PublishSingleFile>false</PublishSingleFile>
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Remove noisy CsWinRT analyzer (consistent with PT's Common.Dotnet.CsWinRT.props) -->
+  <Target Name="RemoveCsWinRTPackageAnalyzer" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="%(Analyzer.NuGetPackageId) == 'Microsoft.Windows.CsWinRT'" />
+    </ItemGroup>
+  </Target>
 </Project>
 ```
 
