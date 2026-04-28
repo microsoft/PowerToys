@@ -189,4 +189,42 @@ public class DdcCiNativeFetchCapabilitiesTests
 
         Assert.IsFalse(result.IsValid);
     }
+
+    [TestMethod]
+    public void FetchCapabilities_EmptyCaps_ProbeThrows_ReturnsInvalid()
+    {
+        bool ProbeReader(IntPtr h, byte code, out uint cur, out uint max)
+        {
+            cur = 0;
+            max = 0;
+            throw new System.ComponentModel.Win32Exception("simulated I2C failure");
+        }
+
+        var result = DdcCiNative.FetchCapabilitiesForTest(
+            FakeHandle,
+            readCapsString: _ => string.Empty,
+            readVcpFeature: ProbeReader);
+
+        Assert.IsFalse(result.IsValid, "Probe exception must be caught and treated as failure");
+    }
+
+    [TestMethod]
+    public void FetchCapabilities_CapsMissingBrightness_ProbeCalledExactlyOnce()
+    {
+        int probeCallCount = 0;
+        bool ProbeReader(IntPtr h, byte code, out uint cur, out uint max)
+        {
+            probeCallCount++;
+            cur = 50;
+            max = 100;
+            return true;
+        }
+
+        DdcCiNative.FetchCapabilitiesForTest(
+            FakeHandle,
+            readCapsString: _ => CapsWithoutBrightness,
+            readVcpFeature: ProbeReader);
+
+        Assert.AreEqual(1, probeCallCount, "Probe must be called exactly once per FetchCapabilities");
+    }
 }
