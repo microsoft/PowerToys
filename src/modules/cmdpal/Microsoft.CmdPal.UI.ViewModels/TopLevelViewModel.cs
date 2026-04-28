@@ -196,7 +196,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
                 {
                     ProviderId = this.CommandProviderId,
                     CommandId = this.Id,
-                    ShowLabels = true,
+                    ShowTitles = true,
                 };
             }
 
