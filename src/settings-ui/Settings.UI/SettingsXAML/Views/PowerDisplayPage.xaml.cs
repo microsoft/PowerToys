@@ -221,6 +221,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 (monitor, value) => monitor.EnableColorTemperature = value);
         }
 
+        private async void EnablePowerState_Click(object sender, RoutedEventArgs e)
+        {
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_PowerState",
+                (monitor, value) => monitor.EnablePowerState = value);
+        }
+
         private async Task HandleDangerousFeatureClickAsync(
             object sender,
             string resourceKeyPrefix,

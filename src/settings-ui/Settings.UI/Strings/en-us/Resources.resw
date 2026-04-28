@@ -5501,6 +5501,23 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable color temperature control for this monitor?</value>
   </data>
+  <data name="PowerDisplay_PowerState_WarningTitle" xml:space="preserve">
+    <value>Confirm Power State Control</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
+    <value>Enabling power state control may cause unintended results, including:</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningList" xml:space="preserve">
+    <value>• Monitor entering standby that cannot be woken via software
+• Need to physically press the monitor's power button or unplug/replug the signal cable to recover
+• Some monitors may not return to the previous state correctly</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
+    <value>Do you want to enable power state control for this monitor?</value>
+  </data>
   <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>
