@@ -655,7 +655,15 @@ public sealed partial class MainWindow : WindowEx,
         // Once we're done, uncloak to avoid all animations
         Uncloak();
 
-        PInvoke.SetForegroundWindow(hwnd);
+        // Use StealForeground to reliably bring the window to the foreground.
+        // A plain SetForegroundWindow call can fail when the process does not
+        // hold the foreground lock (e.g. when summoned via Quick Access or a
+        // named-event trigger while another app is in the foreground).
+        // StealForeground uses AttachThreadInput to temporarily borrow the
+        // foreground thread's input context, which gives us permission to call
+        // SetForegroundWindow regardless of which process currently owns the
+        // foreground.
+        StealForeground();
         PInvoke.SetActiveWindow(hwnd);
 
         // Push our window to the top of the Z-order and make it the topmost, so that it appears above all other windows.
