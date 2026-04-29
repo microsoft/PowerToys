@@ -109,7 +109,10 @@ namespace PowerLauncher.Helper
             }
             catch (System.Exception)
             {
-                // If we cannot inspect the stack trace, assume the exception is not from a user plugin.
+                // Reflection-based stack inspection can throw a variety of exceptions
+                // (e.g., SecurityException, TypeLoadException, BadImageFormatException).
+                // In every failure case the safe fallback is to treat the exception as
+                // NOT originating from a plugin so that it still surfaces as a crash report.
             }
 
             return false;
