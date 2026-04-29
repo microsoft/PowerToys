@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace ProcessMonitorExtension;
 
@@ -17,6 +18,12 @@ public class Program
         {
             using ExtensionServer server = new();
             var extensionDisposedEvent = new ManualResetEvent(false);
+
+            // AppLifeMonitor creates a hidden window on a background STA thread to handle
+            // WM_QUERYENDSESSION and WM_ENDSESSION. Without it, extensions hang on OS
+            // shutdown because the MTA main thread has no message loop to receive those messages.
+            using AppLifeMonitor monitor = new(extensionDisposedEvent);
+
             var extensionInstance = new SampleExtension(extensionDisposedEvent);
 
             // We are instantiating an extension instance once above, and returning it every time the callback in RegisterExtension below is called.
