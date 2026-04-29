@@ -5505,7 +5505,7 @@ The break timer font matches the text font.</value>
     <value>Confirm Power State Control</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+    <value>⚠️ Warning: This action may be unsafe.</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
     <value>Enabling power state control may cause unintended results, including:</value>
