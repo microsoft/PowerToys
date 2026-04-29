@@ -22,7 +22,9 @@
 
         <!-- VC++ 2015-2022 Redistributable detection. The Installed value is a DWORD set to 1 when the runtime is
              present; checking for its existence with Result="exists" gives a reliable boolean regardless of the
-             registry value's internal type representation in WiX bundle conditions. -->
+             registry value's internal type representation in WiX bundle conditions.
+             Note: all VC++ 2015-2022 releases (v14.x) share the same "14.0" registry root even though the
+             binaries ship separately for each VS version; finding the key here means at least one is installed. -->
         <?if $(var.Platform) = x64 ?>
             <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" Value="Installed" Result="exists" />
             <?define VCRedistDisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x64)"?>

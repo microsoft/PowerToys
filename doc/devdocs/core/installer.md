@@ -18,7 +18,7 @@ The bootstrapper (`PowerToys.wxs`) installs prerequisites before the main MSI ru
 | Prerequisite | Detection | Install source |
 |---|---|---|
 | Microsoft Edge WebView2 | Registry: `EdgeUpdate\Clients\{F3017226…}` | Bundled stub that downloads the runtime |
-| Microsoft Visual C++ 2015-2022 Redistributable | Registry: `VisualStudio\14.0\VC\Runtimes\{x64|arm64}` value `Installed` exists | Downloaded from `https://aka.ms/vs/17/release/vc_redist.{x64|arm64}.exe` |
+| Microsoft Visual C++ 2015-2022 Redistributable | `HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\{x64|arm64}` value `Installed` exists | Downloaded from `https://aka.ms/vs/17/release/vc_redist.{x64|arm64}.exe` |
 
 > **Note:** The VC++ Redistributable is marked `Vital="no"` because PowerToys ships its own
 > self-contained VC++ runtime DLLs (since v0.66). The system-wide redistributable is installed
