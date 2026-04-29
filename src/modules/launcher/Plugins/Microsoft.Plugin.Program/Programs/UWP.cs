@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Xml.Linq;
@@ -82,7 +81,7 @@ namespace Microsoft.Plugin.Program.Programs
 
                 if (Marshal.ReleaseComObject(stream) > 0)
                 {
-                    Log.Error("AppxManifest.xml was leaked", MethodBase.GetCurrentMethod().DeclaringType);
+                    Log.Error("AppxManifest.xml was leaked", GetType());
                 }
             }
             else
@@ -110,7 +109,7 @@ namespace Microsoft.Plugin.Program.Programs
             }
             else
             {
-                Log.Error($"Error occurred while trying to get the XML from {path}", MethodBase.GetCurrentMethod().DeclaringType);
+                Log.Error($"Error occurred while trying to get the XML from {path}", typeof(UWP));
 
                 return Array.Empty<string>();
             }
@@ -145,7 +144,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.Exception($"Unable to convert Package to UWP for {p.FullName}", e, MethodBase.GetCurrentMethod().DeclaringType, p.InstalledLocation);
+                        ProgramLogger.Exception($"Unable to convert Package to UWP for {p.FullName}", e, typeof(UWP), p.InstalledLocation);
 
                         return Array.Empty<UWPApplication>();
                     }
@@ -177,7 +176,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception e)
                 {
-                    ProgramLogger.Exception("An unexpected error occurred and unable to verify if package is valid", e, MethodBase.GetCurrentMethod().DeclaringType, "id");
+                    ProgramLogger.Exception("An unexpected error occurred and unable to verify if package is valid", e, typeof(UWP), "id");
                     return false;
                 }
             });

@@ -215,7 +215,7 @@ namespace Microsoft.Plugin.Program.Programs
                 }
                 catch (Exception ex)
                 {
-                    ProgramLogger.Exception($"Unable to launch UWP {DisplayName}", ex, MethodBase.GetCurrentMethod().DeclaringType, queryArguments);
+                    ProgramLogger.Exception($"Unable to launch UWP {DisplayName}", ex, GetType(), queryArguments);
                     var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
                     var message = $"{Properties.Resources.powertoys_run_plugin_program_uwp_failed}: {DisplayName}";
                     api.ShowMsg(name, message, string.Empty);
@@ -284,7 +284,7 @@ namespace Microsoft.Plugin.Program.Programs
                     }
                     catch (Exception e)
                     {
-                        ProgramLogger.Exception($"Unable to parse manifest file for {DisplayName}", e, MethodBase.GetCurrentMethod().DeclaringType, manifest);
+                        ProgramLogger.Exception($"Unable to parse manifest file for {DisplayName}", e, GetType(), manifest);
                     }
                 }
             }
