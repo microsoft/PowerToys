@@ -868,6 +868,9 @@ opera.exe</value>
   <data name="FancyZones_MoveWindowsAcrossAllMonitorsCheckBoxControl.Content" xml:space="preserve">
     <value>Move windows between zones across all monitors</value>
   </data>
+  <data name="FancyZones_CycleThroughAllZonesCheckBoxControl.Content" xml:space="preserve">
+    <value>Cycle through all zones</value>
+  </data>
   <data name="FancyZones_OverrideSnapHotkeys.Header" xml:space="preserve">
     <value>Override Windows Snap</value>
   </data>

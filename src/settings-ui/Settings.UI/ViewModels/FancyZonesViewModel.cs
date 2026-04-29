@@ -70,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _mouseMiddleButtonSpanningMultipleZones = Settings.Properties.FancyzonesMouseMiddleClickSpanningMultipleZones.Value;
             _overrideSnapHotkeys = Settings.Properties.FancyzonesOverrideSnapHotkeys.Value;
             _moveWindowsAcrossMonitors = Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value;
+            _cycleThroughAllZones = Settings.Properties.FancyzonesCycleThroughAllZones.Value;
             _moveWindowBehaviour = Settings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value ? MoveWindowBehaviour.MoveWindowBasedOnPosition : MoveWindowBehaviour.MoveWindowBasedOnZoneIndex;
             _overlappingZonesAlgorithm = (OverlappingZonesAlgorithm)Settings.Properties.FancyzonesOverlappingZonesAlgorithm.Value;
             _displayOrWorkAreaChangeMoveWindows = Settings.Properties.FancyzonesDisplayOrWorkAreaChangeMoveWindows.Value;
@@ -155,6 +156,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mouseMiddleButtonSpanningMultipleZones;
         private bool _overrideSnapHotkeys;
         private bool _moveWindowsAcrossMonitors;
+        private bool _cycleThroughAllZones;
         private MoveWindowBehaviour _moveWindowBehaviour;
         private OverlappingZonesAlgorithm _overlappingZonesAlgorithm;
         private bool _displayOrWorkAreaChangeMoveWindows;
@@ -337,6 +339,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _moveWindowsAcrossMonitors = value;
                     Settings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool CycleThroughAllZones
+        {
+            get
+            {
+                return _cycleThroughAllZones;
+            }
+
+            set
+            {
+                if (value != _cycleThroughAllZones)
+                {
+                    _cycleThroughAllZones = value;
+                    Settings.Properties.FancyzonesCycleThroughAllZones.Value = value;
                     NotifyPropertyChanged();
                 }
             }
