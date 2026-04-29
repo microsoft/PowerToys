@@ -46,5 +46,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// 1-based index (paths[0] = 1, paths[1] = 2, etc.)
         /// </summary>
         public int MonitorNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the output technology reported by QueryDisplayConfig.
+        /// Used to identify internal/embedded displays (LVDS, eDP, UDI-embedded, INTERNAL)
+        /// that should be skipped during DDC/CI discovery.
+        /// </summary>
+        public uint OutputTechnology { get; set; }
     }
 }

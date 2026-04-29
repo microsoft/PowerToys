@@ -319,6 +319,16 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Returns true for output technologies that indicate a built-in panel (LVDS, eDP, UDI-embedded, INTERNAL).
+        /// These displays use the WDDM brightness interface (WMI) and do not support DDC/CI.
+        /// </summary>
+        private static bool IsInternalDisplay(uint outputTechnology) =>
+            outputTechnology == NativeConstants.OutputTechnologyLvds ||
+            outputTechnology == NativeConstants.OutputTechnologyDisplayPortEmbedded ||
+            outputTechnology == NativeConstants.OutputTechnologyUdiEmbedded ||
+            outputTechnology == NativeConstants.OutputTechnologyInternal;
+
+        /// <summary>
         /// Get GDI device name for a monitor handle (e.g., "\\.\DISPLAY1").
         /// </summary>
         private unsafe string? GetGdiDeviceName(IntPtr hMonitor)
@@ -384,6 +394,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     }
 
                     var monitorInfo = matchingInfos[i];
+
+                    if (IsInternalDisplay(monitorInfo.OutputTechnology))
+                    {
+                        Logger.LogDebug($"DDC: Skipping internal display {gdiDeviceName} (outputTechnology=0x{monitorInfo.OutputTechnology:X})");
+                        continue;
+                    }
 
                     candidates.Add(new CandidateMonitor(physicalMonitor.HPhysicalMonitor, physicalMonitor, monitorInfo));
                 }

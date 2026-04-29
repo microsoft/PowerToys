@@ -142,5 +142,27 @@ namespace PowerDisplay.Common.Drivers
         /// An invalid parameter was passed in.
         /// </summary>
         public const int DispChangeBadparam = -5;
+
+        // ==================== DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY (embedded/internal) ====================
+
+        /// <summary>
+        /// LVDS — legacy internal panel interface used on older laptops.
+        /// </summary>
+        public const uint OutputTechnologyLvds = 6;
+
+        /// <summary>
+        /// eDP (embedded DisplayPort) — standard internal panel interface on modern laptops.
+        /// </summary>
+        public const uint OutputTechnologyDisplayPortEmbedded = 11;
+
+        /// <summary>
+        /// UDI embedded — internal panel variant of the UDI connector.
+        /// </summary>
+        public const uint OutputTechnologyUdiEmbedded = 13;
+
+        /// <summary>
+        /// Generic internal display flag used when the specific connector type is not one of the above.
+        /// </summary>
+        public const uint OutputTechnologyInternal = 0x80000000;
     }
 }

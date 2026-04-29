@@ -359,6 +359,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                         AdapterId = path.TargetInfo.AdapterId,
                         TargetId = path.TargetInfo.Id,
                         MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
+                        OutputTechnology = path.TargetInfo.OutputTechnology,
                     };
                 }
             }
