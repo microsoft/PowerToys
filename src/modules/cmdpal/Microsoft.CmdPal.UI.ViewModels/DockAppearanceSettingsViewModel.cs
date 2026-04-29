@@ -297,13 +297,17 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
     {
         // Call Reapply directly rather than via _saveTimer.Debounce.
         // ThemeService already debounces internally, so ThemeChanged is already
-        // de-duplicated by the time this handler runs. Using Debounce here causes
-        // a deadlock: Debounce unsubscribes/resubscribes from the DispatcherQueueTimer
-        // Tick WinRT event (acquiring an EventSourceCache write lock then a read lock).
-        // When a background thread is concurrently subscribing to extension WinRT events
-        // (holding a read lock), STA reentrancy lets a nested timer callback fire that
-        // also needs a read lock, creating a circular wait between the write-lock
-        // waiter and the read-lock waiters.
+        // de-duplicated by the time this handler runs. Using Debounce here can
+        // cause a deadlock: a prior Debounce call's DispatcherQueueTimer may still
+        // be trying to unsubscribe from its Tick event, which acquires a WinRT
+        // EventSourceCache write lock. While waiting for that write lock (blocked
+        // by background threads holding read locks during extension-event subscription),
+        // WinRT STA reentrancy lets a nested timer callback reach this handler again.
+        // The inner Debounce call then tries to subscribe to _saveTimer.Tick (a read
+        // lock), but ReaderWriterLockSlim blocks new readers while a writer is pending,
+        // creating a circular wait: the pending writer waits for background readers to
+        // finish, and those background threads wait for the STA to process a COM call
+        // that is itself blocked by the deadlocked nested callback.
         Reapply();
     }
 
