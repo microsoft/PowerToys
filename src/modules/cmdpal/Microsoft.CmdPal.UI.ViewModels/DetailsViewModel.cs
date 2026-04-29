@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -34,7 +35,7 @@ public partial class DetailsViewModel(IDetails _details, WeakReference<IPageCont
         }
 
         Title = model.Title ?? string.Empty;
-        Body = model.Body ?? string.Empty;
+        Body = MarkdownTextHelper.SanitizeMarkdown(model.Body);
         HeroImage = new(model.HeroImage);
         HeroImage.InitializeProperties();
 
