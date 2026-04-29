@@ -28,7 +28,7 @@ namespace ipc
 
         try
         {
-            m_stream = std::ofstream(path);
+            m_stream = std::ofstream(path, std::ios::binary);
             return S_OK;
         }
         catch (...)
