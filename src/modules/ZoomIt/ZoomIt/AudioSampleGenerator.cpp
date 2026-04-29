@@ -123,31 +123,65 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
                 : defaultMicrophoneId;
             if (!microphoneId.empty())
             {
-                auto microphone = co_await winrt::DeviceInformation::CreateFromIdAsync(microphoneId);
-
-                // Initialize audio input node
-                auto inputNodeResult = co_await m_audioGraph.CreateDeviceInputNodeAsync(winrt::MediaCategory::Media, m_audioGraph.EncodingProperties(), microphone);
-                if (inputNodeResult.Status() != winrt::AudioDeviceNodeCreationStatus::Success && microphoneId != defaultMicrophoneId)
+                bool micAccessDenied = false;
+                try
                 {
-                    // If the selected microphone failed, try again with the default
-                    microphone = co_await winrt::DeviceInformation::CreateFromIdAsync(defaultMicrophoneId);
-                    inputNodeResult = co_await m_audioGraph.CreateDeviceInputNodeAsync(winrt::MediaCategory::Media, m_audioGraph.EncodingProperties(), microphone);
-                }
-                if (inputNodeResult.Status() == winrt::AudioDeviceNodeCreationStatus::Success)
-                {
-                    m_audioInputNode = inputNodeResult.DeviceInputNode();
-                    m_audioInputNode.AddOutgoingConnection(m_submixNode);
+                    auto microphone = co_await winrt::DeviceInformation::CreateFromIdAsync(microphoneId);
 
-                    // If mic capture is disabled, mute the input so only loopback is captured
-                    if (!m_captureMicrophone)
+                    // Initialize audio input node
+                    auto inputNodeResult = co_await m_audioGraph.CreateDeviceInputNodeAsync(winrt::MediaCategory::Media, m_audioGraph.EncodingProperties(), microphone);
+                    if (inputNodeResult.Status() != winrt::AudioDeviceNodeCreationStatus::Success && microphoneId != defaultMicrophoneId)
                     {
-                        m_audioInputNode.OutgoingGain(0.0);
-                        OutputDebugStringA("Mic input created but muted (loopback-only mode)\n");
+                        // If the selected microphone failed, try again with the default
+                        microphone = co_await winrt::DeviceInformation::CreateFromIdAsync(defaultMicrophoneId);
+                        inputNodeResult = co_await m_audioGraph.CreateDeviceInputNodeAsync(winrt::MediaCategory::Media, m_audioGraph.EncodingProperties(), microphone);
+                    }
+                    if (inputNodeResult.Status() == winrt::AudioDeviceNodeCreationStatus::Success)
+                    {
+                        m_audioInputNode = inputNodeResult.DeviceInputNode();
+                        m_audioInputNode.AddOutgoingConnection(m_submixNode);
+
+                        // If mic capture is disabled, mute the input so only loopback is captured
+                        if (!m_captureMicrophone)
+                        {
+                            m_audioInputNode.OutgoingGain(0.0);
+                            OutputDebugStringA("Mic input created but muted (loopback-only mode)\n");
+                        }
+                        else
+                        {
+                            OutputDebugStringA("Mic input created and active\n");
+                        }
+                    }
+                    else if (inputNodeResult.Status() == winrt::AudioDeviceNodeCreationStatus::AccessDenied)
+                    {
+                        micAccessDenied = true;
                     }
                     else
                     {
-                        OutputDebugStringA("Mic input created and active\n");
+                        OutputDebugStringA(("WARNING: Failed to create microphone input node, status=" + std::to_string(static_cast<int>(inputNodeResult.Status())) + "\n").c_str());
                     }
+                }
+                catch (winrt::hresult_error const& error)
+                {
+                    if (error.code() == E_ACCESSDENIED)
+                    {
+                        micAccessDenied = true;
+                        OutputDebugStringA("WARNING: Microphone access denied\n");
+                    }
+                    else
+                    {
+                        throw; // Re-throw other errors
+                    }
+                }
+                if (micAccessDenied)
+                {
+                    if (m_captureMicrophone)
+                    {
+                        throw winrt::hresult_error(E_ACCESSDENIED, L"Microphone access was denied. Please enable microphone access in Windows Settings > Privacy & Security > Microphone.");
+                    }
+                    // In loopback-only mode, continue without mic node.
+                    // The AudioGraph may run in non-realtime mode without a device input node.
+                    OutputDebugStringA("WARNING: Microphone access denied in loopback-only mode, mic input node not created\n");
                 }
             }
         }
