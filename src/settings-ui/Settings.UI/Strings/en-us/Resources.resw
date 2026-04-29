@@ -5516,7 +5516,7 @@ The break timer font matches the text font.</value>
 • Some monitors may not restore the previous state correctly.</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
-    <value>Do you want to enable power state control for this monitor?</value>
+    <value>Enable power state control for this monitor?</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningTitle" xml:space="preserve">
     <value>Confirm input source control</value>
