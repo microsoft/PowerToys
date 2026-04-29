@@ -5528,9 +5528,9 @@ The break timer font matches the text font.</value>
     <value>Switching input sources may cause unintended results, including:</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningList" xml:space="preserve">
-    <value>• Monitor going black if the new input has no signal
-• Loss of software control until you switch back via the monitor's physical buttons
-• Some monitors may not enumerate or expose all input sources reliably</value>
+    <value>• Screen may go black if the selected input has no signal.
+• Software control may be lost until you switch back using the monitor’s physical buttons.
+• Some monitors may not reliably expose all input sources.</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
     <value>Enable input source control for this monitor?</value>
