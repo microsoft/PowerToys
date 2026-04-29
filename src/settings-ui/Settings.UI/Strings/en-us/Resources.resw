@@ -5511,9 +5511,9 @@ The break timer font matches the text font.</value>
     <value>Enabling power state control may lead to unexpected behavior, including:</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningList" xml:space="preserve">
-    <value>• Monitor entering standby that cannot be woken via software
-• Need to physically press the monitor's power button or unplug and reconnect the signal cable to recover
-• Some monitors may not return to the previous state correctly</value>
+    <value>• Monitor may enter standby and not wake via software.
+• You may need to press the monitor’s power button or reconnect the cable to recover.
+• Some monitors may not restore the previous state correctly.</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable power state control for this monitor?</value>
