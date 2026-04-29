@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Timers;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -18,7 +19,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 
-public partial class ImageResizerViewModel : Observable
+public partial class ImageResizerViewModel : Observable, IDisposable
 {
     private static readonly string DefaultPresetNamePrefix =
         Helpers.ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer_DefaultSize_NewSizePrefix");
@@ -42,6 +43,13 @@ public partial class ImageResizerViewModel : Observable
     /// Holds defaults for new presets.
     /// </summary>
     private readonly ImageSize _customSize;
+
+    // Delay saving of settings in order to avoid calling save multiple times and hitting file in use exception. If there is no other request to save settings in given interval, we proceed to save it; otherwise, we schedule saving it after this interval
+    private const int SaveSettingsDelayInMs = 500;
+
+    private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
+    private Timer _delayedTimer;
+    private bool _disposed;
 
     private GeneralSettings GeneralSettingsConfig { get; set; }
 
@@ -98,6 +106,11 @@ public partial class ImageResizerViewModel : Observable
         _customSize = Settings.Properties.ImageresizerCustomSize.Value;
 
         _isInitializing = false;
+
+        _delayedTimer = new Timer();
+        _delayedTimer.Interval = SaveSettingsDelayInMs;
+        _delayedTimer.Elapsed += DelayedTimer_Tick;
+        _delayedTimer.AutoReset = false;
     }
 
     private void InitializeEnabledValue()
@@ -337,7 +350,49 @@ public partial class ImageResizerViewModel : Observable
 
     public void SizePropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        SaveImageSizes();
+        ScheduleSaveImageSizes();
+    }
+
+    private void ScheduleSaveImageSizes()
+    {
+        lock (_delayedActionLock)
+        {
+            if (_delayedTimer.Enabled)
+            {
+                _delayedTimer.Stop();
+            }
+
+            _delayedTimer.Start();
+        }
+    }
+
+    private void DelayedTimer_Tick(object sender, ElapsedEventArgs e)
+    {
+        lock (_delayedActionLock)
+        {
+            _delayedTimer.Stop();
+            SaveImageSizes();
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _delayedTimer?.Dispose();
+                _delayedTimer = null;
+            }
+
+            _disposed = true;
+        }
     }
 
     private string GenerateNameForNewSize(string namePrefix)
