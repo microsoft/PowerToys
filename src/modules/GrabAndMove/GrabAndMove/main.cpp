@@ -579,14 +579,16 @@ static void StopResizing()
     HideOverlay();
 }
 
-static void ReplayAbsorbedAlt()
+static void ReplayAbsorbedModifier(bool alsoKeyUp)
 {
-    INPUT keyboardInput = {};
-    keyboardInput.type = INPUT_KEYBOARD;
-    keyboardInput.ki.wVk = static_cast<WORD>(g_absorbedVk);
-    keyboardInput.ki.wScan = static_cast<WORD>(g_absorbedScanCode);
-    keyboardInput.ki.dwFlags = (g_absorbedFlags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
-    SendInput(1, &keyboardInput, sizeof(INPUT));
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = static_cast<WORD>(g_absorbedVk);
+    inputs[0].ki.wScan = static_cast<WORD>(g_absorbedScanCode);
+    inputs[0].ki.dwFlags = (g_absorbedFlags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
+    inputs[1] = inputs[0];
+    inputs[1].ki.dwFlags |= KEYEVENTF_KEYUP;
+    SendInput(alsoKeyUp ? 2 : 1, inputs, sizeof(INPUT));
 }
 
 // ---------------------------------------------------------------------------
@@ -830,8 +832,9 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                         g_dragConsumedAlt = false;
                         return 1;
                     }
-                    // No drag happened; replay the keydown, then let keyup through
-                    ReplayAbsorbedAlt();
+                    // No drag happened; replay the keydown, THEN the keyup
+                    ReplayAbsorbedModifier(true);
+                    return 1; // swallow this keyup since the replay already sent one
                 }
             }
             goto forward; // let Win keyup pass through
@@ -888,7 +891,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                             return 1;
                         }
                         // No drag happened; replay the keydown, then let keyup through
-                        ReplayAbsorbedAlt();
+                        ReplayAbsorbedModifier(false);
                     }
                 }
             }
@@ -899,7 +902,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 {
                     g_altAbsorbed = false;
                     g_altPressed = false;
-                    ReplayAbsorbedAlt();
+                    ReplayAbsorbedModifier(false);
                 }
             }
         }
@@ -909,7 +912,7 @@ static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
         {
             g_winAbsorbed = false;
             g_winPressed = false;
-            ReplayAbsorbedAlt();
+            ReplayAbsorbedModifier(false);
         }
 
         // Track held non-modifier keys (used to suppress GrabAndMove when the modifier
