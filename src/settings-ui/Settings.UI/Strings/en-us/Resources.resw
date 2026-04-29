@@ -5502,7 +5502,7 @@ The break timer font matches the text font.</value>
     <value>Do you want to enable color temperature control for this monitor?</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningTitle" xml:space="preserve">
-    <value>Confirm Power State Control</value>
+    <value>Confirm power state control</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningHeader" xml:space="preserve">
     <value>⚠️ Warning: This action may be unsafe.</value>
