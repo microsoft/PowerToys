@@ -136,7 +136,7 @@
     <value>Built-in display</value>
   </data>
   <data name="BuiltInDisplayName" xml:space="preserve">
-    <value>Built-in Display</value>
+    <value>Built-in display</value>
     <comment>Display name shown in the monitor list for the laptop's internal/built-in display.</comment>
   </data>
   <data name="BrightnessTooltip.ToolTipService.ToolTip" xml:space="preserve">
