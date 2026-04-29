@@ -28,9 +28,10 @@ namespace PowerLauncher.Helper
                 return false;
             }
 
-            // Walk the exception chain to detect DWM composition errors at any level
+            // Walk the exception chain (up to a reasonable depth) to detect DWM composition errors at any level
+            const int maxDepth = 10;
             var current = exception;
-            while (current != null)
+            for (var depth = 0; current != null && depth < maxDepth; depth++, current = current.InnerException)
             {
                 if (current is COMException comException)
                 {
@@ -44,8 +45,6 @@ namespace PowerLauncher.Helper
                         return true;
                     }
                 }
-
-                current = current.InnerException;
             }
 
             // Check for common DWM composition changed patterns in the stack trace of the outermost exception
