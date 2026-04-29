@@ -177,7 +177,8 @@ public sealed class AppLifeMonitor : IDisposable
             var atom = RegisterClassW(ref wndClass);
             if (atom == 0)
             {
-                _windowCreated.Set();
+                // Window class registration failed. The monitor is non-operational, but the
+                // extension continues to run normally — just without graceful shutdown support.
                 return;
             }
 
@@ -198,13 +199,17 @@ public sealed class AppLifeMonitor : IDisposable
                 hInstance: hInstance,
                 lpParam: 0);
 
-            _windowCreated.Set();
-
             if (_hwnd == 0)
             {
+                // Window creation failed. The monitor is non-operational, but the extension
+                // continues to run normally — just without graceful shutdown support.
                 UnregisterClassW(classNamePtr, hInstance);
                 return;
             }
+
+            // Signal that initialization succeeded before entering the message loop.
+            // The constructor's WaitOne() unblocks here.
+            _windowCreated.Set();
 
             // Run the message loop until PostQuitMessage is called (WM_QUIT).
             while (GetMessageW(out var msg, nint.Zero, 0, 0))
@@ -217,6 +222,11 @@ public sealed class AppLifeMonitor : IDisposable
         }
         finally
         {
+            // Always signal and dispose the event so the constructor never hangs, even on
+            // failure paths. Set() is idempotent, so calling it here after an early success
+            // Set() above is safe.
+            _windowCreated.Set();
+            _windowCreated.Dispose();
             Marshal.FreeHGlobal(classNamePtr);
             _wndProcDelegate = null;
         }
@@ -268,6 +278,7 @@ public sealed class AppLifeMonitor : IDisposable
             // Post WM_CLOSE to our window on the message thread.
             // The WndProc will call DestroyWindow → WM_DESTROY → PostQuitMessage,
             // which unblocks GetMessageW and lets the background thread exit cleanly.
+            // The background thread's finally block will then signal and dispose _windowCreated.
             PostMessageW(hwnd, WM_CLOSE, 0, 0);
         }
     }
