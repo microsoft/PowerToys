@@ -39,6 +39,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataTestMethod]
         [DataRow("test")]
         [DataRow("[10,10]")] // '[10,10]' is interpreted as array by mages engine
+        [DataRow("sqrt(-1)")] // sqrt(-1) returns a complex number which is not supported
         public void Interpret_NoResult_WhenCalled(string input)
         {
             // Arrange
