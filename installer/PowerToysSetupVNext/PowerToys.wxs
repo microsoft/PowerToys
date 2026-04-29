@@ -20,6 +20,13 @@
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
+        <!-- VC++ 2015-2022 Redistributable detection. The Installed DWORD is 1 when any version of the runtime is present. -->
+        <?if $(var.Platform) = x64 ?>
+            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" Value="Installed" Result="value" />
+        <?else?>
+            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\arm64" Value="Installed" Result="value" />
+        <?endif?>
+
         <?if $(var.PerUser) = "true" ?>
             <Variable Name="InstallFolder" Type="formatted" Value="[LocalAppDataFolder]PowerToys" bal:Overridable="yes" />
         <?else?>
@@ -58,6 +65,16 @@
             </ExePackage>
             <ExePackage DisplayName="Microsoft Edge WebView2" Name="MicrosoftEdgeWebview2Setup.exe" Compressed="yes" Id="WebView2" DetectCondition="HasWebView2PerMachine OR HasWebView2PerUser" SourceFile="WebView2\MicrosoftEdgeWebview2Setup.exe" Permanent="yes" PerMachine="$(var.PerMachineYesNo)" InstallArguments="/silent /install" RepairArguments="/repair /passive" UninstallArguments="/silent /uninstall">
             </ExePackage>
+            <!-- Install the VC++ 2015-2022 Redistributable when absent. The package is downloaded from Microsoft servers
+                 and installed before the PowerToys MSI so that native components (e.g., custom-action DLLs) can
+                 load successfully even on minimal or freshly-deployed Windows images.
+                 Vital="no" because PowerToys ships its own self-contained runtime DLLs (since v0.66), so the
+                 bundled copies will cover most scenarios even if this step fails (e.g., no network or elevation). -->
+            <?if $(var.Platform) = x64 ?>
+                <ExePackage DisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x64)" Id="VCRedist2022" Name="vc_redist.x64.exe" Compressed="no" PerMachine="yes" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed = 1" DownloadUrl="https://aka.ms/vs/17/release/vc_redist.x64.exe" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
+            <?else?>
+                <ExePackage DisplayName="Microsoft Visual C++ 2015-2022 Redistributable (ARM64)" Id="VCRedist2022" Name="vc_redist.arm64.exe" Compressed="no" PerMachine="yes" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed = 1" DownloadUrl="https://aka.ms/vs/17/release/vc_redist.arm64.exe" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
+            <?endif?>
             <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" bal:DisplayInternalUICondition="false">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
                 <MsiProperty Name="MSIRESTARTMANAGERCONTROL" Value="Disable" />

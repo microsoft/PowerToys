@@ -11,6 +11,34 @@
   - GPO checking
   - Process termination
 
+### Bootstrapper Prerequisites
+
+The bootstrapper (`PowerToys.wxs`) installs prerequisites before the main MSI runs:
+
+| Prerequisite | Detection | Install source |
+|---|---|---|
+| Microsoft Edge WebView2 | Registry: `EdgeUpdate\Clients\{F3017226…}` | Bundled stub that downloads the runtime |
+| Microsoft Visual C++ 2015-2022 Redistributable | Registry: `VisualStudio\14.0\VC\Runtimes\{x64|arm64}` `Installed=1` | Downloaded from `https://aka.ms/vs/17/release/vc_redist.{x64|arm64}.exe` |
+
+> **Note:** The VC++ Redistributable is marked `Vital="no"` because PowerToys ships its own
+> self-contained VC++ runtime DLLs (since v0.66). The system-wide redistributable is installed
+> as a safety net for edge cases (e.g., minimal Windows images, corrupted system DLLs) where
+> native components such as the custom-action DLL fail to load with error `0x8007007e`
+> (ERROR_MOD_NOT_FOUND). If the download or elevation fails, the bundled DLLs still cover
+> PowerToys' own binaries.
+
+### Self-contained Runtimes
+
+Since v0.66, PowerToys bundles the following runtimes inside its installation directory
+(hard-linked across modules to minimize disk usage):
+
+- Windows App SDK runtime
+- .NET Desktop Runtime
+- Microsoft Visual C++ Runtime
+
+These are installed as part of the MSI and live under `<InstallDir>\`. See
+[disk-usage-footprint.md](../disk-usage-footprint.md) for details.
+
 ### Installer Components
 
 - Separate builds for machine-wide and user-scope installation
