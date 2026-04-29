@@ -12,10 +12,8 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using Windows.ApplicationModel.DataTransfer;
-using CustomVcpValueMapping = Microsoft.PowerToys.Settings.UI.Library.CustomVcpValueMapping;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -127,11 +125,29 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private string GenerateDefaultProfileName()
         {
-            // Use shared ProfileHelper for consistent profile name generation
-            var existingNames = ViewModel.Profiles.Select(p => p.Name).ToHashSet();
+            var existingNames = ViewModel.Profiles.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             var baseName = resourceLoader.GetString("PowerDisplay_Profile_DefaultBaseName");
-            return ProfileHelper.GenerateUniqueProfileName(existingNames, baseName);
+            if (string.IsNullOrEmpty(baseName))
+            {
+                baseName = "Profile";
+            }
+
+            if (!existingNames.Contains(baseName))
+            {
+                return baseName;
+            }
+
+            for (int i = 2; i < 1000; i++)
+            {
+                var candidate = $"{baseName} {i}";
+                if (!existingNames.Contains(candidate))
+                {
+                    return candidate;
+                }
+            }
+
+            return $"{baseName} {DateTime.Now.Ticks}";
         }
 
         // Custom VCP Mapping event handlers
@@ -193,13 +209,40 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Flag to prevent reentrant handling during programmatic checkbox changes
-        private bool _isRestoringColorTempCheckbox;
+        // Flag to prevent reentrant Click handling while we programmatically restore
+        // a checkbox after the user cancels a dangerous-feature confirmation dialog.
+        private bool _isRestoringDangerousFeatureCheckbox;
 
         private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
         {
-            // Skip if we're programmatically restoring the checkbox state
-            if (_isRestoringColorTempCheckbox)
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_ColorTemperature",
+                (monitor, value) => monitor.EnableColorTemperature = value);
+        }
+
+        private async void EnablePowerState_Click(object sender, RoutedEventArgs e)
+        {
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_PowerState",
+                (monitor, value) => monitor.EnablePowerState = value);
+        }
+
+        private async void EnableInputSource_Click(object sender, RoutedEventArgs e)
+        {
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_InputSource",
+                (monitor, value) => monitor.EnableInputSource = value);
+        }
+
+        private async Task HandleDangerousFeatureClickAsync(
+            object sender,
+            string resourceKeyPrefix,
+            Action<MonitorInfo, bool> setter)
+        {
+            if (_isRestoringDangerousFeatureCheckbox)
             {
                 return;
             }
@@ -209,18 +252,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            // Only show warning when enabling (checking the box)
+            // Only show the warning when the user is enabling the feature.
             if (checkBox.IsChecked != true)
             {
                 return;
             }
 
-            // Show confirmation dialog with color temperature warning
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
             var dialog = new ContentDialog
             {
                 XamlRoot = this.XamlRoot,
-                Title = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningTitle"),
+                Title = resourceLoader.GetString($"{resourceKeyPrefix}_WarningTitle"),
                 Content = new StackPanel
                 {
                     Spacing = 12,
@@ -228,31 +270,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     {
                         new TextBlock
                         {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningHeader"),
+                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningHeader"),
                             FontWeight = Microsoft.UI.Text.FontWeights.Bold,
                             Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
                             TextWrapping = TextWrapping.Wrap,
                         },
                         new TextBlock
                         {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningDescription"),
+                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningDescription"),
                             TextWrapping = TextWrapping.Wrap,
                         },
                         new TextBlock
                         {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningList"),
+                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningList"),
                             TextWrapping = TextWrapping.Wrap,
                             Margin = new Thickness(20, 0, 0, 0),
                         },
                         new TextBlock
                         {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningConfirm"),
+                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningConfirm"),
                             FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                             TextWrapping = TextWrapping.Wrap,
                         },
                     },
                 },
-                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_ColorTemperature_EnableButton"),
+                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Enable"),
                 CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
                 DefaultButton = ContentDialogButton.Close,
             };
@@ -261,16 +303,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (result != ContentDialogResult.Primary)
             {
-                // User cancelled: revert checkbox to unchecked
-                _isRestoringColorTempCheckbox = true;
+                // User cancelled: revert checkbox to unchecked.
+                _isRestoringDangerousFeatureCheckbox = true;
                 try
                 {
                     checkBox.IsChecked = false;
-                    monitor.EnableColorTemperature = false;
+                    setter(monitor, false);
                 }
                 finally
                 {
-                    _isRestoringColorTempCheckbox = false;
+                    _isRestoringDangerousFeatureCheckbox = false;
                 }
             }
         }

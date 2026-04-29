@@ -61,6 +61,11 @@ public sealed partial class DockViewModel
         }
 
         Logger.LogDebug("Starting DockBands_CollectionChanged");
+
+        // Refresh settings so newly pinned/unpinned bands are visible.
+        // Pin/unpin operations save with hotReload:false (to avoid
+        // double-updates), so _settings can be stale here.
+        _settings = _settingsService.Settings.DockSettings;
         SetupBands();
         Logger.LogDebug("Ended DockBands_CollectionChanged");
     }
@@ -554,7 +559,7 @@ public sealed partial class DockViewModel
         }
 
         // Create settings for the new band
-        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId, ShowLabels = null };
+        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId };
         var dockSettings = _settings;
 
         // Create the band view model

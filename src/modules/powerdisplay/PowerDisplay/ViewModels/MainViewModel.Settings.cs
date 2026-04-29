@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Telemetry;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using PowerDisplay.Serialization;
 using PowerDisplay.Services;
 using PowerDisplay.Telemetry.Events;
@@ -24,10 +25,18 @@ namespace PowerDisplay.ViewModels;
 /// </summary>
 public partial class MainViewModel
 {
-    /// <summary>
-    /// Check if a value is within the valid range (inclusive).
-    /// </summary>
-    private static bool IsValueInRange(int value, int min, int max) => value >= min && value <= max;
+    private static void TryRestore(
+        List<Task> tasks,
+        int? savedValue,
+        bool isVisible,
+        int currentValue,
+        Func<int, Task> setter)
+    {
+        if (savedValue.HasValue && isVisible && savedValue.Value != currentValue)
+        {
+            tasks.Add(setter(savedValue.Value));
+        }
+    }
 
     /// <summary>
     /// Apply settings changes from Settings UI (IPC event handler entry point)
@@ -49,7 +58,7 @@ public partial class MainViewModel
 
             // Apply UI configuration changes only (feature visibility toggles, etc.)
             // Hardware parameters (brightness, color temperature) are applied via custom actions
-            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>("PowerDisplay");
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ApplyUIConfiguration(settings);
 
             // Reload profiles in case they were added/updated/deleted in Settings UI
@@ -211,31 +220,16 @@ public partial class MainViewModel
             }
 
             // Apply brightness if included in profile
-            if (setting.Brightness.HasValue &&
-                IsValueInRange(setting.Brightness.Value, monitorVm.MinBrightness, monitorVm.MaxBrightness))
-            {
-                updateTasks.Add(monitorVm.SetBrightnessAsync(setting.Brightness.Value));
-            }
+            TryRestore(updateTasks, setting.Brightness, monitorVm.ShowBrightness, monitorVm.Brightness, monitorVm.SetBrightnessAsync);
 
             // Apply contrast if supported and value provided
-            if (setting.Contrast.HasValue && monitorVm.ShowContrast &&
-                IsValueInRange(setting.Contrast.Value, monitorVm.MinContrast, monitorVm.MaxContrast))
-            {
-                updateTasks.Add(monitorVm.SetContrastAsync(setting.Contrast.Value));
-            }
+            TryRestore(updateTasks, setting.Contrast, monitorVm.ShowContrast, monitorVm.Contrast, monitorVm.SetContrastAsync);
 
             // Apply volume if supported and value provided
-            if (setting.Volume.HasValue && monitorVm.ShowVolume &&
-                IsValueInRange(setting.Volume.Value, monitorVm.MinVolume, monitorVm.MaxVolume))
-            {
-                updateTasks.Add(monitorVm.SetVolumeAsync(setting.Volume.Value));
-            }
+            TryRestore(updateTasks, setting.Volume, monitorVm.ShowVolume, monitorVm.Volume, monitorVm.SetVolumeAsync);
 
             // Apply color temperature if included in profile
-            if (setting.ColorTemperatureVcp.HasValue && setting.ColorTemperatureVcp.Value > 0)
-            {
-                updateTasks.Add(monitorVm.SetColorTemperatureAsync(setting.ColorTemperatureVcp.Value));
-            }
+            TryRestore(updateTasks, setting.ColorTemperatureVcp, monitorVm.ShowColorTemperature, monitorVm.ColorTemperature, monitorVm.SetColorTemperatureAsync);
         }
 
         // Wait for all updates to complete
@@ -264,35 +258,12 @@ public partial class MainViewModel
                     continue;
                 }
 
-                // Restore brightness if different from current
-                if (IsValueInRange(savedState.Value.Brightness, monitorVm.MinBrightness, monitorVm.MaxBrightness) &&
-                    savedState.Value.Brightness != monitorVm.Brightness)
-                {
-                    updateTasks.Add(monitorVm.SetBrightnessAsync(savedState.Value.Brightness));
-                }
+                var (brightness, colorTemp, contrast, volume) = savedState.Value;
 
-                // Restore color temperature if different from current
-                if (savedState.Value.ColorTemperatureVcp > 0 &&
-                    savedState.Value.ColorTemperatureVcp != monitorVm.ColorTemperature)
-                {
-                    updateTasks.Add(monitorVm.SetColorTemperatureAsync(savedState.Value.ColorTemperatureVcp));
-                }
-
-                // Restore contrast if different from current
-                if (monitorVm.ShowContrast &&
-                    IsValueInRange(savedState.Value.Contrast, monitorVm.MinContrast, monitorVm.MaxContrast) &&
-                    savedState.Value.Contrast != monitorVm.Contrast)
-                {
-                    updateTasks.Add(monitorVm.SetContrastAsync(savedState.Value.Contrast));
-                }
-
-                // Restore volume if different from current
-                if (monitorVm.ShowVolume &&
-                    IsValueInRange(savedState.Value.Volume, monitorVm.MinVolume, monitorVm.MaxVolume) &&
-                    savedState.Value.Volume != monitorVm.Volume)
-                {
-                    updateTasks.Add(monitorVm.SetVolumeAsync(savedState.Value.Volume));
-                }
+                TryRestore(updateTasks, brightness, monitorVm.ShowBrightness, monitorVm.Brightness, monitorVm.SetBrightnessAsync);
+                TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.ColorTemperature, monitorVm.SetColorTemperatureAsync);
+                TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.Contrast, monitorVm.SetContrastAsync);
+                TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.Volume, monitorVm.SetVolumeAsync);
             }
 
             if (updateTasks.Count > 0)
@@ -444,13 +415,17 @@ public partial class MainViewModel
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             SupportsPowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
 
-            // Default Enable* to match Supports* for new monitors (first-time setup)
-            // ApplyPreservedUserSettings will override these with saved user preferences if they exist
+            // Default Enable* for new monitors (first-time setup):
+            // - Contrast / Volume: enabled if the monitor advertises the VCP code (low-risk features).
+            // - InputSource / ColorTemperature / PowerState: always disabled by default. These can leave
+            //   the monitor in a state recoverable only via physical buttons; users opt-in via the
+            //   Settings UI checkbox, which raises a confirmation dialog (HandleDangerousFeatureClickAsync).
+            // ApplyPreservedUserSettings will override these with saved user preferences if they exist.
             EnableContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
             EnableVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
-            EnableInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
-            EnableColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
-            EnablePowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
+            EnableInputSource = false,
+            EnableColorTemperature = false,
+            EnablePowerState = false,
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,

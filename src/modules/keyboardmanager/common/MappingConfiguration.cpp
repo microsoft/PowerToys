@@ -93,7 +93,7 @@ bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, cons
 // Function to add a new App specific shortcut remapping
 bool MappingConfiguration::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutTextUnion& newSC)
 {
-    // Convert app name to lower case
+    // Convert app name to lowercase
     std::wstring process_name;
     process_name.resize(app.length());
     std::transform(app.begin(), app.end(), process_name.begin(), towlower);

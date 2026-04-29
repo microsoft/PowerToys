@@ -146,8 +146,7 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
-        // now, the state is just next to the exe
-        return Path.Combine(directory, "settings.json");
+        return Path.Combine(directory, $"{_namespace}.settings.json");
     }
 
     public AllAppsSettings()
@@ -162,7 +161,6 @@ public class AllAppsSettings : JsonSettingsManager, ISettingsInterface
         Settings.Add(_enablePathEnvironmentVariableSource);
         Settings.Add(_searchResultLimitSource);
 
-        // Load settings from file upon initialization
         LoadSettings();
 
         Settings.SettingsChanged += (s, a) => this.SaveSettings();
