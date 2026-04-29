@@ -5522,7 +5522,7 @@ The break timer font matches the text font.</value>
     <value>Confirm input source control</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+    <value>⚠️ Warning: This action may be unsafe.</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningDescription" xml:space="preserve">
     <value>Switching input sources may cause unintended results, including:</value>
