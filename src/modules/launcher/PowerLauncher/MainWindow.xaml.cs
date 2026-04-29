@@ -196,10 +196,17 @@ namespace PowerLauncher
             if (OSVersionHelper.IsGreaterThanWindows11_21H2())
             {
                 // ResizeMode="NoResize" removes rounded corners. So force them to rounded.
-                IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
-                DWMWINDOWATTRIBUTE attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
-                DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
-                DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+                try
+                {
+                    IntPtr hWnd = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
+                    DWMWINDOWATTRIBUTE attribute = DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE;
+                    DWM_WINDOW_CORNER_PREFERENCE preference = DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
+                    DwmSetWindowAttribute(hWnd, attribute, ref preference, sizeof(uint));
+                }
+                catch (Exception ex) when (ExceptionHelper.IsRecoverableDwmCompositionException(ex))
+                {
+                    Log.Warn($"Desktop composition is disabled. Unable to set window corner preference. HRESULT: 0x{ex.HResult:X}", typeof(MainWindow));
+                }
             }
             else
             {

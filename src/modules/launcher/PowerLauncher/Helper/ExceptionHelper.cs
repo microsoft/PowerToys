@@ -19,26 +19,37 @@ namespace PowerLauncher.Helper
 
         /// <summary>
         /// Returns true if the exception is a recoverable DWM composition exception.
+        /// Also checks inner exceptions to handle cases where a DWM error is wrapped by another exception type.
         /// </summary>
         internal static bool IsRecoverableDwmCompositionException(Exception exception)
         {
-            if (exception is not COMException comException)
+            if (exception == null)
             {
                 return false;
             }
 
-            if (comException.HResult is DWM_E_COMPOSITIONDISABLED)
+            // Walk the exception chain to detect DWM composition errors at any level
+            var current = exception;
+            while (current != null)
             {
-                return true;
+                if (current is COMException comException)
+                {
+                    if (comException.HResult is DWM_E_COMPOSITIONDISABLED)
+                    {
+                        return true;
+                    }
+
+                    if (comException.HResult is STATUS_MESSAGE_LOST_HR && comException.Source == PresentationFrameworkExceptionSource)
+                    {
+                        return true;
+                    }
+                }
+
+                current = current.InnerException;
             }
 
-            if (comException.HResult is STATUS_MESSAGE_LOST_HR && comException.Source == PresentationFrameworkExceptionSource)
-            {
-                return true;
-            }
-
-            // Check for common DWM composition changed patterns in the stack trace
-            var stackTrace = comException.StackTrace;
+            // Check for common DWM composition changed patterns in the stack trace of the outermost exception
+            var stackTrace = exception.StackTrace;
             return !string.IsNullOrEmpty(stackTrace) &&
                    stackTrace.Contains("DwmCompositionChanged");
         }
