@@ -108,7 +108,6 @@ internal static class ResultHelper
             tags.Add(new Tag
             {
                 Text = Resources.windowwalker_NotResponding,
-                Foreground = ColorHelpers.FromRgb(220, 20, 60),
             });
         }
 

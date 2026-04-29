@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using ManagedCommon;
 using Windows.Win32.Foundation;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.PInvoke;
@@ -27,8 +28,11 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             if (hPhysicalMonitor == IntPtr.Zero)
             {
+                Logger.LogWarning("DDC: Monitor ignored - null physical monitor handle");
                 return DdcCiValidationResult.Invalid;
             }
+
+            var handleHex = $"0x{hPhysicalMonitor:X}";
 
             try
             {
@@ -36,23 +40,43 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var capsString = TryGetCapabilitiesString(hPhysicalMonitor);
                 if (string.IsNullOrEmpty(capsString))
                 {
+                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - empty capabilities string from DDC/CI");
                     return DdcCiValidationResult.Invalid;
                 }
+
+                Logger.LogInfo($"DDC: Capabilities raw (handle={handleHex}, length={capsString.Length}): {capsString}");
 
                 // Parse the capabilities string
                 var parseResult = Utils.MccsCapabilitiesParser.Parse(capsString);
                 var capabilities = parseResult.Capabilities;
+
                 if (capabilities == null || capabilities.SupportedVcpCodes.Count == 0)
                 {
+                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - parsed capabilities have no VCP codes (parseErrors={parseResult.Errors.Count})");
                     return DdcCiValidationResult.Invalid;
                 }
 
                 // Check if brightness (VCP 0x10) is supported - determines DDC/CI validity
                 bool supportsBrightness = capabilities.SupportsVcpCode(NativeConstants.VcpCodeBrightness);
+                bool supportsContrast = capabilities.SupportsVcpCode(NativeConstants.VcpCodeContrast);
+                bool supportsColorTemperature = capabilities.SupportsVcpCode(NativeConstants.VcpCodeSelectColorPreset);
+                bool supportsVolume = capabilities.SupportsVcpCode(NativeConstants.VcpCodeVolume);
+
+                Logger.LogInfo(
+                    $"DDC: Capabilities parsed (handle={handleHex}) - " +
+                    $"Brightness={supportsBrightness} Contrast={supportsContrast} " +
+                    $"ColorTemperature={supportsColorTemperature} Volume={supportsVolume}");
+
+                if (!supportsBrightness)
+                {
+                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - brightness (VCP 0x10) not advertised in capabilities");
+                }
+
                 return new DdcCiValidationResult(supportsBrightness, capsString, capabilities);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogError($"DDC: Monitor ignored (handle={handleHex}) - exception during FetchCapabilities: {ex.Message}");
                 return DdcCiValidationResult.Invalid;
             }
         }
@@ -74,6 +98,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 // Get capabilities string length
                 if (!GetCapabilitiesStringLength(hPhysicalMonitor, out uint length) || length == 0)
                 {
+                    Logger.LogWarning($"DDC: GetCapabilitiesStringLength failed (handle=0x{hPhysicalMonitor:X}, length={length})");
                     return null;
                 }
 
@@ -83,6 +108,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 {
                     if (!CapabilitiesRequestAndCapabilitiesReply(hPhysicalMonitor, buffer, length))
                     {
+                        Logger.LogWarning($"DDC: CapabilitiesRequestAndCapabilitiesReply failed (handle=0x{hPhysicalMonitor:X})");
                         return null;
                     }
 
@@ -95,6 +121,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogError($"DDC: TryGetCapabilitiesString exception (handle=0x{hPhysicalMonitor:X}): {ex.Message}");
                 return null;
             }
         }
@@ -189,7 +216,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             // EDID manufacturer ID requires byte order swap first
             manufacturerId = (ushort)(((manufacturerId & 0xff00) >> 8) | ((manufacturerId & 0x00ff) << 8));
 
-            // Extract 3 5-bit characters (each character is A-Z, where A=1, B=2, ..., Z=26)
+            // Extract three 5-bit characters (each character is A-Z, where A=1, B=2, ..., Z=26)
             var char1 = (char)('A' - 1 + ((manufacturerId >> 0) & 0x1f));
             var char2 = (char)('A' - 1 + ((manufacturerId >> 5) & 0x1f));
             var char3 = (char)('A' - 1 + ((manufacturerId >> 10) & 0x1f));

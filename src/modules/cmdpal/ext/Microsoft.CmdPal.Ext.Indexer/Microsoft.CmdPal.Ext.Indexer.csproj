@@ -59,4 +59,8 @@
     <AdditionalFiles Include="NativeMethods.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.CmdPal.Ext.Indexer.UnitTests" />
+  </ItemGroup>
+
 </Project>

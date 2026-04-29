@@ -77,7 +77,7 @@ public sealed partial class DockWindow : WindowEx,
         _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         _settingsService.SettingsChanged += SettingsChangedHandler;
         _settings = mainSettings.DockSettings;
-        _lastSize = _settings.DockSize;
+        _lastSize = EffectiveDockSize(_settings);
 
         viewModel = serviceProvider.GetService<DockViewModel>()!;
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
@@ -97,6 +97,10 @@ public sealed partial class DockWindow : WindowEx,
             overlappedPresenter.IsResizable = false;
         }
 
+        // immediately when we're created: make sure to remove our window frame
+        // and shadow. We don't _always_ get an Activated when we're first
+        // created.
+        UpdateWindowFrame();
         this.Activated += DockWindow_Activated;
 
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
@@ -145,6 +149,12 @@ public sealed partial class DockWindow : WindowEx,
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        UpdateWindowFrame();
+        UpdateTopmostState();
+    }
+
+    private void UpdateWindowFrame()
+    {
         // These are used for removing the very subtle shadow/border that we get from Windows 11
         HwndExtensions.ToggleWindowStyle(_hwnd, false, WindowStyle.TiledWindow);
         unsafe
@@ -152,8 +162,6 @@ public sealed partial class DockWindow : WindowEx,
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
         }
-
-        UpdateTopmostState();
     }
 
     private HWND GetWindowHandle(Window window)
@@ -174,7 +182,7 @@ public sealed partial class DockWindow : WindowEx,
         if (_appBarData.hWnd != IntPtr.Zero)
         {
             var sameEdge = _appBarData.uEdge == side;
-            var sameSize = _lastSize == _settings.DockSize;
+            var sameSize = _lastSize == EffectiveDockSize(_settings);
             if (sameEdge && sameSize)
             {
                 UpdateTopmostState();
@@ -332,7 +340,7 @@ public sealed partial class DockWindow : WindowEx,
 
         // Stash the last size we created the bar at, so we know when to hot-
         // reload it
-        _lastSize = _settings.DockSize;
+        _lastSize = EffectiveDockSize(_settings);
 
         UpdateWindowPosition();
     }
@@ -384,15 +392,9 @@ public sealed partial class DockWindow : WindowEx,
 
         var dpi = PInvoke.GetDpiForWindow(_hwnd);
 
-        var screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
-
-        // Get system border metrics
-        var borderWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXBORDER);
-        var edgeWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXEDGE);
-        var frameWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXFRAME);
-
         var scaleFactor = dpi / 96.0;
-        UpdateAppBarDataForEdge(_settings.Side, _settings.DockSize, scaleFactor);
+        var effectiveSize = EffectiveDockSize(_settings);
+        UpdateAppBarDataForEdge(_settings.Side, effectiveSize, scaleFactor);
 
         // Query and set position
         PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
@@ -406,16 +408,16 @@ public sealed partial class DockWindow : WindowEx,
         switch (_settings.Side)
         {
             case DockSide.Top:
-                _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.bottom = _appBarData.rc.top + (int)(DockSettingsToViews.HeightForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Bottom:
-                _appBarData.rc.top = _appBarData.rc.bottom - (int)(DockSettingsToViews.HeightForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.top = _appBarData.rc.bottom - (int)(DockSettingsToViews.HeightForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Left:
-                _appBarData.rc.right = _appBarData.rc.left + (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.right = _appBarData.rc.left + (int)(DockSettingsToViews.WidthForSize(effectiveSize) * scaleFactor);
                 break;
             case DockSide.Right:
-                _appBarData.rc.left = _appBarData.rc.right - (int)(DockSettingsToViews.WidthForSize(_settings.DockSize) * scaleFactor);
+                _appBarData.rc.left = _appBarData.rc.right - (int)(DockSettingsToViews.WidthForSize(effectiveSize) * scaleFactor);
                 break;
         }
 
@@ -428,21 +430,26 @@ public sealed partial class DockWindow : WindowEx,
         //   PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
         //   PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
 
-        // Account for system borders when moving the window
-        // Adjust position to account for window frame/border
-        var adjustedLeft = _appBarData.rc.left - frameWidth;
-        var adjustedTop = _appBarData.rc.top - frameWidth;
-        var adjustedWidth = (_appBarData.rc.right - _appBarData.rc.left) + (2 * frameWidth);
-        var adjustedHeight = (_appBarData.rc.bottom - _appBarData.rc.top) + (2 * frameWidth);
-
-        // Move the actual window
+        // The dock window is borderless (SetBorderAndTitleBar(false, false),
+        // IsResizable = false) so no frame compensation is needed — the
+        // app bar rect matches the window rect exactly.
         PInvoke.MoveWindow(
             _hwnd,
-            adjustedLeft,
-            adjustedTop,
-            adjustedWidth,
-            adjustedHeight,
+            _appBarData.rc.left,
+            _appBarData.rc.top,
+            _appBarData.rc.right - _appBarData.rc.left,
+            _appBarData.rc.bottom - _appBarData.rc.top,
             true);
+    }
+
+    /// <summary>
+    /// Compact mode is only supported for Top/Bottom dock positions.
+    /// For Left/Right, always use Default size.
+    /// </summary>
+    private static DockSize EffectiveDockSize(DockSettings settings)
+    {
+        var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        return isHorizontal ? settings.DockSize : DockSize.Default;
     }
 
     private void UpdateAppBarDataForEdge(DockSide side, DockSize size, double scaleFactor)
@@ -587,11 +594,21 @@ public sealed partial class DockWindow : WindowEx,
             }
         }
 
-        // Handle WM_GETMINMAXINFO to control window size limits
+        // Handle WM_GETMINMAXINFO to allow the dock to be smaller than
+        // the default minimum window size (SM_CYMINTRACK ~36px).
         else if (msg == PInvoke.WM_GETMINMAXINFO)
         {
-            // We can modify the min/max tracking info here if needed
-            // For now, let it pass through but we could restrict max size
+            // Call the original WndProc first so it fills default values,
+            // then override the minimum tracking size.
+            var result = PInvoke.CallWindowProc(_originalWndProc, hwnd, msg, wParam, lParam);
+            unsafe
+            {
+                var minMaxInfo = (MINMAXINFO*)lParam.Value;
+                minMaxInfo->ptMinTrackSize.X = 1;
+                minMaxInfo->ptMinTrackSize.Y = 1;
+            }
+
+            return result;
         }
 
         // Handle the AppBarMessage message

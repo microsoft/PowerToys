@@ -5,6 +5,7 @@
 #include "ActionRunnerUtils.h"
 #include "general_settings.h"
 #include "trace.h"
+#include "tray_icon.h"
 #include "UpdateUtils.h"
 
 #include <common/utils/gpo.h>
@@ -130,6 +131,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         state.releasePageUrl = {};
         state.downloadedInstallerFilename = {};
         Logger::trace(L"Version is up to date");
+        dispatch_run_on_main_ui_thread([](PVOID) { set_tray_icon_update_available(false); }, nullptr);
         return;
     }
     const auto new_version_info = std::get<new_version_download_info>(version_info);
@@ -179,6 +181,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
             state.state = UpdateState::readyToInstall;
             state.downloadedInstallerFilename = new_version_info.installer_filename;
             Trace::UpdateDownloadCompleted(true, new_version_info.version.toWstring());
+            dispatch_run_on_main_ui_thread([](PVOID) { set_tray_icon_update_available(true); }, nullptr);
             if (show_notifications)
             {
                 ShowNewVersionAvailable(new_version_info);
@@ -197,6 +200,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         Logger::trace(L"New version is ready to download, showing notification");
         state.state = UpdateState::readyToDownload;
         state.downloadedInstallerFilename = {};
+        dispatch_run_on_main_ui_thread([](PVOID) { set_tray_icon_update_available(true); }, nullptr);
         if (show_notifications)
         {
             ShowOpenSettingsForUpdate();

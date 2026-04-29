@@ -36,6 +36,7 @@
       <string id="SUPPORTED_POWERTOYS_0_96_0">PowerToys version 0.96.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_97_0">PowerToys version 0.97.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_98_0">PowerToys version 0.98.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_99_0">PowerToys version 0.99.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -77,7 +78,7 @@ If enabled, per-user installation is not allowed.
 
 If disabled or not configured, per-user installation is allowed.
 </string>
-      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether the automatic download and installation of available updates is disabled or not. (On metered connections updates are never downloaded.)
+      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether or not the automatic download and installation of available updates is disabled. (On metered connections updates are never downloaded.)
 
 If enabled, automatic download and installation is disabled.
 
@@ -93,7 +94,7 @@ Note: The notification about new major versions is always displayed.
 
 This policy has no effect if the update notification is disabled by the policy "Disable Action Center notification for new updates" or the user setting.
 </string>
-      <string id="DisableNewUpdateToastDescription">This policy configures whether the action center notification for new updates is shown or not.
+      <string id="DisableNewUpdateToastDescription">This policy configures whether or not the action center notification for new updates is shown.
 
 If enabled, the notification is disabled.
 
