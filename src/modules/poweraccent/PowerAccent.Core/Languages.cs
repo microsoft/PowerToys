@@ -744,6 +744,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_I => new[] { "í" },
                 LetterKey.VK_O => new[] { "ó", "ő", "ö" },
                 LetterKey.VK_U => new[] { "ú", "ű", "ü" },
+                LetterKey.VK_Y => new[] { "ÿ", "ý" },
                 LetterKey.VK_COMMA => new[] { "„", "”", "»", "«" },
                 _ => Array.Empty<string>(),
             };

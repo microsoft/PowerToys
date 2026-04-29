@@ -7,12 +7,12 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Flyout;
 using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.PowerToys.QuickAccess.ViewModels;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Windows.Graphics;
 using WinRT.Interop;
 using WinUIEx;
 
@@ -27,6 +27,13 @@ public sealed partial class MainWindow : WindowEx, IDisposable
     private readonly LauncherViewModel _launcherViewModel;
     private readonly AllAppsViewModel _allAppsViewModel;
     private readonly QuickAccessCoordinator _coordinator;
+
+    // XAML-defined design size in DIPs. Captured once at construction so the value
+    // isn't corrupted by later DPI transitions (WindowEx.Width/Height returns the
+    // *current* physical size translated through the *current* DPI, which drifts).
+    private readonly int _designWidthDip;
+    private readonly int _designHeightDip;
+
     private bool _disposed;
     private EventWaitHandle? _showEvent;
     private EventWaitHandle? _exitEvent;
@@ -44,8 +51,6 @@ public sealed partial class MainWindow : WindowEx, IDisposable
     private LowLevelMouseProc? _mouseHookDelegate;
     private CancellationTokenSource? _trimCts;
 
-    private const int DefaultWidth = 320;
-    private const int DefaultHeight = 480;
     private const int DwmWaCloak = 13;
     private const int GwlStyle = -16;
     private const int GwlExStyle = -20;
@@ -62,7 +67,6 @@ public sealed partial class MainWindow : WindowEx, IDisposable
     private const long WsMinimizeBox = 0x00020000L;
     private const long WsMaximizeBox = 0x00010000L;
     private const long WsExToolWindow = 0x00000080L;
-    private const uint MonitorDefaulttonearest = 0x00000002;
     private static readonly IntPtr HwndTopmost = new(-1);
     private static readonly IntPtr HwndBottom = new(1);
 
@@ -75,6 +79,12 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         _appWindow = InitializeAppWindow(_hwnd);
         Title = "PowerToys Quick Access (Preview)";
 
+        // Capture XAML design size NOW, before any user-driven DPI changes can
+        // perturb WindowEx.Width / WindowEx.Height. These are the source of truth
+        // for sizing the flyout on every subsequent summon.
+        _designWidthDip = (int)Math.Ceiling(this.Width);
+        _designHeightDip = (int)Math.Ceiling(this.Height);
+
         _coordinator = new QuickAccessCoordinator(this, _launchContext);
         _launcherViewModel = new LauncherViewModel(_coordinator);
         _allAppsViewModel = new AllAppsViewModel(_coordinator);
@@ -83,6 +93,7 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         CustomizeWindowChrome();
         HideFromTaskbar();
         HideWindow();
+
         InitializeEventListeners();
         Closed += OnClosed;
         Activated += OnActivated;
@@ -213,27 +224,19 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
             ShowWindowNative(_hwnd, SwShow);
 
-            var flags = SwpNoSize | SwpShowWindow;
-            var targetX = 0;
-            var targetY = 0;
+            // Use shared FlyoutWindowHelper to size the window in DIPs against the target
+            // monitor's effective DPI. Internally uses a 1×1 teleport into the target
+            // display first to avoid WM_DPICHANGED double-scaling on cross-monitor moves.
+            // Use the cached XAML design size — this.Width/Height are runtime values that
+            // can drift through DPI transitions and must NOT be used as the source of truth.
+            FlyoutWindowHelper.PositionWindowBottomRight(
+                this,
+                _designWidthDip,
+                _designHeightDip);
 
-            var windowSize = _appWindow?.Size;
-            var windowWidth = windowSize?.Width ?? DefaultWidth;
-            var windowHeight = windowSize?.Height ?? DefaultHeight;
-
-            GetCursorPos(out var cursorPosition);
-            var monitorHandle = MonitorFromPointNative(cursorPosition, MonitorDefaulttonearest);
-            if (monitorHandle != IntPtr.Zero)
-            {
-                var monitorInfo = new MonitorInfo { CbSize = Marshal.SizeOf<MonitorInfo>() };
-                if (GetMonitorInfoNative(monitorHandle, ref monitorInfo))
-                {
-                    targetX = monitorInfo.RcWork.Right - windowWidth;
-                    targetY = monitorInfo.RcWork.Bottom - windowHeight;
-                }
-            }
-
-            SetWindowPosNative(_hwnd, HwndTopmost, targetX, targetY, 0, 0, flags);
+            // Ensure the flyout is brought to the top of the Z-order. MoveAndResize does not
+            // change Z-order, so explicitly raise the window after positioning.
+            SetWindowPosNative(_hwnd, HwndTopmost, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpShowWindow);
             WindowHelpers.BringToForeground(_hwnd);
         }
 
@@ -286,8 +289,13 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
         if (_appWindow != null)
         {
-            var currentPosition = _appWindow.Position;
-            _appWindow.MoveAndResize(new RectInt32(currentPosition.X, currentPosition.Y, DefaultWidth, DefaultHeight));
+            // Size the cloaked window via the shared helper so the first summon already has the
+            // correct physical size for the target monitor's DPI. Use the cached XAML design
+            // size — see comments in ShowWindow for why this.Width/Height cannot be trusted.
+            FlyoutWindowHelper.PositionWindowBottomRight(
+                this,
+                _designWidthDip,
+                _designHeightDip);
         }
 
         // Warm up the window while cloaked so the first summon does not pay XAML initialization cost.
@@ -423,12 +431,6 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
     [DllImport("dwmapi.dll", EntryPoint = "DwmSetWindowAttribute", SetLastError = true)]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
-
-    [DllImport("user32.dll", EntryPoint = "MonitorFromPoint", SetLastError = true)]
-    private static extern IntPtr MonitorFromPointNative(NativePoint pt, uint dwFlags);
-
-    [DllImport("user32.dll", EntryPoint = "GetMonitorInfoW", SetLastError = true)]
-    private static extern bool GetMonitorInfoNative(IntPtr hMonitor, ref MonitorInfo lpmi);
 
     [DllImport("user32.dll", EntryPoint = "SetWindowsHookExW", SetLastError = true)]
     private static extern IntPtr SetWindowsHookExNative(int idHook, LowLevelMouseProc lpfn, IntPtr hMod, uint dwThreadId);
@@ -725,18 +727,11 @@ public sealed partial class MainWindow : WindowEx, IDisposable
         public IntPtr DwExtraInfo;
     }
 
+#pragma warning disable CS0649 // Fields populated by P/Invoke marshaler
     private struct NativePoint
     {
         public int X;
         public int Y;
     }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct MonitorInfo
-    {
-        public int CbSize;
-        public Rect RcMonitor;
-        public Rect RcWork;
-        public uint DwFlags;
-    }
+#pragma warning restore CS0649
 }
