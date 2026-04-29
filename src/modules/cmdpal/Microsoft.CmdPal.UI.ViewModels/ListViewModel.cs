@@ -957,8 +957,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
         Filters?.InitializeProperties();
         UpdateProperty(nameof(Filters));
 
-        FetchItems(true);
         model.ItemsChanged += Model_ItemsChanged;
+        FetchItems(true);
     }
 
     private static IGridPropertiesViewModel? LoadGridPropertiesViewModel(IGridProperties? gridProperties)

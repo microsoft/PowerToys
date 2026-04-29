@@ -44,9 +44,9 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
             UpdateProperty(nameof(Root));
         }
 
-        FetchContent();
         model.PropChanged += Model_PropChanged;
         model.ItemsChanged += Model_ItemsChanged;
+        FetchContent();
     }
 
     // Theoretically, we should unify this with the one in CommandPalettePageViewModelFactory

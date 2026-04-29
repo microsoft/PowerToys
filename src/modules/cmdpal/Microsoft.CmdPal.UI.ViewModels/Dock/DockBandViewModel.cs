@@ -209,8 +209,8 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
         var list = command.Model.Unsafe as IListPage;
         if (list is not null)
         {
-            InitializeFromList(list);
             list.ItemsChanged += HandleItemsChanged;
+            InitializeFromList(list);
         }
         else
         {
