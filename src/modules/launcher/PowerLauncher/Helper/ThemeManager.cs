@@ -23,6 +23,7 @@ namespace PowerLauncher.Helper
         private readonly ThemeHelper _themeHelper = new();
 
         private bool _disposed;
+        private bool _isHighContrastMode;
         private CancellationTokenSource _themeUpdateTokenSource;
         private const int MaxRetries = 5;
         private const int InitialDelayMs = 2000;
@@ -53,8 +54,13 @@ namespace PowerLauncher.Helper
 
             if (theme is Theme.Dark or Theme.Light)
             {
-                // Clear any high-contrast resource dictionaries that may have been added previously.
-                _mainWindow.Resources.MergedDictionaries.Clear();
+                // When returning from a high-contrast theme, clear the high-contrast resource
+                // dictionaries that were applied to the window.
+                if (_isHighContrastMode)
+                {
+                    _mainWindow.Resources.MergedDictionaries.Clear();
+                    _isHighContrastMode = false;
+                }
 
                 // Need to disable WPF0001 since setting Application.Current.ThemeMode is experimental
                 // https://learn.microsoft.com/en-us/dotnet/desktop/wpf/whats-new/net90#set-in-code
@@ -79,6 +85,8 @@ namespace PowerLauncher.Helper
 #pragma warning disable WPF0001
                 Application.Current.ThemeMode = ThemeMode.None;
 #pragma warning restore WPF0001
+
+                _isHighContrastMode = true;
 
                 string styleThemeString = theme switch
                 {

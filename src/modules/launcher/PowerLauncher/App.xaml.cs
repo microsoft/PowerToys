@@ -159,11 +159,12 @@ namespace PowerLauncher
                 // parsing. ThemeManager will apply the correct final theme asynchronously.
                 // For high-contrast themes, Dark is used as a temporary fallback because
                 // ThemeManager will switch to ThemeMode.None and apply custom high-contrast
-                // resource dictionaries once it processes the actual theme.
-                var earlyThemeHelper = new ThemeHelper();
-                var earlyTheme = earlyThemeHelper.DetermineTheme(_settings.Theme);
+                // resource dictionaries once it processes the actual theme. Dark is chosen
+                // because the high-contrast themes are visually closer to dark than light.
+                var themeHelper = new ThemeHelper();
+                var initialTheme = themeHelper.DetermineTheme(_settings.Theme);
 #pragma warning disable WPF0001
-                Application.Current.ThemeMode = earlyTheme == Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
+                Application.Current.ThemeMode = initialTheme == Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
 #pragma warning restore WPF0001
 
                 _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
