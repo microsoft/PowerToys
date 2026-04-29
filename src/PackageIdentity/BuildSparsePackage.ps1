@@ -417,6 +417,7 @@ if ($NoSign) {
     Write-BuildLog "Identity Name: $($script:Config.IdentityName)" -Level Info
 }
 
+$winUI3AppsDir = Join-Path $outDir "WinUI3Apps"
 Write-BuildLog "Register sparse package:" -Level Info
-Write-BuildLog "  Add-AppxPackage -Path `"$msixPath`" -ExternalLocation `"$outDir`"" -Level Warning
-Write-BuildLog "(If already installed and you changed manifest only): Add-AppxPackage -Register `"$manifestPath`" -ExternalLocation `"$outDir`" -ForceApplicationShutdown" -Level Warning
+Write-BuildLog "  Add-AppxPackage -Path `"$msixPath`" -ExternalLocation `"$winUI3AppsDir`"" -Level Warning
+Write-BuildLog "(If already installed and you changed manifest only): Add-AppxPackage -Register `"$manifestPath`" -ExternalLocation `"$winUI3AppsDir`" -ForceApplicationShutdown" -Level Warning

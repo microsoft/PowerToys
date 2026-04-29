@@ -197,4 +197,7 @@
     <value>Close</value>
     <comment>Close as a verb, as in Close the application</comment>
   </data>
+  <data name="UPDATE_AVAILABLE_MENU_TEXT" xml:space="preserve">
+    <value>Update available</value>
+  </data>
 </root>
