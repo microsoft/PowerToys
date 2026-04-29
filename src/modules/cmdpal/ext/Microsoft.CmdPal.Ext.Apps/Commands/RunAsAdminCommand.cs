@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -31,21 +32,28 @@ internal sealed partial class RunAsAdminCommand : InvokableCommand
     {
         await Task.Run(() =>
         {
-            if (packaged)
+            try
             {
-                var command = "shell:AppsFolder\\" + target;
-                command = Environment.ExpandEnvironmentVariables(command.Trim());
+                if (packaged)
+                {
+                    var command = "shell:AppsFolder\\" + target;
+                    command = Environment.ExpandEnvironmentVariables(command.Trim());
 
-                var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
-                info.UseShellExecute = true;
-                info.Arguments = string.Empty;
-                Process.Start(info);
+                    var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
+                    info.UseShellExecute = true;
+                    info.Arguments = string.Empty;
+                    Process.Start(info);
+                }
+                else
+                {
+                    var info = ShellCommand.GetProcessStartInfo(target, parentDir, string.Empty, ShellCommand.RunAsType.Administrator);
+
+                    Process.Start(info);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                var info = ShellCommand.GetProcessStartInfo(target, parentDir, string.Empty, ShellCommand.RunAsType.Administrator);
-
-                Process.Start(info);
+                Logger.LogError($"Failed to run as administrator: {ex.Message}");
             }
         });
     }

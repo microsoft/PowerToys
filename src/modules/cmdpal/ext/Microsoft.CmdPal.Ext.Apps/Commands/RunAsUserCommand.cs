@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -29,9 +30,16 @@ internal sealed partial class RunAsUserCommand : InvokableCommand
     {
         await Task.Run(() =>
         {
-            var info = ShellCommand.GetProcessStartInfo(target, parentDir, string.Empty, ShellCommand.RunAsType.OtherUser);
+            try
+            {
+                var info = ShellCommand.GetProcessStartInfo(target, parentDir, string.Empty, ShellCommand.RunAsType.OtherUser);
 
-            Process.Start(info);
+                Process.Start(info);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to run as different user: {ex.Message}");
+            }
         });
     }
 
