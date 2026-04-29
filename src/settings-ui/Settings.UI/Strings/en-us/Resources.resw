@@ -4652,7 +4652,9 @@ In manual mode, press **Space** to unblock keyboard input at the end of a snippe
 In auto mode, control returns automatically after completion.
 
 At the end of the file, ZoomIt reloads the file and restarts from the beginning.
-Press the hotkey with **Shift** in the opposite mode to step back to the previous **[end]** marker.</value>
+Press the hotkey with **Shift** in the opposite mode to step back to the previous **[end]** marker.
+
+Use the **DemoType reset** hotkey to reset DemoType and start from the beginning.</value>
   </data>
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
     <value>DemoType activation</value>

@@ -5341,6 +5341,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_BreakTimeout = newTimeout;
                 g_ToggleKey = newToggleKey;
                 g_LiveZoomToggleKey = newLiveZoomToggleKey;
+                // In standalone mode, secondary hotkeys are always derived from the primary key
+                // since the dialog does not expose controls for independent configuration.
+                // Independent configuration of secondary keys is only available in PowerToys mode.
                 g_LiveZoomDrawKey = (newLiveZoomToggleKey & 0xFF) | (((newLiveZoomToggleKey >> 8) ^ HOTKEYF_SHIFT) << 8);
                 g_LiveZoomDrawMod = newLiveZoomToggleMod ^ MOD_SHIFT;
                 g_ToggleMod = newToggleMod;
