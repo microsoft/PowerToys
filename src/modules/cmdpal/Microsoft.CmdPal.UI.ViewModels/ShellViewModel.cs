@@ -201,6 +201,11 @@ public partial class ShellViewModel : ObservableObject,
 
                                 CurrentPage = viewModel;
                             },
+                            // Use CancellationToken.None (not cancellationToken) so that this
+                            // UI-thread task is always scheduled and always runs its body.
+                            // If we passed the already-cancelled token the task would be placed
+                            // in the Cancelled state immediately and the cleanup lambda above
+                            // would never execute, leaking the initialized ViewModel.
                             CancellationToken.None,
                             TaskCreationOptions.None,
                             _scheduler);
