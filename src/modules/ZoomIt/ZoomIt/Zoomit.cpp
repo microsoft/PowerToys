@@ -5216,9 +5216,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newBreakToggleMod = GetKeyMod( newBreakToggleKey );
             newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
             newRecordToggleMod = GetKeyMod(newRecordToggleKey);
-            // Derive crop and window hotkeys from the base record key in the native dialog
-            newRecordCropToggleKey = (newRecordToggleKey & 0x00FF) | ((newRecordToggleKey & 0xFF00) ^ (HOTKEYF_SHIFT << 8));
-            newRecordWindowToggleKey = (newRecordToggleKey & 0x00FF) | ((newRecordToggleKey & 0xFF00) ^ (HOTKEYF_ALT << 8));
+            // Preserve the independently configured crop and window hotkeys from the registry
+            newRecordCropToggleKey = g_RecordCropToggleKey;
+            newRecordWindowToggleKey = g_RecordWindowToggleKey;
             newRecordCropToggleMod = GetKeyMod(newRecordCropToggleKey);
             newRecordWindowToggleMod = GetKeyMod(newRecordWindowToggleKey);
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
