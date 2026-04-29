@@ -5508,7 +5508,7 @@ The break timer font matches the text font.</value>
     <value>⚠️ Warning: This action may be unsafe.</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
-    <value>Enabling power state control may cause unintended results, including:</value>
+    <value>Enabling power state control may lead to unexpected behavior, including:</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningList" xml:space="preserve">
     <value>• Monitor entering standby that cannot be woken via software
