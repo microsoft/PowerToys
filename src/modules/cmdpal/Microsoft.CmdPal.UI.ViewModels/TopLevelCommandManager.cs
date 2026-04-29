@@ -456,6 +456,18 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         try
         {
             await startTask.WaitAsync(ExtensionStartTimeout, ct).ConfigureAwait(false);
+
+            // If the extension server failed to activate (e.g. E_NOINTERFACE on older Windows),
+            // IsRunning() will be false and CommandProviderWrapper will throw. Check first so we
+            // can log a more actionable message than the generic "You forgot to call StartExtensionAsync".
+            if (!extension.IsRunning())
+            {
+                Logger.LogError($"Extension {extension.PackageFullName} did not activate after {sw.ElapsedMilliseconds} ms. " +
+                    $"This can happen on Windows 11 23H2 (Build 22631) and earlier due to WinRT cross-process " +
+                    $"interface marshaling limitations for custom interfaces. Check extension logs for HRESULT details.");
+                return ExtensionStartResult.Failed(extension);
+            }
+
             Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
             return ExtensionStartResult.Started(extension, new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache));
         }

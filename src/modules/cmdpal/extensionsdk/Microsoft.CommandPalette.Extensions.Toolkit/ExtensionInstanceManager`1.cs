@@ -28,6 +28,15 @@ internal sealed partial class ExtensionInstanceManager : IClassFactory
 
     private static readonly Guid IID_IUnknown = Guid.Parse("00000000-0000-0000-C000-000000000046");
 
+    // IInspectable is the WinRT base interface (always marshalable cross-process on all Windows versions).
+    private static readonly Guid IID_IInspectable = Guid.Parse("AF86E2E0-B12D-4C6A-9C5A-D7AA65101E90");
+
+    // IExtension's WinRT interface IID. On Windows 11 23H2 (Build 22631), CoCreateInstance may
+    // invoke CreateInstance with this IID directly. We handle it by returning the IInspectable CCW,
+    // which COM on all Windows versions can marshal cross-process. On 24H2+ the OS uses WinRT
+    // metadata (winmd) to marshal custom interfaces transparently.
+    private static readonly Guid IID_IExtension = typeof(IExtension).GUID;
+
 #pragma warning restore SA1310 // Field names should not contain underscore
 
     private readonly Func<IExtension> _createExtension;
@@ -60,9 +69,12 @@ internal sealed partial class ExtensionInstanceManager : IClassFactory
             Marshal.ThrowExceptionForHR(CLASS_E_NOAGGREGATION);
         }
 
-        if (riid == _clsid || riid == IID_IUnknown)
+        if (riid == _clsid || riid == IID_IUnknown || riid == IID_IInspectable || riid == IID_IExtension)
         {
-            // Create the instance of the .NET object
+            // Create the instance of the .NET object and return it as IInspectable.
+            // Returning IInspectable ensures the CCW is marshalable cross-process on all
+            // Windows versions (including 23H2), since IInspectable has built-in OS support.
+            // The client will resolve the specific WinRT interface (IExtension) via CsWinRT.
             var managed = _createExtension();
             var ins = MarshalInspectable<object>.FromManaged(managed);
             ppvObject = ins;

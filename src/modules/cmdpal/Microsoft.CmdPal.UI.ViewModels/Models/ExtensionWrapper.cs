@@ -18,6 +18,13 @@ public class ExtensionWrapper : IExtensionWrapper
 {
     private const int HResultRpcServerNotRunning = -2147023174;
 
+    // COM/WinRT HRESULT constants used during extension activation
+    private const int HResultNoInterface = unchecked((int)0x80004002);   // E_NOINTERFACE
+    private const int HResultPathNotFound = unchecked((int)0x80070003);  // E_PATH_NOT_FOUND (HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND))
+
+    // IID_IUnknown - the base COM interface always accepted by any well-formed class factory
+    private static readonly Guid IID_IUnknown = new("00000000-0000-0000-C000-000000000046");
+
     private readonly string _appUserModelId;
     private readonly string _extensionId;
 
@@ -111,28 +118,68 @@ public class ExtensionWrapper : IExtensionWrapper
                         var extensionPtr = (void*)nint.Zero;
                         try
                         {
-                            // -2147024809: E_INVALIDARG
-                            // -2147467262: E_NOINTERFACE
-                            // -2147024893: E_PATH_NOT_FOUND
-                            var guid = typeof(IExtension).GUID;
+                            // First attempt: request IExtension directly.
+                            // On Windows 11 23H2 (Build 22631), CoCreateInstance with a custom
+                            // WinRT interface IID (like IExtension) may return E_NOINTERFACE because
+                            // the OS cannot marshal the interface cross-process without a registered
+                            // proxy/stub. Newer Windows builds (24H2+) handle this automatically via
+                            // WinRT metadata. In that case, we fall back to IID_IUnknown so the
+                            // server can return an IInspectable CCW, which is always marshalable.
+                            var extensionIid = typeof(IExtension).GUID;
 
-                            var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, guid, out extensionPtr);
+                            var hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, extensionIid, out extensionPtr);
 
-                            if (hr.Value == -2147024893)
+                            var usedIUnknownFallback = false;
+                            if (hr.Value == HResultNoInterface)
+                            {
+                                // On Windows 23H2, the OS may be unable to marshal the IExtension
+                                // WinRT interface cross-process. Retry with IID_IUnknown so the
+                                // server can return an IInspectable CCW (marshalable on all Windows
+                                // versions). We then QI for IExtension from the returned pointer.
+                                Logger.LogWarning($"CoCreateInstance for {ExtensionDisplayName} returned E_NOINTERFACE for IID_IExtension (hr=0x{hr.Value:X8}). " +
+                                    $"Retrying with IID_IUnknown as a Windows 23H2 compatibility fallback.");
+
+                                extensionPtr = (void*)nint.Zero;
+                                hr = PInvoke.CoCreateInstance(Guid.Parse(ExtensionClassId), null, CLSCTX.CLSCTX_LOCAL_SERVER, IID_IUnknown, out extensionPtr);
+                                usedIUnknownFallback = true;
+                            }
+
+                            if (hr.Value == HResultPathNotFound)
                             {
                                 Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr}. It may have been uninstalled or deleted.");
-
-                                // We don't really need to throw this exception.
-                                // We'll just return out nothing.
                                 return;
                             }
                             else if (hr.Value != 0)
                             {
-                                Logger.LogError($"Failed to find {ExtensionDisplayName}: {hr.Value}");
+                                // All other failures — log and bail out. Do NOT fall through to
+                                // MarshalInterface below, which would dereference a null pointer and
+                                // cause an access violation.
+                                Logger.LogError($"Failed to activate {ExtensionDisplayName}: hr=0x{hr.Value:X8}. " +
+                                    $"On Windows 23H2 this may indicate that WinRT cross-process interface " +
+                                    $"marshaling is unsupported for custom interfaces without a registered proxy/stub.");
+                                return;
                             }
 
-                            // Marshal.ThrowExceptionForHR(hr);
-                            _extensionObject = MarshalInterface<IExtension>.FromAbi((nint)extensionPtr);
+                            if (usedIUnknownFallback)
+                            {
+                                // extensionPtr is an IUnknown/IInspectable cross-process proxy.
+                                // Wrap it as IInspectable and then try to QI for IExtension.
+                                // On Windows 23H2, this QI may fail (no proxy/stub for IExtension),
+                                // resulting in a null _extensionObject. On newer Windows the QI
+                                // should succeed via WinRT metadata-based marshaling.
+                                var inspectable = MarshalInspectable<object>.FromAbi((nint)extensionPtr);
+                                _extensionObject = inspectable as IExtension;
+                                if (_extensionObject == null)
+                                {
+                                    Logger.LogError($"Extension {ExtensionDisplayName} does not expose IExtension across the COM process boundary. " +
+                                        $"On Windows 23H2 (Build 22631) and earlier, custom WinRT interfaces cannot be marshaled " +
+                                        $"cross-process without a registered proxy/stub. The extension will not be available.");
+                                }
+                            }
+                            else
+                            {
+                                _extensionObject = MarshalInterface<IExtension>.FromAbi((nint)extensionPtr);
+                            }
                         }
                         catch (Exception e)
                         {
