@@ -6009,7 +6009,7 @@ Text uses the current drawing color.</value>
   </data>
   <data name="GrabAndMove_ModifierKey.Header" xml:space="preserve">
     <value>Activation modifier key</value>
-    <comment>Drop-down to choose which modifier key (Alt or Win) activates Grab And Move drag and resize.</comment>
+    <comment>Drop-down to choose which modifier key (Alt or Win) activates Grab And Move drag and resize. "Activation" here means to enable/trigger the feature (활성화 in Korean), NOT product authentication/genuine certification (정품인증 in Korean).</comment>
   </data>
   <data name="GrabAndMove_ModifierKey_Alt.Content" xml:space="preserve">
     <value>Alt</value>
