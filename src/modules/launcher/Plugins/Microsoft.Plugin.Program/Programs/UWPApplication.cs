@@ -152,7 +152,18 @@ namespace Microsoft.Plugin.Program.Programs
                                 var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
                                 info.UseShellExecute = true;
                                 info.Arguments = queryArguments;
-                                Process.Start(info);
+                                try
+                                {
+                                    Process.Start(info);
+                                }
+                                catch (Exception e)
+                                {
+                                    ProgramLogger.Exception($"Unable to run {DisplayName} as administrator", e, MethodBase.GetCurrentMethod().DeclaringType, command);
+                                    var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
+                                    var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {DisplayName}";
+                                    api.ShowMsg(name, message, string.Empty);
+                                }
+
                                 return true;
                             },
                         });
