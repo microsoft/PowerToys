@@ -160,12 +160,14 @@ namespace PowerLauncher.Helper
 
                     return;
                 }
-                catch (COMException ex) when (ExceptionHelper.IsRecoverableDwmCompositionException(ex))
+                catch (Exception ex) when (ExceptionHelper.IsRecoverableDwmCompositionException(ex))
                 {
+                    // Unwrap TargetInvocationException to extract the DWM HRESULT for logging.
+                    var dwmEx = ex is System.Reflection.TargetInvocationException { InnerException: COMException inner } ? inner : ex as COMException;
                     switch (attempt)
                     {
                         case 1:
-                            Log.Warn($"Desktop composition is disabled (HRESULT: 0x{ex.HResult:X}). Scheduling retries for theme update.", typeof(ThemeManager));
+                            Log.Warn($"Desktop composition is disabled (HRESULT: 0x{dwmEx?.HResult ?? ex.HResult:X}). Scheduling retries for theme update.", typeof(ThemeManager));
                             delayMs = InitialDelayMs;
                             break;
                         case < maxAttempts:

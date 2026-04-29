@@ -22,6 +22,13 @@ namespace PowerLauncher.Helper
         /// </summary>
         internal static bool IsRecoverableDwmCompositionException(Exception exception)
         {
+            // Unwrap TargetInvocationException: WPF raises theme-change events via reflection,
+            // so DWM COMExceptions (0x80263001) surface as TargetInvocationException.InnerException.
+            if (exception is System.Reflection.TargetInvocationException tie && tie.InnerException != null)
+            {
+                return IsRecoverableDwmCompositionException(tie.InnerException);
+            }
+
             if (exception is not COMException comException)
             {
                 return false;
