@@ -51,14 +51,17 @@ namespace PowerLauncher.Helper
         {
             _mainWindow.Background = !OSVersionHelper.IsWindows11() ? SystemColors.WindowBrush : null;
 
-            // Need to disable WPF0001 since setting Application.Current.ThemeMode is experimental
-            // https://learn.microsoft.com/en-us/dotnet/desktop/wpf/whats-new/net90#set-in-code
-#pragma warning disable WPF0001
-            Application.Current.ThemeMode = theme == Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
-#pragma warning restore WPF0001
-
             if (theme is Theme.Dark or Theme.Light)
             {
+                // Clear any high-contrast resource dictionaries that may have been added previously.
+                _mainWindow.Resources.MergedDictionaries.Clear();
+
+                // Need to disable WPF0001 since setting Application.Current.ThemeMode is experimental
+                // https://learn.microsoft.com/en-us/dotnet/desktop/wpf/whats-new/net90#set-in-code
+#pragma warning disable WPF0001
+                Application.Current.ThemeMode = theme == Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
+#pragma warning restore WPF0001
+
                 if (!OSVersionHelper.IsWindows11())
                 {
                     // Apply background only on Windows 10
@@ -71,6 +74,12 @@ namespace PowerLauncher.Helper
             }
             else
             {
+                // For high-contrast themes, disable WPF's Fluent theme manager to avoid conflicts
+                // with the custom high-contrast resource dictionaries.
+#pragma warning disable WPF0001
+                Application.Current.ThemeMode = ThemeMode.None;
+#pragma warning restore WPF0001
+
                 string styleThemeString = theme switch
                 {
                     Theme.HighContrastOne => "Themes/HighContrast1.xaml",
