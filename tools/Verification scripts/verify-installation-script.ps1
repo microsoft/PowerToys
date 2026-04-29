@@ -432,12 +432,9 @@ function Test-CoreFiles {
         'PowerToys.MouseWithoutBordersHelper.dll',
         'PowerToys.MouseWithoutBordersHelper.exe',
         
-        # PowerAccent
-        'PowerAccent.Core.dll',
-        'PowerToys.PowerAccent.dll',
-        'PowerToys.PowerAccent.exe',
+        # PowerAccent (only the runner-side module interface stays at the install root;
+        # the WinUI 3 app and its native deps live under WinUI3Apps\)
         'PowerToys.PowerAccentModuleInterface.dll',
-        'PowerToys.PowerAccentKeyboardService.dll',
         
         # Workspaces
         'PowerToys.WorkspacesSnapshotTool.exe',
@@ -500,7 +497,11 @@ function Test-CoreFiles {
         'PowerToys.RegistryPreviewExt.dll',
         'PowerToys.RegistryPreviewUILib.dll',
         'PowerToys.RegistryPreview.dll',
-        'PowerToys.RegistryPreview.exe'
+        'PowerToys.RegistryPreview.exe',
+        'PowerAccent.Core.dll',
+        'PowerToys.PowerAccent.dll',
+        'PowerToys.PowerAccent.exe',
+        'PowerToys.PowerAccentKeyboardService.dll'
     )
     
     # Tools signed files (in Tools subdirectory)

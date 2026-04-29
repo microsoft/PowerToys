@@ -211,11 +211,11 @@
             "WinUI3Apps\\NewPlusPackage.msix",
             "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.win10.dll",
 
-            "PowerAccent.Core.dll",
-            "PowerToys.PowerAccent.dll",
-            "PowerToys.PowerAccent.exe",
+            "WinUI3Apps\\PowerAccent.Core.dll",
+            "WinUI3Apps\\PowerToys.PowerAccent.dll",
+            "WinUI3Apps\\PowerToys.PowerAccent.exe",
+            "WinUI3Apps\\PowerToys.PowerAccentKeyboardService.dll",
             "PowerToys.PowerAccentModuleInterface.dll",
-            "PowerToys.PowerAccentKeyboardService.dll",
 
             "PowerToys.PowerDisplayModuleInterface.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.dll",

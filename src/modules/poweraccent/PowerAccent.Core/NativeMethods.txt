@@ -2,5 +2,11 @@ GetDpiForWindow
 GetGUIThreadInfo
 GetKeyState
 GetMonitorInfo
+GetWindowLong
 MonitorFromWindow
 SendInput
+SetWindowLong
+ShowWindow
+WINDOW_EX_STYLE
+SHOW_WINDOW_CMD
+WINDOW_LONG_PTR_INDEX

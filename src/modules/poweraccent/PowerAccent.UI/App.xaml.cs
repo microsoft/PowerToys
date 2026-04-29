@@ -3,40 +3,57 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading;
-using System.Windows;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 
 namespace PowerAccent.UI
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application, IDisposable
     {
-        private static Mutex _mutex;
+        private readonly ETWTrace _etwTrace = new ETWTrace();
+
         private bool _disposed;
-        private ETWTrace _etwTrace = new ETWTrace();
+        private Selector _window;
 
-        protected override void OnStartup(StartupEventArgs e)
+        public static Window Window { get; private set; }
+
+        public App()
         {
-            _mutex = new Mutex(true, "QuickAccent", out bool createdNew);
-
-            if (!createdNew)
+            try
             {
-                Logger.LogWarning("Another running QuickAccent instance was detected. Exiting QuickAccent");
-                Application.Current.Shutdown();
+                string appLanguage = LanguageHelper.LoadLanguage();
+                if (!string.IsNullOrEmpty(appLanguage))
+                {
+                    Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = appLanguage;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Language initialization error: " + ex.Message);
             }
 
-            base.OnStartup(e);
+            InitializeComponent();
+
+            UnhandledException += App_UnhandledException;
         }
 
-        protected override void OnExit(ExitEventArgs e)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            _mutex?.ReleaseMutex();
-            base.OnExit(e);
+            // The keyboard hook callbacks marshal onto this dispatcher before touching UI.
+            // Wire it up before the Selector spins up its hook so no hook event runs on a worker thread.
+            var dispatcher = DispatcherQueue.GetForCurrentThread();
+            Core.PowerAccent.DispatcherInvoker = action => dispatcher.TryEnqueue(() => action());
+
+            _window = new Selector();
+            Window = _window;
+        }
+
+        private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception", e.Exception);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -48,7 +65,6 @@ namespace PowerAccent.UI
 
             if (disposing)
             {
-                _mutex?.Dispose();
                 _etwTrace?.Dispose();
             }
 

@@ -5,7 +5,6 @@
 using System.Globalization;
 using System.Text;
 using System.Unicode;
-using System.Windows;
 
 using ManagedCommon;
 using PowerAccent.Core.Services;
@@ -16,6 +15,13 @@ namespace PowerAccent.Core;
 
 public partial class PowerAccent : IDisposable
 {
+    /// <summary>
+    /// Marshals a callback onto the UI thread. Set by the UI host (WinUI 3 DispatcherQueue,
+    /// or a test stub) before the keyboard hook can fire. Without it, hook callbacks are
+    /// dropped because they would otherwise try to touch UI from a worker thread.
+    /// </summary>
+    public static Action<Action> DispatcherInvoker { get; set; }
+
     private readonly SettingsService _settingService;
 
     // Keys that show a description (like dashes) when ShowCharacterInfoSetting is 1
@@ -65,32 +71,35 @@ public partial class PowerAccent : IDisposable
     {
         _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                ShowToolbar(letterKey);
-            });
+            DispatchToUI(() => ShowToolbar(letterKey));
         }));
 
         _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                SendInputAndHideToolbar(inputType);
-            });
+            DispatchToUI(() => SendInputAndHideToolbar(inputType));
         }));
 
         _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey, bool shiftPressed) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                ProcessNextChar(triggerKey, shiftPressed);
-            });
+            DispatchToUI(() => ProcessNextChar(triggerKey, shiftPressed));
         }));
 
         _keyboardListener.SetIsLanguageLetterDelegate(new PowerToys.PowerAccentKeyboardService.IsLanguageLetter((LetterKey letterKey, out bool result) =>
         {
             result = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang).Length > 0;
         }));
+    }
+
+    private static void DispatchToUI(Action action)
+    {
+        var invoker = DispatcherInvoker;
+        if (invoker == null)
+        {
+            // No UI host attached yet — drop the event rather than running on the hook thread.
+            return;
+        }
+
+        invoker(action);
     }
 
     private void ShowToolbar(LetterKey letterKey)
@@ -207,13 +216,13 @@ public partial class PowerAccent : IDisposable
 
             case InputType.Right:
                 {
-                    SendKeys.SendWait("{RIGHT}");
+                    WindowsFunctions.SendVirtualKey(Windows.Win32.UI.Input.KeyboardAndMouse.VIRTUAL_KEY.VK_RIGHT);
                     break;
                 }
 
             case InputType.Left:
                 {
-                    SendKeys.SendWait("{LEFT}");
+                    WindowsFunctions.SendVirtualKey(Windows.Win32.UI.Input.KeyboardAndMouse.VIRTUAL_KEY.VK_LEFT);
                     break;
                 }
 

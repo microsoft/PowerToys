@@ -2,36 +2,71 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
-	
-	<PropertyGroup>
-		<OutputType>WinExe</OutputType>
-		<Nullable>disable</Nullable>
-		<UseWPF>true</UseWPF>
-		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-		<ApplicationIcon>icon.ico</ApplicationIcon>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<AssemblyName>PowerToys.PowerAccent</AssemblyName>
-		<XamlDebuggingInformation>True</XamlDebuggingInformation>
-		<StartupObject>PowerAccent.UI.Program</StartupObject>
-		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
-		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-	</PropertyGroup>
 
-	<ItemGroup>
-		<Resource Include="icon.ico">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-	</ItemGroup>
+  <PropertyGroup>
+    <AssemblyTitle>PowerToys.PowerAccent</AssemblyTitle>
+    <AssemblyDescription>PowerToys Quick Accent</AssemblyDescription>
+    <OutputType>WinExe</OutputType>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>PowerToys.PowerAccent</AssemblyName>
+    <RootNamespace>PowerAccent.UI</RootNamespace>
+    <StartupObject>PowerAccent.UI.Program</StartupObject>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <UseWinUI>true</UseWinUI>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
+    <ProjectPriFileName>PowerToys.PowerAccent.pri</ProjectPriFileName>
+    <!-- Custom Main entry point -->
+    <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="WPF-UI" />
-	</ItemGroup>
+  <ItemGroup>
+    <Resource Include="icon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
-		<ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
-		<ProjectReference Include="..\PowerAccent.Core\PowerAccent.Core.csproj" />
-		<ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
-	</ItemGroup>
+  <PropertyGroup>
+    <!-- GPOWrapper and PowerAccentKeyboardService are projected in PowerAccent.Core; suppress
+         re-projection here so we don't duplicate the generated types and trip CS0436. -->
+    <CsWinRTIncludes></CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="WinUIEx" />
+    <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->
+    <PackageReference Include="CommunityToolkit.Common" />
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <!--
+    Defining the "Msix" ProjectCapability here allows the Single-project MSIX Packaging
+    Tools extension to be activated for this project even if the Windows App SDK Nuget
+    package has not yet been restored.
+  -->
+  <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnablePreviewMsixTooling)'=='true'">
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- HACK: Common.UI is referenced, even if it is not used, to force dll versions to be the same as in other projects that use it. It's still unclear why this is the case, but this is need for flattening the install directory. -->
+    <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\PowerAccent.Core\PowerAccent.Core.csproj" />
+    <ProjectReference Include="..\PowerAccentKeyboardService\PowerAccentKeyboardService.vcxproj" />
+  </ItemGroup>
 </Project>

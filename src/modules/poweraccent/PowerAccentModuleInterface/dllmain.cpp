@@ -59,7 +59,9 @@ private:
         unsigned long powertoys_pid = GetCurrentProcessId();
 
         std::wstring executable_args = L"" + std::to_wstring(powertoys_pid);
-        std::wstring application_path = L"PowerToys.PowerAccent.exe";
+        // QuickAccent is a WinUI 3 self-contained app; its binaries live under WinUI3Apps\
+        // alongside the Windows App SDK runtime DLLs they depend on.
+        std::wstring application_path = L"WinUI3Apps\\PowerToys.PowerAccent.exe";
         std::wstring full_command_path = application_path + L" " + executable_args.data();
         Logger::trace(L"PowerToys QuickAccent launching: " + full_command_path);
 

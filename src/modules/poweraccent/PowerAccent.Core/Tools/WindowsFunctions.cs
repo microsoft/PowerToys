@@ -5,13 +5,14 @@
 using System.Runtime.InteropServices;
 
 using Windows.Win32;
+using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace PowerAccent.Core.Tools;
 
-internal static class WindowsFunctions
+public static class WindowsFunctions
 {
     public static void Insert(string s, bool back = false)
     {
@@ -87,6 +88,38 @@ internal static class WindowsFunctions
         }
     }
 
+    internal static void SendVirtualKey(VIRTUAL_KEY key)
+    {
+        var inputs = new INPUT[]
+        {
+            new INPUT
+            {
+                type = INPUT_TYPE.INPUT_KEYBOARD,
+                Anonymous = new INPUT._Anonymous_e__Union
+                {
+                    ki = new KEYBDINPUT
+                    {
+                        wVk = key,
+                    },
+                },
+            },
+            new INPUT
+            {
+                type = INPUT_TYPE.INPUT_KEYBOARD,
+                Anonymous = new INPUT._Anonymous_e__Union
+                {
+                    ki = new KEYBDINPUT
+                    {
+                        wVk = key,
+                        dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                    },
+                },
+            },
+        };
+
+        _ = PInvoke.SendInput(inputs, Marshal.SizeOf<INPUT>());
+    }
+
     public static (Point Location, Size Size, double Dpi) GetActiveDisplay()
     {
         GUITHREADINFO guiInfo = default;
@@ -113,5 +146,32 @@ internal static class WindowsFunctions
     {
         var shift = PInvoke.GetKeyState((int)VIRTUAL_KEY.VK_SHIFT);
         return shift < 0;
+    }
+
+    /// <summary>
+    /// Adds the WS_EX_NOACTIVATE and WS_EX_TOOLWINDOW extended styles so the window never steals
+    /// focus from the user's text field and never appears in the taskbar / Alt-Tab.
+    /// </summary>
+    public static void ApplyNoActivateWindowStyle(nint hwnd)
+    {
+        var window = new HWND(hwnd);
+        var current = PInvoke.GetWindowLong(window, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE);
+        var updated = current | (int)WINDOW_EX_STYLE.WS_EX_NOACTIVATE | (int)WINDOW_EX_STYLE.WS_EX_TOOLWINDOW;
+        _ = PInvoke.SetWindowLong(window, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, updated);
+    }
+
+    /// <summary>
+    /// Shows the window without activating it. AppWindow.Show() activates by default, which would
+    /// move focus away from whatever the user is typing into.
+    /// </summary>
+    public static void ShowWindowNoActivate(nint hwnd)
+    {
+        _ = PInvoke.ShowWindow(new HWND(hwnd), SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+    }
+
+    public static uint GetDpiForWindowSafe(nint hwnd)
+    {
+        var dpi = PInvoke.GetDpiForWindow(new HWND(hwnd));
+        return dpi == 0 ? 96u : dpi;
     }
 }
