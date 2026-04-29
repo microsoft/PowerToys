@@ -356,12 +356,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 CopyTemplateExamples(_templateLocation);
 
-                var process = new ProcessStartInfo()
-                {
-                    FileName = _templateLocation,
-                    UseShellExecute = true,
-                };
-                Process.Start(process);
+                Process.Start("explorer.exe", _templateLocation);
             }
             catch (Exception ex)
             {
