@@ -122,6 +122,20 @@ public sealed class MacroStepViewModelTests
     }
 
     [TestMethod]
+    public void IsTypeText_OnlyTrueForTypeText()
+    {
+        Assert.IsTrue(new MacroStepViewModel { Type = StepType.TypeText }.IsTypeText);
+        Assert.IsFalse(new MacroStepViewModel { Type = StepType.PressKey }.IsTypeText);
+    }
+
+    [TestMethod]
+    public void IsWait_OnlyTrueForWait()
+    {
+        Assert.IsTrue(new MacroStepViewModel { Type = StepType.Wait }.IsWait);
+        Assert.IsFalse(new MacroStepViewModel { Type = StepType.Repeat }.IsWait);
+    }
+
+    [TestMethod]
     public void ToModel_NonRepeat_NullSubSteps()
     {
         var vm = new MacroStepViewModel { Type = StepType.PressKey, Key = "A" };

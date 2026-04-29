@@ -67,14 +67,14 @@ public sealed class MacroStepViewModel : Observable
         get => _ms ?? 0;
         set
         {
-            Ms = (int)value;
+            Ms = Math.Max(0, (int)value);
             OnPropertyChanged();
         }
     }
 
     public double CountDouble
     {
-        get => _count ?? 1;
+        get => Math.Max(1, _count ?? 1);
         set
         {
             Count = Math.Max(1, (int)value);
