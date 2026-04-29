@@ -177,6 +177,13 @@ public partial class ShellViewModel : ObservableObject,
                             {
                                 if (cancellationToken.IsCancellationRequested)
                                 {
+                                    // SafeCleanup removes COM event subscriptions that were added during
+                                    // initialization (items PropChanged, page PropChanged, etc.).
+                                    // Without this, items remain alive via cross-process COM event
+                                    // registrations that are never unregistered when navigation is cancelled
+                                    // by a rapid second hotkey press.
+                                    viewModel.SafeCleanup();
+
                                     if (viewModel is IDisposable disposable)
                                     {
                                         try
@@ -194,7 +201,7 @@ public partial class ShellViewModel : ObservableObject,
 
                                 CurrentPage = viewModel;
                             },
-                            cancellationToken,
+                            CancellationToken.None,
                             TaskCreationOptions.None,
                             _scheduler);
                         await t;
@@ -207,6 +214,12 @@ public partial class ShellViewModel : ObservableObject,
         {
             if (cancellationToken.IsCancellationRequested)
             {
+                // SafeCleanup removes COM event subscriptions that were added during
+                // initialization (items PropChanged, page PropChanged, etc.).
+                // Without this, items remain alive via cross-process COM event
+                // registrations that are never unregistered when navigation is cancelled.
+                viewModel.SafeCleanup();
+
                 if (viewModel is IDisposable disposable)
                 {
                     try

@@ -1113,6 +1113,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
         CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
+        // Unsubscribe the selected-item PropertyChanged handler to prevent
+        // _lastSelectedItem from keeping this ListViewModel alive via the
+        // SelectedItemPropertyChanged delegate.
+        if (_lastSelectedItem is not null)
+        {
+            _lastSelectedItem.PropertyChanged -= SelectedItemPropertyChanged;
+            _lastSelectedItem = null;
+        }
+
         lock (_listLock)
         {
             foreach (var item in Items)

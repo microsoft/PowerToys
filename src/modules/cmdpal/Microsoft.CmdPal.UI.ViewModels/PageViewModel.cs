@@ -158,6 +158,14 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public override void InitializeProperties()
     {
+        // Guard against a race with UnsafeCleanup on the UI thread.
+        // If this ViewModel has already been cleaned up, do not subscribe to
+        // any COM events as there would be no path to unsubscribe them.
+        if (IsCleanedUp)
+        {
+            return;
+        }
+
         var page = _pageModel.Unsafe;
         if (page is null)
         {
@@ -182,6 +190,13 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         UpdateProperty(nameof(HasSearchBox));
 
         page.PropChanged += Model_PropChanged;
+
+        // Second guard: handle the narrow race window where SafeCleanup ran
+        // between the check above and the subscription just made.
+        if (IsCleanedUp)
+        {
+            page.PropChanged -= Model_PropChanged;
+        }
     }
 
     private void Model_PropChanged(object sender, IPropChangedEventArgs args)

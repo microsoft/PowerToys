@@ -271,8 +271,22 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
         // base doesn't do anything, but sub-classes should override this.
     }
 
+    private volatile bool _isCleanedUp;
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="SafeCleanup"/> has been called on this object.
+    /// Safe to read from any thread.  Once set, it is never cleared.
+    /// </summary>
+    public bool IsCleanedUp => _isCleanedUp;
+
     public virtual void SafeCleanup()
     {
+        // Set the flag *before* UnsafeCleanup so that any concurrent
+        // InitializeProperties calls on background threads can see it and
+        // bail out before subscribing to COM events that would never be
+        // unsubscribed.
+        _isCleanedUp = true;
+
         try
         {
             UnsafeCleanup();

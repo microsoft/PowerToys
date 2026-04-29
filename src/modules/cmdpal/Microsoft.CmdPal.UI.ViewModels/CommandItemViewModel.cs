@@ -160,6 +160,17 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
+        // Guard against a race with UnsafeCleanup on the UI thread.
+        // _initializeItemsTask runs on a background thread and may call
+        // InitializeProperties() after SafeCleanup() has already removed the
+        // event subscriptions.  If we allowed the subscription to happen here
+        // there would be no cleanup path for it, leaking the view model via
+        // the cross-process COM event registration.
+        if (IsCleanedUp)
+        {
+            return;
+        }
+
         if (!IsFastInitialized)
         {
             FastInitializeProperties();
@@ -183,6 +194,15 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         // TODO: Do these need to go into FastInit?
         model.PropChanged += Model_PropChanged;
         Command.PropertyChanged += Command_PropertyChanged;
+
+        // Second guard: handle the narrow race window where SafeCleanup ran
+        // between the check above and the subscriptions just made.
+        if (IsCleanedUp)
+        {
+            model.PropChanged -= Model_PropChanged;
+            Command.PropertyChanged -= Command_PropertyChanged;
+            return;
+        }
 
         UpdateProperty(nameof(Name));
         UpdateProperty(nameof(Title));
