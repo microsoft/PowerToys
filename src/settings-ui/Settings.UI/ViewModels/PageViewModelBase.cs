@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -71,18 +70,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
 
-            _ = Task.Run(() =>
-            {
-                try
-                {
-                    var settingsWindow = App.GetSettingsWindow();
-                    settingsWindow.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
-                }
-                catch
-                {
-                    UpdateConflictProperties();
-                }
-            });
+            var dispatcherQueue = App.GetSettingsWindow()?.DispatcherQueue;
+            dispatcherQueue?.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateConflictProperties);
         }
 
         public virtual Dictionary<string, HotkeySettings[]> GetAllHotkeySettings()

@@ -12,8 +12,8 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using System.Windows.Threading;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -29,7 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private readonly SettingsFactory _settingsFactory;
         private readonly Func<string, int> _ipcMSGCallBackFunc;
-        private readonly Dispatcher _dispatcher;
+        private readonly DispatcherQueue _dispatcherQueue;
 
         private bool _disposed;
         private AllHotkeyConflictsData _conflictsData = new();
@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc)
         {
-            _dispatcher = Dispatcher.CurrentDispatcher;
+            _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             _ipcMSGCallBackFunc = ipcMSGCallBackFunc ?? throw new ArgumentNullException(nameof(ipcMSGCallBackFunc));
             resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
@@ -123,7 +123,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
-            _dispatcher.BeginInvoke(() =>
+            _dispatcherQueue?.TryEnqueue(() =>
             {
                 ConflictsData = e.Conflicts ?? new AllHotkeyConflictsData();
             });
