@@ -135,7 +135,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void Frame_NavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            throw e.Exception;
+            throw e.Exception ?? new InvalidOperationException(
+                $"Navigation to {e.SourcePageType?.FullName ?? "unknown page"} failed.");
         }
 
         private void Frame_Navigated(object sender, NavigationEventArgs e)
