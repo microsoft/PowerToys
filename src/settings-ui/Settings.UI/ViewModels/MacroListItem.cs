@@ -5,6 +5,7 @@
 #nullable enable
 
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.MacroCommon.Models;
 using PowerToys.MacroCommon.Serialization;
@@ -41,7 +42,9 @@ public sealed class MacroListItem : Observable
             if (Set(ref _isEnabled, value))
             {
                 _definition = _definition with { IsEnabled = value };
-                File.WriteAllText(FilePath, MacroSerializer.Serialize(_definition));
+                string json = MacroSerializer.Serialize(_definition);
+                string path = FilePath;
+                _ = Task.Run(() => File.WriteAllText(path, json));
             }
         }
     }

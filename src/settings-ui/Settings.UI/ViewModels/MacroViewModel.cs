@@ -59,7 +59,14 @@ public sealed class MacroViewModel : Observable, IDisposable
         _debounce = new System.Timers.Timer(300) { AutoReset = false };
         _debounce.Elapsed += (_, _) =>
         {
-            _dispatcherQueue?.TryEnqueue(LoadMacros);
+            if (_dispatcherQueue != null)
+            {
+                _dispatcherQueue.TryEnqueue(LoadMacros);
+            }
+            else
+            {
+                Logger.LogWarning("Macro settings: FSW reload skipped — no DispatcherQueue available.");
+            }
         };
 
         _watcher = new FileSystemWatcher(_macrosDirectory, "*.json")
@@ -125,6 +132,10 @@ public sealed class MacroViewModel : Observable, IDisposable
         }
     }
 
+    /// <summary>
+    /// Resumes hotkeys after a prior <see cref="SuspendHotkeysAsync"/> call.
+    /// If the engine was not reachable when Suspend was called, this is a no-op.
+    /// </summary>
     public async Task ResumeHotkeysAsync()
     {
         if (_rpc is null)
@@ -160,13 +171,12 @@ public sealed class MacroViewModel : Observable, IDisposable
         try
         {
             File.Delete(item.FilePath);
+            Macros.Remove(item);
         }
         catch (Exception ex)
         {
             Logger.LogWarning($"Macro settings: delete failed for {item.FilePath}: {ex.Message}");
         }
-
-        Macros.Remove(item);
     }
 
     private async Task EnsureRpcAsync()
@@ -202,7 +212,9 @@ public sealed class MacroViewModel : Observable, IDisposable
         }
 
         _disposed = true;
+        _watcher.EnableRaisingEvents = false;
         _watcher.Dispose();
+        _debounce.Stop();
         _debounce.Dispose();
         _rpc?.Dispose();
         _pipe?.Dispose();

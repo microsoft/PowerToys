@@ -100,7 +100,7 @@ public sealed class MacroViewModelTests
     }
 
     [TestMethod]
-    public void MacroListItem_IsEnabled_Toggle_WritesJson()
+    public async Task MacroListItem_IsEnabled_Toggle_WritesJson()
     {
         MacroDefinition def = new() { Id = "en-1", Name = "Toggleable", IsEnabled = true };
         WriteMacro(def);
@@ -110,6 +110,7 @@ public sealed class MacroViewModelTests
         Assert.IsTrue(item.IsEnabled);
 
         item.IsEnabled = false;
+        await Task.Delay(100);
 
         string json = File.ReadAllText(Path.Combine(_tempDir, "en-1.json"));
         MacroDefinition restored = MacroSerializer.Deserialize(json);
