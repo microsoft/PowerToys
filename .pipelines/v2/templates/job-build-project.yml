@@ -70,7 +70,7 @@ parameters:
     default: false
   - name: winAppSDKVersionNumber
     type: string
-    default: 1.6
+    default: '2.0'
   - name: useExperimentalVersion
     type: boolean
     default: false
