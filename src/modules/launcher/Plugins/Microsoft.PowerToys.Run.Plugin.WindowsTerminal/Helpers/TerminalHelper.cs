@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsTerminal.Helpers
             }
             else if (openNewTab)
             {
-                argsPrefix = "--window 0 nt";
+                argsPrefix = "nt";
             }
 
             return $"{argsPrefix} --profile \"{profileName}\"";
