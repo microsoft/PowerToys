@@ -169,6 +169,8 @@ DWORD	g_DrawToggleMod;
 DWORD	g_BreakToggleMod;
 DWORD	g_DemoTypeToggleMod;
 DWORD	g_RecordToggleMod;
+DWORD   g_RecordCropToggleMod;
+DWORD   g_RecordWindowToggleMod;
 DWORD   g_SnipToggleMod;
 DWORD   g_SnipPanoramaToggleMod;
 DWORD   g_SnipOcrToggleMod;
@@ -3310,8 +3312,8 @@ void RegisterAllHotkeys(HWND hWnd)
     }
     if (g_RecordToggleKey) {
         registerHotkey( RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
-        registerHotkey( RECORD_CROP_HOTKEY, ( g_RecordToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
-        registerHotkey( RECORD_WINDOW_HOTKEY, ( g_RecordToggleMod ^ MOD_ALT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        registerHotkey( RECORD_CROP_HOTKEY, g_RecordCropToggleMod | MOD_NOREPEAT, g_RecordCropToggleKey & 0xFF );
+        registerHotkey( RECORD_WINDOW_HOTKEY, g_RecordWindowToggleMod | MOD_NOREPEAT, g_RecordWindowToggleKey & 0xFF );
     }
 
     // Note: COPY_IMAGE_HOTKEY, COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) and
@@ -4525,6 +4527,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     static bool     stableWindowRectValid = false;
     TCHAR			text[32];
     DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipPanoramaToggleKey, newSnipOcrToggleKey;
+    DWORD			newRecordCropToggleKey, newRecordWindowToggleKey, newRecordCropToggleMod, newRecordWindowToggleMod;
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipPanoramaToggleMod, newSnipOcrToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
@@ -5213,6 +5216,11 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newBreakToggleMod = GetKeyMod( newBreakToggleKey );
             newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
             newRecordToggleMod = GetKeyMod(newRecordToggleKey);
+            // Derive crop and window hotkeys from the base record key in the native dialog
+            newRecordCropToggleKey = (newRecordToggleKey & 0x00FF) | ((newRecordToggleKey & 0xFF00) ^ (HOTKEYF_SHIFT << 8));
+            newRecordWindowToggleKey = (newRecordToggleKey & 0x00FF) | ((newRecordToggleKey & 0xFF00) ^ (HOTKEYF_ALT << 8));
+            newRecordCropToggleMod = GetKeyMod(newRecordCropToggleKey);
+            newRecordWindowToggleMod = GetKeyMod(newRecordWindowToggleKey);
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
             newSnipPanoramaToggleMod = GetKeyMod( newSnipPanoramaToggleKey );
             newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
@@ -5309,8 +5317,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             }
             else if( newRecordToggleKey &&
                 (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY,      newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, (newRecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, (newRecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, newRecordToggleKey & 0xFF))) {
+                 !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, newRecordCropToggleMod | MOD_NOREPEAT, newRecordCropToggleKey & 0xFF) ||
+                 !RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, newRecordWindowToggleMod | MOD_NOREPEAT, newRecordWindowToggleKey & 0xFF))) {
 
                 MessageBox(hDlg, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -5331,6 +5339,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_DemoTypeToggleMod = newDemoTypeToggleMod;
                 g_RecordToggleKey = newRecordToggleKey;
                 g_RecordToggleMod = newRecordToggleMod;
+                g_RecordCropToggleKey = newRecordCropToggleKey;
+                g_RecordCropToggleMod = newRecordCropToggleMod;
+                g_RecordWindowToggleKey = newRecordWindowToggleKey;
+                g_RecordWindowToggleMod = newRecordWindowToggleMod;
                 g_SnipToggleKey = newSnipToggleKey;
                 g_SnipToggleMod = newSnipToggleMod;
                 g_SnipPanoramaToggleKey = newSnipPanoramaToggleKey;
@@ -7223,6 +7235,8 @@ LRESULT APIENTRY MainWndProc(
         g_SnipPanoramaToggleMod = GetKeyMod( g_SnipPanoramaToggleKey );
         g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
+        g_RecordCropToggleMod = GetKeyMod( g_RecordCropToggleKey );
+        g_RecordWindowToggleMod = GetKeyMod( g_RecordWindowToggleKey );
 
         if( !g_OptionsShown && !g_StartedByPowerToys ) {
             // First run should show options when running as standalone. If not running as standalone,
@@ -7299,8 +7313,8 @@ LRESULT APIENTRY MainWndProc(
             }
             else if (g_RecordToggleKey &&
                 (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))) {
+                 !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, g_RecordCropToggleMod | MOD_NOREPEAT, g_RecordCropToggleKey & 0xFF) ||
+                 !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, g_RecordWindowToggleMod | MOD_NOREPEAT, g_RecordWindowToggleKey & 0xFF))) {
 
                 MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
                     APPNAME, MB_ICONERROR);
@@ -9779,6 +9793,8 @@ LRESULT APIENTRY MainWndProc(
         g_SnipPanoramaToggleMod = GetKeyMod(g_SnipPanoramaToggleKey);
         g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
+        g_RecordCropToggleMod = GetKeyMod(g_RecordCropToggleKey);
+        g_RecordWindowToggleMod = GetKeyMod(g_RecordWindowToggleKey);
         BOOL showOptions = FALSE;
         if (g_ToggleKey)
         {
@@ -9876,8 +9892,8 @@ LRESULT APIENTRY MainWndProc(
         if (g_RecordToggleKey)
         {
             if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))
+                !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, g_RecordCropToggleMod | MOD_NOREPEAT, g_RecordCropToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, g_RecordWindowToggleMod | MOD_NOREPEAT, g_RecordWindowToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {

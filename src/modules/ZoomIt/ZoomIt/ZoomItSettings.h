@@ -16,6 +16,8 @@ DWORD	g_DrawToggleKey = ((HOTKEYF_CONTROL) << 8)| '2';
 DWORD	g_BreakToggleKey = ((HOTKEYF_CONTROL) << 8)| '3';
 DWORD	g_DemoTypeToggleKey = ((HOTKEYF_CONTROL) << 8) | '7';
 DWORD	g_RecordToggleKey = ((HOTKEYF_CONTROL) << 8) | '5';
+DWORD   g_RecordCropToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '5'; // Ctrl+Shift+5
+DWORD   g_RecordWindowToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '5'; // Ctrl+Alt+5
 DWORD   g_SnipToggleKey = ((HOTKEYF_CONTROL) << 8) | '6';
 DWORD   g_SnipPanoramaToggleKey = ((HOTKEYF_CONTROL) << 8) | '8';
 DWORD   g_SnipOcrToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '6';
@@ -69,6 +71,8 @@ REG_SETTING RegSettings[] = {
     { L"LiveZoomToggleKey", SETTING_TYPE_DWORD, 0, &g_LiveZoomToggleKey, static_cast<DOUBLE>(g_LiveZoomToggleKey) },
     { L"DrawToggleKey", SETTING_TYPE_DWORD, 0, &g_DrawToggleKey, static_cast<DOUBLE>(g_DrawToggleKey) },
     { L"RecordToggleKey", SETTING_TYPE_DWORD, 0, &g_RecordToggleKey, static_cast<DOUBLE>(g_RecordToggleKey) },
+    { L"RecordCropToggleKey", SETTING_TYPE_DWORD, 0, &g_RecordCropToggleKey, static_cast<DOUBLE>(g_RecordCropToggleKey) },
+    { L"RecordWindowToggleKey", SETTING_TYPE_DWORD, 0, &g_RecordWindowToggleKey, static_cast<DOUBLE>(g_RecordWindowToggleKey) },
     { L"SnipToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipToggleKey, static_cast<DOUBLE>(g_SnipToggleKey) },
     { L"SnipPanoramaToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaToggleKey, static_cast<DOUBLE>(g_SnipPanoramaToggleKey) },
     { L"SnipOcrToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipOcrToggleKey, static_cast<DOUBLE>(g_SnipOcrToggleKey) },

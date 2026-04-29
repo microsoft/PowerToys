@@ -69,6 +69,8 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
         { L"LiveZoomToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"DrawToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"RecordToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
+        { L"RecordCropToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
+        { L"RecordWindowToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"SnipToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"SnipOcrToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"SnipPanoramaToggleKey", SPECIAL_SEMANTICS_SHORTCUT },

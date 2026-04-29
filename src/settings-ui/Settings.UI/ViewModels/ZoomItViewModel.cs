@@ -286,50 +286,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.RecordToggleKey.Value = value ?? ZoomItProperties.DefaultRecordToggleKey;
                     OnPropertyChanged(nameof(RecordToggleKey));
-                    OnPropertyChanged(nameof(RecordToggleKeyCrop));
-                    OnPropertyChanged(nameof(RecordToggleKeyWindow));
                     NotifySettingsChanged();
                 }
             }
         }
 
-        public HotkeySettings RecordToggleKeyCrop
+        public HotkeySettings RecordCropToggleKey
         {
-            get
+            get => _zoomItSettings.Properties.RecordCropToggleKey.Value;
+            set
             {
-                var baseKey = _zoomItSettings.Properties.RecordToggleKey.Value;
-                if (baseKey == null)
+                if (_zoomItSettings.Properties.RecordCropToggleKey.Value != value)
                 {
-                    return null;
+                    _zoomItSettings.Properties.RecordCropToggleKey.Value = value ?? ZoomItProperties.DefaultRecordCropToggleKey;
+                    OnPropertyChanged(nameof(RecordCropToggleKey));
+                    NotifySettingsChanged();
                 }
-
-                // XOR with Shift: if Shift is present, remove it; if absent, add it
-                return new HotkeySettings(
-                    baseKey.Win,
-                    baseKey.Ctrl,
-                    baseKey.Alt,
-                    !baseKey.Shift,  // XOR with Shift
-                    baseKey.Code);
             }
         }
 
-        public HotkeySettings RecordToggleKeyWindow
+        public HotkeySettings RecordWindowToggleKey
         {
-            get
+            get => _zoomItSettings.Properties.RecordWindowToggleKey.Value;
+            set
             {
-                var baseKey = _zoomItSettings.Properties.RecordToggleKey.Value;
-                if (baseKey == null)
+                if (_zoomItSettings.Properties.RecordWindowToggleKey.Value != value)
                 {
-                    return null;
+                    _zoomItSettings.Properties.RecordWindowToggleKey.Value = value ?? ZoomItProperties.DefaultRecordWindowToggleKey;
+                    OnPropertyChanged(nameof(RecordWindowToggleKey));
+                    NotifySettingsChanged();
                 }
-
-                // XOR with Alt: if Alt is present, remove it; if absent, add it
-                return new HotkeySettings(
-                    baseKey.Win,
-                    baseKey.Ctrl,
-                    !baseKey.Alt,    // XOR with Alt
-                    baseKey.Shift,
-                    baseKey.Code);
             }
         }
 

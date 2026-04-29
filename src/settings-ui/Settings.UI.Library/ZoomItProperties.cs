@@ -26,6 +26,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static HotkeySettings DefaultRecordToggleKey => new HotkeySettings(false, true, false, false, '5'); // Ctrl+5
 
         [CmdConfigureIgnore]
+        public static HotkeySettings DefaultRecordCropToggleKey => new HotkeySettings(false, true, false, true, '5'); // Ctrl+Shift+5
+
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultRecordWindowToggleKey => new HotkeySettings(false, true, true, false, '5'); // Ctrl+Alt+5
+
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultSnipToggleKey => new HotkeySettings(false, true, false, false, '6'); // Ctrl+6
 
         [CmdConfigureIgnore]
@@ -47,6 +53,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public KeyboardKeysProperty DrawToggleKey { get; set; }
 
         public KeyboardKeysProperty RecordToggleKey { get; set; }
+
+        public KeyboardKeysProperty RecordCropToggleKey { get; set; }
+
+        public KeyboardKeysProperty RecordWindowToggleKey { get; set; }
 
         public KeyboardKeysProperty SnipToggleKey { get; set; }
 

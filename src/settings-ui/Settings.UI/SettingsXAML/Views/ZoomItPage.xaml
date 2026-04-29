@@ -301,17 +301,20 @@
                                     SelectedValue="{x:Bind ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
                                     SelectedValuePath="Item1" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <StackPanel Orientation="Vertical" Spacing="4">
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_FullScreen}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Crop}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Window}" />
-                                    </StackPanel>
-                                </tkcontrols:SettingsCard.Description>
-                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                    <tkcontrols:SettingsCard
+                        Name="ZoomItRecordCropShortcut"
+                        x:Uid="ZoomIt_Record_Crop_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C8;}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.RecordCropToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="ZoomItRecordWindowShortcut"
+                        x:Uid="ZoomIt_Record_Window_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C8;}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.RecordWindowToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard
