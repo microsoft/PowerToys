@@ -15,6 +15,7 @@
 #include <Windows.h>
 #include <shlobj.h>
 #include <algorithm>
+#include <thread>
 #include <vector>
 #include <system_error>
 #include <memory>

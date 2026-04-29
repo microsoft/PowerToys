@@ -14,6 +14,7 @@
 #include <shellapi.h>
 #include <Windows.h>
 #include <shlobj.h>
+#include <thread>
 #include <vector>
 #include <system_error>
 #include <memory>

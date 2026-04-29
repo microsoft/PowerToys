@@ -334,6 +334,105 @@ namespace newplus::utilities
         }
     }
 
+    // Watches for the user renaming a newly-created folder, then resolves $PARENT_FOLDER_NAME
+    // in its child files using the final (user-given) name.
+    // If no rename is detected within timeout_ms, resolves using the original folder name.
+    // Must be called from a background thread; runs until the rename is detected or timeout expires.
+    inline void watch_for_rename_then_resolve_variables(
+        const std::filesystem::path& parent_dir,
+        const std::wstring& original_folder_name,
+        const DWORD timeout_ms = 30000)
+    {
+        std::filesystem::path final_target_path = parent_dir / original_folder_name;
+
+        HANDLE dir_handle = CreateFileW(
+            parent_dir.c_str(),
+            FILE_LIST_DIRECTORY,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            nullptr,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+            nullptr);
+
+        if (dir_handle != INVALID_HANDLE_VALUE)
+        {
+            HANDLE event_handle = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+            if (event_handle)
+            {
+                OVERLAPPED overlapped = {};
+                overlapped.hEvent = event_handle;
+
+                std::vector<BYTE> buffer(32768, 0);
+
+                if (ReadDirectoryChangesW(
+                        dir_handle,
+                        buffer.data(),
+                        static_cast<DWORD>(buffer.size()),
+                        FALSE,
+                        FILE_NOTIFY_CHANGE_DIR_NAME,
+                        nullptr,
+                        &overlapped,
+                        nullptr))
+                {
+                    const DWORD wait_result = WaitForSingleObject(event_handle, timeout_ms);
+
+                    if (wait_result == WAIT_TIMEOUT)
+                    {
+                        CancelIo(dir_handle);
+                    }
+
+                    // Wait for the I/O to fully complete (either normally or after cancellation)
+                    // before touching the OVERLAPPED or closing handles.
+                    DWORD bytes_returned = 0;
+                    const bool io_succeeded = GetOverlappedResult(dir_handle, &overlapped, &bytes_returned, TRUE) != FALSE;
+
+                    if (wait_result == WAIT_OBJECT_0 && io_succeeded && bytes_returned > 0)
+                    {
+                        auto* notify_info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(buffer.data());
+                        bool found_old_name = false;
+
+                        while (notify_info)
+                        {
+                            const std::wstring filename(
+                                notify_info->FileName,
+                                notify_info->FileNameLength / sizeof(wchar_t));
+
+                            if (!found_old_name &&
+                                notify_info->Action == FILE_ACTION_RENAMED_OLD_NAME &&
+                                wstring_same_when_comparing_ignore_case(filename, original_folder_name))
+                            {
+                                found_old_name = true;
+                            }
+                            else if (found_old_name && notify_info->Action == FILE_ACTION_RENAMED_NEW_NAME)
+                            {
+                                final_target_path = parent_dir / filename;
+                                break;
+                            }
+
+                            if (notify_info->NextEntryOffset == 0)
+                                break;
+                            notify_info = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(
+                                reinterpret_cast<BYTE*>(notify_info) + notify_info->NextEntryOffset);
+                        }
+                    }
+                }
+
+                CloseHandle(event_handle);
+                CloseHandle(dir_handle);
+            }
+            else
+            {
+                CloseHandle(dir_handle);
+            }
+        }
+
+        // Resolve $PARENT_FOLDER_NAME in child files using the final folder name
+        if (std::filesystem::exists(final_target_path) && std::filesystem::is_directory(final_target_path))
+        {
+            helpers::variables::resolve_variables_in_filename_and_rename_files(final_target_path);
+        }
+    }
+
     inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
     {
         HRESULT hr = S_OK;
@@ -376,10 +475,18 @@ namespace newplus::utilities
             // Finally copy file/folder/subfolders
             std::filesystem::path target_final_fullpath = template_entry->copy_object_to(GetActiveWindow(), target_fullpath);
 
-            // Resolve variables and rename files in newly copied folders and subfolders and files
+            // Resolve variables and rename files in newly copied folders and subfolders.
+            // For directory templates the top-level folder name is only known after the user
+            // completes the rename-on-creation prompt, so defer resolution until then so that
+            // $PARENT_FOLDER_NAME picks up the user-given name rather than the template name.
+            // The watcher must be started before enter_rename_mode so the rename event is not missed.
             if (utilities::get_newplus_setting_resolve_variables() && helpers::filesystem::is_directory(target_final_fullpath))
             {
-                helpers::variables::resolve_variables_in_filename_and_rename_files(target_final_fullpath);
+                auto parent_dir = target_final_fullpath.parent_path();
+                auto original_folder_name = target_final_fullpath.filename().wstring();
+                std::thread([parent_dir = std::move(parent_dir), original_folder_name = std::move(original_folder_name)]() {
+                    watch_for_rename_then_resolve_variables(parent_dir, original_folder_name);
+                }).detach();
             }
 
             // Touch all files and set last modified to "now"
