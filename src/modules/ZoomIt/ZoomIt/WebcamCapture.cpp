@@ -430,10 +430,6 @@ void WebcamCapture::CaptureThread()
         totalCopyMs += copyMs;
 #endif
 
-        // Use the current m_camWidth (which may have been corrected by
-        // the buffer-mismatch safety net above).
-        const UINT actualRowBytes = m_camWidth * 4;
-
         // Compute overlay dimensions if not yet done.
         if( m_overlayW == 0 )
             ComputeOverlayDimensions();
