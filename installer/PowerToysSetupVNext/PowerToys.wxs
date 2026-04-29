@@ -20,14 +20,16 @@
         <util:RegistrySearch Variable="HasWebView2PerMachine" Root="HKLM" Key="SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
         <util:RegistrySearch Variable="HasWebView2PerUser" Root="HKCU" Key="Software\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}" Result="exists" />
 
-        <!-- VC++ 2015-2022 Redistributable detection. The Installed DWORD is 1 when any version of the runtime is present. -->
+        <!-- VC++ 2015-2022 Redistributable detection. The Installed value is a DWORD set to 1 when the runtime is
+             present; checking for its existence with Result="exists" gives a reliable boolean regardless of the
+             registry value's internal type representation in WiX bundle conditions. -->
         <?if $(var.Platform) = x64 ?>
-            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" Value="Installed" Result="value" />
+            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" Value="Installed" Result="exists" />
             <?define VCRedistDisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x64)"?>
             <?define VCRedistFileName="vc_redist.x64.exe"?>
             <?define VCRedistDownloadUrl="https://aka.ms/vs/17/release/vc_redist.x64.exe"?>
         <?else?>
-            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\arm64" Value="Installed" Result="value" />
+            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\arm64" Value="Installed" Result="exists" />
             <?define VCRedistDisplayName="Microsoft Visual C++ 2015-2022 Redistributable (ARM64)"?>
             <?define VCRedistFileName="vc_redist.arm64.exe"?>
             <?define VCRedistDownloadUrl="https://aka.ms/vs/17/release/vc_redist.arm64.exe"?>
@@ -75,8 +77,11 @@
                  and installed before the PowerToys MSI so that native components (e.g., custom-action DLLs) can
                  load successfully even on minimal or freshly-deployed Windows images.
                  Vital="no" because PowerToys ships its own self-contained runtime DLLs (since v0.66), so the
-                 bundled copies will cover most scenarios even if this step fails (e.g., no network or elevation). -->
-            <ExePackage DisplayName="$(var.VCRedistDisplayName)" Id="VCRedist2022" Name="$(var.VCRedistFileName)" Compressed="no" PerMachine="yes" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed = 1" DownloadUrl="$(var.VCRedistDownloadUrl)" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
+                 bundled copies will cover most scenarios even if this step fails (e.g., no network or elevation).
+                 Note: the download URL points to Microsoft's CDN over HTTPS; a pinned Hash is intentionally omitted
+                 here (same approach as the WebView2 entry above) because the aka.ms redirect always points to the
+                 latest VS 2022 release and the hash would break on every upstream update. -->
+            <ExePackage DisplayName="$(var.VCRedistDisplayName)" Id="VCRedist2022" Name="$(var.VCRedistFileName)" Compressed="no" PerMachine="yes" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed" DownloadUrl="$(var.VCRedistDownloadUrl)" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
             <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" bal:DisplayInternalUICondition="false">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
                 <MsiProperty Name="MSIRESTARTMANAGERCONTROL" Value="Disable" />
