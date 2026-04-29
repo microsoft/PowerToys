@@ -196,6 +196,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             downloadLink.ForeColor = Settings.TextColor;
                             Controls.Add(downloadLink);
                         }
+                        catch (Exception e)
+                        {
+                            Logger.LogError("Exception occurred while initializing WebView2:", e);
+                            AddTextBoxControl(Resources.Exception_Occurred + e.Message);
+                        }
                     });
                 }
                 else
