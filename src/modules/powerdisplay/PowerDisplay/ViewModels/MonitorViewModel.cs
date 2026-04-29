@@ -232,7 +232,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     public string Id => _monitor.Id;
 
-    public string Name => _monitor.Name;
+    public string Name => IsInternal
+        ? ResourceLoaderInstance.ResourceLoader.GetString("BuiltInDisplayName")
+        : _monitor.Name;
 
     /// <summary>
     /// Gets the monitor number from the underlying monitor model (Windows DISPLAY number)
