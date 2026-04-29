@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Ext.WindowWalker.Components;
 using Microsoft.CmdPal.Ext.WindowWalker.Helpers;
@@ -61,7 +62,21 @@ internal sealed partial class EndTaskCommand : InvokableCommand
         }
 
         // Kill process
-        window.Process.KillThisProcess(SettingsManager.Instance.KillProcessTree);
+        try
+        {
+            window.Process.KillThisProcess(SettingsManager.Instance.KillProcessTree);
+        }
+        catch (Win32Exception ex)
+        {
+            ExtensionHost.LogMessage(new LogMessage { Message = $"Failed to kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}): {ex.Message}" });
+            return false;
+        }
+        catch (InvalidOperationException ex)
+        {
+            ExtensionHost.LogMessage(new LogMessage { Message = $"Failed to kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}): {ex.Message}" });
+            return false;
+        }
+
         return !SettingsManager.Instance.KeepOpenAfterKillAndClose;
     }
 

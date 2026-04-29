@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -215,7 +216,18 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
             else
             {
-                Process.GetProcessById((int)ProcessID).Kill(killProcessTree);
+                try
+                {
+                    using Process process = Process.GetProcessById((int)ProcessID);
+                    process.Kill(killProcessTree);
+                }
+                catch (Win32Exception ex) when (ex.NativeErrorCode == 5)
+                {
+                    // Error 5 = ERROR_ACCESS_DENIED
+                    // Fall back to elevated taskkill when direct kill is denied
+                    string killTree = killProcessTree ? " /t" : string.Empty;
+                    Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, Helper.ShellRunAsType.Administrator, true);
+                }
             }
         }
 
