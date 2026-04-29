@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -120,7 +121,18 @@ namespace PowerLauncher
                     });
                 }
 
-                application.Run();
+                try
+                {
+                    application.Run();
+                }
+                catch (Win32Exception ex) when (ex.NativeErrorCode == 1400)
+                {
+                    // ERROR_INVALID_WINDOW_HANDLE (1400) can be thrown by the WPF dispatcher
+                    // after a fast user switch, when its internal message-only window handle
+                    // becomes invalid upon session restoration. Exit gracefully so the
+                    // PowerToys runner can restart PowerLauncher.
+                    Log.Warn($"PowerToys Run exiting due to invalid window handle after user switch: {ex.Message}", typeof(App));
+                }
             }
         }
 
