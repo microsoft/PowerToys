@@ -357,6 +357,11 @@ public partial class ImageResizerViewModel : Observable, IDisposable
     {
         lock (_delayedActionLock)
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             if (_delayedTimer.Enabled)
             {
                 _delayedTimer.Stop();
@@ -371,8 +376,9 @@ public partial class ImageResizerViewModel : Observable, IDisposable
         lock (_delayedActionLock)
         {
             _delayedTimer.Stop();
-            SaveImageSizes();
         }
+
+        SaveImageSizes();
     }
 
     public void Dispose()
@@ -383,15 +389,19 @@ public partial class ImageResizerViewModel : Observable, IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed)
+        lock (_delayedActionLock)
         {
-            if (disposing)
+            if (!_disposed)
             {
-                _delayedTimer?.Dispose();
-                _delayedTimer = null;
-            }
+                if (disposing)
+                {
+                    _delayedTimer?.Stop();
+                    _delayedTimer?.Dispose();
+                    _delayedTimer = null;
+                }
 
-            _disposed = true;
+                _disposed = true;
+            }
         }
     }
 
