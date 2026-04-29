@@ -16,7 +16,7 @@ namespace Peek.Common.Helpers
 
         public static int NumberOfDigits(int num)
         {
-            return Math.Abs(num).ToString(CultureInfo.InvariantCulture).Length;
+            return Math.Abs((long)num).ToString(CultureInfo.InvariantCulture).Length;
         }
     }
 }
