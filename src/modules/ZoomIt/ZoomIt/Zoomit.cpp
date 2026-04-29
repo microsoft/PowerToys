@@ -165,12 +165,18 @@ const float STRONG_BLUR_RADIUS = 40;
 
 DWORD	g_ToggleMod;
 DWORD	g_LiveZoomToggleMod;
+DWORD	g_LiveZoomDrawMod;
 DWORD	g_DrawToggleMod;
 DWORD	g_BreakToggleMod;
 DWORD	g_DemoTypeToggleMod;
+DWORD	g_DemoTypeResetMod;
 DWORD	g_RecordToggleMod;
+DWORD	g_RecordCropMod;
+DWORD	g_RecordWindowMod;
 DWORD   g_SnipToggleMod;
+DWORD   g_SnipSaveMod;
 DWORD   g_SnipPanoramaToggleMod;
+DWORD   g_SnipPanoramaSaveMod;
 DWORD   g_SnipOcrToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
@@ -3288,30 +3294,43 @@ void RegisterAllHotkeys(HWND hWnd)
     if (g_ToggleKey) 			registerHotkey( ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF );
     if (g_LiveZoomToggleKey) {
         registerHotkey( LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF );
-        registerHotkey( LIVE_DRAW_HOTKEY, ( g_LiveZoomToggleMod ^ MOD_SHIFT ), g_LiveZoomToggleKey & 0xFF );
+    }
+    if (g_LiveZoomDrawKey) {
+        registerHotkey( LIVE_DRAW_HOTKEY, g_LiveZoomDrawMod, g_LiveZoomDrawKey & 0xFF );
     }
     if (g_DrawToggleKey) 		registerHotkey( DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF );
     if (g_BreakToggleKey) 		registerHotkey( BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF );
     if (g_DemoTypeToggleKey) {
         registerHotkey( DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF );
-        registerHotkey( DEMOTYPE_RESET_HOTKEY, ( g_DemoTypeToggleMod ^ MOD_SHIFT ), g_DemoTypeToggleKey & 0xFF );
+    }
+    if (g_DemoTypeResetKey) {
+        registerHotkey( DEMOTYPE_RESET_HOTKEY, g_DemoTypeResetMod, g_DemoTypeResetKey & 0xFF );
     }
     if (g_SnipToggleKey) {
         registerHotkey( SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF );
-        registerHotkey( SNIP_SAVE_HOTKEY, ( g_SnipToggleMod ^ MOD_SHIFT ), g_SnipToggleKey & 0xFF );
+    }
+    if (g_SnipSaveKey) {
+        registerHotkey( SNIP_SAVE_HOTKEY, g_SnipSaveMod, g_SnipSaveKey & 0xFF );
     }
     if( g_SnipPanoramaToggleKey &&
         (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
         registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
-        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
+    }
+    if (g_SnipPanoramaSaveKey &&
+        (g_SnipPanoramaSaveKey != g_SnipSaveKey || g_SnipPanoramaSaveMod != g_SnipSaveMod)) {
+        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveMod | MOD_NOREPEAT, g_SnipPanoramaSaveKey & 0xFF );
     }
     if (g_SnipOcrToggleKey) {
         registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
     }
     if (g_RecordToggleKey) {
         registerHotkey( RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
-        registerHotkey( RECORD_CROP_HOTKEY, ( g_RecordToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
-        registerHotkey( RECORD_WINDOW_HOTKEY, ( g_RecordToggleMod ^ MOD_ALT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+    }
+    if (g_RecordCropKey) {
+        registerHotkey( RECORD_CROP_HOTKEY, g_RecordCropMod | MOD_NOREPEAT, g_RecordCropKey & 0xFF );
+    }
+    if (g_RecordWindowKey) {
+        registerHotkey( RECORD_WINDOW_HOTKEY, g_RecordWindowMod | MOD_NOREPEAT, g_RecordWindowKey & 0xFF );
     }
 
     // Note: COPY_IMAGE_HOTKEY, COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) and
@@ -5322,6 +5341,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_BreakTimeout = newTimeout;
                 g_ToggleKey = newToggleKey;
                 g_LiveZoomToggleKey = newLiveZoomToggleKey;
+                g_LiveZoomDrawKey = (newLiveZoomToggleKey & 0xFF) | (((newLiveZoomToggleKey >> 8) ^ HOTKEYF_SHIFT) << 8);
+                g_LiveZoomDrawMod = newLiveZoomToggleMod ^ MOD_SHIFT;
                 g_ToggleMod = newToggleMod;
                 g_DrawToggleKey = newDrawToggleKey;
                 g_DrawToggleMod = newDrawToggleMod;
@@ -5329,12 +5350,22 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_BreakToggleMod = newBreakToggleMod;
                 g_DemoTypeToggleKey = newDemoTypeToggleKey;
                 g_DemoTypeToggleMod = newDemoTypeToggleMod;
+                g_DemoTypeResetKey = (newDemoTypeToggleKey & 0xFF) | (((newDemoTypeToggleKey >> 8) ^ HOTKEYF_SHIFT) << 8);
+                g_DemoTypeResetMod = newDemoTypeToggleMod ^ MOD_SHIFT;
                 g_RecordToggleKey = newRecordToggleKey;
                 g_RecordToggleMod = newRecordToggleMod;
+                g_RecordCropKey = (newRecordToggleKey & 0xFF) | (((newRecordToggleKey >> 8) ^ HOTKEYF_SHIFT) << 8);
+                g_RecordCropMod = newRecordToggleMod ^ MOD_SHIFT;
+                g_RecordWindowKey = (newRecordToggleKey & 0xFF) | (((newRecordToggleKey >> 8) ^ HOTKEYF_ALT) << 8);
+                g_RecordWindowMod = newRecordToggleMod ^ MOD_ALT;
                 g_SnipToggleKey = newSnipToggleKey;
                 g_SnipToggleMod = newSnipToggleMod;
+                g_SnipSaveKey = (newSnipToggleKey & 0xFF) | (((newSnipToggleKey >> 8) ^ HOTKEYF_SHIFT) << 8);
+                g_SnipSaveMod = newSnipToggleMod ^ MOD_SHIFT;
                 g_SnipPanoramaToggleKey = newSnipPanoramaToggleKey;
                 g_SnipPanoramaToggleMod = newSnipPanoramaToggleMod;
+                g_SnipPanoramaSaveKey = (newSnipPanoramaToggleKey & 0xFF) | (((newSnipPanoramaToggleKey >> 8) ^ HOTKEYF_SHIFT) << 8);
+                g_SnipPanoramaSaveMod = newSnipPanoramaToggleMod ^ MOD_SHIFT;
                 g_SnipOcrToggleKey = newSnipOcrToggleKey;
                 g_SnipOcrToggleMod = newSnipOcrToggleMod;
                 reg.WriteRegSettings( RegSettings );
@@ -7216,13 +7247,19 @@ LRESULT APIENTRY MainWndProc(
 
         g_ToggleMod = GetKeyMod( g_ToggleKey );
         g_LiveZoomToggleMod = GetKeyMod( g_LiveZoomToggleKey );
+        g_LiveZoomDrawMod = GetKeyMod( g_LiveZoomDrawKey );
         g_DrawToggleMod = GetKeyMod( g_DrawToggleKey );
         g_BreakToggleMod = GetKeyMod( g_BreakToggleKey );
         g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
+        g_DemoTypeResetMod = GetKeyMod( g_DemoTypeResetKey );
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
+        g_SnipSaveMod = GetKeyMod( g_SnipSaveKey );
         g_SnipPanoramaToggleMod = GetKeyMod( g_SnipPanoramaToggleKey );
+        g_SnipPanoramaSaveMod = GetKeyMod( g_SnipPanoramaSaveKey );
         g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
+        g_RecordCropMod = GetKeyMod( g_RecordCropKey );
+        g_RecordWindowMod = GetKeyMod( g_RecordWindowKey );
 
         if( !g_OptionsShown && !g_StartedByPowerToys ) {
             // First run should show options when running as standalone. If not running as standalone,
@@ -7240,10 +7277,16 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
 
             } else if( g_LiveZoomToggleKey &&
-                (!RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
-                    !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF))) {
+                !RegisterHotKey( hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF)) {
 
                 MessageBox( hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.",
+                    APPNAME, MB_ICONERROR );
+                showOptions = TRUE;
+
+            } else if( g_LiveZoomDrawKey &&
+                !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomDrawMod, g_LiveZoomDrawKey & 0xFF)) {
+
+                MessageBox( hWnd, L"The specified live-zoom draw hotkey is already in use.\nSelect a different live-zoom draw hotkey.",
                     APPNAME, MB_ICONERROR );
                 showOptions = TRUE;
 
@@ -7262,29 +7305,51 @@ LRESULT APIENTRY MainWndProc(
 
             }
             else if( g_DemoTypeToggleKey &&
-                (!RegisterHotKey( hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF ) ||
-                 !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF))) {
+                !RegisterHotKey( hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF )) {
 
                 MessageBox( hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.",
                     APPNAME, MB_ICONERROR );
                 showOptions = TRUE;
 
             }
+            else if (g_DemoTypeResetKey &&
+                !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, g_DemoTypeResetMod, g_DemoTypeResetKey & 0xFF)) {
+
+                MessageBox( hWnd, L"The specified live-type reset hotkey is already in use.\nSelect a different live-type reset hotkey.",
+                    APPNAME, MB_ICONERROR );
+                showOptions = TRUE;
+
+            }
             else if (g_SnipToggleKey &&
-                (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
             }
+            else if (g_SnipSaveKey &&
+                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveMod, g_SnipSaveKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
             else if (g_SnipPanoramaToggleKey &&
                 (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
-                (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipPanoramaSaveKey &&
+                (g_SnipPanoramaSaveKey != g_SnipSaveKey || g_SnipPanoramaSaveMod != g_SnipSaveMod) &&
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveMod | MOD_NOREPEAT, g_SnipPanoramaSaveKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
 
@@ -7298,11 +7363,23 @@ LRESULT APIENTRY MainWndProc(
 
             }
             else if (g_RecordToggleKey &&
-                (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))) {
+                !RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)) {
 
                 MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+            else if (g_RecordCropKey &&
+                !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, g_RecordCropMod | MOD_NOREPEAT, g_RecordCropKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified record crop hotkey is already in use.\nSelect a different record crop hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+            }
+            else if (g_RecordWindowKey &&
+                !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, g_RecordWindowMod | MOD_NOREPEAT, g_RecordWindowKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified record window hotkey is already in use.\nSelect a different record window hotkey.",
                     APPNAME, MB_ICONERROR);
                 showOptions = TRUE;
             }
@@ -9772,13 +9849,19 @@ LRESULT APIENTRY MainWndProc(
         UnregisterAllHotkeys(hWnd);
         g_ToggleMod = GetKeyMod(g_ToggleKey);
         g_LiveZoomToggleMod = GetKeyMod(g_LiveZoomToggleKey);
+        g_LiveZoomDrawMod = GetKeyMod(g_LiveZoomDrawKey);
         g_DrawToggleMod = GetKeyMod(g_DrawToggleKey);
         g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
+        g_DemoTypeResetMod = GetKeyMod(g_DemoTypeResetKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_SnipSaveMod = GetKeyMod(g_SnipSaveKey);
         g_SnipPanoramaToggleMod = GetKeyMod(g_SnipPanoramaToggleKey);
+        g_SnipPanoramaSaveMod = GetKeyMod(g_SnipPanoramaSaveKey);
         g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
+        g_RecordCropMod = GetKeyMod(g_RecordCropKey);
+        g_RecordWindowMod = GetKeyMod(g_RecordWindowKey);
         BOOL showOptions = FALSE;
         if (g_ToggleKey)
         {
@@ -9793,12 +9876,22 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_LiveZoomToggleKey)
         {
-            if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomToggleMod ^ MOD_SHIFT, g_LiveZoomToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
                     MessageBox(hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_LiveZoomDrawKey)
+        {
+            if (!RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomDrawMod, g_LiveZoomDrawKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified live-zoom draw hotkey is already in use.\nSelect a different live-zoom draw hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }
@@ -9827,8 +9920,7 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_DemoTypeToggleKey)
         {
-            if (!RegisterHotKey(hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
@@ -9837,10 +9929,20 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
             }
         }
+        if (g_DemoTypeResetKey)
+        {
+            if (!RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, g_DemoTypeResetMod, g_DemoTypeResetKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified live-type reset hotkey is already in use.\nSelect a different live-type reset hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
         if (g_SnipToggleKey)
         {
-            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
@@ -9849,15 +9951,37 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
             }
         }
+        if (g_SnipSaveKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipSaveMod, g_SnipSaveKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip save hotkey is already in use.\nSelect a different snip save hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
         if (g_SnipPanoramaToggleKey &&
             (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
         {
-            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
                     MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipPanoramaSaveKey &&
+            (g_SnipPanoramaSaveKey != g_SnipSaveKey || g_SnipPanoramaSaveMod != g_SnipSaveMod))
+        {
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, g_SnipPanoramaSaveMod | MOD_NOREPEAT, g_SnipPanoramaSaveKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified panorama snip save hotkey is already in use.\nSelect a different panorama snip save hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }
@@ -9875,13 +9999,33 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_RecordToggleKey)
         {
-            if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))
+            if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))
             {
                 if(!g_StartedByPowerToys)
                 {
                     MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_RecordCropKey)
+        {
+            if (!RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, g_RecordCropMod | MOD_NOREPEAT, g_RecordCropKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified record crop hotkey is already in use.\nSelect a different record crop hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_RecordWindowKey)
+        {
+            if (!RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, g_RecordWindowMod | MOD_NOREPEAT, g_RecordWindowKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified record window hotkey is already in use.\nSelect a different record window hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }

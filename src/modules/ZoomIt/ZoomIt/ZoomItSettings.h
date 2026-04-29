@@ -12,12 +12,18 @@ enum class RecordingFormat
 
 DWORD	g_ToggleKey = (HOTKEYF_CONTROL << 8)| '1';
 DWORD	g_LiveZoomToggleKey = ((HOTKEYF_CONTROL) << 8)| '4';
+DWORD	g_LiveZoomDrawKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '4';
 DWORD	g_DrawToggleKey = ((HOTKEYF_CONTROL) << 8)| '2';
 DWORD	g_BreakToggleKey = ((HOTKEYF_CONTROL) << 8)| '3';
 DWORD	g_DemoTypeToggleKey = ((HOTKEYF_CONTROL) << 8) | '7';
+DWORD	g_DemoTypeResetKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '7';
 DWORD	g_RecordToggleKey = ((HOTKEYF_CONTROL) << 8) | '5';
+DWORD	g_RecordCropKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '5';
+DWORD	g_RecordWindowKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '5';
 DWORD   g_SnipToggleKey = ((HOTKEYF_CONTROL) << 8) | '6';
+DWORD   g_SnipSaveKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '6';
 DWORD   g_SnipPanoramaToggleKey = ((HOTKEYF_CONTROL) << 8) | '8';
+DWORD   g_SnipPanoramaSaveKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '8';
 DWORD   g_SnipOcrToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '6';
 
 DWORD	g_ShowExpiredTime = 1;
@@ -67,10 +73,15 @@ DWORD	g_TrimDialogVolume = 70; // 0-100 volume level for trim dialog preview
 REG_SETTING RegSettings[] = {
     { L"ToggleKey", SETTING_TYPE_DWORD, 0, &g_ToggleKey, static_cast<DOUBLE>(g_ToggleKey) },
     { L"LiveZoomToggleKey", SETTING_TYPE_DWORD, 0, &g_LiveZoomToggleKey, static_cast<DOUBLE>(g_LiveZoomToggleKey) },
+    { L"LiveZoomDrawKey", SETTING_TYPE_DWORD, 0, &g_LiveZoomDrawKey, static_cast<DOUBLE>(g_LiveZoomDrawKey) },
     { L"DrawToggleKey", SETTING_TYPE_DWORD, 0, &g_DrawToggleKey, static_cast<DOUBLE>(g_DrawToggleKey) },
     { L"RecordToggleKey", SETTING_TYPE_DWORD, 0, &g_RecordToggleKey, static_cast<DOUBLE>(g_RecordToggleKey) },
+    { L"RecordCropKey", SETTING_TYPE_DWORD, 0, &g_RecordCropKey, static_cast<DOUBLE>(g_RecordCropKey) },
+    { L"RecordWindowKey", SETTING_TYPE_DWORD, 0, &g_RecordWindowKey, static_cast<DOUBLE>(g_RecordWindowKey) },
     { L"SnipToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipToggleKey, static_cast<DOUBLE>(g_SnipToggleKey) },
+    { L"SnipSaveKey", SETTING_TYPE_DWORD, 0, &g_SnipSaveKey, static_cast<DOUBLE>(g_SnipSaveKey) },
     { L"SnipPanoramaToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaToggleKey, static_cast<DOUBLE>(g_SnipPanoramaToggleKey) },
+    { L"SnipPanoramaSaveKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaSaveKey, static_cast<DOUBLE>(g_SnipPanoramaSaveKey) },
     { L"SnipOcrToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipOcrToggleKey, static_cast<DOUBLE>(g_SnipOcrToggleKey) },
     { L"PenColor", SETTING_TYPE_DWORD, 0, &g_PenColor, static_cast<DOUBLE>(g_PenColor) },
     { L"PenWidth", SETTING_TYPE_DWORD, 0, &g_RootPenWidth, static_cast<DOUBLE>(g_RootPenWidth) },
@@ -79,6 +90,7 @@ REG_SETTING RegSettings[] = {
     { L"BreakBackgroundColor", SETTING_TYPE_DWORD, 0, &g_BreakBackgroundColor, static_cast<DOUBLE>(g_BreakBackgroundColor) },
     { L"BreakTimerKey", SETTING_TYPE_DWORD, 0, &g_BreakToggleKey, static_cast<DOUBLE>(g_BreakToggleKey) },
     { L"DemoTypeToggleKey", SETTING_TYPE_DWORD, 0, &g_DemoTypeToggleKey, static_cast<DOUBLE>(g_DemoTypeToggleKey) },
+    { L"DemoTypeResetKey", SETTING_TYPE_DWORD, 0, &g_DemoTypeResetKey, static_cast<DOUBLE>(g_DemoTypeResetKey) },
     { L"DemoTypeFile", SETTING_TYPE_STRING, sizeof( g_DemoTypeFile ), g_DemoTypeFile, static_cast<DOUBLE>(0) },
     { L"DemoTypeSpeedSlider", SETTING_TYPE_DWORD, 0, &g_DemoTypeSpeedSlider, static_cast<DOUBLE>(g_DemoTypeSpeedSlider) },
     { L"DemoTypeUserDrivenMode", SETTING_TYPE_BOOLEAN, 0, &g_DemoTypeUserDriven, static_cast<DOUBLE>(g_DemoTypeUserDriven) },

@@ -20,13 +20,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static HotkeySettings DefaultLiveZoomToggleKey => new HotkeySettings(false, true, false, false, '4'); // Ctrl+4
 
         [CmdConfigureIgnore]
+        public static HotkeySettings DefaultLiveZoomDrawKey => new HotkeySettings(false, true, false, true, '4'); // Ctrl+Shift+4
+
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultDrawToggleKey => new HotkeySettings(false, true, false, false, '2'); // Ctrl+2
 
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultRecordToggleKey => new HotkeySettings(false, true, false, false, '5'); // Ctrl+5
 
         [CmdConfigureIgnore]
+        public static HotkeySettings DefaultRecordCropKey => new HotkeySettings(false, true, false, true, '5'); // Ctrl+Shift+5
+
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultRecordWindowKey => new HotkeySettings(false, true, true, false, '5'); // Ctrl+Alt+5
+
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultSnipToggleKey => new HotkeySettings(false, true, false, false, '6'); // Ctrl+6
+
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipSaveKey => new HotkeySettings(false, true, false, true, '6'); // Ctrl+Shift+6
 
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultSnipOcrToggleKey => new HotkeySettings(false, true, true, false, '6'); // Ctrl+Alt+6
@@ -35,30 +47,48 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static HotkeySettings DefaultSnipPanoramaToggleKey => new HotkeySettings(false, true, false, false, '8'); // Ctrl+8
 
         [CmdConfigureIgnore]
+        public static HotkeySettings DefaultSnipPanoramaSaveKey => new HotkeySettings(false, true, false, true, '8'); // Ctrl+Shift+8
+
+        [CmdConfigureIgnore]
         public static HotkeySettings DefaultBreakTimerKey => new HotkeySettings(false, true, false, false, '3'); // Ctrl+3
 
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultDemoTypeToggleKey => new HotkeySettings(false, true, false, false, '7'); // Ctrl+7
 
+        [CmdConfigureIgnore]
+        public static HotkeySettings DefaultDemoTypeResetKey => new HotkeySettings(false, true, false, true, '7'); // Ctrl+Shift+7
+
         public KeyboardKeysProperty ToggleKey { get; set; }
 
         public KeyboardKeysProperty LiveZoomToggleKey { get; set; }
+
+        public KeyboardKeysProperty LiveZoomDrawKey { get; set; }
 
         public KeyboardKeysProperty DrawToggleKey { get; set; }
 
         public KeyboardKeysProperty RecordToggleKey { get; set; }
 
+        public KeyboardKeysProperty RecordCropKey { get; set; }
+
+        public KeyboardKeysProperty RecordWindowKey { get; set; }
+
         public KeyboardKeysProperty SnipToggleKey { get; set; }
+
+        public KeyboardKeysProperty SnipSaveKey { get; set; }
 
         public KeyboardKeysProperty SnipOcrToggleKey { get; set; }
 
         public KeyboardKeysProperty SnipPanoramaToggleKey { get; set; }
 
+        public KeyboardKeysProperty SnipPanoramaSaveKey { get; set; }
+
         public KeyboardKeysProperty BreakTimerKey { get; set; }
 
-        public StringProperty Font { get; set; }
-
         public KeyboardKeysProperty DemoTypeToggleKey { get; set; }
+
+        public KeyboardKeysProperty DemoTypeResetKey { get; set; }
+
+        public StringProperty Font { get; set; }
 
         public StringProperty DemoTypeFile { get; set; }
 

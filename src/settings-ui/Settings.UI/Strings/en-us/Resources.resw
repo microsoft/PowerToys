@@ -4592,6 +4592,9 @@ Press **Ctrl + Shift** to crop before copying or saving.</value>
   <data name="ZoomIt_LiveZoom_Shortcut.Header" xml:space="preserve">
     <value>Live Zoom activation</value>
   </data>
+  <data name="ZoomIt_LiveZoom_Shortcut_Draw.Header" xml:space="preserve">
+    <value>Live drawing activation</value>
+  </data>
   <data name="ZoomIt_DrawGroup.Header" xml:space="preserve">
     <value>Draw</value>
   </data>
@@ -4649,12 +4652,13 @@ In manual mode, press **Space** to unblock keyboard input at the end of a snippe
 In auto mode, control returns automatically after completion.
 
 At the end of the file, ZoomIt reloads the file and restarts from the beginning.
-Press the hotkey with **Shift** in the opposite mode to step back to the previous **[end]** marker.
-
-Press **{0}** to reset DemoType and start from the beginning.</value>
+Press the hotkey with **Shift** in the opposite mode to step back to the previous **[end]** marker.</value>
   </data>
   <data name="ZoomIt_DemoType_Shortcut.Header" xml:space="preserve">
     <value>DemoType activation</value>
+  </data>
+  <data name="ZoomIt_DemoType_Shortcut_Reset.Header" xml:space="preserve">
+    <value>DemoType reset</value>
   </data>
   <data name="ZoomIt_DemoType_File.Header" xml:space="preserve">
     <value>Input file</value>
@@ -4785,6 +4789,12 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
     <value>Record activation</value>
   </data>
+  <data name="ZoomIt_Record_Shortcut_Crop.Header" xml:space="preserve">
+    <value>Record a portion of the screen</value>
+  </data>
+  <data name="ZoomIt_Record_Shortcut_Window.Header" xml:space="preserve">
+    <value>Record a specific window</value>
+  </data>
   <data name="ZoomIt_Record_Shortcut_FullScreen" xml:space="preserve">
     <value>Press **{0}** to start or stop screen or zoom recording</value>
   </data>
@@ -4827,11 +4837,17 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Snip_Shortcut.Header" xml:space="preserve">
     <value>Snip activation</value>
   </data>
+  <data name="ZoomIt_Snip_Shortcut_Save.Header" xml:space="preserve">
+    <value>Save snip to file</value>
+  </data>
   <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
     <value>Press **{0}** to save the snip to a file</value>
   </data>
   <data name="ZoomIt_Panorama_Shortcut_Save" xml:space="preserve">
     <value>Press **{0}** to save the scrolling screenshot to a file</value>
+  </data>
+  <data name="ZoomIt_Panorama_Shortcut_Save.Header" xml:space="preserve">
+    <value>Save scrolling screenshot to file</value>
   </data>
   <data name="ZoomIt_SnipOcr_Shortcut.Header" xml:space="preserve">
     <value>Text recognition and extraction</value>

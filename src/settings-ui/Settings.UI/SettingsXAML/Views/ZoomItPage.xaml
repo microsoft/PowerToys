@@ -83,10 +83,10 @@
                         IsExpanded="True">
                         <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.LiveZoomToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.LiveZoomToggleKeyDraw, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_LiveZoom_Shortcut_Draw}" />
-                                </tkcontrols:SettingsCard.Description>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItLiveZoomDrawShortcut"
+                                x:Uid="ZoomIt_LiveZoom_Shortcut_Draw">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.LiveZoomToggleKeyDraw, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -157,9 +157,14 @@
                                     ThumbToolTipValueConverter="{StaticResource ZoomItTypeSpeedSliderConverter}"
                                     Value="{x:Bind ViewModel.DemoTypeSpeedSlider, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="ZoomItDemoTypeShortcutReset">
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItDemoTypeShortcutReset"
+                                x:Uid="ZoomIt_DemoType_Shortcut_Reset">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.DemoTypeToggleKeyReset, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.DemoTypeToggleKeyReset, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_DemoTypeFAQ}" />
+                                    <tkcontrols:MarkdownTextBlock x:Uid="ZoomIt_DemoTypeFAQ" Config="{StaticResource DescriptionTextMarkdownConfig}" />
                                 </tkcontrols:SettingsCard.Description>
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
@@ -301,14 +306,15 @@
                                     SelectedValue="{x:Bind ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
                                     SelectedValuePath="Item1" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <StackPanel Orientation="Vertical" Spacing="4">
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKey, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_FullScreen}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyCrop, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Crop}" />
-                                        <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.RecordToggleKeyWindow, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Record_Shortcut_Window}" />
-                                    </StackPanel>
-                                </tkcontrols:SettingsCard.Description>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordCropShortcut"
+                                x:Uid="ZoomIt_Record_Shortcut_Crop">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.RecordToggleKeyCrop, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWindowShortcut"
+                                x:Uid="ZoomIt_Record_Shortcut_Window">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.RecordToggleKeyWindow, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
@@ -318,10 +324,12 @@
                         Name="ZoomItSnipShortcut"
                         x:Uid="ZoomIt_Snip_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}">
-                        <tkcontrols:SettingsCard.Description>
-                            <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
-                        </tkcontrols:SettingsCard.Description>
                         <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="ZoomItSnipSaveShortcut"
+                        x:Uid="ZoomIt_Snip_Shortcut_Save">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipToggleKeySave, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
                         Name="ZoomItSnipOcrShortcut"
@@ -336,10 +344,10 @@
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard>
-                                <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipPanoramaToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Panorama_Shortcut_Save}" />
-                                </tkcontrols:SettingsCard.Description>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItPanoramaSaveShortcut"
+                                x:Uid="ZoomIt_Panorama_Shortcut_Save">
+                                <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKeySave, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
