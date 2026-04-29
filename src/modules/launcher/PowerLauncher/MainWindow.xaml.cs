@@ -205,7 +205,7 @@ namespace PowerLauncher
                 }
                 catch (Exception ex) when (ExceptionHelper.IsRecoverableDwmCompositionException(ex))
                 {
-                    Log.Warn($"Desktop composition is disabled. Unable to set window corner preference. HRESULT: 0x{ex.HResult:X}", typeof(MainWindow));
+                    Log.Warn($"Desktop composition is disabled. Unable to set window corner preference (cosmetic only). HRESULT: 0x{ex.HResult:X}", typeof(MainWindow));
                 }
             }
             else
