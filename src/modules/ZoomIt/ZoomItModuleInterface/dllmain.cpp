@@ -109,7 +109,7 @@ public:
     // Returns if the powertoy is enabled
     virtual bool is_enabled() override
     {
-        return m_enabled;
+        return m_enabled.load();
     }
 
     // Destroy the powertoy and free memory
@@ -137,6 +137,10 @@ private:
     // Called by the thread pool when the ZoomIt process exits.
     static void CALLBACK OnZoomItProcessExited(PVOID lpParameter, BOOLEAN /*TimerOrWaitFired*/)
     {
+        if (lpParameter == nullptr)
+        {
+            return;
+        }
         reinterpret_cast<ZoomItModuleInterface*>(lpParameter)->HandleUnexpectedExit();
     }
 
@@ -153,7 +157,7 @@ private:
         // The wait handle is auto-deregistered because WT_EXECUTEONLYONCE was used.
         m_processWaitHandle = NULL;
 
-        if (!m_enabled)
+        if (!m_enabled.load())
         {
             // Disable() was called concurrently; do not restart.
             return;
@@ -177,7 +181,10 @@ private:
     {
         m_enabled = true;
 
-        // Cancel any previous crash-monitoring wait before starting a new process.
+        // Prevent any in-flight callback from the previous session from triggering a
+        // spurious restart, then cancel the old wait (non-blocking, as Enable() may
+        // itself be called from the callback thread).
+        m_restartOnCrash = false;
         if (m_processWaitHandle)
         {
             UnregisterWait(m_processWaitHandle);
@@ -244,12 +251,20 @@ private:
         // Signal that any pending crash-monitoring callback must not restart ZoomIt.
         m_restartOnCrash = false;
 
-        // Unregister the crash-monitoring wait (non-blocking; a callback already in
-        // flight will still see m_restartOnCrash == false and bail out early).
-        if (m_processWaitHandle)
+        // Unregister the crash-monitoring wait and block until any in-flight callback
+        // has completed, so we can safely proceed with process teardown without racing.
+        // Use InterlockedExchangePointer to atomically take ownership of the handle,
+        // preventing a TOCTOU race with a concurrently completing callback.
         {
-            UnregisterWait(m_processWaitHandle);
-            m_processWaitHandle = NULL;
+            HANDLE waitHandle = reinterpret_cast<HANDLE>(
+                InterlockedExchangePointer(reinterpret_cast<PVOID*>(&m_processWaitHandle), nullptr));
+            if (waitHandle)
+            {
+                // INVALID_HANDLE_VALUE: block until all callbacks for this wait have returned.
+                // Must not be called from within a callback — Disable() always runs on the
+                // main/runner thread, so this is safe.
+                UnregisterWaitEx(waitHandle, INVALID_HANDLE_VALUE);
+            }
         }
 
         // Log telemetry
@@ -307,7 +322,7 @@ private:
     std::wstring app_name;
     std::wstring app_key; //contains the non localized key of the powertoy
 
-    bool m_enabled = false;
+    std::atomic<bool> m_enabled{ false };
     HANDLE m_hProcess = nullptr;
     HANDLE m_processWaitHandle = NULL;
     std::atomic<bool> m_restartOnCrash{ false };
