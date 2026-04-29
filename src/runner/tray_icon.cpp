@@ -196,6 +196,17 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         if (!tray_icon_created)
         {
             tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
+            if (tray_icon_created)
+            {
+                // Explorer is now ready. If QuickAccess is enabled but crashed during boot
+                // (because explorer wasn't ready), restart it now.
+                auto const settings = get_general_settings();
+                if (settings.enableQuickAccess && !QuickAccessHost::is_running())
+                {
+                    Logger::info(L"Explorer is now ready; restarting QuickAccess.");
+                    QuickAccessHost::start();
+                }
+            }
         }
         break;
     }
@@ -334,6 +345,14 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         else if (message == wm_taskbar_restart)
         {
             tray_icon_created = Shell_NotifyIcon(NIM_ADD, &tray_icon_data) == TRUE;
+            // The taskbar has restarted (explorer restarted). Restart QuickAccess if it is
+            // enabled but not running – it may have exited because explorer wasn't ready.
+            auto const settings = get_general_settings();
+            if (settings.enableQuickAccess && !QuickAccessHost::is_running())
+            {
+                Logger::info(L"Taskbar restarted; restarting QuickAccess.");
+                QuickAccessHost::start();
+            }
             break;
         }
     }

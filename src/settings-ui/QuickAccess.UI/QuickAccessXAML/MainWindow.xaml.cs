@@ -289,13 +289,22 @@ public sealed partial class MainWindow : WindowEx, IDisposable
 
         if (_appWindow != null)
         {
-            // Size the cloaked window via the shared helper so the first summon already has the
-            // correct physical size for the target monitor's DPI. Use the cached XAML design
-            // size — see comments in ShowWindow for why this.Width/Height cannot be trusted.
-            FlyoutWindowHelper.PositionWindowBottomRight(
-                this,
-                _designWidthDip,
-                _designHeightDip);
+            try
+            {
+                // Size the cloaked window via the shared helper so the first summon already has the
+                // correct physical size for the target monitor's DPI. Use the cached XAML design
+                // size — see comments in ShowWindow for why this.Width/Height cannot be trusted.
+                FlyoutWindowHelper.PositionWindowBottomRight(
+                    this,
+                    _designWidthDip,
+                    _designHeightDip);
+            }
+            catch (Exception ex)
+            {
+                // Positioning can fail if the shell is not yet ready at boot. Log and continue;
+                // the window will be positioned on the first user-triggered summon instead.
+                Logger.LogError("QuickAccess: failed to prime window position.", ex);
+            }
         }
 
         // Warm up the window while cloaked so the first summon does not pay XAML initialization cost.
