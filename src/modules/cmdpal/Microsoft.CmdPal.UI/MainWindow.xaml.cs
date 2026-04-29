@@ -133,7 +133,17 @@ public sealed partial class MainWindow : WindowEx,
         _keyboardListener = new KeyboardListener();
         _keyboardListener.Start();
 
-        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(HandleSummon));
+        // Dispatch HandleSummon to the UI thread. When UseLowLevelGlobalHotkey is enabled,
+        // this ProcessCommand callback is invoked directly from the WH_KEYBOARD_LL low-level
+        // keyboard hook callback, which is an input-synchronous context. Calling window/WinUI
+        // operations (e.g. ShowWindow, Hide) from that context triggers outgoing COM calls that
+        // COM forbids inside input-sync calls, causing RPC_E_CANTCALLOUT_ININPUTSYNCCALL (0x8001010D).
+        // TryEnqueue posts the work to the UI thread's message queue so it runs after the hook
+        // callback returns, outside the input-sync restriction.
+        // Note: the standard WM_HOTKEY path (HotKeyPrc) already runs on the UI thread's message
+        // pump and does not require this dispatch.
+        _keyboardListener.SetProcessCommand(new CmdPalKeyboardService.ProcessCommand(
+            (id) => DispatcherQueue.TryEnqueue(() => HandleSummon(id))));
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
