@@ -43,6 +43,7 @@ namespace Wox.Infrastructure.Image
             NoInterface = unchecked((int)0x80004002),
             Fail = unchecked((int)0x80004005),
             ExtractionFailed = unchecked((int)0x8004B200),
+            NoStorageProviderThumbnailHandler = unchecked((int)0x8004B207),
             ElementNotFound = unchecked((int)0x80070490),
             TypeElementNotFound = unchecked((int)0x8002802B),
             NoObject = unchecked((int)0x800401E5),
@@ -130,7 +131,7 @@ namespace Wox.Infrastructure.Image
                 HResult hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, options, out hBitmap);
 
                 // if extracting image thumbnail and failed, extract shell icon
-                if (options == ThumbnailOptions.ThumbnailOnly && hr == HResult.ExtractionFailed)
+                if (options == ThumbnailOptions.ThumbnailOnly && (hr == HResult.ExtractionFailed || hr == HResult.NoStorageProviderThumbnailHandler))
                 {
                     hr = ((IShellItemImageFactory)nativeShellItem).GetImage(nativeSize, ThumbnailOptions.IconOnly, out hBitmap);
                 }
