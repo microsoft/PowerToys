@@ -4,8 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows;
 
 using Community.PowerToys.Run.Plugin.ValueGenerator.Helper;
@@ -176,24 +174,14 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                 SubTitle = request.Description,
                 Action = c =>
                 {
-                    var ret = false;
-                    var thread = new Thread(() =>
+                    if (!ClipboardHelper.CopyToClipboard(request.ResultToString()))
                     {
-                        try
-                        {
-                            Clipboard.SetText(request.ResultToString());
-                            ret = true;
-                        }
-                        catch (ExternalException ex)
-                        {
-                            Log.Exception("Copy failed", ex, GetType());
-                            MessageBox.Show(ex.Message, Properties.Resources.copy_failed);
-                        }
-                    });
-                    thread.SetApartmentState(ApartmentState.STA);
-                    thread.Start();
-                    thread.Join();
-                    return ret;
+                        Log.Warn("Copy failed", GetType());
+                        MessageBox.Show(Properties.Resources.copy_failed, Properties.Resources.copy_failed);
+                        return false;
+                    }
+
+                    return true;
                 },
             };
         }

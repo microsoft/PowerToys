@@ -6,13 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 
 using ManagedCommon;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -68,24 +67,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 SubTitle = string.Format(CultureInfo.CurrentCulture, CopyToClipboard, result.QuantityInfo.Name),
                 Action = c =>
                 {
-                    var ret = false;
-                    var thread = new Thread(() =>
+                    if (!ClipboardHelper.CopyToClipboard(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture)))
                     {
-                        try
-                        {
-                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture));
-                            ret = true;
-                        }
-                        catch (ExternalException ex)
-                        {
-                            Log.Exception("Copy failed", ex, GetType());
-                            MessageBox.Show(ex.Message, Properties.Resources.copy_failed);
-                        }
-                    });
-                    thread.SetApartmentState(ApartmentState.STA);
-                    thread.Start();
-                    thread.Join();
-                    return ret;
+                        Log.Warn("Copy failed", GetType());
+                        MessageBox.Show(Properties.Resources.copy_failed, Properties.Resources.copy_failed);
+                        return false;
+                    }
+
+                    return true;
                 },
             };
         }
@@ -101,24 +90,14 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                 AcceleratorKey = Key.Enter,
                 Action = _ =>
                 {
-                    bool ret = false;
-                    var thread = new Thread(() =>
+                    if (!ClipboardHelper.CopyToClipboard(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture)))
                     {
-                        try
-                        {
-                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture));
-                            ret = true;
-                        }
-                        catch (ExternalException ex)
-                        {
-                            Log.Exception("Copy failed", ex, GetType());
-                            MessageBox.Show(ex.Message, Properties.Resources.copy_failed);
-                        }
-                    });
-                    thread.SetApartmentState(ApartmentState.STA);
-                    thread.Start();
-                    thread.Join();
-                    return ret;
+                        Log.Warn("Copy failed", GetType());
+                        MessageBox.Show(Properties.Resources.copy_failed, Properties.Resources.copy_failed);
+                        return false;
+                    }
+
+                    return true;
                 },
             };
         }

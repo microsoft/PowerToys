@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Input;
 
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -56,17 +57,13 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         /// <returns><see langword="true"/>The text successful copy to the clipboard; otherwise, <see langword="false"/></returns>
         private static bool TryToCopyToClipBoard(in string text)
         {
-            try
+            if (!ClipboardHelper.CopyToClipboard(text))
             {
-                Clipboard.Clear();
-                Clipboard.SetText(text);
-                return true;
-            }
-            catch (Exception exception)
-            {
-                Log.Exception("Can't copy to clipboard", exception, typeof(Main));
+                Log.Warn("Can't copy to clipboard", typeof(Main));
                 return false;
             }
+
+            return true;
         }
     }
 }

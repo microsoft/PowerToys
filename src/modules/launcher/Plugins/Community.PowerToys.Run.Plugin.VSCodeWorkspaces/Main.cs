@@ -221,16 +221,13 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
 
         private bool CopyToClipboard(string path)
         {
-            try
+            if (!ClipboardHelper.CopyToClipboard(path))
             {
-                Clipboard.SetText(path);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                HandleError("Can't copy to clipboard", ex, showMsg: true);
+                HandleError("Can't copy to clipboard", showMsg: true);
                 return false;
             }
+
+            return true;
         }
 
         private bool OpenInConsole(string path)

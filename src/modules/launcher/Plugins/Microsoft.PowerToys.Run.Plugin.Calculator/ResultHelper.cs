@@ -3,10 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows;
 
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -41,30 +40,19 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public static bool Action(decimal? roundedResult, CultureInfo culture)
         {
-            var ret = false;
-
-            if (roundedResult != null)
+            if (roundedResult == null)
             {
-                var thread = new Thread(() =>
-                {
-                    try
-                    {
-                        Clipboard.SetText(roundedResult?.ToString(culture));
-                        ret = true;
-                    }
-                    catch (ExternalException ex)
-                    {
-                        Log.Exception("Copy failed", ex, typeof(ResultHelper));
-                        MessageBox.Show(ex.Message, Properties.Resources.wox_plugin_calculator_copy_failed);
-                    }
-                });
-
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
-                thread.Join();
+                return false;
             }
 
-            return ret;
+            if (!ClipboardHelper.CopyToClipboard(roundedResult?.ToString(culture)))
+            {
+                Log.Warn("Copy failed", typeof(ResultHelper));
+                MessageBox.Show(Properties.Resources.wox_plugin_calculator_copy_failed, Properties.Resources.wox_plugin_calculator_copy_failed);
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Input;
 
 using Microsoft.PowerToys.Run.Plugin.System.Properties;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Common.Win32;
 using Wox.Plugin.Logger;
@@ -41,17 +42,13 @@ namespace Microsoft.PowerToys.Run.Plugin.System.Components
 
         internal static bool CopyToClipBoard(in string text)
         {
-            try
+            if (!ClipboardHelper.CopyToClipboard(text))
             {
-                Clipboard.Clear();
-                Clipboard.SetText(text);
-                return true;
-            }
-            catch (Exception exception)
-            {
-                Log.Exception("Can't copy to clipboard", exception, typeof(ResultHelper));
+                Log.Warn("Can't copy to clipboard", typeof(ResultHelper));
                 return false;
             }
+
+            return true;
         }
 
         internal static async void EmptyRecycleBinAsync(bool settingEmptyRBSuccesMsg)
