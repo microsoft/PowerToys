@@ -222,11 +222,13 @@ public sealed class AppLifeMonitor : IDisposable
         }
         finally
         {
-            // Always signal and dispose the event so the constructor never hangs, even on
-            // failure paths. Set() is idempotent, so calling it here after an early success
-            // Set() above is safe.
+            // Always signal so the constructor's WaitOne() unblocks even on failure paths.
+            // Set() is idempotent, so calling it again after an early Set() in the try block is safe.
+            // Note: _windowCreated is not disposed here because there is a theoretical window
+            // between Set() and WaitOne() returning in the constructor where Dispose() could race.
+            // ManualResetEvent wraps a kernel object that is released when the process exits
+            // or the GC finalizes it; for a process-lifetime object this is acceptable.
             _windowCreated.Set();
-            _windowCreated.Dispose();
             Marshal.FreeHGlobal(classNamePtr);
             _wndProcDelegate = null;
         }
