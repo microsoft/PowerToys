@@ -211,14 +211,22 @@ void Highlighter::AddDrawingPoint(MouseButton button)
         else
         {
             circleShape.FillBrush(m_compositor.CreateColorBrush(m_alwaysColor));
+            // Remove the previous always-pointer shape from the collection before replacing it.
+            // It has already been made transparent by ClearDrawingPoint(), so removing it
+            // causes no visual glitch and prevents an unbounded accumulation of shape objects.
+            if (m_alwaysPointer)
+            {
+                uint32_t index;
+                if (m_shape.Shapes().IndexOf(m_alwaysPointer, index))
+                {
+                    m_shape.Shapes().RemoveAt(index);
+                }
+            }
             m_alwaysPointer = circleShape;
         }
     }
 
     m_shape.Shapes().Append(circleShape);
-
-    // TODO: We're leaking shapes for long drawing sessions.
-    // Perhaps add a task to the Dispatcher every X circles to clean up.
 
     // Get back on top in case other Window is now the topmost.
     // HACK: Draw with 1 pixel off. Otherwise, Windows glitches the task bar transparency when a transparent window fill the whole screen.
@@ -289,7 +297,19 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     animation.Duration(timeSpan(duration));
     animation.DelayTime(timeSpan(delay));
 
+    // Use a scoped batch to detect when the fade animation completes, then remove
+    // the fully-transparent shape from the collection so it does not leak.
+    auto batch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
     circleShape.FillBrush().StartAnimation(L"Color", animation);
+    batch.End();
+    auto shapes = m_shape.Shapes();
+    batch.Completed([shape = circleShape, shapes](winrt::IInspectable const&, winrt::CompositionBatchCompletedEventArgs const&) {
+        uint32_t index;
+        if (shapes.IndexOf(shape, index))
+        {
+            shapes.RemoveAt(index);
+        }
+    });
 }
 
 void Highlighter::ClearDrawingPoint()
