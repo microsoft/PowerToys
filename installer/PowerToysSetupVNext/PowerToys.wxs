@@ -23,8 +23,14 @@
         <!-- VC++ 2015-2022 Redistributable detection. The Installed DWORD is 1 when any version of the runtime is present. -->
         <?if $(var.Platform) = x64 ?>
             <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" Value="Installed" Result="value" />
+            <?define VCRedistDisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x64)"?>
+            <?define VCRedistFileName="vc_redist.x64.exe"?>
+            <?define VCRedistDownloadUrl="https://aka.ms/vs/17/release/vc_redist.x64.exe"?>
         <?else?>
             <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\arm64" Value="Installed" Result="value" />
+            <?define VCRedistDisplayName="Microsoft Visual C++ 2015-2022 Redistributable (ARM64)"?>
+            <?define VCRedistFileName="vc_redist.arm64.exe"?>
+            <?define VCRedistDownloadUrl="https://aka.ms/vs/17/release/vc_redist.arm64.exe"?>
         <?endif?>
 
         <?if $(var.PerUser) = "true" ?>
@@ -70,11 +76,7 @@
                  load successfully even on minimal or freshly-deployed Windows images.
                  Vital="no" because PowerToys ships its own self-contained runtime DLLs (since v0.66), so the
                  bundled copies will cover most scenarios even if this step fails (e.g., no network or elevation). -->
-            <?if $(var.Platform) = x64 ?>
-                <ExePackage DisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x64)" Id="VCRedist2022" Name="vc_redist.x64.exe" Compressed="no" PerMachine="yes" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed = 1" DownloadUrl="https://aka.ms/vs/17/release/vc_redist.x64.exe" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
-            <?else?>
-                <ExePackage DisplayName="Microsoft Visual C++ 2015-2022 Redistributable (ARM64)" Id="VCRedist2022" Name="vc_redist.arm64.exe" Compressed="no" PerMachine="yes" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed = 1" DownloadUrl="https://aka.ms/vs/17/release/vc_redist.arm64.exe" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
-            <?endif?>
+            <ExePackage DisplayName="$(var.VCRedistDisplayName)" Id="VCRedist2022" Name="$(var.VCRedistFileName)" Compressed="no" PerMachine="yes" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed = 1" DownloadUrl="$(var.VCRedistDownloadUrl)" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
             <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" bal:DisplayInternalUICondition="false">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
                 <MsiProperty Name="MSIRESTARTMANAGERCONTROL" Value="Disable" />
