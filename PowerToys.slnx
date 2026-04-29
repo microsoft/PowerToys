@@ -160,6 +160,7 @@
     <Project Path="src/modules/alwaysontop/AlwaysOnTop/AlwaysOnTop.vcxproj" Id="1dc3be92-ce89-43fb-8110-9c043a2fe7a2" />
     <Project Path="src/modules/alwaysontop/AlwaysOnTopModuleInterface/AlwaysOnTopModuleInterface.vcxproj" Id="48a0a19e-a0be-4256-acf8-cc3b80291af9" />
   </Folder>
+
   <Folder Name="/modules/awake/">
     <Project Path="src/modules/awake/Awake.ModuleServices/Awake.ModuleServices.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -842,6 +843,7 @@
       <BuildDependency Project="src/modules/powerrename/dll/PowerRenameExt.vcxproj" />
       <BuildDependency Project="src/modules/powerrename/lib/PowerRenameLib.vcxproj" />
     </Project>
+
   </Folder>
   <Folder Name="/modules/previewpane/">
     <Project Path="src/modules/previewpane/BgcodePreviewHandler/BgcodePreviewHandler.csproj">

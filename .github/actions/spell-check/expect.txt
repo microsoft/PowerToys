@@ -2165,3 +2165,10 @@ Zoomin
 zoomit
 ZOOMITX
 Zorder
+ADEF
+FFFFFF
+MIXEDCASE
+napp
+nchrome
+nfirefox
+Uppercased
