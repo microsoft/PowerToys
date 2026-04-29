@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -160,7 +159,7 @@ namespace PowerLauncher.Helper
 
                     return;
                 }
-                catch (COMException ex) when (ExceptionHelper.IsRecoverableDwmCompositionException(ex))
+                catch (Exception ex) when (ExceptionHelper.IsRecoverableDwmCompositionException(ex))
                 {
                     switch (attempt)
                     {

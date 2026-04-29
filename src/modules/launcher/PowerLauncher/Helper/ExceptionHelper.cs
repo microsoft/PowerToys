@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace PowerLauncher.Helper
@@ -22,6 +23,13 @@ namespace PowerLauncher.Helper
         /// </summary>
         internal static bool IsRecoverableDwmCompositionException(Exception exception)
         {
+            // Unwrap TargetInvocationException to get the underlying exception, since WPF's internal
+            // theme-change mechanism invokes handlers via reflection which wraps exceptions this way.
+            if (exception is TargetInvocationException && exception.InnerException != null)
+            {
+                exception = exception.InnerException;
+            }
+
             if (exception is not COMException comException)
             {
                 return false;
