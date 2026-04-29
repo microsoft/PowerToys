@@ -243,6 +243,7 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
         BOOL bSuccess;
         WCHAR chBuf[BUFSIZE];
         DWORD dwRead;
+        std::wstring accumulated;
         for (;;)
         {
             // Read from standard input and stop on error or no data.
@@ -251,18 +252,34 @@ void App::OnLaunched(LaunchActivatedEventArgs const&)
             if (!bSuccess || dwRead == 0)
                 break;
 
-            std::wstring inputBatch{ chBuf, dwRead / sizeof(wchar_t) };
+            // Append the newly-read data to any leftover from the previous iteration.
+            // A file path may span two consecutive reads, so we must not split on chunk
+            // boundaries; instead we scan for the '?' delimiter that separates entries.
+            accumulated.append(chBuf, dwRead / sizeof(wchar_t));
 
-            std::wstringstream ss(inputBatch);
-            std::wstring item;
             wchar_t delimiter = '?';
-            while (std::getline(ss, item, delimiter))
+            size_t pos = 0;
+            size_t found;
+            while ((found = accumulated.find(delimiter, pos)) != std::wstring::npos)
             {
-                g_files.push_back(item);
+                std::wstring item = accumulated.substr(pos, found - pos);
+                if (!item.empty())
+                {
+                    g_files.push_back(std::move(item));
+                }
+                pos = found + 1;
             }
-
-            if (!bSuccess)
-                break;
+            // Keep whatever comes after the last '?' for the next iteration.
+            accumulated = accumulated.substr(pos);
+        }
+        // Flush any trailing data that was not terminated by a '?'.
+        // In normal operation every entry is '?'-terminated by the writer, so reaching
+        // here with a non-empty accumulator means the pipe was closed mid-write (e.g.
+        // the sending process crashed). Discard the incomplete path rather than adding
+        // a potentially corrupt entry to the file list.
+        if (!accumulated.empty())
+        {
+            Logger::warn(L"PowerRename: pipe closed with unterminated path fragment, discarding: {}", accumulated);
         }
         CloseHandle(hStdin);
 #endif
