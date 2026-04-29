@@ -57,7 +57,7 @@ namespace HotkeyConflictDetector
         static std::mutex instanceMutex;
         static HotkeyConflictManager* instance;
 
-        std::mutex hotkeyMutex;
+        std::recursive_mutex hotkeyMutex;
         // Hotkey in hotkeyMap means the hotkey has been registered successfully
         std::unordered_map<uint16_t, HotkeyConflictInfo> hotkeyMap;
         // Hotkey in sysConflictHotkeyMap means the hotkey has conflict with system defined hotkeys
