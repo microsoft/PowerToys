@@ -5501,7 +5501,41 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable color temperature control for this monitor?</value>
   </data>
-  <data name="PowerDisplay_ColorTemperature_EnableButton" xml:space="preserve">
+  <data name="PowerDisplay_PowerState_WarningTitle" xml:space="preserve">
+    <value>Confirm power state control</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This action may be unsafe.</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
+    <value>Enabling power state control may lead to unexpected behavior, including:</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningList" xml:space="preserve">
+    <value>• Monitor may enter standby and not wake via software.
+• You may need to press the monitor’s power button or reconnect the cable to recover.
+• Some monitors may not restore the previous state correctly.</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
+    <value>Enable power state control for this monitor?</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningTitle" xml:space="preserve">
+    <value>Confirm input source control</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This action may be unsafe.</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningDescription" xml:space="preserve">
+    <value>Switching input sources may cause unintended results, including:</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningList" xml:space="preserve">
+    <value>• Screen may go black if the selected input has no signal.
+• Software control may be lost until you switch back using the monitor’s physical buttons.
+• Some monitors may not reliably expose all input sources.</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
+    <value>Enable input source control for this monitor?</value>
+  </data>
+  <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>
   <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
