@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ScreenRuler.UITests
 {
-    public static class TestHelper
+    public static partial class TestHelper
     {
         private static readonly string[] ShortcutSeparators = { " + ", "+", " " };
 
@@ -330,8 +330,8 @@ namespace ScreenRuler.UITests
 
             return spacingType switch
             {
-                "Spacing" => Regex.IsMatch(clipboardText, @"\d+\s*[�x×]\s*\d+"),
-                "Horizontal Spacing" or "Vertical Spacing" => Regex.IsMatch(clipboardText, @"^\d+$"),
+                "Spacing" => SpacingPatternRegex().IsMatch(clipboardText),
+                "Horizontal Spacing" or "Vertical Spacing" => DigitsOnlyRegex().IsMatch(clipboardText),
                 _ => false,
             };
         }
@@ -462,5 +462,11 @@ namespace ScreenRuler.UITests
                 containsValidPattern,
                 $"{testName}: Clipboard should contain valid spacing measurement, but contained: '{clipboardText}'");
         }
+
+        [GeneratedRegex(@"\d+\s*[�x×]\s*\d+")]
+        private static partial Regex SpacingPatternRegex();
+
+        [GeneratedRegex(@"^\d+$")]
+        private static partial Regex DigitsOnlyRegex();
     }
 }

@@ -14,7 +14,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
     /// <summary>
     /// Helper class to easier work with queries
     /// </summary>
-    internal static class QueryHelper
+    internal static partial class QueryHelper
     {
         /// <summary>
         /// The character to distinguish if the search query contain multiple parts (typically "\\")
@@ -41,7 +41,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         /// <returns>A string replacing all the front-slashes with back-slashes</returns>
         private static string SanitizeQuery(in string query)
         {
-            var sanitizedQuery = Regex.Replace(query, @"/(?<=^(?:[^""]*""[^""]*"")*[^""]*)(?<!//.+)", "\\");
+            var sanitizedQuery = ForwardSlashReplacementRegex().Replace(query, "\\");
 
             return sanitizedQuery.Replace("\"", string.Empty);
         }
@@ -110,5 +110,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
 
             return registryKey;
         }
+
+        [GeneratedRegex(@"/(?<=^(?:[^""]*""[^""]*"")*[^""]*)(?<!//.+)")]
+        private static partial Regex ForwardSlashReplacementRegex();
     }
 }

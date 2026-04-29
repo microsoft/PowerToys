@@ -10,7 +10,7 @@ using Microsoft.Plugin.Uri.Interfaces;
 
 namespace Microsoft.Plugin.Uri.UriHelper
 {
-    public class ExtendedUriParser : IUriParser
+    public partial class ExtendedUriParser : IUriParser
     {
         // When updating this method, also update the local method IsUri() in Community.PowerToys.Run.Plugin.WebSearch.Main.Query
         public bool TryParse(string input, out System.Uri webUri, out System.Uri systemUri)
@@ -26,12 +26,11 @@ namespace Microsoft.Plugin.Uri.UriHelper
             // Handling URL with only scheme, typically mailto or application uri.
             // Do nothing, return the result without urlBuilder
             // And check if scheme match RFC3986 (issue #15035)
-            const string schemeRegex = @"^([a-z][a-z0-9+\-.]*):";
             if (input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
                 && !input.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                 && !input.Contains('/', StringComparison.OrdinalIgnoreCase)
                 && !input.All(char.IsDigit)
-                && Regex.IsMatch(input, schemeRegex))
+                && SchemeRegex().IsMatch(input))
             {
                 systemUri = new System.Uri(input);
                 return true;
@@ -50,8 +49,6 @@ namespace Microsoft.Plugin.Uri.UriHelper
 
             try
             {
-                string isDomainPortRegex = @"^[\w\.]+:\d+";
-                string isIPv6PortRegex = @"^\[([\w:]+:+)+[\w]+\]:\d+";
                 var urlBuilder = new UriBuilder(input);
                 urlBuilder.Port = urlBuilder.Uri.IsDefaultPort ? -1 : urlBuilder.Port;
 
@@ -59,8 +56,8 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 {
                     urlBuilder.Scheme = System.Uri.UriSchemeHttp;
                 }
-                else if (Regex.IsMatch(input, isDomainPortRegex) ||
-                         Regex.IsMatch(input, isIPv6PortRegex))
+                else if (DomainPortRegex().IsMatch(input) ||
+                         IPv6PortRegex().IsMatch(input))
                 {
                     var secondUrlBuilder = urlBuilder;
 
@@ -80,8 +77,7 @@ namespace Microsoft.Plugin.Uri.UriHelper
                         // The catch ensures it will at least still try to return a systemUri
                     }
 
-                    string singleLabelRegex = @"[\.:]+|^http$|^https$|^localhost$";
-                    systemUri = Regex.IsMatch(urlBuilder.Host, singleLabelRegex) ? null : secondUrlBuilder.Uri;
+                    systemUri = SingleLabelRegex().IsMatch(urlBuilder.Host) ? null : secondUrlBuilder.Uri;
                 }
                 else if (input.Contains(':', StringComparison.OrdinalIgnoreCase) &&
                         !input.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
@@ -108,5 +104,17 @@ namespace Microsoft.Plugin.Uri.UriHelper
                 return false;
             }
         }
+
+        [GeneratedRegex(@"^([a-z][a-z0-9+\-.]*):")]
+        private static partial Regex SchemeRegex();
+
+        [GeneratedRegex(@"^[\w\.]+:\d+")]
+        private static partial Regex DomainPortRegex();
+
+        [GeneratedRegex(@"^\[([\w:]+:+)+[\w]+\]:\d+")]
+        private static partial Regex IPv6PortRegex();
+
+        [GeneratedRegex(@"[\.:]+|^http$|^https$|^localhost$")]
+        private static partial Regex SingleLabelRegex();
     }
 }

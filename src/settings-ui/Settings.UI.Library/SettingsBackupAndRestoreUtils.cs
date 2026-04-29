@@ -21,7 +21,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class SettingsBackupAndRestoreUtils
+    public partial class SettingsBackupAndRestoreUtils
     {
         private static SettingsBackupAndRestoreUtils instance;
         private (bool Success, string Severity, bool LastBackupExists, DateTime? LastRan) lastBackupSettingsResults;
@@ -402,7 +402,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         private List<string> GetBackupSettingsFiles(string settingsBackupAndRestoreDir)
         {
-            return Directory.GetFiles(settingsBackupAndRestoreDir, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19}).ptb")).ToList();
+            return Directory.GetFiles(settingsBackupAndRestoreDir, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => SettingsBackupFileRegex().IsMatch(f)).ToList();
         }
 
         /// <summary>
@@ -945,11 +945,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 DateTime deleteIfOlder = DateTime.UtcNow.Subtract(deleteIfOlderThanTs);
 
-                var settingsBackupFolders = Directory.GetDirectories(location, "settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19})")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture)).ToList();
+                var settingsBackupFolders = Directory.GetDirectories(location, "settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => SettingsBackupFolderRegex().IsMatch(f)).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty), CultureInfo.InvariantCulture)).ToList();
 
-                settingsBackupFolders.AddRange(Directory.GetDirectories(location, "PowerToys_settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "PowerToys_settings_(\\d{1,19})")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("PowerToys_settings_", string.Empty), CultureInfo.InvariantCulture)));
+                settingsBackupFolders.AddRange(Directory.GetDirectories(location, "PowerToys_settings_*", SearchOption.TopDirectoryOnly).ToList().Where(f => PowerToysSettingsBackupFolderRegex().IsMatch(f)).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("PowerToys_settings_", string.Empty), CultureInfo.InvariantCulture)));
 
-                var settingsBackupFiles = Directory.GetFiles(location, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => Regex.IsMatch(f, "settings_(\\d{1,19}).ptb")).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
+                var settingsBackupFiles = Directory.GetFiles(location, "settings_*.ptb", SearchOption.TopDirectoryOnly).ToList().Where(f => SettingsBackupFileRegex().IsMatch(f)).ToDictionary(x => long.Parse(Path.GetFileName(x).Replace("settings_", string.Empty).Replace(".ptb", string.Empty), CultureInfo.InvariantCulture));
 
                 if (settingsBackupFolders.Count + settingsBackupFiles.Count <= minNumberToKeep)
                 {
@@ -1008,6 +1008,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 removeOldBackupsLock.Exit();
             }
         }
+
+        [GeneratedRegex("settings_(\\d{1,19}).ptb")]
+        private static partial Regex SettingsBackupFileRegex();
+
+        [GeneratedRegex("settings_(\\d{1,19})")]
+        private static partial Regex SettingsBackupFolderRegex();
+
+        [GeneratedRegex("PowerToys_settings_(\\d{1,19})")]
+        private static partial Regex PowerToysSettingsBackupFolderRegex();
 
         /// <summary>
         /// Class <c>JsonNormalizer</c> is a utility class to 'normalize' a JSON file so that it can be compared to another JSON file.

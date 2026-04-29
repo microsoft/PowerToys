@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Helper;
 /// <summary>
 /// Tries to convert all numbers in a text from one culture format to another.
 /// </summary>
-public class NumberTranslator
+public partial class NumberTranslator
 {
     private readonly CultureInfo sourceCulture;
     private readonly CultureInfo targetCulture;
@@ -98,9 +98,7 @@ public class NumberTranslator
 
         // Match numbers in hexadecimal (0x..), binary (0b..), or octal (0o..) format,
         // and convert them to decimal form for compatibility with ExprTk (which only supports decimal input).
-        var baseNumberRegex = new Regex(@"(0[xX][\da-fA-F]+|0[bB][0-9]+|0[oO][0-9]+)");
-
-        var tokens = baseNumberRegex.Split(input);
+        var tokens = BaseNumberRegex().Split(input);
 
         foreach (var token in tokens)
         {
@@ -158,6 +156,9 @@ public class NumberTranslator
 
         var splitPattern = $"([0-9{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}" +
             $"{Regex.Escape(groupSeparator)}]+)";
-        return new Regex(splitPattern);
+        return new Regex(splitPattern); // Dynamic pattern from culture: can't use GeneratedRegex
     }
+
+    [GeneratedRegex(@"(0[xX][\da-fA-F]+|0[bB][0-9]+|0[oO][0-9]+)")]
+    private static partial Regex BaseNumberRegex();
 }

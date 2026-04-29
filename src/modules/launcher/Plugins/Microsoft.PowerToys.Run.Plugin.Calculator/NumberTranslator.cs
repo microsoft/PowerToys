@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
     /// <summary>
     /// Tries to convert all numbers in a text from one culture format to another.
     /// </summary>
-    public class NumberTranslator
+    public partial class NumberTranslator
     {
         private readonly CultureInfo sourceCulture;
         private readonly CultureInfo targetCulture;
@@ -66,9 +66,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private static string Translate(string input, CultureInfo cultureFrom, CultureInfo cultureTo, Regex splitRegex)
         {
             var outputBuilder = new StringBuilder();
-            var hexRegex = new Regex(@"(?:(0x[\da-fA-F]+))");
-
-            string[] hexTokens = hexRegex.Split(input);
+            string[] hexTokens = HexNumberRegex().Split(input);
 
             foreach (string hexToken in hexTokens)
             {
@@ -139,7 +137,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             }
 
             splitPattern += ")+)";
-            return new Regex(splitPattern);
+            return new Regex(splitPattern); // Dynamic pattern from culture: can't use GeneratedRegex
         }
+
+        [GeneratedRegex(@"(?:(0x[\da-fA-F]+))")]
+        private static partial Regex HexNumberRegex();
     }
 }

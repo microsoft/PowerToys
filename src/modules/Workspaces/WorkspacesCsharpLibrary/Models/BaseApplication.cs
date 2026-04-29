@@ -192,8 +192,7 @@ namespace WorkspacesCsharpLibrary.Models
                     else
                     {
                         string appPath = AppPath.Replace("C:\\Program Files\\WindowsApps\\", string.Empty);
-                        Regex packagedAppPathRegex = new Regex(@"(?<APPID>[^_]*)_\d+.\d+.\d+.\d+_(:?x64|arm64)__(?<PublisherID>[^\\]*)", RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                        Match match = packagedAppPathRegex.Match(appPath);
+                        Match match = PackagedAppPathRegex().Match(appPath);
                         _isPackagedApp = match.Success;
                         if (match.Success)
                         {
@@ -213,5 +212,8 @@ namespace WorkspacesCsharpLibrary.Models
         {
             GC.SuppressFinalize(this);
         }
+
+        [GeneratedRegex(@"(?<APPID>[^_]*)_\d+.\d+.\d+.\d+_(:?x64|arm64)__(?<PublisherID>[^\\]*)", RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
+        private static partial Regex PackagedAppPathRegex();
     }
 }

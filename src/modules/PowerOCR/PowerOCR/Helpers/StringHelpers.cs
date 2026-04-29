@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace PowerOCR.Helpers;
 
-internal static class StringHelpers
+internal static partial class StringHelpers
 {
     public static string MakeStringSingleLine(this string textToEdit)
     {
@@ -25,8 +25,7 @@ internal static class StringHelpers
         workingString.Replace('\n', ' ');
         workingString.Replace('\r', ' ');
 
-        Regex regex = new("[ ]{2,}");
-        string temp = regex.Replace(workingString.ToString(), " ");
+        string temp = MultipleSpacesRegex().Replace(workingString.ToString(), " ");
         workingString.Clear();
         workingString.Append(temp);
         if (workingString[0] == ' ')
@@ -41,4 +40,7 @@ internal static class StringHelpers
 
         return workingString.ToString();
     }
+
+    [GeneratedRegex("[ ]{2,}")]
+    private static partial Regex MultipleSpacesRegex();
 }

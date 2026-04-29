@@ -11,7 +11,7 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Folder.Sources
 {
-    public class ShellAction : IShellAction
+    public partial class ShellAction : IShellAction
     {
         public bool Execute(string sanitizedPath, IPublicAPI contextApi)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.Plugin.Folder.Sources
 
         private static string SanitizedPath(string search)
         {
-            var sanitizedPath = Regex.Replace(search, @"[\/\\]+", "\\");
+            var sanitizedPath = PathSeparatorRegex().Replace(search, "\\");
 
             // A network path must start with \\
             // Using Ordinal since this is internal and used with a symbol
@@ -51,5 +51,8 @@ namespace Microsoft.Plugin.Folder.Sources
 
             return true;
         }
+
+        [GeneratedRegex(@"[\/\\]+")]
+        private static partial Regex PathSeparatorRegex();
     }
 }

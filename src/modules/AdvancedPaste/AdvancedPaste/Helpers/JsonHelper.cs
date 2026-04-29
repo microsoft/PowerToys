@@ -16,23 +16,34 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace AdvancedPaste.Helpers
 {
-    internal static class JsonHelper
+    internal static partial class JsonHelper
     {
-        // Ini parts regex
-        private static readonly Regex IniSectionNameRegex = new Regex(@"^\[(.+)\]");
-        private static readonly Regex IniValueLineRegex = new Regex(@"(.+?)\s*=\s*(.*)");
-
-        // List of supported CSV delimiters and Regex to detect separator property
+        // List of supported CSV delimiters
         private static readonly char[] CsvDelimArry = [',', ';', '\t'];
-        private static readonly Regex CsvSepIdentifierRegex = new Regex(@"^sep=(.)$", RegexOptions.IgnoreCase);
 
         // CSV: Split on every occurrence of the delimiter except if it is enclosed by " and ignore two " as escaped "
         private static readonly string CsvDelimSepRegexStr = @"(?=(?:[^""]*""[^""]*"")*(?![^""]*""))";
 
+        // Ini parts regex
+        [GeneratedRegex(@"^\[(.+)\]")]
+        private static partial Regex IniSectionNameRegex();
+
+        [GeneratedRegex(@"(.+?)\s*=\s*(.*)")]
+        private static partial Regex IniValueLineRegex();
+
+        // Regex to detect separator property
+        [GeneratedRegex(@"^sep=(.)$", RegexOptions.IgnoreCase)]
+        private static partial Regex CsvSepIdentifierRegex();
+
         // CSV: Regex to remove/replace quotation marks
-        private static readonly Regex CsvRemoveSingleQuotationMarksRegex = new Regex(@"^""(?!"")|(?<!"")""$|^""""$");
-        private static readonly Regex CsvRemoveStartAndEndQuotationMarksRegex = new Regex(@"^""(?=(""{2})+)|(?<=(""{2})+)""$");
-        private static readonly Regex CsvReplaceDoubleQuotationMarksRegex = new Regex(@"""{2}");
+        [GeneratedRegex(@"^""(?!"")|(?<!"")""$|^""""$")]
+        private static partial Regex CsvRemoveSingleQuotationMarksRegex();
+
+        [GeneratedRegex(@"^""(?=(""{2})+)|(?<=(""{2})+)""$")]
+        private static partial Regex CsvRemoveStartAndEndQuotationMarksRegex();
+
+        [GeneratedRegex(@"""{2}")]
+        private static partial Regex CsvReplaceDoubleQuotationMarksRegex();
 
         private static bool IsJson(string text)
         {
@@ -98,14 +109,14 @@ namespace AdvancedPaste.Helpers
                     // Validate content as ini
                     // (First line is a section name and second line is a section name or a key-value-pair.
                     // For the second line we check both, in case the first ini section is empty.)
-                    if (lines.Length >= 2 && IniSectionNameRegex.IsMatch(lines[0]) &&
-                        (IniSectionNameRegex.IsMatch(lines[1]) || IniValueLineRegex.IsMatch(lines[1])))
+                    if (lines.Length >= 2 && IniSectionNameRegex().IsMatch(lines[0]) &&
+                        (IniSectionNameRegex().IsMatch(lines[1]) || IniValueLineRegex().IsMatch(lines[1])))
                     {
                         // Parse and convert Ini
                         foreach (string line in lines)
                         {
-                            Match lineSectionNameCheck = IniSectionNameRegex.Match(line);
-                            Match lineKeyValuePairCheck = IniValueLineRegex.Match(line);
+                            Match lineSectionNameCheck = IniSectionNameRegex().Match(line);
+                            Match lineKeyValuePairCheck = IniValueLineRegex().Match(line);
 
                             if (lineSectionNameCheck.Success)
                             {
@@ -163,7 +174,7 @@ namespace AdvancedPaste.Helpers
                     foreach (var line in lines)
                     {
                         // If line is separator property line, then skip it
-                        if (CsvSepIdentifierRegex.IsMatch(line))
+                        if (CsvSepIdentifierRegex().IsMatch(line))
                         {
                             continue;
                         }
@@ -222,7 +233,7 @@ namespace AdvancedPaste.Helpers
             if (csvLines.Length > 1)
             {
                 // Try to select the delimiter based on the separator property.
-                Match matchChar = CsvSepIdentifierRegex.Match(csvLines[0]);
+                Match matchChar = CsvSepIdentifierRegex().Match(csvLines[0]);
                 if (matchChar.Success)
                 {
                     // We can do matchChar[0] as the match only returns one character.
@@ -273,15 +284,15 @@ namespace AdvancedPaste.Helpers
         private static string ReplaceQuotationMarksInCsvData(string str)
         {
             // Remove first and last single quotation mark (enclosing quotation marks) and remove quotation marks of an empty data set ("").
-            str = CsvRemoveSingleQuotationMarksRegex.Replace(str, string.Empty);
+            str = CsvRemoveSingleQuotationMarksRegex().Replace(str, string.Empty);
 
             // Remove first quotation mark if followed by pairs of quotation marks
             // and remove last quotation mark if precede by pairs of quotation marks.
             // (Removes enclosing quotation marks around the cell data for data like /"""abc"""/.)
-            str = CsvRemoveStartAndEndQuotationMarksRegex.Replace(str, string.Empty);
+            str = CsvRemoveStartAndEndQuotationMarksRegex().Replace(str, string.Empty);
 
             // Replace pairs of two quotation marks with a single quotation mark. (Escaped quotation marks.)
-            str = CsvReplaceDoubleQuotationMarksRegex.Replace(str, "\"");
+            str = CsvReplaceDoubleQuotationMarksRegex().Replace(str, "\"");
 
             return str;
         }

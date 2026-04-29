@@ -286,9 +286,7 @@ namespace ColorPicker.Controls
             var newValue = (sender as System.Windows.Controls.TextBox).Text;
 
             // support hex with 3 and 6 characters and optional with hashtag
-            var reg = new Regex("^#?([0-9A-Fa-f]{3}){1,2}$");
-
-            if (!reg.IsMatch(newValue))
+            if (!HexColorRegex().IsMatch(newValue))
             {
                 return;
             }
@@ -342,7 +340,7 @@ namespace ColorPicker.Controls
             if (hexCodeText.Length == 3 || hexCodeText.Length == 4)
             {
                 // Hex with or without hashtag and three characters
-                return Regex.Replace(hexCodeText, "^#?([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$", "#$1$1$2$2$3$3");
+                return ShortHexColorRegex().Replace(hexCodeText, "#$1$1$2$2$3$3");
             }
             else
             {
@@ -358,7 +356,7 @@ namespace ColorPicker.Controls
 
         private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$");
+            e.Handled = !DigitsOnlyRegex().IsMatch(e.Text);
         }
 
         private void RGBNumberBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -433,6 +431,15 @@ namespace ColorPicker.Controls
 
             return null;
         }
+
+        [GeneratedRegex("^#?([0-9A-Fa-f]{3}){1,2}$")]
+        private static partial Regex HexColorRegex();
+
+        [GeneratedRegex("^#?([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$")]
+        private static partial Regex ShortHexColorRegex();
+
+        [GeneratedRegex("^[0-9]+$")]
+        private static partial Regex DigitsOnlyRegex();
     }
 
 #pragma warning disable SA1402 // File may only contain a single type

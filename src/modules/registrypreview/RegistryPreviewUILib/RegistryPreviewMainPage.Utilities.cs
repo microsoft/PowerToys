@@ -958,7 +958,7 @@ namespace RegistryPreviewUILib
         public void UpdateUnsavedFileState(bool unsavedChanges)
         {
             // get, cut and analyze the current title
-            string currentTitle = Regex.Replace(_mainWindow.Title, APPNAME + @"$|\s-\s" + APPNAME + @"$", string.Empty);
+            string currentTitle = AppNameSuffixRegex().Replace(_mainWindow.Title, string.Empty);
             bool titleContainsIndicator = currentTitle.StartsWith(_unsavedFileIndicator, StringComparison.CurrentCultureIgnoreCase);
 
             // update window title and save button state
@@ -1193,5 +1193,8 @@ namespace RegistryPreviewUILib
 
             return false;
         }
+
+        [GeneratedRegex(@"RegistryPreview$|\s-\sRegistryPreview$")]
+        private static partial Regex AppNameSuffixRegex();
     }
 }
