@@ -1,0 +1,82 @@
+<!-- Copyright (c) Microsoft Corporation -->
+<!-- The Microsoft Corporation licenses this file to you under the MIT license. -->
+<!-- See the LICENSE file in the project root for more information. -->
+
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.MacroPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <local:NavigablePage.Resources>
+        <tkconverters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </local:NavigablePage.Resources>
+
+    <controls:SettingsPageControl
+        x:Uid="MacroPage_Header"
+        IsTabStop="False"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/Macro.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical" Spacing="4">
+
+                <controls:SettingsGroup x:Uid="Macro_MacrosGroup">
+                    <!-- New Macro button -->
+                    <Button
+                        x:Uid="Macro_NewMacroButton"
+                        Margin="0,0,0,8"
+                        Click="NewMacro_Click" />
+
+                    <!-- Macro list -->
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Macros}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:MacroListItem">
+                                <tkcontrols:SettingsCard Margin="0,0,0,4">
+                                    <tkcontrols:SettingsCard.Header>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                Style="{StaticResource BodyTextBlockStyle}"
+                                                Text="{x:Bind Name, Mode=OneWay}" />
+                                            <Border
+                                                Padding="6,2"
+                                                Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}"
+                                                CornerRadius="4"
+                                                Visibility="{x:Bind HasHotkey, Converter={StaticResource BoolToVisibilityConverter}, Mode=OneWay}">
+                                                <TextBlock
+                                                    FontSize="11"
+                                                    Text="{x:Bind Hotkey, Mode=OneWay}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </tkcontrols:SettingsCard.Header>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <ToggleSwitch
+                                            IsOn="{x:Bind IsEnabled, Mode=TwoWay}"
+                                            OffContent=""
+                                            OnContent="" />
+                                        <Button
+                                            Content="Edit"
+                                            Tag="{x:Bind}"
+                                            Click="EditMacro_Click" />
+                                        <Button
+                                            Content="Delete"
+                                            Tag="{x:Bind}"
+                                            Click="DeleteMacro_Click" />
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </controls:SettingsGroup>
+
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

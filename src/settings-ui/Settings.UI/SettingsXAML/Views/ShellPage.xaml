@@ -315,6 +315,12 @@
                             AutomationProperties.AutomationId="KeyboardManagerNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}" />
                         <NavigationViewItem
+                            x:Name="MacroNavigationItem"
+                            x:Uid="Shell_Macro"
+                            helpers:NavHelper.NavigateTo="views:MacroPage"
+                            AutomationProperties.AutomationId="MacroNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Macro.png}" />
+                        <NavigationViewItem
                             x:Name="MouseUtilitiesNavigationItem"
                             x:Uid="Shell_MouseUtilities"
                             helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
