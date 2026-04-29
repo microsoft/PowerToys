@@ -16,8 +16,10 @@ public partial class App : Application
     {
         InitializeComponent();
 
-        // Catch unhandled exceptions so WinUI does not FailFast the process.
-        // This can happen at boot when explorer.exe is not yet ready.
+        // Register a global unhandled-exception handler so WinUI does not FailFast the
+        // process. The primary scenario is startup at system boot, when explorer.exe is
+        // not yet ready and shell/compositor APIs can throw; however the handler also
+        // provides general exception safety for any other unhandled errors.
         UnhandledException += OnUnhandledException;
     }
 

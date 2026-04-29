@@ -301,8 +301,10 @@ public sealed partial class MainWindow : WindowEx, IDisposable
             }
             catch (Exception ex)
             {
-                // Positioning can fail if the shell is not yet ready at boot. Log and continue;
-                // the window will be positioned on the first user-triggered summon instead.
+                // Positioning can fail at boot if the shell is not yet ready (e.g. explorer.exe
+                // has not finished starting). This is non-fatal: the window will be correctly
+                // positioned in ShowWindow() when the user first invokes QuickAccess, by which
+                // time the shell is guaranteed to be available.
                 Logger.LogError("QuickAccess: failed to prime window position.", ex);
             }
         }
