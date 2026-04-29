@@ -103,4 +103,52 @@ public sealed class MacroHotkeyConverterTests
         Assert.IsTrue(hs.Shift);
         Assert.AreEqual(0x70, hs.Code); // F1
     }
+
+    [TestMethod]
+    public void ToHotkeySettings_SingleFunctionKey_NoModifiers()
+    {
+        var hs = MacroHotkeyConverter.ToHotkeySettings("F12");
+        Assert.IsFalse(hs.Win);
+        Assert.IsFalse(hs.Ctrl);
+        Assert.IsFalse(hs.Alt);
+        Assert.IsFalse(hs.Shift);
+        Assert.AreEqual(0x7B, hs.Code); // F12
+    }
+
+    [TestMethod]
+    public void ToHotkeySettings_DigitKey_Correct()
+    {
+        var hs = MacroHotkeyConverter.ToHotkeySettings("Ctrl+5");
+        Assert.IsTrue(hs.Ctrl);
+        Assert.AreEqual(0x35, hs.Code); // VK code for digit '5'
+    }
+
+    [TestMethod]
+    public void ToHotkeySettings_NamedKey_Enter()
+    {
+        var hs = MacroHotkeyConverter.ToHotkeySettings("Enter");
+        Assert.AreEqual(0x0D, hs.Code);
+        Assert.IsFalse(hs.Ctrl);
+    }
+
+    [TestMethod]
+    public void FromHotkeySettings_AliasedKey_NormalizesToCanonical()
+    {
+        // "Escape" and "Esc" both map to 0x1B.
+        // Round-trip normalizes to whichever alias was stored first in VkToName.
+        // This test documents (and pins) that behavior.
+        var hsFromEscape = MacroHotkeyConverter.ToHotkeySettings("Escape");
+        var hsFromEsc = MacroHotkeyConverter.ToHotkeySettings("Esc");
+
+        // Both should produce the same VK code
+        Assert.AreEqual(hsFromEscape.Code, hsFromEsc.Code);
+        Assert.AreEqual(0x1B, hsFromEscape.Code);
+
+        // FromHotkeySettings returns a canonical name (whichever was first in dict)
+        var canonical = MacroHotkeyConverter.FromHotkeySettings(hsFromEscape);
+        Assert.IsNotNull(canonical);
+        Assert.IsTrue(
+            canonical == "Escape" || canonical == "Esc",
+            $"Expected 'Escape' or 'Esc' but got '{canonical}'");
+    }
 }
