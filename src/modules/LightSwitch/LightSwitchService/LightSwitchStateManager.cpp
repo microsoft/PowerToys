@@ -143,11 +143,9 @@ static std::pair<int, int> update_sun_times(auto& settings)
 
         Logger::info(L"[LightSwitchService] Updated sun times and saved to config.");
     }
-    catch (const std::exception& e)
+    catch (...)
     {
-        std::string msg = e.what();
-        std::wstring wmsg(msg.begin(), msg.end());
-        Logger::error(L"[LightSwitchService] Exception during sun time update: {}", wmsg);
+        Logger::error(L"[LightSwitchService] Exception during sun time update.");
     }
 
     return { newLightTime, newDarkTime };
