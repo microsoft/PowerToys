@@ -5519,7 +5519,7 @@ The break timer font matches the text font.</value>
     <value>Do you want to enable power state control for this monitor?</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningTitle" xml:space="preserve">
-    <value>Confirm Input Source Control</value>
+    <value>Confirm input source control</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningHeader" xml:space="preserve">
     <value>⚠️ Warning: This is a potentially dangerous operation!</value>
