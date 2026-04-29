@@ -750,6 +750,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/MeasureTool/UnitTests/UnitTests-MeasureTool.vcxproj" Id="a8f12d3e-5b6c-4e7f-9a0b-c1d2e3f4a5b6" />
   </Folder>
   <Folder Name="/modules/MouseWithoutBorders/">
     <Project Path="src/modules/MouseWithoutBorders/App/Helper/MouseWithoutBordersHelper.csproj">
