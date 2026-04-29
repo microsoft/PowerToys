@@ -40,9 +40,10 @@ public sealed partial class MacroEditDialog : ContentDialog
 
     private void AddStep_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is MenuFlyoutItem item && item.Tag is string tag)
+        if (sender is MenuFlyoutItem item &&
+            item.Tag is string tag &&
+            Enum.TryParse<StepType>(tag, out StepType type))
         {
-            StepType type = Enum.Parse<StepType>(tag);
             ViewModel.AddStep(type);
         }
     }
