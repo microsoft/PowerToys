@@ -14,9 +14,6 @@
     <Nullable>enable</Nullable>
     <AssemblyName>PowerDisplay.Lib</AssemblyName>
   </PropertyGroup>
-  <ItemGroup>
-    <InternalsVisibleTo Include="PowerDisplay.Lib.UnitTests" />
-  </ItemGroup>
   <!-- Native AOT Configuration -->
   <PropertyGroup>
     <PublishSingleFile>false</PublishSingleFile>

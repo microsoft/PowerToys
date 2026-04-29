@@ -13,15 +13,6 @@ using static PowerDisplay.Common.Drivers.PInvoke;
 namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
-    /// Test seam delegate for reading a VCP feature.
-    /// </summary>
-    internal delegate bool VcpFeatureReader(
-        IntPtr hPhysicalMonitor,
-        byte vcpCode,
-        out uint currentValue,
-        out uint maxValue);
-
-    /// <summary>
     /// DDC/CI native API wrapper
     /// </summary>
     public static class DdcCiNative
@@ -34,15 +25,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <param name="hPhysicalMonitor">Physical monitor handle</param>
         /// <returns>Validation result with capabilities data (or failure status)</returns>
         public static DdcCiValidationResult FetchCapabilities(IntPtr hPhysicalMonitor)
-            => FetchCapabilitiesForTest(
-                hPhysicalMonitor,
-                TryGetCapabilitiesString,
-                DefaultReadVcpFeature);
-
-        internal static DdcCiValidationResult FetchCapabilitiesForTest(
-            IntPtr hPhysicalMonitor,
-            Func<IntPtr, string?> readCapsString,
-            VcpFeatureReader readVcpFeature)
         {
             if (hPhysicalMonitor == IntPtr.Zero)
             {
@@ -55,10 +37,10 @@ namespace PowerDisplay.Common.Drivers.DDC
             try
             {
                 // Try to get capabilities string (slow I2C operation)
-                var capsString = readCapsString(hPhysicalMonitor);
+                var capsString = TryGetCapabilitiesString(hPhysicalMonitor);
                 if (string.IsNullOrEmpty(capsString))
                 {
-                    if (TryProbeBrightness(hPhysicalMonitor, readVcpFeature, handleHex, ScenarioEmptyCap))
+                    if (TryProbeBrightness(hPhysicalMonitor, handleHex, ScenarioEmptyCap))
                     {
                         Logger.LogInfo($"DDC: Monitor rescued via brightness probe (handle={handleHex}, scenario={ScenarioEmptyCap})");
                         return new DdcCiValidationResult(
@@ -86,7 +68,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 if (!supportsBrightness)
                 {
-                    if (TryProbeBrightness(hPhysicalMonitor, readVcpFeature, handleHex, ScenarioCapMissingBrightness))
+                    if (TryProbeBrightness(hPhysicalMonitor, handleHex, ScenarioCapMissingBrightness))
                     {
                         capabilities.SupportedVcpCodes[NativeConstants.VcpCodeBrightness] =
                             new Models.VcpCodeInfo(NativeConstants.VcpCodeBrightness, "Brightness");
@@ -120,14 +102,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
         }
 
-        private static bool DefaultReadVcpFeature(
-            IntPtr hPhysicalMonitor,
-            byte vcpCode,
-            out uint currentValue,
-            out uint maxValue)
-            => GetVCPFeatureAndVCPFeatureReply(
-                hPhysicalMonitor, vcpCode, IntPtr.Zero, out currentValue, out maxValue);
-
         private const string ScenarioEmptyCap = "empty cap";
         private const string ScenarioCapMissingBrightness = "cap missing 0x10";
 
@@ -136,15 +110,11 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Used as a fallback when the cap string is empty or omits brightness.
         /// </summary>
         /// <returns>True if the monitor answered with a non-zero max value.</returns>
-        private static bool TryProbeBrightness(
-            IntPtr hPhysicalMonitor,
-            VcpFeatureReader readVcpFeature,
-            string handleHex,
-            string scenarioTag)
+        private static bool TryProbeBrightness(IntPtr hPhysicalMonitor, string handleHex, string scenarioTag)
         {
             try
             {
-                if (!readVcpFeature(hPhysicalMonitor, NativeConstants.VcpCodeBrightness, out uint current, out uint max))
+                if (!GetVCPFeatureAndVCPFeatureReply(hPhysicalMonitor, NativeConstants.VcpCodeBrightness, IntPtr.Zero, out uint current, out uint max))
                 {
                     var lastError = Marshal.GetLastWin32Error();
                     Logger.LogWarning($"DDC: Brightness probe failed (handle={handleHex}, scenario={scenarioTag}, lastError={lastError})");
