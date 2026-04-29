@@ -3,10 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -106,13 +109,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void Launch()
         {
-            string eventName = !_isElevated && LaunchAdministrator
-                ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
-                : Constants.ShowEnvironmentVariablesSharedEvent();
-
-            using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
+            try
             {
-                eventHandle.Set();
+                if (!_isElevated && LaunchAdministrator)
+                {
+                    Process.Start(new ProcessStartInfo()
+                    {
+                        FileName = Path.GetFullPath("WinUI3Apps\\PowerToys.EnvironmentVariables.exe"),
+                        Verb = "runas",
+                        UseShellExecute = true,
+                    });
+                    return;
+                }
+
+                Process.Start("WinUI3Apps\\PowerToys.EnvironmentVariables.exe");
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"[EnvironmentVariablesViewModel] Launch failed", e);
             }
         }
 

@@ -63,7 +63,6 @@
     <ClCompile Include="LoggerHelper.Tests.cpp" />
     <ClCompile Include="ModulesRegistry.Tests.cpp" />
     <ClCompile Include="MsWindowsSettings.Tests.cpp" />
-    <ClCompile Include="Package.Tests.cpp" />
     <ClCompile Include="ProcessApi.Tests.cpp" />
     <ClCompile Include="ProcessWaiter.Tests.cpp" />
     <ClCompile Include="Registry.Tests.cpp" />

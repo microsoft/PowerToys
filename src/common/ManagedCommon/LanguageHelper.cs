@@ -18,7 +18,7 @@ namespace ManagedCommon
         internal sealed class OutGoingLanguageSettings
         {
             [JsonPropertyName("language")]
-            public string LanguageTag { get; set; }
+            public string? LanguageTag { get; set; }
         }
 
         public static string LoadLanguage()
@@ -36,7 +36,7 @@ namespace ManagedCommon
                     inputStream.Close();
                     reader.Dispose();
 
-                    return JsonSerializer.Deserialize<OutGoingLanguageSettings>(data, SourceGenerationContext.Default.OutGoingLanguageSettings).LanguageTag;
+                    return JsonSerializer.Deserialize<OutGoingLanguageSettings>(data, SourceGenerationContext.Default.OutGoingLanguageSettings)!.LanguageTag!;
                 }
                 catch (Exception)
                 {

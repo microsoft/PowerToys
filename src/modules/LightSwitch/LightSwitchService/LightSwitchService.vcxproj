@@ -28,17 +28,14 @@
     <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
     <ProjectName>LightSwitchService</ProjectName>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -80,6 +77,7 @@
     <ClCompile Include="LightSwitchStateManager.cpp" />
     <ClCompile Include="NightLightRegistryObserver.cpp" />
     <ClCompile Include="SettingsConstants.cpp" />
+    <ClCompile Include="ThemeHelper.cpp" />
     <ClCompile Include="ThemeScheduler.cpp" />
     <ClCompile Include="trace.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
@@ -94,6 +92,7 @@
     <ClInclude Include="NightLightRegistryObserver.h" />
     <ClInclude Include="SettingsConstants.h" />
     <ClInclude Include="SettingsObserver.h" />
+    <ClInclude Include="ThemeHelper.h" />
     <ClInclude Include="ThemeScheduler.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="WinHookEventIDs.h" />
@@ -110,9 +109,6 @@
     </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
       <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\LightSwitchLib\LightSwitchLib.vcxproj">
-      <Project>{79267138-2895-4346-9021-21408d65379f}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

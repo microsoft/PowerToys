@@ -35,7 +35,7 @@
     </Property>
     <Launch Condition="(WINDOWSBUILDNUMBER &gt;= 19041)" Message="This application is only supported on Windows 10 version v2004 (build 19041) or higher." />
 
-    <Icon Id="powertoys.exe" SourceFile="$(var.BinDir)svgs\icon.ico" />
+    <Icon Id="powertoys.exe" SourceFile="$(var.BinDir)icon.ico" />
 
     <Property Id="ARPPRODUCTICON" Value="powertoys.exe" />
 

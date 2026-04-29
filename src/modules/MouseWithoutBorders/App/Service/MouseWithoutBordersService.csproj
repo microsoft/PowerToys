@@ -28,12 +28,6 @@
     <NoWarn />
   </PropertyGroup>
 
-  <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
-  <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
-    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
-    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
-  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Class\**" />
     <Compile Remove="Control\**" />
@@ -76,7 +70,7 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\..\common\GPOWrapperProjection\GPOWrapperProjection.csproj" />
     <ProjectReference Include="..\..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <PropertyGroup>

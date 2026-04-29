@@ -187,6 +187,9 @@ namespace CommonSharedConstants
     const wchar_t MWB_TOGGLE_EASY_MOUSE_EVENT[] = L"Local\\PowerToysMWB-ToggleEasyMouseEvent-a9c8d7b6-e5f4-3c2a-1b0d-9e8f7a6b5c4d";
     const wchar_t MWB_RECONNECT_EVENT[] = L"Local\\PowerToysMWB-ReconnectEvent-b8d7c6a5-f4e3-2b1c-0a9d-8e7f6a5b4c3d";
 
+    // Used by Light Switch
+    const wchar_t LIGHTSWITCH_MANUAL_OVERRIDE_EVENT[] = L"Local\\PowerToysLightSwitch-ManualOverrideEvent-7a464015-a560-419c-845e-2249edc1b4d7";
+
     // Max DWORD for key code to disable keys.
     const DWORD VK_DISABLED = 0x100;
 }

@@ -27,9 +27,6 @@
     <ClCompile Include="FindMyMouse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WinHookEventIDs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,8 +52,5 @@
     <ResourceCompile Include="FindMyMouse.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

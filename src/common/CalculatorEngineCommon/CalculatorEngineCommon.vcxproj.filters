@@ -12,9 +12,13 @@
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="ExprtkEvaluator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ExprtkEvaluator.h" />
+    <ClInclude Include="exprtk.hpp" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="Calculator.idl" />
@@ -25,5 +29,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PropertySheet.props" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CalculatorEngineCommon.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

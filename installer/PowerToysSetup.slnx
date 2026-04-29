@@ -7,7 +7,6 @@
     <Build Solution="Debug|ARM64" Project="false" />
   </Project>
   <Project Path="../src/common/Telemetry/EtwTrace/EtwTrace.vcxproj" Id="8f021b46-362b-485c-bfba-ccf83e820cbd" />
-  <Project Path="../src/common/version/version.vcxproj" Id="cc6e41ac-8174-4e8a-8d22-85dd7f4851df" />
   <Project Path="../src/logging/logging.vcxproj" Id="7e1e3f13-2bd6-3f75-a6a7-873a2b55c60f">
     <Build Solution="Debug|ARM64" Project="false" />
   </Project>

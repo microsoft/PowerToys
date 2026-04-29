@@ -5961,6 +5961,10 @@ Text uses the current drawing color.</value>
   <data name="ZoomIt_Type_DemoSample.Text" xml:space="preserve">
     <value>Sample</value>
   </data>
+  <data name="Default_language" xml:space="preserve">
+    <value>Default</value>
+  </data>
+</root>
   <data name="GrabAndMove.ModuleDescription" xml:space="preserve">
     <value>Move and resize windows by holding a modifier key and dragging. Left-click to move, right-click to resize.</value>
     <comment>"Grab And Move" is the name of the utility</comment>

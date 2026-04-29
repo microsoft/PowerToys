@@ -1,0 +1,20 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        struct PACKAGE_VERSION
+        {
+            UInt16 Major;
+            UInt16 Minor;
+            UInt16 Build;
+            UInt16 Revision;
+        };
+
+        [default_interface] runtimeclass Package {
+            static Boolean GetPackageNameAndVersionFromAppx(
+                String appxPath,
+                out String outName,
+                out PACKAGE_VERSION outVersion);
+        }
+    }
+}

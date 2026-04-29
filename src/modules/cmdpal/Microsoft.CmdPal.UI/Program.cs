@@ -70,7 +70,7 @@ internal sealed class Program
         // Log application startup information
         try
         {
-            var appInfoService = new ApplicationInfoService(() => Logger.CurrentVersionLogDirectoryPath);
+            var appInfoService = new ApplicationInfoService(() => Logger.CurrentVersionLogDirectoryPath!);
             var startupMessage = $"""
                 ============================================================
                 Hello World! Command Palette is starting.

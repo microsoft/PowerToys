@@ -1,0 +1,12 @@
+namespace PowerToys
+{
+    namespace Interop
+    {
+        [default_interface] runtimeclass Elevation
+        {
+            static void RunNonElevated(String file, String params);
+        }
+
+    }
+}
+

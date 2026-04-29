@@ -25,6 +25,7 @@
 #include <Helpers.h>
 #include <Settings.h>
 #include <trace.h>
+#include "../dll/RuntimeRegistration.h"
 
 #include <mutex>
 #include <thread>
