@@ -78,6 +78,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 WebcamList.Add(new Tuple<string, string>(webcam.Id, webcam.Name));
             }
+
+            // Re-notify so the ComboBox re-resolves SelectedValue against the now-populated list.
+            OnPropertyChanged(nameof(WebcamDeviceSymLink));
         }
 
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
@@ -1002,9 +1005,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _zoomItSettings.Properties.WebcamDeviceSymLink.Value;
             set
             {
+                // Ignore null: the ComboBox sends null when SelectedValue can't be
+                // matched (e.g. the async device list hasn't loaded yet).  Accepting
+                // null would overwrite the persisted device with empty string.
+                if (value == null)
+                {
+                    return;
+                }
+
                 if (_zoomItSettings.Properties.WebcamDeviceSymLink.Value != value)
                 {
-                    _zoomItSettings.Properties.WebcamDeviceSymLink.Value = value ?? string.Empty;
+                    _zoomItSettings.Properties.WebcamDeviceSymLink.Value = value;
                     OnPropertyChanged(nameof(WebcamDeviceSymLink));
                     NotifySettingsChanged();
                 }
