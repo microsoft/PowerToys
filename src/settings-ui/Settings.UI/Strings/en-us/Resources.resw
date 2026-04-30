@@ -4558,7 +4558,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>App scope (process name)</value>
     <comment>Label for app scope field in edit dialog. Leave blank for global.</comment>
   </data>
-  <data name="MacroEdit_StepsGroup.Header" xml:space="preserve">
+  <data name="MacroEdit_StepsGroup.Text" xml:space="preserve">
     <value>Steps</value>
     <comment>Header for the steps section in macro edit dialog</comment>
   </data>
