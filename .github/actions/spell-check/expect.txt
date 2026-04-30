@@ -1965,6 +1965,7 @@ vabdq
 validmodulename
 valuegenerator
 VARTYPE
+vbcscompiler
 vcamp
 VCENTER
 vcgtq
