@@ -284,11 +284,13 @@
                             <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="ZoomItRecordMicMonoMix" ContentAlignment="Left">
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordMicMonoMix"
+                                ContentAlignment="Left"
+                                Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}">
                                 <CheckBox
                                     x:Uid="ZoomIt_Record_MicMonoMix"
-                                    IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}"
-                                    Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}" />
+                                    IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItRecordMicrophone"
@@ -300,6 +302,54 @@
                                     ItemsSource="{x:Bind ViewModel.MicrophoneList}"
                                     SelectedValue="{x:Bind ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
                                     SelectedValuePath="Item1" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordWebcamOverlay" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Record_WebcamOverlay" IsChecked="{x:Bind ViewModel.WebcamOverlay, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamDevice"
+                                x:Uid="ZoomIt_Record_WebcamDevice"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    DisplayMemberPath="Item2"
+                                    ItemsSource="{x:Bind ViewModel.WebcamList}"
+                                    SelectedValue="{x:Bind ViewModel.WebcamDeviceSymLink, Mode=TwoWay}"
+                                    SelectedValuePath="Item1" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamPosition"
+                                x:Uid="ZoomIt_Record_WebcamPosition"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.WebcamPosition, Mode=TwoWay}">
+                                    <ComboBoxItem>Top-left</ComboBoxItem>
+                                    <ComboBoxItem>Top-right</ComboBoxItem>
+                                    <ComboBoxItem>Bottom-left</ComboBoxItem>
+                                    <ComboBoxItem>Bottom-right</ComboBoxItem>
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamSize"
+                                x:Uid="ZoomIt_Record_WebcamSize"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.WebcamSize, Mode=TwoWay}">
+                                    <ComboBoxItem>Small</ComboBoxItem>
+                                    <ComboBoxItem>Medium</ComboBoxItem>
+                                    <ComboBoxItem>Large</ComboBoxItem>
+                                    <ComboBoxItem>X-Large</ComboBoxItem>
+                                    <ComboBoxItem>Full screen</ComboBoxItem>
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamShape"
+                                x:Uid="ZoomIt_Record_WebcamShape"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.WebcamShape, Mode=TwoWay}">
+                                    <ComboBoxItem>Rectangle</ComboBoxItem>
+                                    <ComboBoxItem>Rounded Rectangle</ComboBoxItem>
+                                    <ComboBoxItem>Rounded Square</ComboBoxItem>
+                                    <ComboBoxItem>Circle</ComboBoxItem>
+                                </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>

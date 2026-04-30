@@ -54,6 +54,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<Tuple<string, string>> MicrophoneList { get; set; } = new ObservableCollection<Tuple<string, string>>();
 
+        public ObservableCollection<Tuple<string, string>> WebcamList { get; set; } = new ObservableCollection<Tuple<string, string>>();
+
         private async void LoadMicrophoneList()
         {
             ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
@@ -63,6 +65,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             foreach (var microphone in microphones)
             {
                 MicrophoneList.Add(new Tuple<string, string>(microphone.Id, microphone.Name));
+            }
+        }
+
+        private async void LoadWebcamList()
+        {
+            ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            string defaultName = resourceLoader.GetString("ZoomIt_Record_WebcamDevices_Default_Name");
+            WebcamList.Add(new Tuple<string, string>(string.Empty, defaultName));
+            var webcams = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+            foreach (var webcam in webcams)
+            {
+                WebcamList.Add(new Tuple<string, string>(webcam.Id, webcam.Name));
             }
         }
 
@@ -105,6 +119,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectTypeFontCommand = new ButtonClickCommand(SelectTypeFontAction);
 
             LoadMicrophoneList();
+            LoadWebcamList();
         }
 
         private void InitializeEnabledValue()
@@ -963,6 +978,76 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.MicrophoneDeviceId.Value = value ?? string.Empty; // If we're trying to save a null, just default to empty string, which means default microphone.
                     OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool WebcamOverlay
+        {
+            get => _zoomItSettings.Properties.WebcamOverlay.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamOverlay.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamOverlay.Value = value;
+                    OnPropertyChanged(nameof(WebcamOverlay));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public string WebcamDeviceSymLink
+        {
+            get => _zoomItSettings.Properties.WebcamDeviceSymLink.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamDeviceSymLink.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamDeviceSymLink.Value = value ?? string.Empty;
+                    OnPropertyChanged(nameof(WebcamDeviceSymLink));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int WebcamPosition
+        {
+            get => _zoomItSettings.Properties.WebcamPosition.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamPosition.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamPosition.Value = value;
+                    OnPropertyChanged(nameof(WebcamPosition));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int WebcamSize
+        {
+            get => _zoomItSettings.Properties.WebcamSize.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamSize.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamSize.Value = value;
+                    OnPropertyChanged(nameof(WebcamSize));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int WebcamShape
+        {
+            get => _zoomItSettings.Properties.WebcamShape.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamShape.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamShape.Value = value;
+                    OnPropertyChanged(nameof(WebcamShape));
                     NotifySettingsChanged();
                 }
             }

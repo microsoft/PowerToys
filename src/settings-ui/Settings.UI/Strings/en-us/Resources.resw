@@ -4815,6 +4815,24 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Microphones_Default_Name" xml:space="preserve">
     <value>Default</value>
   </data>
+  <data name="ZoomIt_Record_WebcamOverlay.Content" xml:space="preserve">
+    <value>Show webcam overlay (Ctrl+C toggles)</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamDevice.Header" xml:space="preserve">
+    <value>Camera:</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamDevices_Default_Name" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition.Header" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize.Header" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape.Header" xml:space="preserve">
+    <value>Shape</value>
+  </data>
   <data name="ZoomIt_Break_LockWorkstation.Content" xml:space="preserve">
     <value>Lock workstation during break</value>
   </data>
