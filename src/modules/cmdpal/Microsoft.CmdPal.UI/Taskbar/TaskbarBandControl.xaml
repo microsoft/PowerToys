@@ -20,9 +20,17 @@
                 Orientation="Horizontal"
                 Spacing="4" />
             <StackLayout
+                x:Key="HorizontalCompactItemsLayout"
+                Orientation="Horizontal"
+                Spacing="0" />
+            <StackLayout
                 x:Key="VerticalItemsLayout"
                 Orientation="Vertical"
                 Spacing="4" />
+            <StackLayout
+                x:Key="VerticalCompactItemsLayout"
+                Orientation="Vertical"
+                Spacing="0" />
 
             <ItemsPanelTemplate x:Key="HorizontalBandsPanel">
                 <StackPanel Orientation="Horizontal" Spacing="4" />

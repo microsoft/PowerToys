@@ -269,7 +269,36 @@ public sealed partial class TaskbarBandControl : UserControl,
             }
             else
             {
-                item.TextVisibility = Visibility.Visible;
+                // Clear the forced override so the item determines text
+                // visibility from its own Title/Subtitle content. Setting
+                // Visible here would override the "TextHidden" visual
+                // state for items that have no text at all.
+                item.ClearValue(DockItemControl.TextVisibilityProperty);
+            }
+        }
+
+        // Swap to tighter spacing between items when compact.
+        var isVertical = RootPanel.Orientation == Orientation.Vertical;
+        string layoutKey;
+        if (_isCompact)
+        {
+            layoutKey = isVertical ? "VerticalCompactItemsLayout" : "HorizontalCompactItemsLayout";
+        }
+        else
+        {
+            layoutKey = isVertical ? "VerticalItemsLayout" : "HorizontalItemsLayout";
+        }
+
+        var layout = (Microsoft.UI.Xaml.Controls.Layout)Resources[layoutKey];
+        foreach (var band in _viewModel.TaskbarItems)
+        {
+            if (BandsListView.ContainerFromItem(band) is ListViewItem container)
+            {
+                var repeater = FindDescendant<ItemsRepeater>(container);
+                if (repeater != null)
+                {
+                    repeater.Layout = layout;
+                }
             }
         }
     }
