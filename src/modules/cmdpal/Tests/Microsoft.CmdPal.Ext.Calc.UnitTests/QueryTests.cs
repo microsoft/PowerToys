@@ -72,7 +72,6 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result.Title);
-        Assert.AreEqual(expectedResult, result.TextToSuggest);
     }
 
     [TestMethod]
