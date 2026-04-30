@@ -38,7 +38,7 @@ public static class ResultHelper
             return null;
         }
 
-        var result = roundedResult?.ToString(outputCulture);
+        var result = FormatResult(roundedResult, outputCulture);
 
         var replaceCommand = new ReplaceQueryCommand();
         replaceCommand.ReplaceRequested += handleReplace;
@@ -85,14 +85,14 @@ public static class ResultHelper
             return null;
         }
 
-        var decimalResult = roundedResult?.ToString(outputCulture);
+        var decimalResult = FormatResult(roundedResult, outputCulture);
         var copyCommand = CreateCopyCommand(decimalResult, Properties.Resources.calculator_copy_command_name, hideOnCopy: true);
         return CreateResultItem(roundedResult, inputCulture, outputCulture, query, copyCommand, hideOnCopy: true);
     }
 
     private static ListItem CreateResultItem(decimal? roundedResult, CultureInfo inputCulture, CultureInfo outputCulture, string query, ICommand copyCommand, bool hideOnCopy)
     {
-        var decimalResult = roundedResult?.ToString(outputCulture);
+        var decimalResult = FormatResult(roundedResult, outputCulture);
         var decimalValue = (decimal)roundedResult;
 
         List<IContextItem> context = [];
@@ -172,5 +172,10 @@ public static class ResultHelper
         };
 
         return command;
+    }
+
+    private static string FormatResult(decimal? roundedResult, CultureInfo outputCulture)
+    {
+        return roundedResult is null ? null : roundedResult.Value.ToString("0.#############################", outputCulture);
     }
 }

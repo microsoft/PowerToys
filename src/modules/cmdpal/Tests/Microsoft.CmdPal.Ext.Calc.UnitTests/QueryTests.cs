@@ -59,6 +59,34 @@ public class QueryTests : CommandPaletteUnitTestBase
             $"Expected result to contain '{expectedResult}' but got '{firstResult.Title}'");
     }
 
+    [DataTestMethod]
+    [DataRow("4+4", "8")]
+    [DataRow("2.5+2.5", "5")]
+    public void TopLevelPageQuery_DoesNotShowTrailingZeroes(string input, string expectedResult)
+    {
+        var settings = new Settings(outputUseEnglishFormat: true);
+        var page = new CalculatorListPage(settings);
+
+        page.UpdateSearchText(string.Empty, input);
+        var result = page.GetItems().FirstOrDefault();
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedResult, result.Title);
+        Assert.AreEqual(expectedResult, result.TextToSuggest);
+    }
+
+    [TestMethod]
+    public void FallbackQuery_DoesNotShowTrailingZeroes()
+    {
+        var settings = new Settings(outputUseEnglishFormat: true);
+        var page = new CalculatorListPage(settings);
+        var item = new FallbackCalculatorItem(settings, page);
+
+        item.UpdateQuery("4+4");
+
+        Assert.AreEqual("8", item.Title);
+    }
+
     [TestMethod]
     public void EmptyQueryTest()
     {
