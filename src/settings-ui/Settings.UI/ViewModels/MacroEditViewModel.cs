@@ -17,6 +17,7 @@ public sealed class MacroEditViewModel : Observable
     private string _name;
     private HotkeySettings _hotkey;
     private string? _appScope;
+    private bool _isEnabled;
 
     public MacroEditViewModel()
         : this(new MacroDefinition())
@@ -29,6 +30,7 @@ public sealed class MacroEditViewModel : Observable
         _name = definition.Name;
         _hotkey = MacroHotkeyConverter.ToHotkeySettings(definition.Hotkey);
         _appScope = definition.AppScope;
+        _isEnabled = definition.IsEnabled;
         Steps = new ObservableCollection<MacroStepViewModel>(
             definition.Steps.Select(MacroStepViewModel.FromModel));
     }
@@ -72,6 +74,7 @@ public sealed class MacroEditViewModel : Observable
         Name = Name.Trim(),
         Hotkey = MacroHotkeyConverter.FromHotkeySettings(Hotkey),
         AppScope = string.IsNullOrWhiteSpace(AppScope) ? null : AppScope!.Trim(),
+        IsEnabled = _isEnabled,
         Steps = [.. Steps.Select(s => s.ToModel())],
     };
 

@@ -121,6 +121,21 @@ public sealed class MacroEditViewModelTests
     }
 
     [TestMethod]
+    public void ToDefinition_PreservesIsEnabled_False()
+    {
+        var definition = new MacroDefinition { Name = "x", IsEnabled = false };
+        var vm = new MacroEditViewModel(definition);
+        Assert.IsFalse(vm.ToDefinition().IsEnabled);
+    }
+
+    [TestMethod]
+    public void ToDefinition_DefaultIsEnabled_True()
+    {
+        var vm = new MacroEditViewModel();
+        Assert.IsTrue(vm.ToDefinition().IsEnabled);
+    }
+
+    [TestMethod]
     public void ToDefinition_Steps_RoundTrip()
     {
         MacroDefinition def = new()

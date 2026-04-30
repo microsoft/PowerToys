@@ -58,9 +58,14 @@ public sealed partial class MacroEditDialog : ContentDialog
 
     private void AddSubStep_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button btn && btn.Tag is MacroStepViewModel parent)
+        if (sender is MenuFlyoutItem item &&
+            item.Tag is string tag &&
+            Enum.TryParse<StepType>(tag, out StepType type) &&
+            item.Parent is MenuFlyout flyout &&
+            flyout.Target is Button btn &&
+            btn.Tag is MacroStepViewModel parent)
         {
-            ViewModel.AddSubStep(parent, StepType.PressKey);
+            ViewModel.AddSubStep(parent, type);
         }
     }
 }

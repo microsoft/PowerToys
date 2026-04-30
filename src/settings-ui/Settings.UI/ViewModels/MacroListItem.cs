@@ -6,6 +6,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.MacroCommon.Models;
 using PowerToys.MacroCommon.Serialization;
@@ -44,7 +45,10 @@ public sealed class MacroListItem : Observable
                 _definition = _definition with { IsEnabled = value };
                 string json = MacroSerializer.Serialize(_definition);
                 string path = FilePath;
-                _ = Task.Run(() => File.WriteAllText(path, json));
+                _ = Task.Run(() => File.WriteAllText(path, json))
+                    .ContinueWith(
+                        t => Logger.LogError($"Macro: failed to write IsEnabled for {path}: {t.Exception}"),
+                        TaskContinuationOptions.OnlyOnFaulted);
             }
         }
     }

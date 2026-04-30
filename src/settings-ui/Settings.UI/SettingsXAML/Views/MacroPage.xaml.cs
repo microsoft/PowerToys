@@ -86,7 +86,7 @@ public sealed partial class MacroPage : NavigablePage
             Title = resourceLoader.GetString("Macro_DeleteDialog_Title"),
             Content = string.Format(
                 CultureInfo.CurrentCulture,
-                "'{0}' will be permanently deleted.",
+                resourceLoader.GetString("Macro_DeleteDialog_Content"),
                 item.Name),
             PrimaryButtonText = resourceLoader.GetString("Macro_DeleteDialog_PrimaryButtonText"),
             CloseButtonText = resourceLoader.GetString("Macro_DeleteDialog_CloseButtonText"),
