@@ -4530,11 +4530,11 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Macro</value>
     <comment>Product name: Navigation view item name for Macro</comment>
   </data>
-  <data name="MacroPage_Header.Title" xml:space="preserve">
+  <data name="MacroPage_Header.ModuleTitle" xml:space="preserve">
     <value>Macro</value>
     <comment>Settings page header title for Macro module</comment>
   </data>
-  <data name="MacroPage_Header.Description" xml:space="preserve">
+  <data name="MacroPage_Header.ModuleDescription" xml:space="preserve">
     <value>Create and manage keyboard macros with multiple steps</value>
     <comment>Settings page header description for Macro module</comment>
   </data>
