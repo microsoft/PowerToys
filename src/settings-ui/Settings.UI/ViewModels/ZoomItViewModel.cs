@@ -67,6 +67,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 MicrophoneList.Add(new Tuple<string, string>(microphone.Id, microphone.Name));
             }
 
+            // Normalize the stored device ID to match the casing from the system
+            // enumeration so the case-sensitive ComboBox SelectedValue binding works.
+            var storedMic = _zoomItSettings.Properties.MicrophoneDeviceId.Value;
+            if (!string.IsNullOrEmpty(storedMic))
+            {
+                foreach (var entry in MicrophoneList)
+                {
+                    if (string.Equals(entry.Item1, storedMic, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (entry.Item1 != storedMic)
+                        {
+                            _zoomItSettings.Properties.MicrophoneDeviceId.Value = entry.Item1;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
             // Re-notify so the ComboBox re-resolves SelectedValue against the now-populated list.
             OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
         }
@@ -80,6 +99,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             foreach (var webcam in webcams)
             {
                 WebcamList.Add(new Tuple<string, string>(webcam.Id, webcam.Name));
+            }
+
+            // Normalize the stored device ID to match the casing from the system
+            // enumeration so the case-sensitive ComboBox SelectedValue binding works.
+            var storedCam = _zoomItSettings.Properties.WebcamDeviceSymLink.Value;
+            if (!string.IsNullOrEmpty(storedCam))
+            {
+                foreach (var entry in WebcamList)
+                {
+                    if (string.Equals(entry.Item1, storedCam, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (entry.Item1 != storedCam)
+                        {
+                            _zoomItSettings.Properties.WebcamDeviceSymLink.Value = entry.Item1;
+                        }
+
+                        break;
+                    }
+                }
             }
 
             // Re-notify so the ComboBox re-resolves SelectedValue against the now-populated list.
