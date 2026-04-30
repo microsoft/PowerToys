@@ -215,13 +215,19 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         // Subscribe to underlying Monitor property changes (e.g., Orientation updates in mirror mode)
         _monitor.PropertyChanged += OnMonitorPropertyChanged;
 
-        // Initialize Show properties based on hardware capabilities
+        // Initialize Show properties for first-time detection. ApplyFeatureVisibility will
+        // override these whenever settings.json has a saved entry for this monitor, so these
+        // values only take effect for brand-new monitors (no persisted preference yet).
+        // Mirror CreateMonitorInfo's defaults to keep the flyout and settings.json in sync:
+        //   - Brightness / Contrast / Volume: enabled if the hardware advertises the VCP code.
+        //   - InputSource / ColorTemperature / PowerState: always disabled by default (dangerous
+        //     features); the user opts in via the Settings UI confirmation dialog.
         ShowBrightness = monitor.SupportsBrightness;
         ShowContrast = monitor.SupportsContrast;
         ShowVolume = monitor.SupportsVolume;
-        ShowInputSource = monitor.SupportsInputSource;
-        _showPowerState = monitor.SupportsPowerState;
-        _showColorTemperature = monitor.SupportsColorTemperature;
+        ShowInputSource = false;
+        _showPowerState = false;
+        _showColorTemperature = false;
 
         // Initialize basic properties from monitor
         _brightness = monitor.CurrentBrightness;
@@ -232,7 +238,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     public string Id => _monitor.Id;
 
-    public string Name => _monitor.Name;
+    public string Name => IsInternal
+        ? ResourceLoaderInstance.ResourceLoader.GetString("BuiltInDisplayName")
+        : _monitor.Name;
 
     /// <summary>
     /// Gets the monitor number from the underlying monitor model (Windows DISPLAY number)

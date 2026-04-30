@@ -81,7 +81,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System
             IsBootedInUefiMode = Win32Helpers.GetSystemFirmwareType() == FirmwareType.Uefi;
 
             // Log info if the system hasn't boot in uefi mode.
-            // (Because this is only going into the log we can ignore the fact that normally UEFI and BIOS are written upper case. No need to convert the enumeration value to upper case.)
+            // (Because this is only going into the log we can ignore the fact that normally UEFI and BIOS are written uppercase. No need to convert the enumeration value to uppercase.)
             if (!IsBootedInUefiMode)
             {
                 Wox.Plugin.Logger.Log.Info($"The UEFI command will not show to the user. The system has not booted in UEFI mode or the system does not have an UEFI firmware! (Detected type: {Win32Helpers.GetSystemFirmwareType()})", typeof(Main));

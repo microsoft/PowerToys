@@ -124,7 +124,7 @@ namespace Microsoft.Plugin.Program.Programs
                 return;
             }
 
-            ProgramLogger.Exception($"|Trying to get the package version of the UWP program, but a unknown UWP appmanifest version {FullName} from location {Location} is returned.", new FormatException(), GetType(), Location);
+            ProgramLogger.Exception($"|Trying to get the package version of the UWP program, but an unknown UWP appmanifest version {FullName} from location {Location} is returned.", new FormatException(), GetType(), Location);
 
             Version = PackageVersion.Unknown;
         }

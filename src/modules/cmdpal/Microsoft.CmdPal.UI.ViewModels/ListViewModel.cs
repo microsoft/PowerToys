@@ -44,6 +44,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
 
+    // Reentrancy guard for FilteredItems mutations. WinUI3's ListView processes
+    // CollectionChanged synchronously, and its layout pass can pump the message
+    // loop — which lets a second DoOnUiThread task start mutating FilteredItems
+    // while the first is still mid-update. C# lock is reentrant (same thread
+    // re-acquires), so _listLock cannot prevent this. Instead we use a boolean
+    // flag and defer the latest update until the in-flight one finishes.
+    private bool _isUpdatingFilteredItems;
+    private Action? _pendingFilteredItemsUpdate;
+
     [ThreadStatic]
     private static Dictionary<ListViewModel, int>? _getItemsDepthByViewModel;
 
@@ -185,7 +194,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             // But for all normal pages, we should run our fuzzy match on them.
             lock (_listLock)
             {
-                ApplyFilterUnderLock();
+                RunFilteredItemsUpdate(ApplyFilterUnderLock);
             }
 
             ItemsUpdated?.Invoke(this, new ItemsUpdatedEventArgs(true));
@@ -502,14 +511,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         if (!_isDynamic)
                         {
                             // A static list? Great! Just run the filter.
-                            ApplyFilterUnderLock();
+                            RunFilteredItemsUpdate(ApplyFilterUnderLock);
                         }
                         else
                         {
                             // A dynamic list? Even better! Just stick everything into
                             // FilteredItems. The extension already did any filtering it cared about.
                             var snapshot = Items.Where(i => !i.IsInErrorState).ToList();
-                            ListHelpers.InPlaceUpdateList(FilteredItems, snapshot);
+                            RunFilteredItemsUpdate(() => ListHelpers.InPlaceUpdateList(FilteredItems, snapshot));
                         }
 
                         UpdateEmptyContent();
@@ -571,6 +580,50 @@ public partial class ListViewModel : PageViewModel, IDisposable
     /// FilteredItems to match the results.
     /// </summary>
     private void ApplyFilterUnderLock() => ListHelpers.InPlaceUpdateList(FilteredItems, FilterList(Items, SearchTextBox));
+
+    /// <summary>
+    /// Executes an action that mutates <see cref="FilteredItems"/> with a
+    /// reentrancy guard.  WinUI3's native XAML renderer can pump the
+    /// message loop while processing a <c>CollectionChanged</c>
+    /// notification, which allows a second queued UI-thread task to begin
+    /// mutating the same collection before the first task finishes.  This
+    /// causes heap corruption inside the native ItemsRepeater / ListView
+    /// and manifests as an access-violation in ntdll.dll.
+    ///
+    /// The guard detects reentrancy (same UI thread re-entering) and
+    /// stores only the <em>latest</em> pending action.  Once the
+    /// in-flight mutation completes, the pending action (if any) executes
+    /// immediately, ensuring the UI always converges to the newest state
+    /// without overlapping mutations.
+    /// </summary>
+    private void RunFilteredItemsUpdate(Action updateAction)
+    {
+        if (_isUpdatingFilteredItems)
+        {
+            // Reentrant call — store only the latest; earlier stale
+            // updates are intentionally dropped.
+            _pendingFilteredItemsUpdate = updateAction;
+            return;
+        }
+
+        _isUpdatingFilteredItems = true;
+        try
+        {
+            updateAction();
+
+            // Drain any update that was enqueued while we were running.
+            while (_pendingFilteredItemsUpdate is not null)
+            {
+                var pending = _pendingFilteredItemsUpdate;
+                _pendingFilteredItemsUpdate = null;
+                pending();
+            }
+        }
+        finally
+        {
+            _isUpdatingFilteredItems = false;
+        }
+    }
 
     private Dictionary<IListItem, ListItemViewModel> ReadVmCache() => Volatile.Read(ref _vmCache);
 
@@ -1068,12 +1121,15 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             Items.Clear();
-            foreach (var item in FilteredItems)
+            RunFilteredItemsUpdate(() =>
             {
-                item.SafeCleanup();
-            }
+                foreach (var item in FilteredItems)
+                {
+                    item.SafeCleanup();
+                }
 
-            FilteredItems.Clear();
+                FilteredItems.Clear();
+            });
         }
 
         PublishVmCache(new(VmCacheComparer));

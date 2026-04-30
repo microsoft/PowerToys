@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Utils;
 using WmiLight;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
@@ -245,8 +244,9 @@ namespace PowerDisplay.Common.Drivers.WMI
 
         /// <summary>
         /// Discover supported monitors.
-        /// WMI brightness control is typically only available on internal laptop displays,
-        /// which don't have meaningful UserFriendlyName in WmiMonitorID, so we use "Built-in Display".
+        /// WMI brightness control is typically only available on internal laptop displays.
+        /// The monitor Name is left blank here; the ViewModel layer fills in a localized
+        /// "Built-in Display" string so it can be translated for the user's UI language.
         /// </summary>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
         {
@@ -294,13 +294,12 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 ? $"WMI_{edidId}_{monitorNumber}"
                                 : $"WMI_Unknown_{monitorNumber}";
 
-                            // Get display name from PnP manufacturer ID (e.g., "Lenovo Built-in Display")
-                            var displayName = PnpIdHelper.GetBuiltInDisplayName(edidId);
-
+                            // Name is left blank: MonitorViewModel injects a localized
+                            // "Built-in Display" string for internal displays.
                             var monitor = new Monitor
                             {
                                 Id = uniqueId,
-                                Name = displayName,
+                                Name = string.Empty,
                                 CurrentBrightness = currentBrightness,
                                 MinBrightness = 0,
                                 MaxBrightness = 100,
