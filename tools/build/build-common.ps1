@@ -178,7 +178,7 @@ function Get-DefaultPlatform {
 
 function Test-VsHasNativeTools {
     # Returns $true when the current process environment was initialized with a
-    # usable native (C++) toolchain. Any VS instance — full SKU or Build Tools —
+    # usable native (C++) toolchain. Any VS instance (full SKU or Build Tools)
     # without the C++ workload leaves these unset, which is the original
     # MSB4086 ($(PlatformToolsetVersion) empty) failure mode we are guarding
     # against.
@@ -217,8 +217,8 @@ function Ensure-VsDevEnvironment {
     if ($vswhere) {
         # Newest VS instance with the C++ VC tools workload (stable + prerelease).
         try { $p = & $vswhere -latest -prerelease -products $vsProducts -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
-        # Last-resort fallback if no instance reports the VC workload — still
-        # validated below by Test-VsHasNativeTools to skip unusable installs.
+        # Last-resort fallback if no instance reports the VC workload (still
+        # validated below by Test-VsHasNativeTools to skip unusable installs).
         if (-not $instPaths) {
             try { $p2 = & $vswhere -latest -prerelease -products $vsProducts -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
         }
@@ -269,7 +269,7 @@ function Ensure-VsDevEnvironment {
                 try {
                     Enter-VsDevShell -VsInstallPath $inst -ErrorAction Stop
                     if (-not (Test-VsHasNativeTools)) {
-                        Write-Warning "[VS] DevShell entered $inst but VC tools (VCToolsInstallDir) not present — skipping"
+                        Write-Warning "[VS] DevShell entered $inst but VC tools (VCToolsInstallDir) not present - skipping"
                         continue
                     }
                     Write-Host "[VS] Entered Visual Studio DevShell at $inst"
@@ -298,7 +298,7 @@ function Ensure-VsDevEnvironment {
                     }
                 }
                 if (-not (Test-VsHasNativeTools)) {
-                    Write-Warning "[VS] VsDevCmd.bat imported $inst but VC tools (VCToolsInstallDir) not present — skipping"
+                    Write-Warning "[VS] VsDevCmd.bat imported $inst but VC tools (VCToolsInstallDir) not present - skipping"
                     continue
                 }
                 Write-Host "[VS] Imported environment from VsDevCmd.bat at $inst"
