@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using System.Text.RegularExpressions;
 
 using Mages.Core;
@@ -120,6 +121,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
             {
                 // '[10,10]' is interpreted as array by mages engine
                 return Properties.Resources.wox_plugin_calculator_double_array_returned;
+            }
+
+            if (result is Complex)
+            {
+                return Properties.Resources.wox_plugin_calculator_complex_number_returned;
             }
 
             return result;
