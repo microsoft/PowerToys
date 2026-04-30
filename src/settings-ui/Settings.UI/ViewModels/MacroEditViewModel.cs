@@ -43,6 +43,7 @@ public sealed class MacroEditViewModel : Observable
             if (Set(ref _name, value))
             {
                 OnPropertyChanged(nameof(HasValidationError));
+                OnPropertyChanged(nameof(IsValid));
             }
         }
     }
@@ -62,6 +63,8 @@ public sealed class MacroEditViewModel : Observable
     public ObservableCollection<MacroStepViewModel> Steps { get; }
 
     public bool HasValidationError => string.IsNullOrWhiteSpace(_name);
+
+    public bool IsValid => !HasValidationError;
 
     public MacroDefinition ToDefinition() => new()
     {

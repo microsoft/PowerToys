@@ -62,11 +62,13 @@
                                             OffContent=""
                                             OnContent="" />
                                         <Button
-                                            Content="Edit"
+                                            x:Uid="Macro_EditButton"
+                                            AutomationProperties.AutomationId="MacroEditButton"
                                             Tag="{x:Bind}"
                                             Click="EditMacro_Click" />
                                         <Button
-                                            Content="Delete"
+                                            x:Uid="Macro_DeleteButton"
+                                            AutomationProperties.AutomationId="MacroDeleteButton"
                                             Tag="{x:Bind}"
                                             Click="DeleteMacro_Click" />
                                     </StackPanel>

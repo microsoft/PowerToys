@@ -15,6 +15,7 @@
     MinWidth="480"
     CloseButtonText="Cancel"
     DefaultButton="Primary"
+    IsPrimaryButtonEnabled="{x:Bind ViewModel.IsValid, Mode=OneWay}"
     PrimaryButtonText="Save"
     mc:Ignorable="d">
 
