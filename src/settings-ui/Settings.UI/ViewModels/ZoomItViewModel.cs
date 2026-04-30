@@ -66,6 +66,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 MicrophoneList.Add(new Tuple<string, string>(microphone.Id, microphone.Name));
             }
+
+            // Re-notify so the ComboBox re-resolves SelectedValue against the now-populated list.
+            OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
         }
 
         private async void LoadWebcamList()
@@ -977,9 +980,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _zoomItSettings.Properties.MicrophoneDeviceId.Value;
             set
             {
+                // Ignore null: the ComboBox sends null when SelectedValue can't be
+                // matched (e.g. the async device list hasn't loaded yet).  Accepting
+                // null would overwrite the persisted device with empty string.
+                if (value == null)
+                {
+                    return;
+                }
+
                 if (_zoomItSettings.Properties.MicrophoneDeviceId.Value != value)
                 {
-                    _zoomItSettings.Properties.MicrophoneDeviceId.Value = value ?? string.Empty; // If we're trying to save a null, just default to empty string, which means default microphone.
+                    _zoomItSettings.Properties.MicrophoneDeviceId.Value = value;
                     OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
                     NotifySettingsChanged();
                 }
