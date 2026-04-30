@@ -14,10 +14,10 @@ internal sealed class SendInputHelper : ISendInputHelper
 
     public void PressKeyCombo(string combo)
     {
-        var (modifierVks, mainVk) = KeyParser.ParseKeyCombo(combo);
+        var (modifierKeys, mainVk) = KeyParser.ParseKeyCombo(combo);
         var inputs = new List<INPUT>();
 
-        foreach (var mod in modifierVks)
+        foreach (var mod in modifierKeys)
         {
             inputs.Add(KeyDown(mod));
         }
@@ -25,7 +25,7 @@ internal sealed class SendInputHelper : ISendInputHelper
         inputs.Add(KeyDown(mainVk));
         inputs.Add(KeyUp(mainVk));
 
-        foreach (var mod in Enumerable.Reverse(modifierVks))
+        foreach (var mod in Enumerable.Reverse(modifierKeys))
         {
             inputs.Add(KeyUp(mod));
         }

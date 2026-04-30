@@ -106,21 +106,21 @@ internal static class KeyParser
     }
 
     /// <summary>Parses "Ctrl+C" → list of modifier VK codes + main VK for SendInput key-combo.</summary>
-    internal static (IReadOnlyList<ushort> ModifierVks, ushort MainVk) ParseKeyCombo(string combo)
+    internal static (IReadOnlyList<ushort> ModifierKeys, ushort MainVk) ParseKeyCombo(string combo)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(combo, nameof(combo));
 
-        var modifierVks = new List<ushort>();
+        var modifierKeys = new List<ushort>();
         ushort mainVk = 0;
 
         foreach (var part in combo.Split('+').Select(p => p.Trim()))
         {
             switch (part.ToUpperInvariant())
             {
-                case "CTRL" or "CONTROL": modifierVks.Add(VkLControl); break;
-                case "ALT": modifierVks.Add(VkLMenu); break;
-                case "SHIFT": modifierVks.Add(VkLShift); break;
-                case "WIN": modifierVks.Add(VkLWin); break;
+                case "CTRL" or "CONTROL": modifierKeys.Add(VkLControl); break;
+                case "ALT": modifierKeys.Add(VkLMenu); break;
+                case "SHIFT": modifierKeys.Add(VkLShift); break;
+                case "WIN": modifierKeys.Add(VkLWin); break;
                 default: mainVk = ParseKey(part); break;
             }
         }
@@ -130,6 +130,6 @@ internal static class KeyParser
             throw new ArgumentException($"No main key found in combo: '{combo}'");
         }
 
-        return (ModifierVks: modifierVks, MainVk: mainVk);
+        return (ModifierKeys: modifierKeys, MainVk: mainVk);
     }
 }
