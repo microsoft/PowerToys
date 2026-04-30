@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.Views;
 
@@ -20,6 +22,12 @@ public sealed partial class MacroPage : NavigablePage
         ViewModel = new MacroViewModel();
         DataContext = ViewModel;
         InitializeComponent();
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+        ViewModel.Dispose();
     }
 
     private async void NewMacro_Click(object sender, RoutedEventArgs e)
@@ -72,12 +80,16 @@ public sealed partial class MacroPage : NavigablePage
             return;
         }
 
+        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
         var confirm = new ContentDialog
         {
-            Title = "Delete macro?",
-            Content = $"'{item.Name}' will be permanently deleted.",
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
+            Title = resourceLoader.GetString("Macro_DeleteDialog_Title"),
+            Content = string.Format(
+                CultureInfo.CurrentCulture,
+                "'{0}' will be permanently deleted.",
+                item.Name),
+            PrimaryButtonText = resourceLoader.GetString("Macro_DeleteDialog_PrimaryButtonText"),
+            CloseButtonText = resourceLoader.GetString("Macro_DeleteDialog_CloseButtonText"),
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = XamlRoot,
         };
