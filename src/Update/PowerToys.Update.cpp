@@ -181,6 +181,8 @@ bool InstallNewVersionStage2(std::wstring installer_path)
         state.state = UpdateState::upToDate;
     });
 
+    updating::cleanup_updates();
+
     return true;
 }
 

@@ -552,7 +552,7 @@ int WINAPI WinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, LPSTR l
 
         std::thread{ [] {
             auto state = UpdateState::read();
-            if (state.state == UpdateState::upToDate)
+            if (state.state != UpdateState::readyToInstall || state.downloadedInstallerFilename.empty())
             {
                 updating::cleanup_updates();
             }
