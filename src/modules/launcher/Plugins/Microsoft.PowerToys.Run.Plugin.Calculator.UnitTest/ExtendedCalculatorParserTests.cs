@@ -192,6 +192,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("cos", false)]
         [DataRow("abs", false)]
         [DataRow("1+1.1e3", true)]
+        [DataRow(".76*2.4", true)]
+        [DataRow("-.5*2", true)]
         [DataRow("randi(8)", true)]
         [DataRow("randi()", false)]
         [DataRow("randi(0.5)", true)]
@@ -237,6 +239,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "0+(1*2)/(0+1)", 2M }, // Validate that division by "(0+1)" is not interpret as division by zero.
                new object[] { "0+(1*2)/0.5", 4M }, // Validate that division by number with decimal digits is not interpret as division by zero.
                new object[] { "0+(1*2)/0o004", 0.5M }, // Validate that division by an octal number with zeroes is not treated as division by zero.
+               new object[] { ".76*2.4", 1.824M },
+               new object[] { "-.5*2", -1M },
            };
 
         [DataTestMethod]
