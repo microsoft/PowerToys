@@ -1,0 +1,263 @@
+name: Auto Label Product on Issue Creation
+
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'single: label one issue, batch: label all issues missing Product- labels'
+        required: true
+        type: choice
+        options:
+          - single
+          - batch
+        default: single
+      issue_number:
+        description: 'Issue number (only used in single mode)'
+        required: false
+        type: number
+      dry_run:
+        description: 'If true, only log what labels would be applied without applying them'
+        required: false
+        type: boolean
+        default: true
+      batch_limit:
+        description: 'Max issues to process in batch mode (default: 50)'
+        required: false
+        type: number
+        default: 50
+
+permissions:
+  issues: write
+  models: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number || github.event.inputs.issue_number || 'batch' }}
+  cancel-in-progress: true
+
+jobs:
+  label-product:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto-apply Product labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const isManual = context.eventName === 'workflow_dispatch';
+            const dryRun = isManual ? (context.payload.inputs.dry_run === 'true') : false;
+            const batchMode = isManual && context.payload.inputs.mode === 'batch';
+            const batchLimit = isManual ? parseInt(context.payload.inputs.batch_limit || '50') : 1;
+
+            // Mapping from issue template "Area(s) with issue?" values to Product- labels
+            const AREA_TO_LABEL = {
+              'Advanced Paste': 'Product-Advanced Paste',
+              'Always on Top': 'Product-Always On Top',
+              'Awake': 'Product-Awake',
+              'ColorPicker': 'Product-Color Picker',
+              'Command not found': 'Product-CommandNotFound',
+              'Command Palette': 'Product-Command Palette',
+              'Crop and Lock': 'Product-CropAndLock',
+              'Environment Variables': 'Product-Environment Variables',
+              'FancyZones': 'Product-FancyZones',
+              'FancyZones Editor': 'Product-FancyZones',
+              'File Locksmith': 'Product-File Locksmith',
+              'File Explorer: Preview Pane': 'Product-File Explorer',
+              'File Explorer: Thumbnail preview': 'Product-File Explorer',
+              'Hosts File Editor': 'Product-Hosts File Editor',
+              'Image Resizer': 'Product-Image Resizer',
+              'Keyboard Manager': 'Product-Keyboard Shortcut Manager',
+              'Light Switch': 'Product-LightSwitch',
+              'Mouse Utilities': 'Product-Mouse Utilities',
+              'Mouse Without Borders': 'Product-Mouse Without Borders',
+              'New+': 'Product-New+',
+              'Peek': 'Product-Peek',
+              'Power Display': 'Product-PowerDisplay',
+              'PowerRename': 'Product-PowerRename',
+              'PowerToys Run': 'Product-PowerToys Run',
+              'Quick Accent': 'Product-Quick Accent',
+              'Registry Preview': 'Product-Registry Preview',
+              'Screen ruler': 'Product-Screen Ruler',
+              'Settings': 'Product-Settings',
+              'Shortcut Guide': 'Product-Shortcut Guide',
+              'TextExtractor': 'Product-Text Extractor',
+              'Workspaces': 'Product-Workspaces',
+              'ZoomIt': 'Product-ZoomIt',
+              'General': 'Product-General',
+              'Grab And Move': 'Product-Grab And Move',
+            };
+
+            const ALL_PRODUCT_LABELS = [...new Set(Object.values(AREA_TO_LABEL))].sort();
+
+            // ─── Collect issues to process ───
+            let issues = [];
+            if (batchMode) {
+              // Fetch open issues that have no Product-* label
+              core.info(`Batch mode: fetching up to ${batchLimit} issues without Product- labels...`);
+              let page = 1;
+              while (issues.length < batchLimit) {
+                const { data } = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  per_page: 100,
+                  page: page++,
+                  sort: 'created',
+                  direction: 'desc',
+                });
+                if (data.length === 0) break;
+                for (const issue of data) {
+                  if (issue.pull_request) continue; // skip PRs
+                  const hasProductLabel = issue.labels.some(l => l.name.startsWith('Product-'));
+                  if (!hasProductLabel) {
+                    issues.push(issue);
+                    if (issues.length >= batchLimit) break;
+                  }
+                }
+              }
+              core.info(`Found ${issues.length} issues to process.`);
+            } else if (isManual) {
+              const issueNumber = parseInt(context.payload.inputs.issue_number);
+              if (!issueNumber) { core.setFailed('issue_number is required in single mode'); return; }
+              const { data } = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+              });
+              issues = [data];
+            } else {
+              issues = [context.payload.issue];
+            }
+
+            // ─── Process each issue ───
+            const summaryRows = [];
+
+            for (const issue of issues) {
+              const body = issue.body || '';
+              const title = issue.title || '';
+
+              // Parse the "Area(s) with issue?" field
+              const areaMatch = body.match(/### Area\(s\) with issue\?\s*\n\n([\s\S]*?)(?=\n\n###|\n*$)/);
+              let selectedAreas = [];
+              if (areaMatch) {
+                const areaText = areaMatch[1].trim();
+                selectedAreas = areaText.split(',').map(s => s.trim()).filter(Boolean);
+              }
+
+              // Resolve labels from the structured field
+              const resolvedLabels = new Set();
+              for (const area of selectedAreas) {
+                if (AREA_TO_LABEL[area]) {
+                  resolvedLabels.add(AREA_TO_LABEL[area]);
+                }
+              }
+
+              // AI fallback if no deterministic match
+              if (resolvedLabels.size === 0) {
+                core.info(`#${issue.number}: No deterministic match, trying AI inference...`);
+                try {
+                  const prompt = `You are a GitHub issue triage assistant for the PowerToys project.
+            Given the following issue title and body, determine which PowerToys product(s) this issue is PRIMARILY about.
+
+            Rules:
+            - Only include products the issue is directly reporting a bug for or requesting a feature in.
+            - Do NOT include products that are merely mentioned as examples or comparisons.
+            - When in doubt, prefer fewer labels over more. One correct label is better than many guesses.
+            - If the issue is about general PowerToys infrastructure (installer, settings app, system tray), use "Product-General" or "Product-Settings" as appropriate.
+
+            Respond with ONLY a JSON array of label strings from this list:
+            ${JSON.stringify(ALL_PRODUCT_LABELS)}
+
+            If you cannot determine the product, respond with an empty array: []
+
+            Issue title: ${title}
+
+            Issue body (first 2000 chars):
+            ${body.substring(0, 2000)}`;
+
+                  const response = await fetch('https://models.github.ai/inference/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${process.env.GITHUB_TOKEN}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      model: 'openai/gpt-4.1-mini',
+                      messages: [{ role: 'user', content: prompt }],
+                      temperature: 0,
+                    }),
+                  });
+
+                  if (response.ok) {
+                    const data = await response.json();
+                    const content = data.choices?.[0]?.message?.content || '';
+                    const jsonMatch = content.match(/\[[\s\S]*?\]/);
+                    if (jsonMatch) {
+                      const inferred = JSON.parse(jsonMatch[0]);
+                      for (const label of inferred) {
+                        if (ALL_PRODUCT_LABELS.includes(label)) {
+                          resolvedLabels.add(label);
+                        }
+                      }
+                    }
+                    core.info(`#${issue.number}: AI inferred: ${[...resolvedLabels].join(', ') || '(none)'}`);
+                  } else {
+                    core.warning(`#${issue.number}: AI inference failed (${response.status})`);
+                  }
+                } catch (err) {
+                  core.warning(`#${issue.number}: AI error: ${err.message}`);
+                }
+              }
+
+              if (resolvedLabels.size === 0) {
+                summaryRows.push([`#${issue.number}`, title.substring(0, 60), '(none)', 'skipped']);
+                continue;
+              }
+
+              // Validate labels exist
+              const labelsToApply = [];
+              for (const label of resolvedLabels) {
+                try {
+                  await github.rest.issues.getLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label,
+                  });
+                  labelsToApply.push(label);
+                } catch (err) {
+                  if (err.status === 404) {
+                    core.warning(`Label "${label}" not found in repo, skipping.`);
+                  }
+                }
+              }
+
+              if (labelsToApply.length === 0) {
+                summaryRows.push([`#${issue.number}`, title.substring(0, 60), '(labels not found)', 'skipped']);
+                continue;
+              }
+
+              // Apply or dry-run
+              if (dryRun) {
+                core.info(`[DRY RUN] #${issue.number}: would apply ${labelsToApply.join(', ')}`);
+                summaryRows.push([`#${issue.number}`, title.substring(0, 60), labelsToApply.join(', '), 'dry-run']);
+              } else {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: labelsToApply,
+                });
+                core.info(`#${issue.number}: applied ${labelsToApply.join(', ')}`);
+                summaryRows.push([`#${issue.number}`, title.substring(0, 60), labelsToApply.join(', '), 'applied']);
+              }
+            }
+
+            // Write job summary
+            if (summaryRows.length > 0) {
+              core.summary.addHeading(`Auto-Label Results (${dryRun ? 'Dry Run' : 'Applied'})`, 3);
+              core.summary.addTable([
+                [{data: 'Issue', header: true}, {data: 'Title', header: true}, {data: 'Labels', header: true}, {data: 'Status', header: true}],
+                ...summaryRows,
+              ]);
+              await core.summary.write();
+            }
