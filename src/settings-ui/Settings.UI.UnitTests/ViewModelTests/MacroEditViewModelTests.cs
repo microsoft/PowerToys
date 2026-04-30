@@ -33,8 +33,7 @@ public sealed class MacroEditViewModelTests
 
         Assert.AreEqual("My Macro", vm.Name);
         Assert.AreEqual("notepad.exe", vm.AppScope);
-        Assert.IsTrue(vm.Hotkey.Ctrl);
-        Assert.AreEqual(0x78, vm.Hotkey.Code); // F9
+        Assert.AreEqual("Ctrl+F9", vm.HotkeyText);
     }
 
     [TestMethod]
