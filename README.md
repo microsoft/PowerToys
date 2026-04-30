@@ -131,3 +131,5 @@ The application logs basic diagnostic data (telemetry). For more privacy informa
 [oss-CLA]: https://cla.opensource.microsoft.com
 [oss-conduct-code]: CODE_OF_CONDUCT.md
 [community-link]: COMMUNITY.md
+
+- [EnigmAgent](https://github.com/Agnuxo1/EnigmAgent) — Windows system utility for encrypted AI API key management with zero cloud
