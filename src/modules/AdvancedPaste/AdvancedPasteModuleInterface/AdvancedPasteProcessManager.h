@@ -15,7 +15,7 @@ public:
     AdvancedPasteProcessManager(const AdvancedPasteProcessManager&) = delete;
     AdvancedPasteProcessManager& operator=(const AdvancedPasteProcessManager&) = delete;
 
-    void start();
+    void start(bool exit_after_use = false);
     void stop();
     void send_message(const std::wstring& message_type, const std::wstring& message_arg = L"");
     void bring_to_front();
@@ -31,6 +31,7 @@ private:
 
     OnThreadExecutor m_thread_executor; // all internal operations are done on background thread with task queue
     std::atomic<bool> m_enabled = false; // written on main thread, read on background thread
+    std::atomic<bool> m_exit_after_use = false; // written on main thread, read on background thread
     HANDLE m_hProcess = 0;
     std::unique_ptr<CAtlFile> m_write_pipe;
 };

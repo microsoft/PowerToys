@@ -60,7 +60,7 @@ namespace ColorPicker.ViewModels
 
             NativeEventWaiter.WaitForEventLoop(
                 Constants.TerminateColorPickerSharedEvent(),
-                Application.Current.Shutdown,
+                () => (Application.Current as ColorPickerUI.App)?.RequestShutdown(),
                 Application.Current.Dispatcher,
                 exitToken);
 

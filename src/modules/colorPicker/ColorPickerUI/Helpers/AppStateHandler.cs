@@ -84,6 +84,7 @@ namespace ColorPicker.Helpers
             {
                 if (IsColorPickerEditorVisible() || _colorPickerShown)
                 {
+                    bool isRunningDetached = (System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys();
                     if (IsColorPickerEditorVisible())
                     {
                         HideColorPickerEditor();
@@ -93,12 +94,17 @@ namespace ColorPicker.Helpers
                         HideColorPicker();
                     }
 
-                    if (!(System.Windows.Application.Current as ColorPickerUI.App).IsRunningDetachedFromPowerToys())
+                    if (!isRunningDetached)
                     {
                         UserSessionEnded?.Invoke(this, EventArgs.Empty);
                     }
 
                     SessionEventHelper.End();
+
+                    if (!isRunningDetached && (System.Windows.Application.Current as ColorPickerUI.App).ExitAfterClose)
+                    {
+                        (System.Windows.Application.Current as ColorPickerUI.App)?.RequestShutdown();
+                    }
 
                     return true;
                 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,7 @@ namespace Peek.UI
         private bool _disposed;
         private SelectedItem? _selectedItem;
         private bool _launchedFromCli;
+        private bool _exitAfterClose;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -104,6 +106,7 @@ namespace Peek.UI
             }
 
             var cmdArgs = Environment.GetCommandLineArgs();
+            _exitAfterClose = cmdArgs.Contains("--exit-after-close", StringComparer.OrdinalIgnoreCase);
             if (cmdArgs?.Length > 1)
             {
                 // Check if the last argument is a PowerToys Runner PID
@@ -169,7 +172,7 @@ namespace Peek.UI
                 Window = new MainWindow();
             }
 
-            Window.Toggle(firstActivation, _selectedItem, _launchedFromCli);
+            Window.Toggle(firstActivation, _selectedItem, _launchedFromCli || _exitAfterClose);
             _launchedFromCli = false;
             _selectedItem = null;
         }

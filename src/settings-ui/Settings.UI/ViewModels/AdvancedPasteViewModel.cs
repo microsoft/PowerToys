@@ -14,6 +14,7 @@ using System.Runtime.Versioning;
 using System.Text.Json;
 
 using global::PowerToys.GPOWrapper;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -99,6 +100,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+            InitializeLowMemorySettings(GeneralSettingsConfig, SendConfigMSG, ModuleType.AdvancedPaste);
 
             _additionalActions = _advancedPasteSettings.Properties.AdditionalActions;
             _customActions = _advancedPasteSettings.Properties.CustomActions.Value ?? new ObservableCollection<AdvancedPasteCustomAction>();

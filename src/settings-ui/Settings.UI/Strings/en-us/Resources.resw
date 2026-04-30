@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -6020,6 +6020,42 @@ Text uses the current drawing color.</value>
   </data>
   <data name="GeneralPage_QuickAccessShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
+  </data>
+  <data name="GeneralPage_LowMemoryMode.Header" xml:space="preserve">
+    <value>Close apps when inactive</value>
+  </data>
+  <data name="GeneralPage_LowMemoryMode.Description" xml:space="preserve">
+    <value>Select apps that close when not in use to save memory. They may open slower.</value>
+  </data>
+  <data name="GeneralPage_LowMemoryModeAllSupported.Header" xml:space="preserve">
+    <value>All apps</value>
+  </data>
+  <data name="GeneralPage_LowMemoryModeAllSupported.Description" xml:space="preserve">
+    <value>Apply this behavior to every app in this list.</value>
+  </data>
+  <data name="GeneralPage_LowMemoryModeEnableAll.Content" xml:space="preserve">
+    <value>Enable all</value>
+  </data>
+  <data name="GeneralPage_LowMemoryModeDisableAll.Content" xml:space="preserve">
+    <value>Disable all</value>
+  </data>
+  <data name="GeneralPage_LowMemoryTextExtractor.Header" xml:space="preserve">
+    <value>Text Extractor</value>
+  </data>
+  <data name="GeneralPage_LowMemoryColorPicker.Header" xml:space="preserve">
+    <value>Color Picker</value>
+  </data>
+  <data name="GeneralPage_LowMemoryAdvancedPaste.Header" xml:space="preserve">
+    <value>Advanced Paste</value>
+  </data>
+  <data name="GeneralPage_LowMemoryPeek.Header" xml:space="preserve">
+    <value>Peek</value>
+  </data>
+  <data name="CloseAppWhenInactive.Header" xml:space="preserve">
+    <value>Close app when inactive</value>
+  </data>
+  <data name="CloseAppWhenInactive.Description" xml:space="preserve">
+    <value>Closes the app when not in use to save memory. It may open slower.</value>
   </data>
   <data name="LightSwitch_ModeFollowNightLight.Content" xml:space="preserve">
     <value>Follow Night Light</value>
