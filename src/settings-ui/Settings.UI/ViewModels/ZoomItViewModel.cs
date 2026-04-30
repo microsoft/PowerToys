@@ -977,7 +977,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string RecordMicrophoneDeviceId
         {
-            get => _zoomItSettings.Properties.MicrophoneDeviceId.Value;
+            get => _zoomItSettings.Properties.MicrophoneDeviceId.Value ?? string.Empty;
             set
             {
                 // Ignore null: the ComboBox sends null when SelectedValue can't be
@@ -1013,7 +1013,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string WebcamDeviceSymLink
         {
-            get => _zoomItSettings.Properties.WebcamDeviceSymLink.Value;
+            get => _zoomItSettings.Properties.WebcamDeviceSymLink.Value ?? string.Empty;
             set
             {
                 // Ignore null: the ComboBox sends null when SelectedValue can't be
