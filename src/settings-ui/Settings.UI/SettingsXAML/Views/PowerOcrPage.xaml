@@ -1,4 +1,4 @@
-﻿<local:NavigablePage
+<local:NavigablePage
     x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerOcrPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -35,6 +35,15 @@
                             IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
+                <tkcontrols:SettingsCard
+                    Name="TextExtractorLowMemoryMode"
+                    x:Uid="CloseAppWhenInactive"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE8BE;}">
+                    <ToggleSwitch
+                        x:Uid="ToggleSwitch"
+                        AutomationProperties.Name="{Binding ElementName=TextExtractorLowMemoryMode, Path=Header}"
+                        IsOn="{x:Bind ViewModel.UseLowMemoryMode, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
                 <InfoBar
                     x:Uid="TextExtractor_SupportedLanguages"
                     IsClosable="False"

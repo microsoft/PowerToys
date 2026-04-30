@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -57,6 +57,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("enable_quick_access")]
         public bool EnableQuickAccess { get; set; }
 
+        // Gets or sets a derived value indicating whether any supported utility uses low memory mode.
+        [JsonPropertyName("low_memory_mode")]
+        public bool LowMemoryMode { get; set; }
+
+        [JsonPropertyName("low_memory_modules")]
+        public LowMemoryModuleSettings LowMemoryModules { get; set; }
+
         // Gets or sets Quick Access shortcut.
         [JsonPropertyName("quick_access_shortcut")]
         public HotkeySettings QuickAccessShortcut { get; set; }
@@ -108,6 +115,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IsAdmin = false;
             EnableWarningsElevatedApps = true;
             EnableQuickAccess = true;
+            LowMemoryMode = false;
+            LowMemoryModules = new LowMemoryModuleSettings();
             QuickAccessShortcut = new HotkeySettings();
             IsElevated = false;
             ShowNewUpdatesToastNotification = true;

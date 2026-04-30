@@ -21,6 +21,8 @@ struct GeneralSettings
     bool isAdmin;
     bool enableWarningsElevatedApps;
     bool enableQuickAccess;
+    bool lowMemoryMode;
+    json::JsonObject lowMemoryModules;
     PowerToysSettings::HotkeyObject quickAccessShortcut;
     bool showNewUpdatesToastNotification;
     bool downloadUpdatesAutomatically;
