@@ -381,6 +381,9 @@
   <data name="ErrorMessage_InvalidChar" xml:space="preserve">
     <value>File name contains invalid character(s):&#xD;&#xA; &gt; &lt; | " : ? * \ /</value>
   </data>
+  <data name="ErrorMessage_RenameFailed" xml:space="preserve">
+    <value>This item couldn't be renamed.</value>
+  </data>
   <data name="RenameParts_FilenameAndExtension.Content" xml:space="preserve">
     <value>Filename + extension</value>
   </data>
