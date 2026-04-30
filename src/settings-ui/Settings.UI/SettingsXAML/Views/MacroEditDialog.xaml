@@ -141,10 +141,28 @@
                                                     </Style>
                                                 </ListView.ItemContainerStyle>
                                             </ListView>
-                                            <Button
-                                                x:Uid="MacroEdit_AddSubStep"
-                                                Click="AddSubStep_Click"
-                                                Tag="{x:Bind}" />
+                                            <Button x:Uid="MacroEdit_AddSubStep" Tag="{x:Bind}">
+                                                <Button.Flyout>
+                                                    <MenuFlyout>
+                                                        <MenuFlyoutItem
+                                                            Click="AddSubStep_Click"
+                                                            Tag="PressKey"
+                                                            Text="Press Key" />
+                                                        <MenuFlyoutItem
+                                                            Click="AddSubStep_Click"
+                                                            Tag="TypeText"
+                                                            Text="Type Text" />
+                                                        <MenuFlyoutItem
+                                                            Click="AddSubStep_Click"
+                                                            Tag="Wait"
+                                                            Text="Wait" />
+                                                        <MenuFlyoutItem
+                                                            Click="AddSubStep_Click"
+                                                            Tag="Repeat"
+                                                            Text="Repeat" />
+                                                    </MenuFlyout>
+                                                </Button.Flyout>
+                                            </Button>
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>

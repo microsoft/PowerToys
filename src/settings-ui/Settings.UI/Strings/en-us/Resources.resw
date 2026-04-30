@@ -4572,18 +4572,27 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="Macro_EditButton.Content" xml:space="preserve">
     <value>Edit</value>
+    <comment>Button label to open the edit dialog for an existing macro</comment>
   </data>
   <data name="Macro_DeleteButton.Content" xml:space="preserve">
     <value>Delete</value>
+    <comment>Button label to delete an existing macro</comment>
   </data>
   <data name="Macro_DeleteDialog_Title" xml:space="preserve">
     <value>Delete macro?</value>
+    <comment>Title of the confirmation dialog shown before deleting a macro</comment>
+  </data>
+  <data name="Macro_DeleteDialog_Content" xml:space="preserve">
+    <value>'{0}' will be permanently deleted.</value>
+    <comment>Confirmation dialog body when deleting a macro. {0} is replaced with the macro name.</comment>
   </data>
   <data name="Macro_DeleteDialog_PrimaryButtonText" xml:space="preserve">
     <value>Delete</value>
+    <comment>Primary button text in the delete macro confirmation dialog</comment>
   </data>
   <data name="Macro_DeleteDialog_CloseButtonText" xml:space="preserve">
     <value>Cancel</value>
+    <comment>Close/cancel button text in the delete macro confirmation dialog</comment>
   </data>
   <data name="Shell_ZoomIt.Content" xml:space="preserve">
     <value>ZoomIt</value>
