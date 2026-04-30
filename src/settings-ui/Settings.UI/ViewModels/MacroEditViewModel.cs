@@ -6,7 +6,6 @@
 
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using PowerToys.MacroCommon.Models;
 
@@ -15,7 +14,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels;
 public sealed class MacroEditViewModel : Observable
 {
     private string _name;
-    private HotkeySettings _hotkey;
+    private string? _hotkeyText;
     private string? _appScope;
     private bool _isEnabled;
 
@@ -28,7 +27,7 @@ public sealed class MacroEditViewModel : Observable
     {
         OriginalId = definition.Id;
         _name = definition.Name;
-        _hotkey = MacroHotkeyConverter.ToHotkeySettings(definition.Hotkey);
+        _hotkeyText = definition.Hotkey;
         _appScope = definition.AppScope;
         _isEnabled = definition.IsEnabled;
         Steps = new ObservableCollection<MacroStepViewModel>(
@@ -50,10 +49,10 @@ public sealed class MacroEditViewModel : Observable
         }
     }
 
-    public HotkeySettings Hotkey
+    public string? HotkeyText
     {
-        get => _hotkey;
-        set => Set(ref _hotkey, value);
+        get => _hotkeyText;
+        set => Set(ref _hotkeyText, value);
     }
 
     public string? AppScope
@@ -72,7 +71,7 @@ public sealed class MacroEditViewModel : Observable
     {
         Id = OriginalId,
         Name = Name.Trim(),
-        Hotkey = MacroHotkeyConverter.FromHotkeySettings(Hotkey),
+        Hotkey = string.IsNullOrWhiteSpace(HotkeyText) ? null : HotkeyText!.Trim(),
         AppScope = string.IsNullOrWhiteSpace(AppScope) ? null : AppScope!.Trim(),
         IsEnabled = _isEnabled,
         Steps = [.. Steps.Select(s => s.ToModel())],
