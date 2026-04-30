@@ -63,7 +63,7 @@
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.MistralAI" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.Ollama" Version="1.66.0-alpha" />
     <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.2" />
-    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3179.45" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3719.77" />
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="9.0.10" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
