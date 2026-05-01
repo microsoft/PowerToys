@@ -32,7 +32,7 @@ public sealed partial class CalculatorListPage : DynamicListPage
     private List<ListItem> _historyItems = [];
 
     // This is the text that saved when the user click the result.
-    // We need to avoid the double calculation. This may cause some wierd behaviors.
+    // We need to avoid the double calculation. This may cause some weird behaviors.
     private string _skipQuerySearchText = string.Empty;
 
     public CalculatorListPage(ISettingsInterface settings)

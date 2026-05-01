@@ -285,7 +285,7 @@ inline void CreateEditShortcutsWindowImpl(HINSTANCE hInst, KBMEditor::KeyboardMa
         auto isHidden = false;
 
         // check to see if this should be hidden because it's NOT the one we are looking for.
-        // It will still be there for backward compatability, just not visible
+        // It will still be there for backward compatibility, just not visible
         if (!keysForShortcutToEdit.empty())
         {
             isHidden = (keysForShortcutToEdit != it.first.ToHstringVK());

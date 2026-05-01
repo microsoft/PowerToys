@@ -325,7 +325,7 @@ internal static class TimeAndDateHelper
     /// <param name="calWeek">Value for relacing calendar week.</param>
     /// <param name="eraShortFormat">Era abbreviation.</param>
     /// <param name="format">Format definition.</param>
-    /// <returns>Formated date/time string.</returns>
+    /// <returns>Formatted date/time string.</returns>
     internal static string ConvertToCustomFormat(DateTime date, long unix, long unixMilliseconds, int calWeek, string eraShortFormat, string format, CalendarWeekRule firstWeekRule, DayOfWeek firstDayOfTheWeek)
     {
         var result = format;
