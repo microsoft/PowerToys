@@ -29,12 +29,15 @@ public sealed partial class ParameterRunTemplateSelector : DataTemplateSelector
 
     public DataTemplate? ButtonParamTemplate { get; set; }
 
+    public DataTemplate? ListParamTemplate { get; set; }
+
     protected override DataTemplate? SelectTemplateCore(object item)
     {
         return item switch
         {
             LabelRunViewModel => LabelRunTemplate,
             StringParameterRunViewModel => StringParamTemplate,
+            CommandParameterRunViewModel { IsListParameter: true } => ListParamTemplate,
             CommandParameterRunViewModel => ButtonParamTemplate,
             _ => base.SelectTemplateCore(item),
         };

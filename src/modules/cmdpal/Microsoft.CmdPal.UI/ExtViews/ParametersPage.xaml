@@ -9,7 +9,6 @@
     xmlns:cmdpalUI="using:Microsoft.CmdPal.UI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
-    xmlns:coreViewModels="using:Microsoft.CmdPal.Core.ViewModels"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:local="using:Microsoft.CmdPal.UI"
@@ -19,51 +18,115 @@
     mc:Ignorable="d">
 
     <Page.Resources>
-        <ResourceDictionary />
+        <ResourceDictionary>
+            <DataTemplate x:Key="ParameterListItemTemplate" x:DataType="viewModels:ListItemViewModel">
+                <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="28" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <cmdPalControls:IconBox
+                        Grid.Column="0"
+                        Width="20"
+                        Height="20"
+                        AutomationProperties.AccessibilityView="Raw"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        SourceKey="{x:Bind Icon, Mode=OneWay}"
+                        SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+
+                    <Grid Grid.Column="1" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            CharacterSpacing="12"
+                            FontSize="14"
+                            MaxLines="1"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind Title, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />
+
+                        <TextBlock
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            CharacterSpacing="12"
+                            FontSize="14"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            MaxLines="1"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            Text="{x:Bind Subtitle, Mode=OneWay}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap"
+                            Visibility="{x:Bind ShowSubtitle, Mode=OneWay}" />
+                    </Grid>
+                </Grid>
+            </DataTemplate>
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid>
         <controls:SwitchPresenter
             HorizontalAlignment="Stretch"
             TargetType="x:Boolean"
-            Value="{x:Bind ViewModel.ShowCommand, Mode=OneWay}">
-            <controls:Case Value="False">
-                <!--
-                    what kind of content do we want on this page before it
-                    has a command? Anything? Nothing?
-                -->
-            </controls:Case>
+            Value="{x:Bind ViewModel.HasActiveList, Mode=OneWay}">
             <controls:Case Value="True">
-                <StackPanel
-                    Margin="24"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Orientation="Vertical"
-                    Spacing="4">
-                    <cmdPalControls:IconBox
-                        x:Name="IconBorder"
-                        Width="48"
-                        Height="48"
-                        Margin="8"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        SourceKey="{x:Bind ViewModel.Command.Icon, Mode=OneWay}"
-                        SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
-                    <TextBlock
-                        Margin="0,4,0,0"
-                        HorizontalAlignment="Center"
-                        FontWeight="SemiBold"
-                        Text="{x:Bind ViewModel.Command.Title, Mode=OneWay}"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap" />
-                    <TextBlock
-                        HorizontalAlignment="Center"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Text="{x:Bind ViewModel.Command.Subtitle, Mode=OneWay}"
-                        TextAlignment="Center"
-                        TextWrapping="Wrap" />
-                </StackPanel>
+                <!--  Show list items from the active list parameter  -->
+                <ListView
+                    x:Name="ParamItemsList"
+                    Padding="0,2,0,0"
+                    IsItemClickEnabled="True"
+                    ItemClick="ParamItems_ItemClick"
+                    ItemTemplate="{StaticResource ParameterListItemTemplate}"
+                    ItemsSource="{x:Bind ViewModel.ActiveListViewModel.FilteredItems, Mode=OneWay}">
+                    <ListView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </ListView.ItemContainerTransitions>
+                </ListView>
             </controls:Case>
-
+            <controls:Case Value="False">
+                <controls:SwitchPresenter
+                    HorizontalAlignment="Stretch"
+                    TargetType="x:Boolean"
+                    Value="{x:Bind ViewModel.ShowCommand, Mode=OneWay}">
+                    <controls:Case Value="False" />
+                    <controls:Case Value="True">
+                        <StackPanel
+                            Margin="24"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Orientation="Vertical"
+                            Spacing="4">
+                            <cmdPalControls:IconBox
+                                x:Name="IconBorder"
+                                Width="48"
+                                Height="48"
+                                Margin="8"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                SourceKey="{x:Bind ViewModel.Command.Icon, Mode=OneWay}"
+                                SourceRequested="{x:Bind help:IconProvider.SourceRequested64}" />
+                            <TextBlock
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Center"
+                                FontWeight="SemiBold"
+                                Text="{x:Bind ViewModel.Command.Title, Mode=OneWay}"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Text="{x:Bind ViewModel.Command.Subtitle, Mode=OneWay}"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </controls:Case>
+                </controls:SwitchPresenter>
+            </controls:Case>
         </controls:SwitchPresenter>
     </Grid>
 

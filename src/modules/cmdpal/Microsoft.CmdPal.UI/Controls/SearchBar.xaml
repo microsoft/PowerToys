@@ -43,16 +43,35 @@
                     TextChanged="StringParameter_TextChanged" />
             </DataTemplate>
             <DataTemplate x:Key="ListParamTemplate" x:DataType="coreVm:CommandParameterRunViewModel">
-                <TextBox
-                    VerticalAlignment="Center"
-                    PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
-                    Style="{StaticResource SearchParameterTextBoxStyle}"
-                    Text="{x:Bind SearchBoxText, Mode=TwoWay}" />
+                <controls:SwitchPresenter TargetType="x:Boolean" Value="{x:Bind ShowTextBox, Mode=OneWay}">
+                    <controls:Case Value="True">
+                        <TextBox
+                            VerticalAlignment="Center"
+                            GotFocus="ListParameter_GotFocus"
+                            Loaded="ListParameter_Loaded"
+                            LostFocus="ListParameter_LostFocus"
+                            PlaceholderText="{x:Bind PlaceholderText, Mode=OneWay}"
+                            PreviewKeyDown="ListParameter_PreviewKeyDown"
+                            Style="{StaticResource SearchParameterTextBoxStyle}"
+                            Text="{x:Bind SearchBoxText, Mode=TwoWay}"
+                            TextChanged="ListParameter_TextChanged" />
+                    </controls:Case>
+                    <controls:Case Value="False">
+                        <Button
+                            MinHeight="32"
+                            Margin="2,0,2,0"
+                            VerticalAlignment="Center"
+                            VerticalContentAlignment="Stretch"
+                            Click="ListParameterButton_Click"
+                            Content="{x:Bind ButtonLabel, Mode=OneWay}" />
+                    </controls:Case>
+                </controls:SwitchPresenter>
             </DataTemplate>
             <cpcontrols:ParameterRunTemplateSelector
                 x:Key="ParameterRunTemplateSelector"
                 ButtonParamTemplate="{StaticResource ButtonParamTemplate}"
                 LabelRunTemplate="{StaticResource LabelRunTemplate}"
+                ListParamTemplate="{StaticResource ListParamTemplate}"
                 StringParamTemplate="{StaticResource StringParamTemplate}" />
         </ResourceDictionary>
     </UserControl.Resources>

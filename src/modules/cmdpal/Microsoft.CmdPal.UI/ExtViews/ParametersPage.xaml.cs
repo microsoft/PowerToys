@@ -7,6 +7,8 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,7 +19,12 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-public sealed partial class ParametersPage : Page
+public sealed partial class ParametersPage : Page,
+    IRecipient<NavigateNextCommand>,
+    IRecipient<NavigatePreviousCommand>,
+    IRecipient<NavigatePageDownCommand>,
+    IRecipient<NavigatePageUpCommand>,
+    IRecipient<ActivateSelectedListItemMessage>
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
 
@@ -35,6 +42,12 @@ public sealed partial class ParametersPage : Page
     {
         this.InitializeComponent();
         this.Unloaded += OnUnloaded;
+
+        WeakReferenceMessenger.Default.Register<NavigateNextCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePreviousCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePageDownCommand>(this);
+        WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
+        WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
     }
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -96,5 +109,79 @@ public sealed partial class ParametersPage : Page
         {
             Debug.WriteLine($"ViewModel.ShowCommand {ViewModel?.ShowCommand}");
         }
+        else if (prop == nameof(ViewModel.ActiveListViewModel))
+        {
+            if (ViewModel?.HasActiveList == true)
+            {
+                SelectFirstItem();
+            }
+        }
+    }
+
+    private void ParamItems_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is ListItemViewModel item)
+        {
+            ViewModel?.ActiveListViewModel?.InvokeItemCommand.Execute(item);
+        }
+    }
+
+    public void Receive(NavigateNextCommand message) => NavigateList(1);
+
+    public void Receive(NavigatePreviousCommand message) => NavigateList(-1);
+
+    public void Receive(NavigatePageDownCommand message) => NavigateList(10);
+
+    public void Receive(NavigatePageUpCommand message) => NavigateList(-10);
+
+    public void Receive(ActivateSelectedListItemMessage message)
+    {
+        if (ViewModel?.HasActiveList != true)
+        {
+            return;
+        }
+
+        if (ParamItemsList.SelectedItem is ListItemViewModel item)
+        {
+            ViewModel.ActiveListViewModel?.InvokeItemCommand.Execute(item);
+        }
+        else if (ViewModel.ActiveListViewModel?.FilteredItems.Count > 0 &&
+                 ViewModel.ActiveListViewModel.FilteredItems[0] is ListItemViewModel firstItem)
+        {
+            ViewModel.ActiveListViewModel.InvokeItemCommand.Execute(firstItem);
+        }
+    }
+
+    private void NavigateList(int delta)
+    {
+        if (ViewModel?.HasActiveList != true)
+        {
+            return;
+        }
+
+        var list = ParamItemsList;
+        var count = list.Items.Count;
+        if (count == 0)
+        {
+            return;
+        }
+
+        var current = list.SelectedIndex;
+        var target = Math.Clamp(current + delta, 0, count - 1);
+        list.SelectedIndex = target;
+        list.ScrollIntoView(list.SelectedItem);
+    }
+
+    public void SelectFirstItem()
+    {
+        // Use TryEnqueue so the ListView has had time to populate from the binding
+        _queue.TryEnqueue(() =>
+        {
+            if (ParamItemsList.Items.Count > 0)
+            {
+                ParamItemsList.SelectedIndex = 0;
+                ParamItemsList.ScrollIntoView(ParamItemsList.SelectedItem);
+            }
+        });
     }
 }
