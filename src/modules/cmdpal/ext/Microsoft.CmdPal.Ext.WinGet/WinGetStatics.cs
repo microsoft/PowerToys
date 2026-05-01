@@ -94,7 +94,7 @@ internal static class WinGetStatics
             createCompositePackageCatalogOptions.Catalogs.Add(_wingetCatalog);
         }
 
-        // Searches only the catalogs provided, but will correlated with installed items
+        // Searches only the catalogs provided, but will be correlated with installed items
         createCompositePackageCatalogOptions.CompositeSearchBehavior = CompositeSearchBehavior.RemotePackagesFromAllCatalogs;
 
         var catalogRef = WinGetStatics.Manager.CreateCompositePackageCatalog(createCompositePackageCatalogOptions);
