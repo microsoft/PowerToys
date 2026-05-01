@@ -70,14 +70,12 @@ internal static class CommandLauncher
     {
         public static void ActivateApplication(string aumid, string? args, int options, out uint pid)
         {
-            // TODO!
-            // var mgr = (IApplicationActivationManager)new _ApplicationActivationManager();
-            // var hr = mgr.ActivateApplication(aumid, args ?? string.Empty, options, out pid);
-            // if (hr < 0)
-            // {
-            //    throw new Win32Exception(hr);
-            // }
-            throw new Win32Exception(-1);
+            var mgr = (IApplicationActivationManager)new _ApplicationActivationManager();
+            var hr = mgr.ActivateApplication(aumid, args ?? string.Empty, options, out pid);
+            if (hr < 0)
+            {
+                throw new Win32Exception(hr);
+            }
         }
 
         [ComImport]

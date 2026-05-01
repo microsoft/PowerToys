@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.UnitTestBase;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

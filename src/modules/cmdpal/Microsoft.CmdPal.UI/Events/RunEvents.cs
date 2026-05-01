@@ -263,5 +263,23 @@ public class CmdPalRunLoadHistoryItem : EventBase, IEvent
     }
 }
 
+[EventData]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+public class CmdPalGenericLogEvent : EventBase, IEvent
+{
+    public PartA_PrivTags PartA_PrivTags => PartA_PrivTags.ProductAndServiceUsage;
+
+    public string Name { get; set; }
+
+    public string Message { get; set; }
+
+    public CmdPalGenericLogEvent(string name, string message)
+    {
+        EventName = "CmdPal_GenericLogEvent";
+        Name = name;
+        Message = message;
+    }
+}
+
 #pragma warning restore SA1649 // File name should match first type name
 #pragma warning restore SA1402 // File may only contain a single type

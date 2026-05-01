@@ -171,10 +171,31 @@ internal sealed class TelemetryForwarder :
                 break;
 
             default:
-                // Unknown event name - drop it. Add a concrete event type
-                // above to start collecting telemetry for new event names.
+                // Unknown event name - log a generic event with the
+                // serialized properties. Add a concrete event type above to
+                // start collecting strongly-typed telemetry for new event
+                // names.
+                PowerToysTelemetry.Log.WriteEvent(new CmdPalGenericLogEvent(
+                    eventName,
+                    PrintProperties(properties)));
                 break;
         }
+    }
+
+    private static string PrintProperties(IDictionary<string, object>? properties)
+    {
+        if (properties == null || properties.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var list = new List<string>();
+        foreach (KeyValuePair<string, object> kvp in properties)
+        {
+            list.Add($"{kvp.Key}={kvp.Value}");
+        }
+
+        return string.Join(", ", list);
     }
 
     private static string GetString(IDictionary<string, object>? properties, string key)
