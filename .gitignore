@@ -370,7 +370,3 @@ installer/*/*.wxs.bk
 .squad-workstream
 .github/agents/**squad**.md
 .github/workflows/**squad**.yml
-
-# Claude / Superpowers internal files
-.claude/
-docs/superpowers/
