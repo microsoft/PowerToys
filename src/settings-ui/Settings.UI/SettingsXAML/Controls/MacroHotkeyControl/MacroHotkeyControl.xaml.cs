@@ -2,19 +2,22 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
+#pragma warning disable CA1001 // _hook is disposed in Unloaded; UserControl does not implement IDisposable
+
 using System;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Windows.System;
+using VirtualKey = Windows.System.VirtualKey;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls;
 
 public sealed partial class MacroHotkeyControl : UserControl
 {
     // ── Dependency Properties ─────────────────────────────────────────────────
-
     public static readonly DependencyProperty HotkeyProperty =
         DependencyProperty.Register(
             nameof(Hotkey),
@@ -59,7 +62,6 @@ public sealed partial class MacroHotkeyControl : UserControl
     }
 
     // ── Recording state ───────────────────────────────────────────────────────
-
     private HotkeySettings _internalSettings = new HotkeySettings();
     private HotkeySettingsControlHook? _hook;
     private bool _isRecording;
@@ -88,7 +90,6 @@ public sealed partial class MacroHotkeyControl : UserControl
     }
 
     // ── Button / Flyout handlers ──────────────────────────────────────────────
-
     private void RecordButton_Click(object sender, RoutedEventArgs e)
     {
         _internalSettings = new HotkeySettings();
@@ -114,7 +115,6 @@ public sealed partial class MacroHotkeyControl : UserControl
     }
 
     // ── Key event handlers ────────────────────────────────────────────────────
-
     private void OnKeyDown(int key)
     {
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>

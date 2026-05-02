@@ -13,7 +13,6 @@ namespace ViewModelTests;
 public sealed class MacroHotkeyConverterTests
 {
     // ── ToMacroHotkeySettings ──────────────────────────────────────────────────
-
     [TestMethod]
     public void ToMacroHotkeySettings_Null_ReturnsNull()
     {
@@ -57,7 +56,6 @@ public sealed class MacroHotkeyConverterTests
     }
 
     // ── ToHotkeySettings ──────────────────────────────────────────────────────
-
     [TestMethod]
     public void ToHotkeySettings_Null_ReturnsNull()
     {
@@ -79,7 +77,6 @@ public sealed class MacroHotkeyConverterTests
     }
 
     // ── Round-trip ────────────────────────────────────────────────────────────
-
     [TestMethod]
     public void RoundTrip_CtrlShiftF5()
     {

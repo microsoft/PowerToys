@@ -31,9 +31,21 @@ public sealed class MacroListItem : Observable
 
     public string Name => _definition.Name;
 
-    public string? Hotkey => _definition.Hotkey;
+    public string? Hotkey
+    {
+        get
+        {
+            if (_definition.Hotkey is null)
+            {
+                return null;
+            }
 
-    public bool HasHotkey => !string.IsNullOrEmpty(_definition.Hotkey);
+            var keys = MacroHotkeyConverter.ToHotkeySettings(_definition.Hotkey)?.GetKeysList();
+            return keys is { Count: > 0 } ? string.Join(" + ", keys) : null;
+        }
+    }
+
+    public bool HasHotkey => _definition.Hotkey is not null;
 
     public bool IsEnabled
     {
