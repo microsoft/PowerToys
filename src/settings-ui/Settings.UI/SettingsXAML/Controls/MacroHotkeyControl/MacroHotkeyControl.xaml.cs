@@ -103,11 +103,7 @@ public sealed partial class MacroHotkeyControl : UserControl
 
     private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
-        if (_internalSettings.Code != 0)
-        {
-            Hotkey = _internalSettings;
-        }
-
+        Hotkey = _internalSettings;
         RecorderFlyout.Hide();
     }
 
@@ -161,7 +157,12 @@ public sealed partial class MacroHotkeyControl : UserControl
                 _internalSettings.Shift = pressed;
                 break;
             case VirtualKey.Escape:
-                _internalSettings = new HotkeySettings();
+                if (pressed)
+                {
+                    // Escape closes the flyout without saving.
+                    DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, RecorderFlyout.Hide);
+                }
+
                 break;
             default:
                 if (pressed)
