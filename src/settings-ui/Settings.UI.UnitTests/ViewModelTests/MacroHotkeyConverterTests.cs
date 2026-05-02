@@ -5,150 +5,107 @@
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerToys.MacroCommon.Models;
 
 namespace ViewModelTests;
 
 [TestClass]
 public sealed class MacroHotkeyConverterTests
 {
+    // ── ToMacroHotkeySettings ──────────────────────────────────────────────────
+
     [TestMethod]
-    public void ToHotkeySettings_Null_ReturnsEmpty()
+    public void ToMacroHotkeySettings_Null_ReturnsNull()
     {
-        var hs = MacroHotkeyConverter.ToHotkeySettings(null);
-        Assert.AreEqual(0, hs.Code);
-        Assert.IsFalse(hs.Ctrl);
+        Assert.IsNull(MacroHotkeyConverter.ToMacroHotkeySettings(null));
     }
 
     [TestMethod]
-    public void ToHotkeySettings_Empty_ReturnsEmpty()
+    public void ToMacroHotkeySettings_NoCode_ReturnsNull()
     {
-        var hs = MacroHotkeyConverter.ToHotkeySettings(string.Empty);
-        Assert.AreEqual(0, hs.Code);
-    }
-
-    [TestMethod]
-    public void ToHotkeySettings_CtrlF12_Correct()
-    {
-        var hs = MacroHotkeyConverter.ToHotkeySettings("Ctrl+F12");
-        Assert.IsTrue(hs.Ctrl);
-        Assert.IsFalse(hs.Shift);
-        Assert.IsFalse(hs.Alt);
-        Assert.IsFalse(hs.Win);
-        Assert.AreEqual(0x7B, hs.Code); // F12
-    }
-
-    [TestMethod]
-    public void ToHotkeySettings_CtrlShiftV_Correct()
-    {
-        var hs = MacroHotkeyConverter.ToHotkeySettings("Ctrl+Shift+V");
-        Assert.IsTrue(hs.Ctrl);
-        Assert.IsTrue(hs.Shift);
-        Assert.IsFalse(hs.Alt);
-        Assert.AreEqual((int)'V', hs.Code);
-    }
-
-    [TestMethod]
-    public void ToHotkeySettings_WinAltG_Correct()
-    {
-        var hs = MacroHotkeyConverter.ToHotkeySettings("Win+Alt+G");
-        Assert.IsTrue(hs.Win);
-        Assert.IsTrue(hs.Alt);
-        Assert.IsFalse(hs.Ctrl);
-        Assert.AreEqual((int)'G', hs.Code);
-    }
-
-    [TestMethod]
-    public void FromHotkeySettings_Null_ReturnsNull()
-    {
-        Assert.IsNull(MacroHotkeyConverter.FromHotkeySettings(null));
-    }
-
-    [TestMethod]
-    public void FromHotkeySettings_NoCode_ReturnsNull()
-    {
+        // A HotkeySettings with Code=0 is "empty" — treat as no hotkey.
         var hs = new HotkeySettings(false, true, false, false, 0);
-        Assert.IsNull(MacroHotkeyConverter.FromHotkeySettings(hs));
+        Assert.IsNull(MacroHotkeyConverter.ToMacroHotkeySettings(hs));
     }
 
     [TestMethod]
-    public void FromHotkeySettings_CtrlF12_Correct()
+    public void ToMacroHotkeySettings_CtrlF9_CorrectFields()
     {
-        var hs = new HotkeySettings(false, true, false, false, 0x7B);
-        Assert.AreEqual("Ctrl+F12", MacroHotkeyConverter.FromHotkeySettings(hs));
+        var hs = new HotkeySettings(false, true, false, false, 0x78); // Win=false Ctrl=true Alt=false Shift=false F9
+        var mhs = MacroHotkeyConverter.ToMacroHotkeySettings(hs);
+
+        Assert.IsNotNull(mhs);
+        Assert.IsFalse(mhs!.Win);
+        Assert.IsTrue(mhs!.Ctrl);
+        Assert.IsFalse(mhs!.Alt);
+        Assert.IsFalse(mhs!.Shift);
+        Assert.AreEqual(0x78, mhs!.Code);
     }
+
+    [TestMethod]
+    public void ToMacroHotkeySettings_AllModifiers_CorrectFields()
+    {
+        var hs = new HotkeySettings(true, true, true, true, 0x41); // All mods + A
+        var mhs = MacroHotkeyConverter.ToMacroHotkeySettings(hs);
+
+        Assert.IsNotNull(mhs);
+        Assert.IsTrue(mhs!.Win);
+        Assert.IsTrue(mhs!.Ctrl);
+        Assert.IsTrue(mhs!.Alt);
+        Assert.IsTrue(mhs!.Shift);
+        Assert.AreEqual(0x41, mhs!.Code);
+    }
+
+    // ── ToHotkeySettings ──────────────────────────────────────────────────────
+
+    [TestMethod]
+    public void ToHotkeySettings_Null_ReturnsNull()
+    {
+        Assert.IsNull(MacroHotkeyConverter.ToHotkeySettings(null));
+    }
+
+    [TestMethod]
+    public void ToHotkeySettings_CtrlF9_CorrectFields()
+    {
+        var mhs = new MacroHotkeySettings(false, true, false, false, 0x78);
+        var hs = MacroHotkeyConverter.ToHotkeySettings(mhs);
+
+        Assert.IsNotNull(hs);
+        Assert.IsFalse(hs!.Win);
+        Assert.IsTrue(hs!.Ctrl);
+        Assert.IsFalse(hs!.Alt);
+        Assert.IsFalse(hs!.Shift);
+        Assert.AreEqual(0x78, hs!.Code);
+    }
+
+    // ── Round-trip ────────────────────────────────────────────────────────────
 
     [TestMethod]
     public void RoundTrip_CtrlShiftF5()
     {
-        const string original = "Ctrl+Shift+F5";
-        var hs = MacroHotkeyConverter.ToHotkeySettings(original);
-        var result = MacroHotkeyConverter.FromHotkeySettings(hs);
-        Assert.AreEqual(original, result);
+        // HotkeySettings → MacroHotkeySettings → HotkeySettings
+        var original = new HotkeySettings(false, true, false, true, 0x74); // Ctrl+Shift+F5
+        var mhs = MacroHotkeyConverter.ToMacroHotkeySettings(original)!;
+        var restored = MacroHotkeyConverter.ToHotkeySettings(mhs)!;
+
+        Assert.AreEqual(original.Win,   restored.Win);
+        Assert.AreEqual(original.Ctrl,  restored.Ctrl);
+        Assert.AreEqual(original.Alt,   restored.Alt);
+        Assert.AreEqual(original.Shift, restored.Shift);
+        Assert.AreEqual(original.Code,  restored.Code);
     }
 
     [TestMethod]
-    public void RoundTrip_WinAltG()
+    public void RoundTrip_WinAltA()
     {
-        const string original = "Win+Alt+G";
-        var hs = MacroHotkeyConverter.ToHotkeySettings(original);
-        var result = MacroHotkeyConverter.FromHotkeySettings(hs);
-        Assert.AreEqual(original, result);
-    }
+        var original = new HotkeySettings(true, false, true, false, 0x41); // Win+Alt+A
+        var mhs = MacroHotkeyConverter.ToMacroHotkeySettings(original)!;
+        var restored = MacroHotkeyConverter.ToHotkeySettings(mhs)!;
 
-    [TestMethod]
-    public void ToHotkeySettings_CaseInsensitive_Modifiers()
-    {
-        var hs = MacroHotkeyConverter.ToHotkeySettings("ctrl+shift+F1");
-        Assert.IsTrue(hs.Ctrl);
-        Assert.IsTrue(hs.Shift);
-        Assert.AreEqual(0x70, hs.Code); // F1
-    }
-
-    [TestMethod]
-    public void ToHotkeySettings_SingleFunctionKey_NoModifiers()
-    {
-        var hs = MacroHotkeyConverter.ToHotkeySettings("F12");
-        Assert.IsFalse(hs.Win);
-        Assert.IsFalse(hs.Ctrl);
-        Assert.IsFalse(hs.Alt);
-        Assert.IsFalse(hs.Shift);
-        Assert.AreEqual(0x7B, hs.Code); // F12
-    }
-
-    [TestMethod]
-    public void ToHotkeySettings_DigitKey_Correct()
-    {
-        var hs = MacroHotkeyConverter.ToHotkeySettings("Ctrl+5");
-        Assert.IsTrue(hs.Ctrl);
-        Assert.AreEqual(0x35, hs.Code); // VK code for digit '5'
-    }
-
-    [TestMethod]
-    public void ToHotkeySettings_NamedKey_Enter()
-    {
-        var hs = MacroHotkeyConverter.ToHotkeySettings("Enter");
-        Assert.AreEqual(0x0D, hs.Code);
-        Assert.IsFalse(hs.Ctrl);
-    }
-
-    [TestMethod]
-    public void FromHotkeySettings_AliasedKey_NormalizesToCanonical()
-    {
-        // "Escape" and "Esc" both map to 0x1B.
-        // Round-trip normalizes to whichever alias was stored first in VkToName.
-        // This test documents (and pins) that behavior.
-        var hsFromEscape = MacroHotkeyConverter.ToHotkeySettings("Escape");
-        var hsFromEsc = MacroHotkeyConverter.ToHotkeySettings("Esc");
-
-        // Both should produce the same VK code
-        Assert.AreEqual(hsFromEscape.Code, hsFromEsc.Code);
-        Assert.AreEqual(0x1B, hsFromEscape.Code);
-
-        // FromHotkeySettings returns a canonical name (whichever was first in dict)
-        var canonical = MacroHotkeyConverter.FromHotkeySettings(hsFromEscape);
-        Assert.IsNotNull(canonical);
-        Assert.IsTrue(
-            canonical == "Escape" || canonical == "Esc",
-            $"Expected 'Escape' or 'Esc' but got '{canonical}'");
+        Assert.AreEqual(original.Win,   restored.Win);
+        Assert.AreEqual(original.Ctrl,  restored.Ctrl);
+        Assert.AreEqual(original.Alt,   restored.Alt);
+        Assert.AreEqual(original.Shift, restored.Shift);
+        Assert.AreEqual(original.Code,  restored.Code);
     }
 }
