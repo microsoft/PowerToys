@@ -52,10 +52,10 @@ internal sealed class HotkeyManager : IDisposable
             throw new InvalidOperationException("Call Start() before RegisterHotkey().");
         }
 
-        uint mods = (hotkey.Ctrl  ? KeyParser.ModControl : 0u)
-                  | (hotkey.Alt   ? KeyParser.ModAlt     : 0u)
-                  | (hotkey.Shift ? KeyParser.ModShift   : 0u)
-                  | (hotkey.Win   ? KeyParser.ModWin     : 0u)
+        uint mods = (hotkey.Ctrl ? KeyParser.ModControl : 0u)
+                  | (hotkey.Alt ? KeyParser.ModAlt : 0u)
+                  | (hotkey.Shift ? KeyParser.ModShift : 0u)
+                  | (hotkey.Win ? KeyParser.ModWin : 0u)
                   | KeyParser.ModNoRepeat;
 
         _window.Invoke(() =>
