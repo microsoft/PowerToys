@@ -10,28 +10,8 @@ namespace PowerToys.MacroEngine.Tests;
 [TestClass]
 public sealed class KeyParserTests
 {
-    [TestMethod]
-    public void ParseHotkey_CtrlShiftV_ReturnsCorrectModifiersAndVk()
-    {
-        var (mods, vk) = KeyParser.ParseHotkey("Ctrl+Shift+V");
-        Assert.AreEqual(KeyParser.ModControl | KeyParser.ModShift | KeyParser.ModNoRepeat, mods);
-        Assert.AreEqual((ushort)'V', vk);
-    }
-
-    [TestMethod]
-    public void ParseHotkey_F5_NoModifiers()
-    {
-        var (mods, vk) = KeyParser.ParseHotkey("F5");
-        Assert.AreEqual(KeyParser.ModNoRepeat, mods);
-        Assert.AreEqual((ushort)0x74, vk);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
-    public void ParseHotkey_NoMainKey_Throws()
-    {
-        KeyParser.ParseHotkey("Ctrl+Shift");
-    }
+    // ParseHotkey was removed in the MacroHotkeySettings refactor.
+    // ParseKey and ParseKeyCombo remain (used for PressKey step execution).
 
     [TestMethod]
     public void ParseKeyCombo_CtrlC_ReturnsModifierAndMain()
@@ -62,14 +42,6 @@ public sealed class KeyParserTests
     }
 
     [TestMethod]
-    public void ParseHotkey_LowercaseModifiers_Works()
-    {
-        var (mods, vk) = KeyParser.ParseHotkey("ctrl+shift+v");
-        Assert.AreEqual(KeyParser.ModControl | KeyParser.ModShift | KeyParser.ModNoRepeat, mods);
-        Assert.AreEqual((ushort)'V', vk);
-    }
-
-    [TestMethod]
     public void ParseKeyCombo_MultipleModifiers_ReturnsAll()
     {
         var (mods, main) = KeyParser.ParseKeyCombo("Ctrl+Shift+S");
@@ -89,13 +61,6 @@ public sealed class KeyParserTests
     public void ParseKey_Alias_Esc_Works()
     {
         Assert.AreEqual((ushort)0x1B, KeyParser.ParseKey("Esc"));
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
-    public void ParseHotkey_NullInput_Throws()
-    {
-        KeyParser.ParseHotkey(null!);
     }
 
     [TestMethod]

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Windows.Forms;
+using PowerToys.MacroCommon.Models;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
@@ -41,9 +42,9 @@ internal sealed class HotkeyManager : IDisposable
         ready.Wait();
     }
 
-    public void RegisterHotkey(string hotkey, string macroId)
+    public void RegisterHotkey(MacroHotkeySettings hotkey, string macroId)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(hotkey, nameof(hotkey));
+        ArgumentNullException.ThrowIfNull(hotkey, nameof(hotkey));
         ArgumentException.ThrowIfNullOrWhiteSpace(macroId, nameof(macroId));
 
         if (_window is null)
@@ -51,7 +52,11 @@ internal sealed class HotkeyManager : IDisposable
             throw new InvalidOperationException("Call Start() before RegisterHotkey().");
         }
 
-        var (mods, vk) = KeyParser.ParseHotkey(hotkey);
+        uint mods = (hotkey.Ctrl  ? KeyParser.ModControl : 0u)
+                  | (hotkey.Alt   ? KeyParser.ModAlt     : 0u)
+                  | (hotkey.Shift ? KeyParser.ModShift   : 0u)
+                  | (hotkey.Win   ? KeyParser.ModWin     : 0u)
+                  | KeyParser.ModNoRepeat;
 
         _window.Invoke(() =>
         {
@@ -60,10 +65,10 @@ internal sealed class HotkeyManager : IDisposable
                     (HWND)_window.Handle,
                     id,
                     (HOT_KEY_MODIFIERS)mods,
-                    vk))
+                    (uint)hotkey.Code))
             {
                 throw new InvalidOperationException(
-                    $"RegisterHotKey failed for '{hotkey}'. It may conflict with another application.");
+                    $"RegisterHotKey failed for macro '{macroId}' (VK=0x{hotkey.Code:X2}). It may conflict with another application.");
             }
 
             _idToMacroId[id] = macroId;

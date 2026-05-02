@@ -54,34 +54,6 @@ internal static class KeyParser
         ["F12"] = 0x7B,
     };
 
-    /// <summary>Parses "Ctrl+Shift+V" → (Modifiers, Vk) for RegisterHotKey.</summary>
-    internal static (uint Modifiers, ushort Vk) ParseHotkey(string hotkey)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(hotkey, nameof(hotkey));
-
-        uint modifiers = 0;
-        ushort vk = 0;
-
-        foreach (var part in hotkey.Split('+').Select(p => p.Trim()))
-        {
-            switch (part.ToUpperInvariant())
-            {
-                case "CTRL" or "CONTROL": modifiers |= ModControl; break;
-                case "ALT": modifiers |= ModAlt; break;
-                case "SHIFT": modifiers |= ModShift; break;
-                case "WIN": modifiers |= ModWin; break;
-                default: vk = ParseKey(part); break;
-            }
-        }
-
-        if (vk == 0)
-        {
-            throw new ArgumentException($"No main key found in hotkey: '{hotkey}'");
-        }
-
-        return (Modifiers: modifiers | ModNoRepeat, Vk: vk);
-    }
-
     /// <summary>Parses a single key name or character → VK code for SendInput.</summary>
     internal static ushort ParseKey(string keyName)
     {
