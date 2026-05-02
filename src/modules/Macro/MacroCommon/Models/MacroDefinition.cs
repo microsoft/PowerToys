@@ -12,7 +12,7 @@ public sealed record MacroDefinition
 
     public string? Description { get; init; }
 
-    public string? Hotkey { get; init; }
+    public MacroHotkeySettings? Hotkey { get; init; }
 
     public string? AppScope { get; init; }
 

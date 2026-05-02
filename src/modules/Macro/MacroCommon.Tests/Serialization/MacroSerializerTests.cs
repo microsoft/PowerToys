@@ -21,7 +21,7 @@ public sealed class MacroSerializerTests
             Id = "test-id",
             Name = "Test Macro",
             Description = "A test",
-            Hotkey = "Ctrl+Shift+T",
+            Hotkey = new MacroHotkeySettings(false, true, false, true, (int)'T'), // Ctrl+Shift+T
             AppScope = "notepad.exe",
             Steps =
             [
@@ -42,7 +42,7 @@ public sealed class MacroSerializerTests
 
         Assert.AreEqual(original.Id, restored.Id);
         Assert.AreEqual(original.Name, restored.Name);
-        Assert.AreEqual(original.Hotkey, restored.Hotkey);
+        Assert.AreEqual(original.Hotkey, restored.Hotkey); // record value equality
         Assert.AreEqual(original.AppScope, restored.AppScope);
         Assert.AreEqual(4, restored.Steps.Count);
         Assert.AreEqual(StepType.PressKey, restored.Steps[0].Type);
@@ -54,6 +54,40 @@ public sealed class MacroSerializerTests
         Assert.AreEqual(original.Description, restored.Description);
         Assert.AreEqual("Tab", restored.Steps[3].Steps![0].Key);
         Assert.IsTrue(restored.IsEnabled);
+    }
+
+    [TestMethod]
+    public void Hotkey_SerializesAsNestedObject()
+    {
+        var macro = new MacroDefinition
+        {
+            Name = "T",
+            Hotkey = new MacroHotkeySettings(false, true, false, false, 0x78), // Ctrl+F9
+        };
+        var json = MacroSerializer.Serialize(macro);
+
+        StringAssert.Contains(json, "\"hotkey\"");
+        StringAssert.Contains(json, "\"ctrl\": true");
+        StringAssert.Contains(json, "\"code\": 120");
+        Assert.IsFalse(json.Contains("\"hotkey\": \""), "hotkey must not be a plain string");
+    }
+
+    [TestMethod]
+    public void Hotkey_RoundTrip_CtrlF9()
+    {
+        var macro = new MacroDefinition
+        {
+            Name = "T",
+            Hotkey = new MacroHotkeySettings(false, true, false, false, 0x78), // Ctrl+F9
+        };
+        var restored = MacroSerializer.Deserialize(MacroSerializer.Serialize(macro));
+
+        Assert.IsNotNull(restored.Hotkey);
+        Assert.IsFalse(restored.Hotkey!.Win);
+        Assert.IsTrue(restored.Hotkey!.Ctrl);
+        Assert.IsFalse(restored.Hotkey!.Alt);
+        Assert.IsFalse(restored.Hotkey!.Shift);
+        Assert.AreEqual(0x78, restored.Hotkey!.Code);
     }
 
     [TestMethod]

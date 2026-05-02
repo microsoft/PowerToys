@@ -16,6 +16,7 @@ namespace PowerToys.MacroCommon.Serialization;
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(MacroDefinition))]
+[JsonSerializable(typeof(MacroHotkeySettings))]
 internal sealed partial class MacroJsonContext : JsonSerializerContext
 {
 }
