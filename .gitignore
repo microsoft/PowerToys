@@ -370,3 +370,6 @@ installer/*/*.wxs.bk
 .squad-workstream
 .github/agents/**squad**.md
 .github/workflows/**squad**.yml
+
+# Internal tooling docs — never committed
+docs/superpowers/
