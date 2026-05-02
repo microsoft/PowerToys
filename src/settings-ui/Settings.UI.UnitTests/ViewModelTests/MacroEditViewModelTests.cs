@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerToys.MacroCommon.Models;
@@ -26,14 +27,24 @@ public sealed class MacroEditViewModelTests
         {
             Id = "abc",
             Name = "My Macro",
-            Hotkey = "Ctrl+F9",
+            Hotkey = new MacroHotkeySettings(false, true, false, false, 0x78), // Ctrl+F9
             AppScope = "notepad.exe",
         };
         MacroEditViewModel vm = new(def);
 
         Assert.AreEqual("My Macro", vm.Name);
         Assert.AreEqual("notepad.exe", vm.AppScope);
-        Assert.AreEqual("Ctrl+F9", vm.HotkeyText);
+        Assert.IsNotNull(vm.Hotkey);
+        Assert.IsTrue(vm.Hotkey!.Ctrl);
+        Assert.AreEqual(0x78, vm.Hotkey!.Code);
+    }
+
+    [TestMethod]
+    public void Constructor_WithNullHotkey_HotkeyIsNull()
+    {
+        MacroDefinition def = new() { Name = "X" };
+        MacroEditViewModel vm = new(def);
+        Assert.IsNull(vm.Hotkey);
     }
 
     [TestMethod]
@@ -63,10 +74,21 @@ public sealed class MacroEditViewModelTests
     [TestMethod]
     public void ToDefinition_HotkeyRoundTrip()
     {
-        MacroDefinition def = new() { Name = "X", Hotkey = "Ctrl+Shift+F5" };
+        var hotkey = new MacroHotkeySettings(false, true, true, false, 0x74); // Ctrl+Shift+F5
+        MacroDefinition def = new() { Name = "X", Hotkey = hotkey };
         MacroEditViewModel vm = new(def);
         MacroDefinition result = vm.ToDefinition();
-        Assert.AreEqual("Ctrl+Shift+F5", result.Hotkey);
+
+        Assert.IsNotNull(result.Hotkey);
+        Assert.AreEqual(hotkey, result.Hotkey); // record value equality
+    }
+
+    [TestMethod]
+    public void ToDefinition_NullHotkey_SerializesNull()
+    {
+        MacroEditViewModel vm = new() { Name = "X" };
+        MacroDefinition result = vm.ToDefinition();
+        Assert.IsNull(result.Hotkey);
     }
 
     [TestMethod]
