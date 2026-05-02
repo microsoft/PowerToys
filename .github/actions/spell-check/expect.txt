@@ -2166,3 +2166,4 @@ Zoomin
 zoomit
 ZOOMITX
 Zorder
+LShaped
