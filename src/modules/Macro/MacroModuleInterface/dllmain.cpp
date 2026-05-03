@@ -8,6 +8,8 @@
 #include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
 #include <common/utils/winapi_error.h>
+#include <common/SettingsAPI/settings_helpers.h>
+#include <common/SettingsAPI/settings_objects.h>
 #include "resource.h"
 
 BOOL APIENTRY DllMain(HMODULE, DWORD ul_reason_for_call, LPVOID)

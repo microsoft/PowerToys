@@ -288,6 +288,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.LightSwitchModuleInterface.dll",
             L"PowerToys.PowerDisplayModuleInterface.dll",
             L"PowerToys.GrabAndMoveModuleInterface.dll",
+            L"PowerToys.MacroModuleInterface.dll",
         };
 
         for (auto moduleSubdir : knownModules)
