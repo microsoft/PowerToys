@@ -253,6 +253,9 @@
             "PowerToys.GrabAndMove.exe",
             "PowerToys.GrabAndMoveModuleInterface.dll",
 
+            "PowerToys.MacroEngine.exe",
+            "PowerToys.MacroModuleInterface.dll",
+
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
 
