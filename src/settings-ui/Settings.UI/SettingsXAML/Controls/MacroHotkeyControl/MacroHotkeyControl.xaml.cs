@@ -46,8 +46,8 @@ public sealed partial class MacroHotkeyControl : UserControl
 
     private static void OnHotkeyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var ctl = (MacroHotkeyControl)d;
-        ctl.HotkeyDisplayText = BuildDisplayText((HotkeySettings?)e.NewValue);
+        var control = (MacroHotkeyControl)d;
+        control.HotkeyDisplayText = BuildDisplayText((HotkeySettings?)e.NewValue);
     }
 
     private static string BuildDisplayText(HotkeySettings? hs)

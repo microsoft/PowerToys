@@ -31,28 +31,28 @@ public sealed class MacroHotkeyConverterTests
     public void ToMacroHotkeySettings_CtrlF9_CorrectFields()
     {
         var hs = new HotkeySettings(false, true, false, false, 0x78); // Win=false Ctrl=true Alt=false Shift=false F9
-        var mhs = MacroHotkeyConverter.ToMacroHotkeySettings(hs);
+        var macroHotkey = MacroHotkeyConverter.ToMacroHotkeySettings(hs);
 
-        Assert.IsNotNull(mhs);
-        Assert.IsFalse(mhs!.Win);
-        Assert.IsTrue(mhs!.Ctrl);
-        Assert.IsFalse(mhs!.Alt);
-        Assert.IsFalse(mhs!.Shift);
-        Assert.AreEqual(0x78, mhs!.Code);
+        Assert.IsNotNull(macroHotkey);
+        Assert.IsFalse(macroHotkey!.Win);
+        Assert.IsTrue(macroHotkey!.Ctrl);
+        Assert.IsFalse(macroHotkey!.Alt);
+        Assert.IsFalse(macroHotkey!.Shift);
+        Assert.AreEqual(0x78, macroHotkey!.Code);
     }
 
     [TestMethod]
     public void ToMacroHotkeySettings_AllModifiers_CorrectFields()
     {
         var hs = new HotkeySettings(true, true, true, true, 0x41); // All mods + A
-        var mhs = MacroHotkeyConverter.ToMacroHotkeySettings(hs);
+        var macroHotkey = MacroHotkeyConverter.ToMacroHotkeySettings(hs);
 
-        Assert.IsNotNull(mhs);
-        Assert.IsTrue(mhs!.Win);
-        Assert.IsTrue(mhs!.Ctrl);
-        Assert.IsTrue(mhs!.Alt);
-        Assert.IsTrue(mhs!.Shift);
-        Assert.AreEqual(0x41, mhs!.Code);
+        Assert.IsNotNull(macroHotkey);
+        Assert.IsTrue(macroHotkey!.Win);
+        Assert.IsTrue(macroHotkey!.Ctrl);
+        Assert.IsTrue(macroHotkey!.Alt);
+        Assert.IsTrue(macroHotkey!.Shift);
+        Assert.AreEqual(0x41, macroHotkey!.Code);
     }
 
     // ── ToHotkeySettings ──────────────────────────────────────────────────────
@@ -65,8 +65,8 @@ public sealed class MacroHotkeyConverterTests
     [TestMethod]
     public void ToHotkeySettings_CtrlF9_CorrectFields()
     {
-        var mhs = new MacroHotkeySettings(false, true, false, false, 0x78);
-        var hs = MacroHotkeyConverter.ToHotkeySettings(mhs);
+        var macroHotkey = new MacroHotkeySettings(false, true, false, false, 0x78);
+        var hs = MacroHotkeyConverter.ToHotkeySettings(macroHotkey);
 
         Assert.IsNotNull(hs);
         Assert.IsFalse(hs!.Win);
@@ -82,8 +82,8 @@ public sealed class MacroHotkeyConverterTests
     {
         // HotkeySettings → MacroHotkeySettings → HotkeySettings
         var original = new HotkeySettings(false, true, false, true, 0x74); // Ctrl+Shift+F5
-        var mhs = MacroHotkeyConverter.ToMacroHotkeySettings(original)!;
-        var restored = MacroHotkeyConverter.ToHotkeySettings(mhs)!;
+        var macroHotkey = MacroHotkeyConverter.ToMacroHotkeySettings(original)!;
+        var restored = MacroHotkeyConverter.ToHotkeySettings(macroHotkey)!;
 
         Assert.AreEqual(original.Win,   restored.Win);
         Assert.AreEqual(original.Ctrl,  restored.Ctrl);
@@ -96,8 +96,8 @@ public sealed class MacroHotkeyConverterTests
     public void RoundTrip_WinAltA()
     {
         var original = new HotkeySettings(true, false, true, false, 0x41); // Win+Alt+A
-        var mhs = MacroHotkeyConverter.ToMacroHotkeySettings(original)!;
-        var restored = MacroHotkeyConverter.ToHotkeySettings(mhs)!;
+        var macroHotkey = MacroHotkeyConverter.ToMacroHotkeySettings(original)!;
+        var restored = MacroHotkeyConverter.ToHotkeySettings(macroHotkey)!;
 
         Assert.AreEqual(original.Win,   restored.Win);
         Assert.AreEqual(original.Ctrl,  restored.Ctrl);
