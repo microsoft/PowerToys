@@ -194,18 +194,21 @@ public class DockMultiMonitorTests
     }
 
     [TestMethod]
-    public void Reconciler_DisconnectedMonitor_RemovesOrphan()
+    public void Reconciler_DisconnectedMonitor_PreservesConfig()
     {
         var configs = ImmutableList.Create(
-            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = true },
-            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY99", Enabled = true });
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = true, LastSeen = DateTime.UtcNow },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY99", Enabled = true, IsCustomized = true, LastSeen = DateTime.UtcNow });
 
         var monitors = new List<MonitorInfo> { PrimaryMonitor };
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        Assert.AreEqual(1, result.Count);
+        // Connected monitor is first, disconnected monitor is retained at end
+        Assert.AreEqual(2, result.Count);
         Assert.AreEqual(@"\\.\DISPLAY1", result[0].MonitorDeviceId);
+        Assert.AreEqual(@"\\.\DISPLAY99", result[1].MonitorDeviceId);
+        Assert.IsTrue(result[1].IsCustomized, "Disconnected monitor should preserve its customizations.");
     }
 
     [TestMethod]
@@ -272,20 +275,22 @@ public class DockMultiMonitorTests
         // Config has stale device ID for a non-primary monitor
         var configs = ImmutableList.Create(
             new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY1", Enabled = true, IsPrimary = true },
-            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY_STALE", Enabled = true, IsPrimary = false, IsCustomized = true });
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY_STALE", Enabled = true, IsPrimary = false, IsCustomized = true, LastSeen = DateTime.UtcNow });
 
         // Current monitors have primary + a different secondary
         var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        // Primary keeps its config, stale secondary is orphaned (removed),
-        // new secondary gets a fresh customized config with empty bands
-        Assert.AreEqual(2, result.Count);
+        // Primary keeps its config, new secondary gets a fresh customized config,
+        // stale secondary is retained at end for future reconnection
+        Assert.AreEqual(3, result.Count);
         Assert.AreEqual(@"\\.\DISPLAY1", result[0].MonitorDeviceId);
         Assert.AreEqual(@"\\.\DISPLAY2", result[1].MonitorDeviceId);
         Assert.IsTrue(result[1].IsCustomized, "New secondary should get an empty-bands customized config.");
         Assert.AreEqual(0, result[1].StartBands?.Count ?? 0, "New secondary should start with empty bands.");
+        Assert.AreEqual(@"\\.\DISPLAY_STALE", result[2].MonitorDeviceId, "Stale config should be preserved.");
+        Assert.IsTrue(result[2].IsCustomized, "Stale config should retain its customizations.");
     }
 
     // --- JSON serialization round-trip ---
@@ -350,12 +355,13 @@ public class DockMultiMonitorTests
     [TestMethod]
     public void Reconciler_ReturnsOriginalReference_WhenNothingChanged()
     {
+        var now = DateTime.UtcNow;
         var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
         var configs = ImmutableList.Create(
-            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Enabled = true, IsPrimary = true },
-            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.DeviceId, Enabled = true, IsPrimary = false });
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Enabled = true, IsPrimary = true, LastSeen = now },
+            new DockMonitorConfig { MonitorDeviceId = SecondaryMonitor.DeviceId, Enabled = true, IsPrimary = false, LastSeen = now });
 
-        var reconciled = MonitorConfigReconciler.Reconcile(configs, monitors);
+        var reconciled = MonitorConfigReconciler.Reconcile(configs, monitors, now);
 
         Assert.AreSame(configs, reconciled, "Reconciler should return the same reference when nothing changed");
     }
@@ -587,6 +593,108 @@ public class DockMultiMonitorTests
         var secondaryConfig = reconciled.Find(c => c.MonitorDeviceId == SecondaryMonitor.DeviceId);
         Assert.IsNotNull(secondaryConfig, "Secondary monitor config should exist");
         Assert.IsFalse(secondaryConfig.IsPrimary, "Secondary config should not be marked as primary");
+    }
+
+    [TestMethod]
+    public void Reconcile_NullExistingConfigs_CreatesDefaultsForAllMonitors()
+    {
+        // Simulate upgrade from a version that didn't have multi-monitor settings —
+        // MonitorConfigs is null because it didn't exist in the older settings.json.
+        var monitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
+
+        var reconciled = MonitorConfigReconciler.Reconcile(null, monitors);
+
+        Assert.AreEqual(2, reconciled.Count, "Should create configs for all monitors even when existing configs is null");
+
+        var primaryConfig = reconciled.Find(c => c.IsPrimary);
+        Assert.IsNotNull(primaryConfig, "Primary config should be created");
+        Assert.IsTrue(primaryConfig.Enabled, "Primary should be enabled by default");
+        Assert.IsFalse(primaryConfig.IsCustomized, "Primary should inherit global bands");
+
+        var secondaryConfig = reconciled.Find(c => !c.IsPrimary);
+        Assert.IsNotNull(secondaryConfig, "Secondary config should be created");
+        Assert.IsTrue(secondaryConfig.Enabled, "Secondary should be enabled by default");
+        Assert.IsTrue(secondaryConfig.IsCustomized, "Secondary should start with custom (empty) bands");
+    }
+
+    [TestMethod]
+    public void Reconcile_DisconnectThenReconnect_PreservesCustomizations()
+    {
+        // Step 1: Both monitors connected with customized secondary
+        var customBands = ImmutableList.Create(new DockBandSettings { ProviderId = "custom", CommandId = "cmd1" });
+        var now = DateTime.UtcNow;
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Enabled = true, IsPrimary = true, LastSeen = now },
+            new DockMonitorConfig
+            {
+                MonitorDeviceId = SecondaryMonitor.DeviceId,
+                Enabled = true,
+                IsPrimary = false,
+                IsCustomized = true,
+                StartBands = customBands,
+                CenterBands = ImmutableList<DockBandSettings>.Empty,
+                EndBands = ImmutableList<DockBandSettings>.Empty,
+                Side = DockSide.Left,
+                LastSeen = now,
+            });
+
+        // Step 2: Disconnect secondary monitor
+        var onlyPrimary = new List<MonitorInfo> { PrimaryMonitor };
+        var afterDisconnect = MonitorConfigReconciler.Reconcile(configs, onlyPrimary, now);
+
+        Assert.AreEqual(2, afterDisconnect.Count, "Disconnected monitor config should be retained");
+
+        // Step 3: Reconnect secondary monitor
+        var bothMonitors = new List<MonitorInfo> { PrimaryMonitor, SecondaryMonitor };
+        var afterReconnect = MonitorConfigReconciler.Reconcile(afterDisconnect, bothMonitors, now);
+
+        // Verify customizations survived the round-trip
+        var secondaryConfig = afterReconnect.Find(c =>
+            string.Equals(c.MonitorDeviceId, SecondaryMonitor.DeviceId, StringComparison.OrdinalIgnoreCase));
+        Assert.IsNotNull(secondaryConfig, "Secondary config should be found after reconnection");
+        Assert.IsTrue(secondaryConfig.IsCustomized, "Customization flag should survive");
+        Assert.AreEqual(DockSide.Left, secondaryConfig.Side, "Side override should survive");
+        Assert.AreEqual(1, secondaryConfig.StartBands?.Count ?? 0, "Custom start bands should survive");
+        Assert.AreEqual("custom", secondaryConfig.StartBands![0].ProviderId);
+    }
+
+    [TestMethod]
+    public void Reconcile_StaleConfig_PrunedAfterSixMonths()
+    {
+        var now = DateTime.UtcNow;
+        var sevenMonthsAgo = now - TimeSpan.FromDays(210);
+        var fiveMonthsAgo = now - TimeSpan.FromDays(150);
+
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Enabled = true, IsPrimary = true, LastSeen = now },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY_STALE", Enabled = true, IsPrimary = false, LastSeen = sevenMonthsAgo },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY_RECENT", Enabled = true, IsPrimary = false, LastSeen = fiveMonthsAgo });
+
+        var monitors = new List<MonitorInfo> { PrimaryMonitor };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, monitors, now);
+
+        // Primary is matched, RECENT is retained (< 6 months), STALE is pruned (> 6 months)
+        Assert.AreEqual(2, result.Count, "Should have matched primary + recently-seen disconnected config");
+        Assert.AreEqual(PrimaryMonitor.DeviceId, result[0].MonitorDeviceId);
+        Assert.AreEqual(@"\\.\DISPLAY_RECENT", result[1].MonitorDeviceId, "Recently-seen config should be retained");
+    }
+
+    [TestMethod]
+    public void Reconcile_LegacyConfigWithoutLastSeen_TreatedAsFresh()
+    {
+        // Configs from before LastSeen was added (LastSeen is null)
+        var configs = ImmutableList.Create(
+            new DockMonitorConfig { MonitorDeviceId = PrimaryMonitor.DeviceId, Enabled = true, IsPrimary = true },
+            new DockMonitorConfig { MonitorDeviceId = @"\\.\DISPLAY_LEGACY", Enabled = true, IsPrimary = false, IsCustomized = true });
+
+        var monitors = new List<MonitorInfo> { PrimaryMonitor };
+
+        var result = MonitorConfigReconciler.Reconcile(configs, monitors);
+
+        // Legacy config (null LastSeen) should be treated as fresh and retained
+        Assert.AreEqual(2, result.Count, "Legacy config without LastSeen should be retained");
+        Assert.AreEqual(@"\\.\DISPLAY_LEGACY", result[1].MonitorDeviceId);
     }
 
     private static SettingsModel CreateSettingsModelWithConfigs(params DockMonitorConfig[] configs)

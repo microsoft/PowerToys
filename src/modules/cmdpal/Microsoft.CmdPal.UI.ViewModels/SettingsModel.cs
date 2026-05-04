@@ -39,16 +39,40 @@ public record SettingsModel
 
     public bool AllowExternalReload { get; init; }
 
-    public ImmutableDictionary<string, ProviderSettings> ProviderSettings { get; init; }
+    private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
 
-    public string[] FallbackRanks { get; init; } = [];
+    public ImmutableDictionary<string, ProviderSettings> ProviderSettings
+    {
+        get => _providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        init => _providerSettings = value;
+    }
 
-    public ImmutableDictionary<string, CommandAlias> Aliases { get; init; }
+    private string[]? _fallbackRanks = [];
+
+    public string[] FallbackRanks
+    {
+        get => _fallbackRanks ?? [];
+        init => _fallbackRanks = value;
+    }
+
+    private ImmutableDictionary<string, CommandAlias>? _aliases
         = ImmutableDictionary<string, CommandAlias>.Empty;
 
-    public ImmutableList<TopLevelHotkey> CommandHotkeys { get; init; }
+    public ImmutableDictionary<string, CommandAlias> Aliases
+    {
+        get => _aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        init => _aliases = value;
+    }
+
+    private ImmutableList<TopLevelHotkey>? _commandHotkeys
         = ImmutableList<TopLevelHotkey>.Empty;
+
+    public ImmutableList<TopLevelHotkey> CommandHotkeys
+    {
+        get => _commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        init => _commandHotkeys = value;
+    }
 
     public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
 
@@ -62,7 +86,13 @@ public record SettingsModel
 
     public bool EnableDock { get; init; }
 
-    public DockSettings DockSettings { get; init; } = new();
+    private DockSettings? _dockSettings = new();
+
+    public DockSettings DockSettings
+    {
+        get => _dockSettings ?? new();
+        init => _dockSettings = value;
+    }
 
     // Theme settings
     public UserTheme Theme { get; init; } = UserTheme.Default;

@@ -72,8 +72,9 @@ public sealed partial class DockViewModel : IDisposable
 
         Logger.LogDebug("Starting DockBands_CollectionChanged");
 
-        // Refresh local settings from the persisted state so SetupBands sees
-        // the latest data (e.g., new pins saved with hotReload: false).
+        // Refresh settings so newly pinned/unpinned bands are visible.
+        // Pin/unpin operations save with hotReload:false (to avoid
+        // double-updates), so _settings can be stale here.
         _settings = _settingsService.Settings.DockSettings;
         SetupBands();
         Logger.LogDebug("Ended DockBands_CollectionChanged");
@@ -786,7 +787,8 @@ public sealed partial class DockViewModel : IDisposable
         }
 
         // Create settings for the new band
-        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId, ShowLabels = null };
+        var bandSettings = new DockBandSettings { ProviderId = topLevel.CommandProviderId, CommandId = bandId };
+        var dockSettings = _settings;
         var (activeSt, activeCt, activeEnd) = GetActiveBands();
 
         // Create the band view model

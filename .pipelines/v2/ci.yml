@@ -16,6 +16,7 @@ pr:
     include:
       - main
       - stable
+  drafts: false
 #  paths:
 #    exclude:
 #      - '**.md'

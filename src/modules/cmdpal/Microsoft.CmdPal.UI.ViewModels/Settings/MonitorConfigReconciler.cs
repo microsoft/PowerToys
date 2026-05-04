@@ -22,18 +22,40 @@ namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 public static class MonitorConfigReconciler
 {
     /// <summary>
+    /// Configs whose <see cref="DockMonitorConfig.LastSeen"/> is older than this
+    /// duration are pruned during reconciliation.
+    /// </summary>
+    internal static readonly TimeSpan StaleThreshold = TimeSpan.FromDays(180);
+
+    /// <summary>
     /// Reconciles persisted monitor configs against the current set of connected monitors.
     /// <para>
     /// <b>Phase 1</b>: Exact DeviceId matching — keep IsPrimary up-to-date.<br/>
     /// <b>Phase 2</b>: Fuzzy matching — reassociate unmatched configs by IsPrimary flag.<br/>
     /// <b>Phase 3</b>: Create default configs for monitors that have no matching config.<br/>
-    /// <b>Phase 4</b>: Remove orphaned configs whose DeviceIds don't match any connected monitor.
+    /// <b>Phase 4</b>: Retain disconnected monitor configs for future reconnection; prune entries not seen for 6+ months.
     /// </para>
     /// </summary>
     public static ImmutableList<DockMonitorConfig> Reconcile(
-        ImmutableList<DockMonitorConfig> existingConfigs,
+        ImmutableList<DockMonitorConfig>? existingConfigs,
         IReadOnlyList<MonitorInfo> currentMonitors)
     {
+        // Use Date (day granularity) so the value stabilizes across multiple reconciliations
+        // within the same day. This prevents infinite loops: SettingsChanged → SyncDocks →
+        // Reconcile → SettingsChanged when LastSeen changes by milliseconds each call.
+        return Reconcile(existingConfigs, currentMonitors, DateTime.UtcNow.Date);
+    }
+
+    /// <summary>
+    /// Overload accepting an explicit <paramref name="utcNow"/> for testability.
+    /// </summary>
+    internal static ImmutableList<DockMonitorConfig> Reconcile(
+        ImmutableList<DockMonitorConfig>? existingConfigs,
+        IReadOnlyList<MonitorInfo> currentMonitors,
+        DateTime utcNow)
+    {
+        existingConfigs ??= ImmutableList<DockMonitorConfig>.Empty;
+
         if (currentMonitors.Count == 0)
         {
             return existingConfigs;
@@ -60,8 +82,8 @@ public static class MonitorConfigReconciler
 
                 if (string.Equals(configs[ci].MonitorDeviceId, monitor.DeviceId, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Update IsPrimary to current state
-                    result.Add(configs[ci] with { IsPrimary = monitor.IsPrimary });
+                    // Update IsPrimary and LastSeen to current state
+                    result.Add(configs[ci] with { IsPrimary = monitor.IsPrimary, LastSeen = utcNow });
                     matchedMonitorDeviceIds.Add(monitor.DeviceId);
                     matchedConfigIndices.Add(ci);
                     break;
@@ -88,11 +110,12 @@ public static class MonitorConfigReconciler
 
                 if (configs[ci].IsPrimary)
                 {
-                    // Reassociate: update DeviceId and IsPrimary
+                    // Reassociate: update DeviceId, IsPrimary, and LastSeen
                     result.Add(configs[ci] with
                     {
                         MonitorDeviceId = monitor.DeviceId,
                         IsPrimary = monitor.IsPrimary,
+                        LastSeen = utcNow,
                     });
                     matchedMonitorDeviceIds.Add(monitor.DeviceId);
                     matchedConfigIndices.Add(ci);
@@ -121,6 +144,7 @@ public static class MonitorConfigReconciler
                     MonitorDeviceId = monitor.DeviceId,
                     Enabled = true,
                     IsPrimary = true,
+                    LastSeen = utcNow,
                 });
             }
             else
@@ -135,11 +159,27 @@ public static class MonitorConfigReconciler
                     StartBands = ImmutableList<DockBandSettings>.Empty,
                     CenterBands = ImmutableList<DockBandSettings>.Empty,
                     EndBands = ImmutableList<DockBandSettings>.Empty,
+                    LastSeen = utcNow,
                 });
             }
         }
 
-        // Phase 4: Orphaned configs are not included in result (implicitly removed)
+        // Phase 4: Retain disconnected monitor configs so settings survive reconnection.
+        // Prune entries not seen for longer than StaleThreshold (6 months).
+        for (var ci = 0; ci < configs.Count; ci++)
+        {
+            if (matchedConfigIndices.Contains(ci))
+            {
+                continue;
+            }
+
+            var config = configs[ci];
+            var lastSeen = config.LastSeen ?? utcNow; // Treat legacy entries (no LastSeen) as fresh
+            if ((utcNow - lastSeen) < StaleThreshold)
+            {
+                result.Add(config);
+            }
+        }
 
         // Return the original reference when nothing actually changed so callers
         // can use reference equality to skip no-op settings writes.
