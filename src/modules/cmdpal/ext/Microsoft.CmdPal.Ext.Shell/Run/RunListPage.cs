@@ -95,10 +95,13 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         var correctedSearchText = searchText;
         if (withLeadingTilde)
         {
-            correctedSearchText = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    $".\\{searchText[1..]}");
-            correctedSearchText = Path.GetFullPath(correctedSearchText);
+            // Replace ~ with the user profile path via simple string
+            // substitution.  We intentionally avoid Path.GetFullPath here
+            // because it resolves "." as "current directory", which would
+            // destroy a trailing "." filter — e.g. "~\." should list
+            // dot-files in the user profile, not resolve to the profile
+            // directory itself.
+            correctedSearchText = string.Concat(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), searchText.AsSpan(1));
         }
 
         // Previously, we were expanding environment variables before searching
@@ -295,7 +298,17 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         //
         // we'll replicate that here
         var lastSlash = searchText.LastIndexOfAny(['\\', '/']);
-        var directoryPath = lastSlash != -1 ? searchText.Substring(0, lastSlash) : searchText;
+
+        // If the search text has no path separator (e.g. bare "c:"), there's
+        // nothing to browse — RunDlg only enumerates directory contents when
+        // there is at least one backslash in the input.
+        if (lastSlash < 0)
+        {
+            _pathItems.Clear();
+            return;
+        }
+
+        var directoryPath = searchText.Substring(0, lastSlash);
 
         // AutoComplete is crazy, and will just append the child items to a full
         // path, without inserting a \. So you'll get things like
@@ -337,8 +350,13 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             }
         }
 
+        // Use searchText (the user's corrected input) rather than
+        // fullFilePath (from ParseCommandline) for filtering. ParseCommandline
+        // can resolve special path components like "." and "..", which
+        // would lose the user's filter text — e.g. "c:\Windows\." resolves
+        // to "c:\Windows", losing the "." prefix filter.
         var newMatchedPathItems = FilterCurrentDirectoryFiles(
-            fullFilePath,
+            searchText,
             directoryPath,
             _currentSubdir,
             _currentPathItems.AsReadOnly(),

@@ -88,10 +88,22 @@ public static class RunHistory
             return defaultDirectory;
         }
 
-        // Qualify: get the directory from the file path
+        // Qualify: get the directory from the file path.
+        // Resolve relative paths (e.g. "..\tools\app.exe") to absolute
+        // paths first, so Path.GetDirectoryName returns an absolute
+        // directory.  This mirrors the native helper which always works
+        // with fully-qualified paths.  When resolving a relative path we
+        // use the defaultDirectory as the base (not the process CWD).
         try
         {
-            var directory = Path.GetDirectoryName(filePath);
+            var resolvedPath = filePath;
+            if (!Path.IsPathRooted(filePath))
+            {
+                var basePath = string.IsNullOrEmpty(defaultDirectory) ? Environment.CurrentDirectory : defaultDirectory;
+                resolvedPath = Path.GetFullPath(Path.Combine(basePath, filePath));
+            }
+
+            var directory = Path.GetDirectoryName(resolvedPath);
             if (!string.IsNullOrEmpty(directory))
             {
                 return directory;
@@ -117,13 +129,13 @@ public static class RunHistory
         string commandLine,
         string workingDirectory)
     {
-        if (string.IsNullOrEmpty(commandLine))
+        if (string.IsNullOrEmpty(commandLine) || string.IsNullOrWhiteSpace(commandLine))
         {
             return new ParseCommandlineResult
             {
-                Result = unchecked((int)0x80070057), // E_INVALIDARG
+                Result = 0, // S_OK — matches native behavior
                 IsUri = false,
-                FilePath = string.Empty,
+                FilePath = commandLine ?? string.Empty,
                 Arguments = string.Empty,
             };
         }
@@ -238,6 +250,19 @@ public static class RunHistory
     private static bool IsUrl(string text)
     {
         if (string.IsNullOrEmpty(text))
+        {
+            return false;
+        }
+
+        // Reject anything that looks like a file-system path before trying
+        // URI parsing. Drive-letter paths ("C:\..."), UNC paths ("\\..."),
+        // and NT paths ("\\?\...") must never be treated as URLs.
+        if (text.Length >= 2 && char.IsLetter(text[0]) && text[1] == ':')
+        {
+            return false;
+        }
+
+        if (text.StartsWith("\\\\", StringComparison.Ordinal))
         {
             return false;
         }
@@ -417,6 +442,16 @@ public static class RunHistory
 
         // First check if the file exists directly
         if (File.Exists(name))
+        {
+            resolvedPath = Path.GetFullPath(name);
+            return true;
+        }
+
+        // Check if it's a directory, but only if the name contains a path
+        // separator. This avoids treating bare drive letters like "c:" as
+        // resolvable paths (Directory.Exists("c:") returns true but the
+        // native code doesn't resolve bare drive letters this way).
+        if (name.Contains(Path.DirectorySeparatorChar) && Directory.Exists(name))
         {
             resolvedPath = Path.GetFullPath(name);
             return true;
