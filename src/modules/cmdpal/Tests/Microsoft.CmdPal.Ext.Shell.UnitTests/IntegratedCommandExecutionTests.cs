@@ -141,7 +141,7 @@ public static class IntegratedCommandExecutionTests
         [TestMethod]
         public void RelativePath_ParsesThenQualifiesBasedOnCommand()
         {
-            var commandLine = "..\\tools\\mytool.exe";
+            var commandLine = "..\\tools\\myTool.exe";
             var defaultDirectory = "C:\\Users\\TestUser";
 
             ParseCommandlineResult parseResult = RunHistory.ParseCommandline(commandLine, defaultDirectory);

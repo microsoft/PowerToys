@@ -207,7 +207,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
 
             // If it's not a file, and there are no arguments, then we'll try to
             // add the items in this path. CreatePathItemsAsync will find the
-            // child items in the last fullty specified path, and add them to
+            // child items in the last fully specified path, and add them to
             // the page's _pathItems.
             var filePath = res.FilePath;
             var args = res.Arguments;
@@ -418,7 +418,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
     /// <summary>
     /// Returns true if we should include this result (as specified in
     /// `haystack`) in the results for a given search `needle`. This attempts to
-    /// mimick the behavior of CACLIShellFolder, which is what RunDlg uses to
+    /// mimic the behavior of CACLIShellFolder, which is what RunDlg uses to
     /// build its suggestions list.
     ///
     /// If the needle is an exact match for the haystack, then we only want to
@@ -742,11 +742,11 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         var hr = enumString.Next(enumResult);
         while (hr == HRESULT.S_OK)
         {
-            var pwstr = enumResult[0];
-            results.Add(new(pwstr.AsSpan()));
+            var s = enumResult[0];
+            results.Add(new(s.AsSpan()));
             unsafe
             {
-                Marshal.FreeCoTaskMem((IntPtr)(char*)pwstr);
+                Marshal.FreeCoTaskMem((IntPtr)(char*)s);
             }
 
             hr = enumString.Next(enumResult);
