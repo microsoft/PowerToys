@@ -4974,7 +4974,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
         // Webcam position combo
         {
-            const wchar_t* positions[] = { L"Top-left", L"Top-right", L"Bottom-left", L"Bottom-right" };
+            const wchar_t* positions[] = { L"Top left", L"Top right", L"Bottom left", L"Bottom right" };
             for( int i = 0; i < 4; i++ )
                 SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(positions[i]) );
             SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamPosition), static_cast<LPARAM>(0) );
@@ -4990,7 +4990,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
         // Webcam shape combo
         {
-            const wchar_t* shapes[] = { L"Rectangle", L"Rounded Rectangle", L"Rounded Square", L"Circle" };
+            const wchar_t* shapes[] = { L"Rectangle", L"Rounded rectangle", L"Rounded square", L"Circle" };
             for( int i = 0; i < 4; i++ )
                 SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(shapes[i]) );
             SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamShape), static_cast<LPARAM>(0) );
