@@ -4819,7 +4819,7 @@ The break timer font matches the text font.</value>
     <value>Show webcam overlay (Ctrl+C toggles)</value>
   </data>
   <data name="ZoomIt_Record_WebcamDevice.Header" xml:space="preserve">
-    <value>Camera:</value>
+    <value>Camera</value>
   </data>
   <data name="ZoomIt_Record_WebcamDevices_Default_Name" xml:space="preserve">
     <value>Default</value>
@@ -4832,6 +4832,45 @@ The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Record_WebcamShape.Header" xml:space="preserve">
     <value>Shape</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_TopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_TopRight.Content" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_BottomLeft.Content" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_BottomRight.Content" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Small.Content" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Medium.Content" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Large.Content" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_XLarge.Content" xml:space="preserve">
+    <value>X-Large</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_FullScreen.Content" xml:space="preserve">
+    <value>Full screen</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_Rectangle.Content" xml:space="preserve">
+    <value>Rectangle</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_RoundedRectangle.Content" xml:space="preserve">
+    <value>Rounded rectangle</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_RoundedSquare.Content" xml:space="preserve">
+    <value>Rounded square</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_Circle.Content" xml:space="preserve">
+    <value>Circle</value>
   </data>
   <data name="ZoomIt_Break_LockWorkstation.Content" xml:space="preserve">
     <value>Lock workstation during break</value>
