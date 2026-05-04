@@ -715,6 +715,7 @@ HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
+hostfxr
 hostsfileeditor
 hotfixes
 hotkeycontrol
