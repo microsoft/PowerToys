@@ -288,9 +288,7 @@
                                 Name="ZoomItRecordMicMonoMix"
                                 ContentAlignment="Left"
                                 Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}">
-                                <CheckBox
-                                    x:Uid="ZoomIt_Record_MicMonoMix"
-                                    IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}" />
+                                <CheckBox x:Uid="ZoomIt_Record_MicMonoMix" IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItRecordMicrophone"
