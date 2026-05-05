@@ -102,7 +102,7 @@ public record DockSettings
     public ImmutableList<DockMonitorConfig> MonitorConfigs
     {
         get => _monitorConfigs ?? ImmutableList<DockMonitorConfig>.Empty;
-        init => _monitorConfigs = value;
+        init => _monitorConfigs = value ?? ImmutableList<DockMonitorConfig>.Empty;
     }
 
     [JsonIgnore]

@@ -712,6 +712,31 @@ public class DockMultiMonitorTests
         return settingsModel with { DockSettings = dockSettings };
     }
 
+    [TestMethod]
+    public void FreshInstall_MonitorConfigs_SurvivesRecordWithExpression()
+    {
+        // Simulate fresh install: JSON has no MonitorConfigs key at all.
+        // STJ passes null to the init setter. Verify the backing field is
+        // properly coalesced so that record `with` clones remain non-null.
+        var json = "{}";
+        var deserialized = JsonSerializer.Deserialize(
+            json,
+            JsonSerializationContext.Default.DockSettings) ?? new DockSettings();
+
+        // Direct read through getter should be non-null
+        Assert.IsNotNull(deserialized.MonitorConfigs, "MonitorConfigs should never be null after deserialization");
+        Assert.AreEqual(0, deserialized.MonitorConfigs.Count);
+
+        // Crucially: a `with` clone must also have non-null MonitorConfigs
+        var clone = deserialized with { ShowLabels = false };
+        Assert.IsNotNull(clone.MonitorConfigs, "MonitorConfigs should survive record 'with' expression");
+        Assert.AreEqual(0, clone.MonitorConfigs.Count);
+
+        // Double-clone to be thorough
+        var clone2 = clone with { Side = DockSide.Left };
+        Assert.IsNotNull(clone2.MonitorConfigs, "MonitorConfigs should survive multiple 'with' expressions");
+    }
+
     private static Mock<ISettingsService> CreateMockSettingsService(SettingsModel settings)
     {
         var mock = new Mock<ISettingsService>();
