@@ -67,7 +67,7 @@ You can easily install PowerToys from the Microsoft Store:
 <details>
 <summary><strong>WinGet</strong></summary>
 <br/>
-Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, run the following command from the command line / PowerShell:
+Download PowerToys from [WinGet](https://github.com/microsoft/winget-cli#installing-the-client). Updating PowerToys via winget will respect the current PowerToys installation scope. To install PowerToys, execute the following command in the command processor / PowerShell:
 
 - User scope installer (default)
 
