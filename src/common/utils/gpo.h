@@ -294,11 +294,6 @@ namespace powertoys_gpo
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AWAKE);
     }
 
-    inline gpo_rule_configured_t getConfiguredAwakeIndefinitelyEnabledValue()
-    {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AWAKE_INDEFINITELY);
-    }
-
     inline gpo_rule_configured_t getConfiguredCmdNotFoundEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CMD_NOT_FOUND);
@@ -561,6 +556,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredRunAtStartupValue()
     {
         return getConfiguredValue(POLICY_CONFIGURE_RUN_AT_STARTUP);
+    }
+
+        inline gpo_rule_configured_t getConfiguredAwakeIndefinitelyEnabledValue()
+    {
+        return getConfiguredValue(POLICY_CONFIGURE_ENABLED_AWAKE_INDEFINITELY);
     }
 
     inline gpo_rule_configured_t getRunPluginEnabledValue(std::string pluginID)
