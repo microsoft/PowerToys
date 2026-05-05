@@ -6,7 +6,7 @@
 #include <variant>
 #include <winrt/Windows.Foundation.h>
 //#if __MSVC_VERSION__ >= 1933 // MSVC begin to support std::unexpected in 19.33
-#if __has_include(<expected> ) // use the same way with excepted-lite to detect std::unexpected, as using it as backup
+#if __has_include(<expected> ) // Detect standard <expected> support the same way as the expected-lite fallback.
 #include <expected>
 #define USE_STD_EXPECTED 1
 #else
