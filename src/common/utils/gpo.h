@@ -293,6 +293,11 @@ namespace powertoys_gpo
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AWAKE);
     }
 
+        inline gpo_rule_configured_t getConfiguredAwakeIndefinitelyEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AWAKE_INDEFINITELY);
+    }
+
     inline gpo_rule_configured_t getConfiguredCmdNotFoundEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CMD_NOT_FOUND);
