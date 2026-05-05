@@ -28,7 +28,6 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_GLOBAL_ALL_UTILITIES = L"ConfigureGlobalUtilityEnabledState";
     const std::wstring POLICY_CONFIGURE_ENABLED_ALWAYS_ON_TOP = L"ConfigureEnabledUtilityAlwaysOnTop";
     const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE = L"ConfigureEnabledUtilityAwake";
-    const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE_INDEFINITELY = L"ConfigureEnabledUtilityAwakeIndefinitely";
     const std::wstring POLICY_CONFIGURE_ENABLED_CMD_NOT_FOUND = L"ConfigureEnabledUtilityCmdNotFound";
     const std::wstring POLICY_CONFIGURE_ENABLED_COLOR_PICKER = L"ConfigureEnabledUtilityColorPicker";
     const std::wstring POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK = L"ConfigureEnabledUtilityCropAndLock";
@@ -85,6 +84,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_ALLOW_EXPERIMENTATION = L"AllowExperimentation";
     const std::wstring POLICY_ALLOW_DATA_DIAGNOSTICS = L"AllowDataDiagnostics";
     const std::wstring POLICY_CONFIGURE_RUN_AT_STARTUP = L"ConfigureRunAtStartup";
+    const std::wstring POLICY_CONFIGURE_ENABLED_AWAKE_INDEFINITELY = L"ConfigureEnabledUtilityAwakeIndefinitely";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_OPENAI = L"AllowAdvancedPasteOpenAI";
