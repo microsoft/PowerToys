@@ -261,12 +261,13 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: true));
     }
 
-    internal void UpdateSettings(DockSettings settings)
+    internal void UpdateSettings(DockSettings settings, DockSide? effectiveSide = null)
     {
-        DockSide = settings.Side;
+        var side = effectiveSide ?? settings.Side;
+        DockSide = side;
 
         // Compact mode is only supported for Top/Bottom positions
-        var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        var isHorizontal = side == DockSide.Top || side == DockSide.Bottom;
         var effectiveSize = isHorizontal ? settings.DockSize : DockSize.Default;
         DockSize = effectiveSize;
 

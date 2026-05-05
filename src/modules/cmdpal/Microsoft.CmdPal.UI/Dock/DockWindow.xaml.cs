@@ -218,7 +218,7 @@ public sealed partial class DockWindow : WindowEx,
         this.viewModel.UpdateSettings(_settings);
         UpdateBackdrop();
 
-        _dock.UpdateSettings(_settings);
+        _dock.UpdateSettings(_settings, EffectiveSide);
 
         var side = DockSettingsToViews.GetAppBarEdge(EffectiveSide);
 
