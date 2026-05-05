@@ -111,7 +111,15 @@ static void RecDiag( const wchar_t* fmt, ... )
     wchar_t buf[512];
     int offset = swprintf_s( buf, L"[RecDiag +%.1fms] ", RecDiagElapsedMs() );
     va_list va;
+#ifdef _MSC_VER
+// For some reason, ARM64 Debug builds causes an analyzer error on va_start: "error C26492: Don't use const_cast to cast away const or volatile (type.3)."
+#pragma warning(push)
+#pragma warning(disable : 26492)
+#endif
     va_start( va, fmt );
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
     _vsnwprintf_s( buf + offset, _countof( buf ) - offset, _TRUNCATE, fmt, va );
     va_end( va );
     OutputDebugStringW( buf );
