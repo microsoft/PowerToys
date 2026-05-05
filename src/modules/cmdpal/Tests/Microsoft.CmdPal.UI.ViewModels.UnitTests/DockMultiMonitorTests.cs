@@ -716,7 +716,7 @@ public class DockMultiMonitorTests
     public void FreshInstall_MonitorConfigs_SurvivesRecordWithExpression()
     {
         // Simulate fresh install: JSON has no MonitorConfigs key at all.
-        // STJ passes null to the init setter. Verify the backing field is
+        // System.Text.Json passes null to the init setter. Verify the backing field is
         // properly coalesced so that record `with` clones remain non-null.
         var json = "{}";
         var deserialized = JsonSerializer.Deserialize(
