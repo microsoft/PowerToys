@@ -97,8 +97,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             try
             {
-                // Get EDID ID and friendly name directly from MonitorDisplayInfo
-                string edidId = monitorInfo.EdidId ?? string.Empty;
+                // Get friendly name directly from MonitorDisplayInfo
                 string name = physicalMonitor.GetDescription() ?? string.Empty;
 
                 // Use FriendlyName from QueryDisplayConfig if available and not generic
@@ -108,9 +107,10 @@ namespace PowerDisplay.Common.Drivers.DDC
                     name = monitorInfo.FriendlyName;
                 }
 
-                // Generate unique monitor Id: "DDC_{EdidId}_{MonitorNumber}"
-                string monitorId = !string.IsNullOrEmpty(edidId)
-                    ? $"DDC_{edidId}_{monitorInfo.MonitorNumber}"
+                // Generate stable monitor Id from the DevicePath (Windows PnP instance path).
+                // Falls back to a synthesized Id only if the DevicePath is unavailable.
+                string monitorId = !string.IsNullOrEmpty(monitorInfo.DevicePath)
+                    ? MonitorIdentity.FromDevicePath(monitorInfo.DevicePath)
                     : $"DDC_Unknown_{monitorInfo.MonitorNumber}";
 
                 // If still no good name, use default value

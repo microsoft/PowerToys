@@ -289,9 +289,10 @@ namespace PowerDisplay.Common.Drivers.WMI
                             int monitorNumber = displayInfo?.MonitorNumber ?? 0;
                             string gdiDeviceName = displayInfo?.GdiDeviceName ?? string.Empty;
 
-                            // Generate unique ID: "WMI_{EdidId}_{MonitorNumber}"
-                            string uniqueId = !string.IsNullOrEmpty(edidId)
-                                ? $"WMI_{edidId}_{monitorNumber}"
+                            // Generate stable monitor Id from the DevicePath (Windows PnP instance path).
+                            // Falls back to a synthesized Id only if the DevicePath is unavailable.
+                            string uniqueId = !string.IsNullOrEmpty(displayInfo?.DevicePath)
+                                ? MonitorIdentity.FromDevicePath(displayInfo.Value.DevicePath)
                                 : $"WMI_Unknown_{monitorNumber}";
 
                             // Name is left blank: MonitorViewModel injects a localized
