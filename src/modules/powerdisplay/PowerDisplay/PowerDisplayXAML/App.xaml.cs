@@ -12,6 +12,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppLifecycle;
 using PowerDisplay.Common;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using PowerDisplay.Serialization;
 using PowerToys.Interop;
@@ -83,6 +84,27 @@ namespace PowerDisplay
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             Logger.LogInfo("OnLaunched: Application launching");
+
+            // Phase 0: crash recovery. Must run before any DDC/CI initialization.
+            // If the previous run left an orphan discovery.lock, write the user-visible
+            // crash_detected.flag, set enabled.PowerDisplay=false in global settings.json,
+            // signal the AutoDisable event, delete the lock, and exit. The runner's module
+            // DLL listener will pick up the event and call disable() to sync m_enabled.
+            try
+            {
+                if (CrashRecovery.CreateDefault().DetectOrphanAndDisable())
+                {
+                    Logger.LogWarning("Phase 0: orphan discovery.lock detected; auto-disable sequence executed; exiting");
+                    Environment.Exit(0);
+                }
+            }
+            catch (Exception phaseZeroEx)
+            {
+                Logger.LogError($"Phase 0: auto-disable sequence failed: {phaseZeroEx}");
+                // discovery.lock not deleted; next PowerDisplay.exe startup will retry.
+                Environment.Exit(1);
+            }
+
             try
             {
                 // Single instance is already ensured by AppInstance.FindOrRegisterForKey() in Program.cs
