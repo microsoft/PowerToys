@@ -410,6 +410,18 @@ namespace PowerDisplay.Common.Drivers.DDC
             List<CandidateMonitor> candidates,
             CancellationToken cancellationToken)
         {
+#if DEBUG
+            if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
+            {
+                // Debug-only: simulate a hard process kill to test the crash recovery
+                // pipeline without actually invoking the kernel BSOD path. FailFast does
+                // not run finally blocks, so the discovery.lock written by
+                // CrashDetectionScope will survive — just like a real BSOD.
+                Logger.LogWarning("DEBUG: POWERDISPLAY_SIMULATE_CRASH=1 — invoking FailFast");
+                Environment.FailFast("Simulated crash for quarantine testing");
+            }
+#endif
+
             var tasks = candidates.Select(candidate =>
                 Task.Run(
                     () => (Candidate: candidate, Result: DdcCiNative.FetchCapabilities(candidate.Handle)),
