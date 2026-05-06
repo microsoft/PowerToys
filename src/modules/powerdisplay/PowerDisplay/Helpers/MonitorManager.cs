@@ -152,7 +152,7 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 brightness,
                 (ctrl, mon, val, ct) => ctrl.SetBrightnessAsync(mon, val, ct),
-                (mon, val) => mon.UpdateStatus(val, true),
+                (mon, val) => mon.CurrentBrightness = val,
                 cancellationToken);
 
         /// <summary>
@@ -202,14 +202,13 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Set power state for a monitor using VCP 0xD6.
         /// Note: Setting any state other than On (0x01) will turn off the display.
-        /// We don't update monitor state since the display will be off.
         /// </summary>
         public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
             => ExecuteMonitorOperationAsync(
                 monitorId,
                 powerState,
                 (ctrl, mon, val, ct) => ctrl.SetPowerStateAsync(mon, val, ct),
-                (mon, val) => { }, // No state update - display will be off for non-On values
+                (mon, val) => mon.CurrentPowerState = val,
                 cancellationToken);
 
         /// <summary>
@@ -267,7 +266,6 @@ namespace PowerDisplay.Helpers
                 if (currentOrientation >= 0 && currentOrientation != monitor.Orientation)
                 {
                     monitor.Orientation = currentOrientation;
-                    monitor.LastUpdate = DateTime.Now;
                 }
             }
         }
@@ -326,18 +324,12 @@ namespace PowerDisplay.Helpers
                 if (result.IsSuccess)
                 {
                     onSuccess(monitor, value);
-                    monitor.LastUpdate = DateTime.Now;
-                }
-                else
-                {
-                    monitor.IsAvailable = false;
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                monitor.IsAvailable = false;
                 Logger.LogError($"[MonitorManager] Operation failed for {monitorId}: {ex.Message}");
                 return MonitorOperationResult.Failure($"Exception: {ex.Message}");
             }
