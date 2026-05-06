@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -153,6 +154,10 @@ namespace PowerDisplay.Common.Services
 
             return null;
         }
+
+        /// <summary>Snapshot of the currently-tracked monitor Ids. Used by migration helpers.</summary>
+        public System.Collections.Generic.IReadOnlyCollection<string> GetAllMonitorIds()
+            => _states.Keys.ToList();
 
         /// <summary>
         /// Re-key the in-memory state dictionary using a supplied {oldId → newId} mapping,

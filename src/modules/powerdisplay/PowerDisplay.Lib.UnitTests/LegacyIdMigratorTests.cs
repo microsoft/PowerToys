@@ -88,4 +88,21 @@ public class LegacyIdMigratorTests
         Assert.IsFalse(ok);
         Assert.AreEqual(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID1", newId);
     }
+
+    [TestMethod]
+    public void BuildLookup_FromCurrentMonitors_KeysOnEdidIdAndMonitorNumber()
+    {
+        var current = new List<PowerDisplay.Common.Models.Monitor>
+        {
+            new() { Id = @"\\?\DISPLAY#DELD1A8#5&abc&0&UID1", MonitorNumber = 1 },
+            new() { Id = @"\\?\DISPLAY#DELD1A8#5&xyz&0&UID2", MonitorNumber = 2 },
+            new() { Id = "DDC_OLDFORMAT_3", MonitorNumber = 3 }, // legacy entry — skipped
+        };
+
+        var lookup = LegacyIdMigrator.BuildLookup(current);
+
+        Assert.AreEqual(2, lookup.Count);
+        Assert.AreEqual(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID1", lookup[("DELD1A8", 1)]);
+        Assert.AreEqual(@"\\?\DISPLAY#DELD1A8#5&xyz&0&UID2", lookup[("DELD1A8", 2)]);
+    }
 }
