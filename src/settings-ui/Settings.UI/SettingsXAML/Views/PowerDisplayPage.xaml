@@ -33,6 +33,21 @@
     <controls:SettingsPageControl x:Uid="PowerDisplay" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerDisplay.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
+                <!-- Crash recovery banner. Outside the inner StackPanel so the Ignore button stays clickable when the rest of the page is locked. -->
+                <InfoBar
+                    x:Uid="PowerDisplay_CrashDetectedInfoBar"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsCrashLockActive, Mode=OneWay}"
+                    Severity="Error">
+                    <InfoBar.ActionButton>
+                        <Button
+                            x:Uid="PowerDisplay_CrashDetected_IgnoreButton"
+                            Command="{x:Bind ViewModel.DismissCrashWarningCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <!-- Inner wrapper: everything below is locked when crash flag is present. -->
+                <StackPanel IsEnabled="{x:Bind ViewModel.IsCrashLockActive, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="PowerDisplay_Enable_PowerDisplay"
@@ -314,6 +329,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </controls:SettingsGroup>
+                </StackPanel>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
