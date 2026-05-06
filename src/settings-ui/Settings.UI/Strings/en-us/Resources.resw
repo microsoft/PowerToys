@@ -4872,6 +4872,9 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_WebcamShape_Circle.Content" xml:space="preserve">
     <value>Circle</value>
   </data>
+  <data name="ZoomIt_Record_AspectRatio.Content" xml:space="preserve">
+    <value>Lock region selection to 16:9 aspect ratio</value>
+  </data>
   <data name="ZoomIt_Break_LockWorkstation.Content" xml:space="preserve">
     <value>Lock workstation during break</value>
   </data>

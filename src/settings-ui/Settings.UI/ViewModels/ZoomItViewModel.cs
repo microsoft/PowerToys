@@ -1113,6 +1113,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool RecordAspectRatio
+        {
+            get => _zoomItSettings.Properties.RecordAspectRatio.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.RecordAspectRatio.Value != value)
+                {
+                    _zoomItSettings.Properties.RecordAspectRatio.Value = value;
+                    OnPropertyChanged(nameof(RecordAspectRatio));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
