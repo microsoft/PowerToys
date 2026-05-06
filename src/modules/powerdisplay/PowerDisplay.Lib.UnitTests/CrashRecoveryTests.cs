@@ -152,4 +152,34 @@ public class CrashRecoveryTests
             Assert.IsTrue(File.Exists(_flagPath));
         }
     }
+
+    [TestMethod]
+    public void DetectOrphanAndDisable_LeavesLockIntactOnSettingsWriteFailure()
+    {
+        File.WriteAllText(_lockPath, "{\"version\":1}");
+
+        // Block settings write by placing a directory at the settings path —
+        // File.WriteAllText cannot replace a directory.
+        File.Delete(_settingsPath);
+        Directory.CreateDirectory(_settingsPath);
+
+        var rec = new CrashRecovery(_lockPath, _flagPath, _settingsPath, _ => true);
+
+        try
+        {
+            rec.DetectOrphanAndDisable();
+            Assert.Fail("expected an exception when settings.json cannot be written");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // expected — Step 2 (write settings.json) failed
+        }
+        finally
+        {
+            Assert.IsTrue(File.Exists(_lockPath), "lock must remain on failure");
+            // Step 1 (flag) ran before step 2 failed → flag exists, settings is still
+            // a directory (no rollback — retry on next start is idempotent).
+            Assert.IsTrue(File.Exists(_flagPath));
+        }
+    }
 }

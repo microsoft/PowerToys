@@ -229,7 +229,11 @@ public:
             return;
         }
 
-        // Reset stop event before starting thread
+        // Note: m_hStopEvent is shared with the toggle listener. Both listeners must
+        // be started and stopped together (always via enable()/disable()). Resetting
+        // it here is safe because StartToggleEventListener already reset it just
+        // before this call in enable(); we reset again as a self-contained guard,
+        // matching the toggle listener's pattern.
         ResetEvent(m_hStopEvent);
 
         m_autoDisableEventThread = std::thread([this]() {
