@@ -152,6 +152,7 @@ NCRBUTTONDBLCLK
 NCRBUTTONDOWN
 NCRBUTTONUP
 NUMLOCK
+OSK
 RBUTTON
 RBUTTONDBLCLK
 RBUTTONDOWN
@@ -296,6 +297,9 @@ workarounds
 
 # For upgrade to check-spelling v0.0.24
 pwa
+
+# due to newline, \napp
+napp
 
 # .NET
 
