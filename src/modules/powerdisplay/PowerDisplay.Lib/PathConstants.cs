@@ -118,6 +118,13 @@ namespace PowerDisplay.Common
         public const string LightSwitchDarkThemeEventName = "Local\\PowerToysLightSwitch-DarkThemeEvent-b3a835c0-eaa2-49b0-b8eb-f793e3df3368";
 
         /// <summary>
+        /// Event name signaled by CrashRecovery when it auto-disables PowerDisplay after detecting
+        /// a crash during Phase 2 capability fetch.
+        /// Must match CommonSharedConstants::POWER_DISPLAY_AUTO_DISABLE_EVENT in shared_constants.h.
+        /// </summary>
+        public const string AutoDisablePowerDisplayEventName = "Local\\PowerToysPowerDisplay-AutoDisableEvent-1a7bd9af-d2e0-4e57-8879-0e1c353994d0";
+
+        /// <summary>
         /// Ensures the PowerDisplay folder exists. Creates it if necessary.
         /// </summary>
         /// <returns>The PowerDisplay folder path</returns>
