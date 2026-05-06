@@ -272,6 +272,9 @@
                                     TickPlacement="Outside"
                                     Value="{x:Bind ViewModel.RecordScaling, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordAspectRatio" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Record_AspectRatio" IsChecked="{x:Bind ViewModel.RecordAspectRatio, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItRecordFormat" x:Uid="ZoomIt_Record_Format">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.RecordFormatIndex, Mode=TwoWay}">
                                     <ComboBoxItem>GIF</ComboBoxItem>
