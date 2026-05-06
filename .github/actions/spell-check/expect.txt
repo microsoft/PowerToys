@@ -218,6 +218,7 @@ clickable
 clickonce
 clientedge
 clientside
+cliextensions
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
@@ -1455,6 +1456,7 @@ ptcontrols
 ptd
 PTOKEN
 ptstr
+ptsym
 pui
 pvct
 PWAs
@@ -1900,6 +1902,7 @@ trx
 tsa
 tskill
 tstoi
+tsv
 tweakable
 TWF
 tymed
