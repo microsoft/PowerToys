@@ -356,16 +356,13 @@ public partial class MainViewModel
                 monitors.Add(monitorInfo);
             }
 
-            // Also add hidden monitors from existing settings (monitors that are hidden but still connected)
-            // Only include those with valid IDs
-            foreach (var existingMonitor in settings.Properties.Monitors.Where(m => m.IsHidden && !string.IsNullOrEmpty(m.Id)))
-            {
-                // Only add if not already in the list (to avoid duplicates)
-                if (!monitors.Any(m => m.Id == existingMonitor.Id))
-                {
-                    monitors.Add(existingMonitor);
-                }
-            }
+            // Replace the manually-built `monitors` list with the rebuilt list that
+            // applies the 30-day retention rule for non-hidden disconnected monitors.
+            monitors = MonitorSettingsRebuilder.Rebuild(
+                currentlyDiscovered: monitors,
+                existing: settings.Properties.Monitors,
+                clock: _clock,
+                retentionDays: PowerDisplaySettings.MonitorEntryRetentionDays);
 
             // Update monitors list
             settings.Properties.Monitors = monitors;
@@ -429,6 +426,7 @@ public partial class MainViewModel
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
+            LastSeenUtc = _clock.UtcNow,
         };
 
         return monitorInfo;
