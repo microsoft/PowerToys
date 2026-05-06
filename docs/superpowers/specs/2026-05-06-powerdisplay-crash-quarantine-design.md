@@ -1,55 +1,55 @@
-# PowerDisplay Crash Quarantine — Design
+# PowerDisplay 崩溃隔离机制 —— 设计文档
 
-**Status:** Draft for review
-**Branch:** `yuleng/pd/f/crash/1`
-**Author:** yuleng@microsoft.com
-**Date:** 2026-05-06
-**Related issue:** [microsoft/PowerToys#47556](https://github.com/microsoft/PowerToys/issues/47556)
+**状态：** 草稿待评审
+**分支：** `yuleng/pd/f/crash/1`
+**作者：** yuleng@microsoft.com
+**日期：** 2026-05-06
+**关联 issue：** [microsoft/PowerToys#47556](https://github.com/microsoft/PowerToys/issues/47556)
 
-## 1. Background
+## 1. 背景
 
-GitHub issue #47556 reports a `KERNEL_SECURITY_CHECK_FAILURE (0x139, subcode 0x2)` BSOD originating in `win32kfull!CPhysicalMonitorHandle::DdcciGetCapabilitiesStringFromMonitor`. The crash is reproducible on Windows 11 build 26200.8328 with PowerToys 0.99.1.0 when a particular LG monitor (LG 27MR400 with malformed EDID) is attached. A second user reports a related symptom (no BSOD but the LG firmware's display rendering pipeline gets wedged after sleep/resume) on a different LG model.
+GitHub issue #47556 报告了一个 `KERNEL_SECURITY_CHECK_FAILURE (0x139, 子码 0x2)` 蓝屏，崩溃栈源头在 `win32kfull!CPhysicalMonitorHandle::DdcciGetCapabilitiesStringFromMonitor`。在 Windows 11 build 26200.8328、PowerToys 0.99.1.0、外接特定 LG 显示器（LG 27MR400，EDID 已损坏）的环境下可稳定复现。第二位用户报告了类似的次生症状——没有蓝屏，但 LG 固件的显示渲染流水线在睡眠/恢复后被楔死，发生在另一型 LG 显示器上。
 
-Both reports point to the same kernel-side path: PowerDisplay invokes `GetCapabilitiesStringLength` / `CapabilitiesRequestAndCapabilitiesReply` (Dxva2.dll) on a non-conformant monitor, and the kernel function corrupts its own stack while parsing the malformed DDC/CI capability string.
+两份报告都指向同一条内核侧路径：PowerDisplay 调用 `Dxva2.dll` 的 `GetCapabilitiesStringLength` / `CapabilitiesRequestAndCapabilitiesReply`，作用于一台返回非规范 DDC/CI capability 字符串的显示器，内核函数在解析过程中破坏了自己的栈。
 
-**The root cause is in the Windows kernel** (`win32kfull`) and must be fixed by the Windows team. PowerToys cannot patch the kernel. This design covers a *mitigation* on the PowerToys side: **detect that PowerDisplay was responsible for a crash and refuse to repeat the dangerous operation until the user explicitly acknowledges the risk**.
+**根因在 Windows 内核（`win32kfull`），必须由 Windows 团队修复。** PowerToys 没法 patch 内核。这份设计是 PowerToys 一侧的**缓解措施**：**检测到 PowerDisplay 上次运行造成了崩溃，就拒绝再次执行同样的危险操作，直到用户明确表示愿意承担风险**。
 
-Mitigation goal: any user who has experienced this BSOD once will not experience it again automatically. After the first crash, PowerDisplay disables itself, displays an error InfoBar in Settings UI, and locks the entire PowerDisplay settings page. The user must explicitly click "Ignore" to dismiss the warning, then manually re-enable PowerDisplay. If the offending monitor is still attached, re-enabling will trigger the crash again — but at that point it's the user's informed choice.
+缓解目标：**任何遭遇过一次蓝屏的用户，不应该被同一颗雷自动炸第二次**。第一次崩溃后，PowerDisplay 自我禁用、Settings UI 顶部显示红色 InfoBar 警告、整个 PowerDisplay 设置页面被锁定。用户必须主动点击 "Ignore" 才能解除锁定，然后手动翻开关重新启用。如果触发崩溃的显示器仍然连着，重启用会再次蓝屏——但那是用户在知情下做出的选择。
 
-## 2. Scope
+## 2. 范围
 
-### In scope (Scope A, agreed during brainstorming)
+### 包含（方案 A，brainstorming 阶段已确认）
 
-* **Capability fetch** is the only DDC/CI path protected by the crash-detection mechanism. Specifically:
-  * `Dxva2.dll!GetCapabilitiesStringLength` ([PInvoke.cs:107-109](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/PInvoke.cs#L107-L109))
-  * `Dxva2.dll!CapabilitiesRequestAndCapabilitiesReply` ([PInvoke.cs:111-116](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/PInvoke.cs#L111-L116))
-* These are invoked exclusively from `DdcCiNative.FetchCapabilities` ([DdcCiNative.cs:27-82](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiNative.cs#L27-L82)) and `DdcCiController.GetCapabilitiesStringAsync` ([DdcCiController.cs:179-235](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs#L179-L235)). The protected window is the parallel fetch in `DdcCiController.FetchCapabilitiesInParallelAsync` ([DdcCiController.cs:400-412](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs#L400-L412)).
+* **仅 capability 获取路径**受本机制保护：
+  * `Dxva2.dll!GetCapabilitiesStringLength`（[PInvoke.cs:107-109](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/PInvoke.cs#L107-L109)）
+  * `Dxva2.dll!CapabilitiesRequestAndCapabilitiesReply`（[PInvoke.cs:111-116](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/PInvoke.cs#L111-L116)）
+* 这两个 API 仅在 `DdcCiNative.FetchCapabilities`（[DdcCiNative.cs:27-82](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiNative.cs#L27-L82)）和 `DdcCiController.GetCapabilitiesStringAsync`（[DdcCiController.cs:179-235](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs#L179-L235)）中调用。受保护的窗口是 `DdcCiController.FetchCapabilitiesInParallelAsync` 的并行 fetch 阶段（[DdcCiController.cs:400-412](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs#L400-L412)）。
 
-### Out of scope
+### 不包含
 
-* **VCP get/set** (`SetVCPFeature`, `GetVCPFeatureAndVCPFeatureReply`). These are hot-path operations (the brightness slider triggers many per second). Adding crash detection here would require synchronous disk flushes per VCP call, with unacceptable latency. The reported BSOD is not in this path. Decision rationale: brainstorming round 1 — chose A over B (which covered all VCP ops) after analyzing the L3-flush cost on the slider hot path.
-* **Per-monitor quarantine.** We do not attempt to identify which specific monitor caused the crash. Phase 2 fetches capabilities for all candidate monitors in parallel, so multiple BEGIN markers would be in flight simultaneously when a BSOD occurs — there is no reliable way to attribute the crash to a single monitor. Instead we disable the entire PowerDisplay module. Decision rationale: brainstorming round 2.
-* **Telemetry of crash events.** No telemetry hook in v1.
-* **Listing offending monitors in the InfoBar.** The InfoBar text is generic ("crash detected, auto-disabled"). Decision rationale: explicit user request during brainstorming.
-* **Kernel-side fix.** That requires a Windows update from the win32k team.
+* **VCP get/set**（`SetVCPFeature`、`GetVCPFeatureAndVCPFeatureReply`）——这些是热路径调用（亮度滑条每秒触发数十次 set）。在这里加崩溃检测意味着每次 VCP 调用都要同步落盘 + flush，性能不可接受。已报告的蓝屏路径也不在这里。决策依据：brainstorming 第一轮——分析了 L3 flush 在滑条热路径上的成本后，舍方案 B 选方案 A。
+* **按显示器粒度的隔离**。我们不尝试识别"是哪一台显示器导致的崩溃"。Phase 2 是并行 fetch，多个 BEGIN 标记同时在飞，蓝屏发生时无法可靠归因到单台显示器。所以我们禁用整个 PowerDisplay 模块。决策依据：brainstorming 第二轮。
+* **崩溃事件的遥测**。v1 不加 telemetry。
+* **InfoBar 列出可疑显示器**。InfoBar 文案是通用的（"检测到崩溃，已自动禁用"），不展示具体设备。决策依据：用户在 brainstorming 中明确要求。
+* **内核侧修复**——那需要 Windows 内核团队出 update。
 
-### Non-goals
+### 非目标
 
-* Preventing every possible PowerDisplay-related crash. We only protect the documented BSOD path. PowerDisplay.exe could still crash for unrelated reasons (e.g., bugs in our C# code) and those are outside this design.
-* Auto-recovery. After Ignore + re-enable with the offending monitor still attached, the system will BSOD again. We do not try to be clever about this — the user has been warned.
+* 防住所有 PowerDisplay 相关的崩溃。我们只覆盖文档明确的蓝屏路径。PowerDisplay.exe 还可能因为别的原因崩（例如 C# 代码自身 bug），那些不在本设计范围内。
+* 自动恢复。用户点 Ignore + 重新启用后，如果坏显示器还连着，系统会再蓝。我们不打算在这里做任何"聪明"的事——用户已经被警告过了。
 
-## 3. Architecture
+## 3. 架构
 
-### 3.1 Disk artifacts
+### 3.1 磁盘文件
 
-Both files live under `%LOCALAPPDATA%\Microsoft\PowerToys\PowerDisplay\` (PathConstants.PowerDisplayFolderPath).
+两个文件都放在 `%LOCALAPPDATA%\Microsoft\PowerToys\PowerDisplay\`（即 `PathConstants.PowerDisplayFolderPath`）。
 
-| File | Lifetime | Purpose |
+| 文件 | 生命周期 | 用途 |
 |---|---|---|
-| `discovery.lock` | Written before Phase 2 begins; deleted after Phase 2 completes (or on any non-crash exit). Survives only if the process was killed externally (BSOD, TerminateProcess, FailFast). | "We were inside the dangerous code path." Existence at next startup ⇒ previous run crashed. Internal mechanism only — not user-visible. |
-| `crash_detected.flag` | Written by PowerDisplay.exe Phase 0 when an orphan `discovery.lock` is found; deleted when the user clicks Ignore in Settings UI. | UI signal. Settings UI reads this to decide whether to render the error InfoBar and lock the page. |
+| `discovery.lock` | Phase 2 进入前写入；Phase 2 完成或非崩溃式退出时删除。**只有进程被外力强杀（蓝屏、TerminateProcess、FailFast）时才会残留**。 | "我们正在执行危险代码"的标志。下次启动时若发现它，意味着上次崩溃了。**纯内部机制，用户看不到**。 |
+| `crash_detected.flag` | PowerDisplay.exe Phase 0 检测到孤儿 `discovery.lock` 时写入；用户在 Settings UI 点 Ignore 时删除。 | UI 信号。Settings UI 读这个文件来决定是否显示红色 InfoBar 并锁定页面。 |
 
-Both files are JSON with a `version` field for forward compatibility. The version is currently `1`. Phase 0 treats any unexpected version as "format unknown ⇒ act conservatively, treat as orphan".
+两个文件都是带 `version` 字段的 JSON，便于将来格式演进。当前 `version=1`。Phase 0 读取时如果遇到不认识的 version，**保守处理为"格式异常 ⇒ 当作孤儿"**。
 
 ```jsonc
 // discovery.lock
@@ -66,70 +66,70 @@ Both files are JSON with a `version` field for forward compatibility. The versio
 }
 ```
 
-The `pid` and timestamp fields are diagnostic only — they appear in logs to help triage user reports but are not consulted in decision logic. The detection rule is "lock file exists ⇒ orphan".
+`pid` 和时间戳字段**仅用于诊断**（写到 log 里方便用户提 issue 时贴出），**不参与决策逻辑**。检测规则就是"lock 文件是否存在"这一个 bool。
 
-### 3.2 Component overview
+### 3.2 组件总览
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│  runner.exe process                                          │
+│  runner.exe 进程                                             │
 │                                                              │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │  PowerDisplayModuleInterface.dll (loaded into runner)│   │
+│  │  PowerDisplayModuleInterface.dll（被 runner 加载）   │   │
 │  │                                                       │   │
-│  │  • [NEW] AutoDisable listener thread waits on         │   │
+│  │  • [新增] AutoDisable listener 线程，wait              │   │
 │  │    POWER_DISPLAY_AUTO_DISABLE_EVENT                   │   │
-│  │  • Existing toggle/refresh listeners unchanged        │   │
+│  │  • 现有的 toggle/refresh listener 不动                │   │
 │  └──────┬───────────────────────────────────────────────┘   │
-│         │ spawns (existing)                                  │
+│         │ 启动子进程（已有逻辑）                              │
 └─────────┼───────────────────────────────────────────────────┘
           │
           ▼
 ┌──────────────────────────────────────────────────────────────┐
-│  PowerDisplay.exe (C# WinUI app)                             │
+│  PowerDisplay.exe（C# WinUI 应用）                           │
 │                                                              │
-│  Startup:                                                    │
-│    [NEW] CrashRecovery.DetectOrphanAndDisable()             │
-│      → if orphan lock: write flag, write settings.json,     │
-│        signal event, delete lock, Exit(0)                   │
+│  启动时:                                                      │
+│    [新增] CrashRecovery.DetectOrphanAndDisable()             │
+│      → 若孤儿 lock：写 flag、写 settings.json、              │
+│        SignalEvent、删 lock、Exit(0)                          │
 │                                                              │
-│  Discovery:                                                  │
-│    DdcCiController.DiscoverMonitorsAsync()                  │
-│      Phase 1 (GDI enumerate)        — safe                  │
-│      [NEW] using (CrashDetectionScope.Begin())               │
-│        Phase 2 (FetchCapabilitiesInParallelAsync) — DANGER   │
-│      Phase 3 (CreateValidMonitors) — safe                   │
+│  发现监视器时:                                                │
+│    DdcCiController.DiscoverMonitorsAsync()                   │
+│      Phase 1（GDI 枚举）       — 安全                         │
+│      [新增] using (CrashDetectionScope.Begin())               │
+│        Phase 2（FetchCapabilitiesInParallelAsync）— 危险      │
+│      Phase 3（CreateValidMonitors）— 安全                     │
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────┐
-│  PowerToys Settings UI process (separate, on-demand)         │
+│  PowerToys Settings UI 进程（独立进程，按需启动）             │
 │                                                              │
-│  PowerDisplayViewModel:                                      │
-│    [NEW] On construction: read crash_detected.flag           │
-│    [NEW] IsCrashLockActive property drives:                  │
-│      - Top error InfoBar visibility                          │
-│      - Whole-page IsEnabled binding (page locked)            │
-│    [NEW] DismissCrashWarning command deletes flag            │
+│  PowerDisplayViewModel:                                       │
+│    [新增] 构造时读 crash_detected.flag                        │
+│    [新增] IsCrashLockActive 属性驱动:                         │
+│      - 顶部 Error InfoBar 是否显示                            │
+│      - 整页面的 IsEnabled 绑定（页面锁定）                    │
+│    [新增] DismissCrashWarning 命令删除 flag                   │
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### 3.3 Five components
+### 3.3 五个组件清单
 
-1. **DdcCiController (C#)** — wraps Phase 2 in a `using (CrashDetectionScope.Begin())` block. Phase 3 is outside the scope.
-2. **PowerDisplay.exe Phase 0 (C#)** — at app startup, before any DDC/CI activity, calls `CrashRecovery.DetectOrphanAndDisable()`. If true, exit immediately.
-3. **CommonSharedConstants (C++)** — adds `POWER_DISPLAY_AUTO_DISABLE_EVENT` constant.
-4. **PowerDisplayModuleInterface DLL (C++)** — adds a listener thread waiting on the new event; on signal, calls `this->disable()` to align runner-internal state with the (already-on-disk) disabled state.
-5. **PowerDisplayViewModel + PowerDisplayPage XAML (C#/XAML)** — adds `IsCrashLockActive` property, top error InfoBar, page-wide IsEnabled lock-out, Ignore button.
+1. **DdcCiController（C#）** —— 用 `using (CrashDetectionScope.Begin())` 包住 Phase 2 调用。Phase 3 在 scope 外。
+2. **PowerDisplay.exe Phase 0（C#）** —— 应用启动时、任何 DDC/CI 活动之前调用 `CrashRecovery.DetectOrphanAndDisable()`。返回 true 则立即退出。
+3. **CommonSharedConstants（C++）** —— 新增 `POWER_DISPLAY_AUTO_DISABLE_EVENT` 常量。
+4. **PowerDisplayModuleInterface DLL（C++）** —— 新增一条 listener 线程 wait 在新事件上；收到信号调 `this->disable()`，把 runner 内存状态校准到磁盘上"已禁用"的事实。
+5. **PowerDisplayViewModel + PowerDisplayPage XAML（C#/XAML）** —— 新增 `IsCrashLockActive` 属性、顶部 Error InfoBar、整页 IsEnabled 锁定、Ignore 按钮。
 
-## 4. Detailed design
+## 4. 详细设计
 
-### 4.1 `CrashDetectionScope` (new class)
+### 4.1 `CrashDetectionScope`（新建类）
 
-**Location:** `src/modules/powerdisplay/PowerDisplay.Lib/Services/CrashDetectionScope.cs`
+**位置：** `src/modules/powerdisplay/PowerDisplay.Lib/Services/CrashDetectionScope.cs`
 
-**Responsibility:** Manage the `discovery.lock` file's lifetime around Phase 2. Single responsibility — does NOT do detection, does NOT write any other file.
+**职责：** 管理 `discovery.lock` 在 Phase 2 期间的生命周期。**单一职责**——不做检测，不写其他文件。
 
-**API:**
+**API：**
 
 ```csharp
 public sealed class CrashDetectionScope : IDisposable
@@ -139,17 +139,17 @@ public sealed class CrashDetectionScope : IDisposable
 }
 ```
 
-**Implementation contract:**
+**实现契约：**
 
-* `Begin()` writes `discovery.lock` using `FileMode.CreateNew` (fails if file already exists — defensive), `FileOptions.WriteThrough`, and an explicit `Flush(flushToDisk: true)` after the write. Throws `IOException` on file system failure or if the lock already exists.
-* `Begin()` writes the JSON payload with `version`, `pid`, `startedAt`. Content is for diagnostics only; existence is what matters.
-* `Dispose()` deletes `discovery.lock`. If deletion fails, log a warning but do not rethrow — the worst-case consequence is a single false-positive quarantine on next start, recoverable by the user.
-* `Dispose()` is idempotent (a `_disposed` guard).
+* `Begin()` 用 `FileMode.CreateNew`（如果文件已存在直接抛——防御性）、`FileOptions.WriteThrough`、且写完显式 `Flush(flushToDisk: true)` 写入 `discovery.lock`。文件系统失败或 lock 已存在时抛 `IOException`。
+* `Begin()` 写入的 JSON 内容包含 `version`、`pid`、`startedAt`。**内容仅用于诊断**；逻辑只关心文件是否存在。
+* `Dispose()` 删除 `discovery.lock`。删除失败时 log warning 但**不重抛**——失败的最坏后果是下次启动一次性误判为崩溃，用户点 Ignore 即可恢复。
+* `Dispose()` 是幂等的（用 `_disposed` 字段守卫）。
 
-**Caller pattern:**
+**调用方模式：**
 
 ```csharp
-// DdcCiController.DiscoverMonitorsAsync
+// DdcCiController.DiscoverMonitorsAsync 中
 (CandidateMonitor, DdcCiValidationResult)[] fetchResults;
 using (CrashDetectionScope.Begin())
 {
@@ -158,90 +158,90 @@ using (CrashDetectionScope.Begin())
 return CreateValidMonitors(fetchResults);
 ```
 
-The `using` block (not `using var`) ensures the lock is released *immediately after* Phase 2 completes, not at end-of-method. Phase 3 (`CreateValidMonitors`) executes outside the scope so its own DDC/CI calls (VCP gets to initialize input source, color temperature) are not covered — consistent with Scope A.
+用 `using (...)` 块（**而不是** `using var`）确保 lock 在 Phase 2 完成的**那一刻**释放，而不是在方法 return 时。Phase 3（`CreateValidMonitors`）在 scope 外执行——它内部的 DDC/CI 调用（VCP get 初始化输入源、色温等）走的是不同的内核函数，不在我们这次防御范围内，符合方案 A 的语义。
 
-**Why `FileMode.CreateNew` instead of `Create`:** if a stray `discovery.lock` exists at Phase 2 entry, that means either (a) Phase 0 detection failed to clean it up, or (b) two PowerDisplay.exe instances are running concurrently. Both are bugs. Failing fast is better than overwriting silently.
+**为什么用 `FileMode.CreateNew` 而不是 `Create`：** 如果 Phase 2 入口处发现 `discovery.lock` 已存在，意味着要么 (a) Phase 0 检测没清理干净，要么 (b) 两个 PowerDisplay.exe 实例并发跑了。两种都是 bug。失败比静默覆盖好。
 
-### 4.2 `CrashRecovery` (new static class)
+### 4.2 `CrashRecovery`（新建静态类）
 
-**Location:** `src/modules/powerdisplay/PowerDisplay.Lib/Services/CrashRecovery.cs`
+**位置：** `src/modules/powerdisplay/PowerDisplay.Lib/Services/CrashRecovery.cs`
 
-**Responsibility:** One-shot Phase 0 detection. Independent from `CrashDetectionScope`.
+**职责：** 一次性的 Phase 0 检测。和 `CrashDetectionScope` 互相独立。
 
-**API:**
+**API：**
 
 ```csharp
 public static class CrashRecovery
 {
     /// <summary>
-    /// Run at PowerDisplay.exe startup before any DDC/CI activity.
-    /// If an orphan discovery.lock is found, executes the strict auto-disable
-    /// sequence (write flag, write settings.json, signal event, delete lock).
+    /// 在 PowerDisplay.exe 启动时、任何 DDC/CI 活动之前调用。
+    /// 若检测到孤儿 discovery.lock，执行严格的 auto-disable 序列
+    ///（写 flag、写 settings.json、SignalEvent、删 lock）。
     /// </summary>
-    /// <returns>true if orphan was detected and handled; caller should exit immediately.</returns>
-    /// <exception>Throws on any sequence-step failure (strict fail-fast).</exception>
+    /// <returns>true 表示检测到孤儿、调用方应立即退出进程。</returns>
+    /// <exception>序列任何一步失败即抛出（严格 fail-fast）。</exception>
     public static bool DetectOrphanAndDisable();
 }
 ```
 
-**Strict fail-fast sequence (must execute in this exact order):**
+**严格 fail-fast 序列（必须严格按此顺序执行）：**
 
-1. **Write `crash_detected.flag`** (UI signal)
-2. **Write global `settings.json`** with `enabled.PowerDisplay = false` (persistent disable)
-3. **Signal `POWER_DISPLAY_AUTO_DISABLE_EVENT`** (live runner-internal state sync)
-4. **Delete `discovery.lock`** (commit point)
+1. **写 `crash_detected.flag`**（UI 信号）
+2. **写全局 `settings.json`**，把 `enabled.PowerDisplay = false`（持久化禁用）
+3. **Signal `POWER_DISPLAY_AUTO_DISABLE_EVENT`**（runner 内存状态校准）
+4. **删除 `discovery.lock`**（commit point）
 
-If any of steps 1–3 throws, the lock is **not** deleted. The exception propagates up; `Program.Main` should `Environment.Exit(1)`. Next startup re-runs the detection and retries the entire sequence — self-healing via the lock-as-commit-point pattern.
+如果第 1～3 步任何一步抛异常，**lock 不会被删除**。异常向上传播；`Program.Main` 应该 `Environment.Exit(1)`。下次启动时检测会再次发现 lock 并重新跑完整序列——通过"lock 即 commit point"模式实现自愈。
 
-**Step ordering rationale:**
+**步骤顺序的理由：**
 
-| Step | Failure consequence (if subsequent steps not executed) | Self-healing on retry |
+| 步骤 | 失败后果（如果后续步骤未执行） | 重试时的自愈结果 |
 |---|---|---|
-| 1 fails | No UI banner this start; lock remains | Retry; full recovery |
-| 2 fails | Settings.json still says enabled; runner re-spawns next boot; lock remains | Retry; eventually succeeds |
-| 3 fails | Current runner session not synced; user sees toggle OFF + InfoBar; flipping toggle requires OFF→ON cycle (because runner m_enabled still true). But settings.json was written, so next runner restart is consistent. | Retry on next start; cleaner state |
-| 4 must be last | If 4 ran before 1–3, we'd lose the "this was a crash" evidence and Phase 1/2 would proceed normally on the next restart, potentially BSOD-ing again | N/A — this is the final commit |
+| 1 失败 | 当前会话没 UI banner；lock 仍在 | 重试；完整恢复 |
+| 2 失败 | settings.json 还是 enabled；下次开机 runner 仍会启动 PowerDisplay；lock 仍在 | 重试；最终成功 |
+| 3 失败 | 当前 runner 会话未同步；用户看到 toggle OFF + InfoBar；翻 toggle 需要 OFF→ON 一次（因为 runner m_enabled 还是 true）。但 settings.json 已写，下次 runner 重启状态一致 | 下次启动重试；状态会更干净 |
+| 4 必须最后 | 如果 4 在 1～3 之前跑了，会丢失"上次崩了"的证据，下次启动 Phase 1/2 正常进入，可能再蓝一次 | N/A —— 这步是最终 commit |
 
-**Deletion of `discovery.lock` is the commit point.** Until the lock is deleted, the sequence is "pending"; any failure leaves the system in a recoverable state.
+**删除 `discovery.lock` 是 commit point**：在 lock 被删除之前，整个序列处于"未提交"状态；任何失败都让系统处于可恢复状态。
 
-**No partial fault tolerance.** Per design decision, individual step failures are *not* swallowed. If we cannot reliably write the flag or settings.json, we cannot reliably claim "PowerDisplay is disabled" — better to leave evidence for the next attempt than to fake success.
+**不做部分容错。** 按设计决策，单步失败**不**被吞掉。如果我们没法可靠地写 flag 或 settings.json，就没法可靠地声称"PowerDisplay 已禁用"——留下证据等待下次重试，比假装成功好。
 
-### 4.3 `CommonSharedConstants` addition (C++)
+### 4.3 `CommonSharedConstants` 新增（C++）
 
-**Location:** `src/common/interop/shared_constants.h`
+**位置：** `src/common/interop/shared_constants.h`
 
-Add a single `constexpr` string constant:
+新增一个 `constexpr` 字符串常量：
 
 ```cpp
-// Naming follows existing convention (see TOGGLE_POWER_DISPLAY_EVENT, REFRESH_POWER_DISPLAY_MONITORS_EVENT).
+// 命名遵循已有约定（见 TOGGLE_POWER_DISPLAY_EVENT、REFRESH_POWER_DISPLAY_MONITORS_EVENT）。
 inline constexpr wchar_t POWER_DISPLAY_AUTO_DISABLE_EVENT[] =
-    L"Local\\PowerToysPowerDisplay-AutoDisable-Event-{insert-uuid-when-implementing}";
+    L"Local\\PowerToysPowerDisplay-AutoDisable-Event-{在落地阶段填入新生成的 UUID}";
 ```
 
-The UUID suffix is a fresh GUID generated at implementation time (mirroring the pattern used by `LIGHT_SWITCH_LIGHT_THEME_EVENT` etc. in [PathConstants.cs:84](src/modules/powerdisplay/PowerDisplay.Lib/PathConstants.cs#L84)).
+UUID 后缀在落地阶段由实现者生成（参考 [PathConstants.cs:84](src/modules/powerdisplay/PowerDisplay.Lib/PathConstants.cs#L84) 中 `LIGHT_SWITCH_LIGHT_THEME_EVENT` 等的 UUID 用法）。
 
-The same constant must be exposed to C# in `PathConstants.cs` (or a new `EventConstants.cs`) so `CrashRecovery` can signal it from PowerDisplay.exe.
+同一常量需要在 C# 侧暴露——加到 `PathConstants.cs`（或新建一个 `EventConstants.cs`），让 `CrashRecovery` 能在 PowerDisplay.exe 中 SignalEvent。
 
-### 4.4 PowerDisplayModuleInterface DLL changes (C++)
+### 4.4 PowerDisplayModuleInterface DLL 改动（C++）
 
-**Location:** `src/modules/powerdisplay/PowerDisplayModuleInterface/dllmain.cpp`
+**位置：** `src/modules/powerdisplay/PowerDisplayModuleInterface/dllmain.cpp`
 
-Add an event handle and listener thread mirroring the existing `m_hToggleEvent` / `m_toggleEventThread` pattern ([dllmain.cpp:75-80, 127-170](src/modules/powerdisplay/PowerDisplayModuleInterface/dllmain.cpp#L75-L80)):
+仿照已有的 `m_hToggleEvent` / `m_toggleEventThread` 模式（[dllmain.cpp:75-80, 127-170](src/modules/powerdisplay/PowerDisplayModuleInterface/dllmain.cpp#L75-L80)），新增事件 handle 和 listener 线程：
 
 ```cpp
-// In PowerDisplayModule class:
+// PowerDisplayModule 类内：
 HANDLE m_hAutoDisableEvent = nullptr;
 std::thread m_autoDisableEventThread;
 
-// In constructor (alongside existing event creates):
+// 构造函数中（和现有 event create 并列）:
 m_hAutoDisableEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_AUTO_DISABLE_EVENT);
 
-// New listener thread, started in enable() and stopped in disable():
+// 新增 listener 线程，由 enable() 启动、disable() 停止:
 void StartAutoDisableEventListener();
 void StopAutoDisableEventListener();
 ```
 
-The listener body:
+listener 线程主体：
 
 ```cpp
 m_autoDisableEventThread = std::thread([this]() {
@@ -250,35 +250,36 @@ m_autoDisableEventThread = std::thread([this]() {
         DWORD result = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
         if (result == WAIT_OBJECT_0) {
             Logger::warn(L"PowerDisplay AutoDisable event received — disabling module");
-            // Call own disable() — this sets m_enabled=false (which runner queries via is_enabled())
-            // and stops the process manager (PowerDisplay.exe has already self-exited).
+            // 调本模块自己的 disable() —— 这会把 m_enabled 设为 false
+            //（runner 通过 is_enabled() 查这个值），并 stop process manager
+            //（PowerDisplay.exe 已自杀，stop 是 no-op）
             this->disable();
-            // Note: we don't write settings.json here. PowerDisplay.exe Phase 0 already did that.
-            break;  // one-shot — listener exits; will be recreated if module is re-enabled
+            // 注意: 这里不写 settings.json。PowerDisplay.exe Phase 0 已经写过了。
+            break;  // 一次性 —— listener 退出；模块如被重新启用，listener 会重新创建
         }
         else {
-            break;  // stop event signaled
+            break;  // stop event 信号
         }
     }
 });
 ```
 
-**Why one-shot:** after disable() runs, the listener has done its job. If the user later re-enables PowerDisplay (which calls `enable()`), a fresh listener can be started. This avoids ambiguity about "what does it mean to receive an AutoDisable event when the module is already disabled".
+**为什么是一次性的：** listener 收到事件并调用 `disable()` 之后，任务已完成。如果用户后续重新启用 PowerDisplay（调 `enable()`），可以重新启动一条新的 listener。这避免了"模块已经 disabled 时再收到 AutoDisable 事件该怎么办"的歧义。
 
-**Lifecycle:**
+**生命周期：**
 
-* `enable()` — creates the event handle (already created in constructor), starts the listener thread.
-* `disable()` — already does `StopToggleEventListener`; we add `StopAutoDisableEventListener` alongside.
-* Constructor / destructor manage the event handle lifetime.
+* `enable()` —— 事件 handle 已在构造函数创建；这里启动 listener 线程。
+* `disable()` —— 已有 `StopToggleEventListener` 调用，我们并列加 `StopAutoDisableEventListener`。
+* 构造函数 / 析构函数管理事件 handle 的生命周期。
 
-### 4.5 PowerDisplay.exe Phase 0 wiring (C#)
+### 4.5 PowerDisplay.exe Phase 0 接入（C#）
 
-**Location:** `PowerDisplay.exe` startup. Likely in `App.xaml.cs::OnLaunched` or a new bootstrap method called before any window is constructed. Implementation detail to be confirmed during planning.
+**位置：** `PowerDisplay.exe` 启动入口。具体可能在 `App.xaml.cs::OnLaunched`，也可能是一个在任何窗口构造之前调用的 bootstrap 方法。具体位置在 plan 阶段确认。
 
 ```csharp
 protected override void OnLaunched(LaunchActivatedEventArgs args)
 {
-    // Phase 0: Crash recovery. Must run before ANY DDC/CI initialization.
+    // Phase 0: 崩溃恢复检测。必须在任何 DDC/CI 初始化之前。
     try
     {
         if (CrashRecovery.DetectOrphanAndDisable())
@@ -290,19 +291,19 @@ protected override void OnLaunched(LaunchActivatedEventArgs args)
     catch (Exception ex)
     {
         Logger.LogError($"Phase 0: auto-disable sequence failed: {ex}");
-        // Lock was not deleted; next startup will retry.
+        // lock 没有被删除；下次启动会重试整个序列。
         Environment.Exit(1);
     }
 
-    // ... existing OnLaunched logic ...
+    // ... 现有 OnLaunched 逻辑 ...
 }
 ```
 
-### 4.6 PowerDisplay.Lib changes — DdcCiController integration
+### 4.6 PowerDisplay.Lib 改动 —— DdcCiController 集成
 
-**Location:** [DdcCiController.cs:264-298](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs#L264-L298)
+**位置：** [DdcCiController.cs:264-298](src/modules/powerdisplay/PowerDisplay.Lib/Drivers/DDC/DdcCiController.cs#L264-L298)
 
-Modify `DiscoverMonitorsAsync` to wrap Phase 2:
+修改 `DiscoverMonitorsAsync`，把 Phase 2 包进 scope：
 
 ```csharp
 public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
@@ -318,14 +319,14 @@ public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken 
             monitorHandles, allMonitorDisplayInfo, cancellationToken);
         if (candidates.Count == 0) return Enumerable.Empty<Monitor>();
 
-        // Phase 2: protected by crash-detection scope.
+        // Phase 2: 严格被崩溃检测 scope 包住
         (CandidateMonitor Candidate, DdcCiValidationResult Result)[] fetchResults;
         using (CrashDetectionScope.Begin())
         {
             fetchResults = await FetchCapabilitiesInParallelAsync(candidates, cancellationToken);
         }
 
-        // Phase 3: outside scope.
+        // Phase 3: 在 scope 外
         return CreateValidMonitors(fetchResults);
     }
     catch (Exception ex)
@@ -336,13 +337,13 @@ public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken 
 }
 ```
 
-The `using` block boundary is exact — Phase 1 happens before Begin(), Phase 3 happens after Dispose(). This matches Scope A.
+`using` 块的边界是精确的——Phase 1 在 `Begin()` 之前、Phase 3 在 `Dispose()` 之后。这正符合方案 A。
 
-### 4.7 PathConstants additions
+### 4.7 PathConstants 新增
 
-**Location:** [PathConstants.cs](src/modules/powerdisplay/PowerDisplay.Lib/PathConstants.cs)
+**位置：** [PathConstants.cs](src/modules/powerdisplay/PowerDisplay.Lib/PathConstants.cs)
 
-Add three new path/event accessors:
+新增三个路径/事件访问器：
 
 ```csharp
 public const string DiscoveryLockFileName = "discovery.lock";
@@ -355,16 +356,16 @@ public static string CrashDetectedFlagPath
     => Path.Combine(PowerDisplayFolderPath, CrashDetectedFlagFileName);
 
 public const string AutoDisableEventName =
-    "Local\\PowerToysPowerDisplay-AutoDisable-Event-{matches-shared_constants.h-uuid}";
+    "Local\\PowerToysPowerDisplay-AutoDisable-Event-{对齐 shared_constants.h 中的 UUID}";
 ```
 
-The `AutoDisableEventName` value must exactly match `POWER_DISPLAY_AUTO_DISABLE_EVENT` in `shared_constants.h`. We rely on the existing pattern (string constant duplication between C++ and C#) used by `LightSwitchLightThemeEventName` etc.
+`AutoDisableEventName` 的字符串值必须**完全等于** `shared_constants.h` 里的 `POWER_DISPLAY_AUTO_DISABLE_EVENT`。我们沿用现有约定（C++ 和 C# 双方各自维护字符串常量，靠人工对齐）——和 `LightSwitchLightThemeEventName` 等的做法一致。
 
-### 4.8 Settings UI — PowerDisplayViewModel (C#)
+### 4.8 Settings UI —— PowerDisplayViewModel（C#）
 
-**Location:** [PowerDisplayViewModel.cs](src/settings-ui/Settings.UI/ViewModels/PowerDisplayViewModel.cs)
+**位置：** [PowerDisplayViewModel.cs](src/settings-ui/Settings.UI/ViewModels/PowerDisplayViewModel.cs)
 
-Add:
+新增：
 
 ```csharp
 private bool _isCrashLockActive;
@@ -387,7 +388,7 @@ private void DismissCrashWarning()
 {
     try
     {
-        var path = /* CrashDetectedFlagPath — see Section 4.10 */;
+        var path = /* CrashDetectedFlagPath —— 见 4.10 节 */;
         if (File.Exists(path))
         {
             File.Delete(path);
@@ -401,25 +402,25 @@ private void DismissCrashWarning()
 }
 ```
 
-In the constructor, after existing initialization:
+构造函数中，在现有初始化之后：
 
 ```csharp
 IsCrashLockActive = File.Exists(/* CrashDetectedFlagPath */);
 ```
 
-The IsEnabled toggle setter is **not** modified — when `IsCrashLockActive` is true, the entire page (including the toggle) is disabled by the XAML binding. The user must click Ignore first.
+`IsEnabled` 的 setter **不动**——当 `IsCrashLockActive` 为 true 时，整个页面（包括 toggle）由 XAML 绑定层强制 disabled，用户必须先点 Ignore。
 
-### 4.9 Settings UI — PowerDisplayPage XAML
+### 4.9 Settings UI —— PowerDisplayPage XAML
 
-**Location:** [PowerDisplayPage.xaml](src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml)
+**位置：** [PowerDisplayPage.xaml](src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml)
 
-Two changes:
+两处修改：
 
-**Change 1:** Add the InfoBar at the top of `ModuleContent`'s root StackPanel (above the existing GPOInfoControl):
+**修改 1：** 在 `ModuleContent` 根 StackPanel 顶部加 InfoBar（在现有 GPOInfoControl 上方）：
 
 ```xml
 <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
-    <!-- NEW: Crash recovery banner -->
+    <!-- 新增：崩溃恢复 banner -->
     <InfoBar
         x:Uid="PowerDisplay_CrashDetectedInfoBar"
         IsClosable="False"
@@ -432,32 +433,32 @@ Two changes:
         </InfoBar.ActionButton>
     </InfoBar>
 
-    <!-- Existing content, but wrapped to be disabled when locked -->
+    <!-- 现有内容，但包一层 wrapper 让其在锁定时变 disabled -->
     <StackPanel
         IsEnabled="{x:Bind ViewModel.IsCrashLockActive, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
         <controls:GPOInfoControl ...>
             ...
         </controls:GPOInfoControl>
-        <!-- All existing SettingsGroup elements remain inside this inner StackPanel -->
+        <!-- 所有现有的 SettingsGroup 都放在这个内层 StackPanel 内 -->
     </StackPanel>
 </StackPanel>
 ```
 
-**Change 2:** Add localized resources to `Settings.UI/Strings/en-us/Resources.resw`:
+**修改 2：** 在 `Settings.UI/Strings/en-us/Resources.resw` 加本地化资源：
 
-| Resource key | Value (en-US) |
+| 资源 key | 英文文案 |
 |---|---|
 | `PowerDisplay_CrashDetectedInfoBar.Title` | `PowerDisplay was automatically disabled` |
 | `PowerDisplay_CrashDetectedInfoBar.Message` | `A system crash was detected during the previous PowerDisplay session. PowerDisplay has been disabled to prevent another crash. If you understand the risk, click Ignore to dismiss this warning, then re-enable PowerDisplay manually.` |
 | `PowerDisplay_CrashDetected_IgnoreButton.Content` | `Ignore` |
 
-**Why InfoBar is outside the inner disabled StackPanel:** the InfoBar itself (and especially the Ignore button) must remain interactive even when the rest of the page is locked. Putting it outside the IsEnabled-bound container achieves this naturally.
+**为什么 InfoBar 在内层 disabled StackPanel 之外：** InfoBar 本身（特别是 Ignore 按钮）必须在页面其他部分被锁定时仍可交互。把 InfoBar 放在被 IsEnabled 绑定锁住的容器之外，自然达成这个效果。
 
-### 4.10 Sharing the file path between PowerDisplay.Lib and Settings.UI
+### 4.10 PowerDisplay.Lib 和 Settings.UI 之间的路径共享
 
-**Problem:** Settings UI's `PowerDisplayViewModel` lives in `src/settings-ui/Settings.UI/`, which by default does not reference `PowerDisplay.Lib`. The `crash_detected.flag` path is defined in `PowerDisplay.Lib/PathConstants.cs`.
+**问题：** Settings UI 的 `PowerDisplayViewModel` 在 `src/settings-ui/Settings.UI/`，默认**不**引用 `PowerDisplay.Lib`。`crash_detected.flag` 的路径定义在 `PowerDisplay.Lib/PathConstants.cs`。
 
-**Resolution:** Add a small `PowerDisplayPaths` static class to `PowerDisplay.Models` (which Settings UI **does** reference — see [PowerDisplayPage.xaml:10](src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml#L10)). This class exposes only the path-derivation logic needed by the UI:
+**方案：** 在 `PowerDisplay.Models`（Settings UI 已经引用，见 [PowerDisplayPage.xaml:10](src/settings-ui/Settings.UI/SettingsXAML/Views/PowerDisplayPage.xaml#L10)）里加一个轻量的 `PowerDisplayPaths` 静态类，**只暴露 UI 需要的那部分路径推导逻辑**：
 
 ```csharp
 // PowerDisplay.Models/PowerDisplayPaths.cs
@@ -470,103 +471,103 @@ public static class PowerDisplayPaths
 }
 ```
 
-`PathConstants` in `PowerDisplay.Lib` continues to be the source of truth for runtime; it can either reference `PowerDisplayPaths` or duplicate the literal. Implementation note for the plan: pick one and stick with it; do not let the two diverge.
+`PowerDisplay.Lib` 中的 `PathConstants` 继续作为运行时的 single source of truth，可以引用 `PowerDisplayPaths`、也可以重复字面量。**plan 阶段确认采用其中一种、保持单一来源**——绝不能让两边各自维护、漂移。
 
-## 5. End-to-end flow
+## 5. 端到端流程
 
-### 5.1 Happy path (no crash)
+### 5.1 Happy path（无崩溃）
 
-1. PowerDisplay.exe launches.
-2. Phase 0: `CrashRecovery.DetectOrphanAndDisable()` checks for `discovery.lock` → not found → returns false.
-3. Normal startup continues.
-4. `DdcCiController.DiscoverMonitorsAsync` runs:
-   * Phase 1: GDI enumerate.
-   * `CrashDetectionScope.Begin()` writes `discovery.lock`.
-   * Phase 2: `FetchCapabilitiesInParallelAsync` runs.
-   * On normal completion or exception, `Dispose()` deletes `discovery.lock`.
-   * Phase 3: `CreateValidMonitors` (lock already gone).
-5. PowerDisplay normal operation.
+1. PowerDisplay.exe 启动。
+2. Phase 0：`CrashRecovery.DetectOrphanAndDisable()` 检查 `discovery.lock` → 不存在 → 返回 false。
+3. 正常启动流程继续。
+4. `DdcCiController.DiscoverMonitorsAsync` 运行：
+   * Phase 1：GDI 枚举。
+   * `CrashDetectionScope.Begin()` 写入 `discovery.lock`。
+   * Phase 2：`FetchCapabilitiesInParallelAsync` 运行。
+   * 正常完成或抛异常时，`Dispose()` 删除 `discovery.lock`。
+   * Phase 3：`CreateValidMonitors`（lock 已不存在）。
+5. PowerDisplay 正常运行。
 
-### 5.2 BSOD path
+### 5.2 蓝屏路径
 
-1. PowerDisplay.exe launches; Phase 0 finds no lock; normal startup.
-2. `DdcCiController.DiscoverMonitorsAsync`: Phase 1 → `CrashDetectionScope.Begin()` writes lock with `WriteThrough+Flush(true)` → Phase 2 starts → BSOD inside `win32kfull!DdcciGetCapabilitiesStringFromMonitor`.
-3. System hard-reboots.
-4. Windows boots; runner reads global `settings.json` (still has `enabled.PowerDisplay=true`) → enables PowerDisplay module → spawns PowerDisplay.exe.
-5. PowerDisplay.exe launches; Phase 0 finds **orphan** `discovery.lock` from step 2.
-6. `CrashRecovery.DetectOrphanAndDisable()` runs strict sequence:
-   * Writes `crash_detected.flag`.
-   * Writes global `settings.json` with `enabled.PowerDisplay=false`.
-   * Signals `POWER_DISPLAY_AUTO_DISABLE_EVENT` → runner-internal listener thread (in module DLL) wakes up → calls `this->disable()` → `m_enabled=false`, `m_processManager.stop()` (PowerDisplay.exe will exit shortly anyway).
-   * Deletes `discovery.lock` (commit point).
-   * Returns true.
-7. PowerDisplay.exe `Environment.Exit(0)`.
-8. From this point: `enabled.PowerDisplay=false` on disk, `m_enabled=false` in runner, `crash_detected.flag` exists. Consistent state.
+1. PowerDisplay.exe 启动；Phase 0 没找到 lock；正常启动。
+2. `DdcCiController.DiscoverMonitorsAsync`：Phase 1 → `CrashDetectionScope.Begin()` 用 `WriteThrough+Flush(true)` 写 lock → Phase 2 开始 → 在 `win32kfull!DdcciGetCapabilitiesStringFromMonitor` 内部蓝屏。
+3. 系统硬重启。
+4. Windows 启动；runner 读全局 `settings.json`（仍是 `enabled.PowerDisplay=true`）→ 启用 PowerDisplay 模块 → 启动 PowerDisplay.exe。
+5. PowerDisplay.exe 启动；Phase 0 发现步骤 2 留下的**孤儿** `discovery.lock`。
+6. `CrashRecovery.DetectOrphanAndDisable()` 跑严格序列：
+   * 写 `crash_detected.flag`。
+   * 写全局 `settings.json`，`enabled.PowerDisplay=false`。
+   * Signal `POWER_DISPLAY_AUTO_DISABLE_EVENT` → runner 内的 listener（在 module DLL 里的线程）醒来 → 调 `this->disable()` → `m_enabled=false`、`m_processManager.stop()`（PowerDisplay.exe 反正马上要退出）。
+   * 删除 `discovery.lock`（commit point）。
+   * 返回 true。
+7. PowerDisplay.exe `Environment.Exit(0)`。
+8. 此时：磁盘 `enabled.PowerDisplay=false`、runner `m_enabled=false`、`crash_detected.flag` 存在。状态自洽。
 
-### 5.3 User opens Settings UI
+### 5.3 用户打开 Settings UI
 
-9. User opens Settings UI (separate process; reads `settings.json` fresh).
-10. PowerDisplayPage navigated to → PowerDisplayViewModel constructed.
-11. ViewModel reads `crash_detected.flag` → `IsCrashLockActive = true`.
-12. ViewModel reads `_isEnabled = GeneralSettingsConfig.Enabled.PowerDisplay` → false.
-13. UI renders:
-    * Top InfoBar (Severity=Error) visible with "Ignore" button.
-    * **Entire page below the InfoBar is disabled** (binding to `!IsCrashLockActive`). Toggle, monitor list, profiles, custom mappings — all greyed out and unclickable.
-    * Only the Ignore button is interactive.
+9. 用户打开 Settings UI（独立进程；重新读 `settings.json`）。
+10. 导航到 PowerDisplayPage → 构造 PowerDisplayViewModel。
+11. ViewModel 读 `crash_detected.flag` → `IsCrashLockActive = true`。
+12. ViewModel 读 `_isEnabled = GeneralSettingsConfig.Enabled.PowerDisplay` → false。
+13. UI 渲染：
+    * 顶部 InfoBar（Severity=Error）显示，带 "Ignore" 按钮。
+    * **InfoBar 下方整个页面 disabled**（绑定到 `!IsCrashLockActive`）。toggle、监视器列表、profiles、自定义 VCP 映射——全部灰着、不可点。
+    * **唯一可交互的就是 Ignore 按钮**。
 
-### 5.4 User dismisses warning and re-enables
+### 5.4 用户 dismiss 警告并重新启用
 
-14. User clicks Ignore → `DismissCrashWarningCommand` → flag deleted, `IsCrashLockActive=false`.
-15. Page becomes interactive. Toggle is OFF (settings.json says false; runner agrees because step 6 synced it).
-16. User flips toggle to ON → existing setter logic → IPC to runner with `enabled.PowerDisplay=true` → runner sees target=true, `module->is_enabled()=false` (because step 6 set it) → not equal → `enable()` called → PowerDisplay.exe spawns.
-17. PowerDisplay.exe Phase 0 (no lock, no flag now) → normal startup → discovery → if offending monitor still attached, BSOD again → loop back to step 2.
+14. 用户点 Ignore → `DismissCrashWarningCommand` → flag 被删、`IsCrashLockActive=false`。
+15. 页面变可交互。toggle 仍 OFF（settings.json 是 false；runner 也认为是 false——步骤 6 已同步）。
+16. 用户翻 toggle 到 ON → 走现有 setter 逻辑 → IPC 给 runner `enabled.PowerDisplay=true` → runner 看 target=true、`module->is_enabled()=false`（步骤 6 已设）→ 不相等 → 调 `enable()` → PowerDisplay.exe 启动。
+17. PowerDisplay.exe Phase 0（现在 lock 不在、flag 也不在）→ 正常启动 → discovery → 如果坏显示器仍连着，再次蓝屏 → 回到步骤 2 循环。
 
-### 5.5 Edge case: PowerDisplay.exe crashes (not BSOD)
+### 5.5 边角场景：PowerDisplay.exe 自身崩（非蓝屏）
 
-If PowerDisplay.exe itself crashes (e.g., unhandled C# exception) inside Phase 2:
+如果 PowerDisplay.exe 进程在 Phase 2 期间因为别的原因（C# 未捕获异常等）崩溃：
 
-* Lock is left on disk (no Dispose ran).
-* The module DLL's `m_processManager` does not auto-restart; runner thinks PowerDisplay is enabled but the process is gone.
-* Next time `m_processManager.send_message` is called (e.g., Quick Access toggle), it detects `!is_process_running()` and calls `refresh()` → respawn PowerDisplay.exe → Phase 0 detects orphan → auto-disable sequence runs.
-* From the user's perspective: the same as the BSOD path, just triggered later (when something tries to interact with PowerDisplay).
+* lock 文件留在磁盘上（没机会跑 Dispose）。
+* module DLL 的 `m_processManager` **不会**自动重启子进程；runner 认为 PowerDisplay 还 enabled，但进程已经没了。
+* 下次有人调 `m_processManager.send_message`（比如 Quick Access toggle）时，会检测到 `!is_process_running()` → 调 `refresh()` → 重新启动 PowerDisplay.exe → Phase 0 检测到孤儿 → 跑 auto-disable 序列。
+* 用户视角：和蓝屏路径一样，只是触发时机晚一些（直到有人想和 PowerDisplay 交互的那一刻）。
 
-## 6. Failure modes and recovery matrix
+## 6. 失败模式与恢复矩阵
 
-| Scenario | What's left on disk | What happens on next start | User action needed |
+| 场景 | 磁盘上残留 | 下次启动行为 | 用户需要做什么 |
 |---|---|---|---|
-| Phase 2 BSOD | `discovery.lock` only | Phase 0 detects → full sequence → `crash_detected.flag` + `settings.json=false` | Open Settings, click Ignore, re-enable manually |
-| Phase 2 process crash (non-BSOD) | `discovery.lock` only | Same as BSOD scenario, just later (next process spawn) | Same |
-| Phase 0 step 1 fails (can't write flag) | `discovery.lock` only | Retry full sequence | None initially; if persistent disk issue, user must fix that |
-| Phase 0 step 2 fails (can't write settings.json) | `discovery.lock` + `crash_detected.flag` | Retry full sequence; flag write is idempotent | Same |
-| Phase 0 step 3 fails (can't signal event) | `discovery.lock` + `crash_detected.flag` + `settings.json=false` | Retry: steps 1, 2 succeed (idempotent), step 3 retried, etc. | Same |
-| Phase 0 step 4 fails (can't delete lock) | All four artifacts effectively in place; lock survives | Retry full sequence — duplicate writes are idempotent | Same; lock will eventually be deleted |
-| User clicks Ignore but doesn't re-enable | `crash_detected.flag` deleted, `settings.json=false` | Module stays disabled across reboots | None |
-| User flips toggle ON after Ignore, with offending monitor still attached | Normal startup → BSOD again | Loops back to BSOD path | User must disconnect offending monitor |
+| Phase 2 蓝屏 | 仅 `discovery.lock` | Phase 0 检测 → 完整序列 → `crash_detected.flag` + `settings.json=false` | 打开 Settings、点 Ignore、手动翻 toggle 重新启用 |
+| Phase 2 进程崩（非蓝屏） | 仅 `discovery.lock` | 同蓝屏场景，只是触发晚（下次 spawn 时） | 同上 |
+| Phase 0 步骤 1 失败（无法写 flag） | 仅 `discovery.lock` | 重试完整序列 | 起初无；如果是持久性磁盘问题，用户需自己解决 |
+| Phase 0 步骤 2 失败（无法写 settings.json） | `discovery.lock` + `crash_detected.flag` | 重试完整序列；flag 写入是幂等的 | 同上 |
+| Phase 0 步骤 3 失败（无法 Signal event） | `discovery.lock` + `crash_detected.flag` + `settings.json=false` | 重试：1、2 步幂等通过，3 步重试，依此类推 | 同上 |
+| Phase 0 步骤 4 失败（无法删 lock） | 四个文件状态都对，但 lock 仍在 | 重试完整序列——重复写入是幂等的 | 同上；lock 最终会被删除 |
+| 用户点 Ignore 但没重启用 | `crash_detected.flag` 已删、`settings.json=false` | 模块跨重启保持禁用 | 无 |
+| 用户 Ignore 后翻 toggle ON，坏显示器仍连着 | 正常启动 → 再次蓝屏 | 回到蓝屏路径 | 用户必须断开坏显示器 |
 
-## 7. Testing strategy
+## 7. 测试策略
 
-### 7.1 Unit tests
+### 7.1 单元测试
 
-**Project:** `src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/`
+**项目：** `src/modules/powerdisplay/PowerDisplay.Lib.UnitTests/`
 
-* `CrashDetectionScopeTests`:
-  * `Begin_WritesLockFile`: verifies file is created at expected path with correct version/pid/timestamp.
-  * `Begin_FailsIfLockAlreadyExists`: ensures `FileMode.CreateNew` enforces uniqueness.
-  * `Dispose_DeletesLockFile`: standard happy path.
-  * `Dispose_IsIdempotent`: calling Dispose twice does not throw.
-  * `Dispose_DoesNotThrowOnDeleteFailure`: simulate lock held by another process → Dispose logs but does not throw.
-* `CrashRecoveryTests`:
-  * `DetectOrphanAndDisable_ReturnsFalseWhenNoLock`.
-  * `DetectOrphanAndDisable_RunsFullSequenceWhenLockPresent`: verify flag write, settings write, event signal, lock delete in correct order.
-  * `DetectOrphanAndDisable_LeavesLockIntactIfFlagWriteFails`: simulate IO failure on step 1 → ensure lock survives, exception propagates.
-  * Same for failures at steps 2 and 3.
-  * `DetectOrphanAndDisable_HandlesUnknownVersionAsOrphan`: forward-compat behavior.
+* `CrashDetectionScopeTests`：
+  * `Begin_WritesLockFile`：验证文件创建在预期路径，含正确的 version/pid/timestamp。
+  * `Begin_FailsIfLockAlreadyExists`：确保 `FileMode.CreateNew` 正确强制唯一性。
+  * `Dispose_DeletesLockFile`：标准 happy path。
+  * `Dispose_IsIdempotent`：调用 Dispose 两次不抛。
+  * `Dispose_DoesNotThrowOnDeleteFailure`：模拟 lock 被另一进程持有 → Dispose log 但不抛。
+* `CrashRecoveryTests`：
+  * `DetectOrphanAndDisable_ReturnsFalseWhenNoLock`。
+  * `DetectOrphanAndDisable_RunsFullSequenceWhenLockPresent`：验证 flag 写、settings 写、event signal、删 lock 按正确顺序执行。
+  * `DetectOrphanAndDisable_LeavesLockIntactIfFlagWriteFails`：模拟步骤 1 IO 失败 → 确保 lock 仍在、异常向上传播。
+  * 步骤 2、3 失败的同类测试。
+  * `DetectOrphanAndDisable_HandlesUnknownVersionAsOrphan`：向前兼容行为。
 
-Tests use abstract file-system / event seam (e.g., `IFileSystem`, `IEventSignaler`) so we can inject failures.
+测试通过抽象的文件系统 / 事件 seam（如 `IFileSystem`、`IEventSignaler`）注入失败。
 
-### 7.2 Integration / manual QA
+### 7.2 集成 / 手工 QA
 
-**Debug-only crash injection** in `DdcCiController.FetchCapabilitiesInParallelAsync`:
+**Debug-only 崩溃注入**，加在 `DdcCiController.FetchCapabilitiesInParallelAsync`：
 
 ```csharp
 #if DEBUG
@@ -577,71 +578,71 @@ if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
 #endif
 ```
 
-QA scenario:
+QA 流程：
 
-1. `set POWERDISPLAY_SIMULATE_CRASH=1` and start PowerDisplay.exe.
-2. PowerDisplay enters Phase 2 → FailFast → process dies hard.
-3. Verify `discovery.lock` exists on disk.
-4. `set POWERDISPLAY_SIMULATE_CRASH=` (clear) and restart PowerDisplay.exe.
-5. Verify Phase 0 detects orphan: `crash_detected.flag` appears, `settings.json` shows `enabled.PowerDisplay=false`, `discovery.lock` deleted, PowerDisplay.exe exits with code 0.
-6. Open Settings UI → PowerDisplayPage → verify error InfoBar visible, page disabled, Ignore button works.
-7. Click Ignore → page becomes interactive, toggle still OFF.
-8. Toggle to ON → PowerDisplay.exe spawns and runs normally (no crash this time, env var cleared).
+1. `set POWERDISPLAY_SIMULATE_CRASH=1`，启动 PowerDisplay.exe。
+2. PowerDisplay 进 Phase 2 → FailFast → 进程硬死。
+3. 验证磁盘上 `discovery.lock` 存在。
+4. `set POWERDISPLAY_SIMULATE_CRASH=`（清掉），重新启动 PowerDisplay.exe。
+5. 验证 Phase 0 检测到孤儿：`crash_detected.flag` 出现、`settings.json` 显示 `enabled.PowerDisplay=false`、`discovery.lock` 已删、PowerDisplay.exe 以 0 退出。
+6. 打开 Settings UI → PowerDisplayPage → 验证 Error InfoBar 显示、页面 disabled、Ignore 按钮可点。
+7. 点 Ignore → 页面变可交互、toggle 仍 OFF。
+8. 翻 toggle 到 ON → PowerDisplay.exe 正常启动并跑（这次不会崩，env var 已清）。
 
-### 7.3 Cross-component IPC test
+### 7.3 跨组件 IPC 测试
 
-Verify the `POWER_DISPLAY_AUTO_DISABLE_EVENT` round-trip with both processes running:
+验证 `POWER_DISPLAY_AUTO_DISABLE_EVENT` 在两个进程同时运行时的回环：
 
-* Start PowerToys (runner + PowerDisplay module loaded).
-* From a small test utility, signal the event (using its well-known name).
-* Verify module's `m_enabled` becomes false (e.g., via Settings UI showing toggle as off after refresh).
+* 启动 PowerToys（runner + PowerDisplay 模块加载）。
+* 用一个小测试工具 SignalEvent（用 well-known event 名）。
+* 验证 module 的 `m_enabled` 变 false（例如刷新 Settings UI 看 toggle 已 OFF）。
 
-This mirrors the existing pattern used to test `TOGGLE_POWER_DISPLAY_EVENT`.
+参考已有 `TOGGLE_POWER_DISPLAY_EVENT` 的测试方式。
 
-## 8. Logging
+## 8. 日志
 
-Following the project's "concise hot-path silence; verbose decision points" convention:
+遵循项目"热路径静默、决策点详细"的约定：
 
-| Location | Level | Message |
+| 位置 | 级别 | 文案 |
 |---|---|---|
-| `CrashDetectionScope.Begin()` success | Info | `CrashDetectionScope: lock written at <path>` |
-| `CrashDetectionScope.Begin()` failure | Error | `CrashDetectionScope: failed to write lock at <path>: <ex>` |
-| `CrashDetectionScope.Dispose()` success | Info | `CrashDetectionScope: lock deleted at <path>` |
-| `CrashDetectionScope.Dispose()` failure | Warning | `CrashDetectionScope: failed to delete lock at <path>: <ex>` |
-| `CrashRecovery.DetectOrphanAndDisable()` no orphan | Trace | `Phase 0: no orphan lock; normal startup` |
-| `CrashRecovery.DetectOrphanAndDisable()` orphan found | Warning | `Phase 0: found orphan lock at <path> with content <json>; entering auto-disable sequence` |
-| Each strict sequence step | Info | `Phase 0: step <N> (<name>) ok` |
-| Strict sequence step failure | Error | `Phase 0: step <N> (<name>) failed: <ex>; sequence aborted, lock retained for retry` |
-| Module DLL listener fires | Warning | `PowerDisplay AutoDisable event received — disabling module` |
-| Settings UI loads with flag present | Info | `PowerDisplayViewModel: crash flag present, locking page` |
-| Settings UI Ignore clicked | Info | `PowerDisplayViewModel: user dismissed crash warning, flag deleted` |
+| `CrashDetectionScope.Begin()` 成功 | Info | `CrashDetectionScope: lock written at <path>` |
+| `CrashDetectionScope.Begin()` 失败 | Error | `CrashDetectionScope: failed to write lock at <path>: <ex>` |
+| `CrashDetectionScope.Dispose()` 成功 | Info | `CrashDetectionScope: lock deleted at <path>` |
+| `CrashDetectionScope.Dispose()` 失败 | Warning | `CrashDetectionScope: failed to delete lock at <path>: <ex>` |
+| `CrashRecovery.DetectOrphanAndDisable()` 没孤儿 | Trace | `Phase 0: no orphan lock; normal startup` |
+| `CrashRecovery.DetectOrphanAndDisable()` 找到孤儿 | Warning | `Phase 0: found orphan lock at <path> with content <json>; entering auto-disable sequence` |
+| 严格序列每个步骤 | Info | `Phase 0: step <N> (<name>) ok` |
+| 严格序列步骤失败 | Error | `Phase 0: step <N> (<name>) failed: <ex>; sequence aborted, lock retained for retry` |
+| Module DLL listener 触发 | Warning | `PowerDisplay AutoDisable event received — disabling module` |
+| Settings UI 加载时 flag 存在 | Info | `PowerDisplayViewModel: crash flag present, locking page` |
+| Settings UI 用户点 Ignore | Info | `PowerDisplayViewModel: user dismissed crash warning, flag deleted` |
 
-Hot paths (DDC/CI VCP get/set, refresh loop) remain log-silent.
+热路径（DDC/CI 的 VCP get/set、刷新循环）保持 log 静默。
 
-## 9. Out-of-band considerations
+## 9. 边界考虑
 
-* **Multi-user / RDP:** files are under `%LOCALAPPDATA%`, per-user. Each user's PowerDisplay state is independent. If user A crashes, only user A's PowerDisplay is auto-disabled. User B is unaffected.
-* **Roaming profiles:** the same per-user property holds. No special handling needed.
-* **Backup/restore (PowerToys settings backup):** `crash_detected.flag` and `discovery.lock` should **not** be included in PowerToys backups — they are transient runtime state. If `SettingsBackupAndRestoreUtils` glob-includes them, exclude them explicitly. Verify during plan execution.
-* **Uninstall:** if PowerToys is uninstalled, the entire `%LOCALAPPDATA%\Microsoft\PowerToys\` folder is removed by the existing uninstall path. No special cleanup.
-* **GPO disabled:** if PowerDisplay is GPO-disabled, the module never spawns PowerDisplay.exe → no Phase 2 → no lock → crash recovery is moot. The `IsCrashLockActive` UI state is still respected (user could see a warning if a flag from before GPO took effect remains).
+* **多用户 / RDP：** 文件在 `%LOCALAPPDATA%`，按用户隔离。每个用户的 PowerDisplay 状态独立。用户 A 崩溃只影响用户 A 的 PowerDisplay。用户 B 不受影响。
+* **漫游配置文件：** 同样按用户属性。无需特殊处理。
+* **备份/恢复（PowerToys 设置备份功能）：** `crash_detected.flag` 和 `discovery.lock` **不应**被包含在 PowerToys 备份中——它们是瞬时运行时状态。如果 `SettingsBackupAndRestoreUtils` 用 glob 模式包含了，需要显式排除。**plan 阶段验证。**
+* **卸载：** PowerToys 卸载时整个 `%LOCALAPPDATA%\Microsoft\PowerToys\` 文件夹会被现有卸载逻辑删除，无需特殊清理。
+* **GPO 禁用：** 如果 PowerDisplay 被 GPO 禁用，模块根本不启动 PowerDisplay.exe → 没有 Phase 2 → 没有 lock → 崩溃恢复机制无关。`IsCrashLockActive` UI 状态仍受尊重（如果 GPO 生效之前留下了 flag，用户仍能看到警告）。
 
-## 10. What this design explicitly does not do
+## 10. 这个设计明确不做什么
 
-* Does not identify which monitor caused the crash.
-* Does not warn before re-enabling. After Ignore, user may BSOD again — that's their informed choice.
-* Does not try to be clever about "is this a real BSOD or did someone TerminateProcess us." Both are treated identically. Manual force-kill of PowerDisplay.exe mid-Phase 2 will be detected as a crash. Recoverable by user via Ignore.
-* Does not add PowerDisplay-specific code to the runner main loop. All new C++ code lives in `PowerDisplayModuleInterface.dll`.
-* Does not modify any DDC/CI logic or kernel API calls. The fix to the actual BSOD is the kernel team's responsibility.
-* Does not implement EDID-based pre-screening or known-bad monitor blocklists. Those are separate ideas (raised earlier in brainstorming) and intentionally deferred to keep this PR atomic.
+* 不识别是哪台显示器导致崩溃。
+* 不在重新启用前再次警告。点 Ignore 后用户可能再蓝一次——这是用户在知情下的选择。
+* 不去聪明地区分"真蓝屏"和"被 TerminateProcess 强杀"。两者一视同仁。手动强杀 Phase 2 期间的 PowerDisplay.exe 会被识别为崩溃。用户可通过 Ignore 恢复。
+* 不在 runner 主体（main.cpp / general_settings.cpp）添加任何 PowerDisplay 特定的代码。所有新 C++ 代码都放在 `PowerDisplayModuleInterface.dll`。
+* 不修改任何 DDC/CI 逻辑或内核 API 调用。修复实际蓝屏是内核团队的责任。
+* 不实现基于 EDID 的预筛选或已知坏显示器黑名单。这些是 brainstorming 中提到的相关改动，**有意延后**以保持本 PR 的原子性。
 
-## 11. Open implementation details (for the plan)
+## 11. 留给实现 plan 的细节
 
-* Exact file path within `App.xaml.cs` or equivalent for the Phase 0 hook.
-* Whether to abstract file system / event signaler behind interfaces for testing — recommended but not strictly required.
-* The new GUID for `POWER_DISPLAY_AUTO_DISABLE_EVENT`.
-* Whether to add a `PowerDisplay.Models` reference to `PowerDisplay.Lib` (so `PathConstants` can use `PowerDisplayPaths` rather than duplicating literals).
-* Confirm `PTSettingsHelper::save_general_settings` (C++) and the corresponding C# write path don't conflict; pick one for Phase 0's settings.json write. (Tentative: PowerDisplay.exe is C#, so use the existing C# `SettingsUtils.SaveSettings` mechanism via the global settings file path.)
-* Localization keys must be added to all `Resources.resw` files (en-US is canonical; translation pipelines pick it up).
+* `App.xaml.cs` 中 Phase 0 hook 的精确位置。
+* 是否在文件系统 / 事件 SignalEvent 后面抽象 interface 以便测试——推荐但非强制。
+* `POWER_DISPLAY_AUTO_DISABLE_EVENT` 的新 GUID。
+* `PowerDisplay.Models` 是否引用 `PowerDisplay.Lib`（让 `PathConstants` 用 `PowerDisplayPaths` 而非重复字面量）。
+* 确认 `PTSettingsHelper::save_general_settings`（C++）和对应的 C# 写入路径不冲突；为 Phase 0 写 settings.json 选定其中一个。**初步倾向：** PowerDisplay.exe 是 C#，用现有的 C# `SettingsUtils.SaveSettings` 走全局 settings 文件路径。
+* 本地化 key 必须加到所有 `Resources.resw` 文件（en-US 是规范，翻译流水线会拾取）。
 
-These are flagged for resolution in the implementation plan.
+这些点在实现 plan 阶段解决。
