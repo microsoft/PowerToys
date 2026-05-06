@@ -131,13 +131,14 @@ jobs:
 
             // ─── Process each issue ───
             const summaryRows = [];
+            const labelExistsCache = new Map();
 
             for (const issue of issues) {
               const body = issue.body || '';
               const title = issue.title || '';
 
               // Parse the "Area(s) with issue?" field
-              const areaMatch = body.match(/### Area\(s\) with issue\?\s*\n\n([\s\S]*?)(?=\n\n###|\n*$)/);
+              const areaMatch = body.match(/### Area\(s\) with issue\?\s*\r?\n\r?\n([\s\S]*?)(?=\r?\n\r?\n###|\r?\n*$)/);
               let selectedAreas = [];
               if (areaMatch) {
                 const areaText = areaMatch[1].trim();
@@ -214,20 +215,31 @@ jobs:
                 continue;
               }
 
-              // Validate labels exist
+              // Validate labels exist (cached to reduce API calls in batch mode)
               const labelsToApply = [];
               for (const label of resolvedLabels) {
-                try {
-                  await github.rest.issues.getLabel({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    name: label,
-                  });
-                  labelsToApply.push(label);
-                } catch (err) {
-                  if (err.status === 404) {
-                    core.warning(`Label "${label}" not found in repo, skipping.`);
+                let exists = labelExistsCache.get(label);
+                if (exists === undefined) {
+                  try {
+                    await github.rest.issues.getLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      name: label,
+                    });
+                    exists = true;
+                  } catch (err) {
+                    if (err.status === 404) {
+                      exists = false;
+                    } else {
+                      throw err;
+                    }
                   }
+                  labelExistsCache.set(label, exists);
+                }
+                if (exists) {
+                  labelsToApply.push(label);
+                } else {
+                  core.warning(`Label "${label}" not found in repo, skipping.`);
                 }
               }
 

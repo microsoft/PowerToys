@@ -8,9 +8,6 @@
     applying labels). This lets you validate the mapping and AI inference before
     merging the workflow.
 
-.PARAMETER DryRun
-    (Default) Show what labels WOULD be applied without changing anything.
-
 .PARAMETER Apply
     Actually apply the labels via `gh issue edit`. Requires gh auth.
 
@@ -83,11 +80,27 @@ $NON_PRODUCT_AREAS = @('Installer', 'System tray interaction', 'Welcome / PowerT
 Write-Host "`n🔍 Fetching issues with 'Needs-Triage' and no 'Product-*' label (limit: $Limit)..." -ForegroundColor Cyan
 
 # gh search finds issues with Needs-Triage; we filter out those that already have Product- labels
-$issuesJson = gh issue list --repo microsoft/PowerToys --label "Needs-Triage" --limit 100 --json number,title,body,labels --state open 2>&1
-if ($LASTEXITCODE -ne 0) {
+$ghStderrPath = [System.IO.Path]::GetTempFileName()
+try {
+    $issuesJson = gh issue list --repo microsoft/PowerToys --label "Needs-Triage" --limit 100 --json number,title,body,labels --state open 2> $ghStderrPath
+    $ghExitCode = $LASTEXITCODE
+    $ghErrorOutput = Get-Content -Path $ghStderrPath -Raw
+}
+finally {
+    Remove-Item -Path $ghStderrPath -ErrorAction SilentlyContinue
+}
+
+if ($ghExitCode -ne 0) {
     Write-Host "❌ Failed to fetch issues. Ensure 'gh auth login' is done." -ForegroundColor Red
-    Write-Host $issuesJson
+    if (-not [string]::IsNullOrWhiteSpace($ghErrorOutput)) {
+        Write-Host $ghErrorOutput
+    }
     exit 1
+}
+
+if (-not [string]::IsNullOrWhiteSpace($ghErrorOutput)) {
+    Write-Host "⚠️ gh emitted stderr output while fetching issues:" -ForegroundColor Yellow
+    Write-Host $ghErrorOutput
 }
 
 $issues = $issuesJson | ConvertFrom-Json
