@@ -64,6 +64,17 @@ namespace PowerDisplay.Common.Services
         }
 
         /// <summary>
+        /// Internal constructor for tests. Production code uses the parameterless ctor
+        /// which resolves the path via <see cref="PathConstants"/>.
+        /// </summary>
+        internal MonitorStateManager(string stateFilePath)
+        {
+            _stateFilePath = stateFilePath;
+            _saveDebouncer = new SimpleDebouncer(SaveDebounceMs);
+            LoadStateFromDisk();
+        }
+
+        /// <summary>
         /// Update monitor parameter and schedule debounced save to disk.
         /// Uses Monitor.Id as the stable key (e.g., "DDC_GSM5C6D_1", "WMI_BOE0900_2").
         /// Debounced-save strategy reduces disk I/O by batching rapid updates (e.g., during slider drag).
@@ -141,6 +152,44 @@ namespace PowerDisplay.Common.Services
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Re-key the in-memory state dictionary using a supplied {oldId → newId} mapping,
+        /// then schedule a save. Idempotent: keys that don't appear in the mapping (or whose
+        /// mapped value already matches an existing key) are left alone. Returns the number
+        /// of entries actually rewritten.
+        /// </summary>
+        /// <param name="rewrites">Map from legacy Id to new Id.</param>
+        public int MigrateMonitorIds(System.Collections.Generic.IReadOnlyDictionary<string, string> rewrites)
+        {
+            if (rewrites.Count == 0)
+            {
+                return 0;
+            }
+
+            int rewritten = 0;
+            foreach (var kvp in rewrites)
+            {
+                if (kvp.Key == kvp.Value)
+                {
+                    continue;
+                }
+
+                if (_states.TryRemove(kvp.Key, out var state))
+                {
+                    _states[kvp.Value] = state;
+                    rewritten++;
+                }
+            }
+
+            if (rewritten > 0)
+            {
+                _isDirty = true;
+                _saveDebouncer.Debounce(SaveStateToDiskAsync);
+            }
+
+            return rewritten;
         }
 
         /// <summary>
