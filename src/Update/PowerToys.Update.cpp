@@ -21,6 +21,8 @@
 #include <common/utils/resources.h>
 #include <common/utils/timeutil.h>
 
+#include <wil/resource.h>
+
 #include <common/SettingsAPI/settings_helpers.h>
 
 #include <common/logger/logger.h>
@@ -116,7 +118,22 @@ bool InstallNewVersionStage1(fs::path installer)
 
         if (pt_main_window != nullptr)
         {
+            // Get the process that owns the tray window so we can wait for it to exit
+            DWORD ptProcessId = 0;
+            GetWindowThreadProcessId(pt_main_window, &ptProcessId);
+
             SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
+
+            // Wait for PT to actually exit before launching installer.
+            // Without this, the installer may find PT files locked.
+            if (ptProcessId != 0)
+            {
+                wil::unique_handle ptProcess{ OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) };
+                if (ptProcess)
+                {
+                    WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
+                }
+            }
         }
 
         std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2 };
