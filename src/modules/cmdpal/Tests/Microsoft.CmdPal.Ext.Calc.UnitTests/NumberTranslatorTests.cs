@@ -89,6 +89,23 @@ public class NumberTranslatorTests
     }
 
     [DataTestMethod]
+    [DataRow("max(1,2)", "max(1,2)")]
+    [DataRow("min(1,2)", "min(1,2)")]
+    [DataRow("pow(2,3)", "pow(2,3)")]
+    [DataRow("max(1.5,2.5)", "max(1.5,2.5)")]
+    [DataRow("pow(9,0.5)", "pow(9,0.5)")]
+    [DataRow("pow(max(2,3),2)", "pow(max(2,3),2)")]
+    public void Translate_PreservesFunctionArgumentSeparators_WhenCultureUsesCommaListSeparator(string input, string expectedResult)
+    {
+        var translator = NumberTranslator.Create(new CultureInfo("en-US", false), new CultureInfo("en-US", false));
+
+        var result = translator.Translate(input);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedResult, result);
+    }
+
+    [DataTestMethod]
     [DataRow("2.0 * 2", "2,0 * 2")]
     [DataRow("4 * 3.6 + 9", "4 * 3,6 + 9")]
     [DataRow("5.2+6", "5,2+6")]

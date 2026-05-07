@@ -138,7 +138,7 @@ public class NumberTranslator
 
                 outputBuilder.Append(
                     decimal.TryParse(inner, NumberStyles.Number, cultureFrom, out number)
-                    ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
+                    ? ((inner.Contains(cultureFrom.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal) ? string.Empty : new string('0', leadingZeroCount)) + number.ToString(cultureTo))
                     : inner.Replace(cultureFrom.TextInfo.ListSeparator, cultureTo.TextInfo.ListSeparator));
             }
         }
@@ -148,16 +148,30 @@ public class NumberTranslator
 
     private static Regex GetSplitRegex(CultureInfo culture)
     {
+        var listSeparator = culture.TextInfo.ListSeparator;
         var groupSeparator = culture.NumberFormat.NumberGroupSeparator;
+        var hasAmbiguousNumericSeparators = groupSeparator == listSeparator;
 
-        // if the group separator is a no-break space, we also add a normal space to the regex
+        // Some cultures use a non-breaking space for digit grouping, but users may type a
+        // normal space instead. Expand the group separator to allow for either character.
         if (groupSeparator == "\u00a0")
         {
             groupSeparator = "\u0020\u00a0";
         }
 
-        var splitPattern = $"([0-9{Regex.Escape(culture.NumberFormat.NumberDecimalSeparator)}" +
-            $"{Regex.Escape(groupSeparator)}]+)";
-        return new Regex(splitPattern);
+        var decimalSeparator = Regex.Escape(culture.NumberFormat.NumberDecimalSeparator);
+
+        // Strictly match only culture-valid numbers when the group separator is also the
+        // function argument separator. In cultures like en-US, a looser pattern would
+        // swallow max(1,2) as if "1,2" were a single number instead of two arguments.
+        var strictNumberTokenPattern =
+            $@"((?:\d{{1,3}}(?:[{Regex.Escape(groupSeparator)}]\d{{3}})+|\d+)(?:{decimalSeparator}\d+)?|{decimalSeparator}\d+)";
+
+        // Preserve the legacy looser matching in cultures where numeric grouping cannot be
+        // confused with function argument separators. This keeps existing behavior for cases
+        // like de-DE, where '.' is a group separator but ';' separates function arguments.
+        var looseNumberTokenPattern = $"([0-9{decimalSeparator}{Regex.Escape(groupSeparator)}]+)";
+
+        return new Regex(hasAmbiguousNumericSeparators ? strictNumberTokenPattern : looseNumberTokenPattern);
     }
 }
