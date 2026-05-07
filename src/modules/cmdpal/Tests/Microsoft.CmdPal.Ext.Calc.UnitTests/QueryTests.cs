@@ -45,6 +45,10 @@ public class QueryTests : CommandPaletteUnitTestBase
     [DataRow("pow(2,3)", "8")]
     [DataRow("max(1.5,2.5)", "2.5")]
     [DataRow("pow(9,0.5)", "3")]
+    [DataRow("max(123,45)", "123")]
+    [DataRow("max(123,456)", "456")]
+    [DataRow("max(123,min(12,pow(2,6)))", "123")]
+    [DataRow("max    (    12, 34  )", "34")]
     public void TopLevelPageQueryTest(string input, string expectedResult)
     {
         var settings = new Settings();

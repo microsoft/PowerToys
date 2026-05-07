@@ -94,6 +94,10 @@ public class NumberTranslatorTests
     [DataRow("pow(2,3)", "pow(2,3)")]
     [DataRow("max(1.5,2.5)", "max(1.5,2.5)")]
     [DataRow("pow(9,0.5)", "pow(9,0.5)")]
+    [DataRow("max(123,45)", "max(123,45)")]
+    [DataRow("max(123,456)", "max(123,456)")]
+    [DataRow("max(123,min(12,pow(2,6)))", "max(123,min(12,pow(2,6)))")]
+    [DataRow("max    (    12, 34  )", "max    (    12, 34  )")]
     [DataRow("pow(max(2,3),2)", "pow(max(2,3),2)")]
     public void Translate_PreservesFunctionArgumentSeparators_WhenCultureUsesCommaListSeparator(string input, string expectedResult)
     {
