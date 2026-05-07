@@ -96,7 +96,7 @@ public class LegacyIdMigratorTests
         {
             new() { Id = @"\\?\DISPLAY#DELD1A8#5&abc&0&UID1", MonitorNumber = 1 },
             new() { Id = @"\\?\DISPLAY#DELD1A8#5&xyz&0&UID2", MonitorNumber = 2 },
-            new() { Id = "DDC_OLDFORMAT_3", MonitorNumber = 3 }, // legacy entry — skipped
+            new() { Id = "DDC_LEGACY_3", MonitorNumber = 3 }, // legacy-format entry — skipped
         };
 
         var lookup = LegacyIdMigrator.BuildLookup(current);

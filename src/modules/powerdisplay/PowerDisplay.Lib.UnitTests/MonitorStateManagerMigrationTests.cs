@@ -13,7 +13,7 @@ namespace PowerDisplay.UnitTests;
 public class MonitorStateManagerMigrationTests
 {
     private static string TempPath() =>
-        Path.Combine(Path.GetTempPath(), $"powerdisplay-monitorstate-test-{System.Guid.NewGuid():N}.json");
+        Path.Combine(Path.GetTempPath(), $"powerdisplay-monitor-state-test-{System.Guid.NewGuid():N}.json");
 
     [TestMethod]
     public void MigrateMonitorIds_RewritesKeys()

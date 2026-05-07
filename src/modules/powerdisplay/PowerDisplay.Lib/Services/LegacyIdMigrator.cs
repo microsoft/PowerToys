@@ -88,9 +88,9 @@ public static partial class LegacyIdMigrator
     /// Run a single migration pass across all PowerDisplay persistence surfaces.
     /// Idempotent — safe to call after every discovery cycle.
     /// </summary>
-    /// <param name="currentMonitors">Currently-discovered monitors (with new-format Ids once Task 10 lands).</param>
+    /// <param name="currentMonitors">Currently-discovered monitors (with new-format Ids).</param>
     /// <param name="settingsUtils">Settings persistence (used to read/write settings.json).</param>
-    /// <param name="settingsSerializer">Function that serialises <see cref="Microsoft.PowerToys.Settings.UI.Library.PowerDisplaySettings"/> to JSON. Caller provides this with their source-generated context.</param>
+    /// <param name="settingsSerializer">Function that serializes <see cref="Microsoft.PowerToys.Settings.UI.Library.PowerDisplaySettings"/> to JSON. Caller provides this with their source-generated context.</param>
     /// <param name="stateManager">Monitor state manager (state persistence).</param>
     /// <returns>Total number of entries rewritten across all files.</returns>
     public static int Migrate(
