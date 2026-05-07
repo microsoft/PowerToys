@@ -16,6 +16,8 @@ namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 [TestClass]
 public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
 {
+    private const int IntMax = int.MaxValue;
+
     [DataTestMethod]
     [DataRow(null)]
     [DataRow("")]
@@ -409,5 +411,87 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
 
         Assert.IsFalse(string.IsNullOrEmpty(error));
         Assert.AreNotEqual(null, error);
+    }
+
+    [TestMethod]
+    public void Interpret_ReturnsNotANumberError_WhenResultIsNaN()
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, "sqrt(-1)", CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_not_a_number, error);
+    }
+
+    [TestMethod]
+    public void Interpret_Rand_ReturnsValueInRange()
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, "rand()", CultureInfo.InvariantCulture, out var error);
+
+        Assert.IsNull(error);
+        Assert.IsTrue(result.Result.HasValue, "rand() returned no result");
+        Assert.IsTrue(result.Result >= 0M && result.Result < 1M, $"rand() result {result.Result} was not in [0, 1)");
+    }
+
+    [TestMethod]
+    public void Interpret_Randi_ReturnsZero_WhenArgIsOne()
+    {
+        // randi(1) has only one valid outcome: 0. This test is fully deterministic.
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, "randi(1)", CultureInfo.InvariantCulture, out var error);
+
+        Assert.IsNull(error);
+        Assert.IsTrue(result.Result.HasValue, "randi(1) returned no result");
+        Assert.AreEqual(0M, result.Result!.Value, "randi(1) must always return 0");
+    }
+
+    [TestMethod]
+    public void Interpret_Randi_StaysInRange_WhenArgIsTwo()
+    {
+        // randi(2) has the smallest non-trivial range [0, 1]. Running many iterations
+        // gives high confidence both boundary values are reachable.
+        var settings = new Settings();
+
+        for (var i = 0; i < 100; i++)
+        {
+            var result = CalculateEngine.Interpret(settings, "randi(2)", CultureInfo.InvariantCulture, out var error);
+            Assert.IsNull(error);
+            Assert.IsTrue(result.Result.HasValue, "randi(2) returned no result");
+            var value = result.Result!.Value;
+            Assert.AreEqual(value, Math.Floor(value), $"randi(2) result {value} was not an integer");
+            Assert.IsTrue(value >= 0M && value <= 1M, $"randi(2) result {value} was not in [0, 1]");
+        }
+    }
+
+    [TestMethod]
+    public void Interpret_Randi_HandlesIntMaxArgument()
+    {
+        // Ensures no integer overflow in the C++ cast when the argument is int.MaxValue.
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, $"randi({IntMax})", CultureInfo.InvariantCulture, out var error);
+
+        Assert.IsNull(error);
+        Assert.IsTrue(result.Result.HasValue, $"randi({IntMax}) returned no result");
+        var value = result.Result!.Value;
+        Assert.AreEqual(value, Math.Floor(value), $"randi({IntMax}) result {value} was not an integer");
+        Assert.IsTrue(value >= 0M && value < IntMax, $"randi({IntMax}) result {value} was out of range");
+    }
+
+    [DataTestMethod]
+    [DataRow("randi(0)")]
+    [DataRow("randi(0.5)")]
+    [DataRow("randi(-1)")]
+    public void Interpret_Randi_ReturnsNoResult_WhenArgumentInvalid(string input)
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
+
+        Assert.AreEqual(default, result);
     }
 }
