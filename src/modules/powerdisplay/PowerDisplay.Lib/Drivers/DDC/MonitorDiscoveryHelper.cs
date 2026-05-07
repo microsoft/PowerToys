@@ -108,10 +108,17 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 // Generate stable monitor Id from the DevicePath (Windows PnP instance path).
-                // Falls back to a synthesized Id only if the DevicePath is unavailable.
-                string monitorId = !string.IsNullOrEmpty(monitorInfo.DevicePath)
-                    ? MonitorIdentity.FromDevicePath(monitorInfo.DevicePath)
-                    : $"DDC_Unknown_{monitorInfo.MonitorNumber}";
+                // If DevicePath is missing we cannot produce a stable Id, so the monitor is
+                // skipped — better to drop one entry than to persist settings under a key
+                // that won't survive the next reboot.
+                if (string.IsNullOrEmpty(monitorInfo.DevicePath))
+                {
+                    Logger.LogWarning(
+                        $"DDC: Skipping monitor #{monitorInfo.MonitorNumber} (name='{name}', edid='{monitorInfo.EdidId}') — DevicePath unavailable, cannot generate stable Id");
+                    return null;
+                }
+
+                string monitorId = MonitorIdentity.FromDevicePath(monitorInfo.DevicePath);
 
                 // If still no good name, use default value
                 if (string.IsNullOrEmpty(name) || name.Contains("Generic") || name.Contains("PnP"))

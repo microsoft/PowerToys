@@ -290,10 +290,17 @@ namespace PowerDisplay.Common.Drivers.WMI
                             string gdiDeviceName = displayInfo?.GdiDeviceName ?? string.Empty;
 
                             // Generate stable monitor Id from the DevicePath (Windows PnP instance path).
-                            // Falls back to a synthesized Id only if the DevicePath is unavailable.
-                            string uniqueId = !string.IsNullOrEmpty(displayInfo?.DevicePath)
-                                ? MonitorIdentity.FromDevicePath(displayInfo.Value.DevicePath)
-                                : $"WMI_Unknown_{monitorNumber}";
+                            // If DevicePath is missing we cannot produce a stable Id, so the
+                            // monitor is skipped — better to drop one entry than to persist
+                            // settings under a key that won't survive the next reboot.
+                            if (string.IsNullOrEmpty(displayInfo?.DevicePath))
+                            {
+                                Logger.LogWarning(
+                                    $"WMI: Skipping monitor (instance='{instanceName}', edid='{edidId}', monitorNumber={monitorNumber}) — DevicePath unavailable, cannot generate stable Id");
+                                continue;
+                            }
+
+                            string uniqueId = MonitorIdentity.FromDevicePath(displayInfo.Value.DevicePath);
 
                             // Name is left blank: MonitorViewModel injects a localized
                             // "Built-in Display" string for internal displays.
