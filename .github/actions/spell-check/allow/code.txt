@@ -186,6 +186,12 @@ xmlutil
 # Prefix
 pcs
 
+# EXPRTK / C++ MATH
+
+ifunction
+isinf
+isnan
+
 # User32.SYSTEM_METRICS_INDEX.cs
 
 CLEANBOOT
