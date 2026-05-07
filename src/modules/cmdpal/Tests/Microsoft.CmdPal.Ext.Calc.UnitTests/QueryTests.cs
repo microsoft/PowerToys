@@ -49,6 +49,12 @@ public class QueryTests : CommandPaletteUnitTestBase
     [DataRow("max(123,456)", "456")]
     [DataRow("max(123,min(12,pow(2,6)))", "123")]
     [DataRow("max    (    12, 34  )", "34")]
+    [DataRow("ceil(123,456.23)", "123457")]
+    [DataRow("max(ceil(123,456.23),2)", "123457")]
+    [DataRow("pow(round(1,234.5),2)", "1525225")]
+    [DataRow("max(1e3,2e3)", "2000")]
+    [DataRow("pow(1.5e2,2)", "22500")]
+    [DataRow("max(0b1010,0o12)", "10")]
     public void TopLevelPageQueryTest(string input, string expectedResult)
     {
         var settings = new Settings();

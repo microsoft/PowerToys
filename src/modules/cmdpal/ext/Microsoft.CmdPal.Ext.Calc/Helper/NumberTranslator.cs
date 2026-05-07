@@ -17,6 +17,48 @@ public class NumberTranslator
 {
     private const string ProtectedListSeparatorToken = "\uE000";
 
+    /// <summary>
+    /// ExprTK does not expose a public API that lets us enumerate the built-in functions accepted by
+    /// this calculator together with their arity. Keep this table in sync with the functions allowed
+    /// by <see cref="CalculateHelper.InputValid"/> and extend the translator/query tests when adding
+    /// new functions.
+    /// </summary>
+    private static readonly Dictionary<string, int> SupportedFunctionArgumentCounts = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "ceil", 1 },
+        { "floor", 1 },
+        { "exp", 1 },
+        { "max", 2 },
+        { "min", 2 },
+        { "abs", 1 },
+        { "log", 1 },
+        { "log2", 1 },
+        { "log10", 1 },
+        { "ln", 1 },
+        { "sqrt", 1 },
+        { "pow", 2 },
+        { "factorial", 1 },
+        { "sign", 1 },
+        { "round", 1 },
+        { "rand", 0 },
+        { "randi", 1 },
+        { "sin", 1 },
+        { "cos", 1 },
+        { "tan", 1 },
+        { "arcsin", 1 },
+        { "arccos", 1 },
+        { "arctan", 1 },
+        { "sinh", 1 },
+        { "cosh", 1 },
+        { "tanh", 1 },
+        { "arsinh", 1 },
+        { "arcosh", 1 },
+        { "artanh", 1 },
+        { "rad", 1 },
+        { "deg", 1 },
+        { "grad", 1 },
+    };
+
     private readonly CultureInfo sourceCulture;
     private readonly CultureInfo targetCulture;
     private readonly Regex splitRegexForSource;
@@ -99,8 +141,9 @@ public class NumberTranslator
         var protectFunctionArgumentSeparators = cultureFrom.NumberFormat.NumberGroupSeparator == cultureFrom.TextInfo.ListSeparator;
 
         // In cultures such as en-US, ',' can mean either digit grouping or a function argument
-        // separator. Preserve separators that appear inside function-call parentheses before the
-        // regex-based number pass so expressions like max(123,456) are not collapsed to 123456.
+        // separator. Preserve separators only inside the supported multi-argument functions before
+        // the regex-based number pass so expressions like max(123,456) are not collapsed to 123456,
+        // while single-argument calls such as ceil(123,456.23) still keep their grouped number.
         var workingInput = protectFunctionArgumentSeparators
             ? ProtectFunctionArgumentSeparators(input, cultureFrom.TextInfo.ListSeparator, ProtectedListSeparatorToken)
             : input;
@@ -170,15 +213,15 @@ public class NumberTranslator
         }
 
         var outputBuilder = new StringBuilder();
-        var functionCalls = new Stack<bool>();
-        var functionDepth = 0;
+        var parenthesisProtection = new Stack<bool>();
 
         for (var i = 0; i < input.Length; i++)
         {
-            if (functionDepth > 0 && MatchesAt(input, listSeparator, i))
+            if (parenthesisProtection.Count > 0 && parenthesisProtection.Peek() && MatchesAt(input, listSeparator, i))
             {
-                // Only separators inside detected function calls are protected. Group separators in
-                // plain numeric text should still be available to the number parser.
+                // Protect separators only for the current multi-argument function call. Nested
+                // single-argument functions such as max(ceil(123,456.23), 2) must still be able to
+                // treat ',' as a digit-group separator inside their own argument.
                 outputBuilder.Append(placeholder);
                 i += listSeparator.Length - 1;
                 continue;
@@ -189,23 +232,18 @@ public class NumberTranslator
 
             if (current == '(')
             {
-                var isFunctionCall = IsFunctionCallOpenParen(input, i);
-                functionCalls.Push(isFunctionCall);
-                if (isFunctionCall)
-                {
-                    functionDepth++;
-                }
+                parenthesisProtection.Push(ShouldProtectFunctionArgumentSeparators(input, i));
             }
-            else if (current == ')' && functionCalls.Count > 0 && functionCalls.Pop())
+            else if (current == ')' && parenthesisProtection.Count > 0)
             {
-                functionDepth--;
+                parenthesisProtection.Pop();
             }
         }
 
         return outputBuilder.ToString();
     }
 
-    private static bool IsFunctionCallOpenParen(string input, int openParenIndex)
+    private static bool ShouldProtectFunctionArgumentSeparators(string input, int openParenIndex)
     {
         var end = openParenIndex - 1;
 
@@ -229,8 +267,16 @@ public class NumberTranslator
         start++;
 
         // Treat identifier-like text such as max    ( as a function call, but avoid marking plain
-        // grouping parentheses like (1 + 2) as function syntax.
-        return start <= end && char.IsLetter(input[start]);
+        // grouping parentheses like (1 + 2) as function syntax. Only supported functions with more
+        // than one argument need protection; single-argument functions must still allow grouping
+        // separators inside their numeric inputs.
+        if (start > end || !char.IsLetter(input[start]))
+        {
+            return false;
+        }
+
+        var functionName = input.Substring(start, end - start + 1);
+        return SupportedFunctionArgumentCounts.TryGetValue(functionName, out var argumentCount) && argumentCount > 1;
     }
 
     private static bool MatchesAt(string input, string value, int index)

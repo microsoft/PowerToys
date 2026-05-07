@@ -89,6 +89,24 @@ public class NumberTranslatorTests
     }
 
     [DataTestMethod]
+    [DataRow("ceil(123,456.23)", "ceil(123456.23)")]
+    [DataRow("floor(123,456.23)", "floor(123456.23)")]
+    [DataRow("round(123,456.23)", "round(123456.23)")]
+    [DataRow("log(123,456.23)", "log(123456.23)")]
+    [DataRow("sin(123,456.23)", "sin(123456.23)")]
+    [DataRow("max(ceil(123,456.23),2)", "max(ceil(123456.23),2)")]
+    [DataRow("pow(round(1,234.5),2)", "pow(round(1234.5),2)")]
+    public void Translate_PreservesGroupedNumbers_ForSingleArgumentFunctions_WhenCultureUsesCommaListSeparator(string input, string expectedResult)
+    {
+        var translator = NumberTranslator.Create(new CultureInfo("en-US", false), new CultureInfo("en-US", false));
+
+        var result = translator.Translate(input);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedResult, result);
+    }
+
+    [DataTestMethod]
     [DataRow("max(1,2)", "max(1,2)")]
     [DataRow("min(1,2)", "min(1,2)")]
     [DataRow("pow(2,3)", "pow(2,3)")]
@@ -99,6 +117,8 @@ public class NumberTranslatorTests
     [DataRow("max(123,min(12,pow(2,6)))", "max(123,min(12,pow(2,6)))")]
     [DataRow("max    (    12, 34  )", "max    (    12, 34  )")]
     [DataRow("pow(max(2,3),2)", "pow(max(2,3),2)")]
+    [DataRow("max(1e3,2e3)", "max(1e3,2e3)")]
+    [DataRow("pow(1.5e2,2)", "pow(1.5e2,2)")]
     public void Translate_PreservesFunctionArgumentSeparators_WhenCultureUsesCommaListSeparator(string input, string expectedResult)
     {
         var translator = NumberTranslator.Create(new CultureInfo("en-US", false), new CultureInfo("en-US", false));
@@ -191,7 +211,9 @@ public class NumberTranslatorTests
     [DataRow("en-US", "0xF000", "61440")]
     [DataRow("en-US", "0xf4572220", "4099351072")]
     [DataRow("en-US", "0x12345678", "305419896")]
-    public void Translate_LargeHexadecimalNumbersToDecimal(string sourceCultureName, string input, string expectedResult)
+    [DataRow("en-US", "0b101010", "42")]
+    [DataRow("en-US", "0o377", "255")]
+    public void Translate_BaseLiteralsToDecimal(string sourceCultureName, string input, string expectedResult)
     {
         // Arrange
         var translator = NumberTranslator.Create(new CultureInfo(sourceCultureName, false), new CultureInfo("en-US", false));
