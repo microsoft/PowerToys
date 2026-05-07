@@ -490,6 +490,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return value.Length > 0;
         }
 
+        private static bool ContainsTag(string line, string tag)
+        {
+            return line.IndexOf(tag, StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
         /// <summary>
         /// Writes changed metadata back to each script's header and saves settings.
         /// </summary>
@@ -586,7 +591,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 // Handle requires tag separately (may need full removal in auto mode)
-                if (TryParseTag(trimmed, "@advancedpaste:requires", out _))
+                if (ContainsTag(trimmed, "@advancedpaste:requires"))
                 {
                     lastTagLine = i;
 
@@ -615,7 +620,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 foreach (var (tag, newValue) in tagUpdates)
                 {
-                    if (TryParseTag(trimmed, tag, out _))
+                    if (ContainsTag(trimmed, tag))
                     {
                         if (!updatedTags.Contains(tag))
                         {
