@@ -10,7 +10,6 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
-ACR
 acrt
 ACTIVATEAPP
 ACTIVATEOPTIONS
@@ -88,7 +87,6 @@ AShortcut
 ASSOCCHANGED
 ASSOCF
 ASSOCSTR
-ASUS
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -202,7 +200,6 @@ checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
-Chunghwa
 CIBUILD
 cidl
 CIELCh
@@ -308,7 +305,6 @@ Crossdevice
 crt
 csdevkit
 cso
-CSOT
 CSRW
 cswin
 CTEXT
@@ -364,7 +360,6 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTSIZE
-defaulttonearest
 DEFAULTTONEAREST
 DEFAULTTONULL
 DEFAULTTOPRIMARY
@@ -645,7 +640,6 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
-Hann
 Hantai
 Hanzi
 Hardlines
@@ -747,7 +741,6 @@ HWNDLAST
 HWNDNEXT
 HWNDPARENT
 HWNDPREV
-HWP
 hyjiacan
 IAI
 icf
@@ -843,7 +836,6 @@ istep
 ith
 IUI
 IUWP
-IVO
 IWIC
 jeli
 jfif
@@ -1117,7 +1109,6 @@ myorg
 myrepo
 NAMECHANGE
 namespaceanddescendants
-Nanjing
 nao
 NCACTIVATE
 ncc
@@ -1218,7 +1209,6 @@ NOTSRCCOPY
 NOTSRCERASE
 Notupdated
 notwindows
-NOTXORPEN
 nowarn
 NOZORDER
 NPH
@@ -1339,7 +1329,6 @@ pguid
 phbm
 phbmp
 phicon
-PHL
 Photoshop
 phwnd
 pici
@@ -1464,7 +1453,6 @@ PWSTR
 pwsz
 pwtd
 qdc
-QDS
 qit
 QITAB
 QITABENT
@@ -1863,7 +1851,6 @@ THH
 thickframe
 THISCOMPONENT
 throughs
-Tianma
 TILEDWINDOW
 TILLSON
 timedate
