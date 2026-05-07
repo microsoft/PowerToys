@@ -39,6 +39,5 @@
     <ProjectReference Include="..\..\..\common\ManagedCsWin32\ManagedCsWin32.csproj" />
     <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\PowerDisplay.Models\PowerDisplay.Models.csproj" />
-    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
 </Project>

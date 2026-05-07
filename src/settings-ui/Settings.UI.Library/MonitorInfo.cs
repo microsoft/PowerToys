@@ -12,7 +12,7 @@ using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class MonitorInfo : Observable
+    public class MonitorInfo : Observable, IRetainableMonitor
     {
         private const byte VcpCodeSelectColorPreset = 0x14;
 
