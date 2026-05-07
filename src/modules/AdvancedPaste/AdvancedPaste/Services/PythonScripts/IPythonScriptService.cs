@@ -15,12 +15,20 @@ namespace AdvancedPaste.Services.PythonScripts;
 public interface IPythonScriptService
 {
     /// <summary>
-    /// Windows mode: the script directly manipulates the clipboard. C# waits for the process to exit.
+    /// V2 unified execution: C# reads the clipboard, pipes data as JSON to the runner,
+    /// and receives a DataPackage from JSON stdout. Works identically on Windows and WSL.
+    /// </summary>
+    Task<DataPackage> ExecuteScriptAsync(string scriptPath, DataPackageView clipboardData, ClipboardFormat detectedFormat, CancellationToken cancellationToken, IProgress<double> progress);
+
+    /// <summary>
+    /// Legacy Windows mode: the script directly manipulates the clipboard. C# waits for the process to exit.
+    /// Kept for backward compatibility with scripts that use win32clipboard directly.
     /// </summary>
     Task ExecuteWindowsScriptAsync(string scriptPath, ClipboardFormat detectedFormat, CancellationToken cancellationToken, IProgress<double> progress);
 
     /// <summary>
-    /// WSL mode: C# passes data via JSON stdin, receives a DataPackage from JSON stdout.
+    /// Legacy WSL mode: C# passes data via JSON stdin, receives a DataPackage from JSON stdout.
+    /// Kept for backward compatibility with scripts that use json.load(sys.stdin) directly.
     /// </summary>
     Task<DataPackage> ExecuteWslScriptAsync(string scriptPath, DataPackageView clipboardData, ClipboardFormat detectedFormat, CancellationToken cancellationToken, IProgress<double> progress);
 

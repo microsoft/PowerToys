@@ -16,4 +16,5 @@ public sealed record PythonScriptMetadata(
     string Platform,
     string Version,
     bool IsEnabled,
-    IReadOnlyList<PythonRequirement> Requirements);
+    IReadOnlyList<PythonRequirement> Requirements,
+    bool IsV2 = false);

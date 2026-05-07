@@ -96,6 +96,13 @@ public sealed class PasteFormatExecutor(
 
         var detectedFormat = await clipboardData.GetAvailableFormatsAsync();
 
+        // V2 interface: script defines convert() — use unified runner on any platform.
+        if (metadata.IsV2)
+        {
+            return await _pythonScriptService.ExecuteScriptAsync(scriptPath, clipboardData, detectedFormat, cancellationToken, progress);
+        }
+
+        // Legacy paths for backward compatibility.
         if (string.Equals(metadata.Platform, "linux", StringComparison.OrdinalIgnoreCase))
         {
             return await _pythonScriptService.ExecuteWslScriptAsync(scriptPath, clipboardData, detectedFormat, cancellationToken, progress);

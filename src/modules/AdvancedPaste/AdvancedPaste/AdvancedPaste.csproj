@@ -155,5 +155,9 @@
     <Content Include="Assets\AdvancedPaste\SemanticKernel.svg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+
+    <Content Include="Services\PythonScripts\_runner.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>

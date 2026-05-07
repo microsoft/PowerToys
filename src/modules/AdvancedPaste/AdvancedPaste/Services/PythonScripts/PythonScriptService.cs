@@ -32,6 +32,279 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
     private readonly IUserSettings _userSettings = userSettings;
 
+    /// <summary>
+    /// Returns the path to the _runner.py bootstrap script shipped alongside this module.
+    /// </summary>
+    private static string GetRunnerPath()
+    {
+        var assemblyDir = Path.GetDirectoryName(typeof(PythonScriptService).Assembly.Location);
+        return Path.Combine(assemblyDir!, "_runner.py");
+    }
+
+    /// <summary>
+    /// V2 unified execution: C# reads the clipboard, serializes it as JSON, invokes the
+    /// runner which calls the user's convert() function, and parses the JSON result.
+    /// Works identically on both Windows (native Python) and WSL.
+    /// </summary>
+    public async Task<DataPackage> ExecuteScriptAsync(
+        string scriptPath,
+        DataPackageView clipboardData,
+        ClipboardFormat detectedFormat,
+        CancellationToken cancellationToken,
+        IProgress<double> progress)
+    {
+        ThrowIfNotExists(scriptPath);
+
+        var pythonExe = TryFindPythonExecutable(_userSettings.PythonExecutablePath);
+        if (pythonExe is null)
+        {
+            throw new PasteActionException(
+                ResourceLoaderInstance.ResourceLoader.GetString("PythonNotFound"),
+                new InvalidOperationException("Python executable not found."));
+        }
+
+        var runnerPath = GetRunnerPath();
+        if (!File.Exists(runnerPath))
+        {
+            throw new PasteActionException(
+                "Advanced Paste runner script not found. Please reinstall PowerToys.",
+                new FileNotFoundException("_runner.py not found.", runnerPath));
+        }
+
+        var workDir = CreateTempWorkDir();
+
+        try
+        {
+            var inputPayload = await BuildInputPayloadAsync(clipboardData, detectedFormat, workDir, cancellationToken);
+            var inputJson = JsonSerializer.Serialize(inputPayload);
+
+            // Write payload to file to avoid stdin BOM/encoding issues.
+            var inputFilePath = Path.Combine(workDir, "ap_input.json");
+            await File.WriteAllTextAsync(inputFilePath, inputJson, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken);
+
+            var psi = new ProcessStartInfo(pythonExe, $"-X utf8 \"{runnerPath}\" \"{scriptPath}\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
+                WorkingDirectory = workDir,
+            };
+
+            using var process = Process.Start(psi)
+                ?? throw new PasteActionException(
+                    ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"),
+                    new InvalidOperationException("Failed to start Python process."));
+
+            // Write input JSON to stdin then close it.
+            await process.StandardInput.WriteAsync(inputJson);
+            process.StandardInput.Close();
+
+            int timeoutMs = _userSettings.PythonScriptTimeoutSeconds * 1000;
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(timeoutMs);
+
+            string stdout;
+            string stderr;
+
+            try
+            {
+                var stdoutTask = process.StandardOutput.ReadToEndAsync(timeoutCts.Token);
+                var stderrTask = process.StandardError.ReadToEndAsync(timeoutCts.Token);
+                await process.WaitForExitAsync(timeoutCts.Token);
+                stdout = await stdoutTask;
+                stderr = await stderrTask;
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                process.Kill(entireProcessTree: true);
+                throw new PasteActionException(
+                    string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptTimeout"),
+                        _userSettings.PythonScriptTimeoutSeconds),
+                    new TimeoutException());
+            }
+
+            if (process.ExitCode != 0)
+            {
+                var (summary, details) = ParsePythonError(stderr);
+                throw new PasteActionException(summary, new InvalidOperationException($"Script exited with code {process.ExitCode}."), aiServiceMessage: details);
+            }
+
+            return await ParseOutputAsync(stdout, workDir, cancellationToken);
+        }
+        finally
+        {
+            // Delayed cleanup so the target application can finish using output files.
+            _ = Task.Run(
+                async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30), CancellationToken.None);
+                    TryDeleteTempDir(workDir);
+                },
+                CancellationToken.None);
+        }
+    }
+
+    /// <summary>
+    /// Builds the input JSON payload for V2 scripts running on Windows (native paths).
+    /// </summary>
+    private static async Task<JsonObject> BuildInputPayloadAsync(
+        DataPackageView clipboardData,
+        ClipboardFormat detectedFormat,
+        string workDir,
+        CancellationToken cancellationToken)
+    {
+        var formatArray = new JsonArray();
+        foreach (ClipboardFormat flag in Enum.GetValues<ClipboardFormat>())
+        {
+            if (flag != ClipboardFormat.None && detectedFormat.HasFlag(flag))
+            {
+                formatArray.Add(JsonValue.Create(flag.ToString().ToLowerInvariant()));
+            }
+        }
+
+        var obj = new JsonObject
+        {
+            ["version"] = 2,
+            ["format"] = formatArray,
+            ["work_dir"] = workDir,
+        };
+
+        if (clipboardData.Contains(StandardDataFormats.Text))
+        {
+            obj["text"] = await clipboardData.GetTextAsync();
+        }
+
+        if (clipboardData.Contains(StandardDataFormats.Html))
+        {
+            var rawHtml = await clipboardData.GetHtmlFormatAsync();
+            obj["html"] = ExtractHtmlFragment(rawHtml);
+        }
+
+        if (clipboardData.Contains(StandardDataFormats.Bitmap))
+        {
+            var pngBytes = await clipboardData.GetImageAsPngBytesAsync();
+            if (pngBytes != null)
+            {
+                var inputPng = Path.Combine(workDir, "input.png");
+                await File.WriteAllBytesAsync(inputPng, pngBytes, cancellationToken);
+                obj["image_path"] = inputPng;
+            }
+        }
+
+        if (clipboardData.Contains(StandardDataFormats.StorageItems))
+        {
+            var storageItems = await clipboardData.GetStorageItemsAsync();
+            var filePathArray = new JsonArray();
+            foreach (var item in storageItems)
+            {
+                filePathArray.Add(JsonValue.Create(item.Path));
+            }
+
+            obj["file_paths"] = filePathArray;
+        }
+
+        return obj;
+    }
+
+    /// <summary>
+    /// Parses the JSON output from the V2 runner. Same structure as WSL output but with
+    /// native Windows paths (no /mnt/ conversion needed).
+    /// </summary>
+    private static async Task<DataPackage> ParseOutputAsync(
+        string stdout,
+        string workDir,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(stdout))
+        {
+            return new DataPackage();
+        }
+
+        JsonObject outputObj;
+        try
+        {
+            outputObj = JsonSerializer.Deserialize<JsonObject>(stdout)
+                ?? throw new FormatException("null root object");
+        }
+        catch (Exception ex)
+        {
+            throw new PasteActionException(
+                ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptInvalidJson"),
+                ex);
+        }
+
+        var resultType = outputObj["result_type"]?.GetValue<string>() ?? "text";
+        var dataPackage = new DataPackage();
+
+        switch (resultType.ToLowerInvariant())
+        {
+            case "text":
+                var text = outputObj["text"]?.GetValue<string>() ?? string.Empty;
+                dataPackage.SetText(text);
+                break;
+
+            case "html":
+                var html = outputObj["html"]?.GetValue<string>() ?? string.Empty;
+                dataPackage.SetHtmlFormat(html);
+                var htmlAsText = outputObj["text"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(htmlAsText))
+                {
+                    dataPackage.SetText(htmlAsText);
+                }
+
+                break;
+
+            case "file":
+            case "files":
+                var filePathsNode = outputObj["file_paths"];
+                if (filePathsNode is JsonArray arr)
+                {
+                    var storageItems = new List<IStorageItem>();
+                    foreach (var node in arr)
+                    {
+                        var rawPath = node?.GetValue<string>();
+                        if (string.IsNullOrEmpty(rawPath))
+                        {
+                            continue;
+                        }
+
+                        // V2 runner outputs native Windows paths.
+                        storageItems.Add(await StorageFile.GetFileFromPathAsync(rawPath));
+                    }
+
+                    if (storageItems.Count > 0)
+                    {
+                        dataPackage.SetStorageItems(storageItems);
+                    }
+                }
+
+                break;
+
+            case "image":
+                var imagePath = outputObj["image_path"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    var file = await StorageFile.GetFileFromPathAsync(imagePath);
+                    dataPackage.SetStorageItems([file]);
+                }
+
+                break;
+
+            default:
+                var defaultText = outputObj["text"]?.GetValue<string>() ?? string.Empty;
+                dataPackage.SetText(defaultText);
+                break;
+        }
+
+        return dataPackage;
+    }
+
     public async Task ExecuteWindowsScriptAsync(
         string scriptPath,
         ClipboardFormat detectedFormat,
@@ -205,6 +478,16 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
     }
 
+    // Regex to detect `def convert(...)` function definition.
+    private static readonly Regex ConvertFunctionRegex = new(
+        @"^def\s+convert\s*\(",
+        RegexOptions.Compiled);
+
+    // Regex to extract parameter names from a `def convert(...)` line.
+    private static readonly Regex FunctionParamsRegex = new(
+        @"^def\s+convert\s*\(([^)]*)\)",
+        RegexOptions.Compiled);
+
     public PythonScriptMetadata ReadMetadata(string scriptPath)
     {
         var name = Path.GetFileNameWithoutExtension(scriptPath);
@@ -218,6 +501,9 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         var explicitRequirements = new List<PythonRequirement>();
         var allLines = new List<string>();
         var isEnabled = true;
+        bool isV2 = false;
+        bool hasExplicitFormats = false;
+        string convertParamsRaw = null;
 
         try
         {
@@ -235,6 +521,17 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 lineCount++;
                 allLines.Add(line);
                 var trimmed = line.Trim();
+
+                // Detect V2 interface: script defines def convert(...)
+                if (!isV2 && ConvertFunctionRegex.IsMatch(trimmed))
+                {
+                    isV2 = true;
+                    var paramsMatch = FunctionParamsRegex.Match(trimmed);
+                    if (paramsMatch.Success)
+                    {
+                        convertParamsRaw = paramsMatch.Groups[1].Value;
+                    }
+                }
 
                 if (!trimmed.StartsWith('#'))
                 {
@@ -273,6 +570,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 if (tag != null)
                 {
                     supportedFormats = ParseFormats(tag);
+                    hasExplicitFormats = true;
                     continue;
                 }
 
@@ -293,11 +591,24 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 }
             }
 
-            // Read remaining lines for import scanning
+            // Read remaining lines for import scanning and V2 detection beyond header.
             string remainingLine;
             while ((remainingLine = reader.ReadLine()) is not null)
             {
                 allLines.Add(remainingLine);
+                if (!isV2)
+                {
+                    var trimmedRemaining = remainingLine.Trim();
+                    if (ConvertFunctionRegex.IsMatch(trimmedRemaining))
+                    {
+                        isV2 = true;
+                        var paramsMatch = FunctionParamsRegex.Match(trimmedRemaining);
+                        if (paramsMatch.Success)
+                        {
+                            convertParamsRaw = paramsMatch.Groups[1].Value;
+                        }
+                    }
+                }
             }
         }
         catch (Exception ex)
@@ -305,9 +616,71 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             Logger.LogError($"Failed to read metadata from {scriptPath}", ex);
         }
 
+        // V2: infer supported formats from convert() parameter names if no explicit @advancedpaste:formats tag.
+        if (isV2 && !hasExplicitFormats && convertParamsRaw != null)
+        {
+            supportedFormats = InferFormatsFromSignature(convertParamsRaw);
+        }
+
+        // V2 scripts don't need a platform tag — they always use the unified runner.
+        if (isV2)
+        {
+            platform = PlatformWindows; // Ignored — unified execution handles both.
+        }
+
         var mergedRequirements = MergeWithAutoDetectedImports(allLines, explicitRequirements);
 
-        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, isEnabled, mergedRequirements);
+        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, isEnabled, mergedRequirements, isV2);
+    }
+
+    /// <summary>
+    /// Infers clipboard format support from the convert() function's parameter names.
+    /// If **kwargs is present, all formats are supported.
+    /// </summary>
+    internal static ClipboardFormat InferFormatsFromSignature(string paramsRaw)
+    {
+        // If **kwargs present, assume all formats.
+        if (paramsRaw.Contains("**"))
+        {
+            return ClipboardFormat.Text | ClipboardFormat.Html |
+                   ClipboardFormat.Image | ClipboardFormat.Audio |
+                   ClipboardFormat.Video | ClipboardFormat.File;
+        }
+
+        var paramNames = paramsRaw
+            .Split(',')
+            .Select(p => p.Trim().Split('=')[0].Trim().Split(':')[0].Trim())
+            .Where(p => !string.IsNullOrEmpty(p) && p != "self")
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var formats = ClipboardFormat.None;
+
+        if (paramNames.Contains("text"))
+        {
+            formats |= ClipboardFormat.Text;
+        }
+
+        if (paramNames.Contains("html"))
+        {
+            formats |= ClipboardFormat.Html;
+        }
+
+        if (paramNames.Contains("image_path") || paramNames.Contains("image"))
+        {
+            formats |= ClipboardFormat.Image;
+        }
+
+        if (paramNames.Contains("file_paths") || paramNames.Contains("files") || paramNames.Contains("file_path"))
+        {
+            formats |= ClipboardFormat.File;
+        }
+
+        // If no recognized params (e.g. just `work_dir`), default to all formats.
+        return formats == ClipboardFormat.None
+            ? ClipboardFormat.Text | ClipboardFormat.Html |
+              ClipboardFormat.Image | ClipboardFormat.Audio |
+              ClipboardFormat.Video | ClipboardFormat.File
+            : formats;
     }
 
     /// <summary>
