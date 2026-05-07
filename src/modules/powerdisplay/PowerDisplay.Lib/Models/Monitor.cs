@@ -22,11 +22,6 @@ namespace PowerDisplay.Common.Models
     /// PnP instance ID, unique per (physical device × physical port) and stable across
     /// reboots, sleep/wake, and OS-level monitor reordering. See <see cref="MonitorIdentity.FromDevicePath"/>.
     /// </para>
-    /// <para>
-    /// Legacy entries written by older PowerDisplay versions (format <c>DDC_GSM5C6D_1</c> or
-    /// <c>WMI_BOE0900_2</c>) are migrated by <see cref="Common.Services.LegacyIdMigrator"/>
-    /// at the end of every discovery cycle.
-    /// </para>
     /// </remarks>
     public partial class Monitor : INotifyPropertyChanged, IMonitorData
     {
@@ -41,9 +36,9 @@ namespace PowerDisplay.Common.Models
         /// Gets or sets unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
         /// </summary>
         /// <remarks>
-        /// New format (post-migration): the Windows DevicePath with the trailing device-class
-        /// GUID stripped, e.g. <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID12345</c>.
-        /// Stable across reboots, sleep/wake, and identical-monitor reordering by Windows.
+        /// Format: the Windows DevicePath with the trailing device-class GUID stripped,
+        /// e.g. <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID12345</c>. Stable across
+        /// reboots, sleep/wake, and identical-monitor reordering by Windows.
         /// </remarks>
         public string Id { get; set; } = string.Empty;
 

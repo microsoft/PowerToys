@@ -10,9 +10,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
-using PowerDisplay.Serialization;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -127,14 +125,6 @@ public partial class MainViewModel
 
     private void UpdateMonitorList(IReadOnlyList<Monitor> monitors, bool isInitialLoad)
     {
-        // Run a one-shot migration of any legacy-format Ids to the new DevicePath form.
-        // Idempotent: subsequent calls find nothing to migrate.
-        LegacyIdMigrator.Migrate(
-            monitors,
-            _settingsUtils,
-            s => System.Text.Json.JsonSerializer.Serialize(s, AppJsonContext.Default.PowerDisplaySettings),
-            _stateManager);
-
         // Dispose old ViewModels to unsubscribe PropertyChanged handlers
         foreach (var vm in Monitors)
         {

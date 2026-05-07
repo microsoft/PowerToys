@@ -37,24 +37,4 @@ public class MonitorIdentityTests
         Assert.AreEqual(string.Empty, MonitorIdentity.FromDevicePath(null!));
         Assert.AreEqual(string.Empty, MonitorIdentity.FromDevicePath(string.Empty));
     }
-
-    [TestMethod]
-    public void TryGetEdidId_ExtractsBetweenFirstAndSecondHash()
-    {
-        var input = @"\\?\DISPLAY#DELD1A8#5&abc123&0&UID12345";
-
-        bool ok = MonitorIdentity.TryGetEdidId(input, out var edidId);
-
-        Assert.IsTrue(ok);
-        Assert.AreEqual("DELD1A8", edidId);
-    }
-
-    [TestMethod]
-    public void TryGetEdidId_LegacyFormatId_ReturnsFalse()
-    {
-        bool ok = MonitorIdentity.TryGetEdidId("DDC_DELD1A8_1", out var edidId);
-
-        Assert.IsFalse(ok);
-        Assert.AreEqual(string.Empty, edidId);
-    }
 }

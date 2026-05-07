@@ -6,8 +6,7 @@ namespace PowerDisplay.Common.Models;
 
 /// <summary>
 /// Helpers for deriving the stable PowerDisplay <see cref="Monitor.Id"/> from
-/// a Windows monitor DevicePath, and for extracting fields out of the resulting
-/// Id string.
+/// a Windows monitor DevicePath.
 /// </summary>
 /// <remarks>
 /// The Id format is the DevicePath returned by QueryDisplayConfig with the
@@ -31,35 +30,5 @@ public static class MonitorIdentity
 
         var guidStart = devicePath.IndexOf("#{", System.StringComparison.Ordinal);
         return guidStart < 0 ? devicePath : devicePath[..guidStart];
-    }
-
-    /// <summary>
-    /// Extract the EdidId segment (manufacturer + product code) from a new-format Monitor.Id.
-    /// Returns false if the Id is not in the new format.
-    /// </summary>
-    public static bool TryGetEdidId(string? monitorId, out string edidId)
-    {
-        edidId = string.Empty;
-        if (string.IsNullOrEmpty(monitorId))
-        {
-            return false;
-        }
-
-        // New format begins with "\\?\DISPLAY#" — the EdidId is the segment between the
-        // first and second '#'.
-        var first = monitorId.IndexOf('#');
-        if (first < 0)
-        {
-            return false;
-        }
-
-        var second = monitorId.IndexOf('#', first + 1);
-        if (second < 0)
-        {
-            return false;
-        }
-
-        edidId = monitorId.Substring(first + 1, second - first - 1);
-        return edidId.Length > 0;
     }
 }
