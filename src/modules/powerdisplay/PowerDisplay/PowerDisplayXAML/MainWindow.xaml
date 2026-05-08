@@ -323,11 +323,9 @@
                                                         VerticalAlignment="Center"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
-                                                        KeyUp="{x:Bind HandleBrightnessKeyUp}"
                                                         Maximum="100"
                                                         Minimum="0"
-                                                        PointerCaptureLost="{x:Bind HandleBrightnessPointerCaptureLost}"
-                                                        Value="{x:Bind Brightness, Mode=OneWay}" />
+                                                        Value="{x:Bind Brightness, Mode=TwoWay}" />
                                                 </Grid>
 
                                                 <!--  Contrast Control  -->
@@ -354,11 +352,9 @@
                                                         VerticalAlignment="Center"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
-                                                        KeyUp="{x:Bind HandleContrastKeyUp}"
                                                         Maximum="100"
                                                         Minimum="0"
-                                                        PointerCaptureLost="{x:Bind HandleContrastPointerCaptureLost}"
-                                                        Value="{x:Bind Contrast, Mode=OneWay}" />
+                                                        Value="{x:Bind Contrast, Mode=TwoWay}" />
                                                 </Grid>
 
                                                 <!--  Volume Control  -->
@@ -384,11 +380,9 @@
                                                         VerticalAlignment="Center"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
-                                                        KeyUp="{x:Bind HandleVolumeKeyUp}"
                                                         Maximum="100"
                                                         Minimum="0"
-                                                        PointerCaptureLost="{x:Bind HandleVolumePointerCaptureLost}"
-                                                        Value="{x:Bind Volume, Mode=OneWay}" />
+                                                        Value="{x:Bind Volume, Mode=TwoWay}" />
                                                 </Grid>
 
                                                 <!--  Rotation Controls  -->
