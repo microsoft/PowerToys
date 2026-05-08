@@ -911,7 +911,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             _slider = slider;
 
             // Always (re)arm — even for sub-threshold deltas — so the accumulator gets cleared
-            // after the gesture ends. Otherwise a stalled half-notch would bleed into the next
+            // after the gesture ends. Otherwise, a stalled half-notch would bleed into the next
             // gesture (e.g. user gives up scrolling at +80, comes back later, first nudge feels off).
             ArmTimer();
 
