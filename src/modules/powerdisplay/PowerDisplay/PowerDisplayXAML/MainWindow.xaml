@@ -1,4 +1,4 @@
-﻿<winuiex:WindowEx
+<winuiex:WindowEx
     x:Class="PowerDisplay.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -321,6 +321,8 @@
                                                         x:Uid="BrightnessAutomation"
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
+                                                        helpers:SliderExtensions.IsMouseWheelEnabled="True"
+                                                        helpers:SliderExtensions.MouseWheelChange="5"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
@@ -350,6 +352,8 @@
                                                         x:Uid="ContrastAutomation"
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
+                                                        helpers:SliderExtensions.IsMouseWheelEnabled="True"
+                                                        helpers:SliderExtensions.MouseWheelChange="5"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
@@ -378,6 +382,8 @@
                                                         x:Uid="VolumeAutomation"
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
+                                                        helpers:SliderExtensions.IsMouseWheelEnabled="True"
+                                                        helpers:SliderExtensions.MouseWheelChange="5"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
