@@ -47,21 +47,7 @@ But to get started quickly, choose one of the installation methods below:
 <summary><strong>Download the .exe file from GitHub</strong></summary>
 <br/>
 
-Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), select **Assets** to reveal the installation files, and choose the one that matches your architecture and install scope. For most devices, that would be _x64 per-user_.
-
-<!-- items that need to be updated release to release -->
-[github-next-release-work]: https://github.com/microsoft/PowerToys/issues?q=is%3Aissue+milestone%3A%22PowerToys+0.100%22
-[ptUserX64]: https://github.com/microsoft/PowerToys/releases/download/v0.99.0/PowerToysUserSetup-0.99.0-x64.exe
-[ptUserArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.99.0/PowerToysUserSetup-0.99.0-arm64.exe
-[ptMachineX64]: https://github.com/microsoft/PowerToys/releases/download/v0.99.0/PowerToysSetup-0.99.0-x64.exe
-[ptMachineArm64]: https://github.com/microsoft/PowerToys/releases/download/v0.99.0/PowerToysSetup-0.99.0-arm64.exe
-
-| Description | Filename |
-| --- | --- |
-| Per user - x64       | [PowerToysUserSetup-0.99.0-x64.exe][ptUserX64] |
-| Per user - ARM64     | [PowerToysUserSetup-0.99.0-arm64.exe][ptUserArm64] |
-| Machine wide - x64   | [PowerToysSetup-0.99.0-x64.exe][ptMachineX64] |
-| Machine wide - ARM64 | [PowerToysSetup-0.99.0-arm64.exe][ptMachineArm64] |
+Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), scroll down and select **Assets** to reveal the installation files, and choose the one that matches your architecture and install scope. For most devices, that would be _x64 per-user_.
 
 </details>
 
@@ -106,7 +92,7 @@ There are [community driven install methods](https://learn.microsoft.com/windows
 
 [![What's new image](doc/images/readme/Release-Banner.png)](https://github.com/microsoft/PowerToys/releases)
 
-To see what's new, check out the [release notes](https://github.com/microsoft/PowerToys/releases/tag/v0.99.0).
+To see what's new, check out the [release notes](https://github.com/microsoft/PowerToys/releases/).
 
 ## 🛣️ Roadmap
 

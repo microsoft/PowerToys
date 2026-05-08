@@ -324,8 +324,8 @@
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         KeyUp="{x:Bind HandleBrightnessKeyUp}"
-                                                        Maximum="{x:Bind MaxBrightness, Mode=OneWay}"
-                                                        Minimum="{x:Bind MinBrightness, Mode=OneWay}"
+                                                        Maximum="100"
+                                                        Minimum="0"
                                                         PointerCaptureLost="{x:Bind HandleBrightnessPointerCaptureLost}"
                                                         PointerWheelChanged="{x:Bind HandleBrightnessPointerWheel}"
                                                         Value="{x:Bind Brightness, Mode=OneWay}" />
@@ -357,9 +357,10 @@
                                                         IsTabStop="True"
                                                         KeyUp="{x:Bind HandleContrastKeyUp}"
                                                         Maximum="100"
+                                                        Minimum="0"
                                                         PointerCaptureLost="{x:Bind HandleContrastPointerCaptureLost}"
                                                         PointerWheelChanged="{x:Bind HandleContrastPointerWheel}"
-                                                        Value="{x:Bind ContrastPercent, Mode=OneWay}" />
+                                                        Value="{x:Bind Contrast, Mode=OneWay}" />
                                                 </Grid>
 
                                                 <!--  Volume Control  -->
@@ -386,8 +387,8 @@
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         KeyUp="{x:Bind HandleVolumeKeyUp}"
-                                                        Maximum="{x:Bind MaxVolume, Mode=OneWay}"
-                                                        Minimum="{x:Bind MinVolume, Mode=OneWay}"
+                                                        Maximum="100"
+                                                        Minimum="0"
                                                         PointerCaptureLost="{x:Bind HandleVolumePointerCaptureLost}"
                                                         PointerWheelChanged="{x:Bind HandleVolumePointerWheel}"
                                                         Value="{x:Bind Volume, Mode=OneWay}" />
