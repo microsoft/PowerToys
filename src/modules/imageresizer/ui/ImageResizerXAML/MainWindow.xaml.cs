@@ -3,6 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 // Code forked from Brice Lambson's https://github.com/bricelam/ImageResizer/
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Threading.Tasks;
 using ImageResizer.Helpers;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
@@ -10,11 +15,6 @@ using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using Windows.Graphics;
 using Windows.Storage.Pickers;
 using WinUIEx;
@@ -44,7 +44,7 @@ namespace ImageResizer
             SetTitleBar(titleBar);
             this.SetIcon("Assets/ImageResizer/ImageResizer.ico");
 
-            Title = ResourceLoaderInstance.ResourceLoader.GetString("ImageResizer");
+            Title = ResourceLoaderInstance.GetString("ImageResizer");
 
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
