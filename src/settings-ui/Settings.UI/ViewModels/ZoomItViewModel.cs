@@ -304,7 +304,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 // XOR with Shift: if Shift is present, remove it; if absent, add it.
-                // If the result would have no modifier keys, return null to avoid registering a key-only hotkey.
+                // If the result would have no modifier keys, return null to avoid displaying a bare-key shortcut label.
                 if (baseKey.Shift && !baseKey.Win && !baseKey.Ctrl && !baseKey.Alt)
                 {
                     return null;
@@ -330,7 +330,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 // XOR with Alt: if Alt is present, remove it; if absent, add it.
-                // If the result would have no modifier keys, return null to avoid registering a key-only hotkey.
+                // If the result would have no modifier keys, return null to avoid displaying a bare-key shortcut label.
                 if (baseKey.Alt && !baseKey.Win && !baseKey.Ctrl && !baseKey.Shift)
                 {
                     return null;

@@ -3310,11 +3310,13 @@ void RegisterAllHotkeys(HWND hWnd)
     }
     if (g_RecordToggleKey) {
         registerHotkey( RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
-        if ( g_RecordToggleMod ^ MOD_SHIFT ) {
-            registerHotkey( RECORD_CROP_HOTKEY, ( g_RecordToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        UINT cropMod = g_RecordToggleMod ^ MOD_SHIFT;
+        UINT windowMod = g_RecordToggleMod ^ MOD_ALT;
+        if ( cropMod != 0 ) {
+            registerHotkey( RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
         }
-        if ( g_RecordToggleMod ^ MOD_ALT ) {
-            registerHotkey( RECORD_WINDOW_HOTKEY, ( g_RecordToggleMod ^ MOD_ALT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        if ( windowMod != 0 ) {
+            registerHotkey( RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
         }
     }
 
@@ -5311,16 +5313,18 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
-            else if( newRecordToggleKey &&
-                (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY,      newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
-                 ((newRecordToggleMod ^ MOD_SHIFT) && !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, (newRecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, newRecordToggleKey & 0xFF)) ||
-                 ((newRecordToggleMod ^ MOD_ALT) && !RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, (newRecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, newRecordToggleKey & 0xFF)))) {
+            else if( newRecordToggleKey ) {
+                UINT cropMod = newRecordToggleMod ^ MOD_SHIFT;
+                UINT windowMod = newRecordToggleMod ^ MOD_ALT;
+                if (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY, newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
+                    (cropMod != 0 && !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF)) ||
+                    (windowMod != 0 && !RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF))) {
 
-                MessageBox(hDlg, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
-                    APPNAME, MB_ICONERROR);
-                UnregisterAllHotkeys(GetParent(hDlg));
-                break;
-
+                    MessageBox(hDlg, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
+                        APPNAME, MB_ICONERROR);
+                    UnregisterAllHotkeys(GetParent(hDlg));
+                    break;
+                }
             } else {
 
                 g_BreakTimeout = newTimeout;
@@ -7301,14 +7305,17 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
 
             }
-            else if (g_RecordToggleKey &&
-                (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                 ((g_RecordToggleMod ^ MOD_SHIFT) && !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)) ||
-                 ((g_RecordToggleMod ^ MOD_ALT) && !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)))) {
+            else if (g_RecordToggleKey) {
+                UINT cropMod = g_RecordToggleMod ^ MOD_SHIFT;
+                UINT windowMod = g_RecordToggleMod ^ MOD_ALT;
+                if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
+                    (cropMod != 0 && !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)) ||
+                    (windowMod != 0 && !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))) {
 
-                MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
-                    APPNAME, MB_ICONERROR);
-                showOptions = TRUE;
+                    MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
+                        APPNAME, MB_ICONERROR);
+                    showOptions = TRUE;
+                }
             }
             if( showOptions ) {
 
@@ -9879,9 +9886,11 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_RecordToggleKey)
         {
+            UINT cropMod = g_RecordToggleMod ^ MOD_SHIFT;
+            UINT windowMod = g_RecordToggleMod ^ MOD_ALT;
             if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                ((g_RecordToggleMod ^ MOD_SHIFT) && !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)) ||
-                ((g_RecordToggleMod ^ MOD_ALT) && !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)))
+                (cropMod != 0 && !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, cropMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)) ||
+                (windowMod != 0 && !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, windowMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF)))
             {
                 if(!g_StartedByPowerToys)
                 {
