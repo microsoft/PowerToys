@@ -64,6 +64,12 @@
                                     ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
                                     SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="PowerDisplay_WheelScrollStep">
+                                <ComboBox
+                                    MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
+                                    ItemsSource="{x:Bind ViewModel.WheelScrollStepOptions}"
+                                    SelectedItem="{x:Bind ViewModel.WheelScrollStep, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="PowerDisplay_RestoreSettingsOnStartup" IsChecked="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>

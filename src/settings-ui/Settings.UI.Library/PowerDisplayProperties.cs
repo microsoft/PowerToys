@@ -24,6 +24,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowProfileSwitcher = true;
             ShowIdentifyMonitorsButton = true;
             CustomVcpMappings = new List<CustomVcpValueMapping>();
+            WheelScrollStep = 1;
 
             // Note: saved_monitor_settings has been moved to monitor_state.json
             // which is managed separately by PowerDisplay app
@@ -75,5 +76,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("custom_vcp_mappings")]
         public List<CustomVcpValueMapping> CustomVcpMappings { get; set; }
+
+        /// <summary>
+        /// Gets or sets how many units a single mouse-wheel notch moves the brightness/contrast/volume sliders.
+        /// Default is 1.
+        /// </summary>
+        [JsonPropertyName("wheel_scroll_step")]
+        public int WheelScrollStep { get; set; }
     }
 }

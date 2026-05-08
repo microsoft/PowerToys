@@ -204,6 +204,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
 
+        /// <summary>
+        /// Gets or sets how many units a single mouse-wheel notch moves the brightness/contrast/volume sliders.
+        /// </summary>
+        public int WheelScrollStep
+        {
+            get => _settings.Properties.WheelScrollStep;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.WheelScrollStep, value, v => _settings.Properties.WheelScrollStep = v))
+                {
+                    // set_config() in the module DLL doesn't signal SettingsUpdatedEvent,
+                    // so PowerDisplay.exe needs an explicit nudge to re-read settings.
+                    SignalSettingsUpdated();
+                }
+            }
+        }
+
+        private readonly List<int> _wheelScrollStepOptions = new List<int> { 1, 2, 3, 5, 10 };
+
+        public List<int> WheelScrollStepOptions => _wheelScrollStepOptions;
+
         public ObservableCollection<MonitorInfo> Monitors
         {
             get => _monitors;

@@ -33,6 +33,10 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private readonly MonitorManager _monitorManager;
     private readonly MainViewModel? _mainViewModel;
 
+    private readonly WheelDebouncer _brightnessWheel;
+    private readonly WheelDebouncer _contrastWheel;
+    private readonly WheelDebouncer _volumeWheel;
+
     private int _brightness;
     private int _contrast;
     private int _volume;
@@ -234,6 +238,10 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         _contrast = monitor.CurrentContrast;
         _volume = monitor.CurrentVolume;
         IsAvailable = monitor.IsAvailable;
+
+        _brightnessWheel = new WheelDebouncer(WheelCommitDelay, v => Brightness = v);
+        _contrastWheel = new WheelDebouncer(WheelCommitDelay, v => ContrastPercent = v);
+        _volumeWheel = new WheelDebouncer(WheelCommitDelay, v => Volume = v);
     }
 
     public string Id => _monitor.Id;
@@ -890,6 +898,128 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         }
     }
 
+    // Mouse wheel: accumulate delta across events and step the slider once per WHEEL_DELTA (120),
+    // so high-precision wheels and touchpads (which emit small fractional deltas) feel like notched
+    // input. Hardware DDC/CI commit is debounced — fires WheelCommitDelay after scrolling stops,
+    // mirroring the drag commit-on-release pattern.
+    private static readonly TimeSpan WheelCommitDelay = TimeSpan.FromMilliseconds(200);
+
+    public void HandleBrightnessPointerWheel(object sender, PointerRoutedEventArgs e)
+        => HandleWheel(sender, e, _brightnessWheel);
+
+    public void HandleContrastPointerWheel(object sender, PointerRoutedEventArgs e)
+        => HandleWheel(sender, e, _contrastWheel);
+
+    public void HandleVolumePointerWheel(object sender, PointerRoutedEventArgs e)
+        => HandleWheel(sender, e, _volumeWheel);
+
+    private void HandleWheel(object sender, PointerRoutedEventArgs e, WheelDebouncer? debouncer)
+    {
+        if (sender is not Slider slider || debouncer == null)
+        {
+            return;
+        }
+
+        // Always swallow the event so it doesn't bubble to the outer ScrollViewer
+        // and scroll the flyout while the pointer is on a slider.
+        e.Handled = true;
+
+        int delta = e.GetCurrentPoint(slider).Properties.MouseWheelDelta;
+        int magnitude = Math.Max(1, _mainViewModel?.WheelScrollStep ?? 1);
+        debouncer.TryStep(slider, delta, magnitude);
+    }
+
+    /// <summary>
+    /// Per-slider wheel handler: accumulates raw deltas, applies a step every WHEEL_DELTA (120),
+    /// and debounces a hardware-commit callback that fires after the gesture ends.
+    /// </summary>
+    private sealed class WheelDebouncer : IDisposable
+    {
+        // WHEEL_DELTA: accumulated raw delta required to advance the slider by one step.
+        private const int WheelDeltaThreshold = 120;
+
+        private readonly TimeSpan _commitDelay;
+        private readonly Action<int> _commit;
+        private DispatcherTimer? _timer;
+        private Slider? _slider;
+        private int _accumulator;
+
+        public WheelDebouncer(TimeSpan commitDelay, Action<int> commit)
+        {
+            _commitDelay = commitDelay;
+            _commit = commit;
+        }
+
+        public void TryStep(Slider slider, int rawDelta, int magnitude)
+        {
+            if (rawDelta == 0)
+            {
+                return;
+            }
+
+            _accumulator += rawDelta;
+            _slider = slider;
+
+            // Always (re)arm — even for sub-threshold deltas — so the accumulator gets cleared
+            // after the gesture ends. Otherwise a stalled half-notch would bleed into the next
+            // gesture (e.g. user gives up scrolling at +80, comes back later, first nudge feels off).
+            ArmTimer();
+
+            int notches = _accumulator / WheelDeltaThreshold;
+            if (notches == 0)
+            {
+                return;
+            }
+
+            _accumulator -= notches * WheelDeltaThreshold;
+
+            int min = (int)slider.Minimum;
+            int max = (int)slider.Maximum;
+            int current = (int)slider.Value;
+            int next = Math.Clamp(current + (notches * magnitude), min, max);
+            if (next != current)
+            {
+                slider.Value = next;
+            }
+        }
+
+        private void ArmTimer()
+        {
+            if (_timer == null)
+            {
+                _timer = new DispatcherTimer { Interval = _commitDelay };
+                _timer.Tick += OnTick;
+            }
+
+            _timer.Stop();
+            _timer.Start();
+        }
+
+        private void OnTick(object? sender, object e)
+        {
+            // DispatcherTimer is repeating by default — stop so we don't tick again until the
+            // next wheel event re-arms.
+            _timer?.Stop();
+            _accumulator = 0;
+            if (_slider != null)
+            {
+                _commit((int)_slider.Value);
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_timer != null)
+            {
+                _timer.Stop();
+                _timer.Tick -= OnTick;
+                _timer = null;
+            }
+
+            _slider = null;
+        }
+    }
+
     private static bool IsArrowKey(VirtualKey key) =>
         key == VirtualKey.Left || key == VirtualKey.Right ||
         key == VirtualKey.Up || key == VirtualKey.Down;
@@ -966,6 +1096,10 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
         // Unsubscribe from underlying Monitor events
         _monitor.PropertyChanged -= OnMonitorPropertyChanged;
+
+        _brightnessWheel.Dispose();
+        _contrastWheel.Dispose();
+        _volumeWheel.Dispose();
 
         GC.SuppressFinalize(this);
     }

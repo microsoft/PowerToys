@@ -5427,6 +5427,12 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
+  <data name="PowerDisplay_WheelScrollStep.Header" xml:space="preserve">
+    <value>Mouse wheel scroll step</value>
+  </data>
+  <data name="PowerDisplay_WheelScrollStep.Description" xml:space="preserve">
+    <value>Amount each mouse wheel notch moves the brightness, contrast, and volume sliders.</value>
+  </data>
   <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
     <value>Profiles</value>
   </data>

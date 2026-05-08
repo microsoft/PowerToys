@@ -85,6 +85,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         IsScanning = true;
         ShowProfileSwitcher = true;
         ShowIdentifyMonitorsButton = true;
+        WheelScrollStep = 1;
 
         // Initialize settings utils
         _settingsUtils = SettingsUtils.Default;
@@ -119,6 +120,14 @@ public partial class MainViewModel : ObservableObject, IDisposable
 
     [ObservableProperty]
     public partial bool ShowIdentifyMonitorsButton { get; set; }
+
+    /// <summary>
+    /// Gets or sets how many units a single mouse-wheel notch moves a slider.
+    /// Read by MonitorViewModel when handling PointerWheelChanged.
+    /// Minimum effective value is 1; legacy or corrupted settings.json with 0 is clamped on load.
+    /// </summary>
+    [ObservableProperty]
+    public partial int WheelScrollStep { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether to show the profile switcher button.
@@ -347,6 +356,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ShowProfileSwitcher = settings.Properties.ShowProfileSwitcher;
             ShowIdentifyMonitorsButton = settings.Properties.ShowIdentifyMonitorsButton;
+            WheelScrollStep = Math.Max(1, settings.Properties.WheelScrollStep);
 
             // Load custom VCP mappings (now using shared type from PowerDisplay.Common.Models)
             CustomVcpMappings = settings.Properties.CustomVcpMappings?.ToList() ?? new List<CustomVcpValueMapping>();
