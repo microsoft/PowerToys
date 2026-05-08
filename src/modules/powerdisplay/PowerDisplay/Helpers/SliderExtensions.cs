@@ -25,7 +25,7 @@ namespace PowerDisplay.Helpers
         /// </summary>
         public static readonly DependencyProperty IsMouseWheelEnabledProperty =
             DependencyProperty.RegisterAttached(
-                "IsMouseWheelEnabled",
+                nameof(GetIsMouseWheelEnabled)[3..],
                 typeof(bool),
                 typeof(SliderExtensions),
                 new PropertyMetadata(false, OnIsMouseWheelEnabledChanged));
@@ -38,7 +38,7 @@ namespace PowerDisplay.Helpers
         /// </summary>
         public static readonly DependencyProperty MouseWheelChangeProperty =
             DependencyProperty.RegisterAttached(
-                "MouseWheelChange",
+                nameof(GetMouseWheelChange)[3..],
                 typeof(double),
                 typeof(SliderExtensions),
                 new PropertyMetadata(double.NaN));
