@@ -16,6 +16,7 @@
 #include "WindowsVersions.h"
 #include "ZoomItSettings.h"
 #include "GifRecordingSession.h"
+#include "WebcamPreviewWindow.h"
 #include "BreakTimer.h"
 #include "PanoramaCapture.h"
 #include <wtsapi32.h>
@@ -100,6 +101,7 @@ COLORREF	g_CustomColors[16];
 #define SNIP_OCR_HOTKEY          18
 #define SNIP_PANORAMA_HOTKEY     19
 #define SNIP_PANORAMA_SAVE_HOTKEY 20
+#define WEBCAM_TOGGLE_HOTKEY     21
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
@@ -209,6 +211,7 @@ BOOLEAN g_running = TRUE;
 BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
+WebcamPreviewWindow g_WebcamPreview;
 std::wstring	g_RecordingSaveLocation;
 std::wstring	g_ScreenshotSaveLocation;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
@@ -2971,7 +2974,47 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                 EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_AUDIO), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), !isGifSelected);
+
+                // Enable/disable webcam controls (webcam overlay is MP4-only).
+                // Also keep everything disabled if no webcam is present.
+                bool hasWebcam = SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), CB_GETCOUNT, 0, 0) > 1;
+                bool webcamEnabled = hasWebcam && !isGifSelected && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_OVERLAY), hasWebcam && !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), webcamEnabled);
+                {
+                    bool isFullScreen = webcamEnabled && SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
+                    EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
+                    EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
+                }
             }
+        }
+        if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_WEBCAM_OVERLAY) {
+            bool isGif = (g_RecordingFormat == RecordingFormat::GIF);
+            bool webcamEnabled = !isGif && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), webcamEnabled);
+            {
+                bool isFullScreen = webcamEnabled && SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
+            }
+        }
+        // Handle webcam size combo change — disable shape when Full screen selected
+        if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_WEBCAM_SIZE) {
+            bool isGif = (g_RecordingFormat == RecordingFormat::GIF);
+            bool webcamEnabled = !isGif && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+            bool isFullScreen = SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
         }
 
         switch ( LOWORD( wParam )) {
@@ -3564,7 +3607,7 @@ LRESULT CALLBACK CheckboxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
             if (checkOnRight)
             {
                 rcText.right = rcCheck.left - ScaleForDpi(4, dpi);
-                textFormat |= DT_RIGHT;
+                textFormat |= DT_LEFT;
             }
             else
             {
@@ -4528,6 +4571,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipPanoramaToggleMod, newSnipOcrToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
+    static std::vector<std::pair<std::wstring, std::wstring>>	webcams;
 
     auto CleanupFonts = [&]()
     {
@@ -4799,6 +4843,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX,
             g_MicMonoMix ? BST_CHECKED: BST_UNCHECKED );
 
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO,
+            g_RecordAspectRatio ? BST_CHECKED: BST_UNCHECKED );
+
         //
         // The framerate drop down list is not used in the current version (might be added in the future)
         //
@@ -4873,6 +4920,100 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO), !isGifSelected);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE_LABEL), !isGifSelected);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected);
+
+        // Webcam overlay controls
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY,
+            g_WebcamOverlay ? BST_CHECKED : BST_UNCHECKED );
+
+        // Enumerate webcam devices
+        webcams.clear();
+        {
+            MFStartup( MF_VERSION, MFSTARTUP_LITE );
+            IMFAttributes* pAttributes = nullptr;
+            if( SUCCEEDED( MFCreateAttributes( &pAttributes, 1 ) ) )
+            {
+                pAttributes->SetGUID( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID );
+                IMFActivate** ppDevices = nullptr;
+                UINT32 count = 0;
+                if( SUCCEEDED( MFEnumDeviceSources( pAttributes, &ppDevices, &count ) ) )
+                {
+                    for( UINT32 i = 0; i < count; i++ )
+                    {
+                        WCHAR* symLink = nullptr;
+                        UINT32 symLinkLen = 0;
+                        WCHAR* friendlyName = nullptr;
+                        UINT32 nameLen = 0;
+                        if( SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &symLink, &symLinkLen ) ) &&
+                            SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &friendlyName, &nameLen ) ) )
+                        {
+                            webcams.emplace_back( symLink, friendlyName );
+                        }
+                        if( symLink ) CoTaskMemFree( symLink );
+                        if( friendlyName ) CoTaskMemFree( friendlyName );
+                        ppDevices[i]->Release();
+                    }
+                    CoTaskMemFree( ppDevices );
+                }
+                pAttributes->Release();
+            }
+            MFShutdown();
+        }
+
+        // Add webcam devices to combo box
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(L"Default") );
+        selection = 0;
+        for( size_t i = 0; i < webcams.size(); i++ )
+        {
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(webcams[i].second.c_str()) );
+            if( selection == 0 && wcscmp( webcams[i].first.c_str(), g_WebcamDeviceSymLink ) == 0 )
+            {
+                selection = i + 1;
+            }
+        }
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
+
+        // Webcam position combo
+        {
+            const wchar_t* positions[] = { L"Top left", L"Top right", L"Bottom left", L"Bottom right" };
+            for( int i = 0; i < 4; i++ )
+                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(positions[i]) );
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamPosition), static_cast<LPARAM>(0) );
+        }
+
+        // Webcam size combo
+        {
+            const wchar_t* sizes[] = { L"Small", L"Medium", L"Large", L"X-Large", L"Full screen" };
+            for( int i = 0; i < 5; i++ )
+                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(sizes[i]) );
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamSize), static_cast<LPARAM>(0) );
+        }
+
+        // Webcam shape combo
+        {
+            const wchar_t* shapes[] = { L"Rectangle", L"Rounded rectangle", L"Rounded square", L"Circle" };
+            for( int i = 0; i < 4; i++ )
+                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(shapes[i]) );
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamShape), static_cast<LPARAM>(0) );
+        }
+
+        // Set initial enabled state for webcam controls.
+        // Disable everything if no webcam is detected on the system.
+        {
+            bool hasWebcam = !webcams.empty();
+            bool webcamEnabled = hasWebcam && !isGifSelected && g_WebcamOverlay;
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY), hasWebcam && !isGifSelected);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE), webcamEnabled);
+            {
+                bool isFullScreen = webcamEnabled && g_WebcamSize == 4;
+                EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
+                EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
+            }
+        }
 
         if( GetFileAttributes( g_DemoTypeFile ) == -1 )
         {
@@ -5225,6 +5366,7 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             g_CaptureSystemAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO) == BST_CHECKED;
             g_CaptureAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO) == BST_CHECKED;
             g_MicMonoMix = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX) == BST_CHECKED;
+            g_RecordAspectRatio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
             text[2] = 0;
             newTimeout = _tstoi( text );
@@ -5236,6 +5378,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             // Get the selected microphone
             int index = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0) ));
             _tcscpy( g_MicrophoneDeviceId, index == 0 ? L"" : microphones[static_cast<size_t>(index) - 1].first.c_str() );
+
+            // Get the webcam settings
+            g_WebcamOverlay = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+            g_WebcamPosition = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION), CB_GETCURSEL, 0, 0));
+            g_WebcamSize = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0));
+            g_WebcamShape = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE), CB_GETCURSEL, 0, 0));
+            {
+                int wcIndex = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE), CB_GETCURSEL, 0, 0));
+                _tcscpy( g_WebcamDeviceSymLink, wcIndex == 0 ? L"" : webcams[static_cast<size_t>(wcIndex) - 1].first.c_str() );
+            }
 
             if( newToggleKey && !RegisterHotKey( GetParent( hDlg ), ZOOM_HOTKEY, newToggleMod, newToggleKey & 0xFF )) {
 
@@ -6391,6 +6543,8 @@ void StopRecording()
     if( g_RecordToggle == TRUE ) {
 
         OutputDebugStringW(L"[Recording] g_RecordToggle was TRUE, stopping...\n");
+        UnregisterHotKey( g_hWndMain, WEBCAM_TOGGLE_HOTKEY );
+        g_WebcamPreview.Destroy();
         g_SelectRectangle.Stop();
 
         if ( g_RecordingSession != nullptr ) {
@@ -6526,6 +6680,21 @@ auto GetUniqueScreenshotFilename()
 //----------------------------------------------------------------------------
 winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndRecord ) try
 {
+    // ---- Recording startup timing diagnostics ----
+    LARGE_INTEGER _diagFreq, _diagT0, _diagT1;
+    QueryPerformanceFrequency( &_diagFreq );
+    QueryPerformanceCounter( &_diagT0 );
+    auto _diagMs = [&]() -> double {
+        QueryPerformanceCounter( &_diagT1 );
+        return static_cast<double>( _diagT1.QuadPart - _diagT0.QuadPart ) * 1000.0 / _diagFreq.QuadPart;
+    };
+    auto _diagLog = [&]( const wchar_t* label ) {
+        wchar_t buf[256];
+        swprintf_s( buf, L"[RecStartup +%.1fms] %s\n", _diagMs(), label );
+        OutputDebugStringW( buf );
+    };
+    _diagLog( L"entry" );
+
     // Capture the UI thread context so we can resume on it for the save dialog
     winrt::apartment_context uiThread;
 
@@ -6536,11 +6705,13 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     // Choose temp file extension based on format
     const wchar_t* tempFileName = (g_RecordingFormat == RecordingFormat::GIF) ? L"zoomit.gif" : L"zoomit.mp4";
     auto file = co_await appFolder.CreateFileAsync( tempFileName, winrt::CreationCollisionOption::ReplaceExisting );
+    _diagLog( L"temp file created" );
 
     // Get the device
     auto d3dDevice = util::CreateD3D11Device();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     g_RecordDevice = CreateDirect3DDevice( dxgiDevice.get() );
+    _diagLog( L"D3D device created" );
 
     // Get the active MONITOR capture device
     HMONITOR hMon = NULL;
@@ -6556,8 +6727,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         item = util::CreateCaptureItemForWindow( hWndRecord );
     else
         item = util::CreateCaptureItemForMonitor( hMon );
+    _diagLog( L"capture item created" );
 
     auto stream = co_await file.OpenAsync( winrt::FileAccessMode::ReadWrite );
+    _diagLog( L"file stream opened" );
 
     // Create the appropriate recording session based on format
     OutputDebugStringW((L"Starting recording session. Framerate:  " + std::to_wstring(g_RecordFrameRate) + L" scaling: " + std::to_wstring(g_RecordScaling) + L" Format: " + (g_RecordingFormat == RecordingFormat::GIF ? L"GIF" : L"MP4") + L"\n").c_str());
@@ -6607,6 +6780,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     }
     else
     {
+        _diagLog( L"calling VideoRecordingSession::Create (constructor)" );
         g_RecordingSession = VideoRecordingSession::Create(
                                         g_RecordDevice,
                                         item,
@@ -6616,8 +6790,37 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         g_CaptureSystemAudio,
                                         g_MicMonoMix,
                                         stream );
+        _diagLog( L"VideoRecordingSession::Create returned" );
 
         recordingStarted = (g_RecordingSession != nullptr);
+
+        // Show a live on-screen preview of the webcam overlay so the user
+        // can see themselves while recording.
+        if( recordingStarted && g_WebcamOverlay && g_RecordingSession->GetWebcamCapture() )
+        {
+            // Determine the screen region being recorded.
+            RECT screenRect;
+            if( rcCrop->right - rcCrop->left > 0 )
+            {
+                // Region recording: the crop rect IS in screen coordinates.
+                screenRect = *rcCrop;
+            }
+            else
+            {
+                // Full-screen: use the monitor rect.
+                MONITORINFO mi = { sizeof( mi ) };
+                if( pGetMonitorInfo && hMon && pGetMonitorInfo( hMon, &mi ) )
+                    screenRect = mi.rcMonitor;
+                else
+                    SetRect( &screenRect, 0, 0, GetSystemMetrics( SM_CXSCREEN ), GetSystemMetrics( SM_CYSCREEN ) );
+            }
+
+            auto* wc = g_RecordingSession->GetWebcamCapture();
+            g_WebcamPreview.Create( wc, screenRect, wc->GetOutputWidth(), wc->GetOutputHeight() );
+
+            // Register Ctrl+C to toggle webcam overlay during recording.
+            RegisterHotKey( hWnd, WEBCAM_TOGGLE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C' );
+        }
 
         if( g_hWndLiveZoom != NULL )
             g_RecordingSession->EnableCursorCapture( false );
@@ -6626,7 +6829,9 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         {
             try
             {
+                _diagLog( L"calling co_await StartAsync()" );
                 co_await g_RecordingSession->StartAsync();
+                _diagLog( L"StartAsync returned" );
             }
             catch (const winrt::hresult_error& error)
             {
@@ -7388,6 +7593,29 @@ LRESULT APIENTRY MainWndProc(
             Sleep(250);
         }
         switch( wParam ) {
+        case WEBCAM_TOGGLE_HOTKEY:
+        {
+            // Ctrl+C during recording: toggle webcam overlay on/off.
+            if( g_RecordToggle && g_RecordingSession && g_RecordingSession->GetWebcamCapture() )
+            {
+                auto* wc = g_RecordingSession->GetWebcamCapture();
+                bool wasEnabled = wc->IsEnabled();
+                wc->SetEnabled( !wasEnabled );
+                if( wasEnabled )
+                {
+                    // Hide the on-screen preview but keep the window alive
+                    // so that position/size are preserved for re-show.
+                    g_WebcamPreview.Hide();
+                }
+                else
+                {
+                    // Re-show the on-screen preview at its last position/size.
+                    g_WebcamPreview.Show();
+                }
+                OutputDebug( L"[Webcam] Toggle: %s\n", wasEnabled ? L"OFF" : L"ON" );
+            }
+            break;
+        }
         case LIVE_DRAW_HOTKEY:
         {
             OutputDebug(L"LIVE_DRAW_HOTKEY\n");
@@ -7935,6 +8163,7 @@ LRESULT APIENTRY MainWndProc(
                 }
 
                 // This call blocks with a message loop while cropping.
+                g_SelectRectangle.AspectRatio( g_RecordAspectRatio ? 16.0 / 9.0 : 0.0 );
                 auto canceled = !g_SelectRectangle.Start( ( g_hWndLiveZoom != nullptr ) ? g_hWndLiveZoom : hWnd );
                 g_RecordCropping = FALSE;
 
@@ -7994,6 +8223,29 @@ LRESULT APIENTRY MainWndProc(
                     if( hWndRecord == GetDesktopWindow()) {
 
                         hWndRecord = NULL;
+                    }
+                }
+
+                // Show a full-monitor recording border (yellow → orange once
+                // the first frame is captured) so the user knows something is
+                // happening, even for full-screen / window captures.
+                // Only create the border when starting a NEW recording
+                // (g_RecordToggle==FALSE).  On the second hotkey press (stop),
+                // skip this — StopRecording() will tear down the border.
+                if( g_RecordToggle == FALSE )
+                {
+                    OutputDebugStringW( L"[RecBorder] About to call SelectRectangle::Start(fullMonitor=true)\n" );
+                    try
+                    {
+                        // Pass NULL as owner — the main window may be hidden,
+                        // and owned popups of hidden owners are hidden too.
+                        g_SelectRectangle.AspectRatio( 0.0 );
+                        g_SelectRectangle.Start( nullptr, true );
+                        OutputDebugStringW( L"[RecBorder] SelectRectangle::Start returned OK\n" );
+                    }
+                    catch( ... )
+                    {
+                        OutputDebugStringW( L"[RecBorder] SelectRectangle::Start THREW an exception!\n" );
                     }
                 }
             }
@@ -8363,6 +8615,13 @@ LRESULT APIENTRY MainWndProc(
     case WM_KILLFOCUS:
         if( ( g_RecordCropping == FALSE ) && g_Zoomed && !g_bSaveInProgress ) {
 
+            // Don't exit zoom when focus moves to the webcam overlay
+            if( g_WebcamPreview.IsActive() &&
+                reinterpret_cast<HWND>( wParam ) == g_WebcamPreview.GetHwnd() )
+            {
+                break;
+            }
+
             // Turn off zoom if not in liveDraw
             DWORD layeringFlag;
             GetLayeredWindowAttributes(hWnd, NULL, NULL, &layeringFlag);
@@ -8644,8 +8903,9 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_KEYDOWN:
 
-        if( (g_TypeMode != TypeModeOff) && g_HaveTyped &&
-            (wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK) ) {
+        if( (g_TypeMode != TypeModeOff) && g_HaveTyped && wParam != VK_UP && wParam != VK_DOWN &&
+            (( wParam <= 127 && isprint( static_cast<int>( wParam ) ) ) ||
+            wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK )) {
 
             if( wParam == VK_RETURN ) {
 
@@ -8747,6 +9007,54 @@ LRESULT APIENTRY MainWndProc(
         case 'G':
         case 'X':
         case 'P':
+        case 'W':
+        case 'K':
+            // Ctrl+K / Ctrl+W: blank screen (sketch pad)
+            // Also triggered internally via SendMessage with lParam == LIVE_DRAW_ZOOM.
+            if( (wParam == 'K' || wParam == 'W') &&
+                ((GetKeyState( VK_CONTROL ) & 0x8000) || lParam == LIVE_DRAW_ZOOM) )
+            {
+                // Break timer: change background color
+                if( g_TimerActive )
+                {
+                    g_BreakBackgroundColor = ( wParam == 'K' ) ? 1 : 0;
+                    reg.WriteRegSettings( RegSettings );
+                    InvalidateRect( hWnd, NULL, FALSE );
+                    break;
+                }
+
+                // Block user-driven sketch pad in liveDraw
+                if( lParam != LIVE_DRAW_ZOOM
+                    && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    break;
+                }
+
+                // Don't allow screen blanking while we've got the typing cursor active
+                // because we don't really handle going from white to black.
+                if( g_Zoomed && (g_TypeMode == TypeModeOff)) {
+
+                    if( !g_Drawing ) {
+
+                        SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
+                    }
+                    // Restore area where cursor was previously
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                    PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+                    g_BlankedScreen = static_cast<int>(wParam);
+                    rc.top = rc.left = 0;
+                    rc.bottom = height;
+                    rc.right = width;
+                    BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
+                    InvalidateRect( hWnd, NULL, FALSE );
+
+                    // Save area that's going to be occupied by new cursor position
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                    SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
+                }
+                break;
+            }
+
             if( (g_Zoomed || g_TimerActive) && (g_TypeMode == TypeModeOff)) {
 
                 PDWORD	penColor;
@@ -8761,6 +9069,8 @@ LRESULT APIENTRY MainWndProc(
                 else if( wParam == 'Y' ) *penColor = COLOR_YELLOW;
                 else if( wParam == 'O' ) *penColor = COLOR_ORANGE;
                 else if( wParam == 'P' ) *penColor = COLOR_PINK;
+                else if( wParam == 'W' ) *penColor = COLOR_WHITE;
+                else if( wParam == 'K' ) *penColor = COLOR_BLACK;
                 else if( wParam == 'X' )
                 {
                     if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
@@ -8845,48 +9155,6 @@ LRESULT APIENTRY MainWndProc(
             }
             break;
 
-        case 'W':
-        case 'K':
-            // Break timer: change background color
-            if( g_TimerActive )
-            {
-                g_BreakBackgroundColor = ( wParam == 'K' ) ? 1 : 0;
-                reg.WriteRegSettings( RegSettings );
-                InvalidateRect( hWnd, NULL, FALSE );
-                break;
-            }
-
-            // Block user-driven sketch pad in liveDraw
-            if( lParam != LIVE_DRAW_ZOOM
-                && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
-            {
-                break;
-            }
-
-            // Don't allow screen blanking while we've got the typing cursor active
-            // because we don't really handle going from white to black.
-            if( g_Zoomed && (g_TypeMode == TypeModeOff)) {
-
-                if( !g_Drawing ) {
-
-                    SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
-                }
-                // Restore area where cursor was previously
-                RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
-                PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
-                g_BlankedScreen = static_cast<int>(wParam);
-                rc.top = rc.left = 0;
-                rc.bottom = height;
-                rc.right = width;
-                BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
-                InvalidateRect( hWnd, NULL, FALSE );
-
-                // Save area that's going to be occupied by new cursor position
-                SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
-                SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
-            }
-            break;
-
         case 'E':
             // Don't allow erase while we have the typing cursor active
             if( g_HaveDrawn && (g_TypeMode == TypeModeOff)) {
@@ -8895,7 +9163,19 @@ LRESULT APIENTRY MainWndProc(
                 g_HaveDrawn = FALSE;
                 OutputDebug(L"Erase\n");
                 if(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
-                    SendMessage(hWnd, WM_KEYDOWN, 'K', 0);
+                    // Blank the live-draw canvas to black directly.
+                    if( !g_Drawing ) {
+                        SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
+                    }
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                    PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+                    g_BlankedScreen = 'K';
+                    rc.top = rc.left = 0;
+                    rc.bottom = height;
+                    rc.right = width;
+                    BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                    SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
                 }
                 else {
                     BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth,
@@ -9006,7 +9286,11 @@ LRESULT APIENTRY MainWndProc(
 
                 } else if(g_DrawingShape) {
 
-                    SetROP2(hdcScreenCompat, R2_NOTXORPEN);
+                    SetROP2(hdcScreenCompat, R2_NOT);
+
+                    // Select a hollow brush so GDI Rectangle/Ellipse draw
+                    // outlines only during rubber-banding (no fill).
+                    HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject( hdcScreenCompat, GetStockObject( NULL_BRUSH ) ));
 
                     // If a previous target rectangle exists, erase
                     // it by drawing another rectangle on top.
@@ -9089,6 +9373,7 @@ LRESULT APIENTRY MainWndProc(
                     }
 
                     prevPenWidth = g_PenWidth;
+                    SelectObject( hdcScreenCompat, hOldBrush );
                     SetROP2( hdcScreenCompat, R2_NOP );
                 }
                 else if (g_Tracing) {
@@ -9523,11 +9808,13 @@ LRESULT APIENTRY MainWndProc(
             } else if (g_rcRectangle.top != g_rcRectangle.bottom ||
                         g_rcRectangle.left != g_rcRectangle.right ) {
 
-                // erase previous
+                // erase previous rubber-band outline
                 if (!PEN_COLOR_HIGHLIGHT(g_PenColor))
                 {
-                    SetROP2(hdcScreenCompat, R2_NOTXORPEN);
+                    HBRUSH hNullBrush = static_cast<HBRUSH>(SelectObject( hdcScreenCompat, GetStockObject( NULL_BRUSH ) ));
+                    SetROP2(hdcScreenCompat, R2_NOT);
                     DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle);
+                    SelectObject( hdcScreenCompat, hNullBrush );
                 }
 
                 // Draw the final shape
@@ -9663,6 +9950,19 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_USER_STOP_RECORDING:
         StopRecording();
+        break;
+
+    case WM_USER_RECORDING_STARTED:
+        // The first video frame has been captured.  Change the selection
+        // border from yellow to orange so the user knows recording is live.
+        OutputDebugStringW( L"[RecBorder] WM_USER_RECORDING_STARTED received\n" );
+        {
+            wchar_t dbg[256];
+            swprintf_s( dbg, L"[RecBorder] m_window=%p m_selected=%d\n",
+                        g_SelectRectangle.Window(), g_SelectRectangle.IsSelected() );
+            OutputDebugStringW( dbg );
+        }
+        g_SelectRectangle.SetRecordingActive();
         break;
 
     case WM_USER_SAVE_CURSOR:
@@ -10906,8 +11206,18 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             if( !g_fullScreenWorkaround ) {
 
                 pSetLayeredWindowAttributes( hWnd, 0, 255, LWA_ALPHA );
-                SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0,
-                    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+
+                // Keep the webcam preview above the zoom window.
+                // Two-step: zoom reclaims topmost first, then preview
+                // goes on top.  SWP_NOACTIVATE does not affect
+                // SetCapture, so this is safe during drag/resize.
+                SetWindowPos( hWnd, HWND_TOPMOST, 0, 0, 0, 0,
+                              SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+                if( g_WebcamPreview.IsActive() )
+                {
+                    SetWindowPos( g_WebcamPreview.GetHwnd(), HWND_TOPMOST, 0, 0, 0, 0,
+                                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+                }
 
                 OutputDebug(L"LIVEZOOM RECLAIM\n");
             }

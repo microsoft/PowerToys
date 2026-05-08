@@ -303,8 +303,18 @@ namespace PowerDisplay.Common.Drivers.WMI
                             int monitorNumber = displayInfo.MonitorNumber;
                             string gdiDeviceName = displayInfo.GdiDeviceName ?? string.Empty;
 
-                            // Generate unique ID: "WMI_{EdidId}_{MonitorNumber}"
-                            string uniqueId = $"WMI_{edidId}_{monitorNumber}";
+                            // Generate stable monitor Id from the DevicePath (Windows PnP instance path).
+                            // If DevicePath is missing we cannot produce a stable Id, so the
+                            // monitor is skipped — better to drop one entry than to persist
+                            // settings under a key that won't survive the next reboot.
+                            if (string.IsNullOrEmpty(displayInfo.DevicePath))
+                            {
+                                Logger.LogWarning(
+                                    $"WMI: Skipping monitor (instance='{instanceName}', edid='{edidId}', monitorNumber={monitorNumber}) — DevicePath unavailable, cannot generate stable Id");
+                                continue;
+                            }
+
+                            string uniqueId = MonitorIdentity.FromDevicePath(displayInfo.DevicePath);
 
                             // Name is left blank: MonitorViewModel injects a localized
                             // "Built-in Display" string for internal displays.
@@ -313,9 +323,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 Id = uniqueId,
                                 Name = string.Empty,
                                 CurrentBrightness = currentBrightness,
-                                MinBrightness = 0,
-                                MaxBrightness = 100,
-                                IsAvailable = true,
                                 InstanceName = instanceName,
                                 Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
                                 CommunicationMethod = "WMI",
@@ -364,10 +371,20 @@ namespace PowerDisplay.Common.Drivers.WMI
                 cancellationToken);
         }
 
-        // Extended features not supported by WMI
+        // Extended features not supported by WMI (internal laptop displays expose only brightness via WMI).
+        public Task<VcpFeatureValue> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(VcpFeatureValue.Invalid);
+        }
+
         public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(MonitorOperationResult.Failure("Contrast control not supported via WMI"));
+        }
+
+        public Task<VcpFeatureValue> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(VcpFeatureValue.Invalid);
         }
 
         public Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default)
