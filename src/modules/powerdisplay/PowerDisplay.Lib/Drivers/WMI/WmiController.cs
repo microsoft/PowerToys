@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using WmiLight;
@@ -114,7 +115,7 @@ namespace PowerDisplay.Common.Drivers.WMI
         /// <param name="edidId">The EDID ID to match (e.g., "LEN4038", "BOE0900").</param>
         /// <param name="monitorDisplayInfos">Dictionary of monitor display info from QueryDisplayConfig.</param>
         /// <returns>MonitorDisplayInfo if found, or null if not found.</returns>
-        private static Drivers.DDC.MonitorDisplayInfo? GetMonitorDisplayInfoByEdidId(string edidId, Dictionary<string, Drivers.DDC.MonitorDisplayInfo> monitorDisplayInfos)
+        private static MonitorDisplayInfo? GetMonitorDisplayInfoByEdidId(string edidId, Dictionary<string, MonitorDisplayInfo> monitorDisplayInfos)
         {
             if (string.IsNullOrEmpty(edidId) || monitorDisplayInfos == null || monitorDisplayInfos.Count == 0)
             {

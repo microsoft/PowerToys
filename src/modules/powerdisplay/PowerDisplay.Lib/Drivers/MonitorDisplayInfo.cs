@@ -4,10 +4,12 @@
 
 using Windows.Win32.Foundation;
 
-namespace PowerDisplay.Common.Drivers.DDC
+namespace PowerDisplay.Common.Drivers
 {
     /// <summary>
-    /// Monitor display information structure
+    /// Monitor display information structure produced by QueryDisplayConfig.
+    /// Used by MonitorManager Phase 0 classification and by both controllers
+    /// during discovery.
     /// </summary>
     public struct MonitorDisplayInfo
     {
@@ -46,5 +48,17 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// 1-based index (paths[0] = 1, paths[1] = 2, etc.)
         /// </summary>
         public int MonitorNumber { get; set; }
+
+        /// <summary>
+        /// Gets or sets the raw DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY value reported
+        /// by QueryDisplayConfig. Preserved for diagnostic logging.
+        /// </summary>
+        public uint OutputTechnology { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this display is classified as internal (built-in).
+        /// Computed from OutputTechnology by DisplayClassifier.IsInternal during Phase 0.
+        /// </summary>
+        public bool IsInternal { get; set; }
     }
 }
