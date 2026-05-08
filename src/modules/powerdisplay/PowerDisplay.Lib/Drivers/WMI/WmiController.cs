@@ -309,9 +309,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 Id = uniqueId,
                                 Name = string.Empty,
                                 CurrentBrightness = currentBrightness,
-                                MinBrightness = 0,
-                                MaxBrightness = 100,
-                                IsAvailable = true,
                                 InstanceName = instanceName,
                                 Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
                                 CommunicationMethod = "WMI",
@@ -342,10 +339,20 @@ namespace PowerDisplay.Common.Drivers.WMI
                 cancellationToken);
         }
 
-        // Extended features not supported by WMI
+        // Extended features not supported by WMI (internal laptop displays expose only brightness via WMI).
+        public Task<VcpFeatureValue> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(VcpFeatureValue.Invalid);
+        }
+
         public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(MonitorOperationResult.Failure("Contrast control not supported via WMI"));
+        }
+
+        public Task<VcpFeatureValue> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(VcpFeatureValue.Invalid);
         }
 
         public Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default)

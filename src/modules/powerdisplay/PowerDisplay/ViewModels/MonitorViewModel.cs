@@ -37,9 +37,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private int _contrast;
     private int _volume;
 
-    [ObservableProperty]
-    public partial bool IsAvailable { get; set; }
-
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
     public partial bool ShowBrightness { get; set; }
@@ -68,7 +65,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// <param name="brightness">Brightness value (0-100)</param>
     public async Task SetBrightnessAsync(int brightness)
     {
-        brightness = Math.Clamp(brightness, MinBrightness, MaxBrightness);
+        brightness = Math.Clamp(brightness, 0, 100);
 
         // Update UI state immediately
         if (_brightness != brightness)
@@ -86,13 +83,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetContrastAsync(int contrast)
     {
-        contrast = Math.Clamp(contrast, MinContrast, MaxContrast);
+        contrast = Math.Clamp(contrast, 0, 100);
 
         if (_contrast != contrast)
         {
             _contrast = contrast;
             OnPropertyChanged(nameof(Contrast));
-            OnPropertyChanged(nameof(ContrastPercent));
         }
 
         await ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync);
@@ -103,7 +99,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetVolumeAsync(int volume)
     {
-        volume = Math.Clamp(volume, MinVolume, MaxVolume);
+        volume = Math.Clamp(volume, 0, 100);
 
         if (_volume != volume)
         {
@@ -233,7 +229,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         _brightness = monitor.CurrentBrightness;
         _contrast = monitor.CurrentContrast;
         _volume = monitor.CurrentVolume;
-        IsAvailable = monitor.IsAvailable;
     }
 
     public string Id => _monitor.Id;
@@ -282,19 +277,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public string MonitorIconGlyph => _monitor.CommunicationMethod?.Contains("WMI", StringComparison.OrdinalIgnoreCase) == true
         ? AppConstants.UI.InternalMonitorGlyph // Laptop icon for WMI
         : AppConstants.UI.ExternalMonitorGlyph; // External monitor icon for DDC/CI and others
-
-    // Monitor property ranges
-    public int MinBrightness => _monitor.MinBrightness;
-
-    public int MaxBrightness => _monitor.MaxBrightness;
-
-    public int MinContrast => _monitor.MinContrast;
-
-    public int MaxContrast => _monitor.MaxContrast;
-
-    public int MinVolume => _monitor.MinVolume;
-
-    public int MaxVolume => _monitor.MaxVolume;
 
     // Advanced control display logic
     public bool HasAdvancedControls => ShowContrast || ShowVolume;
@@ -780,38 +762,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         }
     }
 
-    public int ContrastPercent
-    {
-        get => MapToPercent(_contrast, MinContrast, MaxContrast);
-        set
-        {
-            var actualValue = MapFromPercent(value, MinContrast, MaxContrast);
-            Contrast = actualValue;
-        }
-    }
-
-    // Mapping functions for percentage conversion
-    private int MapToPercent(int value, int min, int max)
-    {
-        if (max <= min)
-        {
-            return 0;
-        }
-
-        return (int)Math.Round((value - min) * 100.0 / (max - min));
-    }
-
-    private int MapFromPercent(int percent, int min, int max)
-    {
-        if (max <= min)
-        {
-            return min;
-        }
-
-        percent = Math.Clamp(percent, 0, 100);
-        return min + (int)Math.Round(percent * (max - min) / 100.0);
-    }
-
     private void OnMainViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
@@ -862,7 +812,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     {
         if (sender is Slider slider)
         {
-            ContrastPercent = (int)slider.Value;
+            Contrast = (int)slider.Value;
         }
     }
 
@@ -870,7 +820,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     {
         if (IsArrowKey(e.Key) && sender is Slider slider)
         {
-            ContrastPercent = (int)slider.Value;
+            Contrast = (int)slider.Value;
         }
     }
 
