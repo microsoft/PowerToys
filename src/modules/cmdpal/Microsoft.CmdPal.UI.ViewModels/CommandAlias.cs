@@ -6,13 +6,13 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public class CommandAlias
+public record CommandAlias
 {
-    public string CommandId { get; set; }
+    public string CommandId { get; init; }
 
-    public string Alias { get; set; }
+    public string Alias { get; init; }
 
-    public bool IsDirect { get; set; }
+    public bool IsDirect { get; init; }
 
     [JsonIgnore]
     public string SearchPrefix => Alias + (IsDirect ? string.Empty : " ");

@@ -10,6 +10,7 @@
 
 #include "CaptureFrameWait.h"
 #include "AudioSampleGenerator.h"
+#include "WebcamCapture.h"
 #include <d3d11_4.h>
 #include <ppltasks.h>
 #include <atomic>
@@ -38,12 +39,26 @@ public:
 
     bool HasCapturedVideoFrames() const { return m_hasVideoSample.load(); }
 
+    // Access the webcam capture for on-screen preview.
+    WebcamCapture* GetWebcamCapture() const { return m_webcamCapture.get(); }
+
+    // Return the crop rect (recording region in capture-item coordinates).
+    RECT GetCropRect() const { return m_rcCrop; }
+
     // Trim and save functionality
     static std::wstring ShowSaveDialogWithTrim(
         HWND hWnd,
         const std::wstring& suggestedFileName,
         const std::wstring& originalVideoPath,
         std::wstring& trimmedVideoPath);
+
+    // Transition type for connecting appended clips
+    enum class AppendTransition
+    {
+        None,           // Hard cut
+        FadeToBlack,    // Insert solid black frame
+        FadeToWhite,    // Insert solid white frame
+    };
 
     struct TrimDialogData
     {
@@ -56,7 +71,15 @@ public:
             UINT height{ 0 };
         };
 
+        // Tracks a boundary between appended clips for timeline visualization
+        struct ClipBoundary
+        {
+            winrt::Windows::Foundation::TimeSpan time{ 0 };     // Absolute time in composition
+            AppendTransition transition{ AppendTransition::None };
+        };
+
         std::wstring videoPath;
+        std::vector<ClipBoundary> clipBoundaries;   // Boundaries between appended clips
         winrt::Windows::Foundation::TimeSpan videoDuration{ 0 };
         winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
         winrt::Windows::Foundation::TimeSpan trimEnd{ 0 };
@@ -132,6 +155,7 @@ public:
         bool isDragging{ false };
         int lastPlayheadX{ -1 }; // Track last playhead pixel position for efficient invalidation
         MMRESULT mmTimerId{ 0 }; // Multimedia timer for smooth MP4 playback
+        bool standaloneMode{ false }; // When true, OK becomes "Save As" and handles file saving directly
 
         // Helper to convert time to pixel position
         int TimeToPixel(winrt::Windows::Foundation::TimeSpan time, int timelineWidth) const
@@ -162,13 +186,18 @@ public:
         HWND hParent,
         const std::wstring& videoPath,
         winrt::Windows::Foundation::TimeSpan& trimStart,
-        winrt::Windows::Foundation::TimeSpan& trimEnd);
+        winrt::Windows::Foundation::TimeSpan& trimEnd,
+        bool standaloneMode = false);
 
 private:
     static INT_PTR CALLBACK TrimDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 
     static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> TrimVideoAsync(
         const std::wstring& sourceVideoPath,
+        winrt::Windows::Foundation::TimeSpan trimTimeStart,
+        winrt::Windows::Foundation::TimeSpan trimTimeEnd);
+    static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> RenderCompositionAsync(
+        winrt::Windows::Media::Editing::MediaComposition composition,
         winrt::Windows::Foundation::TimeSpan trimTimeStart,
         winrt::Windows::Foundation::TimeSpan trimTimeEnd);
     static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> TrimGifAsync(
@@ -179,7 +208,8 @@ private:
         HWND hParent,
         const std::wstring& videoPath,
         winrt::Windows::Foundation::TimeSpan& trimStart,
-        winrt::Windows::Foundation::TimeSpan& trimEnd);
+        winrt::Windows::Foundation::TimeSpan& trimEnd,
+        bool standaloneMode = false);
 
 private:
     VideoRecordingSession(
@@ -217,13 +247,37 @@ private:
     winrt::MediaTranscoder m_transcoder{ nullptr };
 
     std::unique_ptr<AudioSampleGenerator> m_audioGenerator;
+    std::unique_ptr<WebcamCapture> m_webcamCapture;
 
     winrt::com_ptr<IDXGISwapChain1> m_previewSwapChain;
-    winrt::com_ptr<ID3D11RenderTargetView> m_renderTargetView;
+
+    // Cached render target view to avoid per-frame allocation.
+    winrt::com_ptr<ID3D11RenderTargetView> m_cachedRTV;
 
     std::atomic<bool> m_isRecording = false;
     std::atomic<bool> m_closed = false;
 
     // Set once the MediaStreamSource successfully returns at least one video sample.
     std::atomic<bool> m_hasVideoSample = false;
+
+    // Frame captured during OnMediaStreamSourceStarting that would otherwise
+    // be discarded.  By serving it as the very first video sample we eliminate
+    // the timestamp gap between the start position and the first encoded frame.
+    std::optional<CaptureFrame> m_cachedStartingFrame;
+
+    // When a webcam overlay is active we must produce video frames even when
+    // the desktop is static.  m_cachedDesktopTex holds a standalone GPU copy
+    // of the last cropped desktop content so we can composite a fresh webcam
+    // frame onto it without needing a new capture-pool surface.
+    winrt::com_ptr<ID3D11Texture2D> m_cachedDesktopTex;
+    winrt::TimeSpan m_lastVideoTimestamp{ 0 };
+    int64_t m_frameIntervalTicks = 0;   // 10 000 000 / fps
+
+    // Wall-clock reference for synthesising repeat-frame timestamps.
+    // Using QPC keeps repeat-frame timestamps aligned with audio's
+    // real-time clock, preventing A/V drift on static desktops.
+    LARGE_INTEGER m_qpcFreq{};
+    LARGE_INTEGER m_qpcRecordingStart{};    // QPC at first sample
+    int64_t m_startSystemRelativeTime = 0; // SystemRelativeTime of first frame
+    bool m_hasQpcOrigin = false;
 };

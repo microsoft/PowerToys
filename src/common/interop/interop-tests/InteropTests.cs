@@ -13,8 +13,15 @@ namespace Microsoft.Interop.Tests
     [TestClass]
     public class InteropTests : IDisposable
     {
-        private const string ServerSidePipe = "\\\\.\\pipe\\serverside";
-        private const string ClientSidePipe = "\\\\.\\pipe\\clientside";
+        // Pipe names are machine-global, so two concurrent test runs on the same CI agent
+        // (or a leaked handle from a prior run) would deadlock if we used a shared constant.
+        // Suffix with process id + a GUID so every test run gets its own pair.
+        private const string PipePrefix = @"\\.\pipe\";
+        private static readonly string PipeSuffix = $"{Environment.ProcessId}_{Guid.NewGuid():N}";
+        private static readonly string ServerSidePipe = $"{PipePrefix}serverside_{PipeSuffix}";
+        private static readonly string ClientSidePipe = $"{PipePrefix}clientside_{PipeSuffix}";
+
+        private static readonly TimeSpan MessageWaitTimeout = TimeSpan.FromSeconds(30);
 
         internal TwoWayPipeMessageIPCManaged ClientPipe { get; set; }
 
@@ -54,7 +61,11 @@ namespace Microsoft.Interop.Tests
                     Thread.Sleep(100);
 
                     ClientPipe.Send(testString);
-                    reset.WaitOne();
+
+                    // Bounded wait so a broken pipe handshake fails the test quickly
+                    // instead of hanging the CI agent until the job-level timeout.
+                    var timeoutMessage = $"Pipe callback was not invoked within {MessageWaitTimeout.TotalSeconds}s. Server='{ServerSidePipe}' Client='{ClientSidePipe}'.";
+                    Assert.IsTrue(reset.WaitOne(MessageWaitTimeout), timeoutMessage);
 
                     serverPipe.End();
                 }

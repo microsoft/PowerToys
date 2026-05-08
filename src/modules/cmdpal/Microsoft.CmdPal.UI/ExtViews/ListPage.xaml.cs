@@ -9,6 +9,7 @@ using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -42,6 +43,8 @@ public sealed partial class ListPage : Page,
 
     private ListItemViewModel? _stickySelectedItem;
     private ListItemViewModel? _lastPushedToVm;
+    private long _pendingContextMenuOpenRequestId;
+    private Action? _cancelPendingContextMenuOpen;
 
     // A single search-text change can produce multiple ItemsUpdated calls
     // dispatched as separate UI-thread callbacks. A later "soft" update
@@ -123,6 +126,8 @@ public sealed partial class ListPage : Page,
     {
         base.OnNavigatingFrom(e);
 
+        CancelPendingContextMenuOpen();
+
         WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigateLeftCommand>(this);
@@ -155,21 +160,7 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private int GetFirstSelectableIndex()
     {
-        var items = ItemView.Items;
-        if (items is null || items.Count == 0)
-        {
-            return -1;
-        }
-
-        for (var i = 0; i < items.Count; i++)
-        {
-            if (!IsSeparator(items[i]))
-            {
-                return i;
-            }
-        }
-
-        return -1;
+        return FindSelectableIndex(0, 1);
     }
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
@@ -183,7 +174,7 @@ public sealed partial class ListPage : Page,
                 return;
             }
 
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
             if (settings.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(item);
@@ -203,7 +194,7 @@ public sealed partial class ListPage : Page,
     {
         if (ItemView.SelectedItem is ListItemViewModel vm)
         {
-            var settings = App.Current.Services.GetService<SettingsModel>()!;
+            var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
             if (!settings.SingleClickActivates)
             {
                 ViewModel?.InvokeItemCommand.Execute(vm);
@@ -296,17 +287,7 @@ public sealed partial class ListPage : Page,
             ViewModel?.UpdateSelectedItemCommand.Execute(item);
 
             var pos = e.GetPosition(element);
-
-            _ = DispatcherQueue.TryEnqueue(
-                () =>
-                {
-                    WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
-                        new OpenContextMenuMessage(
-                            element,
-                            FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                            pos,
-                            ContextMenuFilterLocation.Top));
-                });
+            RequestContextMenuOpen(item, element, pos);
         }
     }
 
@@ -603,7 +584,42 @@ public sealed partial class ListPage : Page,
             ? Math.Min(itemCount - 1, currentIndex + Math.Max(1, itemsPerPage))
             : Math.Max(0, currentIndex - Math.Max(1, itemsPerPage));
 
+        targetIndex = FindSelectableIndexForPageNavigation(targetIndex, isPageDown);
+        if (targetIndex == -1)
+        {
+            return null;
+        }
+
         return (currentIndex, targetIndex);
+    }
+
+    private int FindSelectableIndex(int startIndex, int step)
+    {
+        var items = ItemView.Items;
+        var count = items.Count;
+        if (count == 0 || step == 0)
+        {
+            return -1;
+        }
+
+        startIndex = Math.Clamp(startIndex, 0, count - 1);
+
+        for (var i = startIndex; i >= 0 && i < count; i += step)
+        {
+            if (!IsSeparator(items[i]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private int FindSelectableIndexForPageNavigation(int targetIndex, bool isPageDown)
+    {
+        var step = isPageDown ? 1 : -1;
+        var index = FindSelectableIndex(targetIndex, step);
+        return index != -1 ? index : FindSelectableIndex(targetIndex - step, -step);
     }
 
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -992,21 +1008,14 @@ public sealed partial class ListPage : Page,
             pos = new(0, element.ActualHeight);
         }
 
-        _ = DispatcherQueue.TryEnqueue(
-            () =>
-            {
-                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
-                    new OpenContextMenuMessage(
-                        element,
-                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                        pos,
-                        ContextMenuFilterLocation.Top));
-            });
+        ViewModel?.UpdateSelectedItemCommand.Execute(item);
+        RequestContextMenuOpen(item, element, pos);
         e.Handled = true;
     }
 
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
+        CancelPendingContextMenuOpen();
         _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
     }
 
@@ -1044,39 +1053,24 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private void NavigateUp()
     {
-        var newIndex = ItemView.SelectedIndex;
-
-        if (ItemView.SelectedIndex > 0)
+        if (ItemView.Items.Count == 0)
         {
-            newIndex--;
-
-            while (
-                newIndex >= 0 &&
-                IsSeparator(ItemView.Items[newIndex]) &&
-                newIndex != ItemView.SelectedIndex)
-            {
-                newIndex--;
-            }
-
-            if (newIndex < 0)
-            {
-                newIndex = ItemView.Items.Count - 1;
-
-                while (
-                    newIndex >= 0 &&
-                    IsSeparator(ItemView.Items[newIndex]) &&
-                    newIndex != ItemView.SelectedIndex)
-                {
-                    newIndex--;
-                }
-            }
-        }
-        else
-        {
-            newIndex = ItemView.Items.Count - 1;
+            return;
         }
 
-        ItemView.SelectedIndex = newIndex;
+        var newIndex = ItemView.SelectedIndex > 0
+            ? FindSelectableIndex(ItemView.SelectedIndex - 1, -1)
+            : -1;
+
+        if (newIndex == -1)
+        {
+            newIndex = FindSelectableIndex(ItemView.Items.Count - 1, -1);
+        }
+
+        if (newIndex != -1)
+        {
+            ItemView.SelectedIndex = newIndex;
+        }
     }
 
     private void Items_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
@@ -1167,50 +1161,24 @@ public sealed partial class ListPage : Page,
     /// </summary>
     private void NavigateDown()
     {
-        var newIndex = ItemView.SelectedIndex;
-
-        if (ItemView.SelectedIndex == ItemView.Items.Count - 1)
+        if (ItemView.Items.Count == 0)
         {
-            newIndex = 0;
-            while (
-                newIndex < ItemView.Items.Count &&
-                IsSeparator(ItemView.Items[newIndex]))
-            {
-                newIndex++;
-            }
-
-            if (newIndex >= ItemView.Items.Count)
-            {
-                return;
-            }
-        }
-        else
-        {
-            newIndex++;
-
-            while (
-                newIndex < ItemView.Items.Count &&
-                IsSeparator(ItemView.Items[newIndex]) &&
-                newIndex != ItemView.SelectedIndex)
-            {
-                newIndex++;
-            }
-
-            if (newIndex >= ItemView.Items.Count)
-            {
-                newIndex = 0;
-
-                while (
-                    newIndex < ItemView.Items.Count &&
-                    IsSeparator(ItemView.Items[newIndex]) &&
-                    newIndex != ItemView.SelectedIndex)
-                {
-                    newIndex++;
-                }
-            }
+            return;
         }
 
-        ItemView.SelectedIndex = newIndex;
+        var newIndex = ItemView.SelectedIndex < ItemView.Items.Count - 1
+            ? FindSelectableIndex(ItemView.SelectedIndex + 1, 1)
+            : -1;
+
+        if (newIndex == -1)
+        {
+            newIndex = FindSelectableIndex(0, 1);
+        }
+
+        if (newIndex != -1)
+        {
+            ItemView.SelectedIndex = newIndex;
+        }
     }
 
     private bool IsSeparator(object? item) => item is ListItemViewModel li && !li.IsInteractive;
@@ -1227,6 +1195,87 @@ public sealed partial class ListPage : Page,
 
         // disableAnimation: true prevents a visible jump animation
         scroll.ChangeView(horizontalOffset: null, verticalOffset: 0, zoomFactor: null, disableAnimation: true);
+    }
+
+    private void RequestContextMenuOpen(ListItemViewModel item, FrameworkElement element, Point pos)
+    {
+        // BEAR LOADING: Right-click can arrive before the selected item's slow
+        // context-menu hydration completes, especially for out-of-proc
+        // providers. Keep this exact open request alive until the same
+        // selected item becomes context-openable instead of dropping the first
+        // click.
+        CancelPendingContextMenuOpen();
+        var requestId = Interlocked.Increment(ref _pendingContextMenuOpenRequestId);
+
+        System.ComponentModel.PropertyChangedEventHandler? onItemChanged = null;
+        Action? detach = null;
+        detach = () =>
+        {
+            if (onItemChanged is not null)
+            {
+                item.PropertyChanged -= onItemChanged;
+            }
+
+            if (ReferenceEquals(_cancelPendingContextMenuOpen, detach))
+            {
+                _cancelPendingContextMenuOpen = null;
+            }
+        };
+
+        onItemChanged = (_, args) =>
+        {
+            if (args.PropertyName is nameof(ListItemViewModel.CanOpenContextMenu) or nameof(ListItemViewModel.AllCommands) &&
+                TryOpenContextMenuIfReady(item, element, pos, requestId))
+            {
+                detach();
+            }
+        };
+
+        item.PropertyChanged += onItemChanged;
+        _cancelPendingContextMenuOpen = detach;
+
+        if (TryOpenContextMenuIfReady(item, element, pos, requestId))
+        {
+            detach();
+        }
+    }
+
+    private bool TryOpenContextMenuIfReady(ListItemViewModel item, FrameworkElement element, Point pos, long requestId)
+    {
+        // Ignore stale requests so rapid selection changes or cancelled opens
+        // can't resurrect an old context menu on the wrong item.
+        if (requestId != Volatile.Read(ref _pendingContextMenuOpenRequestId) ||
+            !ReferenceEquals(ItemView.SelectedItem, item) ||
+            !item.CanOpenContextMenu)
+        {
+            return false;
+        }
+
+        _ = DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                if (requestId != Volatile.Read(ref _pendingContextMenuOpenRequestId) ||
+                    !ReferenceEquals(ItemView.SelectedItem, item))
+                {
+                    return;
+                }
+
+                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                    new OpenContextMenuMessage(
+                        element,
+                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
+            });
+
+        return true;
+    }
+
+    private void CancelPendingContextMenuOpen()
+    {
+        Interlocked.Increment(ref _pendingContextMenuOpenRequestId);
+        _cancelPendingContextMenuOpen?.Invoke();
+        _cancelPendingContextMenuOpen = null;
     }
 
     private IDisposable SuppressSelectionChangedScope()

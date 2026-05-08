@@ -23,8 +23,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// </summary>
 public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, IDisposable
 {
-    private readonly SettingsModel _settings;
-    private readonly DockSettings _dockSettings;
+    private readonly ISettingsService _settingsService;
     private readonly UISettings _uiSettings;
     private readonly IThemeService _themeService;
     private readonly DispatcherQueueTimer _saveTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -37,54 +36,54 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
     public int ThemeIndex
     {
-        get => (int)_dockSettings.Theme;
+        get => (int)_settingsService.Settings.DockSettings.Theme;
         set => Theme = (UserTheme)value;
     }
 
     public UserTheme Theme
     {
-        get => _dockSettings.Theme;
+        get => _settingsService.Settings.DockSettings.Theme;
         set
         {
-            if (_dockSettings.Theme != value)
+            if (_settingsService.Settings.DockSettings.Theme != value)
             {
-                _dockSettings.Theme = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { Theme = value } });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ThemeIndex));
-                Save();
+                DebouncedReapply();
             }
         }
     }
 
     public int BackdropIndex
     {
-        get => (int)_dockSettings.Backdrop;
+        get => (int)_settingsService.Settings.DockSettings.Backdrop;
         set => Backdrop = (DockBackdrop)value;
     }
 
     public DockBackdrop Backdrop
     {
-        get => _dockSettings.Backdrop;
+        get => _settingsService.Settings.DockSettings.Backdrop;
         set
         {
-            if (_dockSettings.Backdrop != value)
+            if (_settingsService.Settings.DockSettings.Backdrop != value)
             {
-                _dockSettings.Backdrop = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { Backdrop = value } });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackdropIndex));
-                Save();
+                DebouncedReapply();
             }
         }
     }
 
     public ColorizationMode ColorizationMode
     {
-        get => _dockSettings.ColorizationMode;
+        get => _settingsService.Settings.DockSettings.ColorizationMode;
         set
         {
-            if (_dockSettings.ColorizationMode != value)
+            if (_settingsService.Settings.DockSettings.ColorizationMode != value)
             {
-                _dockSettings.ColorizationMode = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { ColorizationMode = value } });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ColorizationModeIndex));
                 OnPropertyChanged(nameof(IsCustomTintVisible));
@@ -100,25 +99,25 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
                 IsColorizationDetailsExpanded = value != ColorizationMode.None;
 
-                Save();
+                DebouncedReapply();
             }
         }
     }
 
     public int ColorizationModeIndex
     {
-        get => (int)_dockSettings.ColorizationMode;
+        get => (int)_settingsService.Settings.DockSettings.ColorizationMode;
         set => ColorizationMode = (ColorizationMode)value;
     }
 
     public Color ThemeColor
     {
-        get => _dockSettings.CustomThemeColor;
+        get => _settingsService.Settings.DockSettings.CustomThemeColor;
         set
         {
-            if (_dockSettings.CustomThemeColor != value)
+            if (_settingsService.Settings.DockSettings.CustomThemeColor != value)
             {
-                _dockSettings.CustomThemeColor = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { CustomThemeColor = value } });
 
                 OnPropertyChanged();
 
@@ -127,30 +126,30 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
                     ColorIntensity = 100;
                 }
 
-                Save();
+                DebouncedReapply();
             }
         }
     }
 
     public int ColorIntensity
     {
-        get => _dockSettings.CustomThemeColorIntensity;
+        get => _settingsService.Settings.DockSettings.CustomThemeColorIntensity;
         set
         {
-            _dockSettings.CustomThemeColorIntensity = value;
+            _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { CustomThemeColorIntensity = value } });
             OnPropertyChanged();
-            Save();
+            DebouncedReapply();
         }
     }
 
     public string BackgroundImagePath
     {
-        get => _dockSettings.BackgroundImagePath ?? string.Empty;
+        get => _settingsService.Settings.DockSettings.BackgroundImagePath ?? string.Empty;
         set
         {
-            if (_dockSettings.BackgroundImagePath != value)
+            if (_settingsService.Settings.DockSettings.BackgroundImagePath != value)
             {
-                _dockSettings.BackgroundImagePath = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { BackgroundImagePath = value } });
                 OnPropertyChanged();
 
                 if (BackgroundImageOpacity == 0)
@@ -158,64 +157,64 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
                     BackgroundImageOpacity = 100;
                 }
 
-                Save();
+                DebouncedReapply();
             }
         }
     }
 
     public int BackgroundImageOpacity
     {
-        get => _dockSettings.BackgroundImageOpacity;
+        get => _settingsService.Settings.DockSettings.BackgroundImageOpacity;
         set
         {
-            if (_dockSettings.BackgroundImageOpacity != value)
+            if (_settingsService.Settings.DockSettings.BackgroundImageOpacity != value)
             {
-                _dockSettings.BackgroundImageOpacity = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { BackgroundImageOpacity = value } });
                 OnPropertyChanged();
-                Save();
+                DebouncedReapply();
             }
         }
     }
 
     public int BackgroundImageBrightness
     {
-        get => _dockSettings.BackgroundImageBrightness;
+        get => _settingsService.Settings.DockSettings.BackgroundImageBrightness;
         set
         {
-            if (_dockSettings.BackgroundImageBrightness != value)
+            if (_settingsService.Settings.DockSettings.BackgroundImageBrightness != value)
             {
-                _dockSettings.BackgroundImageBrightness = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { BackgroundImageBrightness = value } });
                 OnPropertyChanged();
-                Save();
+                DebouncedReapply();
             }
         }
     }
 
     public int BackgroundImageBlurAmount
     {
-        get => _dockSettings.BackgroundImageBlurAmount;
+        get => _settingsService.Settings.DockSettings.BackgroundImageBlurAmount;
         set
         {
-            if (_dockSettings.BackgroundImageBlurAmount != value)
+            if (_settingsService.Settings.DockSettings.BackgroundImageBlurAmount != value)
             {
-                _dockSettings.BackgroundImageBlurAmount = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { BackgroundImageBlurAmount = value } });
                 OnPropertyChanged();
-                Save();
+                DebouncedReapply();
             }
         }
     }
 
     public BackgroundImageFit BackgroundImageFit
     {
-        get => _dockSettings.BackgroundImageFit;
+        get => _settingsService.Settings.DockSettings.BackgroundImageFit;
         set
         {
-            if (_dockSettings.BackgroundImageFit != value)
+            if (_settingsService.Settings.DockSettings.BackgroundImageFit != value)
             {
-                _dockSettings.BackgroundImageFit = value;
+                _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { BackgroundImageFit = value } });
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(BackgroundImageFitIndex));
-                Save();
+                DebouncedReapply();
             }
         }
     }
@@ -237,15 +236,15 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
     [ObservableProperty]
     public partial bool IsColorizationDetailsExpanded { get; set; }
 
-    public bool IsCustomTintVisible => _dockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
+    public bool IsCustomTintVisible => _settingsService.Settings.DockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.Image;
 
-    public bool IsCustomTintIntensityVisible => _dockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
+    public bool IsCustomTintIntensityVisible => _settingsService.Settings.DockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
 
-    public bool IsBackgroundControlsVisible => _dockSettings.ColorizationMode is ColorizationMode.Image;
+    public bool IsBackgroundControlsVisible => _settingsService.Settings.DockSettings.ColorizationMode is ColorizationMode.Image;
 
-    public bool IsNoBackgroundVisible => _dockSettings.ColorizationMode is ColorizationMode.None;
+    public bool IsNoBackgroundVisible => _settingsService.Settings.DockSettings.ColorizationMode is ColorizationMode.None;
 
-    public bool IsAccentColorControlsVisible => _dockSettings.ColorizationMode is ColorizationMode.WindowsAccentColor;
+    public bool IsAccentColorControlsVisible => _settingsService.Settings.DockSettings.ColorizationMode is ColorizationMode.WindowsAccentColor;
 
     public ElementTheme EffectiveTheme => _elementThemeOverride ?? _themeService.Current.Theme;
 
@@ -268,12 +267,11 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
             ? new Microsoft.UI.Xaml.Media.Imaging.BitmapImage(uri)
             : null;
 
-    public DockAppearanceSettingsViewModel(IThemeService themeService, SettingsModel settings)
+    public DockAppearanceSettingsViewModel(IThemeService themeService, ISettingsService settingsService)
     {
         _themeService = themeService;
         _themeService.ThemeChanged += ThemeServiceOnThemeChanged;
-        _settings = settings;
-        _dockSettings = settings.DockSettings;
+        _settingsService = settingsService;
 
         _uiSettings = new UISettings();
         _uiSettings.ColorValuesChanged += UiSettingsOnColorValuesChanged;
@@ -281,7 +279,7 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
 
         Reapply();
 
-        IsColorizationDetailsExpanded = _dockSettings.ColorizationMode != ColorizationMode.None;
+        IsColorizationDetailsExpanded = _settingsService.Settings.DockSettings.ColorizationMode != ColorizationMode.None;
     }
 
     private void UiSettingsOnColorValuesChanged(UISettings sender, object args) => _uiDispatcher.TryEnqueue(() => UpdateAccentColor(sender));
@@ -300,9 +298,8 @@ public sealed partial class DockAppearanceSettingsViewModel : ObservableObject, 
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 
-    private void Save()
+    private void DebouncedReapply()
     {
-        SettingsModel.SaveSettings(_settings);
         _saveTimer.Debounce(Reapply, TimeSpan.FromMilliseconds(200));
     }
 

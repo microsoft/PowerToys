@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <RootNamespace>Microsoft.PowerToys.QuickAccess</RootNamespace>
     <AssemblyName>PowerToys.QuickAccess</AssemblyName>
     <ApplicationIcon>..\..\runner\svgs\icon.ico</ApplicationIcon>
@@ -80,6 +80,7 @@
     <ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
     <ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
     <ProjectReference Include="..\..\common\Common.UI\Common.UI.csproj" />
+    <ProjectReference Include="..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <ProjectReference Include="..\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\Settings.UI.Controls\Settings.UI.Controls.csproj" />
   </ItemGroup>

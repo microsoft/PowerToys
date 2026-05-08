@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using PowerDisplay.Common.Models;
+using PowerDisplay.Models;
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -12,7 +12,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class PowerDisplayProperties
     {
         [CmdConfigureIgnore]
-        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, false, true, 0x44); // Ctrl+Shift+Win+D (win, ctrl, alt, shift, code)
+        public HotkeySettings DefaultActivationShortcut => new HotkeySettings(true, true, false, true, 0x50); // Win+Ctrl+Shift+P (win, ctrl, alt, shift, code)
 
         public PowerDisplayProperties()
         {
@@ -29,8 +29,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // which is managed separately by PowerDisplay app
         }
 
+        private HotkeySettings _activationShortcut;
+
         [JsonPropertyName("activation_shortcut")]
-        public HotkeySettings ActivationShortcut { get; set; }
+        public HotkeySettings ActivationShortcut
+        {
+            get => _activationShortcut ?? DefaultActivationShortcut;
+            set => _activationShortcut = value;
+        }
 
         /// <summary>
         /// Gets or sets delay in seconds before refreshing monitors after display changes (hot-plug).
@@ -49,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowSystemTrayIcon { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to show the profile switcher button in the flyout UI.
+        /// Gets or sets a value indicating whether to show the profile switcher button in the flyout UI.
         /// Default is true. When false, the profile switcher is hidden (but profiles still work via Settings).
         /// Note: Also hidden when no profiles exist.
         /// </summary>
@@ -57,7 +63,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowProfileSwitcher { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to show the identify monitors button in the flyout UI.
+        /// Gets or sets a value indicating whether to show the identify monitors button in the flyout UI.
         /// Default is true.
         /// </summary>
         [JsonPropertyName("show_identify_monitors_button")]

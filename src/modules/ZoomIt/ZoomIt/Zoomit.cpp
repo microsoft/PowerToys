@@ -16,6 +16,13 @@
 #include "WindowsVersions.h"
 #include "ZoomItSettings.h"
 #include "GifRecordingSession.h"
+#include "WebcamPreviewWindow.h"
+#include "BreakTimer.h"
+#include "PanoramaCapture.h"
+#include <wtsapi32.h>
+#include <tlhelp32.h>
+#include <limits>
+#include <vector>
 
 #ifdef __ZOOMIT_POWERTOYS__
 #include <common/interop/shared_constants.h>
@@ -40,6 +47,7 @@ enum class ZoomItCommand
     Break,
     LiveZoom,
     Snip,
+    SnipOcr,
     Record,
 };
 #endif // __ZOOMIT_POWERTOYS__
@@ -55,6 +63,7 @@ namespace winrt
     using namespace Windows::Storage::Pickers;
     using namespace Windows::System;
     using namespace Windows::Devices::Enumeration;
+    using namespace Windows::Media::Ocr;
 }
 
 namespace util
@@ -89,15 +98,25 @@ COLORREF	g_CustomColors[16];
 #define SAVE_CROP_HOTKEY         15
 #define COPY_IMAGE_HOTKEY        16
 #define COPY_CROP_HOTKEY         17
+#define SNIP_OCR_HOTKEY          18
+#define SNIP_PANORAMA_HOTKEY     19
+#define SNIP_PANORAMA_SAVE_HOTKEY 20
+#define WEBCAM_TOGGLE_HOTKEY     21
 
 #define ZOOM_PAGE	  0
 #define LIVE_PAGE	  1
+
+// Screensaver activation constant
+#ifndef SC_SCREENSAVE
+#define SC_SCREENSAVE 0xF140
+#endif
 #define DRAW_PAGE	  2
 #define TYPE_PAGE	  3
 #define DEMOTYPE_PAGE 4
 #define BREAK_PAGE	  5
 #define RECORD_PAGE	  6
 #define SNIP_PAGE	  7
+#define PANORAMA_PAGE 8
 
 OPTION_TABS g_OptionsTabs[] = {
     { _T("Zoom"), NULL },
@@ -107,7 +126,8 @@ OPTION_TABS g_OptionsTabs[] = {
     { _T("DemoType"), NULL },
     { _T("Break"), NULL },
     { _T("Record"), NULL },
-    { _T("Snip"), NULL }
+    { _T("Snip"), NULL },
+    { _T("Panorama"), NULL }
 };
 
 static const TCHAR* g_RecordingFormats[] = {
@@ -152,6 +172,8 @@ DWORD	g_BreakToggleMod;
 DWORD	g_DemoTypeToggleMod;
 DWORD	g_RecordToggleMod;
 DWORD   g_SnipToggleMod;
+DWORD   g_SnipPanoramaToggleMod;
+DWORD   g_SnipOcrToggleMod;
 
 BOOLEAN	g_ZoomOnLiveZoom = FALSE;
 DWORD	g_PenWidth = PEN_WIDTH;
@@ -167,6 +189,9 @@ HWND	g_hWndMain;
 int		g_AlphaBlend = 0x80;
 BOOL	g_fullScreenWorkaround = FALSE;
 bool	g_bSaveInProgress = false;
+bool    g_PanoramaCaptureActive = false;
+bool    g_PanoramaStopRequested = false;
+bool    g_PanoramaDebugMode = false;
 std::wstring	g_TextBuffer;
 // This is useful in the context of right-justified text only.
 std::list<std::wstring> g_TextBufferPreviousLines;
@@ -186,6 +211,7 @@ BOOLEAN g_running = TRUE;
 BOOL	g_RecordToggle = FALSE;
 BOOL	g_RecordCropping = FALSE;
 SelectRectangle g_SelectRectangle;
+WebcamPreviewWindow g_WebcamPreview;
 std::wstring	g_RecordingSaveLocation;
 std::wstring	g_ScreenshotSaveLocation;
 winrt::IDirect3DDevice	g_RecordDevice{ nullptr };
@@ -359,6 +385,77 @@ void OutputDebug(const TCHAR* format, ...)
     va_end(va);
 
     OutputDebugString(msg);
+#endif
+}
+
+const wchar_t* HotkeyIdToString( WPARAM hotkeyId )
+{
+    switch( hotkeyId )
+    {
+    case ZOOM_HOTKEY: return L"ZOOM_HOTKEY";
+    case DRAW_HOTKEY: return L"DRAW_HOTKEY";
+    case BREAK_HOTKEY: return L"BREAK_HOTKEY";
+    case LIVE_HOTKEY: return L"LIVE_HOTKEY";
+    case LIVE_DRAW_HOTKEY: return L"LIVE_DRAW_HOTKEY";
+    case RECORD_HOTKEY: return L"RECORD_HOTKEY";
+    case RECORD_CROP_HOTKEY: return L"RECORD_CROP_HOTKEY";
+    case RECORD_WINDOW_HOTKEY: return L"RECORD_WINDOW_HOTKEY";
+    case SNIP_HOTKEY: return L"SNIP_HOTKEY";
+    case SNIP_SAVE_HOTKEY: return L"SNIP_SAVE_HOTKEY";
+    case DEMOTYPE_HOTKEY: return L"DEMOTYPE_HOTKEY";
+    case DEMOTYPE_RESET_HOTKEY: return L"DEMOTYPE_RESET_HOTKEY";
+    case RECORD_GIF_HOTKEY: return L"RECORD_GIF_HOTKEY";
+    case RECORD_GIF_WINDOW_HOTKEY: return L"RECORD_GIF_WINDOW_HOTKEY";
+    case SAVE_IMAGE_HOTKEY: return L"SAVE_IMAGE_HOTKEY";
+    case SAVE_CROP_HOTKEY: return L"SAVE_CROP_HOTKEY";
+    case COPY_IMAGE_HOTKEY: return L"COPY_IMAGE_HOTKEY";
+    case COPY_CROP_HOTKEY: return L"COPY_CROP_HOTKEY";
+    case SNIP_OCR_HOTKEY: return L"SNIP_OCR_HOTKEY";
+    case SNIP_PANORAMA_HOTKEY: return L"SNIP_PANORAMA_HOTKEY";
+    case SNIP_PANORAMA_SAVE_HOTKEY: return L"SNIP_PANORAMA_SAVE_HOTKEY";
+    default: return L"UNKNOWN_HOTKEY";
+    }
+}
+
+static void LogHotkeyRegistrationResult( const wchar_t* phase, HWND hWnd, int hotkeyId, UINT modifiers, UINT key, BOOL success )
+{
+#if _DEBUG
+    const DWORD lastError = success ? 0 : GetLastError();
+    OutputDebug( L"[Hotkey/%s] hwnd=%p id=%d(%s) mods=0x%X key=0x%X success=%d err=%lu\n",
+                 phase,
+                 hWnd,
+                 hotkeyId,
+                 HotkeyIdToString( hotkeyId ),
+                 modifiers,
+                 key,
+                 success ? 1 : 0,
+                 lastError );
+#else
+    UNREFERENCED_PARAMETER( phase );
+    UNREFERENCED_PARAMETER( hWnd );
+    UNREFERENCED_PARAMETER( hotkeyId );
+    UNREFERENCED_PARAMETER( modifiers );
+    UNREFERENCED_PARAMETER( key );
+    UNREFERENCED_PARAMETER( success );
+#endif
+}
+
+static void LogPanoramaState( const wchar_t* phase, WPARAM hotkeyId = static_cast<WPARAM>(-1) )
+{
+#if _DEBUG
+    const auto mainWindowStyle = ( g_hWndMain != nullptr ) ? static_cast<unsigned long long>( GetWindowLongPtr( g_hWndMain, GWL_EXSTYLE ) ) : 0ULL;
+    OutputDebug( L"[Panorama/State] %s hotkey=%ld(%s) active=%d stop=%d recordCropping=%d selectActive=%d mainExStyle=0x%llX\n",
+                 phase,
+                 static_cast<long>( hotkeyId ),
+                 HotkeyIdToString( hotkeyId ),
+                 g_PanoramaCaptureActive ? 1 : 0,
+                 g_PanoramaStopRequested ? 1 : 0,
+                 g_RecordCropping ? 1 : 0,
+                 g_SelectRectangle.IsActive() ? 1 : 0,
+                 mainWindowStyle );
+#else
+    UNREFERENCED_PARAMETER( phase );
+    UNREFERENCED_PARAMETER( hotkeyId );
 #endif
 }
 
@@ -1503,6 +1600,118 @@ DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap )
 
 //----------------------------------------------------------------------------
 //
+// OcrFromHBITMAP
+//
+// Perform OCR on an HBITMAP and return the recognized text.
+// Uses WIC to convert HBITMAP to IWICBitmap, then ISoftwareBitmapNativeFactory
+// for zero-copy conversion to SoftwareBitmap, then Windows.Media.Ocr.
+//
+//----------------------------------------------------------------------------
+std::wstring OcrFromHBITMAP( HBITMAP hBitmap )
+{
+    try
+    {
+        // The main thread is STA (CoInitialize), but RecognizeAsync().get()
+        // asserts if called on an STA thread. Run the entire OCR pipeline
+        // on a background MTA thread.
+        auto future = std::async( std::launch::async, [hBitmap]() -> std::wstring
+        {
+            // Initialize COM as MTA on this worker thread
+            CoInitializeEx( nullptr, COINIT_MULTITHREADED );
+            auto comCleanup = wil::scope_exit( [] { CoUninitialize(); } );
+
+            // Create WIC factory
+            wil::com_ptr<IWICImagingFactory> wicFactory;
+            THROW_IF_FAILED( CoCreateInstance(
+                CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
+                IID_PPV_ARGS( wicFactory.put() ) ) );
+
+            // Create IWICBitmap from HBITMAP
+            wil::com_ptr<IWICBitmap> wicBitmap;
+            THROW_IF_FAILED( wicFactory->CreateBitmapFromHBITMAP(
+                hBitmap, nullptr, WICBitmapIgnoreAlpha, wicBitmap.put() ) );
+
+            // Convert to SoftwareBitmap via ISoftwareBitmapNativeFactory (zero-copy)
+            auto softwareBitmap = winrt::capture<winrt::SoftwareBitmap>(
+                winrt::create_instance<ISoftwareBitmapNativeFactory>( CLSID_SoftwareBitmapNativeFactory ),
+                &ISoftwareBitmapNativeFactory::CreateFromWICBitmap,
+                wicBitmap.get(),
+                false );
+
+            // OcrEngine requires Gray8 or Bgra8 pixel format
+            if( softwareBitmap.BitmapPixelFormat() != winrt::BitmapPixelFormat::Bgra8 ||
+                softwareBitmap.BitmapAlphaMode() != winrt::BitmapAlphaMode::Premultiplied )
+            {
+                softwareBitmap = winrt::SoftwareBitmap::Convert(
+                    softwareBitmap,
+                    winrt::BitmapPixelFormat::Bgra8,
+                    winrt::BitmapAlphaMode::Premultiplied );
+            }
+
+            // Scale down if image exceeds OCR engine's max dimension (2600px)
+            const uint32_t maxDim = winrt::OcrEngine::MaxImageDimension();
+            if( softwareBitmap.PixelWidth() > static_cast<int32_t>( maxDim ) ||
+                softwareBitmap.PixelHeight() > static_cast<int32_t>( maxDim ) )
+            {
+                // Calculate scale factor to fit within max dimensions
+                float scale = min(
+                    static_cast<float>( maxDim ) / softwareBitmap.PixelWidth(),
+                    static_cast<float>( maxDim ) / softwareBitmap.PixelHeight() );
+
+                int32_t newWidth = static_cast<int32_t>( softwareBitmap.PixelWidth() * scale );
+                int32_t newHeight = static_cast<int32_t>( softwareBitmap.PixelHeight() * scale );
+
+                // Use WIC scaler for high-quality downscale
+                wil::com_ptr<IWICBitmapScaler> scaler;
+                THROW_IF_FAILED( wicFactory->CreateBitmapScaler( scaler.put() ) );
+                THROW_IF_FAILED( scaler->Initialize(
+                    wicBitmap.get(), newWidth, newHeight, WICBitmapInterpolationModeHighQualityCubic ) );
+
+                // Create new WICBitmap from scaled result
+                wil::com_ptr<IWICBitmap> scaledBitmap;
+                THROW_IF_FAILED( wicFactory->CreateBitmapFromSource(
+                    scaler.get(), WICBitmapCacheOnDemand, scaledBitmap.put() ) );
+
+                softwareBitmap = winrt::capture<winrt::SoftwareBitmap>(
+                    winrt::create_instance<ISoftwareBitmapNativeFactory>( CLSID_SoftwareBitmapNativeFactory ),
+                    &ISoftwareBitmapNativeFactory::CreateFromWICBitmap,
+                    scaledBitmap.get(),
+                    false );
+
+                if( softwareBitmap.BitmapPixelFormat() != winrt::BitmapPixelFormat::Bgra8 ||
+                    softwareBitmap.BitmapAlphaMode() != winrt::BitmapAlphaMode::Premultiplied )
+                {
+                    softwareBitmap = winrt::SoftwareBitmap::Convert(
+                        softwareBitmap,
+                        winrt::BitmapPixelFormat::Bgra8,
+                        winrt::BitmapAlphaMode::Premultiplied );
+                }
+            }
+
+            // Create OCR engine from user profile languages
+            winrt::OcrEngine engine = winrt::OcrEngine::TryCreateFromUserProfileLanguages();
+            if( !engine )
+            {
+                return std::wstring{};
+            }
+
+            // Run OCR — safe to call .get() on an MTA thread
+            winrt::OcrResult result = engine.RecognizeAsync( softwareBitmap ).get();
+            return std::wstring( result.Text() );
+        } );
+
+        return future.get();
+    }
+    catch( ... )
+    {
+        OutputDebug( L"OcrFromHBITMAP failed\n" );
+        return {};
+    }
+}
+
+
+//----------------------------------------------------------------------------
+//
 // EnableDisableTrayIcon
 //
 //----------------------------------------------------------------------------
@@ -1558,6 +1767,685 @@ void EnableDisableScreenSaver( BOOLEAN Enable )
     SystemParametersInfo(SPI_SETSCREENSAVEACTIVE,Enable,0,0);
     SystemParametersInfo(SPI_SETPOWEROFFACTIVE,Enable,0,0);
     SystemParametersInfo(SPI_SETLOWPOWERACTIVE,Enable,0,0);
+}
+
+
+//----------------------------------------------------------------------------
+//
+// SaveBitmapToFile
+//
+// Save an HBITMAP to a BMP file using GDI+.
+//
+//----------------------------------------------------------------------------
+static BOOLEAN SaveBitmapToFile( HBITMAP hBitmap, PTCHAR filePath )
+{
+    Gdiplus::Bitmap bitmap( hBitmap, NULL );
+    if( bitmap.GetLastStatus() != Gdiplus::Ok )
+        return FALSE;
+
+    // Find the BMP encoder CLSID.
+    UINT num = 0, size = 0;
+    Gdiplus::GetImageEncodersSize( &num, &size );
+    if( size == 0 ) return FALSE;
+
+    Gdiplus::ImageCodecInfo* pInfo = static_cast<Gdiplus::ImageCodecInfo*>( malloc( size ) );
+    if( !pInfo ) return FALSE;
+
+    Gdiplus::GetImageEncoders( num, size, pInfo );
+    CLSID clsid = {};
+    BOOLEAN found = FALSE;
+    for( UINT i = 0; i < num; i++ )
+    {
+        if( wcscmp( pInfo[i].MimeType, L"image/bmp" ) == 0 )
+        {
+            clsid = pInfo[i].Clsid;
+            found = TRUE;
+            break;
+        }
+    }
+    free( pInfo );
+    if( !found ) return FALSE;
+
+    return bitmap.Save( filePath, &clsid, NULL ) == Gdiplus::Ok;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ExtractResourceToFile
+//
+// Extracts a BINRES resource to a file on disk.
+//
+//----------------------------------------------------------------------------
+static BOOLEAN ExtractResourceToFile( LPCTSTR resName, LPCTSTR resType, LPCTSTR destPath )
+{
+    HRSRC hRes = FindResource( NULL, resName, resType );
+    if( !hRes ) return FALSE;
+
+    HGLOBAL hData = LoadResource( NULL, hRes );
+    if( !hData ) return FALSE;
+
+    LPVOID pData = LockResource( hData );
+    DWORD  size  = SizeofResource( NULL, hRes );
+    if( !pData || size == 0 ) return FALSE;
+
+    HANDLE hFile = CreateFile( destPath, GENERIC_WRITE, 0, NULL,
+                               CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+    if( hFile == INVALID_HANDLE_VALUE ) return FALSE;
+
+    DWORD written;
+    BOOL ok = WriteFile( hFile, pData, size, &written, NULL );
+    CloseHandle( hFile );
+
+    return ok && written == size;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// Screensaver settings save / restore for crash recovery.
+//
+// Before swapping in our .scr, save the user's current screensaver
+// settings.  On startup and WM_ENDSESSION, check for orphaned settings
+// and restore them.
+//
+//----------------------------------------------------------------------------
+#define SCREENSAVER_BACKUP_KEY  L"Software\\Sysinternals\\ZoomIt\\SavedScreenSaver"
+
+struct ScreenSaverSnapshot
+{
+    TCHAR scrPath[MAX_PATH] = {};
+    TCHAR screenSaveActive[8] = {};
+    TCHAR secure[8] = {};
+    TCHAR timeoutText[16] = {};
+    DWORD timeoutSeconds = 0;
+    BOOLEAN hasScrPath = FALSE;
+    BOOLEAN hasScreenSaveActive = FALSE;
+    BOOLEAN hasSecure = FALSE;
+    BOOLEAN hasTimeoutText = FALSE;
+    BOOLEAN screenSaveActiveRuntime = TRUE;
+    BOOLEAN valid = FALSE;
+};
+
+// Per-run snapshot captured immediately before we swap in ZoomIt's .scr.
+// This avoids relying only on registry backup timing for unlock restore.
+static ScreenSaverSnapshot g_PreBreakScreenSaverSnapshot;
+
+static BOOLEAN CaptureCurrentScreenSaverSettings( ScreenSaverSnapshot* snapshot )
+{
+    if( snapshot == nullptr )
+        return FALSE;
+
+    ScreenSaverSnapshot localSnapshot;
+
+    DWORD cbPath = sizeof( localSnapshot.scrPath );
+    localSnapshot.hasScrPath =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.scrPath, &cbPath ) == ERROR_SUCCESS );
+
+    DWORD cbScreenSaveActive = sizeof( localSnapshot.screenSaveActive );
+    localSnapshot.hasScreenSaveActive =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveActive",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.screenSaveActive, &cbScreenSaveActive ) == ERROR_SUCCESS );
+
+    DWORD cbSecure = sizeof( localSnapshot.secure );
+    localSnapshot.hasSecure =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.secure, &cbSecure ) == ERROR_SUCCESS );
+
+    DWORD cbTimeoutText = sizeof( localSnapshot.timeoutText );
+    localSnapshot.hasTimeoutText =
+        ( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveTimeOut",
+                       RRF_RT_REG_SZ, NULL, localSnapshot.timeoutText, &cbTimeoutText ) == ERROR_SUCCESS );
+
+    UINT timeout = 0;
+    SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &timeout, 0 );
+    localSnapshot.timeoutSeconds = timeout;
+
+    BOOL screenSaveActive = TRUE;
+    SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &screenSaveActive, 0 );
+    localSnapshot.screenSaveActiveRuntime = screenSaveActive ? TRUE : FALSE;
+
+    if( localSnapshot.hasTimeoutText )
+    {
+        const int parsed = _tstoi( localSnapshot.timeoutText );
+        if( parsed > 0 )
+        {
+            localSnapshot.timeoutSeconds = static_cast<DWORD>( parsed );
+        }
+    }
+
+    localSnapshot.valid = TRUE;
+
+    *snapshot = localSnapshot;
+    return TRUE;
+}
+
+static void ApplyScreenSaverSnapshot( const ScreenSaverSnapshot* snapshot )
+{
+    if( snapshot == nullptr || !snapshot->valid )
+        return;
+
+    if( snapshot->hasScrPath )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"SCRNSAVE.EXE", REG_SZ, snapshot->scrPath,
+                        static_cast<DWORD>( ( _tcslen( snapshot->scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"SCRNSAVE.EXE" );
+    }
+
+    if( snapshot->hasScreenSaveActive )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaveActive", REG_SZ, snapshot->screenSaveActive,
+                        static_cast<DWORD>( ( _tcslen( snapshot->screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveActive" );
+    }
+    SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, snapshot->screenSaveActiveRuntime ? TRUE : FALSE, 0, SPIF_SENDCHANGE );
+
+    if( snapshot->hasSecure )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaverIsSecure", REG_SZ, snapshot->secure,
+                        static_cast<DWORD>( ( _tcslen( snapshot->secure ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaverIsSecure" );
+    }
+
+    if( snapshot->hasTimeoutText )
+    {
+        RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaveTimeOut", REG_SZ, snapshot->timeoutText,
+                        static_cast<DWORD>( ( _tcslen( snapshot->timeoutText ) + 1 ) * sizeof( TCHAR ) ) );
+    }
+    else
+    {
+        RegDeleteKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop", L"ScreenSaveTimeOut" );
+    }
+
+    SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, snapshot->timeoutSeconds, 0, SPIF_SENDCHANGE );
+}
+
+static void SaveScreenSaverSettings( void )
+{
+    CaptureCurrentScreenSaverSettings( &g_PreBreakScreenSaverSnapshot );
+
+    HKEY hKey;
+    if( RegCreateKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0, NULL,
+                        0, KEY_SET_VALUE, NULL, &hKey, NULL ) == ERROR_SUCCESS )
+    {
+        const ScreenSaverSnapshot& snap = g_PreBreakScreenSaverSnapshot;
+
+        DWORD has = snap.hasScrPath;
+        RegSetValueEx( hKey, L"HasSCRNSAVE.EXE", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"SCRNSAVE.EXE", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.scrPath ),
+                       static_cast<DWORD>( ( _tcslen( snap.scrPath ) + 1 ) * sizeof( TCHAR ) ) );
+
+        has = snap.hasScreenSaveActive;
+        RegSetValueEx( hKey, L"HasScreenSaveActive", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"ScreenSaveActive", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.screenSaveActive ),
+                       static_cast<DWORD>( ( _tcslen( snap.screenSaveActive ) + 1 ) * sizeof( TCHAR ) ) );
+
+        has = snap.hasSecure;
+        RegSetValueEx( hKey, L"HasScreenSaverIsSecure", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"ScreenSaverIsSecure", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.secure ),
+                       static_cast<DWORD>( ( _tcslen( snap.secure ) + 1 ) * sizeof( TCHAR ) ) );
+
+        has = snap.hasTimeoutText;
+        RegSetValueEx( hKey, L"HasScreenSaveTimeOut", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &has ), sizeof( DWORD ) );
+        RegSetValueEx( hKey, L"ScreenSaveTimeOutText", 0, REG_SZ,
+                       reinterpret_cast<const BYTE*>( snap.timeoutText ),
+                       static_cast<DWORD>( ( _tcslen( snap.timeoutText ) + 1 ) * sizeof( TCHAR ) ) );
+
+        RegSetValueEx( hKey, L"ScreenSaveTimeOut", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &snap.timeoutSeconds ), sizeof( DWORD ) );
+
+        DWORD runtimeActive = snap.screenSaveActiveRuntime;
+        RegSetValueEx( hKey, L"ScreenSaveActiveRuntime", 0, REG_DWORD,
+                       reinterpret_cast<const BYTE*>( &runtimeActive ), sizeof( DWORD ) );
+
+        RegCloseKey( hKey );
+    }
+}
+
+static void RestoreScreenSaverSettings( void )
+{
+    bool restored = false;
+
+    // Preferred restore path: exact values captured in-memory before this run
+    // applied ZoomIt's screensaver settings.
+    if( g_PreBreakScreenSaverSnapshot.valid )
+    {
+        ApplyScreenSaverSnapshot( &g_PreBreakScreenSaverSnapshot );
+        g_PreBreakScreenSaverSnapshot.valid = FALSE;
+        restored = true;
+        RegDeleteKey( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY );
+    }
+    else
+    {
+        // Crash-recovery fallback path.
+        HKEY hKey;
+        if( RegOpenKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0,
+                          KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+        {
+            ScreenSaverSnapshot backupSnapshot;
+
+            DWORD has = 1;
+            DWORD cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasSCRNSAVE.EXE", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasScrPath = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasScrPath = TRUE;
+            }
+
+            DWORD cbPath = sizeof( backupSnapshot.scrPath );
+            if( RegQueryValueEx( hKey, L"SCRNSAVE.EXE", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.scrPath ), &cbPath ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.scrPath[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaveActive", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasScreenSaveActive = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasScreenSaveActive = TRUE;
+            }
+
+            DWORD cbScreenSaveActive = sizeof( backupSnapshot.screenSaveActive );
+            if( RegQueryValueEx( hKey, L"ScreenSaveActive", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.screenSaveActive ), &cbScreenSaveActive ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.screenSaveActive[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaverIsSecure", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasSecure = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasSecure = TRUE;
+            }
+
+            DWORD cbSecure = sizeof( backupSnapshot.secure );
+            if( RegQueryValueEx( hKey, L"ScreenSaverIsSecure", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.secure ), &cbSecure ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.secure[0] = 0;
+            }
+
+            has = 1;
+            cbHas = sizeof( has );
+            if( RegQueryValueEx( hKey, L"HasScreenSaveTimeOut", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &has ), &cbHas ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.hasTimeoutText = has ? TRUE : FALSE;
+            }
+            else
+            {
+                backupSnapshot.hasTimeoutText = TRUE;
+            }
+
+            DWORD cbTimeoutText = sizeof( backupSnapshot.timeoutText );
+            if( RegQueryValueEx( hKey, L"ScreenSaveTimeOutText", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( backupSnapshot.timeoutText ), &cbTimeoutText ) != ERROR_SUCCESS )
+            {
+                backupSnapshot.timeoutText[0] = 0;
+            }
+
+            DWORD dwTimeout = 0;
+            DWORD cbTimeout = sizeof( dwTimeout );
+            if( RegQueryValueEx( hKey, L"ScreenSaveTimeOut", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &dwTimeout ), &cbTimeout ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.timeoutSeconds = dwTimeout;
+            }
+            else
+            {
+                UINT timeout = 0;
+                SystemParametersInfo( SPI_GETSCREENSAVETIMEOUT, 0, &timeout, 0 );
+                backupSnapshot.timeoutSeconds = timeout;
+            }
+
+            DWORD runtimeActive = TRUE;
+            DWORD cbRuntimeActive = sizeof( runtimeActive );
+            if( RegQueryValueEx( hKey, L"ScreenSaveActiveRuntime", NULL, NULL,
+                                 reinterpret_cast<BYTE*>( &runtimeActive ), &cbRuntimeActive ) == ERROR_SUCCESS )
+            {
+                backupSnapshot.screenSaveActiveRuntime = runtimeActive ? TRUE : FALSE;
+            }
+            else
+            {
+                BOOL active = TRUE;
+                SystemParametersInfo( SPI_GETSCREENSAVEACTIVE, 0, &active, 0 );
+                backupSnapshot.screenSaveActiveRuntime = active ? TRUE : FALSE;
+            }
+
+            backupSnapshot.valid = TRUE;
+            ApplyScreenSaverSnapshot( &backupSnapshot );
+            restored = true;
+
+            RegCloseKey( hKey );
+            RegDeleteKey( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY );
+        }
+    }
+
+    if( restored )
+    {
+        // Broadcast settings change so Windows picks up all registry-only
+        // values (SCRNSAVE.EXE, ScreenSaverIsSecure) and refreshed timeout.
+        SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, 0,
+                           reinterpret_cast<LPARAM>( L"Control Panel\\Desktop" ) );
+        SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETSCREENSAVEACTIVE, 0 );
+    }
+}
+
+static BOOLEAN HasOrphanedScreenSaverSettings( void )
+{
+    HKEY hKey;
+    if( RegOpenKeyEx( HKEY_CURRENT_USER, SCREENSAVER_BACKUP_KEY, 0,
+                      KEY_QUERY_VALUE, &hKey ) == ERROR_SUCCESS )
+    {
+        RegCloseKey( hKey );
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static BOOLEAN IsBreakScreenSaverRunning( void )
+{
+    HANDLE hSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+    if( hSnap == INVALID_HANDLE_VALUE )
+    {
+        return FALSE;
+    }
+
+    PROCESSENTRY32 pe = { sizeof( pe ) };
+    BOOLEAN running = FALSE;
+    if( Process32First( hSnap, &pe ) )
+    {
+        do
+        {
+            if( _tcsicmp( pe.szExeFile, L"ZoomItBreak.scr" ) == 0 )
+            {
+                running = TRUE;
+                break;
+            }
+        }
+        while( Process32Next( hSnap, &pe ) );
+    }
+
+    CloseHandle( hSnap );
+    return running;
+}
+
+
+//----------------------------------------------------------------------------
+//
+// ActivateBreakScreenSaver
+//
+// Activates the break timer as a secure screensaver using the registry-swap
+// approach:
+// 1. Extracts the embedded .scr to %TEMP%
+// 2. Writes config file with break timer settings
+// 3. Saves user's current screensaver settings
+// 4. Configures system to use our .scr with password protection
+// 5. Triggers screensaver via SC_SCREENSAVE
+//
+// The screensaver runs on the ScreenSaver Desktop and displays the countdown
+// timer.  With ScreenSaverIsSecure=1, students must authenticate to dismiss it.
+// The user's original settings are restored on session unlock (WTS_SESSION_UNLOCK)
+// or on ZoomIt shutdown (crash recovery).
+//
+//----------------------------------------------------------------------------
+static BOOLEAN ActivateBreakScreenSaver( HWND hWnd, int breakTimeoutSeconds )
+{
+    TCHAR tempDir[MAX_PATH];
+    GetTempPath( MAX_PATH, tempDir );
+
+    {
+        TCHAR dbg[256];
+        _stprintf( dbg, L"[ZoomIt] ActivateBreakScreenSaver: timeout=%d\n", breakTimeoutSeconds );
+        OutputDebugString( dbg );
+    }
+
+    //
+    // 1. Extract the embedded .scr to %TEMP%.
+    //    Kill any previous instance first — the file may be locked by a
+    //    still-running screensaver process (ERROR_SHARING_VIOLATION).
+    //
+    TCHAR scrPath[MAX_PATH];
+    _stprintf( scrPath, L"%sZoomItBreak.scr", tempDir );
+
+    // Try extracting; if the file is locked, find and kill the old process.
+    if( !ExtractResourceToFile( L"RCZOOMITSCR", L"BINRES", scrPath ) )
+    {
+        DWORD err = GetLastError();
+        if( err == ERROR_SHARING_VIOLATION )
+        {
+            OutputDebugString( L"[ZoomIt] .scr file locked, killing previous instance\n" );
+
+            // Find and terminate any running ZoomItBreak.scr process.
+            HANDLE hSnap = CreateToolhelp32Snapshot( TH32CS_SNAPPROCESS, 0 );
+            if( hSnap != INVALID_HANDLE_VALUE )
+            {
+                PROCESSENTRY32 pe = { sizeof( pe ) };
+                if( Process32First( hSnap, &pe ) )
+                {
+                    do
+                    {
+                        if( _tcsicmp( pe.szExeFile, L"ZoomItBreak.scr" ) == 0 )
+                        {
+                            HANDLE hProc = OpenProcess( PROCESS_TERMINATE, FALSE, pe.th32ProcessID );
+                            if( hProc )
+                            {
+                                TerminateProcess( hProc, 0 );
+                                WaitForSingleObject( hProc, 2000 );
+                                CloseHandle( hProc );
+                            }
+                        }
+                    }
+                    while( Process32Next( hSnap, &pe ) );
+                }
+                CloseHandle( hSnap );
+            }
+            Sleep( 200 );  // Brief wait for file handle release.
+
+            // Retry extraction.
+            if( !ExtractResourceToFile( L"RCZOOMITSCR", L"BINRES", scrPath ) )
+            {
+                TCHAR dbg[256];
+                _stprintf( dbg, L"[ZoomIt] ExtractResourceToFile FAILED (retry), err=%lu\n", GetLastError() );
+                OutputDebugString( dbg );
+                return FALSE;
+            }
+        }
+        else
+        {
+            TCHAR dbg[256];
+            _stprintf( dbg, L"[ZoomIt] ExtractResourceToFile FAILED, err=%lu\n", err );
+            OutputDebugString( dbg );
+            return FALSE;
+        }
+    }
+    //
+    // 2. Capture desktop screenshot if the user wants "show desktop" background.
+    //
+    TCHAR screenshotPath[MAX_PATH] = {};
+    if( g_BreakShowBackgroundFile && g_BreakShowDesktop )
+    {
+        _stprintf( screenshotPath, L"%sZoomItBreakBg.bmp", tempDir );
+        HDC hdcDesktop = GetDC( NULL );
+        MONITORINFO monInfo = { sizeof( monInfo ) };
+        POINT pt;
+        GetCursorPos( &pt );
+        HMONITOR hMon = MonitorFromPoint( pt, MONITOR_DEFAULTTONEAREST );
+        GetMonitorInfo( hMon, &monInfo );
+        HBITMAP hBmp = CreateFadedDesktopBackground( hdcDesktop, &monInfo.rcMonitor, NULL );
+        ReleaseDC( NULL, hdcDesktop );
+        if( hBmp )
+        {
+            SaveBitmapToFile( hBmp, screenshotPath );
+            DeleteObject( hBmp );
+        }
+    }
+
+    //
+    // 3. Write the config file for the screensaver to read.
+    //
+    BreakScrConfig config = {};
+    config.magic = BREAKSCR_CONFIG_MAGIC;
+    config.timeoutSeconds = breakTimeoutSeconds;
+    config.settings.penColor         = g_BreakPenColor;
+    config.settings.backgroundColor  = g_BreakBackgroundColor;
+    config.settings.timerPosition    = g_BreakTimerPosition;
+    config.settings.opacity          = g_BreakOpacity;
+    config.settings.showExpiredTime  = g_ShowExpiredTime;
+    config.settings.smoothImage      = g_SmoothImage;
+    config.settings.backgroundStretch = g_BreakBackgroundStretch;
+    config.settings.playSound        = g_BreakPlaySoundFile;
+    _tcscpy( config.settings.soundFile, g_BreakSoundFile );
+    config.settings.showDesktop      = g_BreakShowDesktop;
+    config.settings.showBackgroundFile = g_BreakShowBackgroundFile;
+    _tcscpy( config.settings.backgroundFile, g_BreakBackgroundFile );
+    config.settings.logFont          = g_LogFont;
+    _tcscpy( config.screenshotPath, screenshotPath );
+
+    // If a desktop screenshot was captured, tell the screensaver to load it
+    // as its background file.
+    if( screenshotPath[0] )
+    {
+        config.settings.showBackgroundFile = TRUE;
+        config.settings.showDesktop = FALSE;
+        _tcscpy( config.settings.backgroundFile, screenshotPath );
+    }
+
+    if( !BreakScrConfig_Write( &config ) )
+    {
+        OutputDebugString( L"[ZoomIt] BreakScrConfig_Write FAILED\n" );
+        return FALSE;
+    }
+
+    //
+    // 4. Save current screensaver settings for later restoration.
+    //    Always take a fresh snapshot immediately before swapping in
+    //    ZoomIt's .scr so unlock cleanup can reliably restore the user's
+    //    pre-break values (path, active flag, secure flag, timeout).
+    //
+    // If a stale backup exists from an interrupted prior run, restore it
+    // first so we don't snapshot already-overridden ZoomIt values.
+    if( HasOrphanedScreenSaverSettings() )
+    {
+        RestoreScreenSaverSettings();
+    }
+    SaveScreenSaverSettings();
+
+    //
+    // 4a. Ensure screensaver is fully reset before reconfiguring.
+    //     Disable screensaver, wait briefly, then reconfigure.  This ensures
+    //     Windows processes the state change and allows subsequent activations.
+    //
+    SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, FALSE, 0, SPIF_SENDCHANGE );
+    Sleep( 200 );  // Allow Windows to process the disable
+
+    //
+    // 5. Configure system to use our screensaver.
+    //
+
+    // Set our .scr as the system screensaver
+    if( RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"SCRNSAVE.EXE", REG_SZ, scrPath,
+                        static_cast<DWORD>( ( _tcslen( scrPath ) + 1 ) * sizeof( TCHAR ) ) ) != ERROR_SUCCESS )
+    {
+        OutputDebugString( L"[ZoomIt] Failed to set SCRNSAVE.EXE\n" );
+        RestoreScreenSaverSettings();
+        return FALSE;
+    }
+
+    // Set screensaver timeout to 15 seconds.
+    // The initial activation uses SC_SCREENSAVE for immediate launch.
+    // This timeout controls how quickly the screensaver REACTIVATES on the lock
+    // screen after a student triggers the credential provider but doesn't
+    // authenticate and walks away.  1 second may be below Windows' enforced
+    // minimum, so we use 15 seconds as a practical value.
+    // ScreenSaveTimeOut is stored as REG_SZ in Control Panel\Desktop.
+    RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                    L"ScreenSaveTimeOut", REG_SZ, L"15",
+                    static_cast<DWORD>( 3 * sizeof( TCHAR ) ) );
+    SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, 15, 0, SPIF_SENDCHANGE );
+
+    // Force password protection for classroom security
+    TCHAR secure[] = L"1";
+    if( RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                        L"ScreenSaverIsSecure", REG_SZ, secure,
+                        static_cast<DWORD>( ( _tcslen( secure ) + 1 ) * sizeof( TCHAR ) ) ) != ERROR_SUCCESS )
+    {
+        OutputDebugString( L"[ZoomIt] Failed to set ScreenSaverIsSecure\n" );
+        RestoreScreenSaverSettings();
+        return FALSE;
+    }
+
+    // Activate screensaver (must be enabled for SC_SCREENSAVE to work).
+    // Set both the registry value and runtime state — Winlogon reads the
+    // registry directly and ignores the SPI runtime flag.
+    RegSetKeyValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                    L"ScreenSaveActive", REG_SZ, L"1",
+                    static_cast<DWORD>( 2 * sizeof( TCHAR ) ) );
+    SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, TRUE, 0, SPIF_SENDCHANGE );
+
+    // Broadcast and give Windows time to process all registry changes before
+    // triggering the screensaver.  If we trigger too quickly, Windows may not
+    // see ScreenSaverIsSecure=1 and the screensaver won't require authentication.
+    SendNotifyMessage( HWND_BROADCAST, WM_SETTINGCHANGE, SPI_SETSCREENSAVEACTIVE,
+                      reinterpret_cast<LPARAM>( L"Policy" ) );
+    Sleep( 500 );
+
+    //
+    // 6. Trigger the screensaver via system mechanism.
+    //    This causes Windows/Winlogon to launch our .scr on the ScreenSaver Desktop.
+    //
+    //    IMPORTANT: Use DefWindowProc on our own window rather than
+    //    SendMessage(HWND_BROADCAST).  Broadcasting WM_SYSCOMMAND is synchronous
+    //    and blocks our message loop for the entire screensaver session, making
+    //    the desktop unresponsive.  It also delivers SC_SCREENSAVE to ZoomIt's
+    //    own window, triggering unwanted LiveZoom activation.
+    //
+    DefWindowProc( hWnd, WM_SYSCOMMAND, SC_SCREENSAVE, 0 );
+
+    // Defensive cleanup path: if session-change notifications are delayed or
+    // missed, poll until the break .scr exits and then restore original values.
+    // This ensures ScreenSaveTimeOut/SCRNSAVE.EXE don't remain overridden.
+    SetTimer( hWnd, 4, 2000, NULL );
+
+    return TRUE;
 }
 
 //----------------------------------------------------------------------------
@@ -2086,7 +2974,47 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                 EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_AUDIO), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), !isGifSelected);
+
+                // Enable/disable webcam controls (webcam overlay is MP4-only).
+                // Also keep everything disabled if no webcam is present.
+                bool hasWebcam = SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), CB_GETCOUNT, 0, 0) > 1;
+                bool webcamEnabled = hasWebcam && !isGifSelected && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_OVERLAY), hasWebcam && !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), webcamEnabled);
+                {
+                    bool isFullScreen = webcamEnabled && SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
+                    EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
+                    EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
+                }
             }
+        }
+        if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_WEBCAM_OVERLAY) {
+            bool isGif = (g_RecordingFormat == RecordingFormat::GIF);
+            bool webcamEnabled = !isGif && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_DEVICE), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_POSITION), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), webcamEnabled);
+            {
+                bool isFullScreen = webcamEnabled && SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
+                EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
+            }
+        }
+        // Handle webcam size combo change — disable shape when Full screen selected
+        if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_WEBCAM_SIZE) {
+            bool isGif = (g_RecordingFormat == RecordingFormat::GIF);
+            bool webcamEnabled = !isGif && IsDlgButtonChecked(hDlg, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+            bool isFullScreen = SendMessage(GetDlgItem(hDlg, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0) == 4;
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
+            EnableWindow(GetDlgItem(hDlg, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
         }
 
         switch ( LOWORD( wParam )) {
@@ -2154,6 +3082,53 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                             SetDlgItemText( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE, pathStr.get() );
                             _tcscpy( g_DemoTypeFile, pathStr.get() );
                         }
+                    }
+                }
+            }
+
+            openDialog->Unadvise( dwCookie );
+            pEvents->Release();
+            break;
+        }
+        case IDC_TRIM_FILE:
+        {
+            // Open a video file for trimming
+            auto openDialog = wil::CoCreateInstance<IFileOpenDialog>( CLSID_FileOpenDialog );
+
+            FILEOPENDIALOGOPTIONS options;
+            if( SUCCEEDED( openDialog->GetOptions( &options ) ) )
+                openDialog->SetOptions( options | FOS_FORCEFILESYSTEM );
+
+            COMDLG_FILTERSPEC fileTypes[] = {
+                { L"Video Files (*.mp4;*.gif)", L"*.mp4;*.gif" },
+                { L"MP4 Video (*.mp4)", L"*.mp4" },
+                { L"GIF Animation (*.gif)", L"*.gif" }
+            };
+            openDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
+            openDialog->SetFileTypeIndex( 1 );
+            openDialog->SetTitle( L"ZoomIt: Open Video for Trimming..." );
+
+            wil::com_ptr<IShellItem> videosFolder;
+            if( SUCCEEDED( SHGetKnownFolderItem( FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_PPV_ARGS( &videosFolder ) ) ) )
+                openDialog->SetDefaultFolder( videosFolder.get() );
+
+            OpenSaveDialogEvents* pEvents = new OpenSaveDialogEvents(false);
+            DWORD dwCookie = 0;
+            openDialog->Advise( pEvents, &dwCookie );
+
+            if( SUCCEEDED( openDialog->Show( hDlg ) ) )
+            {
+                wil::com_ptr<IShellItem> resultItem;
+                if( SUCCEEDED( openDialog->GetResult( &resultItem ) ) )
+                {
+                    wil::unique_cotaskmem_string pathStr;
+                    if( SUCCEEDED( resultItem->GetDisplayName( SIGDN_FILESYSPATH, &pathStr ) ) )
+                    {
+                        std::wstring videoPath( pathStr.get() );
+                        winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
+                        winrt::Windows::Foundation::TimeSpan trimEnd{ 0 };
+                        VideoRecordingSession::ShowTrimDialog(
+                            GetParent( hDlg ), videoPath, trimStart, trimEnd, true );
                     }
                 }
             }
@@ -2311,24 +3286,33 @@ VOID OptionsAddTabs( HWND hOptionsDlg, HWND hTabCtrl )
 //----------------------------------------------------------------------------
 void UnregisterAllHotkeys( HWND hWnd )
 {
-    UnregisterHotKey( hWnd, ZOOM_HOTKEY);
-    UnregisterHotKey( hWnd, LIVE_HOTKEY);
-    UnregisterHotKey( hWnd, LIVE_DRAW_HOTKEY);
-    UnregisterHotKey( hWnd, DRAW_HOTKEY);
-    UnregisterHotKey( hWnd, BREAK_HOTKEY);
-    UnregisterHotKey( hWnd, RECORD_HOTKEY);
-    UnregisterHotKey( hWnd, RECORD_CROP_HOTKEY );
-    UnregisterHotKey( hWnd, RECORD_WINDOW_HOTKEY );
-    UnregisterHotKey( hWnd, SNIP_HOTKEY );
-    UnregisterHotKey( hWnd, SNIP_SAVE_HOTKEY);
-    UnregisterHotKey( hWnd, DEMOTYPE_HOTKEY );
-    UnregisterHotKey( hWnd, DEMOTYPE_RESET_HOTKEY );
-    UnregisterHotKey( hWnd, RECORD_GIF_HOTKEY );
-    UnregisterHotKey( hWnd, RECORD_GIF_WINDOW_HOTKEY );
-    UnregisterHotKey( hWnd, SAVE_IMAGE_HOTKEY );
-    UnregisterHotKey( hWnd, SAVE_CROP_HOTKEY );
-    UnregisterHotKey( hWnd, COPY_IMAGE_HOTKEY );
-    UnregisterHotKey( hWnd, COPY_CROP_HOTKEY );
+    auto unregisterHotkey = [hWnd]( int id )
+    {
+        const BOOL unregistered = UnregisterHotKey( hWnd, id );
+        LogHotkeyRegistrationResult( L"unregister", hWnd, id, 0, 0, unregistered );
+    };
+
+    unregisterHotkey( ZOOM_HOTKEY );
+    unregisterHotkey( LIVE_HOTKEY );
+    unregisterHotkey( LIVE_DRAW_HOTKEY );
+    unregisterHotkey( DRAW_HOTKEY );
+    unregisterHotkey( BREAK_HOTKEY );
+    unregisterHotkey( RECORD_HOTKEY );
+    unregisterHotkey( RECORD_CROP_HOTKEY );
+    unregisterHotkey( RECORD_WINDOW_HOTKEY );
+    unregisterHotkey( SNIP_HOTKEY );
+    unregisterHotkey( SNIP_SAVE_HOTKEY );
+    unregisterHotkey( SNIP_PANORAMA_HOTKEY );
+    unregisterHotkey( SNIP_PANORAMA_SAVE_HOTKEY );
+    unregisterHotkey( SNIP_OCR_HOTKEY );
+    unregisterHotkey( DEMOTYPE_HOTKEY );
+    unregisterHotkey( DEMOTYPE_RESET_HOTKEY );
+    unregisterHotkey( RECORD_GIF_HOTKEY );
+    unregisterHotkey( RECORD_GIF_WINDOW_HOTKEY );
+    unregisterHotkey( SAVE_IMAGE_HOTKEY );
+    unregisterHotkey( SAVE_CROP_HOTKEY );
+    unregisterHotkey( COPY_IMAGE_HOTKEY );
+    unregisterHotkey( COPY_CROP_HOTKEY );
 }
 
 //----------------------------------------------------------------------------
@@ -2338,29 +3322,40 @@ void UnregisterAllHotkeys( HWND hWnd )
 //----------------------------------------------------------------------------
 void RegisterAllHotkeys(HWND hWnd)
 {
-    if (g_ToggleKey) 			RegisterHotKey(hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF);
+    auto registerHotkey = [hWnd]( int id, UINT modifiers, UINT key )
+    {
+        const BOOL registered = RegisterHotKey( hWnd, id, modifiers, key );
+        LogHotkeyRegistrationResult( L"register", hWnd, id, modifiers, key, registered );
+    };
+
+    if (g_ToggleKey) 			registerHotkey( ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF );
     if (g_LiveZoomToggleKey) {
-        RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF);
-        RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, (g_LiveZoomToggleMod ^ MOD_SHIFT), g_LiveZoomToggleKey & 0xFF);
+        registerHotkey( LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF );
+        registerHotkey( LIVE_DRAW_HOTKEY, ( g_LiveZoomToggleMod ^ MOD_SHIFT ), g_LiveZoomToggleKey & 0xFF );
     }
-    if (g_DrawToggleKey) 		RegisterHotKey(hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF);
-    if (g_BreakToggleKey) 		RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF);
+    if (g_DrawToggleKey) 		registerHotkey( DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF );
+    if (g_BreakToggleKey) 		registerHotkey( BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF );
     if (g_DemoTypeToggleKey) {
-        RegisterHotKey(hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF);
-        RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF);
+        registerHotkey( DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF );
+        registerHotkey( DEMOTYPE_RESET_HOTKEY, ( g_DemoTypeToggleMod ^ MOD_SHIFT ), g_DemoTypeToggleKey & 0xFF );
     }
     if (g_SnipToggleKey) {
-        RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF);
-        RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF);
+        registerHotkey( SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF );
+        registerHotkey( SNIP_SAVE_HOTKEY, ( g_SnipToggleMod ^ MOD_SHIFT ), g_SnipToggleKey & 0xFF );
+    }
+    if( g_SnipPanoramaToggleKey &&
+        (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) ) {
+        registerHotkey( SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
+        registerHotkey( SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF );
+    }
+    if (g_SnipOcrToggleKey) {
+        registerHotkey( SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF );
     }
     if (g_RecordToggleKey) {
-        RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
-        RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
-        RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
+        registerHotkey( RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        registerHotkey( RECORD_CROP_HOTKEY, ( g_RecordToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
+        registerHotkey( RECORD_WINDOW_HOTKEY, ( g_RecordToggleMod ^ MOD_ALT ) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF );
     }
-    // Register CTRL+8 for GIF recording and CTRL+ALT+8 for GIF window recording
-    RegisterHotKey(hWnd, RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 568 && 0xFF);
-    RegisterHotKey(hWnd, RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 568 && 0xFF);
 
     // Note: COPY_IMAGE_HOTKEY, COPY_CROP_HOTKEY (Ctrl+C, Ctrl+Shift+C) and
     // SAVE_IMAGE_HOTKEY, SAVE_CROP_HOTKEY (Ctrl+S, Ctrl+Shift+S) are registered
@@ -2612,7 +3607,7 @@ LRESULT CALLBACK CheckboxSubclassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
             if (checkOnRight)
             {
                 rcText.right = rcCheck.left - ScaleForDpi(4, dpi);
-                textFormat |= DT_RIGHT;
+                textFormat |= DT_LEFT;
             }
             else
             {
@@ -3572,10 +4567,11 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
     static RECT     stableWindowRect{};
     static bool     stableWindowRectValid = false;
     TCHAR			text[32];
-    DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey;
-    DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod;
+    DWORD			newToggleKey, newTimeout, newToggleMod, newBreakToggleKey, newDemoTypeToggleKey, newRecordToggleKey, newSnipToggleKey, newSnipPanoramaToggleKey, newSnipOcrToggleKey;
+    DWORD			newDrawToggleKey, newDrawToggleMod, newBreakToggleMod, newDemoTypeToggleMod, newRecordToggleMod, newSnipToggleMod, newSnipPanoramaToggleMod, newSnipOcrToggleMod;
     DWORD			newLiveZoomToggleKey, newLiveZoomToggleMod;
     static std::vector<std::pair<std::wstring, std::wstring>>	microphones;
+    static std::vector<std::pair<std::wstring, std::wstring>>	webcams;
 
     auto CleanupFonts = [&]()
     {
@@ -3808,6 +4804,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         if( g_DemoTypeToggleKey ) SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_SETHOTKEY, g_DemoTypeToggleKey, 0 );
         if( g_RecordToggleKey )	SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_SETHOTKEY, g_RecordToggleKey, 0 );
         if( g_SnipToggleKey) 	SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_SETHOTKEY, g_SnipToggleKey, 0 );
+        if( g_SnipPanoramaToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_SETHOTKEY, g_SnipPanoramaToggleKey, 0 );
+        if( g_SnipOcrToggleKey) SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_SETHOTKEY, g_SnipOcrToggleKey, 0 );
         CheckDlgButton( hDlg, IDC_SHOW_TRAY_ICON,
             g_ShowTrayIcon ? BST_CHECKED: BST_UNCHECKED );
         CheckDlgButton( hDlg, IDC_AUTOSTART,
@@ -3833,6 +4831,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                             MAKELPARAM (99, 1));
         CheckDlgButton( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED,
             g_ShowExpiredTime ? BST_CHECKED : BST_UNCHECKED );
+        CheckDlgButton( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_LOCK_WORKSTATION,
+            g_BreakLockWorkstation ? BST_CHECKED : BST_UNCHECKED );
 
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO,
             g_CaptureSystemAudio ? BST_CHECKED: BST_UNCHECKED );
@@ -3842,6 +4842,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
 
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX,
             g_MicMonoMix ? BST_CHECKED: BST_UNCHECKED );
+
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO,
+            g_RecordAspectRatio ? BST_CHECKED: BST_UNCHECKED );
 
         //
         // The framerate drop down list is not used in the current version (might be added in the future)
@@ -3917,6 +4920,100 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO), !isGifSelected);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE_LABEL), !isGifSelected);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected);
+
+        // Webcam overlay controls
+        CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY,
+            g_WebcamOverlay ? BST_CHECKED : BST_UNCHECKED );
+
+        // Enumerate webcam devices
+        webcams.clear();
+        {
+            MFStartup( MF_VERSION, MFSTARTUP_LITE );
+            IMFAttributes* pAttributes = nullptr;
+            if( SUCCEEDED( MFCreateAttributes( &pAttributes, 1 ) ) )
+            {
+                pAttributes->SetGUID( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID );
+                IMFActivate** ppDevices = nullptr;
+                UINT32 count = 0;
+                if( SUCCEEDED( MFEnumDeviceSources( pAttributes, &ppDevices, &count ) ) )
+                {
+                    for( UINT32 i = 0; i < count; i++ )
+                    {
+                        WCHAR* symLink = nullptr;
+                        UINT32 symLinkLen = 0;
+                        WCHAR* friendlyName = nullptr;
+                        UINT32 nameLen = 0;
+                        if( SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &symLink, &symLinkLen ) ) &&
+                            SUCCEEDED( ppDevices[i]->GetAllocatedString( MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &friendlyName, &nameLen ) ) )
+                        {
+                            webcams.emplace_back( symLink, friendlyName );
+                        }
+                        if( symLink ) CoTaskMemFree( symLink );
+                        if( friendlyName ) CoTaskMemFree( friendlyName );
+                        ppDevices[i]->Release();
+                    }
+                    CoTaskMemFree( ppDevices );
+                }
+                pAttributes->Release();
+            }
+            MFShutdown();
+        }
+
+        // Add webcam devices to combo box
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(L"Default") );
+        selection = 0;
+        for( size_t i = 0; i < webcams.size(); i++ )
+        {
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(webcams[i].second.c_str()) );
+            if( selection == 0 && wcscmp( webcams[i].first.c_str(), g_WebcamDeviceSymLink ) == 0 )
+            {
+                selection = i + 1;
+            }
+        }
+        SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE ), CB_SETCURSEL, static_cast<WPARAM>(selection), static_cast<LPARAM>(0) );
+
+        // Webcam position combo
+        {
+            const wchar_t* positions[] = { L"Top left", L"Top right", L"Bottom left", L"Bottom right" };
+            for( int i = 0; i < 4; i++ )
+                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(positions[i]) );
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamPosition), static_cast<LPARAM>(0) );
+        }
+
+        // Webcam size combo
+        {
+            const wchar_t* sizes[] = { L"Small", L"Medium", L"Large", L"X-Large", L"Full screen" };
+            for( int i = 0; i < 5; i++ )
+                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(sizes[i]) );
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamSize), static_cast<LPARAM>(0) );
+        }
+
+        // Webcam shape combo
+        {
+            const wchar_t* shapes[] = { L"Rectangle", L"Rounded rectangle", L"Rounded square", L"Circle" };
+            for( int i = 0; i < 4; i++ )
+                SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE ), static_cast<UINT>(CB_ADDSTRING), static_cast<WPARAM>(0), reinterpret_cast<LPARAM>(shapes[i]) );
+            SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE ), CB_SETCURSEL, static_cast<WPARAM>(g_WebcamShape), static_cast<LPARAM>(0) );
+        }
+
+        // Set initial enabled state for webcam controls.
+        // Disable everything if no webcam is detected on the system.
+        {
+            bool hasWebcam = !webcams.empty();
+            bool webcamEnabled = hasWebcam && !isGifSelected && g_WebcamOverlay;
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY), hasWebcam && !isGifSelected);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE_LABEL), webcamEnabled);
+            EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE), webcamEnabled);
+            {
+                bool isFullScreen = webcamEnabled && g_WebcamSize == 4;
+                EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE_LABEL), webcamEnabled && !isFullScreen);
+                EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE), webcamEnabled && !isFullScreen);
+            }
+        }
 
         if( GetFileAttributes( g_DemoTypeFile ) == -1 )
         {
@@ -4248,6 +5345,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_HOTKEY ), HKM_GETHOTKEY, 0, 0 ));
             newRecordToggleKey = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_HOTKEY), HKM_GETHOTKEY, 0, 0));
             newSnipToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipPanoramaToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[PANORAMA_PAGE].hPage, IDC_SNIP_PANORAMA_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
+            newSnipOcrToggleKey = static_cast<DWORD>(SendMessage( GetDlgItem( g_OptionsTabs[SNIP_PAGE].hPage, IDC_SNIP_OCR_HOTKEY), HKM_GETHOTKEY, 0, 0 ));
 
             newToggleMod = GetKeyMod( newToggleKey );
             newLiveZoomToggleMod = GetKeyMod( newLiveZoomToggleKey );
@@ -4256,14 +5355,18 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             newDemoTypeToggleMod = GetKeyMod( newDemoTypeToggleKey );
             newRecordToggleMod = GetKeyMod(newRecordToggleKey);
             newSnipToggleMod = GetKeyMod( newSnipToggleKey );
+            newSnipPanoramaToggleMod = GetKeyMod( newSnipPanoramaToggleKey );
+            newSnipOcrToggleMod = GetKeyMod( newSnipOcrToggleKey );
 
             g_SliderZoomLevel = static_cast<int>(SendMessage( GetDlgItem(g_OptionsTabs[ZOOM_PAGE].hPage, IDC_ZOOM_SLIDER), TBM_GETPOS, 0, 0 ));
             g_DemoTypeSpeedSlider = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_GETPOS, 0, 0 ));
 
             g_ShowExpiredTime = IsDlgButtonChecked(  g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_SHOW_EXPIRED ) == BST_CHECKED;
+            g_BreakLockWorkstation = IsDlgButtonChecked( g_OptionsTabs[BREAK_PAGE].hPage, IDC_CHECK_LOCK_WORKSTATION ) == BST_CHECKED;
             g_CaptureSystemAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO) == BST_CHECKED;
             g_CaptureAudio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO) == BST_CHECKED;
             g_MicMonoMix = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX) == BST_CHECKED;
+            g_RecordAspectRatio = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_RECORD_ASPECT_RATIO) == BST_CHECKED;
             GetDlgItemText( g_OptionsTabs[BREAK_PAGE].hPage, IDC_TIMER, text, 3 );
             text[2] = 0;
             newTimeout = _tstoi( text );
@@ -4275,6 +5378,16 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             // Get the selected microphone
             int index = static_cast<int>(SendMessage( GetDlgItem( g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE ), static_cast<UINT>(CB_GETCURSEL), static_cast<WPARAM>(0), static_cast<LPARAM>(0) ));
             _tcscpy( g_MicrophoneDeviceId, index == 0 ? L"" : microphones[static_cast<size_t>(index) - 1].first.c_str() );
+
+            // Get the webcam settings
+            g_WebcamOverlay = IsDlgButtonChecked(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY) == BST_CHECKED;
+            g_WebcamPosition = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_POSITION), CB_GETCURSEL, 0, 0));
+            g_WebcamSize = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SIZE), CB_GETCURSEL, 0, 0));
+            g_WebcamShape = static_cast<DWORD>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SHAPE), CB_GETCURSEL, 0, 0));
+            {
+                int wcIndex = static_cast<int>(SendMessage(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_DEVICE), CB_GETCURSEL, 0, 0));
+                _tcscpy( g_WebcamDeviceSymLink, wcIndex == 0 ? L"" : webcams[static_cast<size_t>(wcIndex) - 1].first.c_str() );
+            }
 
             if( newToggleKey && !RegisterHotKey( GetParent( hDlg ), ZOOM_HOTKEY, newToggleMod, newToggleKey & 0xFF )) {
 
@@ -4326,6 +5439,26 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
+            else if (newSnipPanoramaToggleKey &&
+                (newSnipPanoramaToggleKey != newSnipToggleKey || newSnipPanoramaToggleMod != newSnipToggleMod) &&
+                (!RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_HOTKEY, newSnipPanoramaToggleMod | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF) ||
+                 !RegisterHotKey(GetParent(hDlg), SNIP_PANORAMA_SAVE_HOTKEY, ( newSnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, newSnipPanoramaToggleKey & 0xFF))) {
+
+                MessageBox(hDlg, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
+            else if (newSnipOcrToggleKey &&
+                !RegisterHotKey(GetParent(hDlg), SNIP_OCR_HOTKEY, newSnipOcrToggleMod, newSnipOcrToggleKey & 0xFF)) {
+
+                MessageBox(hDlg, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.",
+                    APPNAME, MB_ICONERROR);
+                UnregisterAllHotkeys(GetParent(hDlg));
+                break;
+
+            }
             else if( newRecordToggleKey &&
                 (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY,      newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
                  !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, (newRecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
@@ -4352,6 +5485,10 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_RecordToggleMod = newRecordToggleMod;
                 g_SnipToggleKey = newSnipToggleKey;
                 g_SnipToggleMod = newSnipToggleMod;
+                g_SnipPanoramaToggleKey = newSnipPanoramaToggleKey;
+                g_SnipPanoramaToggleMod = newSnipPanoramaToggleMod;
+                g_SnipOcrToggleKey = newSnipOcrToggleKey;
+                g_SnipOcrToggleMod = newSnipOcrToggleMod;
                 reg.WriteRegSettings( RegSettings );
                 EnableDisableTrayIcon( GetParent( hDlg ), g_ShowTrayIcon );
 
@@ -5406,6 +6543,8 @@ void StopRecording()
     if( g_RecordToggle == TRUE ) {
 
         OutputDebugStringW(L"[Recording] g_RecordToggle was TRUE, stopping...\n");
+        UnregisterHotKey( g_hWndMain, WEBCAM_TOGGLE_HOTKEY );
+        g_WebcamPreview.Destroy();
         g_SelectRectangle.Stop();
 
         if ( g_RecordingSession != nullptr ) {
@@ -5447,7 +6586,7 @@ void StopRecording()
 // suffixes as needed. Uses the folder from lastSavePath if available
 //
 //----------------------------------------------------------------------------
-auto GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId)
+std::wstring GetUniqueFilename(const std::wstring& lastSavePath, const wchar_t* defaultFilename, REFKNOWNFOLDERID defaultFolderId)
 {
     // Get the folder where the file will be saved
     std::filesystem::path saveFolder;
@@ -5541,6 +6680,21 @@ auto GetUniqueScreenshotFilename()
 //----------------------------------------------------------------------------
 winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndRecord ) try
 {
+    // ---- Recording startup timing diagnostics ----
+    LARGE_INTEGER _diagFreq, _diagT0, _diagT1;
+    QueryPerformanceFrequency( &_diagFreq );
+    QueryPerformanceCounter( &_diagT0 );
+    auto _diagMs = [&]() -> double {
+        QueryPerformanceCounter( &_diagT1 );
+        return static_cast<double>( _diagT1.QuadPart - _diagT0.QuadPart ) * 1000.0 / _diagFreq.QuadPart;
+    };
+    auto _diagLog = [&]( const wchar_t* label ) {
+        wchar_t buf[256];
+        swprintf_s( buf, L"[RecStartup +%.1fms] %s\n", _diagMs(), label );
+        OutputDebugStringW( buf );
+    };
+    _diagLog( L"entry" );
+
     // Capture the UI thread context so we can resume on it for the save dialog
     winrt::apartment_context uiThread;
 
@@ -5551,11 +6705,13 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     // Choose temp file extension based on format
     const wchar_t* tempFileName = (g_RecordingFormat == RecordingFormat::GIF) ? L"zoomit.gif" : L"zoomit.mp4";
     auto file = co_await appFolder.CreateFileAsync( tempFileName, winrt::CreationCollisionOption::ReplaceExisting );
+    _diagLog( L"temp file created" );
 
     // Get the device
     auto d3dDevice = util::CreateD3D11Device();
     auto dxgiDevice = d3dDevice.as<IDXGIDevice>();
     g_RecordDevice = CreateDirect3DDevice( dxgiDevice.get() );
+    _diagLog( L"D3D device created" );
 
     // Get the active MONITOR capture device
     HMONITOR hMon = NULL;
@@ -5571,8 +6727,10 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         item = util::CreateCaptureItemForWindow( hWndRecord );
     else
         item = util::CreateCaptureItemForMonitor( hMon );
+    _diagLog( L"capture item created" );
 
     auto stream = co_await file.OpenAsync( winrt::FileAccessMode::ReadWrite );
+    _diagLog( L"file stream opened" );
 
     // Create the appropriate recording session based on format
     OutputDebugStringW((L"Starting recording session. Framerate:  " + std::to_wstring(g_RecordFrameRate) + L" scaling: " + std::to_wstring(g_RecordScaling) + L" Format: " + (g_RecordingFormat == RecordingFormat::GIF ? L"GIF" : L"MP4") + L"\n").c_str());
@@ -5622,6 +6780,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     }
     else
     {
+        _diagLog( L"calling VideoRecordingSession::Create (constructor)" );
         g_RecordingSession = VideoRecordingSession::Create(
                                         g_RecordDevice,
                                         item,
@@ -5631,8 +6790,37 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
                                         g_CaptureSystemAudio,
                                         g_MicMonoMix,
                                         stream );
+        _diagLog( L"VideoRecordingSession::Create returned" );
 
         recordingStarted = (g_RecordingSession != nullptr);
+
+        // Show a live on-screen preview of the webcam overlay so the user
+        // can see themselves while recording.
+        if( recordingStarted && g_WebcamOverlay && g_RecordingSession->GetWebcamCapture() )
+        {
+            // Determine the screen region being recorded.
+            RECT screenRect;
+            if( rcCrop->right - rcCrop->left > 0 )
+            {
+                // Region recording: the crop rect IS in screen coordinates.
+                screenRect = *rcCrop;
+            }
+            else
+            {
+                // Full-screen: use the monitor rect.
+                MONITORINFO mi = { sizeof( mi ) };
+                if( pGetMonitorInfo && hMon && pGetMonitorInfo( hMon, &mi ) )
+                    screenRect = mi.rcMonitor;
+                else
+                    SetRect( &screenRect, 0, 0, GetSystemMetrics( SM_CXSCREEN ), GetSystemMetrics( SM_CYSCREEN ) );
+            }
+
+            auto* wc = g_RecordingSession->GetWebcamCapture();
+            g_WebcamPreview.Create( wc, screenRect, wc->GetOutputWidth(), wc->GetOutputHeight() );
+
+            // Register Ctrl+C to toggle webcam overlay during recording.
+            RegisterHotKey( hWnd, WEBCAM_TOGGLE_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, 'C' );
+        }
 
         if( g_hWndLiveZoom != NULL )
             g_RecordingSession->EnableCursorCapture( false );
@@ -5641,7 +6829,9 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
         {
             try
             {
+                _diagLog( L"calling co_await StartAsync()" );
                 co_await g_RecordingSession->StartAsync();
+                _diagLog( L"StartAsync returned" );
             }
             catch (const winrt::hresult_error& error)
             {
@@ -5853,7 +7043,12 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
             RestoreForeground();
 
         if( FAILED( hr ) )
-            throw winrt::hresult_error( hr );
+        {
+            if( hr != HRESULT_FROM_WIN32( ERROR_CANCELLED ) )
+            {
+                throw winrt::hresult_error( hr );
+            }
+        }
     }
 
     // Ensure globals are reset after the save/cleanup path completes
@@ -6189,6 +7384,18 @@ LRESULT APIENTRY MainWndProc(
 
         reg.ReadRegSettings( RegSettings );
 
+        // Recover screensaver settings if ZoomIt crashed while the break
+        // screensaver was active (or was force-killed).
+        if( HasOrphanedScreenSaverSettings() )
+        {
+            RestoreScreenSaverSettings();
+        }
+
+        // Register for session change notifications so we can restore
+        // screensaver settings after the break timer screensaver is dismissed
+        // via user authentication (session unlock).
+        WTSRegisterSessionNotification( hWnd, NOTIFY_FOR_THIS_SESSION );
+
         // Refresh dark mode state after loading theme override from registry
         RefreshDarkModeState();
 
@@ -6218,6 +7425,8 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod( g_BreakToggleKey );
         g_DemoTypeToggleMod = GetKeyMod( g_DemoTypeToggleKey );
         g_SnipToggleMod = GetKeyMod( g_SnipToggleKey );
+        g_SnipPanoramaToggleMod = GetKeyMod( g_SnipPanoramaToggleKey );
+        g_SnipOcrToggleMod = GetKeyMod( g_SnipOcrToggleKey );
         g_RecordToggleMod = GetKeyMod( g_RecordToggleKey );
 
         if( !g_OptionsShown && !g_StartedByPowerToys ) {
@@ -6275,6 +7484,24 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
 
             }
+            else if (g_SnipPanoramaToggleKey &&
+                (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod) &&
+                (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
+                 !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))) {
+
+                MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
+            else if (g_SnipOcrToggleKey &&
+                !RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF)) {
+
+                MessageBox(hWnd, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.",
+                    APPNAME, MB_ICONERROR);
+                showOptions = TRUE;
+
+            }
             else if (g_RecordToggleKey &&
                 (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
                  !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
@@ -6298,11 +7525,52 @@ LRESULT APIENTRY MainWndProc(
         return 0;
 
     case WM_HOTKEY:
+        OutputDebug( L"[Hotkey] WM_HOTKEY id=%ld(%s) lParam=0x%llX\n",
+                     static_cast<long>( wParam ),
+                     HotkeyIdToString( wParam ),
+                     static_cast<unsigned long long>( lParam ) );
+        LogPanoramaState( L"WM_HOTKEY entry", wParam );
+
+        if( g_PanoramaCaptureActive )
+        {
+            if( wParam == SNIP_PANORAMA_HOTKEY || wParam == SNIP_PANORAMA_SAVE_HOTKEY )
+            {
+                OutputDebug( L"[Panorama] Stop hotkey received while capture is active\n" );
+                g_PanoramaStopRequested = true;
+
+                // If we're still selecting the panorama source area, stop selection
+                // immediately so the capture path can unwind cleanly.
+                if( g_RecordCropping == TRUE )
+                {
+                    OutputDebug( L"[Panorama] Stop requested during crop selection; stopping SelectRectangle\n" );
+                    g_SelectRectangle.Stop();
+                    g_RecordCropping = FALSE;
+                }
+            }
+
+            // Do not process any other hotkeys while panorama capture is active.
+            LogPanoramaState( L"WM_HOTKEY consumed while panorama active", wParam );
+            return 0;
+        }
+
+        if( g_RecordCropping == TRUE )
+        {
+            // If the crop overlay has already been torn down, clear stale state.
+            if( !g_SelectRectangle.IsActive() )
+            {
+                OutputDebug( L"[Hotkey] Clearing stale crop state (g_RecordCropping=TRUE but SelectRectangle inactive)\n" );
+                g_RecordCropping = FALSE;
+            }
+        }
+
         if( g_RecordCropping == TRUE )
         {
             if( wParam != RECORD_CROP_HOTKEY )
             {
                 // Cancel cropping on any hotkey.
+                OutputDebug( L"[Hotkey] Cancelling crop due to hotkey id=%ld(%s)\n",
+                             static_cast<long>( wParam ),
+                             HotkeyIdToString( wParam ) );
                 g_SelectRectangle.Stop();
                 g_RecordCropping = FALSE;
 
@@ -6325,6 +7593,29 @@ LRESULT APIENTRY MainWndProc(
             Sleep(250);
         }
         switch( wParam ) {
+        case WEBCAM_TOGGLE_HOTKEY:
+        {
+            // Ctrl+C during recording: toggle webcam overlay on/off.
+            if( g_RecordToggle && g_RecordingSession && g_RecordingSession->GetWebcamCapture() )
+            {
+                auto* wc = g_RecordingSession->GetWebcamCapture();
+                bool wasEnabled = wc->IsEnabled();
+                wc->SetEnabled( !wasEnabled );
+                if( wasEnabled )
+                {
+                    // Hide the on-screen preview but keep the window alive
+                    // so that position/size are preserved for re-show.
+                    g_WebcamPreview.Hide();
+                }
+                else
+                {
+                    // Re-show the on-screen preview at its last position/size.
+                    g_WebcamPreview.Show();
+                }
+                OutputDebug( L"[Webcam] Toggle: %s\n", wasEnabled ? L"OFF" : L"ON" );
+            }
+            break;
+        }
         case LIVE_DRAW_HOTKEY:
         {
             OutputDebug(L"LIVE_DRAW_HOTKEY\n");
@@ -6401,12 +7692,87 @@ LRESULT APIENTRY MainWndProc(
             }
             break;
 
+        case SNIP_PANORAMA_HOTKEY:
+        case SNIP_PANORAMA_SAVE_HOTKEY:
         case SNIP_SAVE_HOTKEY:
         case SNIP_HOTKEY:
         {
             OutputDebugStringW((L"[Snip] Hotkey received: " + std::to_wstring(LOWORD(wParam)) +
                 L" (SNIP_SAVE=" + std::to_wstring(SNIP_SAVE_HOTKEY) +
                 L" SNIP=" + std::to_wstring(SNIP_HOTKEY) + L")\n").c_str());
+
+            const bool panoramaRequested = (LOWORD(wParam) == SNIP_PANORAMA_HOTKEY || LOWORD(wParam) == SNIP_PANORAMA_SAVE_HOTKEY);
+            const bool panoramaSaveToFile = (LOWORD(wParam) == SNIP_PANORAMA_SAVE_HOTKEY);
+
+            if( panoramaRequested )
+            {
+                LogPanoramaState( L"Panorama requested", wParam );
+                // Block liveZoom liveDraw snip due to mirroring bug
+                if( IsWindowVisible( g_hWndLiveZoom )
+                    && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    OutputDebug( L"[Panorama] Request ignored because liveDraw overlay is active\n" );
+                    break;
+                }
+
+#ifdef __ZOOMIT_POWERTOYS__
+                if( g_StartedByPowerToys )
+                {
+                    Trace::ZoomItActivateSnip();
+                }
+#endif // __ZOOMIT_POWERTOYS__
+
+                if( g_Drawing )
+                {
+                    OutputDebug( L"[Panorama] Exiting drawing mode before capture\n" );
+                    SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                    if( g_Drawing )
+                    {
+                        SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                    }
+                }
+
+                if( g_Zoomed )
+                {
+                    OutputDebug( L"[Panorama] Exiting zoom before capture; zoomOnLiveZoom=%d\n", g_ZoomOnLiveZoom ? 1 : 0 );
+                    if( g_ZoomOnLiveZoom )
+                    {
+                        ShowCursor( false );
+                        SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                        ShowCursor( true );
+                    }
+                    else
+                    {
+                        SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                    }
+                }
+
+                g_PanoramaCaptureActive = true;
+                g_PanoramaStopRequested = false;
+                LogPanoramaState( L"Panorama capture armed", wParam );
+                auto panoramaCaptureCleanup = wil::scope_exit( [hWnd] {
+                    LogPanoramaState( L"Panorama cleanup begin" );
+                    g_PanoramaCaptureActive = false;
+                    g_PanoramaStopRequested = false;
+                    g_RecordCropping = FALSE;
+                    g_SelectRectangle.Stop();
+                    UNREFERENCED_PARAMETER( hWnd );
+                    LogPanoramaState( L"Panorama cleanup end" );
+                } );
+                const bool captureSuccess = panoramaSaveToFile
+                    ? RunPanoramaCaptureToFile( hWnd )
+                    : RunPanoramaCaptureToClipboard( hWnd );
+                OutputDebug( L"[Panorama] RunPanoramaCapture%s result=%d\n",
+                             panoramaSaveToFile ? L"ToFile" : L"ToClipboard",
+                             captureSuccess ? 1 : 0 );
+                if( !captureSuccess )
+                {
+                    OutputDebugStringW( panoramaSaveToFile
+                        ? L"[Panorama] Failed to save capture to file\n"
+                        : L"[Panorama] Failed to copy capture to clipboard\n" );
+                }
+                break;
+            }
 
             // Block liveZoom liveDraw snip due to mirroring bug
             if( IsWindowVisible( g_hWndLiveZoom )
@@ -6450,7 +7816,6 @@ LRESULT APIENTRY MainWndProc(
             }
             ShowMainWindow(hWnd, monInfo, width, height);
 
-            // Now copy crop or copy+save
             if( LOWORD( wParam ) == SNIP_SAVE_HOTKEY )
             {
                 // IDC_SAVE_CROP handles cursor hiding internally after region selection
@@ -6490,6 +7855,79 @@ LRESULT APIENTRY MainWndProc(
             break;
         }
 
+        case SNIP_OCR_HOTKEY:
+        {
+            OutputDebugStringW( L"[SnipOCR] Hotkey received\n" );
+
+            // Block liveZoom liveDraw snip OCR due to mirroring bug
+            if( IsWindowVisible( g_hWndLiveZoom )
+                && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+            {
+                break;
+            }
+
+            bool zoomed = true;
+#ifdef __ZOOMIT_POWERTOYS__
+            if( g_StartedByPowerToys )
+            {
+                Trace::ZoomItActivateSnipOcr();
+            }
+#endif // __ZOOMIT_POWERTOYS__
+
+            // First, static zoom at 1x
+            if( !g_Zoomed )
+            {
+                zoomed = false;
+                if( IsWindowVisible( g_hWndLiveZoom ) && !g_LiveZoomLevelOne )
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, LIVE_DRAW_ZOOM );
+                }
+                zoomLevel = zoomTelescopeTarget = 1;
+            }
+            else if( g_Drawing )
+            {
+                SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                if( g_Drawing )
+                {
+                    SendMessage( hWnd, WM_USER_EXIT_MODE, 0, 0 );
+                }
+            }
+            ShowMainWindow( hWnd, monInfo, width, height );
+
+            // Perform OCR on the selected region
+            SendMessage( hWnd, WM_COMMAND, IDC_COPY_OCR, ( zoomed ? 0 : SHALLOW_ZOOM ) );
+
+            // Now if we weren't zoomed, unzoom
+            if( !zoomed )
+            {
+                if( g_ZoomOnLiveZoom )
+                {
+                    ShowCursor( false );
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, 0 );
+                    ShowCursor( true );
+                }
+                else
+                {
+                    SendMessage( hWnd, WM_HOTKEY, ZOOM_HOTKEY, SHALLOW_ZOOM );
+                }
+            }
+
+            // exit zoom
+            if( g_Zoomed )
+            {
+                if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
+                {
+                    OutputDebug( L"Exiting liveDraw after snip OCR\n" );
+                    SendMessage( hWnd, WM_KEYDOWN, VK_ESCAPE, 0 );
+                }
+            }
+            break;
+        }
+
         case SAVE_IMAGE_HOTKEY:
             SendMessage(hWnd, WM_COMMAND, IDC_SAVE, 0);
             break;
@@ -6515,7 +7953,6 @@ LRESULT APIENTRY MainWndProc(
 #else
             if( !g_Zoomed && !IsWindowVisible( g_hWndLiveZoom )) {
 #endif
-
                 SendMessage( hWnd, WM_COMMAND, IDC_BREAK, 0 );
             }
             break;
@@ -6726,6 +8163,7 @@ LRESULT APIENTRY MainWndProc(
                 }
 
                 // This call blocks with a message loop while cropping.
+                g_SelectRectangle.AspectRatio( g_RecordAspectRatio ? 16.0 / 9.0 : 0.0 );
                 auto canceled = !g_SelectRectangle.Start( ( g_hWndLiveZoom != nullptr ) ? g_hWndLiveZoom : hWnd );
                 g_RecordCropping = FALSE;
 
@@ -6785,6 +8223,29 @@ LRESULT APIENTRY MainWndProc(
                     if( hWndRecord == GetDesktopWindow()) {
 
                         hWndRecord = NULL;
+                    }
+                }
+
+                // Show a full-monitor recording border (yellow → orange once
+                // the first frame is captured) so the user knows something is
+                // happening, even for full-screen / window captures.
+                // Only create the border when starting a NEW recording
+                // (g_RecordToggle==FALSE).  On the second hotkey press (stop),
+                // skip this — StopRecording() will tear down the border.
+                if( g_RecordToggle == FALSE )
+                {
+                    OutputDebugStringW( L"[RecBorder] About to call SelectRectangle::Start(fullMonitor=true)\n" );
+                    try
+                    {
+                        // Pass NULL as owner — the main window may be hidden,
+                        // and owned popups of hidden owners are hidden too.
+                        g_SelectRectangle.AspectRatio( 0.0 );
+                        g_SelectRectangle.Start( nullptr, true );
+                        OutputDebugStringW( L"[RecBorder] SelectRectangle::Start returned OK\n" );
+                    }
+                    catch( ... )
+                    {
+                        OutputDebugStringW( L"[RecBorder] SelectRectangle::Start THREW an exception!\n" );
                     }
                 }
             }
@@ -7154,6 +8615,13 @@ LRESULT APIENTRY MainWndProc(
     case WM_KILLFOCUS:
         if( ( g_RecordCropping == FALSE ) && g_Zoomed && !g_bSaveInProgress ) {
 
+            // Don't exit zoom when focus moves to the webcam overlay
+            if( g_WebcamPreview.IsActive() &&
+                reinterpret_cast<HWND>( wParam ) == g_WebcamPreview.GetHwnd() )
+            {
+                break;
+            }
+
             // Turn off zoom if not in liveDraw
             DWORD layeringFlag;
             GetLayeredWindowAttributes(hWnd, NULL, NULL, &layeringFlag);
@@ -7435,8 +8903,9 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_KEYDOWN:
 
-        if( (g_TypeMode != TypeModeOff) && g_HaveTyped &&
-            (wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK) ) {
+        if( (g_TypeMode != TypeModeOff) && g_HaveTyped && wParam != VK_UP && wParam != VK_DOWN &&
+            (( wParam <= 127 && isprint( static_cast<int>( wParam ) ) ) ||
+            wParam == VK_RETURN || wParam == VK_DELETE || wParam == VK_BACK )) {
 
             if( wParam == VK_RETURN ) {
 
@@ -7538,6 +9007,54 @@ LRESULT APIENTRY MainWndProc(
         case 'G':
         case 'X':
         case 'P':
+        case 'W':
+        case 'K':
+            // Ctrl+K / Ctrl+W: blank screen (sketch pad)
+            // Also triggered internally via SendMessage with lParam == LIVE_DRAW_ZOOM.
+            if( (wParam == 'K' || wParam == 'W') &&
+                ((GetKeyState( VK_CONTROL ) & 0x8000) || lParam == LIVE_DRAW_ZOOM) )
+            {
+                // Break timer: change background color
+                if( g_TimerActive )
+                {
+                    g_BreakBackgroundColor = ( wParam == 'K' ) ? 1 : 0;
+                    reg.WriteRegSettings( RegSettings );
+                    InvalidateRect( hWnd, NULL, FALSE );
+                    break;
+                }
+
+                // Block user-driven sketch pad in liveDraw
+                if( lParam != LIVE_DRAW_ZOOM
+                    && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
+                {
+                    break;
+                }
+
+                // Don't allow screen blanking while we've got the typing cursor active
+                // because we don't really handle going from white to black.
+                if( g_Zoomed && (g_TypeMode == TypeModeOff)) {
+
+                    if( !g_Drawing ) {
+
+                        SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
+                    }
+                    // Restore area where cursor was previously
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                    PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+                    g_BlankedScreen = static_cast<int>(wParam);
+                    rc.top = rc.left = 0;
+                    rc.bottom = height;
+                    rc.right = width;
+                    BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
+                    InvalidateRect( hWnd, NULL, FALSE );
+
+                    // Save area that's going to be occupied by new cursor position
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                    SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
+                }
+                break;
+            }
+
             if( (g_Zoomed || g_TimerActive) && (g_TypeMode == TypeModeOff)) {
 
                 PDWORD	penColor;
@@ -7552,6 +9069,8 @@ LRESULT APIENTRY MainWndProc(
                 else if( wParam == 'Y' ) *penColor = COLOR_YELLOW;
                 else if( wParam == 'O' ) *penColor = COLOR_ORANGE;
                 else if( wParam == 'P' ) *penColor = COLOR_PINK;
+                else if( wParam == 'W' ) *penColor = COLOR_WHITE;
+                else if( wParam == 'K' ) *penColor = COLOR_BLACK;
                 else if( wParam == 'X' )
                 {
                     if( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED )
@@ -7636,39 +9155,6 @@ LRESULT APIENTRY MainWndProc(
             }
             break;
 
-        case 'W':
-        case 'K':
-            // Block user-driven sketch pad in liveDraw
-            if( lParam != LIVE_DRAW_ZOOM
-                && ( GetWindowLongPtr( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) )
-            {
-                break;
-            }
-
-            // Don't allow screen blanking while we've got the typing cursor active
-            // because we don't really handle going from white to black.
-            if( g_Zoomed && (g_TypeMode == TypeModeOff)) {
-
-                if( !g_Drawing ) {
-
-                    SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
-                }
-                // Restore area where cursor was previously
-                RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
-                PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
-                g_BlankedScreen = static_cast<int>(wParam);
-                rc.top = rc.left = 0;
-                rc.bottom = height;
-                rc.right = width;
-                BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
-                InvalidateRect( hWnd, NULL, FALSE );
-
-                // Save area that's going to be occupied by new cursor position
-                SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
-                SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
-            }
-            break;
-
         case 'E':
             // Don't allow erase while we have the typing cursor active
             if( g_HaveDrawn && (g_TypeMode == TypeModeOff)) {
@@ -7677,7 +9163,19 @@ LRESULT APIENTRY MainWndProc(
                 g_HaveDrawn = FALSE;
                 OutputDebug(L"Erase\n");
                 if(GetWindowLong(hWnd, GWL_EXSTYLE) & WS_EX_LAYERED) {
-                    SendMessage(hWnd, WM_KEYDOWN, 'K', 0);
+                    // Blank the live-draw canvas to black directly.
+                    if( !g_Drawing ) {
+                        SendMessage( hWnd, WM_LBUTTONDOWN, 0, MAKELPARAM( cursorPos.x, cursorPos.y));
+                    }
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                    PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+                    g_BlankedScreen = 'K';
+                    rc.top = rc.left = 0;
+                    rc.bottom = height;
+                    rc.right = width;
+                    BlankScreenArea( hdcScreenCompat, &rc, g_BlankedScreen );
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                    SendMessage( hWnd, WM_MOUSEMOVE, 0, MAKELPARAM( prevPt.x, prevPt.y ));
                 }
                 else {
                     BitBlt(hdcScreenCompat, 0, 0, bmp.bmWidth,
@@ -7788,7 +9286,11 @@ LRESULT APIENTRY MainWndProc(
 
                 } else if(g_DrawingShape) {
 
-                    SetROP2(hdcScreenCompat, R2_NOTXORPEN);
+                    SetROP2(hdcScreenCompat, R2_NOT);
+
+                    // Select a hollow brush so GDI Rectangle/Ellipse draw
+                    // outlines only during rubber-banding (no fill).
+                    HBRUSH hOldBrush = static_cast<HBRUSH>(SelectObject( hdcScreenCompat, GetStockObject( NULL_BRUSH ) ));
 
                     // If a previous target rectangle exists, erase
                     // it by drawing another rectangle on top.
@@ -7871,6 +9373,7 @@ LRESULT APIENTRY MainWndProc(
                     }
 
                     prevPenWidth = g_PenWidth;
+                    SelectObject( hdcScreenCompat, hOldBrush );
                     SetROP2( hdcScreenCompat, R2_NOP );
                 }
                 else if (g_Tracing) {
@@ -8305,11 +9808,13 @@ LRESULT APIENTRY MainWndProc(
             } else if (g_rcRectangle.top != g_rcRectangle.bottom ||
                         g_rcRectangle.left != g_rcRectangle.right ) {
 
-                // erase previous
+                // erase previous rubber-band outline
                 if (!PEN_COLOR_HIGHLIGHT(g_PenColor))
                 {
-                    SetROP2(hdcScreenCompat, R2_NOTXORPEN);
+                    HBRUSH hNullBrush = static_cast<HBRUSH>(SelectObject( hdcScreenCompat, GetStockObject( NULL_BRUSH ) ));
+                    SetROP2(hdcScreenCompat, R2_NOT);
                     DrawShape(g_DrawingShape, hdcScreenCompat, &g_rcRectangle);
+                    SelectObject( hdcScreenCompat, hNullBrush );
                 }
 
                 // Draw the final shape
@@ -8447,6 +9952,19 @@ LRESULT APIENTRY MainWndProc(
         StopRecording();
         break;
 
+    case WM_USER_RECORDING_STARTED:
+        // The first video frame has been captured.  Change the selection
+        // border from yellow to orange so the user knows recording is live.
+        OutputDebugStringW( L"[RecBorder] WM_USER_RECORDING_STARTED received\n" );
+        {
+            wchar_t dbg[256];
+            swprintf_s( dbg, L"[RecBorder] m_window=%p m_selected=%d\n",
+                        g_SelectRectangle.Window(), g_SelectRectangle.IsSelected() );
+            OutputDebugStringW( dbg );
+        }
+        g_SelectRectangle.SetRecordingActive();
+        break;
+
     case WM_USER_SAVE_CURSOR:
         if( g_Zoomed == TRUE )
         {
@@ -8558,13 +10076,18 @@ LRESULT APIENTRY MainWndProc(
         g_BreakToggleMod = GetKeyMod(g_BreakToggleKey);
         g_DemoTypeToggleMod = GetKeyMod(g_DemoTypeToggleKey);
         g_SnipToggleMod = GetKeyMod(g_SnipToggleKey);
+        g_SnipPanoramaToggleMod = GetKeyMod(g_SnipPanoramaToggleKey);
+        g_SnipOcrToggleMod = GetKeyMod(g_SnipOcrToggleKey);
         g_RecordToggleMod = GetKeyMod(g_RecordToggleKey);
         BOOL showOptions = FALSE;
         if (g_ToggleKey)
         {
             if (!RegisterHotKey(hWnd, ZOOM_HOTKEY, g_ToggleMod, g_ToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -8573,7 +10096,10 @@ LRESULT APIENTRY MainWndProc(
             if (!RegisterHotKey(hWnd, LIVE_HOTKEY, g_LiveZoomToggleMod, g_LiveZoomToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomToggleMod ^ MOD_SHIFT, g_LiveZoomToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified live-zoom toggle hotkey is already in use.\nSelect a different zoom toggle hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -8581,7 +10107,10 @@ LRESULT APIENTRY MainWndProc(
         {
             if (!RegisterHotKey(hWnd, DRAW_HOTKEY, g_DrawToggleMod, g_DrawToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified draw w/out zoom hotkey is already in use.\nSelect a different draw w/out zoom hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -8589,7 +10118,10 @@ LRESULT APIENTRY MainWndProc(
         {
             if (!RegisterHotKey(hWnd, BREAK_HOTKEY, g_BreakToggleMod, g_BreakToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified break timer hotkey is already in use.\nSelect a different break timer hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -8598,7 +10130,10 @@ LRESULT APIENTRY MainWndProc(
             if (!RegisterHotKey(hWnd, DEMOTYPE_HOTKEY, g_DemoTypeToggleMod, g_DemoTypeToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified live-type hotkey is already in use.\nSelect a different live-type hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -8607,7 +10142,34 @@ LRESULT APIENTRY MainWndProc(
             if (!RegisterHotKey(hWnd, SNIP_HOTKEY, g_SnipToggleMod, g_SnipToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipPanoramaToggleKey &&
+            (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
+        {
+            if (!RegisterHotKey(hWnd, SNIP_PANORAMA_HOTKEY, g_SnipPanoramaToggleMod | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF) ||
+                !RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, ( g_SnipPanoramaToggleMod ^ MOD_SHIFT ) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
+                }
+                showOptions = TRUE;
+            }
+        }
+        if (g_SnipOcrToggleKey)
+        {
+            if (!RegisterHotKey(hWnd, SNIP_OCR_HOTKEY, g_SnipOcrToggleMod, g_SnipOcrToggleKey & 0xFF))
+            {
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified snip OCR hotkey is already in use.\nSelect a different snip OCR hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
         }
@@ -8617,16 +10179,12 @@ LRESULT APIENTRY MainWndProc(
                 !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
                 !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))
             {
-                MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                if(!g_StartedByPowerToys)
+                {
+                    MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                }
                 showOptions = TRUE;
             }
-        }
-        // Register CTRL+8 for GIF recording and CTRL+ALT+8 for GIF window recording
-        if (!RegisterHotKey(hWnd, RECORD_GIF_HOTKEY, MOD_CONTROL | MOD_NOREPEAT, '8') ||
-            !RegisterHotKey(hWnd, RECORD_GIF_WINDOW_HOTKEY, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, '8'))
-        {
-            MessageBox(hWnd, L"The specified GIF recording hotkey is already in use.\nSelect a different GIF recording hotkey.", APPNAME, MB_ICONERROR);
-            showOptions = TRUE;
         }
         if (showOptions)
         {
@@ -8906,6 +10464,93 @@ LRESULT APIENTRY MainWndProc(
             }
             break;
 
+        case IDC_COPY_OCR:
+        {
+            int         copyX, copyY;
+            int         copyWidth, copyHeight;
+
+            g_RecordCropping = TRUE;
+            POINT local_savedCursorPos{};
+            if( lParam != SHALLOW_ZOOM )
+            {
+                GetCursorPos( &local_savedCursorPos );
+            }
+            SelectRectangle selectRectangle;
+            if( !selectRectangle.Start( hWnd ) )
+            {
+                g_RecordCropping = FALSE;
+                break;
+            }
+            auto copyRc = selectRectangle.SelectedRect();
+            selectRectangle.Stop();
+            if( lParam != SHALLOW_ZOOM )
+            {
+                SetCursorPos( local_savedCursorPos.x, local_savedCursorPos.y );
+            }
+            g_RecordCropping = FALSE;
+
+            copyX = copyRc.left;
+            copyY = copyRc.top;
+            copyWidth = copyRc.right - copyRc.left;
+            copyHeight = copyRc.bottom - copyRc.top;
+
+            if( copyWidth <= 0 || copyHeight <= 0 )
+            {
+                break;
+            }
+
+            // Capture the selected region into an HBITMAP
+            HBITMAP hSaveBitmap = CreateCompatibleBitmap( hdcScreen, copyWidth, copyHeight );
+            HDC hSaveDc = CreateCompatibleDC( hdcScreen );
+            SelectObject( hSaveDc, hSaveBitmap );
+            if( g_SmoothImage )
+            {
+                SetStretchBltMode( hSaveDc, HALFTONE );
+            }
+            else
+            {
+                SetStretchBltMode( hSaveDc, COLORONCOLOR );
+            }
+            StretchBlt( hSaveDc,
+                        0, 0,
+                        copyWidth, copyHeight,
+                        hdcScreen,
+                        monInfo.rcMonitor.left + copyX,
+                        monInfo.rcMonitor.top + copyY,
+                        copyWidth, copyHeight,
+                        SRCCOPY | CAPTUREBLT );
+
+            // Run OCR on the captured bitmap
+            std::wstring ocrText = OcrFromHBITMAP( hSaveBitmap );
+
+            // Copy OCR text to clipboard
+            if( !ocrText.empty() && OpenClipboard( hWnd ) )
+            {
+                EmptyClipboard();
+                size_t cbSize = ( ocrText.size() + 1 ) * sizeof( wchar_t );
+                HGLOBAL hGlobal = GlobalAlloc( GMEM_MOVEABLE, cbSize );
+                if( hGlobal )
+                {
+                    void* pMem = GlobalLock( hGlobal );
+                    if( pMem )
+                    {
+                        memcpy( pMem, ocrText.c_str(), cbSize );
+                        GlobalUnlock( hGlobal );
+                        SetClipboardData( CF_UNICODETEXT, hGlobal );
+                    }
+                    else
+                    {
+                        GlobalFree( hGlobal );
+                    }
+                }
+                CloseClipboard();
+            }
+
+            DeleteObject( hSaveBitmap );
+            DeleteDC( hSaveDc );
+            break;
+        }
+
         case IDC_DRAW:
             PostMessage( hWnd, WM_HOTKEY, DRAW_HOTKEY, 1 );
             break;
@@ -9018,7 +10663,6 @@ LRESULT APIENTRY MainWndProc(
             activeBreakShowBackgroundFile = g_BreakShowBackgroundFile;
             activeBreakShowDesktop = g_BreakShowDesktop;
 
-            g_TimerActive = TRUE;
 #ifdef __ZOOMIT_POWERTOYS__
             if( g_StartedByPowerToys )
             {
@@ -9027,6 +10671,20 @@ LRESULT APIENTRY MainWndProc(
 #endif // __ZOOMIT_POWERTOYS__
 
             breakTimeout = g_BreakTimeout * 60 + 1;
+
+            //
+            // If lock workstation is enabled, skip the local break timer
+            // window entirely — the embedded screensaver will run it on
+            // the ScreenSaver Desktop with authentication required.
+            //
+            if( g_BreakLockWorkstation )
+            {
+                DeleteDC( hdcScreen );
+                ActivateBreakScreenSaver( hWnd, breakTimeout );
+                break;
+            }
+
+            g_TimerActive = TRUE;
 
             // Create font
             g_LogFont.lfHeight = height / 5;
@@ -9115,6 +10773,59 @@ LRESULT APIENTRY MainWndProc(
                 SendMessage(hWnd, WM_MOUSEMOVE, 0, MAKELPARAM(mousePos.x, mousePos.y));
             }
             break;
+
+        case 4:
+            // Break screensaver post-cleanup watchdog.
+            if( HasOrphanedScreenSaverSettings() )
+            {
+                if( !IsBreakScreenSaverRunning() )
+                {
+                    RestoreScreenSaverSettings();
+                    KillTimer( hWnd, 4 );
+                }
+            }
+            else
+            {
+                KillTimer( hWnd, 4 );
+            }
+            break;
+
+        case 5:
+        {
+            //
+            // Deferred SPI re-apply after session unlock.
+            // Winlogon may override our SPI_SETSCREENSAVEACTIVE /
+            // SPI_SETSCREENSAVETIMEOUT calls during the desktop switch.
+            // Re-read the (already-restored) registry values and push
+            // them into the runtime SPI state.
+            //
+            KillTimer( hWnd, 5 );
+
+            TCHAR regActive[16] = {};
+            DWORD cbActive = sizeof( regActive );
+            BOOL rtActive = FALSE;
+            if( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                             L"ScreenSaveActive", RRF_RT_REG_SZ, NULL,
+                             regActive, &cbActive ) == ERROR_SUCCESS )
+            {
+                rtActive = ( wcstol( regActive, nullptr, 10 ) != 0 );
+            }
+            SystemParametersInfo( SPI_SETSCREENSAVEACTIVE, rtActive, 0, SPIF_SENDCHANGE );
+
+            TCHAR regTimeout[16] = {};
+            DWORD cbTimeout = sizeof( regTimeout );
+            UINT timeout = 300;  // safe default
+            if( RegGetValue( HKEY_CURRENT_USER, L"Control Panel\\Desktop",
+                             L"ScreenSaveTimeOut", RRF_RT_REG_SZ, NULL,
+                             regTimeout, &cbTimeout ) == ERROR_SUCCESS )
+            {
+                long parsed = wcstol( regTimeout, nullptr, 10 );
+                if( parsed > 0 )
+                    timeout = static_cast<UINT>( parsed );
+            }
+            SystemParametersInfo( SPI_SETSCREENSAVETIMEOUT, timeout, 0, SPIF_SENDCHANGE );
+            break;
+        }
         }
         break;
 
@@ -9171,11 +10882,11 @@ LRESULT APIENTRY MainWndProc(
 #endif
         } else if( g_TimerActive ) {
 
-            // Fill bitmap with white
+            // Fill background (white by default, black if saved as 1)
             rc.top = rc.left = 0;
             rc.bottom = height;
             rc.right = width;
-            FillRect( hdcScreenCompat, &rc, GetSysColorBrush( COLOR_WINDOW ));
+            BlankScreenArea( hdcScreenCompat, &rc, g_BreakBackgroundColor ? 'K' : 'W' );
 
             // If there's a background bitmap, draw it in the center
             if( g_hBackgroundBmp ) {
@@ -9274,7 +10985,35 @@ LRESULT APIENTRY MainWndProc(
         EndPaint(hWnd, &ps);
         return TRUE;
 
+    case WM_WTSSESSION_CHANGE:
+        //
+        // When the user unlocks the workstation after a break timer screensaver
+        // session, restore the original screensaver settings so the break timer
+        // doesn't reactivate.
+        //
+        if( wParam == WTS_SESSION_UNLOCK ||
+            wParam == WTS_SESSION_LOGON ||
+            wParam == WTS_CONSOLE_CONNECT )
+        {
+            RestoreScreenSaverSettings();
+
+            //
+            // Schedule a deferred SPI re-apply.  Winlogon may re-read the
+            // (now-stale) screensaver policy during the desktop switch,
+            // overriding the SPI_SETSCREENSAVEACTIVE / TIMEOUT calls we
+            // just made.  Timer 5 fires after the transition completes
+            // and re-asserts the correct runtime state.
+            //
+            SetTimer( hWnd, 5, 5000, NULL );
+        }
+        break;
+
     case WM_DESTROY:
+        // Restore screensaver settings on clean shutdown in case the
+        // break screensaver was still active.
+        if( HasOrphanedScreenSaverSettings() )
+            RestoreScreenSaverSettings();
+        WTSUnRegisterSessionNotification( hWnd );
         CleanupDarkModeResources();
         PostQuitMessage( 0 );
         break;
@@ -9467,8 +11206,18 @@ LRESULT CALLBACK LiveZoomWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
             if( !g_fullScreenWorkaround ) {
 
                 pSetLayeredWindowAttributes( hWnd, 0, 255, LWA_ALPHA );
-                SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0,
-                    SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+
+                // Keep the webcam preview above the zoom window.
+                // Two-step: zoom reclaims topmost first, then preview
+                // goes on top.  SWP_NOACTIVATE does not affect
+                // SetCapture, so this is safe during drag/resize.
+                SetWindowPos( hWnd, HWND_TOPMOST, 0, 0, 0, 0,
+                              SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+                if( g_WebcamPreview.IsActive() )
+                {
+                    SetWindowPos( g_WebcamPreview.GetHwnd(), HWND_TOPMOST, 0, 0, 0, 0,
+                                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE );
+                }
 
                 OutputDebug(L"LIVEZOOM RECLAIM\n");
             }
@@ -9957,6 +11706,10 @@ void ZoomIt_DispatchCommand(ZoomItCommand cmd)
         post_hotkey(SNIP_HOTKEY);
         Trace::ZoomItActivateSnip();
         break;
+    case ZoomItCommand::SnipOcr:
+        post_hotkey(SNIP_OCR_HOTKEY);
+        Trace::ZoomItActivateSnipOcr();
+        break;
     case ZoomItCommand::Record:
         post_hotkey(RECORD_HOTKEY);
         Trace::ZoomItActivateRecord();
@@ -9977,6 +11730,40 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 {
     MSG					msg;
     HACCEL				hAccel;
+
+    // Enable panorama frame/log dumps in release builds when requested.
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-debug" ) != nullptr )
+    {
+        g_PanoramaDebugMode = true;
+    }
+
+#ifdef _DEBUG
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-selftest" ) != nullptr )
+    {
+        const bool selfTestPassed = RunPanoramaStitchSelfTest();
+        return selfTestPassed ? 0 : 2;
+    }
+
+    if( lpCmdLine != nullptr && wcsstr( lpCmdLine, L"/panorama-stitch-latest" ) != nullptr )
+    {
+        const bool replayStitchPassed = RunPanoramaStitchLatestDebugDump();
+        return replayStitchPassed ? 0 : 3;
+    }
+
+    {
+        const wchar_t* replayArg = lpCmdLine != nullptr ? wcsstr( lpCmdLine, L"/panorama-stitch-replay " ) : nullptr;
+        if( replayArg != nullptr )
+        {
+            const wchar_t* path = replayArg + wcslen( L"/panorama-stitch-replay " );
+            while( *path == L' ' || *path == L'\"' ) ++path;
+            std::wstring replayPath( path );
+            while( !replayPath.empty() && ( replayPath.back() == L'\"' || replayPath.back() == L' ' ) )
+                replayPath.pop_back();
+            const bool ok = RunPanoramaStitchDumpDirectory( replayPath.c_str() );
+            return ok ? 0 : 3;
+        }
+    }
+#endif // _DEBUG
 
     if( !ShowEula( APPNAME, NULL, NULL )) return 1;
 
@@ -10169,6 +11956,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
     HANDLE m_break_event_handle = NULL;
     HANDLE m_live_zoom_event_handle = NULL;
     HANDLE m_snip_event_handle = NULL;
+    HANDLE m_snip_ocr_event_handle = NULL;
     HANDLE m_record_event_handle = NULL;
     std::thread m_event_triggers_thread;
 
@@ -10181,13 +11969,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         m_break_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_BREAK_EVENT);
         m_live_zoom_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_LIVEZOOM_EVENT);
         m_snip_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_SNIP_EVENT);
+        m_snip_ocr_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_SNIPOCR_EVENT);
         m_record_event_handle = CreateEventW(nullptr, false, false, CommonSharedConstants::ZOOMIT_RECORD_EVENT);
-        if (!m_reload_settings_event_handle || !m_exit_event_handle || !m_zoom_event_handle || !m_draw_event_handle || !m_break_event_handle || !m_live_zoom_event_handle || !m_snip_event_handle || !m_record_event_handle)
+        if (!m_reload_settings_event_handle || !m_exit_event_handle || !m_zoom_event_handle || !m_draw_event_handle || !m_break_event_handle || !m_live_zoom_event_handle || !m_snip_event_handle || !m_snip_ocr_event_handle || !m_record_event_handle)
         {
             Logger::warn(L"Failed to create events. {}", get_last_error_or_default(GetLastError()));
             return 1;
         }
-        const std::array<HANDLE, 8> event_handles{
+        const std::array<HANDLE, 9> event_handles{
             m_reload_settings_event_handle,
             m_exit_event_handle,
             m_zoom_event_handle,
@@ -10195,6 +11984,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
             m_break_event_handle,
             m_live_zoom_event_handle,
             m_snip_event_handle,
+            m_snip_ocr_event_handle,
             m_record_event_handle,
         };
         const DWORD handle_count = static_cast<DWORD>(event_handles.size());
@@ -10252,6 +12042,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
                     ZoomIt_DispatchCommand(ZoomItCommand::Snip);
                     break;
                 case WAIT_OBJECT_0 + 7:
+                    ZoomIt_DispatchCommand(ZoomItCommand::SnipOcr);
+                    break;
+                case WAIT_OBJECT_0 + 8:
                     ZoomIt_DispatchCommand(ZoomItCommand::Record);
                     break;
                 default: break;
@@ -10289,6 +12082,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
         CloseHandle(m_break_event_handle);
         CloseHandle(m_live_zoom_event_handle);
         CloseHandle(m_snip_event_handle);
+        CloseHandle(m_snip_ocr_event_handle);
         CloseHandle(m_record_event_handle);
         m_event_triggers_thread.join();
     }

@@ -35,10 +35,7 @@ public sealed partial class DockItemControl : Control
     {
         if (d is DockItemControl control)
         {
-            // Collapse the tooltip when the string is null or empty so an
-            // empty tooltip bubble doesn't appear on hover.
-            var text = e.NewValue as string;
-            ToolTipService.SetToolTip(control, string.IsNullOrEmpty(text) ? null : text);
+            control.UpdateToolTip();
         }
     }
 
@@ -87,11 +84,35 @@ public sealed partial class DockItemControl : Control
         set => SetValue(TextVisibilityProperty, value);
     }
 
+    public static readonly DependencyProperty IsCompactProperty =
+        DependencyProperty.Register(nameof(IsCompact), typeof(bool), typeof(DockItemControl), new PropertyMetadata(false, OnIsCompactPropertyChanged));
+
+    public bool IsCompact
+    {
+        get => (bool)GetValue(IsCompactProperty);
+        set => SetValue(IsCompactProperty, value);
+    }
+
+    private static void OnIsCompactPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is DockItemControl control)
+        {
+            control.UpdateCompactState();
+        }
+    }
+
+    private void UpdateCompactState()
+    {
+        VisualStateManager.GoToState(this, IsCompact ? "Compact" : "DefaultLayout", true);
+    }
+
     private const string IconPresenterName = "IconPresenter";
 
     private FrameworkElement? _iconPresenter;
     private DockControl? _parentDock;
+    private ToolTip? _toolTip;
     private long _dockSideCallbackToken = -1;
+    private long _dockSizeCallbackToken = -1;
 
     private static void OnTextPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -124,6 +145,14 @@ public sealed partial class DockItemControl : Control
 
     private void UpdateTextVisibilityState()
     {
+        // When TextVisibility is Collapsed, always hide text and collapse the
+        // grid column/spacing so the icon-only layout doesn't waste space.
+        if (TextVisibility == Visibility.Collapsed)
+        {
+            VisualStateManager.GoToState(this, "TextHidden", true);
+            return;
+        }
+
         // Determine which visual state to use based on title/subtitle presence
         var stateName = (HasTitle, HasSubtitle) switch
         {
@@ -184,7 +213,32 @@ public sealed partial class DockItemControl : Control
     {
         UpdateTextVisibility();
         UpdateIconVisibility();
+        UpdateToolTip();
         UpdateAlignment();
+        UpdateCompactState();
+    }
+
+    private void UpdateToolTip()
+    {
+        var text = ToolTip;
+        if (string.IsNullOrEmpty(text))
+        {
+            ToolTipService.SetToolTip(this, null);
+            _toolTip = null;
+            return;
+        }
+
+        // Wait until the control is connected to a XamlRoot before creating
+        // the tooltip popup; dock items are materialized very early in startup.
+        if (XamlRoot is null)
+        {
+            return;
+        }
+
+        _toolTip ??= new ToolTip();
+        _toolTip.Content = text;
+        _toolTip.XamlRoot = XamlRoot;
+        ToolTipService.SetToolTip(this, _toolTip);
     }
 
     protected override void OnApplyTemplate()
@@ -227,11 +281,17 @@ public sealed partial class DockItemControl : Control
         {
             _parentDock = dock;
             UpdateInnerMarginForDockSide(dock.DockSide);
+            UpdateCompactFromParent(dock);
             UpdateAllVisibility();
             _dockSideCallbackToken = dock.RegisterPropertyChangedCallback(
                 DockControl.DockSideProperty,
                 OnParentDockSideChanged);
+            _dockSizeCallbackToken = dock.RegisterPropertyChangedCallback(
+                DockControl.DockSizeProperty,
+                OnParentDockSizeChanged);
         }
+
+        UpdateToolTip();
     }
 
     private void DockItemControl_ActualThemeChanged(FrameworkElement sender, object args)
@@ -242,23 +302,50 @@ public sealed partial class DockItemControl : Control
 
     private void DockItemControl_Unloaded(object sender, RoutedEventArgs e)
     {
-        if (_parentDock is not null && _dockSideCallbackToken >= 0)
+        if (_parentDock is not null)
         {
-            _parentDock.UnregisterPropertyChangedCallback(
-                DockControl.DockSideProperty,
-                _dockSideCallbackToken);
-            _dockSideCallbackToken = -1;
+            if (_dockSideCallbackToken >= 0)
+            {
+                _parentDock.UnregisterPropertyChangedCallback(
+                    DockControl.DockSideProperty,
+                    _dockSideCallbackToken);
+                _dockSideCallbackToken = -1;
+            }
+
+            if (_dockSizeCallbackToken >= 0)
+            {
+                _parentDock.UnregisterPropertyChangedCallback(
+                    DockControl.DockSizeProperty,
+                    _dockSizeCallbackToken);
+                _dockSizeCallbackToken = -1;
+            }
+
             _parentDock = null;
         }
+
+        ToolTipService.SetToolTip(this, null);
+        _toolTip = null;
     }
 
     private void OnParentDockSideChanged(DependencyObject sender, DependencyProperty dp)
     {
         if (sender is DockControl dock)
         {
-            UpdateInnerMarginForDockSide(dock.DockSide);
             UpdateAlignment();
         }
+    }
+
+    private void OnParentDockSizeChanged(DependencyObject sender, DependencyProperty dp)
+    {
+        if (sender is DockControl dock)
+        {
+            UpdateCompactFromParent(dock);
+        }
+    }
+
+    private void UpdateCompactFromParent(DockControl dock)
+    {
+        IsCompact = dock.DockSize == DockSize.Compact;
     }
 
     private void UpdateInnerMarginForDockSide(DockSide side)
@@ -269,7 +356,7 @@ public sealed partial class DockItemControl : Control
         // DockControl's ContentGrid on the screen-edge side.
         InnerMargin = side switch
         {
-            DockSide.Top => new Thickness(0, 4, 0, 0),
+            DockSide.Top => new Thickness(0, 0, 0, 0),
             DockSide.Bottom => new Thickness(0, 0, 0, 4),
             DockSide.Left => new Thickness(8, 0, 0, 0),
             DockSide.Right => new Thickness(0, 0, 8, 0),

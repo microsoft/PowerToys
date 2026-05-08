@@ -55,7 +55,7 @@ name: Spell checking
 #   spelling:
 #     # remove `security-events: write` and `use_sarif: 1`
 #     # remove `experimental_apply_changes_via_bot: 1`
-#     ... otherwise adjust the `with:` as you wish
+#     ... otherwise, adjust the `with:` as you wish
 
 on:
   push:
@@ -74,6 +74,8 @@ on:
     types:
       - "created"
 
+permissions: {}
+
 jobs:
   spelling:
     name: Check Spelling
@@ -85,7 +87,7 @@ jobs:
     outputs:
       followup: ${{ steps.spelling.outputs.followup }}
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event_name, 'pull_request') || github.event_name == 'push' }}
+    if: ${{ (contains(github.event_name, 'pull_request') && github.event.pull_request.state == 'open') || github.event_name == 'push' }}
     concurrency:
       group: spelling-${{ github.event.pull_request.number || github.ref }}
       # note: If you use only_check_changed_files, you do not want cancel-in-progress
@@ -93,7 +95,7 @@ jobs:
     steps:
       - name: check-spelling
         id: spelling
-        uses: check-spelling/check-spelling@c635c2f3f714eec2fcf27b643a1919b9a811ef2e # v0.0.25
+        uses: check-spelling/check-spelling@cfb6f7e75bbfc89c71eaa30366d0c166f1bd9c8c # v0.0.26
         with:
           config: .github/actions/spell-check
           suppress_push_for_open_pull_request: ${{ github.actor != 'dependabot[bot]' && 1 }}
@@ -135,11 +137,12 @@ jobs:
             cspell:cpp/compiler-msvc.txt
             cspell:python/common/extra.txt
             cspell:scala/scala.txt
+          ignored: ignored-expect-variant
 
   comment-push:
     name: Report (Push)
     # If your workflow isn't running on push, you can remove this job
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: spelling
     permissions:
       actions: read
@@ -147,30 +150,23 @@ jobs:
     if: (success() || failure()) && needs.spelling.outputs.followup && github.event_name == 'push'
     steps:
       - name: comment
-        uses: check-spelling/check-spelling@c635c2f3f714eec2fcf27b643a1919b9a811ef2e # v0.0.25
+        uses: check-spelling/check-spelling@cfb6f7e75bbfc89c71eaa30366d0c166f1bd9c8c # v0.0.26
         with:
-          config: .github/actions/spell-check
-          checkout: true
-          spell_check_this: microsoft/PowerToys@main
           task: ${{ needs.spelling.outputs.followup }}
 
   comment-pr:
     name: Report (PR)
     # If you workflow isn't running on pull_request*, you can remove this job
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     needs: spelling
     permissions:
       actions: read
-      contents: read
       pull-requests: write
     if: (success() || failure()) && needs.spelling.outputs.followup && contains(github.event_name, 'pull_request')
     steps:
       - name: comment
-        uses: check-spelling/check-spelling@c635c2f3f714eec2fcf27b643a1919b9a811ef2e # v0.0.25
+        uses: check-spelling/check-spelling@cfb6f7e75bbfc89c71eaa30366d0c166f1bd9c8c # v0.0.26
         with:
-          config: .github/actions/spell-check
-          checkout: true
-          spell_check_this: check-spelling/spell-check-this@prerelease
           task: ${{ needs.spelling.outputs.followup }}
           experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
 
@@ -180,12 +176,13 @@ jobs:
       contents: write
       pull-requests: write
       actions: read
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     if: ${{
       github.repository_owner != 'microsoft' &&
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
-      contains(github.event.comment.body, '@check-spelling-bot apply') &&
+      contains(github.event.comment.body, '@check-spelling-bot') &&
+      contains(github.event.comment.body, 'apply') &&
       contains(github.event.comment.body, 'https://')
       }}
     concurrency:
@@ -193,7 +190,7 @@ jobs:
       cancel-in-progress: false
     steps:
       - name: apply spelling updates
-        uses: check-spelling/check-spelling@c635c2f3f714eec2fcf27b643a1919b9a811ef2e # v0.0.25
+        uses: check-spelling/check-spelling@cfb6f7e75bbfc89c71eaa30366d0c166f1bd9c8c # v0.0.26
         with:
           experimental_apply_changes_via_bot: ${{ github.repository_owner != 'microsoft' && 1 }}
           checkout: true

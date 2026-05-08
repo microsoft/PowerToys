@@ -70,6 +70,8 @@ namespace winrt::PowerToys::ZoomItSettingsInterop::implementation
         { L"DrawToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"RecordToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"SnipToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
+        { L"SnipOcrToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
+        { L"SnipPanoramaToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"BreakTimerKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"DemoTypeToggleKey", SPECIAL_SEMANTICS_SHORTCUT },
         { L"PenColor", SPECIAL_SEMANTICS_COLOR },

@@ -1,5 +1,18 @@
 # See https://github.com/check-spelling/check-spelling/wiki/Configuration-Examples:-patterns
 
+Inno Setup
+
+FFmpeg
+
+# https://github.com/MicrosoftEdge/edge-launcher
+MIcrosoftEdgeLauncherCsharp
+
+# x64
+(?:(?<=[a-df-z])x|(?<=[A-Z]X))64
+
+# reversed irreversible binomials
+\b(?:mouse down and up|low and high)\b
+
 # marker to ignore all code on line
 ^.*/\* #no-spell-check-line \*/.*$
 # marker for ignoring a comment to the end of the line
@@ -71,11 +84,14 @@ StringComparer.OrdinalIgnoreCase\) \{.*\}
 # the last line of mimetype="application/x-microsoft.net.object.bytearray.base64" things in .resx files
 ^\s*[-a-zA-Z=;:/0-9+]*[-a-zA-Z;:/0-9+][-a-zA-Z=;:/0-9+]*=$
 
+# DateTime Formats
+Get-Date -Format \w+|DateTime\.Now(?::|\.ToString\(")\w+
+
 # Automatically suggested patterns
 
 # hit-count: 5402 file-count: 1339
 # IServiceProvider / isAThing
-(?:(?:\b|_|(?<=[a-z]))[IT]|(?:\b|_)(?:nsI|isA))(?=(?:[A-Z][a-z]{2,})+(?:[A-Z\d]|\b))
+(?:(?:\b|_|(?<=[a-z]))[A-Z]|(?:\b|_)(?:nsI|isA))(?=(?:[A-Z][a-z]{2,})+(?:[A-Z\d]|\b))
 
 # hit-count: 2073 file-count: 842
 # #includes
@@ -159,6 +175,10 @@ aka\.ms/[a-zA-Z0-9]+
 # kubernetes crd patterns
 ^\s*pattern: .*$
 
+# hit-count: 7 file-count: 3
+# unicode escaped characters (4)
+\\u[0-9a-fA-F]{4}
+
 # hit-count: 5 file-count: 3
 # URL escaped characters
 %[0-9A-F][A-F](?=[A-Za-z])
@@ -170,6 +190,10 @@ aka\.ms/[a-zA-Z0-9]+
 # hit-count: 2 file-count: 2
 # medium
 \bmedium\.com/@?[^/\s"]+/[-\w:/*.]+
+
+# hit-count: 2 file-count: 2
+# tar arguments
+\b(?:\\n|)g?tar(?:\.exe|)(?:\s-C \S+|(?:\s+--[-a-zA-Z]+|\s+-[a-zA-Z]+|\s[ABGJMOPRSUWZacdfh-pr-xz]+\b)(?:=[^ ]*|))+
 
 # hit-count: 2 file-count: 1
 # While you could try to match `http://` and `https://` by using `s?` in `https?://`, sometimes there
@@ -184,21 +208,8 @@ aka\.ms/[a-zA-Z0-9]+
 # curl arguments
 \b(?:\\n|)curl(?:\.exe|)(?:\s+-[a-zA-Z]{1,2}\b)*(?:\s+-[a-zA-Z]{3,})(?:\s+-[a-zA-Z]+)*
 
-# hit-count: 1 file-count: 1
-# tar arguments
-\b(?:\\n|)g?tar(?:\.exe|)(?:(?:\s+--[-a-zA-Z]+|\s+-[a-zA-Z]+|\s[ABGJMOPRSUWZacdfh-pr-xz]+\b)(?:=[^ ]*|))+
-
 # #pragma lib
 ^\s*#pragma comment\(lib, ".*?"\)
-
-# UnitTests
-\[DataRow\(.*\)\]
-
-# AdditionalDependencies
-<AdditionalDependencies>.*<
-
-# the last line of mimetype="application/x-microsoft.net.object.bytearray.base64" things in .resx files
-^\s*[-a-zA-Z=;:/0-9+]*[-a-zA-Z;:/0-9+][-a-zA-Z=;:/0-9+]*=$
 
 RegExp\(@?([`'"]).*?\g{-1}\)|(?:escapes|regEx):\s*(?:/.*/|([`'"]).*?\g{-1})|return/.*?/
 
@@ -219,13 +230,15 @@ RegExp\(@?([`'"]).*?\g{-1}\)|(?:escapes|regEx):\s*(?:/.*/|([`'"]).*?\g{-1})|retu
 # mount
 \bmount\s+-t\s+(\w+)\s+\g{-1}\b
 # C types and repeated CSS values
-\s(auto|buffalo|center|div|inherit|long|LONG|none|normal|solid|thin|transparent|very)(?:\s\g{-1})+\s
+\s(auto|await|buffalo|center|div|inherit|long|LONG|none|normal|solid|thin|transparent|very)(?:\s\g{-1})+\s
 # C enum and struct
 \b(?:enum|struct)\s+(\w+)\s+\g{-1}\b
 # go templates
 \s(\w+)\s+\g{-1}\s+\`(?:graphql|inject|json|yaml):
 # doxygen / javadoc / .net
 (?:[\\@](?:brief|defgroup|groupname|link|t?param|return|retval)|(?:public|private|\[Parameter(?:\(.+\)|)\])(?:\s+(?:static|override|readonly|required|virtual))*)(?:\s+\{\w+\}|)\s+(\w+)\s+\g{-1}\s
+# C# getter/setter
+\s(\w+)\s+\g{-1}\s*\{\s*[gs]et;
 
 # macOS file path
 (?:Contents\W+|(?!iOS)/)MacOS\b

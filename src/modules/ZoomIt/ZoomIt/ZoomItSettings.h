@@ -17,6 +17,8 @@ DWORD	g_BreakToggleKey = ((HOTKEYF_CONTROL) << 8)| '3';
 DWORD	g_DemoTypeToggleKey = ((HOTKEYF_CONTROL) << 8) | '7';
 DWORD	g_RecordToggleKey = ((HOTKEYF_CONTROL) << 8) | '5';
 DWORD   g_SnipToggleKey = ((HOTKEYF_CONTROL) << 8) | '6';
+DWORD   g_SnipPanoramaToggleKey = ((HOTKEYF_CONTROL) << 8) | '8';
+DWORD   g_SnipOcrToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '6';
 
 DWORD	g_ShowExpiredTime = 1;
 DWORD	g_SliderZoomLevel = 3;
@@ -24,6 +26,7 @@ BOOLEAN g_AnimateZoom = TRUE;
 BOOLEAN g_SmoothImage = TRUE;
 DWORD	g_PenColor = COLOR_RED;
 DWORD	g_BreakPenColor = COLOR_RED;
+DWORD	g_BreakBackgroundColor = 0;
 DWORD   g_RootPenWidth = PEN_WIDTH;
 int		g_FontScale = 10;
 DWORD	g_BreakTimeout = 10;
@@ -40,6 +43,7 @@ BOOLEAN	g_ShowTrayIcon = TRUE;
 BOOLEAN g_SnapToGrid = TRUE;
 BOOLEAN	g_TelescopeZoomOut = TRUE;
 BOOLEAN	g_BreakOnSecondary = FALSE;
+BOOLEAN	g_BreakLockWorkstation = FALSE;
 LOGFONT	g_LogFont;
 BOOLEAN g_DemoTypeUserDriven = false;
 TCHAR   g_DemoTypeFile[MAX_PATH] = {0};
@@ -53,6 +57,12 @@ BOOLEAN g_CaptureSystemAudio = TRUE;
 BOOLEAN g_CaptureAudio = FALSE;
 BOOLEAN g_MicMonoMix = FALSE;
 TCHAR	g_MicrophoneDeviceId[MAX_PATH] = {0};
+BOOLEAN g_WebcamOverlay = FALSE;
+DWORD   g_WebcamPosition = 3; // 0=TL, 1=TR, 2=BL, 3=BR
+DWORD   g_WebcamSize = 1;     // 0=Small(15%), 1=Medium(25%), 2=Large(33%), 3=XLarge(50%)
+DWORD   g_WebcamShape = 0;    // 0=Square, 1=RoundedRect, 2=RoundedSquare, 3=Circle
+TCHAR   g_WebcamDeviceSymLink[MAX_PATH] = {0};
+BOOLEAN g_RecordAspectRatio = FALSE; // Lock region selection to 16:9
 TCHAR	g_RecordingSaveLocationBuffer[MAX_PATH] = {0};
 TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
 DWORD	g_ThemeOverride = 2; // 0=light, 1=dark, 2=system default
@@ -66,10 +76,13 @@ REG_SETTING RegSettings[] = {
     { L"DrawToggleKey", SETTING_TYPE_DWORD, 0, &g_DrawToggleKey, static_cast<DOUBLE>(g_DrawToggleKey) },
     { L"RecordToggleKey", SETTING_TYPE_DWORD, 0, &g_RecordToggleKey, static_cast<DOUBLE>(g_RecordToggleKey) },
     { L"SnipToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipToggleKey, static_cast<DOUBLE>(g_SnipToggleKey) },
+    { L"SnipPanoramaToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaToggleKey, static_cast<DOUBLE>(g_SnipPanoramaToggleKey) },
+    { L"SnipOcrToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipOcrToggleKey, static_cast<DOUBLE>(g_SnipOcrToggleKey) },
     { L"PenColor", SETTING_TYPE_DWORD, 0, &g_PenColor, static_cast<DOUBLE>(g_PenColor) },
     { L"PenWidth", SETTING_TYPE_DWORD, 0, &g_RootPenWidth, static_cast<DOUBLE>(g_RootPenWidth) },
     { L"OptionsShown", SETTING_TYPE_BOOLEAN, 0, &g_OptionsShown, static_cast<DOUBLE>(g_OptionsShown) },
     { L"BreakPenColor", SETTING_TYPE_DWORD, 0, &g_BreakPenColor, static_cast<DOUBLE>(g_BreakPenColor) },
+    { L"BreakBackgroundColor", SETTING_TYPE_DWORD, 0, &g_BreakBackgroundColor, static_cast<DOUBLE>(g_BreakBackgroundColor) },
     { L"BreakTimerKey", SETTING_TYPE_DWORD, 0, &g_BreakToggleKey, static_cast<DOUBLE>(g_BreakToggleKey) },
     { L"DemoTypeToggleKey", SETTING_TYPE_DWORD, 0, &g_DemoTypeToggleKey, static_cast<DOUBLE>(g_DemoTypeToggleKey) },
     { L"DemoTypeFile", SETTING_TYPE_STRING, sizeof( g_DemoTypeFile ), g_DemoTypeFile, static_cast<DOUBLE>(0) },
@@ -85,6 +98,7 @@ REG_SETTING RegSettings[] = {
     { L"BreakTimerPosition", SETTING_TYPE_DWORD, 0, &g_BreakTimerPosition, static_cast<DOUBLE>(g_BreakTimerPosition) },
     { L"BreakShowDesktop", SETTING_TYPE_BOOLEAN, 0, &g_BreakShowDesktop, static_cast<DOUBLE>(g_BreakShowDesktop) },
     { L"BreakOnSecondary", SETTING_TYPE_BOOLEAN, 0, &g_BreakOnSecondary,static_cast<DOUBLE>(g_BreakOnSecondary) },
+    { L"BreakLockWorkstation", SETTING_TYPE_BOOLEAN, 0, &g_BreakLockWorkstation, static_cast<DOUBLE>(g_BreakLockWorkstation) },
     { L"FontScale", SETTING_TYPE_DWORD, 0, &g_FontScale, static_cast<DOUBLE>(g_FontScale) },
     { L"ShowExpiredTime", SETTING_TYPE_BOOLEAN, 0, &g_ShowExpiredTime, static_cast<DOUBLE>(g_ShowExpiredTime) },
     { L"ShowTrayIcon", SETTING_TYPE_BOOLEAN, 0, &g_ShowTrayIcon, static_cast<DOUBLE>(g_ShowTrayIcon) },
@@ -102,6 +116,12 @@ REG_SETTING RegSettings[] = {
     { L"CaptureSystemAudio", SETTING_TYPE_BOOLEAN, 0, &g_CaptureSystemAudio, static_cast<DOUBLE>(g_CaptureSystemAudio) },
     { L"MicMonoMix", SETTING_TYPE_BOOLEAN, 0, &g_MicMonoMix, static_cast<DOUBLE>(g_MicMonoMix) },
     { L"MicrophoneDeviceId", SETTING_TYPE_STRING, sizeof(g_MicrophoneDeviceId), g_MicrophoneDeviceId, static_cast<DOUBLE>(0) },
+    { L"WebcamOverlay", SETTING_TYPE_BOOLEAN, 0, &g_WebcamOverlay, static_cast<DOUBLE>(g_WebcamOverlay) },
+    { L"WebcamPosition", SETTING_TYPE_DWORD, 0, &g_WebcamPosition, static_cast<DOUBLE>(g_WebcamPosition) },
+    { L"WebcamSize", SETTING_TYPE_DWORD, 0, &g_WebcamSize, static_cast<DOUBLE>(g_WebcamSize) },
+    { L"WebcamShape", SETTING_TYPE_DWORD, 0, &g_WebcamShape, static_cast<DOUBLE>(g_WebcamShape) },
+    { L"WebcamDeviceSymLink", SETTING_TYPE_STRING, sizeof(g_WebcamDeviceSymLink), g_WebcamDeviceSymLink, static_cast<DOUBLE>(0) },
+    { L"RecordAspectRatio", SETTING_TYPE_BOOLEAN, 0, &g_RecordAspectRatio, static_cast<DOUBLE>(g_RecordAspectRatio) },
     { L"RecordingSaveLocation", SETTING_TYPE_STRING, sizeof(g_RecordingSaveLocationBuffer), g_RecordingSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"ScreenshotSaveLocation", SETTING_TYPE_STRING, sizeof(g_ScreenshotSaveLocationBuffer), g_ScreenshotSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"Theme", SETTING_TYPE_DWORD, 0, &g_ThemeOverride, static_cast<DOUBLE>(g_ThemeOverride) },

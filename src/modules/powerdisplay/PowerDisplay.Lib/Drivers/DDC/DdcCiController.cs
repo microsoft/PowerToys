@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -94,32 +95,50 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         public string Name => "DDC/CI Monitor Controller";
 
-        /// <summary>
-        /// Get monitor brightness using VCP code 0x10
-        /// </summary>
+        /// <inheritdoc />
         public async Task<VcpFeatureValue> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
             return await GetVcpFeatureAsync(monitor, VcpCodeBrightness, cancellationToken);
         }
 
-        /// <summary>
-        /// Set monitor brightness using VCP code 0x10
-        /// </summary>
+        /// <inheritdoc />
         public Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeBrightness, brightness, cancellationToken);
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            var raw = VcpFeatureValue.FromPercentage(brightness, monitor.BrightnessVcpMax);
+            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeBrightness, raw, cancellationToken);
+        }
 
-        /// <summary>
-        /// Set monitor contrast
-        /// </summary>
+        /// <inheritdoc />
+        public async Task<VcpFeatureValue> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            return await GetVcpFeatureAsync(monitor, VcpCodeContrast, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, contrast, cancellationToken);
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            var raw = VcpFeatureValue.FromPercentage(contrast, monitor.ContrastVcpMax);
+            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, raw, cancellationToken);
+        }
 
-        /// <summary>
-        /// Set monitor volume
-        /// </summary>
+        /// <inheritdoc />
+        public async Task<VcpFeatureValue> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            return await GetVcpFeatureAsync(monitor, VcpCodeVolume, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, volume, cancellationToken);
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            var raw = VcpFeatureValue.FromPercentage(volume, monitor.VolumeVcpMax);
+            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, raw, cancellationToken);
+        }
 
         /// <summary>
         /// Get monitor color temperature using VCP code 0x14 (Select Color Preset)
@@ -470,10 +489,19 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         InitializeContrast(monitor, candidate.Handle);
                     }
+
+                    // Initialize volume if supported
+                    if (monitor.SupportsVolume)
+                    {
+                        InitializeVolume(monitor, candidate.Handle);
+                    }
                 }
 
-                // Initialize brightness (always supported for DDC/CI monitors)
-                InitializeBrightness(monitor, candidate.Handle);
+                // Initialize brightness if supported
+                if (monitor.SupportsBrightness)
+                {
+                    InitializeBrightness(monitor, candidate.Handle);
+                }
 
                 monitors.Add(monitor);
                 newHandleMap[monitor.Id] = candidate.Handle;
@@ -518,11 +546,13 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Initialize brightness value for a monitor using VCP 0x10.
+        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
         /// </summary>
         private static void InitializeBrightness(Monitor monitor, IntPtr handle)
         {
             if (TryGetVcpFeature(handle, VcpCodeBrightness, monitor.Id, out uint current, out uint max))
             {
+                monitor.BrightnessVcpMax = (int)max;
                 var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
                 monitor.CurrentBrightness = brightnessInfo.ToPercentage();
             }
@@ -530,13 +560,29 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Initialize contrast value for a monitor using VCP 0x12.
+        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
         /// </summary>
         private static void InitializeContrast(Monitor monitor, IntPtr handle)
         {
             if (TryGetVcpFeature(handle, VcpCodeContrast, monitor.Id, out uint current, out uint max))
             {
+                monitor.ContrastVcpMax = (int)max;
                 var contrastInfo = new VcpFeatureValue((int)current, 0, (int)max);
                 monitor.CurrentContrast = contrastInfo.ToPercentage();
+            }
+        }
+
+        /// <summary>
+        /// Initialize volume value for a monitor using VCP 0x62.
+        /// Persists the device-reported raw maximum so subsequent writes can scale percent → raw.
+        /// </summary>
+        private static void InitializeVolume(Monitor monitor, IntPtr handle)
+        {
+            if (TryGetVcpFeature(handle, VcpCodeVolume, monitor.Id, out uint current, out uint max))
+            {
+                monitor.VolumeVcpMax = (int)max;
+                var volumeInfo = new VcpFeatureValue((int)current, 0, (int)max);
+                monitor.CurrentVolume = volumeInfo.ToPercentage();
             }
         }
 
@@ -556,7 +602,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return true;
             }
 
-            var lastError = GetLastError();
+            var lastError = Marshal.GetLastWin32Error();
             var monitorPrefix = string.IsNullOrEmpty(monitorId) ? string.Empty : $"[{monitorId}] ";
             Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {lastError}");
             return false;
@@ -567,6 +613,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void UpdateMonitorCapabilitiesFromVcp(Monitor monitor, VcpCapabilities vcpCaps)
         {
+            // Check for Brightness support (VCP 0x10)
+            if (vcpCaps.SupportsVcpCode(VcpCodeBrightness))
+            {
+                monitor.Capabilities |= MonitorCapabilities.Brightness;
+            }
+
             // Check for Contrast support (VCP 0x12)
             if (vcpCaps.SupportsVcpCode(VcpCodeContrast))
             {
@@ -696,8 +748,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                             return MonitorOperationResult.Success();
                         }
 
-                        var lastError = GetLastError();
-                        return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", (int)lastError);
+                        var lastError = Marshal.GetLastWin32Error();
+                        return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", lastError);
                     }
                     catch (Exception ex)
                     {

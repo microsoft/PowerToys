@@ -5,13 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -23,6 +22,7 @@ using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
+using PowerDisplay.Models;
 using PowerDisplay.PowerDisplayXAML;
 
 namespace PowerDisplay.ViewModels;
@@ -35,7 +35,7 @@ namespace PowerDisplay.ViewModels;
 /// - MainViewModel.Settings.cs: Settings UI synchronization and profiles
 /// </summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
-public partial class MainViewModel : INotifyPropertyChanged, IDisposable
+public partial class MainViewModel : ObservableObject, IDisposable
 {
     [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -47,12 +47,24 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     private readonly SettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
+    private readonly ISystemClock _clock;
 
-    private ObservableCollection<MonitorViewModel> _monitors;
-    private ObservableCollection<PowerDisplayProfile> _profiles;
-    private bool _isScanning;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasMonitors))]
+    [NotifyPropertyChangedFor(nameof(ShowNoMonitorsMessage))]
+    [NotifyPropertyChangedFor(nameof(IsInteractionEnabled))]
+    public partial bool IsScanning { get; set; }
+
     private bool _isInitialized;
     private bool _isLoading;
+
+    [ObservableProperty]
+    public partial ObservableCollection<MonitorViewModel> Monitors { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasProfiles))]
+    [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
+    public partial ObservableCollection<PowerDisplayProfile> Profiles { get; set; }
 
     /// <summary>
     /// Event triggered when UI refresh is requested due to settings changes
@@ -66,12 +78,20 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     public event EventHandler? InitializationCompleted;
 
     public MainViewModel()
+        : this(new SystemClock())
     {
+    }
+
+    internal MainViewModel(ISystemClock clock)
+    {
+        _clock = clock;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         _cancellationTokenSource = new CancellationTokenSource();
-        _monitors = new ObservableCollection<MonitorViewModel>();
-        _profiles = new ObservableCollection<PowerDisplayProfile>();
-        _isScanning = true;
+        Monitors = new ObservableCollection<MonitorViewModel>();
+        Profiles = new ObservableCollection<PowerDisplayProfile>();
+        IsScanning = true;
+        ShowProfileSwitcher = true;
+        ShowIdentifyMonitorsButton = true;
 
         // Initialize settings utils
         _settingsUtils = SettingsUtils.Default;
@@ -97,71 +117,21 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         _ = InitializeAsync(_cancellationTokenSource.Token);
     }
 
-    public ObservableCollection<MonitorViewModel> Monitors
-    {
-        get => _monitors;
-        set
-        {
-            _monitors = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public ObservableCollection<PowerDisplayProfile> Profiles
-    {
-        get => _profiles;
-        set
-        {
-            _profiles = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(HasProfiles));
-        }
-    }
-
     public bool HasProfiles => Profiles.Count > 0;
 
     // UI display control properties - loaded from settings
-    private bool _showProfileSwitcher = true;
-    private bool _showIdentifyMonitorsButton = true;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
+    public partial bool ShowProfileSwitcher { get; set; }
+
+    [ObservableProperty]
+    public partial bool ShowIdentifyMonitorsButton { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether to show the profile switcher button.
     /// Combines settings value with HasProfiles check.
     /// </summary>
-    public bool ShowProfileSwitcherButton => _showProfileSwitcher && HasProfiles;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to show the profile switcher (from settings).
-    /// </summary>
-    public bool ShowProfileSwitcher
-    {
-        get => _showProfileSwitcher;
-        set
-        {
-            if (_showProfileSwitcher != value)
-            {
-                _showProfileSwitcher = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(ShowProfileSwitcherButton));
-            }
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to show the identify monitors button.
-    /// </summary>
-    public bool ShowIdentifyMonitorsButton
-    {
-        get => _showIdentifyMonitorsButton;
-        set
-        {
-            if (_showIdentifyMonitorsButton != value)
-            {
-                _showIdentifyMonitorsButton = value;
-                OnPropertyChanged();
-            }
-        }
-    }
+    public bool ShowProfileSwitcherButton => ShowProfileSwitcher && HasProfiles;
 
     // Custom VCP mappings - loaded from settings
     private List<CustomVcpValueMapping> _customVcpMappings = new();
@@ -177,24 +147,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             _customVcpMappings = value ?? new List<CustomVcpValueMapping>();
             OnPropertyChanged();
-        }
-    }
-
-    public bool IsScanning
-    {
-        get => _isScanning;
-        set
-        {
-            if (_isScanning != value)
-            {
-                _isScanning = value;
-                OnPropertyChanged();
-
-                // Dependent properties that change with IsScanning
-                OnPropertyChanged(nameof(HasMonitors));
-                OnPropertyChanged(nameof(ShowNoMonitorsMessage));
-                OnPropertyChanged(nameof(IsInteractionEnabled));
-            }
         }
     }
 
@@ -283,7 +235,10 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
                 // Format display text: single number for normal mode, "1|2" for mirror mode
                 var displayText = string.Join("|", monitorNumbers);
 
-                // Create and position identify window
+                // Create and position identify window.
+                // Position before Activate so the window appears directly at the target
+                // location — avoiding a visible flicker from the default spawn position
+                // and skipping a WM_DPICHANGED round-trip when crossing DPI monitors.
                 var identifyWindow = new IdentifyWindow(displayText);
                 identifyWindow.PositionOnDisplay(displayArea);
                 identifyWindow.Activate();
@@ -303,13 +258,6 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         {
             await ApplyProfileAsync(profile.MonitorSettings);
         }
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public void Dispose()
@@ -381,10 +329,10 @@ public partial class MainViewModel : INotifyPropertyChanged, IDisposable
         try
         {
             var profilesData = ProfileService.LoadProfiles();
-            _profiles.Clear();
+            Profiles.Clear();
             foreach (var profile in profilesData.Profiles)
             {
-                _profiles.Add(profile);
+                Profiles.Add(profile);
             }
 
             OnPropertyChanged(nameof(HasProfiles));

@@ -70,7 +70,12 @@
                             IsThreeState="True"
                             Unchecked="QuickAccent_SelectedLanguage_UnselectAll" />
                         <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                x:Name="LanguageSettingsCard"
+                                HorizontalContentAlignment="Stretch"
+                                ContentAlignment="Left"
+                                Loaded="LanguageSettingsCard_Loaded"
+                                SizeChanged="LanguageSettingsCard_SizeChanged">
                                 <ListView
                                     x:Name="QuickAccent_Language_Select"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
@@ -80,22 +85,18 @@
                                     ItemTemplate="{StaticResource LanguageViewTemplate}"
                                     ItemsSource="{x:Bind LanguagesCustomViewSource.View, Mode=OneWay}"
                                     Loaded="QuickAccent_Language_Select_Loaded"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Visible"
-                                    ScrollViewer.HorizontalScrollMode="Enabled"
-                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                    ScrollViewer.VerticalScrollMode="Disabled"
                                     SelectionChanged="QuickAccent_SelectedLanguage_SelectionChanged"
                                     SelectionMode="Multiple">
                                     <ListView.ItemsPanel>
                                         <ItemsPanelTemplate>
-                                            <ItemsWrapGrid
-                                                MaxWidth="{Binding ElementName=QuickAccent_Language, Path=ActualWidth}"
-                                                ItemWidth="280"
-                                                Orientation="Horizontal" />
+                                            <ItemsWrapGrid Orientation="Horizontal" />
                                         </ItemsPanelTemplate>
                                     </ListView.ItemsPanel>
                                     <ListView.ItemContainerStyle>
                                         <Style TargetType="ListViewItem">
+                                            <Setter Property="Width" Value="280" />
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="ListViewItem">

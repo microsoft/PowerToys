@@ -105,6 +105,22 @@ namespace Microsoft.PowerToys.Common.UI.Controls
             {
                 switch (key)
                 {
+                    case nameof(VirtualKey.Up):
+                        SetGlyphOrText("\uE0E4", VirtualKey.Up);
+                        break;
+
+                    case nameof(VirtualKey.Down):
+                        SetGlyphOrText("\uE0E5", VirtualKey.Down);
+                        break;
+
+                    case nameof(VirtualKey.Left):
+                        SetGlyphOrText("\uE0E2", VirtualKey.Left);
+                        break;
+
+                    case nameof(VirtualKey.Right):
+                        SetGlyphOrText("\uE0E3", VirtualKey.Right);
+                        break;
+
                     case "Copilot":
                         _keyPresenter.Style = (Style)Application.Current.Resources["CopilotKeyCharPresenterStyle"];
                         break;
@@ -141,19 +157,19 @@ namespace Microsoft.PowerToys.Common.UI.Controls
                         break;
 
                     case VirtualKey.Up:
-                        _keyPresenter.Content = "\uE0E4";
+                        SetGlyphOrText("\uE0E4", virtualKey);
                         break;
 
                     case VirtualKey.Down:
-                        _keyPresenter.Content = "\uE0E5";
+                        SetGlyphOrText("\uE0E5", virtualKey);
                         break;
 
                     case VirtualKey.Left:
-                        _keyPresenter.Content = "\uE0E2";
+                        SetGlyphOrText("\uE0E2", virtualKey);
                         break;
 
                     case VirtualKey.Right:
-                        _keyPresenter.Content = "\uE0E3";
+                        SetGlyphOrText("\uE0E3", virtualKey);
                         break;
 
                     case VirtualKey.LeftWindows:

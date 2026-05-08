@@ -145,44 +145,6 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Get brightness of the specified monitor
-        /// </summary>
-        public async Task<VcpFeatureValue> GetBrightnessAsync(string monitorId, CancellationToken cancellationToken = default)
-        {
-            var monitor = GetMonitor(monitorId);
-            if (monitor == null)
-            {
-                return VcpFeatureValue.Invalid;
-            }
-
-            var controller = GetControllerForMonitor(monitor);
-            if (controller == null)
-            {
-                return VcpFeatureValue.Invalid;
-            }
-
-            try
-            {
-                var brightnessInfo = await controller.GetBrightnessAsync(monitor, cancellationToken);
-
-                // Update cached brightness value
-                if (brightnessInfo.IsValid)
-                {
-                    monitor.UpdateStatus(brightnessInfo.ToPercentage(), true);
-                }
-
-                return brightnessInfo;
-            }
-            catch (Exception ex)
-            {
-                // Mark monitor as unavailable
-                Logger.LogError($"Failed to get brightness for monitor {monitorId}: {ex.Message}");
-                monitor.IsAvailable = false;
-                return VcpFeatureValue.Invalid;
-            }
-        }
-
-        /// <summary>
         /// Set brightness of the specified monitor
         /// </summary>
         public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
@@ -190,7 +152,7 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 brightness,
                 (ctrl, mon, val, ct) => ctrl.SetBrightnessAsync(mon, val, ct),
-                (mon, val) => mon.UpdateStatus(val, true),
+                (mon, val) => mon.CurrentBrightness = val,
                 cancellationToken);
 
         /// <summary>
@@ -216,33 +178,6 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Get monitor color temperature
-        /// </summary>
-        public async Task<VcpFeatureValue> GetColorTemperatureAsync(string monitorId, CancellationToken cancellationToken = default)
-        {
-            var monitor = GetMonitor(monitorId);
-            if (monitor == null)
-            {
-                return VcpFeatureValue.Invalid;
-            }
-
-            var controller = GetControllerForMonitor(monitor);
-            if (controller == null)
-            {
-                return VcpFeatureValue.Invalid;
-            }
-
-            try
-            {
-                return await controller.GetColorTemperatureAsync(monitor, cancellationToken);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                return VcpFeatureValue.Invalid;
-            }
-        }
-
-        /// <summary>
         /// Set monitor color temperature
         /// </summary>
         public Task<MonitorOperationResult> SetColorTemperatureAsync(string monitorId, int colorTemperature, CancellationToken cancellationToken = default)
@@ -252,33 +187,6 @@ namespace PowerDisplay.Helpers
                 (ctrl, mon, val, ct) => ctrl.SetColorTemperatureAsync(mon, val, ct),
                 (mon, val) => mon.CurrentColorTemperature = val,
                 cancellationToken);
-
-        /// <summary>
-        /// Get current input source for a monitor
-        /// </summary>
-        public async Task<VcpFeatureValue> GetInputSourceAsync(string monitorId, CancellationToken cancellationToken = default)
-        {
-            var monitor = GetMonitor(monitorId);
-            if (monitor == null)
-            {
-                return VcpFeatureValue.Invalid;
-            }
-
-            var controller = GetControllerForMonitor(monitor);
-            if (controller == null)
-            {
-                return VcpFeatureValue.Invalid;
-            }
-
-            try
-            {
-                return await controller.GetInputSourceAsync(monitor, cancellationToken);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                return VcpFeatureValue.Invalid;
-            }
-        }
 
         /// <summary>
         /// Set input source for a monitor
@@ -294,14 +202,13 @@ namespace PowerDisplay.Helpers
         /// <summary>
         /// Set power state for a monitor using VCP 0xD6.
         /// Note: Setting any state other than On (0x01) will turn off the display.
-        /// We don't update monitor state since the display will be off.
         /// </summary>
         public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
             => ExecuteMonitorOperationAsync(
                 monitorId,
                 powerState,
                 (ctrl, mon, val, ct) => ctrl.SetPowerStateAsync(mon, val, ct),
-                (mon, val) => { }, // No state update - display will be off for non-On values
+                (mon, val) => mon.CurrentPowerState = val,
                 cancellationToken);
 
         /// <summary>
@@ -359,7 +266,6 @@ namespace PowerDisplay.Helpers
                 if (currentOrientation >= 0 && currentOrientation != monitor.Orientation)
                 {
                     monitor.Orientation = currentOrientation;
-                    monitor.LastUpdate = DateTime.Now;
                 }
             }
         }
@@ -418,18 +324,12 @@ namespace PowerDisplay.Helpers
                 if (result.IsSuccess)
                 {
                     onSuccess(monitor, value);
-                    monitor.LastUpdate = DateTime.Now;
-                }
-                else
-                {
-                    monitor.IsAvailable = false;
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                monitor.IsAvailable = false;
                 Logger.LogError($"[MonitorManager] Operation failed for {monitorId}: {ex.Message}");
                 return MonitorOperationResult.Failure($"Exception: {ex.Message}");
             }

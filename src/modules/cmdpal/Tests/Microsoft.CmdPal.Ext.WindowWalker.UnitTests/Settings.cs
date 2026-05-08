@@ -53,7 +53,7 @@ public class Settings : ISettingsInterface
 
     public bool KillProcessTree => killProcessTree;
 
-    public bool OpenAfterKillAndClose => openAfterKillAndClose;
+    public bool KeepOpenAfterKillAndClose => openAfterKillAndClose;
 
     public bool HideKillProcessOnElevatedProcesses => hideKillProcessOnElevatedProcesses;
 

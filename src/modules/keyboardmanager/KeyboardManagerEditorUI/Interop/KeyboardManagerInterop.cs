@@ -98,6 +98,10 @@ namespace KeyboardManagerEditorUI.Interop
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool DeleteShortcutRemap(IntPtr mappingConfiguration, [MarshalAs(UnmanagedType.LPWStr)] string originalKeys, [MarshalAs(UnmanagedType.LPWStr)] string targetApp);
 
+        // Key List Functions
+        [DllImport(DllName, CallingConvention = Convention)]
+        internal static extern int GetKeyboardKeysList([MarshalAs(UnmanagedType.Bool)] bool isShortcut, [Out] KeyNamePair[] keyList, int maxCount);
+
         // Key Utility Functions
         [DllImport(DllName, CallingConvention = Convention, CharSet = CharSet.Unicode)]
         internal static extern int GetKeyCodeFromName([MarshalAs(UnmanagedType.LPWStr)] string keyName);
@@ -161,5 +165,14 @@ namespace KeyboardManagerEditorUI.Interop
         public IntPtr ProgramPath;
         public IntPtr ProgramArgs;
         public IntPtr UriToOpen;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct KeyNamePair
+    {
+        public int KeyCode;
+
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string KeyName;
     }
 }

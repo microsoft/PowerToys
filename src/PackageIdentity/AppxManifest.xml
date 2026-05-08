@@ -38,17 +38,17 @@
   </Capabilities>
 
   <Applications>
-    <Application Id="PowerToys.OCR" Executable="PowerToys.PowerOCR.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="PowerToys.SettingsUI" Executable="PowerToys.Settings.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
-        DisplayName="PowerToys.OCR"
-        Description="PowerToys OCR Module"
+        DisplayName="PowerToys.SettingsUI"
+        Description="PowerToys Settings UI"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png"
         AppListEntry="none">
       </uap:VisualElements>
     </Application>
-    <Application Id="PowerToys.ImageResizerUI" Executable="WinUI3Apps\PowerToys.ImageResizer.exe" EntryPoint="Windows.FullTrustApplication">
+    <Application Id="PowerToys.ImageResizerUI" Executable="PowerToys.ImageResizer.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="PowerToys.ImageResizer"
         Description="PowerToys Image Resizer UI"

@@ -43,6 +43,7 @@
 #include <winrt/Windows.Graphics.DirectX.Direct3d11.h>
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Media.Core.h>
+#include <winrt/Windows.Media.Capture.h>
 #include <winrt/Windows.Media.Editing.h>
 #include <winrt/Windows.Media.Playback.h>
 #include <winrt/Windows.Media.Transcoding.h>
@@ -53,6 +54,9 @@
 #include <winrt/Windows.Storage.Pickers.h>
 #include <winrt/Windows.Storage.FileProperties.h>
 #include <winrt/Windows.Devices.Enumeration.h>
+#include <winrt/Windows.Media.Ocr.h>
+
+#include <Windows.Graphics.Imaging.Interop.h>
 
 #include <filesystem>
 
