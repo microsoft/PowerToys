@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -106,30 +107,73 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Phase 0 + Phase 1: build display inventory once, then dispatch in parallel
-        /// to controllers. In this task all targets are passed to both controllers
-        /// (no filtering yet); Task 5 activates internal/external scoping.
+        /// Phase 0 + Phase 1: classify all displays via OutputTechnology, then dispatch
+        /// strictly-scoped target lists to each controller (WMI = internal only,
+        /// DDC/CI = external only).
         /// </summary>
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
         {
-            // Phase 0: single QueryDisplayConfig call.
+            // Phase 0: single QueryDisplayConfig call + classification logging.
             var inventory = DdcCiNative.GetAllMonitorDisplayInfo();
-            var allTargets = (IReadOnlyList<MonitorDisplayInfo>)inventory.Values.ToList();
+
+            if (inventory.Count == 0)
+            {
+                Logger.LogError("[MonitorManager] Phase 0 classification produced no displays — discovery aborted");
+                return new List<Monitor>();
+            }
+
+            LogClassificationSummary(inventory);
+
+            var internalTargets = (IReadOnlyList<MonitorDisplayInfo>)inventory.Values
+                .Where(i => i.IsInternal)
+                .ToList();
+            var externalTargets = (IReadOnlyList<MonitorDisplayInfo>)inventory.Values
+                .Where(i => !i.IsInternal)
+                .ToList();
 
             var tasks = new List<Task<IEnumerable<Monitor>>>();
 
             if (_ddcController != null)
             {
-                tasks.Add(SafeDiscoverAsync(_ddcController, allTargets, cancellationToken));
+                tasks.Add(SafeDiscoverAsync(_ddcController, externalTargets, cancellationToken));
             }
 
             if (_wmiController != null)
             {
-                tasks.Add(SafeDiscoverAsync(_wmiController, allTargets, cancellationToken));
+                tasks.Add(SafeDiscoverAsync(_wmiController, internalTargets, cancellationToken));
             }
 
             var results = await Task.WhenAll(tasks);
             return results.SelectMany(m => m).ToList();
+        }
+
+        /// <summary>
+        /// Logs the result of Phase 0 classification at Info level, one line per display
+        /// plus a summary. Used for diagnostic traceability of internal/external decisions.
+        /// </summary>
+        private static void LogClassificationSummary(Dictionary<string, MonitorDisplayInfo> inventory)
+        {
+            var ordered = inventory.Values.OrderBy(i => i.MonitorNumber).ToList();
+            int internalCount = 0;
+            int externalCount = 0;
+
+            Logger.LogInfo($"[DisplayClassification] Found {ordered.Count} displays:");
+            foreach (var info in ordered)
+            {
+                var techName = DisplayClassifier.GetOutputTechnologyName(info.OutputTechnology);
+                var techValue = info.OutputTechnology >= 0x80000000u
+                    ? $"0x{info.OutputTechnology:X}"
+                    : info.OutputTechnology.ToString(CultureInfo.InvariantCulture);
+                var classification = info.IsInternal ? "Internal" : "External";
+
+                Logger.LogInfo(
+                    $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\" " +
+                    $"(EdidId={info.EdidId}): OutputTechnology={techValue} ({techName}) → {classification}");
+
+                if (info.IsInternal) { internalCount++; } else { externalCount++; }
+            }
+
+            Logger.LogInfo($"[DisplayClassification] Summary: {internalCount} internal, {externalCount} external");
         }
 
         /// <summary>

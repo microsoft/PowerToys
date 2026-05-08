@@ -111,6 +111,8 @@ namespace PowerDisplay.Common.Drivers.WMI
         /// <summary>
         /// Get MonitorDisplayInfo from dictionary by matching EdidId.
         /// Uses QueryDisplayConfig path index which matches Windows Display Settings "Identify" feature.
+        /// NOTE: This helper is no longer called after the Task 5 rewrite of DiscoverMonitorsAsync
+        /// (which does a direct TryGetValue lookup). Left in place for deferred cleanup in a later pass.
         /// </summary>
         /// <param name="edidId">The EDID ID to match (e.g., "LEN4038", "BOE0900").</param>
         /// <param name="monitorDisplayInfos">Dictionary of monitor display info from QueryDisplayConfig.</param>
@@ -258,6 +260,16 @@ namespace PowerDisplay.Common.Drivers.WMI
                 {
                 var monitors = new List<Monitor>();
 
+                // Build EdidId-keyed lookup from the pre-filtered (internal-only) targets list.
+                var monitorDisplayInfos = targets
+                    .Where(t => !string.IsNullOrEmpty(t.EdidId))
+                    .GroupBy(t => t.EdidId, StringComparer.OrdinalIgnoreCase)
+                    .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+                // Track which internal targets were observed via WmiMonitorBrightness
+                // so we can warn about any that were classified internal but not exposed.
+                var seenEdidIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                 try
                 {
                     using var connection = new WmiConnection(WmiNamespace);
@@ -265,18 +277,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                     // Query WMI brightness support - only internal displays typically support this
                     var brightnessQuery = $"SELECT InstanceName, CurrentBrightness FROM {BrightnessQueryClass}";
                     var brightnessResults = connection.CreateQuery(brightnessQuery).ToList();
-
-                    if (brightnessResults.Count == 0)
-                    {
-                        return monitors;
-                    }
-
-                    // Build EdidId-keyed lookup from the pre-filtered targets list provided by MonitorManager.
-                    // (Replaces the previous self-call to DdcCiNative.GetAllMonitorDisplayInfo, which was a layering violation.)
-                    var monitorDisplayInfos = targets
-                        .Where(t => !string.IsNullOrEmpty(t.EdidId))
-                        .GroupBy(t => t.EdidId, StringComparer.OrdinalIgnoreCase)
-                        .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
                     // Create monitor objects for each supported brightness instance
                     foreach (var obj in brightnessResults)
@@ -290,16 +290,21 @@ namespace PowerDisplay.Common.Drivers.WMI
                             // e.g., "DISPLAY\LEN4038\4&40f4dee&0&UID8388688_0" -> "LEN4038"
                             var edidId = ExtractEdidIdFromInstanceName(instanceName);
 
-                            // Get MonitorDisplayInfo from QueryDisplayConfig by matching EDID ID
-                            // This provides MonitorNumber and GdiDeviceName for display settings APIs
-                            var displayInfo = GetMonitorDisplayInfoByEdidId(edidId, monitorDisplayInfos);
-                            int monitorNumber = displayInfo?.MonitorNumber ?? 0;
-                            string gdiDeviceName = displayInfo?.GdiDeviceName ?? string.Empty;
+                            // Look up the matching MonitorDisplayInfo in the internal-only targets list.
+                            if (string.IsNullOrEmpty(edidId) || !monitorDisplayInfos.TryGetValue(edidId, out var displayInfo))
+                            {
+                                Logger.LogWarning(
+                                    $"WMI returned brightness for EdidId={edidId} but it was not classified as internal — skipping");
+                                continue;
+                            }
+
+                            seenEdidIds.Add(edidId);
+
+                            int monitorNumber = displayInfo.MonitorNumber;
+                            string gdiDeviceName = displayInfo.GdiDeviceName ?? string.Empty;
 
                             // Generate unique ID: "WMI_{EdidId}_{MonitorNumber}"
-                            string uniqueId = !string.IsNullOrEmpty(edidId)
-                                ? $"WMI_{edidId}_{monitorNumber}"
-                                : $"WMI_Unknown_{monitorNumber}";
+                            string uniqueId = $"WMI_{edidId}_{monitorNumber}";
 
                             // Name is left blank: MonitorViewModel injects a localized
                             // "Built-in Display" string for internal displays.
@@ -334,6 +339,24 @@ namespace PowerDisplay.Common.Drivers.WMI
                 catch (Exception ex)
                 {
                     Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message}");
+                }
+
+                // Post-loop: warn about every internal target the driver didn't expose via WMI.
+                foreach (var target in targets)
+                {
+                    if (string.IsNullOrEmpty(target.EdidId))
+                    {
+                        continue;
+                    }
+
+                    if (seenEdidIds.Contains(target.EdidId))
+                    {
+                        continue;
+                    }
+
+                    Logger.LogWarning(
+                        $"Internal display {target.EdidId} (\"{target.FriendlyName}\") was classified internal " +
+                        "but is not exposed via WmiMonitorBrightness — driver may not support brightness control");
                 }
 
                 return monitors;

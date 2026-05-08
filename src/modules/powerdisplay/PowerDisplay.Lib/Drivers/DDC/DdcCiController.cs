@@ -337,8 +337,10 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Phase 1: Collect all candidate monitors with their physical handles.
-        /// Matches physical monitors with MonitorDisplayInfo using GDI device name and friendly name.
+        /// Matches physical monitors with MonitorDisplayInfo using GDI device name.
         /// Supports mirror mode where multiple physical monitors share the same GDI name.
+        /// Skips internal panels (not in the external-only targets dict) before the expensive
+        /// GetPhysicalMonitorsFromHMONITOR call.
         /// </summary>
         private async Task<List<CandidateMonitor>> CollectCandidateMonitorsAsync(
             List<IntPtr> monitorHandles,
@@ -346,6 +348,13 @@ namespace PowerDisplay.Common.Drivers.DDC
             CancellationToken cancellationToken)
         {
             var candidates = new List<CandidateMonitor>();
+
+            // Build a case-insensitive GdiDeviceName -> List<MonitorDisplayInfo> lookup.
+            // List-valued because mirror mode lets multiple targets share one GDI source.
+            var targetsByGdiName = allMonitorDisplayInfo
+                .Where(t => !string.IsNullOrEmpty(t.GdiDeviceName))
+                .GroupBy(t => t.GdiDeviceName, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
 
             foreach (var hMonitor in monitorHandles)
             {
@@ -357,22 +366,19 @@ namespace PowerDisplay.Common.Drivers.DDC
                     continue;
                 }
 
+                // If this GDI name is not in the (external-only) targets list, this is an
+                // internal panel — skip BEFORE the expensive GetPhysicalMonitorsFromHMONITOR
+                // call. This is the source of the discovery-time performance gain.
+                if (!targetsByGdiName.TryGetValue(gdiDeviceName, out var matchingInfos))
+                {
+                    Logger.LogDebug($"DDC skipping {gdiDeviceName}: classified as internal panel");
+                    continue;
+                }
+
                 var physicalMonitors = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
                 if (physicalMonitors == null || physicalMonitors.Length == 0)
                 {
                     Logger.LogWarning($"DDC: Failed to get physical monitors for {gdiDeviceName} after retries");
-                    continue;
-                }
-
-                // Find all MonitorDisplayInfo entries that match this GDI device name
-                // In mirror mode, multiple targets share the same GDI name
-                var matchingInfos = allMonitorDisplayInfo
-                    .Where(info => string.Equals(info.GdiDeviceName, gdiDeviceName, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                if (matchingInfos.Count == 0)
-                {
-                    Logger.LogWarning($"DDC: No QueryDisplayConfig info for {gdiDeviceName}, skipping");
                     continue;
                 }
 
