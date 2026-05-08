@@ -255,6 +255,15 @@ namespace PowerDisplay.Common.Drivers.WMI
             IReadOnlyList<MonitorDisplayInfo> targets,
             CancellationToken cancellationToken = default)
         {
+            // Short-circuit: with no internal displays classified there is nothing for WMI
+            // brightness control to do. Skipping the query also avoids the WmiMonitorBrightness
+            // class throwing WMI 0x1068 ("feature not supported") on systems without an
+            // internal panel — that exception is otherwise caught and logged as Error.
+            if (targets.Count == 0)
+            {
+                return Enumerable.Empty<Monitor>();
+            }
+
             return await Task.Run(
                 () =>
                 {
