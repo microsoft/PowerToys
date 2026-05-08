@@ -106,20 +106,26 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Discover monitors from all registered controllers in parallel.
+        /// Phase 0 + Phase 1: build display inventory once, then dispatch in parallel
+        /// to controllers. In this task all targets are passed to both controllers
+        /// (no filtering yet); Task 5 activates internal/external scoping.
         /// </summary>
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
         {
+            // Phase 0: single QueryDisplayConfig call.
+            var inventory = DdcCiNative.GetAllMonitorDisplayInfo();
+            var allTargets = (IReadOnlyList<MonitorDisplayInfo>)inventory.Values.ToList();
+
             var tasks = new List<Task<IEnumerable<Monitor>>>();
 
             if (_ddcController != null)
             {
-                tasks.Add(SafeDiscoverAsync(_ddcController, cancellationToken));
+                tasks.Add(SafeDiscoverAsync(_ddcController, allTargets, cancellationToken));
             }
 
             if (_wmiController != null)
             {
-                tasks.Add(SafeDiscoverAsync(_wmiController, cancellationToken));
+                tasks.Add(SafeDiscoverAsync(_wmiController, allTargets, cancellationToken));
             }
 
             var results = await Task.WhenAll(tasks);
@@ -131,11 +137,12 @@ namespace PowerDisplay.Helpers
         /// </summary>
         private static async Task<IEnumerable<Monitor>> SafeDiscoverAsync(
             IMonitorController controller,
+            IReadOnlyList<MonitorDisplayInfo> targets,
             CancellationToken cancellationToken)
         {
             try
             {
-                return await controller.DiscoverMonitorsAsync(cancellationToken);
+                return await controller.DiscoverMonitorsAsync(targets, cancellationToken);
             }
             catch (Exception ex)
             {

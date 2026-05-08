@@ -261,12 +261,15 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Phase 2: Fetch DDC/CI capabilities in parallel (slow I2C operations)
         /// Phase 3: Create Monitor objects for valid DDC/CI monitors
         /// </summary>
-        public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
+            IReadOnlyList<MonitorDisplayInfo> targets,
+            CancellationToken cancellationToken = default)
         {
             try
             {
-                // Get monitor display info from QueryDisplayConfig, keyed by device path (unique per target)
-                var allMonitorDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo();
+                // Use the pre-filtered targets list provided by MonitorManager (no longer call GetAllMonitorDisplayInfo here).
+                // Behaviour is unchanged in this task; MonitorManager passes all targets. Filtering is activated in Task 5.
+                var allMonitorDisplayInfo = targets;
 
                 // Phase 1: Collect candidate monitors
                 var monitorHandles = EnumerateMonitorHandles();
@@ -339,7 +342,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private async Task<List<CandidateMonitor>> CollectCandidateMonitorsAsync(
             List<IntPtr> monitorHandles,
-            Dictionary<string, MonitorDisplayInfo> allMonitorDisplayInfo,
+            IReadOnlyList<MonitorDisplayInfo> allMonitorDisplayInfo,
             CancellationToken cancellationToken)
         {
             var candidates = new List<CandidateMonitor>();
@@ -363,7 +366,7 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 // Find all MonitorDisplayInfo entries that match this GDI device name
                 // In mirror mode, multiple targets share the same GDI name
-                var matchingInfos = allMonitorDisplayInfo.Values
+                var matchingInfos = allMonitorDisplayInfo
                     .Where(info => string.Equals(info.GdiDeviceName, gdiDeviceName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 

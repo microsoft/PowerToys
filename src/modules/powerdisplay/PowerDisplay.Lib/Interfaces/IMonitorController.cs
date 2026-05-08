@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
@@ -39,11 +40,16 @@ namespace PowerDisplay.Common.Interfaces
         Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Discovers supported monitors
+        /// Discovers supported monitors. Caller (MonitorManager) is responsible for
+        /// passing a pre-filtered list of MonitorDisplayInfo entries that match this
+        /// controller's scope (internal-only for WMI, external-only for DDC/CI).
         /// </summary>
+        /// <param name="targets">Pre-filtered display targets to consider.</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>List of monitors</returns>
-        Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default);
+        Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
+            IReadOnlyList<MonitorDisplayInfo> targets,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Sets monitor contrast

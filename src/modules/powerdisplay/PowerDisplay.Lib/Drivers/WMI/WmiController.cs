@@ -249,7 +249,9 @@ namespace PowerDisplay.Common.Drivers.WMI
         /// The monitor Name is left blank here; the ViewModel layer fills in a localized
         /// "Built-in Display" string so it can be translated for the user's UI language.
         /// </summary>
-        public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
+            IReadOnlyList<MonitorDisplayInfo> targets,
+            CancellationToken cancellationToken = default)
         {
             return await Task.Run(
                 () =>
@@ -269,8 +271,12 @@ namespace PowerDisplay.Common.Drivers.WMI
                         return monitors;
                     }
 
-                    // Get MonitorDisplayInfo from QueryDisplayConfig - this provides the correct monitor numbers
-                    var monitorDisplayInfos = Drivers.DDC.DdcCiNative.GetAllMonitorDisplayInfo();
+                    // Build EdidId-keyed lookup from the pre-filtered targets list provided by MonitorManager.
+                    // (Replaces the previous self-call to DdcCiNative.GetAllMonitorDisplayInfo, which was a layering violation.)
+                    var monitorDisplayInfos = targets
+                        .Where(t => !string.IsNullOrEmpty(t.EdidId))
+                        .GroupBy(t => t.EdidId, StringComparer.OrdinalIgnoreCase)
+                        .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
                     // Create monitor objects for each supported brightness instance
                     foreach (var obj in brightnessResults)
