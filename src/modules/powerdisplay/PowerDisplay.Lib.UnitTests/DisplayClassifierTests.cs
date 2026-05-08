@@ -37,6 +37,10 @@ public class DisplayClassifierTests
 
     // External: unrecognised values default to external
     [DataRow(0xDEADBEEFu, false, DisplayName = "Unknown value defaults to external")]
+
+    // External: INTERNAL flag combined with an undocumented subtype is treated as external
+    // (locks in the docstring's "INTERNAL | unknown subtype = external" rule).
+    [DataRow(0x80000007u, false, DisplayName = "INTERNAL | unknown subtype 7 (treated as external)")]
     public void IsInternal_ReturnsExpectedClassification(uint outputTechnology, bool expected)
     {
         Assert.AreEqual(expected, DisplayClassifier.IsInternal(outputTechnology));

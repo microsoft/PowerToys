@@ -118,16 +118,16 @@ namespace PowerDisplay.Helpers
 
             if (inventory.Count == 0)
             {
-                Logger.LogError("[MonitorManager] Phase 0 classification produced no displays — discovery aborted");
+                Logger.LogWarning("[MonitorManager] Phase 0 classification produced no displays — discovery aborted");
                 return new List<Monitor>();
             }
 
             LogClassificationSummary(inventory);
 
-            var internalTargets = (IReadOnlyList<MonitorDisplayInfo>)inventory.Values
+            IReadOnlyList<MonitorDisplayInfo> internalTargets = inventory.Values
                 .Where(i => i.IsInternal)
                 .ToList();
-            var externalTargets = (IReadOnlyList<MonitorDisplayInfo>)inventory.Values
+            IReadOnlyList<MonitorDisplayInfo> externalTargets = inventory.Values
                 .Where(i => !i.IsInternal)
                 .ToList();
 
@@ -162,7 +162,7 @@ namespace PowerDisplay.Helpers
             {
                 var techName = DisplayClassifier.GetOutputTechnologyName(info.OutputTechnology);
                 var techValue = info.OutputTechnology >= 0x80000000u
-                    ? $"0x{info.OutputTechnology:X}"
+                    ? "0x" + info.OutputTechnology.ToString("X", CultureInfo.InvariantCulture)
                     : info.OutputTechnology.ToString(CultureInfo.InvariantCulture);
                 var classification = info.IsInternal ? "Internal" : "External";
 
@@ -170,7 +170,14 @@ namespace PowerDisplay.Helpers
                     $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\" " +
                     $"(EdidId={info.EdidId}): OutputTechnology={techValue} ({techName}) → {classification}");
 
-                if (info.IsInternal) { internalCount++; } else { externalCount++; }
+                if (info.IsInternal)
+                {
+                    internalCount++;
+                }
+                else
+                {
+                    externalCount++;
+                }
             }
 
             Logger.LogInfo($"[DisplayClassification] Summary: {internalCount} internal, {externalCount} external");

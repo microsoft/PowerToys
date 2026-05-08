@@ -277,17 +277,20 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Discover supported monitors using a three-phase approach:
         /// Phase 1: Enumerate and collect candidate monitors with their handles
         /// Phase 2: Fetch DDC/CI capabilities in parallel (slow I2C operations)
-        /// Phase 3: Create Monitor objects for valid DDC/CI monitors
+        /// Phase 3: Create Monitor objects for valid DDC/CI monitors.
         /// </summary>
+        /// <param name="targets">External-only display targets (pre-filtered by MonitorManager Phase 0).</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>List of DDC/CI-managed external monitors.</returns>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
             IReadOnlyList<MonitorDisplayInfo> targets,
             CancellationToken cancellationToken = default)
         {
             try
             {
-                // Use the pre-filtered targets list provided by MonitorManager (no longer call GetAllMonitorDisplayInfo here).
-                // Behaviour is unchanged in this task; MonitorManager passes all targets. Filtering is activated in Task 5.
-                var allMonitorDisplayInfo = targets;
+                // External-only targets supplied by MonitorManager Phase 0. We never call
+                // GetAllMonitorDisplayInfo here — all classification decisions are upstream.
+                var externalTargets = targets;
 
                 // Phase 1: Collect candidate monitors
                 var monitorHandles = EnumerateMonitorHandles();
@@ -297,7 +300,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 var candidateMonitors = await CollectCandidateMonitorsAsync(
-                    monitorHandles, allMonitorDisplayInfo, cancellationToken);
+                    monitorHandles, externalTargets, cancellationToken);
 
                 if (candidateMonitors.Count == 0)
                 {
@@ -362,14 +365,14 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private async Task<List<CandidateMonitor>> CollectCandidateMonitorsAsync(
             List<IntPtr> monitorHandles,
-            IReadOnlyList<MonitorDisplayInfo> allMonitorDisplayInfo,
+            IReadOnlyList<MonitorDisplayInfo> externalTargets,
             CancellationToken cancellationToken)
         {
             var candidates = new List<CandidateMonitor>();
 
             // Build a case-insensitive GdiDeviceName -> List<MonitorDisplayInfo> lookup.
             // List-valued because mirror mode lets multiple targets share one GDI source.
-            var targetsByGdiName = allMonitorDisplayInfo
+            var targetsByGdiName = externalTargets
                 .Where(t => !string.IsNullOrEmpty(t.GdiDeviceName))
                 .GroupBy(t => t.GdiDeviceName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
@@ -384,12 +387,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     continue;
                 }
 
-                // If this GDI name is not in the (external-only) targets list, this is an
-                // internal panel — skip BEFORE the expensive GetPhysicalMonitorsFromHMONITOR
-                // call. This is the source of the discovery-time performance gain.
+                // GDI name not in the external targets list — either a Phase 0 internal panel
+                // or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the expensive
+                // GetPhysicalMonitorsFromHMONITOR call; that's where the discovery-time gain comes from.
                 if (!targetsByGdiName.TryGetValue(gdiDeviceName, out var matchingInfos))
                 {
-                    Logger.LogDebug($"DDC skipping {gdiDeviceName}: classified as internal panel");
+                    Logger.LogDebug($"DDC skipping {gdiDeviceName}: not in external targets list");
                     continue;
                 }
 
