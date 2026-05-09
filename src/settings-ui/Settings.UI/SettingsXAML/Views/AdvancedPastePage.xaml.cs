@@ -457,6 +457,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             ShowPhiSilicaLoadingState();
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
 
             try
             {
@@ -469,28 +470,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 {
                     _isPhiSilicaAvailable = false;
                     ShowPhiSilicaNotAvailableState(
-                        "Phi Silica is not available on this device.",
-                        "A Copilot+ PC with an NPU is required to use Phi Silica. For on-device AI on any Windows PC, consider using Foundry Local.");
+                        resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Title"),
+                        resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Description"));
                 }
                 else if (result == "NotReady")
                 {
                     _isPhiSilicaAvailable = false;
                     ShowPhiSilicaNotAvailableState(
-                        "Phi Silica model is not ready.",
-                        "The model needs to be downloaded. Check Windows Update for the AI model download progress.");
+                        resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Title"),
+                        resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Description"));
                 }
                 else
                 {
                     _isPhiSilicaAvailable = true;
-                    ShowPhiSilicaAvailableState("Phi Silica is available and ready on this device.");
+                    ShowPhiSilicaAvailableState(resourceLoader.GetString("AdvancedPaste_PhiSilicaAvailable_Message"));
                 }
             }
             catch (Exception)
             {
                 _isPhiSilicaAvailable = false;
                 ShowPhiSilicaNotAvailableState(
-                    "Phi Silica is not available on this device.",
-                    "Unable to check Phi Silica availability. A Copilot+ PC with an NPU is required.");
+                    resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Title"),
+                    resourceLoader.GetString("AdvancedPaste_PhiSilicaCheckFailed_Description"));
             }
 
             if (PasteAIProviderConfigurationDialog is not null)
@@ -571,7 +572,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         /// <summary>
         /// Checks Phi Silica availability by querying the running AdvancedPaste process
         /// via a well-known named pipe. AdvancedPaste runs as a packaged MSIX with identity
-        /// and checks the API status on startup.
+        /// and checks the API status on demand.
         /// Returns "Available", "NotReady", or "NotSupported".
         /// </summary>
         private static string CheckPhiSilicaViaAdvancedPaste()

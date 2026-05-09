@@ -120,27 +120,7 @@ namespace AdvancedPaste
         {
             Task.Run(async () =>
             {
-                // Check status once (with MSIX identity) and cache
-                string status;
-                try
-                {
-                    PhiSilicaLafHelper.TryUnlock();
-                    var readyState = Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
-                    status = readyState switch
-                    {
-                        Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem => "NotSupported",
-                        Microsoft.Windows.AI.AIFeatureReadyState.NotReady => "NotReady",
-                        _ => "Available",
-                    };
-                }
-                catch
-                {
-                    status = "NotSupported";
-                }
-
-                Logger.LogDebug($"Phi Silica status: {status}");
-
-                // Serve status to any client that connects
+                // Re-check status on every request so Settings reflects current runtime readiness.
                 while (true)
                 {
                     try
@@ -154,6 +134,9 @@ namespace AdvancedPaste
 
                         await server.WaitForConnectionAsync();
 
+                        var status = GetPhiSilicaStatus();
+                        Logger.LogDebug($"Phi Silica status: {status}");
+
                         var bytes = System.Text.Encoding.UTF8.GetBytes(status);
                         await server.WriteAsync(bytes);
                         server.WaitForPipeDrain();
@@ -165,6 +148,25 @@ namespace AdvancedPaste
                     }
                 }
             });
+        }
+
+        private static string GetPhiSilicaStatus()
+        {
+            try
+            {
+                PhiSilicaLafHelper.TryUnlock();
+                var readyState = Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
+                return readyState switch
+                {
+                    Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem => "NotSupported",
+                    Microsoft.Windows.AI.AIFeatureReadyState.NotReady => "NotReady",
+                    _ => "Available",
+                };
+            }
+            catch
+            {
+                return "NotSupported";
+            }
         }
 
         /// <summary>

@@ -6002,6 +6002,37 @@ The break timer font matches the text font.</value>
     <value>Foundry Local is still in public preview</value>
     <comment>Do not loc "Foundry Local"</comment>
   </data>
+  <data name="AdvancedPaste_PhiSilicaLoadingStatus.Text" xml:space="preserve">
+    <value>Checking Phi Silica availability...</value>
+    <comment>Do not localize "Phi Silica", it's a model name</comment>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaCopilotLearnMore.Content" xml:space="preserve">
+    <value>Learn more about Copilot+ PCs</value>
+    <comment>Do not localize "Copilot+ PCs", it's a product name</comment>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaNotAvailable_Title" xml:space="preserve">
+    <value>Phi Silica is not available on this device.</value>
+    <comment>Do not localize "Phi Silica", it's a model name</comment>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaNotAvailable_Description" xml:space="preserve">
+    <value>A Copilot+ PC with an NPU is required to use Phi Silica. For on-device AI on any Windows PC, consider using Foundry Local.</value>
+    <comment>Do not localize "Copilot+ PC", "NPU", "Phi Silica", and "Foundry Local", they are product/technical names</comment>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaNotReady_Title" xml:space="preserve">
+    <value>Phi Silica model is not ready.</value>
+    <comment>Do not localize "Phi Silica", it's a model name</comment>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaNotReady_Description" xml:space="preserve">
+    <value>The model needs to be downloaded. Check Windows Update for the AI model download progress.</value>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaAvailable_Message" xml:space="preserve">
+    <value>Phi Silica is available and ready on this device.</value>
+    <comment>Do not localize "Phi Silica", it's a model name</comment>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaCheckFailed_Description" xml:space="preserve">
+    <value>Unable to check Phi Silica availability. A Copilot+ PC with an NPU is required.</value>
+    <comment>Do not localize "Phi Silica", "Copilot+ PC", and "NPU", they are product/technical names</comment>
+  </data>
   <data name="CmdPal_Settings.Description" xml:space="preserve">
     <value>Configure the activation shortcut, extensions, behavior and much more</value>
   </data>

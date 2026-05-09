@@ -68,6 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             string[] additionalActionHeaderKeys =
             [
                 "ImageToText",
+                "FixSpellingAndGrammar",
                 "PasteAsTxtFile",
                 "PasteAsPngFile",
                 "PasteAsHtmlFile",
@@ -79,10 +80,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 if (action is AdvancedPasteAdditionalAction additionalAction)
                 {
+                    var headerKey = additionalActionHeaderKeys[Math.Min(index, additionalActionHeaderKeys.Length - 1)];
                     hotkeyAccessors.Add(new HotkeyAccessor(
                         () => additionalAction.Shortcut,
                         value => additionalAction.Shortcut = value ?? new HotkeySettings(),
-                        additionalActionHeaderKeys[index]));
+                        headerKey));
                     index++;
                 }
             }

@@ -792,6 +792,7 @@ function Main {
             $installPath = Get-PowerToysInstallPath -Scope 'PerMachine'
             if ($installPath) {
                 Test-CommandPalettePackages -InstallPath $installPath
+                Test-AdvancedPastePackage -InstallPath $installPath
                 Test-ContextMenuPackages -InstallPath $installPath
             }
         }
@@ -804,6 +805,7 @@ function Main {
             $installPath = Get-PowerToysInstallPath -Scope 'PerUser'
             if ($installPath) {
                 Test-CommandPalettePackages -InstallPath $installPath
+                Test-AdvancedPastePackage -InstallPath $installPath
                 Test-ContextMenuPackages -InstallPath $installPath
             }
         }

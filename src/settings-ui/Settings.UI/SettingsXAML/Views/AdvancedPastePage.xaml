@@ -697,9 +697,9 @@
                                     Height="36"
                                     HorizontalAlignment="Center" />
                                 <TextBlock
+                                    x:Uid="AdvancedPaste_PhiSilicaLoadingStatus"
                                     HorizontalAlignment="Center"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="Checking Phi Silica availability..."
                                     TextAlignment="Center"
                                     TextWrapping="Wrap" />
                             </StackPanel>
@@ -744,8 +744,8 @@
                                     TextAlignment="Center"
                                     TextWrapping="Wrap" />
                                 <HyperlinkButton
+                                    x:Uid="AdvancedPaste_PhiSilicaCopilotLearnMore"
                                     HorizontalAlignment="Center"
-                                    Content="Learn more about Copilot+ PCs"
                                     NavigateUri="https://learn.microsoft.com/windows/ai/npu-devices/" />
                             </StackPanel>
                         </Grid>

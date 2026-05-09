@@ -103,6 +103,29 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
 {
     const unsigned long powertoys_pid = GetCurrentProcessId();
 
+    const auto launch_direct_exe = [&]() -> HRESULT {
+        // Fallback: launch exe directly (dev builds without GenerateAppxPackageOnBuild)
+        const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
+
+        SHELLEXECUTEINFOW sei{ sizeof(sei) };
+        sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
+        sei.lpFile = L"WinUI3Apps\\AdvancedPaste\\PowerToys.AdvancedPaste.exe";
+        sei.nShow = SW_SHOWNORMAL;
+        sei.lpParameters = executable_args.data();
+        if (ShellExecuteExW(&sei))
+        {
+            Logger::trace("Successfully started Advanced Paste process (direct)");
+            terminate_process();
+            m_hProcess = sei.hProcess;
+            return S_OK;
+        }
+        else
+        {
+            Logger::error(L"Advanced Paste process failed to start. {}", get_last_error_or_default(GetLastError()));
+            return E_FAIL;
+        }
+    };
+
     // Ensure the AdvancedPaste MSIX package is registered
     static const std::wstring packageName =
 #ifdef _DEBUG
@@ -118,8 +141,23 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
         const auto installationFolder = get_module_folderpath();
 
 #ifdef _DEBUG
-        auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\AppPackages\\PowerToys.AdvancedPaste_0.0.1.0_Debug_Test\\", false);
-        auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\AppPackages\\PowerToys.AdvancedPaste_0.0.1.0_Debug_Test\\Dependencies\\", true);
+        const auto appPackagesRoot = installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\AppPackages\\";
+        const auto debugPackages = package::FindMsixFile(appPackagesRoot, true);
+
+        std::vector<std::wstring> msix;
+        std::vector<std::wstring> dependencies;
+
+        for (const auto& packagePath : debugPackages)
+        {
+            if (packagePath.find(L"\\Dependencies\\") == std::wstring::npos)
+            {
+                msix.push_back(packagePath);
+            }
+            else
+            {
+                dependencies.push_back(packagePath);
+            }
+        }
 #else
         auto msix = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\", false);
         auto dependencies = package::FindMsixFile(installationFolder + L"\\WinUI3Apps\\AdvancedPaste\\Dependencies\\", true);
@@ -130,32 +168,14 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
             if (!package::RegisterPackage(msix[0], dependencies))
             {
                 Logger::error(L"Failed to register AdvancedPaste MSIX package");
+                Logger::warn(L"Falling back to direct exe launch because AdvancedPaste MSIX registration failed");
+                return launch_direct_exe();
             }
         }
         else
         {
             Logger::warn(L"No MSIX found for AdvancedPaste, falling back to direct exe launch");
-
-            // Fallback: launch exe directly (dev builds without GenerateAppxPackageOnBuild)
-            const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
-
-            SHELLEXECUTEINFOW sei{ sizeof(sei) };
-            sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
-            sei.lpFile = L"WinUI3Apps\\AdvancedPaste\\PowerToys.AdvancedPaste.exe";
-            sei.nShow = SW_SHOWNORMAL;
-            sei.lpParameters = executable_args.data();
-            if (ShellExecuteExW(&sei))
-            {
-                Logger::trace("Successfully started Advanced Paste process (direct)");
-                terminate_process();
-                m_hProcess = sei.hProcess;
-                return S_OK;
-            }
-            else
-            {
-                Logger::error(L"Advanced Paste process failed to start. {}", get_last_error_or_default(GetLastError()));
-                return E_FAIL;
-            }
+            return launch_direct_exe();
         }
     }
 
