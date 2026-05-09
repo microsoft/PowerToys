@@ -5,6 +5,8 @@
 #include <spdlog/sinks/base_sink.h>
 #include <filesystem>
 #include <string_view>
+#include <tuple>
+#include <vector>
 
 #include "../../src/common/logger/logger.h"
 #include "../../src/common/utils/gpo.h"
@@ -56,6 +58,135 @@ constexpr inline const wchar_t *DataDiagnosticsRegValueName = L"AllowDataDiagnos
     }
 
 static Shared::Trace::ETWTrace trace{L"PowerToys_Installer"};
+
+namespace
+{
+    struct VersionQuad
+    {
+        uint16_t major = 0;
+        uint16_t minor = 0;
+        uint16_t patch = 0;
+        uint16_t revision = 0;
+
+        bool operator>(const VersionQuad& other) const
+        {
+            return std::tie(major, minor, patch, revision) > std::tie(other.major, other.minor, other.patch, other.revision);
+        }
+    };
+
+    std::wstring VersionToWString(const VersionQuad& v)
+    {
+        return std::to_wstring(v.major) + L"." + std::to_wstring(v.minor) + L"." + std::to_wstring(v.patch) + L"." + std::to_wstring(v.revision);
+    }
+
+    bool TryGetFileVersion(const std::wstring& filePath, VersionQuad& version)
+    {
+        DWORD dummyHandle = 0;
+        DWORD verSize = GetFileVersionInfoSizeW(filePath.c_str(), &dummyHandle);
+        if (verSize == 0)
+        {
+            return false;
+        }
+
+        std::vector<BYTE> verData(verSize);
+        if (!GetFileVersionInfoW(filePath.c_str(), 0, verSize, verData.data()))
+        {
+            return false;
+        }
+
+        VS_FIXEDFILEINFO* verInfo = nullptr;
+        UINT verInfoSize = 0;
+        if (!VerQueryValueW(verData.data(), L"\\", reinterpret_cast<LPVOID*>(&verInfo), &verInfoSize) || verInfo == nullptr)
+        {
+            return false;
+        }
+
+        version.major = HIWORD(verInfo->dwFileVersionMS);
+        version.minor = LOWORD(verInfo->dwFileVersionMS);
+        version.patch = HIWORD(verInfo->dwFileVersionLS);
+        version.revision = LOWORD(verInfo->dwFileVersionLS);
+        return true;
+    }
+
+    bool IsPowerToysPerUserProduct(const wchar_t* productCode, const wchar_t* userSid, MSIINSTALLCONTEXT context)
+    {
+        if ((context != MSIINSTALLCONTEXT_USERMANAGED) && (context != MSIINSTALLCONTEXT_USERUNMANAGED))
+        {
+            return false;
+        }
+
+        wchar_t componentPath[MAX_PATH]{};
+        DWORD pathLength = MAX_PATH;
+        INSTALLSTATE state = MsiGetComponentPathExW(productCode, POWERTOYS_EXE_COMPONENT, userSid, context, componentPath, &pathLength);
+        return state == INSTALLSTATE_LOCAL || state == INSTALLSTATE_SOURCE || state == INSTALLSTATE_DEFAULT;
+    }
+
+    bool IsAnyPowerToysPerUserInstallPresent()
+    {
+        static constexpr wchar_t sidAllUsers[] = L"S-1-1-0";
+        const DWORD contexts = MSIINSTALLCONTEXT_USERMANAGED | MSIINSTALLCONTEXT_USERUNMANAGED;
+
+        for (DWORD index = 0;; ++index)
+        {
+            WCHAR productCode[39]{};
+            WCHAR sidBuffer[256]{};
+            DWORD sidLength = static_cast<DWORD>(std::size(sidBuffer));
+            MSIINSTALLCONTEXT installedContext = MSIINSTALLCONTEXT_NONE;
+
+            UINT enumResult = MsiEnumProductsExW(
+                nullptr,
+                sidAllUsers,
+                contexts,
+                index,
+                productCode,
+                &installedContext,
+                sidBuffer,
+                &sidLength);
+
+            if (enumResult == ERROR_NO_MORE_ITEMS)
+            {
+                break;
+            }
+
+            if (enumResult != ERROR_SUCCESS && enumResult != ERROR_MORE_DATA)
+            {
+                continue;
+            }
+
+            std::wstring dynamicSid;
+            const wchar_t* sidPtr = sidBuffer[0] ? sidBuffer : nullptr;
+            if (enumResult == ERROR_MORE_DATA)
+            {
+                dynamicSid.resize(sidLength + 1);
+                DWORD retrySidLength = static_cast<DWORD>(dynamicSid.size());
+                enumResult = MsiEnumProductsExW(
+                    nullptr,
+                    sidAllUsers,
+                    contexts,
+                    index,
+                    productCode,
+                    &installedContext,
+                    dynamicSid.data(),
+                    &retrySidLength);
+
+                if (enumResult != ERROR_SUCCESS)
+                {
+                    continue;
+                }
+
+                dynamicSid.resize(retrySidLength);
+                sidPtr = dynamicSid.empty() || dynamicSid[0] == L'\0' ? nullptr : dynamicSid.c_str();
+            }
+
+            if (IsPowerToysPerUserProduct(productCode, sidPtr, installedContext))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
 
 inline bool isDataDiagnosticEnabled()
 {
@@ -334,6 +465,69 @@ UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
 
 LExit:
     UINT er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall CheckInstallGuardsCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    LPWSTR currentScope = nullptr;
+    LPWSTR installFolder = nullptr;
+
+    hr = WcaInitialize(hInstall, "CheckInstallGuardsCA");
+    ExitOnFailure(hr, "Failed to initialize");
+
+    hr = WcaGetProperty(L"InstallScope", &currentScope);
+    ExitOnFailure(hr, "Failed to get InstallScope property");
+
+    if (currentScope != nullptr && std::wstring{ currentScope } == L"perMachine" && IsAnyPowerToysPerUserInstallPresent())
+    {
+        PMSIHANDLE hRecord = MsiCreateRecord(0);
+        MsiRecordSetStringW(hRecord, 0, L"PowerToys is already installed per-user for at least one account. Please uninstall all per-user PowerToys installations before installing machine-wide.");
+        MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_ERROR + MB_OK), hRecord);
+        hr = E_ABORT;
+        ExitOnFailure(hr, "Per-user installation detected while attempting machine-wide install");
+    }
+
+    hr = WcaGetProperty(L"INSTALLFOLDER", &installFolder);
+    ExitOnFailure(hr, "Failed to get INSTALLFOLDER property");
+
+    if (installFolder && *installFolder != L'\0')
+    {
+        const auto installedExePath = std::filesystem::path(installFolder) / L"PowerToys.exe";
+        if (std::filesystem::exists(installedExePath))
+        {
+            VersionQuad existingVersion;
+            if (TryGetFileVersion(installedExePath.wstring(), existingVersion))
+            {
+                const VersionQuad targetVersion{
+                    static_cast<uint16_t>(VERSION_MAJOR),
+                    static_cast<uint16_t>(VERSION_MINOR),
+                    static_cast<uint16_t>(VERSION_REVISION),
+                    0
+                };
+
+                if (existingVersion > targetVersion)
+                {
+                    const auto existingVersionText = VersionToWString(existingVersion);
+                    const auto targetVersionText = VersionToWString(targetVersion);
+                    const auto message = L"A newer PowerToys version (" + existingVersionText + L") already exists in the installation folder. The requested installer version (" + targetVersionText + L") is older. Uninstall the newer version first.";
+
+                    PMSIHANDLE hRecord = MsiCreateRecord(0);
+                    MsiRecordSetStringW(hRecord, 0, message.c_str());
+                    MsiProcessMessage(hInstall, static_cast<INSTALLMESSAGE>(INSTALLMESSAGE_ERROR + MB_OK), hRecord);
+                    hr = E_ABORT;
+                    ExitOnFailure(hr, "A higher PowerToys.exe version already exists");
+                }
+            }
+        }
+    }
+
+LExit:
+    ReleaseStr(currentScope);
+    ReleaseStr(installFolder);
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
 
