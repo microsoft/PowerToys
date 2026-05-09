@@ -232,7 +232,7 @@ namespace AdvancedPaste.ViewModels
 
         public bool ShowClipboardPreview => _userSettings.EnableClipboardPreview;
 
-        public bool ShowClipboardHistoryButton => ClipboardHistoryEnabled;
+        public bool ShowClipboardHistoryButton => _userSettings.ShowClipboardHistory && ClipboardHistoryEnabled;
 
         public bool HasIndeterminateTransformProgress => double.IsNaN(TransformProgress);
 

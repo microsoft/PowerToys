@@ -21,6 +21,8 @@ namespace AdvancedPaste.Settings
 
         public bool EnableClipboardPreview { get; }
 
+        public bool ShowClipboardHistory { get; }
+
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions { get; }
 
         public IReadOnlyList<PasteFormats> AdditionalActions { get; }

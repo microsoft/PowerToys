@@ -569,6 +569,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowClipboardHistory
+        {
+            get => _advancedPasteSettings.Properties.ShowClipboardHistory;
+            set
+            {
+                if (value != _advancedPasteSettings.Properties.ShowClipboardHistory)
+                {
+                    _advancedPasteSettings.Properties.ShowClipboardHistory = value;
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool AutoCopySelectionForCustomActionHotkey
         {
             get => _advancedPasteSettings.Properties.AutoCopySelectionForCustomActionHotkey;
@@ -1244,6 +1257,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 target.EnableClipboardPreview = source.EnableClipboardPreview;
                 OnPropertyChanged(nameof(EnableClipboardPreview));
+            }
+
+            if (target.ShowClipboardHistory != source.ShowClipboardHistory)
+            {
+                target.ShowClipboardHistory = source.ShowClipboardHistory;
+                OnPropertyChanged(nameof(ShowClipboardHistory));
             }
 
             if (target.AutoCopySelectionForCustomActionHotkey != source.AutoCopySelectionForCustomActionHotkey)

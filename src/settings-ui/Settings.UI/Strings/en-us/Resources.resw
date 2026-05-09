@@ -4386,6 +4386,10 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Show clipboard preview</value>
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
+  <data name="AdvancedPaste_ShowClipboardHistory.Header" xml:space="preserve">
+    <value>Show clipboard history</value>
+    <comment>Enables display of clipboard history button in the Advanced Paste window</comment>
+  </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
     <value>Auto-copy selection for custom action hotkeys</value>
     <comment>Advanced Paste is a product name</comment>
@@ -5906,6 +5910,9 @@ The break timer font matches the text font.</value>
   </data>
   <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
     <value>Display a preview of the current clipboard content</value>
+  </data>
+  <data name="AdvancedPaste_ShowClipboardHistory.Description" xml:space="preserve">
+    <value>Display a button to access clipboard history in the Advanced Paste window</value>
   </data>
   <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
     <value>Learn more</value>

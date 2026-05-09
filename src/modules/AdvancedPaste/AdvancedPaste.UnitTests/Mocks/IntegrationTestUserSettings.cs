@@ -51,6 +51,8 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public bool EnableClipboardPreview => true;
 
+    public bool ShowClipboardHistory => true;
+
     public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
     public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;

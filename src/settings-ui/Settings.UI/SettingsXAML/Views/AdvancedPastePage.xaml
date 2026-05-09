@@ -169,6 +169,9 @@
                                 <tkcontrols:SettingsCard Name="AdvancedPasteEnableClipboardPreview" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_EnableClipboardPreview" IsChecked="{x:Bind ViewModel.EnableClipboardPreview, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard Name="AdvancedPasteShowClipboardHistory" ContentAlignment="Left">
+                                    <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_ShowClipboardHistory" IsChecked="{x:Bind ViewModel.ShowClipboardHistory, Mode=TwoWay}" />
+                                </tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard Name="AdvancedPasteAutoCopySelectionCustomAction" ContentAlignment="Left">
                                     <ptcontrols:CheckBoxWithDescriptionControl x:Uid="AdvancedPaste_AutoCopySelectionForCustomActionHotkey" IsChecked="{x:Bind ViewModel.AutoCopySelectionForCustomActionHotkey, Mode=TwoWay}" />
                                 </tkcontrols:SettingsCard>

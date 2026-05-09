@@ -28,6 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
             EnableClipboardPreview = true;
+            ShowClipboardHistory = true;
             AutoCopySelectionForCustomActionHotkey = false;
             PasteAIConfiguration = new();
         }
@@ -79,6 +80,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool EnableClipboardPreview { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool ShowClipboardHistory { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool AutoCopySelectionForCustomActionHotkey { get; set; }
