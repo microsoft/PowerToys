@@ -47,7 +47,7 @@ But to get started quickly, choose one of the installation methods below:
 <summary><strong>Download the .exe file from GitHub</strong></summary>
 <br/>
 
-Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), scroll down and select **Assets** to reveal the installation files, and choose the one that matches your architecture and install scope. For most devices, that would be _x64 per-user_.
+Go to the [PowerToys GitHub releases](https://aka.ms/installPowerToys), scroll down and select **Assets** to reveal the installation files, and choose the one that matches your architecture and install scope. For most devices, that would be _x64 per-user_. If you choose the package whose name includes "PowerToysUserSetup" with "Per User" description, Microsoft Powertoys will be installed in "%userprofile%\AppData\Local\Programs" folder by default. If you choose the installer with "Machine Wide" tag, Microsoft Powertoys will be installed in "C:\Program Files" folder by default. But whatever the installer is, you could adjust the installation path directly by clicking "Option" button on the first page in the installer.
 
 </details>
 
