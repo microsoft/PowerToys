@@ -58,11 +58,28 @@ Advanced Paste uses the Windows AI APIs (Phi Silica / `Microsoft.Windows.AI.Text
 
 #### Local development setup
 
-For local debug builds, Visual Studio handles MSIX registration automatically. Select the **"PowerToys.AdvancedPaste (Package)"** launch profile in the debug dropdown.
+For local debug builds, Visual Studio handles MSIX registration automatically.
+
+1. Build `src/modules/AdvancedPaste/AdvancedPaste/AdvancedPaste.csproj` once.
+2. Select the **"PowerToys.AdvancedPaste (Package)"** launch profile in the debug dropdown.
+3. Press F5.
+
+The required launch profiles are defined in `src/modules/AdvancedPaste/AdvancedPaste/Properties/launchSettings.json` and include `commandName: "MsixPackage"`.
+
+If Visual Studio shows:
+
+"X:\\GitHub\\PowerToys\\src\\modules\\AdvancedPaste\\AdvancedPaste\\Properties\\launchSettings.json was not found. To debug a packaged single-project MSIX solution, a profile with command name MsixPackage in launchSettings.json is required."
+
+restore that file and reload the solution.
 
 To manually register:
 ```powershell
 Add-AppxPackage -Register "ARM64\Debug\WinUI3Apps\AdvancedPaste\AppxManifest.xml"
+```
+
+To manually unregister:
+```powershell
+Get-AppxPackage -Name "*AdvancedPaste*" | Remove-AppxPackage
 ```
 
 Verify:
@@ -76,7 +93,7 @@ $pkg.IsDevelopmentMode   # True
 
 Settings UI does not have MSIX package identity. To check whether Phi Silica is available, it queries the running Advanced Paste process via a named pipe (`powertoys_advancedpaste_phi_status`).
 
-Advanced Paste checks LAF + `GetReadyState()` once on startup (with MSIX identity), caches the result, and serves it to any client that connects. Settings connects with a 5-second timeout and reads one of:
+Advanced Paste checks LAF + `GetReadyState()` for each incoming status request (with MSIX identity), then returns the current state. Settings connects with a 5-second timeout and reads one of:
 - `Available` — model is ready
 - `NotReady` — model needs download via Windows Update
 - `NotSupported` — not a Copilot+ PC, API unavailable, or Advanced Paste not running
