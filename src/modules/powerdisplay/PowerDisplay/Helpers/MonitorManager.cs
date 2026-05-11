@@ -194,7 +194,7 @@ namespace PowerDisplay.Helpers
         /// Set brightness of the specified monitor
         /// </summary>
         public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
-            => ExecuteMonitorOperationAsync(
+            => ExecuteMonitorOperationAsync<IMonitorController, int>(
                 monitorId,
                 brightness,
                 (ctrl, mon, val, ct) => ctrl.SetBrightnessAsync(mon, val, ct),
@@ -202,10 +202,10 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set contrast of the specified monitor
+        /// Set contrast of the specified monitor (DDC/CI only)
         /// </summary>
         public Task<MonitorOperationResult> SetContrastAsync(string monitorId, int contrast, CancellationToken cancellationToken = default)
-            => ExecuteMonitorOperationAsync(
+            => ExecuteMonitorOperationAsync<IDdcController, int>(
                 monitorId,
                 contrast,
                 (ctrl, mon, val, ct) => ctrl.SetContrastAsync(mon, val, ct),
@@ -213,10 +213,10 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set volume of the specified monitor
+        /// Set volume of the specified monitor (DDC/CI only)
         /// </summary>
         public Task<MonitorOperationResult> SetVolumeAsync(string monitorId, int volume, CancellationToken cancellationToken = default)
-            => ExecuteMonitorOperationAsync(
+            => ExecuteMonitorOperationAsync<IDdcController, int>(
                 monitorId,
                 volume,
                 (ctrl, mon, val, ct) => ctrl.SetVolumeAsync(mon, val, ct),
@@ -224,10 +224,10 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set monitor color temperature
+        /// Set monitor color temperature (DDC/CI only)
         /// </summary>
         public Task<MonitorOperationResult> SetColorTemperatureAsync(string monitorId, int colorTemperature, CancellationToken cancellationToken = default)
-            => ExecuteMonitorOperationAsync(
+            => ExecuteMonitorOperationAsync<IDdcController, int>(
                 monitorId,
                 colorTemperature,
                 (ctrl, mon, val, ct) => ctrl.SetColorTemperatureAsync(mon, val, ct),
@@ -235,10 +235,10 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set input source for a monitor
+        /// Set input source for a monitor (DDC/CI only)
         /// </summary>
         public Task<MonitorOperationResult> SetInputSourceAsync(string monitorId, int inputSource, CancellationToken cancellationToken = default)
-            => ExecuteMonitorOperationAsync(
+            => ExecuteMonitorOperationAsync<IDdcController, int>(
                 monitorId,
                 inputSource,
                 (ctrl, mon, val, ct) => ctrl.SetInputSourceAsync(mon, val, ct),
@@ -246,11 +246,11 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set power state for a monitor using VCP 0xD6.
+        /// Set power state for a monitor using VCP 0xD6 (DDC/CI only).
         /// Note: Setting any state other than On (0x01) will turn off the display.
         /// </summary>
         public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
-            => ExecuteMonitorOperationAsync(
+            => ExecuteMonitorOperationAsync<IDdcController, int>(
                 monitorId,
                 powerState,
                 (ctrl, mon, val, ct) => ctrl.SetPowerStateAsync(mon, val, ct),
@@ -340,14 +340,18 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Generic helper to execute monitor operations with common error handling.
-        /// Eliminates code duplication across Set* methods.
+        /// <typeparamref name="TController"/> declares which capability interface the operation
+        /// requires (e.g. <see cref="IMonitorController"/> for brightness, <see cref="IDdcController"/>
+        /// for VCP-only features); the call short-circuits with a failure when the monitor's
+        /// controller does not implement it.
         /// </summary>
-        private async Task<MonitorOperationResult> ExecuteMonitorOperationAsync<T>(
+        private async Task<MonitorOperationResult> ExecuteMonitorOperationAsync<TController, TValue>(
             string monitorId,
-            T value,
-            Func<IMonitorController, Monitor, T, CancellationToken, Task<MonitorOperationResult>> operation,
-            Action<Monitor, T> onSuccess,
+            TValue value,
+            Func<TController, Monitor, TValue, CancellationToken, Task<MonitorOperationResult>> operation,
+            Action<Monitor, TValue> onSuccess,
             CancellationToken cancellationToken = default)
+            where TController : class, IMonitorController
         {
             var monitor = GetMonitor(monitorId);
             if (monitor == null)
@@ -357,15 +361,17 @@ namespace PowerDisplay.Helpers
             }
 
             var controller = GetControllerForMonitor(monitor);
-            if (controller == null)
+            if (controller is not TController typedController)
             {
-                Logger.LogError($"[MonitorManager] No controller available for monitor {monitorId}");
-                return MonitorOperationResult.Failure("No controller available for this monitor");
+                Logger.LogWarning(
+                    $"[MonitorManager] Monitor {monitorId} (CommunicationMethod={monitor.CommunicationMethod}) " +
+                    $"does not support {typeof(TController).Name} — operation rejected");
+                return MonitorOperationResult.Failure($"Monitor does not support this feature ({typeof(TController).Name})");
             }
 
             try
             {
-                var result = await operation(controller, monitor, value, cancellationToken);
+                var result = await operation(typedController, monitor, value, cancellationToken);
 
                 if (result.IsSuccess)
                 {

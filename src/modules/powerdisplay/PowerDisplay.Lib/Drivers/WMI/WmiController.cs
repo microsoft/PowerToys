@@ -322,61 +322,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                 cancellationToken);
         }
 
-        // Extended features not supported by WMI (internal laptop displays expose only brightness via WMI).
-        public Task<VcpFeatureValue> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(VcpFeatureValue.Invalid);
-        }
-
-        public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(MonitorOperationResult.Failure("Contrast control not supported via WMI"));
-        }
-
-        public Task<VcpFeatureValue> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(VcpFeatureValue.Invalid);
-        }
-
-        public Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(MonitorOperationResult.Failure("Volume control not supported via WMI"));
-        }
-
-        public Task<VcpFeatureValue> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(VcpFeatureValue.Invalid);
-        }
-
-        public Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(MonitorOperationResult.Failure("Color temperature control not supported via WMI"));
-        }
-
-        public Task<VcpFeatureValue> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            // Input source switching not supported for internal displays
-            return Task.FromResult(VcpFeatureValue.Invalid);
-        }
-
-        public Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
-        {
-            // Input source switching not supported for internal displays
-            return Task.FromResult(MonitorOperationResult.Failure("Input source switching not supported via WMI"));
-        }
-
-        public Task<MonitorOperationResult> SetPowerStateAsync(Monitor monitor, int powerState, CancellationToken cancellationToken = default)
-        {
-            // Power state control not supported for internal displays via WMI
-            return Task.FromResult(MonitorOperationResult.Failure("Power state control not supported via WMI"));
-        }
-
-        public Task<VcpFeatureValue> GetPowerStateAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            // Power state control not supported for internal displays via WMI
-            return Task.FromResult(VcpFeatureValue.Invalid);
-        }
-
         public void Dispose()
         {
             // WmiLight objects are created per-operation and disposed immediately via using statements.

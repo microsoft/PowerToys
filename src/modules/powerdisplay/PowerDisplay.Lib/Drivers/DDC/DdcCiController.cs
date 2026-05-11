@@ -9,8 +9,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Polly;
-using Polly.Retry;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
@@ -29,7 +27,7 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// <summary>
     /// DDC/CI monitor controller for controlling external monitors
     /// </summary>
-    public partial class DdcCiController : IMonitorController, IDisposable
+    public partial class DdcCiController : IDdcController, IDisposable
     {
         /// <summary>
         /// Represents a candidate monitor discovered during Phase 1 of monitor enumeration.
@@ -41,47 +39,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             IntPtr Handle,
             PHYSICAL_MONITOR PhysicalMonitor,
             MonitorDisplayInfo MonitorInfo);
-
-        /// <summary>
-        /// Delay between retry attempts for DDC/CI operations (in milliseconds)
-        /// </summary>
-        private const int RetryDelayMs = 100;
-
-        /// <summary>
-        /// Retry pipeline for getting capabilities string length (3 retries).
-        /// </summary>
-        private static readonly ResiliencePipeline<uint> CapabilitiesLengthRetryPipeline =
-            new ResiliencePipelineBuilder<uint>()
-                .AddRetry(new RetryStrategyOptions<uint>
-                {
-                    MaxRetryAttempts = 2, // 2 retries = 3 total attempts
-                    Delay = TimeSpan.FromMilliseconds(RetryDelayMs),
-                    ShouldHandle = new PredicateBuilder<uint>().HandleResult(len => len == 0),
-                    OnRetry = static args =>
-                    {
-                        Logger.LogWarning($"[Retry] GetCapabilitiesStringLength returned invalid result on attempt {args.AttemptNumber + 1}, retrying...");
-                        return default;
-                    },
-                })
-                .Build();
-
-        /// <summary>
-        /// Retry pipeline for getting capabilities string (5 retries).
-        /// </summary>
-        private static readonly ResiliencePipeline<string?> CapabilitiesStringRetryPipeline =
-            new ResiliencePipelineBuilder<string?>()
-                .AddRetry(new RetryStrategyOptions<string?>
-                {
-                    MaxRetryAttempts = 4, // 4 retries = 5 total attempts
-                    Delay = TimeSpan.FromMilliseconds(RetryDelayMs),
-                    ShouldHandle = new PredicateBuilder<string?>().HandleResult(static str => string.IsNullOrEmpty(str)),
-                    OnRetry = static args =>
-                    {
-                        Logger.LogWarning($"[Retry] GetCapabilitiesString returned invalid result on attempt {args.AttemptNumber + 1}, retrying...");
-                        return default;
-                    },
-                })
-                .Build();
 
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
@@ -188,89 +145,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             ArgumentNullException.ThrowIfNull(monitor);
             return await GetVcpFeatureAsync(monitor, VcpCodePowerMode, cancellationToken);
-        }
-
-        /// <summary>
-        /// Get monitor capabilities string with retry logic.
-        /// Uses cached CapabilitiesRaw if available to avoid slow I2C operations.
-        /// </summary>
-        public async Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            ArgumentNullException.ThrowIfNull(monitor);
-
-            // Check if capabilities are already cached
-            if (!string.IsNullOrEmpty(monitor.CapabilitiesRaw))
-            {
-                return monitor.CapabilitiesRaw;
-            }
-
-            return await Task.Run(
-                () =>
-                {
-                    if (monitor.Handle == IntPtr.Zero)
-                    {
-                        return string.Empty;
-                    }
-
-                    try
-                    {
-                        // Step 1: Get capabilities string length with retry
-                        var length = CapabilitiesLengthRetryPipeline.Execute(() =>
-                        {
-                            if (GetCapabilitiesStringLength(monitor.Handle, out uint len) && len > 0)
-                            {
-                                return len;
-                            }
-
-                            return 0u;
-                        });
-
-                        if (length == 0)
-                        {
-                            Logger.LogWarning("[Retry] GetCapabilitiesStringLength failed after 3 attempts");
-                            return string.Empty;
-                        }
-
-                        // Step 2: Get actual capabilities string with retry
-                        var capsString = CapabilitiesStringRetryPipeline.Execute(
-                            () => TryGetCapabilitiesString(monitor.Handle, length));
-
-                        if (!string.IsNullOrEmpty(capsString))
-                        {
-                            return capsString;
-                        }
-
-                        Logger.LogWarning("[Retry] GetCapabilitiesString failed after 5 attempts");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Exception getting capabilities string: {ex.Message}");
-                    }
-
-                    return string.Empty;
-                },
-                cancellationToken);
-        }
-
-        /// <summary>
-        /// Try to get capabilities string from monitor handle.
-        /// </summary>
-        private string? TryGetCapabilitiesString(IntPtr handle, uint length)
-        {
-            var buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal((int)length);
-            try
-            {
-                if (CapabilitiesRequestAndCapabilitiesReply(handle, buffer, length))
-                {
-                    return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buffer);
-                }
-
-                return null;
-            }
-            finally
-            {
-                System.Runtime.InteropServices.Marshal.FreeHGlobal(buffer);
-            }
         }
 
         /// <summary>
