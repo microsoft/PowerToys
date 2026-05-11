@@ -23,6 +23,7 @@ namespace EnvironmentVariablesUILib.Models
         private string _name;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(Valid))]
         private string _values;
 
         [ObservableProperty]
@@ -143,7 +144,7 @@ namespace EnvironmentVariablesUILib.Models
                             {
                                 var variableToRestore = new Variable(clone.Name, backupVariable.Values, backupVariable.ParentType);
 
-                                if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
+                                if (!EnvironmentVariablesHelper.UnsetBackupVariableWithoutNotify(backupVariable))
                                 {
                                     LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                                 }
@@ -169,7 +170,7 @@ namespace EnvironmentVariablesUILib.Models
                         if (EnvironmentVariablesHelper.GetExisting(variableToOverride.Name) == null)
                         {
                             // Backup the variable
-                            if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
+                            if (!EnvironmentVariablesHelper.SetBackupVariableWithoutNotify(variableToOverride))
                             {
                                 LoggerInstance.Logger.LogError("Failed to set backup variable.");
                             }
@@ -197,19 +198,7 @@ namespace EnvironmentVariablesUILib.Models
 
         public bool Validate()
         {
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                return false;
-            }
-
-            const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
-            if (ParentType != VariablesSetType.System && Name.Length >= MaxUserEnvVariableLength)
-            {
-                LoggerInstance.Logger.LogError("Variable name too long.");
-                return false;
-            }
-
-            return true;
+            return EnvironmentVariablesHelper.TryValidateVariable(Name, Values, out _);
         }
     }
 }

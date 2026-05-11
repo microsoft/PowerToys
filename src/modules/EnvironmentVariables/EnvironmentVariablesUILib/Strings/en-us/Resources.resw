@@ -283,4 +283,10 @@
   <data name="VariableIsAppliedByActiveProfileTooltip.Text" xml:space="preserve">
     <value>This variable is written by the active profile</value>
   </data>
+  <data name="ProfileNameInvalidTitle" xml:space="preserve">
+    <value>Profile name is invalid.</value>
+  </data>
+  <data name="StateProfileNameInvalidMsg" xml:space="preserve">
+    <value>The active profile's name is no longer valid and has been disabled. Please rename or delete it.</value>
+  </data>
 </root>

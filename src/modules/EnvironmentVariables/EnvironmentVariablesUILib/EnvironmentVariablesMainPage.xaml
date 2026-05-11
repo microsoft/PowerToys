@@ -405,33 +405,32 @@
         <ContentDialog
             x:Name="AddDefaultVariableDialog"
             x:Uid="AddDefaultVariableDialog"
-            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
                 <models:Variable />
             </ContentDialog.DataContext>
-            <ScrollViewer>
-                <StackPanel
-                    MinWidth="320"
-                    HorizontalAlignment="Stretch"
-                    Spacing="16">
-                    <TextBox
-                        x:Uid="AddNewVariableName"
-                        IsSpellCheckEnabled="False"
-                        Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                        TextChanged="AddDefaultVariableNameTxtBox_TextChanged" />
-                    <TextBox
-                        x:Uid="AddNewVariableValue"
-                        AcceptsReturn="False"
-                        IsSpellCheckEnabled="False"
-                        ScrollViewer.IsVerticalRailEnabled="True"
-                        ScrollViewer.VerticalScrollBarVisibility="Visible"
-                        ScrollViewer.VerticalScrollMode="Enabled"
-                        Text="{Binding Values, Mode=TwoWay}"
-                        TextWrapping="Wrap" />
-                </StackPanel>
-            </ScrollViewer>
+            <StackPanel
+                MinWidth="320"
+                HorizontalAlignment="Stretch"
+                Spacing="16">
+                <TextBox
+                    x:Uid="AddNewVariableName"
+                    IsSpellCheckEnabled="False"
+                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    TextChanged="AddDefaultVariableNameTxtBox_TextChanged" />
+                <TextBox
+                    x:Uid="AddNewVariableValue"
+                    MaxHeight="240"
+                    AcceptsReturn="False"
+                    IsSpellCheckEnabled="False"
+                    ScrollViewer.IsVerticalRailEnabled="True"
+                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                    ScrollViewer.VerticalScrollMode="Enabled"
+                    Text="{Binding Values, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    TextChanged="AddDefaultVariableValueTxtBox_TextChanged"
+                    TextWrapping="Wrap" />
+            </StackPanel>
         </ContentDialog>
 
         <ContentDialog
@@ -462,7 +461,7 @@
                         ScrollViewer.IsVerticalRailEnabled="True"
                         ScrollViewer.VerticalScrollBarVisibility="Visible"
                         ScrollViewer.VerticalScrollMode="Enabled"
-                        Text="{Binding Values, Mode=TwoWay}"
+                        Text="{Binding Values, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                         TextChanged="EditVariableDialogValueTxtBox_TextChanged"
                         TextWrapping="Wrap" />
                     <MenuFlyoutSeparator Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}" />
@@ -675,7 +674,8 @@
                                                 <TextBox
                                                     x:Name="AddNewVariableValue"
                                                     x:Uid="AddNewVariableValue"
-                                                    Margin="0,16,0,0" />
+                                                    Margin="0,16,0,0"
+                                                    TextChanged="AddNewVariableValue_TextChanged" />
                                             </StackPanel>
                                         </tkcontrols:Case>
                                         <tkcontrols:Case Value="ExistingVariable">

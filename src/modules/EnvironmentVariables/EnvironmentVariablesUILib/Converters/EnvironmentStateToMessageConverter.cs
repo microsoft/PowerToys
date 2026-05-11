@@ -22,6 +22,7 @@ public partial class EnvironmentStateToMessageConverter : IValueConverter
             EnvironmentState.ChangedOnStartup => resourceLoader.GetString("StateNotUpToDateOnStartupMsg"),
             EnvironmentState.EnvironmentMessageReceived => resourceLoader.GetString("StateNotUpToDateEnvironmentMessageReceivedMsg"),
             EnvironmentState.ProfileNotApplicable => resourceLoader.GetString("StateProfileNotApplicableMsg"),
+            EnvironmentState.ProfileNameInvalid => resourceLoader.GetString("StateProfileNameInvalidMsg"),
             _ => throw new NotImplementedException(),
         };
     }
