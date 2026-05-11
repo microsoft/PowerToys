@@ -71,31 +71,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Extract hardware ID from WMI InstanceName.
-        /// InstanceName format: "DISPLAY\BOE0900\4&amp;10fd3ab1&amp;0&amp;UID265988_0"
-        /// Returns the second segment (e.g., "BOE0900") which is the manufacturer+product code.
-        /// </summary>
-        /// <param name="instanceName">The WMI InstanceName.</param>
-        /// <returns>The EDID ID extracted from the InstanceName, or empty string if extraction fails.</returns>
-        private static string ExtractEdidIdFromInstanceName(string instanceName)
-        {
-            if (string.IsNullOrEmpty(instanceName))
-            {
-                return string.Empty;
-            }
-
-            // Split by backslash: ["DISPLAY", "BOE0900", "4&10fd3ab1&0&UID265988_0"]
-            var parts = instanceName.Split('\\');
-            if (parts.Length >= 2 && !string.IsNullOrEmpty(parts[1]))
-            {
-                // Return the second part (e.g., "BOE0900")
-                return parts[1];
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Build a WMI query filtered by monitor instance name.
         /// </summary>
         /// <param name="wmiClass">The WMI class to query.</param>
@@ -106,70 +81,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         {
             var escapedInstanceName = EscapeWmiString(instanceName);
             return $"SELECT {selectClause} FROM {wmiClass} WHERE InstanceName = '{escapedInstanceName}'";
-        }
-
-        /// <summary>
-        /// Extracts the PnP hardware-instance segment from a WMI InstanceName so it can
-        /// be substring-matched against MonitorDisplayInfo.DevicePath.
-        /// InstanceName form: "DISPLAY\BOE0900\4&amp;40f4dee&amp;0&amp;UID8388688_0"
-        /// DevicePath  form: "\\?\DISPLAY#BOE0900#4&amp;40f4dee&amp;0&amp;UID8388688#{GUID}"
-        /// Returns "BOE0900#4&amp;40f4dee&amp;0&amp;UID8388688" — the unique PnP hardware ID
-        /// segment shared by both representations. Returns empty if extraction fails.
-        /// </summary>
-        private static string ExtractPnpHardwareKey(string instanceName)
-        {
-            if (string.IsNullOrEmpty(instanceName))
-            {
-                return string.Empty;
-            }
-
-            // Split by backslash: ["DISPLAY", "BOE0900", "4&40f4dee&0&UID8388688_0"]
-            var parts = instanceName.Split('\\');
-            if (parts.Length < 3 || string.IsNullOrEmpty(parts[1]) || string.IsNullOrEmpty(parts[2]))
-            {
-                return string.Empty;
-            }
-
-            // The third segment may carry a "_N" WMI-instance suffix (e.g. "..._0"); strip it.
-            var instanceSegment = parts[2];
-            var underscore = instanceSegment.LastIndexOf('_');
-            if (underscore > 0)
-            {
-                instanceSegment = instanceSegment[..underscore];
-            }
-
-            // DevicePath joins the segments with '#', so produce the same form.
-            return $"{parts[1]}#{instanceSegment}";
-        }
-
-        /// <summary>
-        /// Picks the MonitorDisplayInfo whose DevicePath uniquely matches the WMI InstanceName.
-        /// Used to disambiguate dual-internal-panel devices (e.g. foldable laptops) where
-        /// two physical panels share the same EdidId but differ in PnP UID.
-        /// Falls back to the first candidate if exact disambiguation isn't possible — the
-        /// caller logs a warning so the ambiguity is observable in field telemetry.
-        /// </summary>
-        private static MonitorDisplayInfo DisambiguateByInstanceName(
-            List<MonitorDisplayInfo> candidates,
-            string instanceName)
-        {
-            var pnpKey = ExtractPnpHardwareKey(instanceName);
-            if (!string.IsNullOrEmpty(pnpKey))
-            {
-                foreach (var info in candidates)
-                {
-                    if (!string.IsNullOrEmpty(info.DevicePath)
-                        && info.DevicePath.Contains(pnpKey, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return info;
-                    }
-                }
-            }
-
-            Logger.LogWarning(
-                $"WMI: Could not disambiguate instance '{instanceName}' among " +
-                $"{candidates.Count} internal targets sharing EdidId — using first match");
-            return candidates[0];
         }
 
         public string Name => "WMI Monitor Controller";
@@ -308,13 +219,15 @@ namespace PowerDisplay.Common.Drivers.WMI
                 {
                 var monitors = new List<Monitor>();
 
-                // Build EdidId -> List<MonitorDisplayInfo> lookup. List-valued because dual-internal-panel
-                // devices (e.g. Yoga Book 9i, Zenbook Duo) can ship two identical panels with the same
-                // EdidId; in that case the WMI loop disambiguates by InstanceName UID.
+                // Build PnP-hardware-key -> MonitorDisplayInfo lookup. The PnP key (manufacturer
+                // code + PnP instance UID) is globally unique per physical device and present in
+                // both WMI InstanceName and DevicePath, so this is a one-step exact match that
+                // handles dual-internal-panel devices (e.g. Yoga Book 9i, Zenbook Duo) without
+                // needing any disambiguation pass.
                 var monitorDisplayInfos = targets
-                    .Where(t => !string.IsNullOrEmpty(t.EdidId))
-                    .GroupBy(t => t.EdidId, StringComparer.OrdinalIgnoreCase)
-                    .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+                    .Select(t => (Key: MonitorIdentity.PnpHardwareKeyFromDevicePath(t.DevicePath), Info: t))
+                    .Where(p => !string.IsNullOrEmpty(p.Key))
+                    .ToDictionary(p => p.Key, p => p.Info, StringComparer.OrdinalIgnoreCase);
 
                 // Track which internal targets (keyed by DevicePath, the unique target id) were
                 // observed via WmiMonitorBrightness so we can warn about any that were classified
@@ -337,22 +250,16 @@ namespace PowerDisplay.Common.Drivers.WMI
                             var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
                             var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
 
-                            // Extract EDID ID from InstanceName
-                            // e.g., "DISPLAY\LEN4038\4&40f4dee&0&UID8388688_0" -> "LEN4038"
-                            var edidId = ExtractEdidIdFromInstanceName(instanceName);
-
-                            // Look up the matching MonitorDisplayInfo in the internal-only targets list.
-                            if (string.IsNullOrEmpty(edidId) || !monitorDisplayInfos.TryGetValue(edidId, out var candidates))
+                            // Derive the same PnP hardware key from the WMI InstanceName and look up
+                            // the matching MonitorDisplayInfo — exact, unique, no disambiguation needed.
+                            var pnpKey = MonitorIdentity.PnpHardwareKeyFromInstanceName(instanceName);
+                            if (string.IsNullOrEmpty(pnpKey) || !monitorDisplayInfos.TryGetValue(pnpKey, out var displayInfo))
                             {
                                 Logger.LogWarning(
-                                    $"WMI returned brightness for EdidId={edidId} but it was not classified as internal — skipping");
+                                    $"WMI returned brightness for instance '{instanceName}' but no matching " +
+                                    "QueryDisplayConfig target was found — skipping");
                                 continue;
                             }
-
-                            // One target is the common case; multiple means dual-internal-panel — disambiguate.
-                            var displayInfo = candidates.Count == 1
-                                ? candidates[0]
-                                : DisambiguateByInstanceName(candidates, instanceName);
 
                             if (!string.IsNullOrEmpty(displayInfo.DevicePath))
                             {
@@ -362,17 +269,9 @@ namespace PowerDisplay.Common.Drivers.WMI
                             int monitorNumber = displayInfo.MonitorNumber;
                             string gdiDeviceName = displayInfo.GdiDeviceName ?? string.Empty;
 
-                            // Generate stable monitor Id from the DevicePath (Windows PnP instance path).
-                            // If DevicePath is missing we cannot produce a stable Id, so the
-                            // monitor is skipped — better to drop one entry than to persist
-                            // settings under a key that won't survive the next reboot.
-                            if (string.IsNullOrEmpty(displayInfo.DevicePath))
-                            {
-                                Logger.LogWarning(
-                                    $"WMI: Skipping monitor (instance='{instanceName}', edid='{edidId}', monitorNumber={monitorNumber}) — DevicePath unavailable, cannot generate stable Id");
-                                continue;
-                            }
-
+                            // DevicePath is guaranteed non-empty here: the PnP-key lookup above
+                            // only succeeds for targets whose key was derived from a populated
+                            // DevicePath, so we can hand it straight to MonitorIdentity.
                             string uniqueId = MonitorIdentity.FromDevicePath(displayInfo.DevicePath);
 
                             // Name is left blank: MonitorViewModel injects a localized

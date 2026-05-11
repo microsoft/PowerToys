@@ -31,4 +31,62 @@ public static class MonitorIdentity
         var guidStart = devicePath.IndexOf("#{", System.StringComparison.Ordinal);
         return guidStart < 0 ? devicePath : devicePath[..guidStart];
     }
+
+    /// <summary>
+    /// Extract the PnP hardware key from a DevicePath. The key identifies a physical
+    /// monitor across both QueryDisplayConfig (DevicePath) and WMI (InstanceName)
+    /// representations, so it is the right join key for pairing WMI brightness instances
+    /// with MonitorDisplayInfo entries.
+    /// </summary>
+    /// <param name="devicePath">DevicePath of the form "\\?\DISPLAY#BOE0900#4&amp;...&amp;UID111#{guid}".</param>
+    /// <returns>Canonical key "BOE0900#4&amp;...&amp;UID111", or empty string if extraction fails.</returns>
+    public static string PnpHardwareKeyFromDevicePath(string? devicePath)
+    {
+        if (string.IsNullOrEmpty(devicePath))
+        {
+            return string.Empty;
+        }
+
+        // Split: ["\\?\DISPLAY", "BOE0900", "4&...&UID111", "{guid}"]
+        var parts = devicePath.Split('#');
+        if (parts.Length < 3 || string.IsNullOrEmpty(parts[1]) || string.IsNullOrEmpty(parts[2]))
+        {
+            return string.Empty;
+        }
+
+        return $"{parts[1]}#{parts[2]}";
+    }
+
+    /// <summary>
+    /// Extract the PnP hardware key from a WMI InstanceName. Produces the same canonical
+    /// form as <see cref="PnpHardwareKeyFromDevicePath"/> for the same physical device,
+    /// enabling reliable one-step matching even on dual-internal-panel devices where
+    /// two panels share an EdidId but differ in PnP UID.
+    /// </summary>
+    /// <param name="instanceName">InstanceName of the form "DISPLAY\BOE0900\4&amp;...&amp;UID111_0".</param>
+    /// <returns>Canonical key "BOE0900#4&amp;...&amp;UID111", or empty string if extraction fails.</returns>
+    public static string PnpHardwareKeyFromInstanceName(string? instanceName)
+    {
+        if (string.IsNullOrEmpty(instanceName))
+        {
+            return string.Empty;
+        }
+
+        // Split: ["DISPLAY", "BOE0900", "4&...&UID111_0"]
+        var parts = instanceName.Split('\\');
+        if (parts.Length < 3 || string.IsNullOrEmpty(parts[1]) || string.IsNullOrEmpty(parts[2]))
+        {
+            return string.Empty;
+        }
+
+        // Strip the trailing "_N" WMI-instance suffix (e.g. "..._0").
+        var instanceSegment = parts[2];
+        var underscore = instanceSegment.LastIndexOf('_');
+        if (underscore > 0)
+        {
+            instanceSegment = instanceSegment[..underscore];
+        }
+
+        return $"{parts[1]}#{instanceSegment}";
+    }
 }
