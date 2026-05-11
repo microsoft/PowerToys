@@ -73,4 +73,34 @@ When the structured field is not available, use these keyword patterns to infer 
 | brightness, monitor, display, DDC | `Product-PowerDisplay` |
 | cursor wrap, edge wrap, multi-monitor cursor | `Product-Cursor Wrap` |
 
+## PR Title Prefix Conventions
+
+Many PRs use `[ProductName]` prefixes. Common variants:
+
+| Title prefix | Product Label |
+|-------------|---------------|
+| `[CmdPal]` | `Product-Command Palette` |
+| `[PowerDisplay]` | `Product-PowerDisplay` |
+| `[ZoomIt]` | `Product-ZoomIt` |
+| `[Image Resizer]` | `Product-Image Resizer` |
+| `[GPO]` | `Product-General` |
+| `[MWB]` | `Product-Mouse Without Borders` |
+
+Most other prefixes match the label directly (e.g., `[FancyZones]` → `Product-FancyZones`).
+
+## Source Directory → Label Mapping
+
+Non-obvious `src/modules/` directory name mappings:
+
+| Directory | Product Label |
+|----------|---------------|
+| `launcher/` | `Product-PowerToys Run` |
+| `MeasureTool/` | `Product-Screen Ruler` |
+| `poweraccent/` | `Product-Quick Accent` |
+| `PowerOCR/` | `Product-Text Extractor` |
+| `previewpane/` | `Product-File Explorer` |
+| `interface/` | `Product-General` (runner/settings host) |
+
+Most other directories match by prepending `Product-` to the directory name.
+
 <!-- Valid Product-* labels are discovered dynamically at runtime via gh label list -->
