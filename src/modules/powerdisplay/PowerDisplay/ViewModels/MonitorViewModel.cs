@@ -123,6 +123,18 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     private bool IsDiscreteValueSupported(byte vcpCode, int value)
     {
+        // First check if it's a custom mapped value - we always allow sending custom mappings
+        if (_mainViewModel?.CustomVcpMappings != null)
+        {
+            var isCustomMapped = _mainViewModel.CustomVcpMappings
+                .Any(m => m.VcpCode == vcpCode && m.Value == value && (m.ApplyToAll || m.TargetMonitorId == _monitor.Id));
+            
+            if (isCustomMapped)
+            {
+                return true;
+            }
+        }
+
         var vcpInfo = VcpCapabilitiesInfo;
         if (vcpInfo == null ||
             !vcpInfo.SupportedVcpCodes.TryGetValue(vcpCode, out var codeInfo) ||
@@ -134,6 +146,34 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Combines natively reported supported values with any user-defined custom VCP mappings.
+    /// This allows users to add discrete values (like missing Input Sources) that their monitor
+    /// supports but failed to report in its capabilities string.
+    /// </summary>
+    private List<int> GetCombinedSupportedValues(byte vcpCode, IReadOnlyList<int>? nativeValues)
+    {
+        var combined = nativeValues?.ToList() ?? new List<int>();
+
+        if (_mainViewModel?.CustomVcpMappings != null)
+        {
+            var customValues = _mainViewModel.CustomVcpMappings
+                .Where(m => m.VcpCode == vcpCode && (m.ApplyToAll || m.TargetMonitorId == _monitor.Id))
+                .Select(m => m.Value);
+
+            foreach (var val in customValues)
+            {
+                if (!combined.Contains(val))
+                {
+                    combined.Add(val);
+                }
+            }
+        }
+
+        combined.Sort();
+        return combined;
     }
 
     /// <summary>
@@ -449,7 +489,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Gets a value indicating whether this monitor supports color temperature via VCP 0x14
     /// </summary>
-    public bool SupportsColorTemperature => _monitor.SupportsColorTemperature;
+    public bool SupportsColorTemperature => _monitor.SupportsColorTemperature || 
+        (_mainViewModel?.CustomVcpMappings?.Any(m => m.VcpCode == 0x14 && (m.ApplyToAll || m.TargetMonitorId == _monitor.Id)) ?? false);
 
     private List<ColorTemperatureItem>? _availableColorPresets;
     private bool _showColorTemperature;
@@ -493,17 +534,19 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private void RefreshAvailableColorPresets()
     {
         var vcpInfo = VcpCapabilitiesInfo;
-        if (!SupportsColorTemperature ||
-            vcpInfo == null ||
-            !vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var colorTempInfo) ||
-            !colorTempInfo.HasDiscreteValues)
+        var nativeValues = (vcpInfo != null && vcpInfo.SupportedVcpCodes.TryGetValue(0x14, out var info) && info.HasDiscreteValues)
+            ? info.SupportedValues : null;
+
+        var combinedValues = GetCombinedSupportedValues(0x14, nativeValues);
+
+        if (!SupportsColorTemperature || combinedValues.Count == 0)
         {
             _availableColorPresets = null;
             OnPropertyChanged(nameof(AvailableColorPresets));
             return;
         }
 
-        _availableColorPresets = colorTempInfo.SupportedValues.Select(value => new ColorTemperatureItem
+        _availableColorPresets = combinedValues.Select(value => new ColorTemperatureItem
         {
             VcpValue = value,
             DisplayName = Common.Utils.VcpNames.GetValueName(0x14, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) is string n ? $"{n} (0x{value:X2})" : $"0x{value:X2}",
@@ -517,7 +560,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Gets a value indicating whether this monitor supports input source switching via VCP 0x60
     /// </summary>
-    public bool SupportsInputSource => _monitor.SupportsInputSource;
+    public bool SupportsInputSource => _monitor.SupportsInputSource || 
+        (_mainViewModel?.CustomVcpMappings?.Any(m => m.VcpCode == 0x60 && (m.ApplyToAll || m.TargetMonitorId == _monitor.Id)) ?? false);
 
     /// <summary>
     /// Gets current input source VCP value (from VCP code 0x60)
@@ -555,14 +599,15 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     private void RefreshAvailableInputSources()
     {
-        var supportedSources = _monitor.SupportedInputSources;
-        if (supportedSources == null || supportedSources.Count == 0)
+        var combinedSources = GetCombinedSupportedValues(0x60, _monitor.SupportedInputSources);
+
+        if (combinedSources.Count == 0)
         {
             _availableInputSources = null;
             return;
         }
 
-        _availableInputSources = supportedSources.Select(value => new InputSourceItem
+        _availableInputSources = combinedSources.Select(value => new InputSourceItem
         {
             Value = value,
             Name = Common.Utils.VcpNames.GetValueName(0x60, value, _mainViewModel?.CustomVcpMappings, _monitor.Id) ?? $"Source 0x{value:X2}",
@@ -636,7 +681,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Gets a value indicating whether this monitor supports power state control via VCP 0xD6
     /// </summary>
-    public bool SupportsPowerState => _monitor.SupportsPowerState;
+    public bool SupportsPowerState => _monitor.SupportsPowerState || 
+        (_mainViewModel?.CustomVcpMappings?.Any(m => m.VcpCode == 0xD6 && (m.ApplyToAll || m.TargetMonitorId == _monitor.Id)) ?? false);
 
     private List<PowerStateItem>? _availablePowerStates;
 
@@ -662,14 +708,15 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     private void RefreshAvailablePowerStates()
     {
-        var supportedStates = _monitor.SupportedPowerStates;
-        if (supportedStates == null || supportedStates.Count == 0)
+        var combinedStates = GetCombinedSupportedValues(0xD6, _monitor.SupportedPowerStates);
+
+        if (combinedStates.Count == 0)
         {
             _availablePowerStates = null;
             return;
         }
 
-        _availablePowerStates = supportedStates.Select(value => new PowerStateItem
+        _availablePowerStates = combinedStates.Select(value => new PowerStateItem
         {
             Value = value,
             Name = Common.Utils.VcpNames.GetValueName(0xD6, value) ?? $"State 0x{value:X2}",
