@@ -320,6 +320,7 @@ namespace AdvancedPaste.ViewModels
             OnPropertyChanged(nameof(AIProviders));
             OnPropertyChanged(nameof(AllowedAIProviders));
             OnPropertyChanged(nameof(ShowClipboardPreview));
+            OnPropertyChanged(nameof(ShowClipboardHistoryButton));
 
             NotifyActiveProviderChanged();
 
