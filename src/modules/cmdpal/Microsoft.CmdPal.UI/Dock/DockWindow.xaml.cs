@@ -485,6 +485,27 @@ public sealed partial class DockWindow : WindowEx,
             true);
     }
 
+    /// <summary>
+    /// Re-resolves <see cref="_targetMonitor"/> against the current monitor list.
+    /// <see cref="MonitorInfo"/> is an immutable record, so the instance captured
+    /// at construction time becomes stale whenever the display topography changes.
+    /// If the monitor is no longer connected we keep the stale reference; the
+    /// <see cref="DockWindowManager"/> will close this window shortly.
+    /// </summary>
+    private void RefreshTargetMonitor()
+    {
+        if (_targetMonitor is null)
+        {
+            return;
+        }
+
+        var refreshed = _monitorService.GetMonitorByDeviceId(_targetMonitor.DeviceId);
+        if (refreshed is not null)
+        {
+            _targetMonitor = refreshed;
+        }
+    }
+
     private void RefreshSideOverride()
     {
         if (_targetMonitor is null)
@@ -603,8 +624,24 @@ public sealed partial class DockWindow : WindowEx,
             // Invalidate the monitor cache so DockWindowManager can reconcile
             _monitorService.NotifyMonitorsChanged();
 
-            // Use dispatcher to ensure we're on the UI thread
-            DispatcherQueue.TryEnqueue(() => UpdateWindowPosition());
+            // Use dispatcher to ensure we're on the UI thread.
+            // Refresh _targetMonitor before re-positioning: the MonitorInfo
+            // captured at construction is an immutable record, so its Bounds
+            // are stale after a topology change (e.g. an external display was
+            // disconnected, shifting our monitor's virtual-screen origin).
+            // Without this, UpdateAppBarDataForEdge would compute the AppBar
+            // rect against the old coordinates and produce a wildly incorrect
+            // size/position.
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                RefreshTargetMonitor();
+                UpdateWindowPosition();
+            });
         }
 
         // Intercept WM_SYSCOMMAND to prevent minimize and maximize
