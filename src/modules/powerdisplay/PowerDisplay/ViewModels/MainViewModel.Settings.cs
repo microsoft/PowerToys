@@ -404,13 +404,13 @@ public partial class MainViewModel
                 .Select(info => FormatVcpCodeForDisplay(info.Code, info))
                 .ToList() ?? new List<Microsoft.PowerToys.Settings.UI.Library.VcpCodeDisplayInfo>(),
 
-            // Infer support flags from VCP capabilities
+            // Infer support flags from VCP capabilities and custom mappings
             // VCP 0x12 (18) = Contrast, 0x14 (20) = Color Temperature, 0x60 (96) = Input Source, 0x62 (98) = Volume, 0xD6 (214) = Power Mode
-            SupportsContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
-            SupportsColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
-            SupportsInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
-            SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
-            SupportsPowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
+            SupportsContrast = vm.SupportsContrast,
+            SupportsColorTemperature = vm.SupportsColorTemperature,
+            SupportsInputSource = vm.SupportsInputSource,
+            SupportsVolume = vm.SupportsVolume,
+            SupportsPowerState = vm.SupportsPowerState,
 
             // Default Enable* for new monitors (first-time setup):
             // - Contrast / Volume: enabled if the monitor advertises the VCP code (low-risk features).
@@ -418,8 +418,8 @@ public partial class MainViewModel
             //   the monitor in a state recoverable only via physical buttons; users opt-in via the
             //   Settings UI checkbox, which raises a confirmation dialog (HandleDangerousFeatureClickAsync).
             // ApplyPreservedUserSettings will override these with saved user preferences if they exist.
-            EnableContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
-            EnableVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
+            EnableContrast = vm.SupportsContrast,
+            EnableVolume = vm.SupportsVolume,
             EnableInputSource = false,
             EnableColorTemperature = false,
             EnablePowerState = false,
