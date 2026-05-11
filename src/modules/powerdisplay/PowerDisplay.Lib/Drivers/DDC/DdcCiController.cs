@@ -675,6 +675,89 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Full per-hMonitor pipeline: GDI-name filter, get physical handles, and for each
+        /// matching physical run <see cref="BuildMonitorFromPhysical"/> on the threadpool.
+        /// Physical monitors that share an hMonitor (mirror mode) process sequentially —
+        /// they share the GDI source and I2C arbitration. Parallelism across hMonitors is
+        /// the caller's job (see <see cref="DiscoverMonitorsAsync"/>'s Task.WhenAll).
+        /// </summary>
+        /// <remarks>
+        /// Catches all exceptions except <see cref="OperationCanceledException"/> and
+        /// <see cref="OutOfMemoryException"/> — those propagate to Task.WhenAll and the
+        /// surrounding MonitorManager.SafeDiscoverAsync wrapper.
+        /// </remarks>
+        private async Task<IReadOnlyList<Monitor>> DiscoverFromHandleAsync(
+            IntPtr hMonitor,
+            IReadOnlyDictionary<string, List<MonitorDisplayInfo>> targetsByGdi,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var gdiName = GetGdiDeviceName(hMonitor);
+                if (string.IsNullOrEmpty(gdiName))
+                {
+                    Logger.LogWarning($"DDC: Failed to get GDI device name for hMonitor 0x{hMonitor:X}");
+                    return Array.Empty<Monitor>();
+                }
+
+                if (!targetsByGdi.TryGetValue(gdiName, out var matchingInfos))
+                {
+                    // GDI name not in the external targets list — either a Phase 0 internal
+                    // panel or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the
+                    // expensive GetPhysicalMonitorsFromHMONITOR call.
+                    Logger.LogDebug($"DDC skipping {gdiName}: not in external targets list");
+                    return Array.Empty<Monitor>();
+                }
+
+                var physicals = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
+                if (physicals == null || physicals.Length == 0)
+                {
+                    Logger.LogWarning($"DDC: Failed to get physical monitors for {gdiName} after retries");
+                    return Array.Empty<Monitor>();
+                }
+
+                var monitors = new List<Monitor>();
+                for (int i = 0; i < physicals.Length; i++)
+                {
+                    if (i >= matchingInfos.Count)
+                    {
+                        Logger.LogWarning(
+                            $"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries " +
+                            $"({matchingInfos.Count}) for {gdiName}");
+                        break;
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var physical = physicals[i];
+                    var info = matchingInfos[i];
+
+                    // Heavy sync block (~4 s caps fetch + up to 6 × ~100 ms VCP reads on this
+                    // one I2C bus). Dispatch to the threadpool; await it before the next physical
+                    // because they share the same hMonitor's I2C arbitration.
+                    var monitor = await Task.Run(
+                        () => BuildMonitorFromPhysical(physical, info),
+                        cancellationToken);
+
+                    if (monitor != null)
+                    {
+                        monitors.Add(monitor);
+                    }
+                }
+
+                return monitors;
+            }
+            catch (Exception ex) when (
+                ex is not OperationCanceledException &&
+                ex is not OutOfMemoryException)
+            {
+                Logger.LogError($"DDC: pipeline exception for hMonitor=0x{hMonitor:X}: {ex.Message}");
+                return Array.Empty<Monitor>();
+            }
+        }
+
+        /// <summary>
         /// Generic method to get VCP feature value.
         /// </summary>
         /// <param name="monitor">Monitor to query</param>
