@@ -213,6 +213,19 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Group external targets by GDI device name (case-insensitive) into a lookup keyed by name.
+        /// Mirror mode can have multiple targets share one GDI source — hence the value is a List.
+        /// </summary>
+        private static Dictionary<string, List<MonitorDisplayInfo>> BuildGdiLookup(
+            IReadOnlyList<MonitorDisplayInfo> externalTargets)
+        {
+            return externalTargets
+                .Where(t => !string.IsNullOrEmpty(t.GdiDeviceName))
+                .GroupBy(t => t.GdiDeviceName, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Get GDI device name for a monitor handle (e.g., "\\.\DISPLAY1").
         /// </summary>
         private unsafe string? GetGdiDeviceName(IntPtr hMonitor)
