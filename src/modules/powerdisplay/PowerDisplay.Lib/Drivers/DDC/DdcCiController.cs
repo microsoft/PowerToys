@@ -13,6 +13,7 @@ using Polly;
 using Polly.Retry;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.NativeDelegates;
@@ -301,11 +302,19 @@ namespace PowerDisplay.Common.Drivers.DDC
                     return Enumerable.Empty<Monitor>();
                 }
 
-                // Phase 2: Fetch capabilities in parallel
-                var fetchResults = await FetchCapabilitiesInParallelAsync(
-                    candidateMonitors, cancellationToken);
+                // Phase 2: Fetch capabilities in parallel — protected by crash-detection scope.
+                // The scope writes discovery.lock before entering and deletes it after.
+                // If the process is killed during fetch (BSOD), the lock survives and the
+                // next PowerDisplay.exe startup will detect it via CrashRecovery.
+                (CandidateMonitor Candidate, DdcCiValidationResult Result)[] fetchResults;
+                using (CrashDetectionScope.Begin())
+                {
+                    fetchResults = await FetchCapabilitiesInParallelAsync(
+                        candidateMonitors, cancellationToken);
+                }
 
-                // Phase 3: Create monitor objects
+                // Phase 3: Create monitor objects (outside scope — VCP get/set on those
+                // objects are not protected; they are not the documented BSOD path).
                 return CreateValidMonitors(fetchResults);
             }
             catch (Exception ex)
@@ -419,6 +428,18 @@ namespace PowerDisplay.Common.Drivers.DDC
             List<CandidateMonitor> candidates,
             CancellationToken cancellationToken)
         {
+#if DEBUG
+            if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
+            {
+                // Debug-only: simulate a hard process kill to test the crash recovery
+                // pipeline without actually invoking the kernel BSOD path. FailFast does
+                // not run finally blocks, so the discovery.lock written by
+                // CrashDetectionScope will survive — just like a real BSOD.
+                Logger.LogWarning("DEBUG: POWERDISPLAY_SIMULATE_CRASH=1 — invoking FailFast");
+                Environment.FailFast("Simulated crash for quarantine testing");
+            }
+#endif
+
             var tasks = candidates.Select(candidate =>
                 Task.Run(
                     () => (Candidate: candidate, Result: DdcCiNative.FetchCapabilities(candidate.Handle)),

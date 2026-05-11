@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -72,6 +73,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
                     ReloadMonitorsFromSettings();
                 });
+
+            // Crash quarantine state — show error InfoBar + lock the page if PowerDisplay.exe
+            // detected a previous-session crash and wrote the flag.
+            if (File.Exists(PowerDisplayPaths.CrashDetectedFlagPath))
+            {
+                Logger.LogInfo("PowerDisplayViewModel: crash flag present, locking page");
+                IsCrashLockActive = true;
+            }
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -118,6 +127,40 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public bool IsCrashLockActive
+        {
+            get => _isCrashLockActive;
+            private set
+            {
+                if (_isCrashLockActive != value)
+                {
+                    _isCrashLockActive = value;
+                    OnPropertyChanged(nameof(IsCrashLockActive));
+                }
+            }
+        }
+
+        public ButtonClickCommand DismissCrashWarningCommand => new ButtonClickCommand(DismissCrashWarning);
+
+        private void DismissCrashWarning()
+        {
+            try
+            {
+                var path = PowerDisplayPaths.CrashDetectedFlagPath;
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                    Logger.LogInfo("PowerDisplayViewModel: user dismissed crash warning, flag deleted");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"PowerDisplayViewModel: failed to delete crash flag: {ex.Message}");
+            }
+
+            IsCrashLockActive = false;
         }
 
         public bool RestoreSettingsOnStartup
@@ -457,6 +500,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isEnabled;
+        private bool _isCrashLockActive;
         private PowerDisplaySettings _settings;
         private ObservableCollection<MonitorInfo> _monitors;
         private bool _hasMonitors;

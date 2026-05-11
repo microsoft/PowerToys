@@ -165,6 +165,7 @@ namespace CommonSharedConstants
     const wchar_t SETTINGS_UPDATED_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-SettingsUpdatedEvent-2e4d6f8a-1c3b-5e7f-9a1d-4c6e8f0b2d3e";
     const wchar_t POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT[] = L"Local\\PowerToysPowerDisplay-SettingsTelemetryEvent-8c4f2a1d-5e3b-7f9c-1a6d-3b8e5f2c9a7d";
     const wchar_t HOTKEY_UPDATED_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-HotkeyUpdatedEvent-9d5f3a2b-7e1c-4b8a-6f3d-2a9e5c7b1d4f";
+    const wchar_t POWER_DISPLAY_AUTO_DISABLE_EVENT[] = L"Local\\PowerToysPowerDisplay-AutoDisableEvent-1a7bd9af-d2e0-4e57-8879-0e1c353994d0";
 
     // IPC Messages used in PowerDisplay (Named Pipe communication)
     const wchar_t POWER_DISPLAY_TOGGLE_MESSAGE[] = L"Toggle";

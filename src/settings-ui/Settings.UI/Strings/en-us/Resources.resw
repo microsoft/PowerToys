@@ -5561,6 +5561,18 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable color temperature control for this monitor?</value>
   </data>
+  <data name="PowerDisplay_CrashDetected_IgnoreButton.Content" xml:space="preserve">
+    <value>Ignore</value>
+    <comment>Action button on the crash recovery InfoBar that dismisses the warning and unlocks the PowerDisplay settings page.</comment>
+  </data>
+  <data name="PowerDisplay_CrashDetectedInfoBar.Message" xml:space="preserve">
+    <value>A system crash was detected during the previous PowerDisplay session. PowerDisplay has been disabled to prevent another crash. If you understand the risk, click Ignore to dismiss this warning, then re-enable PowerDisplay manually.</value>
+    <comment>Body text of the crash recovery InfoBar.</comment>
+  </data>
+  <data name="PowerDisplay_CrashDetectedInfoBar.Title" xml:space="preserve">
+    <value>PowerDisplay was automatically disabled</value>
+    <comment>Title of the crash recovery InfoBar shown on PowerDisplay settings page after a detected crash.</comment>
+  </data>
   <data name="PowerDisplay_PowerState_WarningTitle" xml:space="preserve">
     <value>Confirm power state control</value>
   </data>

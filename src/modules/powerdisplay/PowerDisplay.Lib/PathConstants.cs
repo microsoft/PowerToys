@@ -77,6 +77,33 @@ namespace PowerDisplay.Common
         public static string MonitorStateFilePath => Path.Combine(PowerDisplayFolderPath, MonitorStateFileName);
 
         /// <summary>
+        /// File name of the discovery lock used by the crash quarantine mechanism.
+        /// </summary>
+        public const string DiscoveryLockFileName = "discovery.lock";
+
+        /// <summary>
+        /// File name of the crash-detected flag used by the crash quarantine mechanism.
+        /// </summary>
+        public const string CrashDetectedFlagFileName = "crash_detected.flag";
+
+        /// <summary>
+        /// Full path of discovery.lock. Delegates to PowerDisplay.Models.PowerDisplayPaths
+        /// so the same constant is reachable from Settings UI without taking a
+        /// PowerDisplay.Lib reference.
+        /// </summary>
+        public static string DiscoveryLockPath => global::PowerDisplay.Models.PowerDisplayPaths.DiscoveryLockPath;
+
+        /// <summary>
+        /// Full path of crash_detected.flag. Delegates to PowerDisplay.Models.PowerDisplayPaths.
+        /// </summary>
+        public static string CrashDetectedFlagPath => global::PowerDisplay.Models.PowerDisplayPaths.CrashDetectedFlagPath;
+
+        /// <summary>
+        /// Full path of the global PowerToys settings.json. Delegates to PowerDisplay.Models.PowerDisplayPaths.
+        /// </summary>
+        public static string GlobalPowerToysSettingsPath => global::PowerDisplay.Models.PowerDisplayPaths.GlobalPowerToysSettingsPath;
+
+        /// <summary>
         /// Event name for LightSwitch light theme change notifications.
         /// Signaled when LightSwitch switches to light mode.
         /// Must match CommonSharedConstants::LIGHT_SWITCH_LIGHT_THEME_EVENT in shared_constants.h.
@@ -89,6 +116,13 @@ namespace PowerDisplay.Common
         /// Must match CommonSharedConstants::LIGHT_SWITCH_DARK_THEME_EVENT in shared_constants.h.
         /// </summary>
         public const string LightSwitchDarkThemeEventName = "Local\\PowerToysLightSwitch-DarkThemeEvent-b3a835c0-eaa2-49b0-b8eb-f793e3df3368";
+
+        /// <summary>
+        /// Event name signaled by CrashRecovery when it auto-disables PowerDisplay after detecting
+        /// a crash during Phase 2 capability fetch.
+        /// Must match CommonSharedConstants::POWER_DISPLAY_AUTO_DISABLE_EVENT in shared_constants.h.
+        /// </summary>
+        public const string AutoDisablePowerDisplayEventName = "Local\\PowerToysPowerDisplay-AutoDisableEvent-1a7bd9af-d2e0-4e57-8879-0e1c353994d0";
 
         /// <summary>
         /// Ensures the PowerDisplay folder exists. Creates it if necessary.
