@@ -58,6 +58,16 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
     auto state = UpdateState::read();
 
     const auto new_version_info = std::move(get_github_version_info_async()).get();
+
+    // Check for error BEFORE dereferencing. The previous code crashed here
+    // when GitHub API was unreachable because it dereferenced the expected
+    // value via std::holds_alternative before checking for the error state.
+    if (!new_version_info)
+    {
+        Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
+        return std::nullopt;
+    }
+
     if (std::holds_alternative<version_up_to_date>(*new_version_info))
     {
         isUpToDate = true;
@@ -67,12 +77,6 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 
     if (state.state == UpdateState::readyToDownload || state.state == UpdateState::errorDownloading)
     {
-        if (!new_version_info)
-        {
-            Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
-            return std::nullopt;
-        }
-
         // Cleanup old updates before downloading the latest
         updating::cleanup_updates();
 
