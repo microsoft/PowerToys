@@ -375,4 +375,92 @@ public sealed class PythonScriptServiceTests
         Assert.AreEqual("unknown error", summary);
         Assert.AreEqual(string.Empty, fullStderr);
     }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_TextOnly()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("text");
+        Assert.AreEqual(Models.ClipboardFormat.Text, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_TextWithTypeHint()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("text: str");
+        Assert.AreEqual(Models.ClipboardFormat.Text, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_TextWithDefault()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("text=None");
+        Assert.AreEqual(Models.ClipboardFormat.Text, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_MultipleFormats()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("text, html, work_dir");
+        Assert.IsTrue(formats.HasFlag(Models.ClipboardFormat.Text));
+        Assert.IsTrue(formats.HasFlag(Models.ClipboardFormat.Html));
+        Assert.IsFalse(formats.HasFlag(Models.ClipboardFormat.Image));
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_ImagePath()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("image_path, work_dir");
+        Assert.AreEqual(Models.ClipboardFormat.Image, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_ImageAlias()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("image, work_dir");
+        Assert.AreEqual(Models.ClipboardFormat.Image, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_FilePaths()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("file_paths");
+        Assert.AreEqual(Models.ClipboardFormat.File, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_FilesAlias()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("files");
+        Assert.AreEqual(Models.ClipboardFormat.File, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_Kwargs_ReturnsAll()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("text=None, **kwargs");
+        var allFormats = Models.ClipboardFormat.Text | Models.ClipboardFormat.Html |
+                         Models.ClipboardFormat.Image | Models.ClipboardFormat.Audio |
+                         Models.ClipboardFormat.Video | Models.ClipboardFormat.File;
+        Assert.AreEqual(allFormats, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_OnlyWorkDir_ReturnsAll()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("work_dir");
+        var allFormats = Models.ClipboardFormat.Text | Models.ClipboardFormat.Html |
+                         Models.ClipboardFormat.Image | Models.ClipboardFormat.Audio |
+                         Models.ClipboardFormat.Video | Models.ClipboardFormat.File;
+        Assert.AreEqual(allFormats, formats);
+    }
+
+    [TestMethod]
+    public void InferFormatsFromSignature_ComplexSignature()
+    {
+        var formats = PythonScriptService.InferFormatsFromSignature("file_paths=None, html=None, text=None, **kwargs");
+        var allFormats = Models.ClipboardFormat.Text | Models.ClipboardFormat.Html |
+                         Models.ClipboardFormat.Image | Models.ClipboardFormat.Audio |
+                         Models.ClipboardFormat.Video | Models.ClipboardFormat.File;
+        Assert.AreEqual(allFormats, formats);
+    }
 }

@@ -65,6 +65,8 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public int PythonScriptTimeoutSeconds => 30;
 
+    public bool IsPythonScriptsEnabled => true;
+
     public IReadOnlyDictionary<string, string> TrustedScriptHashes => new Dictionary<string, string>();
 
     public event EventHandler Changed;
