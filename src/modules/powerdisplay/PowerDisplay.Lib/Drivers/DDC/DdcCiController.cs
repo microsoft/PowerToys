@@ -624,6 +624,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             const int maxRetries = 3;
             const int retryDelayMs = 200;
+            PHYSICAL_MONITOR[]? lastResult = null;
 
             for (int attempt = 0; attempt < maxRetries; attempt++)
             {
@@ -632,29 +633,36 @@ namespace PowerDisplay.Common.Drivers.DDC
                     await Task.Delay(retryDelayMs, cancellationToken);
                 }
 
-                var monitors = _discoveryHelper.GetPhysicalMonitors(hMonitor, out bool hasNullHandles);
+                // Sync Win32 call wrapped on the threadpool so concurrent callers
+                // (one per hMonitor pipeline) dispatch to separate threads rather
+                // than serializing on the calling thread before the first await.
+                var (monitors, hasNullHandles) = await Task.Run(
+                    () =>
+                    {
+                        var m = _discoveryHelper.GetPhysicalMonitors(hMonitor, out bool nulls);
+                        return (m, nulls);
+                    },
+                    cancellationToken);
 
-                // Success: got valid monitors with no NULL handles filtered out
                 if (monitors != null && !hasNullHandles)
                 {
                     return monitors;
                 }
 
-                // Got monitors but some had NULL handles - retry to see if API stabilizes
+                lastResult = monitors;
+
                 if (monitors != null && hasNullHandles && attempt < maxRetries - 1)
                 {
                     Logger.LogWarning($"DDC: Some monitors had NULL handles on attempt {attempt + 1}, will retry");
                     continue;
                 }
 
-                // No monitors returned - retry
                 if (monitors == null && attempt < maxRetries - 1)
                 {
                     Logger.LogWarning($"DDC: GetPhysicalMonitors returned null on attempt {attempt + 1}, will retry");
                     continue;
                 }
 
-                // Last attempt - return whatever we have (may have NULL handles filtered)
                 if (monitors != null && hasNullHandles)
                 {
                     Logger.LogWarning($"DDC: NULL handles still present after {maxRetries} attempts, using filtered result");
@@ -663,7 +671,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return monitors;
             }
 
-            return null;
+            return lastResult;
         }
 
         /// <summary>
