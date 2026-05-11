@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -20,6 +21,8 @@ using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using Windows.System;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -36,6 +39,14 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private int _brightness;
     private int _contrast;
     private int _volume;
+
+    // Debounce timers — each user-driven setter restarts the matching timer so a drag
+    // or held arrow key collapses into a single DDC/CI write once the user stops moving.
+    // External / programmatic apply paths (SetBrightnessAsync etc.) bypass the setters
+    // and therefore never schedule a debounced commit.
+    private DispatcherQueueTimer? _brightnessCommitTimer;
+    private DispatcherQueueTimer? _contrastCommitTimer;
+    private DispatcherQueueTimer? _volumeCommitTimer;
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
@@ -408,7 +419,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_brightness != value)
             {
-                _ = SetBrightnessAsync(value);
+                _brightness = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _brightnessCommitTimer, () => SetBrightnessAsync(_brightness));
             }
         }
     }
@@ -718,7 +731,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_contrast != value)
             {
-                _ = SetContrastAsync(value);
+                _contrast = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _contrastCommitTimer, () => SetContrastAsync(_contrast));
             }
         }
     }
@@ -730,7 +745,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_volume != value)
             {
-                _ = SetVolumeAsync(value);
+                _volume = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _volumeCommitTimer, () => SetVolumeAsync(_volume));
             }
         }
     }
@@ -791,58 +808,23 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         }
     }
 
-    // Slider commit handlers — fire hardware update only on pointer release or arrow key up
-    public void HandleBrightnessPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    // Slider commit handlers — debounced via ScheduleCommit. The setters store the
+    // value, raise PropertyChanged, and (re)start a per-metric DispatcherQueueTimer
+    // that fires the hardware write once the user stops moving. The commit closure
+    // reads the latest field at fire-time so intermediate values are coalesced.
+    private void ScheduleCommit(ref DispatcherQueueTimer? timer, Func<Task> commit)
     {
-        if (sender is Slider slider)
+        if (timer == null)
         {
-            Brightness = (int)slider.Value;
+            timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+            timer.IsRepeating = false;
+            timer.Interval = TimeSpan.FromMilliseconds(AppConstants.UI.SliderCommitDebounceMs);
+            timer.Tick += (_, _) => _ = commit();
         }
-    }
 
-    public void HandleBrightnessKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            Brightness = (int)slider.Value;
-        }
+        timer.Stop();
+        timer.Start();
     }
-
-    public void HandleContrastPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-    {
-        if (sender is Slider slider)
-        {
-            Contrast = (int)slider.Value;
-        }
-    }
-
-    public void HandleContrastKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            Contrast = (int)slider.Value;
-        }
-    }
-
-    public void HandleVolumePointerCaptureLost(object sender, PointerRoutedEventArgs e)
-    {
-        if (sender is Slider slider)
-        {
-            Volume = (int)slider.Value;
-        }
-    }
-
-    public void HandleVolumeKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            Volume = (int)slider.Value;
-        }
-    }
-
-    private static bool IsArrowKey(VirtualKey key) =>
-        key == VirtualKey.Left || key == VirtualKey.Right ||
-        key == VirtualKey.Up || key == VirtualKey.Down;
 
     // Rotation button handlers — one per orientation to avoid Tag string parsing
     public async void HandleRotation0Click(object sender, RoutedEventArgs e) => await CommitRotationClickAsync(0);
@@ -908,6 +890,13 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        // Drop any pending debounced commits — if we're being disposed the monitor is
+        // gone (unplug/refresh) or the app is shutting down, so a hardware write would
+        // race a half-torn-down MonitorManager.
+        _brightnessCommitTimer?.Stop();
+        _contrastCommitTimer?.Stop();
+        _volumeCommitTimer?.Stop();
+
         // Unsubscribe from MainViewModel events
         if (_mainViewModel != null)
         {
