@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
-
 namespace PowerDisplay.Common.Drivers
 {
     /// <summary>
@@ -11,6 +9,20 @@ namespace PowerDisplay.Common.Drivers
     /// DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY enum returned by QueryDisplayConfig.
     /// Pure function helper, no side effects.
     /// </summary>
+    /// <remarks>
+    /// Reference for the full set of OutputTechnology values:
+    /// https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ne-wingdi-displayconfig_video_output_technology
+    ///
+    /// Common values seen in the wild:
+    ///   0  HD15 (VGA)        5  HDMI                 10 DISPLAYPORT_EXTERNAL
+    ///   1  SVIDEO            6  LVDS                 11 DISPLAYPORT_EMBEDDED  (internal)
+    ///   2  COMPOSITE_VIDEO   8  D_JPN                12 UDI_EXTERNAL
+    ///   3  COMPONENT_VIDEO   9  SDI                  13 UDI_EMBEDDED          (internal)
+    ///   4  DVI                                       15 MIRACAST
+    ///                                                17 INDIRECT_VIRTUAL
+    ///                              0x80000000 INTERNAL high-bit flag, may be combined with a subtype
+    ///                              0xFFFFFFFF OTHER (signed -1)
+    /// </remarks>
     public static class DisplayClassifier
     {
         // High-bit flag indicating an internal display (DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INTERNAL).
@@ -53,58 +65,5 @@ namespace PowerDisplay.Common.Drivers
             return outputTechnology == DisplayPortEmbedded
                 || outputTechnology == UdiEmbedded;
         }
-
-        /// <summary>
-        /// Returns a human-readable name for the OutputTechnology value (used for logging).
-        /// If the INTERNAL high-bit is combined with a documented subtype, returns a composite
-        /// name like "INTERNAL|DISPLAYPORT_EMBEDDED". Unknown values render as a hex literal.
-        /// </summary>
-        public static string GetOutputTechnologyName(uint outputTechnology)
-        {
-            // Pure INTERNAL with no underlying subtype.
-            if (outputTechnology == InternalFlag)
-            {
-                return "INTERNAL";
-            }
-
-            // INTERNAL combined with a known embedded subtype.
-            if ((outputTechnology & InternalFlag) != 0)
-            {
-                var underlying = outputTechnology & ~InternalFlag;
-                if (underlying == DisplayPortEmbedded || underlying == UdiEmbedded)
-                {
-                    var underlyingName = GetSimpleName(underlying);
-                    return $"INTERNAL|{underlyingName}";
-                }
-
-                // INTERNAL combined with unknown/undocumented subtype: render as-is.
-            }
-
-            return GetSimpleName(outputTechnology);
-        }
-
-        private static string GetSimpleName(uint value) => value switch
-        {
-            0xFFFFFFFFu => "OTHER",      // -1 cast to uint
-            0u => "HD15",
-            1u => "SVIDEO",
-            2u => "COMPOSITE_VIDEO",
-            3u => "COMPONENT_VIDEO",
-            4u => "DVI",
-            5u => "HDMI",
-            6u => "LVDS",
-            8u => "D_JPN",
-            9u => "SDI",
-            10u => "DISPLAYPORT_EXTERNAL",
-            11u => "DISPLAYPORT_EMBEDDED",
-            12u => "UDI_EXTERNAL",
-            13u => "UDI_EMBEDDED",
-            14u => "SDTVDONGLE",
-            15u => "MIRACAST",
-            16u => "INDIRECT_WIRED",
-            17u => "INDIRECT_VIRTUAL",
-            18u => "DISPLAYPORT_USB_TUNNEL",
-            _ => $"Unknown(0x{value.ToString("X", CultureInfo.InvariantCulture)})",
-        };
     }
 }

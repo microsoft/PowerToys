@@ -45,34 +45,4 @@ public class DisplayClassifierTests
     {
         Assert.AreEqual(expected, DisplayClassifier.IsInternal(outputTechnology));
     }
-
-    [TestMethod]
-    public void GetOutputTechnologyName_KnownValues_ReturnsName()
-    {
-        Assert.AreEqual("HDMI", DisplayClassifier.GetOutputTechnologyName(5u));
-        Assert.AreEqual("DISPLAYPORT_EMBEDDED", DisplayClassifier.GetOutputTechnologyName(11u));
-        Assert.AreEqual("INTERNAL", DisplayClassifier.GetOutputTechnologyName(0x80000000u));
-    }
-
-    [TestMethod]
-    public void GetOutputTechnologyName_InternalFlagWithSubtype_ComposesName()
-    {
-        // INTERNAL flag combined with DISPLAYPORT_EMBEDDED should produce a composite name
-        var name = DisplayClassifier.GetOutputTechnologyName(0x8000000Bu);
-        StringAssert.Contains(name, "INTERNAL");
-        StringAssert.Contains(name, "DISPLAYPORT_EMBEDDED");
-    }
-
-    [TestMethod]
-    public void GetOutputTechnologyName_UnknownValue_ReturnsHexFormat()
-    {
-        Assert.AreEqual("Unknown(0xDEADBEEF)", DisplayClassifier.GetOutputTechnologyName(0xDEADBEEFu));
-    }
-
-    [TestMethod]
-    public void GetOutputTechnologyName_InternalFlagWithUnknownSubtype_RendersAsUnknownHex()
-    {
-        // INTERNAL bit set with an undocumented subtype (7): we render the raw hex.
-        Assert.AreEqual("Unknown(0x80000007)", DisplayClassifier.GetOutputTechnologyName(0x80000007u));
-    }
 }

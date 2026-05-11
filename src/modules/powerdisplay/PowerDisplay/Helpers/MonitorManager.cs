@@ -159,7 +159,6 @@ namespace PowerDisplay.Helpers
             Logger.LogInfo($"[DisplayClassification] Found {ordered.Count} displays:");
             foreach (var info in ordered)
             {
-                var techName = DisplayClassifier.GetOutputTechnologyName(info.OutputTechnology);
                 var techValue = info.OutputTechnology >= 0x80000000u
                     ? "0x" + info.OutputTechnology.ToString("X", CultureInfo.InvariantCulture)
                     : info.OutputTechnology.ToString(CultureInfo.InvariantCulture);
@@ -167,7 +166,7 @@ namespace PowerDisplay.Helpers
 
                 Logger.LogInfo(
                     $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
-                    $"OutputTechnology={techValue} ({techName}) → {classification}");
+                    $"OutputTechnology={techValue} → {classification}");
 
                 if (info.IsInternal)
                 {
