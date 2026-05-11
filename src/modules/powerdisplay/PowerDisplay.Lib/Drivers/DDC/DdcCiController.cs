@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -29,17 +30,6 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public partial class DdcCiController : IMonitorController, IDisposable
     {
-        /// <summary>
-        /// Represents a candidate monitor discovered during Phase 1 of monitor enumeration.
-        /// </summary>
-        /// <param name="Handle">Physical monitor handle for DDC/CI communication</param>
-        /// <param name="PhysicalMonitor">Native physical monitor structure with description</param>
-        /// <param name="MonitorInfo">Display info from QueryDisplayConfig (DevicePath, FriendlyName, MonitorNumber)</param>
-        private readonly record struct CandidateMonitor(
-            IntPtr Handle,
-            PHYSICAL_MONITOR PhysicalMonitor,
-            MonitorDisplayInfo MonitorInfo);
-
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
 
@@ -148,10 +138,10 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Discover supported monitors using a three-phase approach:
-        /// Phase 1: Enumerate and collect candidate monitors with their handles
-        /// Phase 2: Fetch DDC/CI capabilities in parallel (slow I2C operations)
-        /// Phase 3: Create Monitor objects for valid DDC/CI monitors.
+        /// Discovers external DDC/CI-managed monitors. Each enumerated hMonitor runs its own
+        /// async pipeline (filter → physical-handle retrieval → caps fetch + VCP init); all
+        /// pipelines run concurrently via Task.WhenAll. Caller (MonitorManager) supplies the
+        /// pre-filtered external-target list from Phase 0.
         /// </summary>
         /// <param name="targets">External-only display targets (pre-filtered by MonitorManager Phase 0).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
@@ -160,35 +150,31 @@ namespace PowerDisplay.Common.Drivers.DDC
             IReadOnlyList<MonitorDisplayInfo> targets,
             CancellationToken cancellationToken = default)
         {
-            try
+            var stopwatch = Stopwatch.StartNew();
+
+            var handles = EnumerateMonitorHandles();
+            var targetsByGdi = BuildGdiLookup(targets);
+            Logger.LogInfo(
+                $"DDC: Discovery start — {handles.Count} candidate handles, {targets.Count} external targets");
+
+            if (handles.Count == 0)
             {
-                // Phase 1: Collect candidate monitors
-                var monitorHandles = EnumerateMonitorHandles();
-                if (monitorHandles.Count == 0)
-                {
-                    return Enumerable.Empty<Monitor>();
-                }
-
-                var candidateMonitors = await CollectCandidateMonitorsAsync(
-                    monitorHandles, targets, cancellationToken);
-
-                if (candidateMonitors.Count == 0)
-                {
-                    return Enumerable.Empty<Monitor>();
-                }
-
-                // Phase 2: Fetch capabilities in parallel
-                var fetchResults = await FetchCapabilitiesInParallelAsync(
-                    candidateMonitors, cancellationToken);
-
-                // Phase 3: Create monitor objects
-                return CreateValidMonitors(fetchResults);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"DDC: DiscoverMonitorsAsync exception: {ex.Message}\nStack: {ex.StackTrace}");
+                Logger.LogInfo($"DDC: Discovery complete in {stopwatch.ElapsedMilliseconds}ms — 0 monitors (no handles)");
                 return Enumerable.Empty<Monitor>();
             }
+
+            var pipelines = handles
+                .Select(h => DiscoverFromHandleAsync(h, targetsByGdi, cancellationToken))
+                .ToList();
+            var results = await Task.WhenAll(pipelines);
+
+            var monitors = results.SelectMany(r => r).ToList();
+            _handleManager.UpdateHandleMap(monitors.ToDictionary(m => m.Id, m => m.Handle));
+
+            Logger.LogInfo(
+                $"DDC: Discovery complete in {stopwatch.ElapsedMilliseconds}ms — " +
+                $"{monitors.Count}/{handles.Count} monitors");
+            return monitors;
         }
 
         /// <summary>
@@ -237,173 +223,6 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Phase 1: Collect all candidate monitors with their physical handles.
-        /// Matches physical monitors with MonitorDisplayInfo using GDI device name.
-        /// Supports mirror mode where multiple physical monitors share the same GDI name.
-        /// Skips internal panels (not in the external-only targets dict) before the expensive
-        /// GetPhysicalMonitorsFromHMONITOR call.
-        /// </summary>
-        private async Task<List<CandidateMonitor>> CollectCandidateMonitorsAsync(
-            List<IntPtr> monitorHandles,
-            IReadOnlyList<MonitorDisplayInfo> externalTargets,
-            CancellationToken cancellationToken)
-        {
-            var candidates = new List<CandidateMonitor>();
-
-            // Build a case-insensitive GdiDeviceName -> List<MonitorDisplayInfo> lookup.
-            // List-valued because mirror mode lets multiple targets share one GDI source.
-            var targetsByGdiName = externalTargets
-                .Where(t => !string.IsNullOrEmpty(t.GdiDeviceName))
-                .GroupBy(t => t.GdiDeviceName, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
-
-            foreach (var hMonitor in monitorHandles)
-            {
-                // Get GDI device name for this monitor (e.g., "\\.\DISPLAY1")
-                var gdiDeviceName = GetGdiDeviceName(hMonitor);
-                if (string.IsNullOrEmpty(gdiDeviceName))
-                {
-                    Logger.LogWarning($"DDC: Failed to get GDI device name for hMonitor 0x{hMonitor:X}");
-                    continue;
-                }
-
-                // GDI name not in the external targets list — either a Phase 0 internal panel
-                // or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the expensive
-                // GetPhysicalMonitorsFromHMONITOR call; that's where the discovery-time gain comes from.
-                if (!targetsByGdiName.TryGetValue(gdiDeviceName, out var matchingInfos))
-                {
-                    Logger.LogDebug($"DDC skipping {gdiDeviceName}: not in external targets list");
-                    continue;
-                }
-
-                var physicalMonitors = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
-                if (physicalMonitors == null || physicalMonitors.Length == 0)
-                {
-                    Logger.LogWarning($"DDC: Failed to get physical monitors for {gdiDeviceName} after retries");
-                    continue;
-                }
-
-                for (int i = 0; i < physicalMonitors.Length; i++)
-                {
-                    var physicalMonitor = physicalMonitors[i];
-
-                    if (i >= matchingInfos.Count)
-                    {
-                        Logger.LogWarning($"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries ({matchingInfos.Count}) for {gdiDeviceName}");
-                        break;
-                    }
-
-                    var monitorInfo = matchingInfos[i];
-
-                    candidates.Add(new CandidateMonitor(physicalMonitor.HPhysicalMonitor, physicalMonitor, monitorInfo));
-                }
-            }
-
-            return candidates;
-        }
-
-        /// <summary>
-        /// Phase 2: Fetch DDC/CI capabilities in parallel for all candidate monitors.
-        /// This is the slow I2C operation (~4s per monitor), but parallelization
-        /// significantly reduces total time when multiple monitors are connected.
-        /// </summary>
-        private async Task<(CandidateMonitor Candidate, DdcCiValidationResult Result)[]> FetchCapabilitiesInParallelAsync(
-            List<CandidateMonitor> candidates,
-            CancellationToken cancellationToken)
-        {
-            var tasks = candidates.Select(candidate =>
-                Task.Run(
-                    () => (Candidate: candidate, Result: DdcCiNative.FetchCapabilities(candidate.Handle)),
-                    cancellationToken));
-
-            var results = await Task.WhenAll(tasks);
-
-            return results;
-        }
-
-        /// <summary>
-        /// Phase 3: Create Monitor objects for valid DDC/CI monitors.
-        /// A monitor is valid if it has capabilities with brightness support.
-        /// </summary>
-        private List<Monitor> CreateValidMonitors(
-            (CandidateMonitor Candidate, DdcCiValidationResult Result)[] fetchResults)
-        {
-            var monitors = new List<Monitor>();
-            var newHandleMap = new Dictionary<string, IntPtr>();
-
-            foreach (var (candidate, capResult) in fetchResults)
-            {
-                if (!capResult.IsValid)
-                {
-                    continue;
-                }
-
-                var monitor = _discoveryHelper.CreateMonitorFromPhysical(
-                    candidate.PhysicalMonitor,
-                    candidate.MonitorInfo);
-
-                if (monitor == null)
-                {
-                    continue;
-                }
-
-                // Set capabilities data
-                if (!string.IsNullOrEmpty(capResult.CapabilitiesString))
-                {
-                    monitor.CapabilitiesRaw = capResult.CapabilitiesString;
-                }
-
-                if (capResult.VcpCapabilitiesInfo != null)
-                {
-                    monitor.VcpCapabilitiesInfo = capResult.VcpCapabilitiesInfo;
-                    UpdateMonitorCapabilitiesFromVcp(monitor, capResult.VcpCapabilitiesInfo);
-
-                    // Initialize input source if supported
-                    if (monitor.SupportsInputSource)
-                    {
-                        InitializeInputSource(monitor, candidate.Handle);
-                    }
-
-                    // Initialize color temperature if supported
-                    if (monitor.SupportsColorTemperature)
-                    {
-                        InitializeColorTemperature(monitor, candidate.Handle);
-                    }
-
-                    // Initialize power state if supported
-                    if (monitor.SupportsPowerState)
-                    {
-                        InitializePowerState(monitor, candidate.Handle);
-                    }
-
-                    // Initialize contrast if supported
-                    if (monitor.SupportsContrast)
-                    {
-                        InitializeContrast(monitor, candidate.Handle);
-                    }
-
-                    // Initialize volume if supported
-                    if (monitor.SupportsVolume)
-                    {
-                        InitializeVolume(monitor, candidate.Handle);
-                    }
-                }
-
-                // Initialize brightness if supported
-                if (monitor.SupportsBrightness)
-                {
-                    InitializeBrightness(monitor, candidate.Handle);
-                }
-
-                monitors.Add(monitor);
-                newHandleMap[monitor.Id] = candidate.Handle;
-            }
-
-            _handleManager.UpdateHandleMap(newHandleMap);
-            return monitors;
         }
 
         /// <summary>
