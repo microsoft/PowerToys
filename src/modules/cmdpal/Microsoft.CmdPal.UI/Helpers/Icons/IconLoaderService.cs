@@ -5,10 +5,9 @@
 using System.Threading.Channels;
 using CommunityToolkit.WinUI;
 using ManagedCommon;
-using Microsoft.Terminal.UI;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
 using Windows.Storage.Streams;
 
@@ -28,10 +27,13 @@ internal sealed partial class IconLoaderService : IIconLoaderService
     private readonly Channel<Func<Task>> _lowPriorityQueue = Channel.CreateUnbounded<Func<Task>>();
     private readonly Task[] _workers;
     private readonly DispatcherQueue _dispatcherQueue;
+    private readonly ManagedIconSourceFactory _managedIconSourceFactory;
+    private long _nextLoadId;
 
-    public IconLoaderService(DispatcherQueue dispatcherQueue)
+    public IconLoaderService(DispatcherQueue dispatcherQueue, ManagedIconSourceFactory managedIconSourceFactory)
     {
         _dispatcherQueue = dispatcherQueue;
+        _managedIconSourceFactory = managedIconSourceFactory;
         _workers = new Task[WorkerCount];
 
         for (var i = 0; i < WorkerCount; i++)
@@ -45,11 +47,12 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         string? fontFamily,
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
+        ElementTheme theme,
         double scale,
         TaskCompletionSource<IconSource?> tcs,
         IconLoadPriority priority = IconLoadPriority.Low)
     {
-        var workItem = () => LoadAndCompleteAsync(iconString, fontFamily, streamRef, iconSize, scale, tcs);
+        var workItem = () => LoadAndCompleteAsync(iconString, fontFamily, streamRef, iconSize, theme, scale, tcs);
 
         if (priority == IconLoadPriority.High)
         {
@@ -63,7 +66,12 @@ internal sealed partial class IconLoaderService : IIconLoaderService
 #endif
         }
 
-        _lowPriorityQueue.Writer.TryWrite(workItem);
+        if (!_lowPriorityQueue.Writer.TryWrite(workItem))
+        {
+            var exception = new InvalidOperationException("Failed to enqueue icon load because the icon loader queue is unavailable.");
+            Logger.LogError("Failed to enqueue icon load", exception);
+            tcs.TrySetException(exception);
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -134,16 +142,18 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         string? fontFamily,
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
+        ElementTheme theme,
         double scale,
         TaskCompletionSource<IconSource?> tcs)
     {
         try
         {
-            var result = await LoadIconCoreAsync(iconString, fontFamily, streamRef, iconSize, scale).ConfigureAwait(false);
+            var result = await LoadIconCoreAsync(iconString, fontFamily, streamRef, iconSize, theme, scale).ConfigureAwait(false);
             tcs.TrySetResult(result);
         }
         catch (Exception ex)
         {
+            Logger.LogError("Failed to load icon", ex);
             tcs.TrySetException(ex);
         }
     }
@@ -153,69 +163,66 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         string? fontFamily,
         IRandomAccessStreamReference? streamRef,
         Size iconSize,
+        ElementTheme theme,
         double scale)
     {
+        var loadId = Interlocked.Increment(ref _nextLoadId);
         var scaledSize = new Size(iconSize.Width * scale, iconSize.Height * scale);
 
         if (!string.IsNullOrEmpty(iconString))
         {
-            return await _dispatcherQueue
-                .EnqueueAsync(() => GetStringIconSource(iconString, fontFamily, scaledSize), LoadingPriorityOnDispatcher)
-                .ConfigureAwait(false);
+            Logger.LogDebug($"[IconLoad:{loadId}] Loading icon string '{TrimForLog(iconString)}' with font family '{fontFamily ?? "(null)"}', target size {DescribeSize(scaledSize)}.");
+            return await GetStringIconSourceAsync(iconString, fontFamily, scaledSize, theme).ConfigureAwait(false);
         }
 
         if (streamRef != null)
         {
             try
             {
+                Logger.LogDebug($"[IconLoad:{loadId}] Loading stream-backed icon with stream ref hash 0x{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(streamRef):X8}, target size {DescribeSize(scaledSize)}.");
                 using var bitmapStream = await streamRef.OpenReadAsync().AsTask().ConfigureAwait(false);
-
-                return await _dispatcherQueue
-                    .EnqueueAsync(BuildImageSource, LoadingPriorityOnDispatcher)
+                Logger.LogDebug($"[IconLoad:{loadId}] Opened stream-backed icon stream of {bitmapStream.Size} bytes.");
+                return await _managedIconSourceFactory
+                    .CreateFromStreamAsync(bitmapStream, sourceUri: null, scaledSize, _dispatcherQueue, LoadingPriorityOnDispatcher)
                     .ConfigureAwait(false);
-
-                async Task<IconSource?> BuildImageSource()
-                {
-                    var bitmap = new BitmapImage();
-                    ApplyDecodeSize(bitmap, scaledSize);
-                    await bitmap.SetSourceAsync(bitmapStream);
-                    return new ImageIconSource { ImageSource = bitmap };
-                }
             }
-#pragma warning disable CS0168 // Variable is declared but never used
             catch (Exception ex)
-#pragma warning restore CS0168 // Variable is declared but never used
             {
-#if DEBUG
-                Logger.LogDebug($"Failed to open icon stream: {ex}");
-#endif
+                Logger.LogError($"[IconLoad:{loadId}] Failed to load icon from stream", ex);
                 return null;
             }
         }
 
+        Logger.LogDebug($"[IconLoad:{loadId}] No icon string or stream was provided.");
         return null;
     }
 
-    private static void ApplyDecodeSize(BitmapImage bitmap, Size size)
+    private async Task<IconSource?> GetStringIconSourceAsync(string iconString, string? fontFamily, Size size, ElementTheme theme)
     {
-        if (size.IsEmpty)
+        try
         {
-            return;
-        }
+            var managedResult = await _managedIconSourceFactory
+                .CreateFromStringAsync(iconString, fontFamily, size, theme, _dispatcherQueue, LoadingPriorityOnDispatcher)
+                .ConfigureAwait(false);
 
-        if (size.Width >= size.Height)
-        {
-            bitmap.DecodePixelWidth = (int)size.Width;
+            if (managedResult.WasHandled)
+            {
+                Logger.LogDebug($"Managed icon pipeline handled icon '{TrimForLog(iconString)}'; result source type is '{managedResult.Source?.GetType().Name ?? "(null)"}'.");
+                return managedResult.Source;
+            }
+
+            Logger.LogWarning($"Managed icon pipeline did not handle icon '{TrimForLog(iconString)}'; returning null icon source.");
+            return null;
         }
-        else
+        catch (Exception ex)
         {
-            bitmap.DecodePixelHeight = (int)size.Height;
+            Logger.LogError($"Failed to create icon source from '{iconString}' with font family '{fontFamily ?? "(null)"}'", ex);
+            return null;
         }
     }
 
-    private static IconSource? GetStringIconSource(string iconString, string? fontFamily, Size size)
-    {
-        var iconSize = (int)Math.Max(size.Width, size.Height);
-        return IconPathConverter.IconSourceMUX(iconString, fontFamily, iconSize);
-    }
+    private static string DescribeSize(Size size) => size.IsEmpty ? "Empty" : $"{size.Width:0.##}x{size.Height:0.##}";
+
+    private static string TrimForLog(string value, int maxLength = 200) =>
+        value.Length <= maxLength ? value : $"{value[..maxLength]}...";
 }

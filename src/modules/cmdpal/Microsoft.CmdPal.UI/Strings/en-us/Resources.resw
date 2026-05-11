@@ -1170,4 +1170,49 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Right</value>
     <comment>Right section label in pin to dock dialog (code access, horizontal end)</comment>
   </data>
+  <data name="InternalPage_IconCacheDiagnosticsExpander.Description" xml:space="preserve">
+    <value>Inspect registered icon caches, including cached providers and managed factory caches.</value>
+  </data>
+  <data name="InternalPage_IconCacheDiagnosticsExpander.Header" xml:space="preserve">
+    <value>Icon cache diagnostics</value>
+  </data>
+  <data name="InternalPage_ForceGarbageCollectionSettingsCard.Description" xml:space="preserve">
+    <value>Runs a full blocking collection so cached UI resources can be reclaimed immediately.</value>
+  </data>
+  <data name="InternalPage_ForceGarbageCollectionSettingsCard.Header" xml:space="preserve">
+    <value>Force garbage collection</value>
+  </data>
+  <data name="InternalPage_CollectGarbageButton.Content" xml:space="preserve">
+    <value>Collect now</value>
+  </data>
+  <data name="InternalPage_CachedIconProvidersSettingsCard.Header" xml:space="preserve">
+    <value>Icon caches</value>
+  </data>
+  <data name="InternalPage_RefreshCachedIconProvidersButton.Content" xml:space="preserve">
+    <value>Refresh caches</value>
+  </data>
+  <data name="InternalPage_PruneCachedIconProviderButton.Content" xml:space="preserve">
+    <value>Prune now</value>
+  </data>
+  <data name="InternalPage_IconCacheDiagnostics_GarbageCollectionNotRun" xml:space="preserve">
+    <value>Managed heap estimate has not been sampled yet.</value>
+  </data>
+  <data name="InternalPage_IconCacheDiagnostics_GarbageCollectionSummaryFormat" xml:space="preserve">
+    <value>Managed heap estimate before collection: {0:N0} bytes. After collection: {1:N0} bytes. Delta: {2:+#,#0;-#,#0;0} bytes.</value>
+  </data>
+  <data name="InternalPage_IconCacheDiagnostics_NoProviders" xml:space="preserve">
+    <value>No icon caches were resolved from the service container.</value>
+  </data>
+  <data name="InternalPage_IconCacheDiagnostics_SummaryFormat" xml:space="preserve">
+    <value>Resolved {0} icon cache(s). Current items: {1}/{2}. Lifetime adds: {3}. Hits: {4}. Misses: {5}.</value>
+  </data>
+  <data name="InternalPage_IconCacheDiagnostics_CacheSummaryFormat" xml:space="preserve">
+    <value>Current items: {0}/{1}. Pool entries: {2}. Tick: {3}. Decay: every {4:0} minute(s) with factor {5:0.##}.</value>
+  </data>
+  <data name="InternalPage_IconCacheDiagnostics_ProviderSummaryFormat" xml:space="preserve">
+    <value>Size: {0}. Current items: {1}/{2}. Pool entries: {3}. Tick: {4}. Decay: every {5:0} minute(s) with factor {6:0.##}.</value>
+  </data>
+  <data name="InternalPage_IconCacheDiagnostics_ProviderTotalsFormat" xml:space="preserve">
+    <value>Totals - adds: {0}; hits: {1}; misses: {2}; removals: {3}; clears: {4}; cleanup runs: {5}; cleanup evictions: {6}.</value>
+  </data>
 </root>

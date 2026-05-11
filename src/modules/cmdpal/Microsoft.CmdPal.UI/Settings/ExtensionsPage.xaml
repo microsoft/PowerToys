@@ -229,26 +229,14 @@
                                     <controls:SettingsCard.HeaderIcon>
                                         <cpcontrols:ContentIcon>
                                             <cpcontrols:ContentIcon.Content>
-                                                <controls:SwitchPresenter
+                                                <cpcontrols:IconBox
+                                                    Width="20"
+                                                    Height="20"
                                                     AutomationProperties.AccessibilityView="Raw"
-                                                    TargetType="x:Boolean"
-                                                    Value="{x:Bind Icon.IsSet, FallbackValue=x:False, Mode=OneWay}">
-                                                    <controls:Case Value="True">
-                                                        <cpcontrols:IconBox
-                                                            Width="20"
-                                                            Height="20"
-                                                            AutomationProperties.AccessibilityView="Raw"
-                                                            SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                            SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
-                                                    </controls:Case>
-                                                    <controls:Case Value="False">
-                                                        <Image
-                                                            Width="20"
-                                                            Height="20"
-                                                            AutomationProperties.AccessibilityView="Raw"
-                                                            Source="ms-appx:///Assets/Icons/ExtensionIconPlaceholder.png" />
-                                                    </controls:Case>
-                                                </controls:SwitchPresenter>
+                                                    FallbackSourceKey="{x:Bind PlaceholderIconViewModel, Mode=OneTime}"
+                                                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                                                    SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}"
+                                                    Tag="{x:Bind DisplayName}" />
                                             </cpcontrols:ContentIcon.Content>
                                         </cpcontrols:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>

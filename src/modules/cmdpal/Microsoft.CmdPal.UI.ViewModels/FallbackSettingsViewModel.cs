@@ -20,6 +20,8 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
     public IconInfoViewModel Icon { get; private set; } = new(null);
 
+    public IconInfoViewModel PlaceholderIconViewModel => PlaceholderIconViewModels.FallbackCommandIcon;
+
     public string Id { get; private set; } = string.Empty;
 
     public bool IsEnabled

@@ -38,14 +38,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Assets\AllApps.png" />
-    <None Remove="Assets\AllApps.svg" />
+    <None Remove="Assets\**\*" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update="Assets\AllApps.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\AllApps.svg">
+    <Content Update="Assets\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

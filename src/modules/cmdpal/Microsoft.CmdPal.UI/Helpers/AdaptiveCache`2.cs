@@ -25,6 +25,13 @@ internal sealed class AdaptiveCache<TKey, TValue>
     private readonly WaitCallback _maintenanceCallback;
 
     private long _currentTick;
+    private long _hitCount;
+    private long _missCount;
+    private long _addCount;
+    private long _removeCount;
+    private long _clearCount;
+    private long _cleanupCount;
+    private long _cleanupEvictionCount;
     private long _lastDecayTicks = DateTime.UtcNow.Ticks;
     private InterlockedBoolean _maintenanceSwitch = new(false);
 
@@ -53,9 +60,12 @@ internal sealed class AdaptiveCache<TKey, TValue>
     {
         if (_map.TryGetValue(key, out var entry))
         {
+            Interlocked.Increment(ref _hitCount);
             entry.Update(Interlocked.Increment(ref _currentTick));
             return entry.Value!;
         }
+
+        Interlocked.Increment(ref _missCount);
 
         if (!_pool.TryPop(out var newEntry))
         {
@@ -73,9 +83,14 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
             if (_map.TryGetValue(key, out var existing))
             {
+                Interlocked.Increment(ref _hitCount);
                 existing.Update(tick);
                 return existing.Value!;
             }
+        }
+        else
+        {
+            Interlocked.Increment(ref _addCount);
         }
 
         if (ShouldMaintenanceRun())
@@ -90,11 +105,13 @@ internal sealed class AdaptiveCache<TKey, TValue>
     {
         if (_map.TryGetValue(key, out var entry))
         {
+            Interlocked.Increment(ref _hitCount);
             entry.Update(Interlocked.Increment(ref _currentTick));
             value = entry.Value;
             return true;
         }
 
+        Interlocked.Increment(ref _missCount);
         value = default;
         return false;
     }
@@ -122,6 +139,10 @@ internal sealed class AdaptiveCache<TKey, TValue>
             newEntry.Clear();
             _pool.Push(newEntry);
         }
+        else
+        {
+            Interlocked.Increment(ref _addCount);
+        }
 
         if (ShouldMaintenanceRun())
         {
@@ -133,6 +154,7 @@ internal sealed class AdaptiveCache<TKey, TValue>
     {
         if (_map.TryRemove(key, out var evicted))
         {
+            Interlocked.Increment(ref _removeCount);
             evicted.Clear();
             _pool.Push(evicted);
             return true;
@@ -143,12 +165,32 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
     public void Clear()
     {
+        Interlocked.Increment(ref _clearCount);
+
         foreach (var key in _map.Keys)
         {
             TryRemove(key);
         }
 
         Interlocked.Exchange(ref _currentTick, 0);
+    }
+
+    public AdaptiveCacheStatistics GetStatistics()
+    {
+        return new AdaptiveCacheStatistics(
+            _map.Count,
+            _capacity,
+            _pool.Count,
+            Interlocked.Read(ref _hitCount),
+            Interlocked.Read(ref _missCount),
+            Interlocked.Read(ref _addCount),
+            Interlocked.Read(ref _removeCount),
+            Interlocked.Read(ref _clearCount),
+            Interlocked.Read(ref _cleanupCount),
+            Interlocked.Read(ref _cleanupEvictionCount),
+            Interlocked.Read(ref _currentTick),
+            _decayInterval,
+            _decayFactor);
     }
 
     private bool ShouldMaintenanceRun()
@@ -166,6 +208,8 @@ internal sealed class AdaptiveCache<TKey, TValue>
 
     private void PerformCleanup()
     {
+        Interlocked.Increment(ref _cleanupCount);
+
         var nowTicks = DateTime.UtcNow.Ticks;
         var isDecay = (nowTicks - Interlocked.Read(ref _lastDecayTicks)) > _decayInterval.Ticks;
         if (isDecay)
@@ -188,6 +232,8 @@ internal sealed class AdaptiveCache<TKey, TValue>
             {
                 if (_map.TryRemove(key, out var evicted))
                 {
+                    Interlocked.Increment(ref _removeCount);
+                    Interlocked.Increment(ref _cleanupEvictionCount);
                     evicted.Clear();
                     _pool.Push(evicted);
                 }

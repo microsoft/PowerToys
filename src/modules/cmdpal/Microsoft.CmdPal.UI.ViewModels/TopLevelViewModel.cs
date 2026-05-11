@@ -64,6 +64,10 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     public IconInfoViewModel IconViewModel => _commandItemViewModel.Icon;
 
+    public IconInfoViewModel PlaceholderIconViewModel => IsFallback
+        ? PlaceholderIconViewModels.FallbackCommandIcon
+        : PlaceholderIconViewModels.CommandIcon;
+
     ////// ICommandItem
     public string Title => _commandItemViewModel.Title;
 

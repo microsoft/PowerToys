@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    x:Name="Root"
     mc:Ignorable="d">
 
     <Grid>
@@ -32,13 +33,13 @@
                         IsExpanded="True">
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard Header="Throw an unhandled exception from the UI thread">
-                                <Button Click="ThrowPlainMainThreadException_Click" Content="Throw" />
+                                <Button Command="{x:Bind ViewModel.ThrowPlainMainThreadExceptionCommand}" Content="Throw" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="Throw an unhandled exception from the UI thread (with PII)">
-                                <Button Click="ThrowPlainMainThreadExceptionPii_Click" Content="Throw" />
+                                <Button Command="{x:Bind ViewModel.ThrowPlainMainThreadExceptionPiiCommand}" Content="Throw" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Description="Throw with delay, when the task is collected by the GC" Header="Throw unobserved exception from a task">
-                                <Button Click="ThrowExceptionInUnobservedTask_Click" Content="Throw" />
+                                <Button Command="{x:Bind ViewModel.ThrowExceptionInUnobservedTaskCommand}" Content="Throw" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
@@ -49,21 +50,84 @@
                         x:Name="LogsSettingsCard"
                         Header="Logs folder"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}">
-                        <Button Click="OpenLogsCardClicked" Content="Open folder" />
+                        <Button Command="{x:Bind ViewModel.OpenLogsFolderCommand}" Content="Open folder" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
                         x:Name="CurrentLogFileSettingsCard"
                         Header="Current log file"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7BB;}">
-                        <Button Click="OpenCurrentLogCardClicked" Content="Open log" />
+                        <Button Command="{x:Bind ViewModel.OpenCurrentLogFileCommand}" Content="Open log" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
                         x:Name="ToggleDevRibbonVisibilitySettingsCard"
                         Description="This is only temporary and state is not saved"
                         Header="Toggle dev ribbon visibility"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8EC;}">
-                        <Button Click="ToggleDevRibbonClicked" Content="Toggle dev ribbon" />
+                        <Button Command="{x:Bind ViewModel.ToggleDevRibbonCommand}" Content="Toggle dev ribbon" />
                     </controls:SettingsCard>
+                    <controls:SettingsExpander
+                        x:Uid="InternalPage_IconCacheDiagnosticsExpander"
+                        Description="Inspect the registered CachedIconSourceProvider instances resolved from the service container."
+                        Header="Icon cache diagnostics"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE753;}">
+                        <controls:SettingsExpander.Items>
+                            <controls:SettingsCard
+                                x:Uid="InternalPage_ForceGarbageCollectionSettingsCard"
+                                Description="Runs a full blocking collection so cached UI resources can be reclaimed immediately."
+                                Header="Force garbage collection">
+                                <StackPanel Spacing="12">
+                                    <Button
+                                        x:Uid="InternalPage_CollectGarbageButton"
+                                        HorizontalAlignment="Left"
+                                        Command="{x:Bind ViewModel.CollectGarbageCommand}"
+                                        Content="Collect now" />
+                                    <TextBlock
+                                        Style="{StaticResource BodyTextBlockStyle}"
+                                        Text="{x:Bind ViewModel.GarbageCollectionSummary, Mode=OneWay}"
+                                        TextWrapping="WrapWholeWords" />
+                                </StackPanel>
+                            </controls:SettingsCard>
+                            <controls:SettingsCard x:Uid="InternalPage_CachedIconProvidersSettingsCard" Header="Cached icon providers">
+                                <StackPanel Spacing="12">
+                                    <TextBlock
+                                        Style="{StaticResource BodyTextBlockStyle}"
+                                        Text="{x:Bind ViewModel.CachedIconProvidersSummary, Mode=OneWay}"
+                                        TextWrapping="WrapWholeWords" />
+                                    <Button
+                                        x:Uid="InternalPage_RefreshCachedIconProvidersButton"
+                                        HorizontalAlignment="Left"
+                                        Command="{x:Bind ViewModel.RefreshCachedIconProvidersCommand}"
+                                        Content="Refresh providers" />
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.CachedIconProviders, Mode=OneWay}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,8" ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Spacing="4">
+                                                        <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                                                        <TextBlock Text="{Binding Summary}" TextWrapping="WrapWholeWords" />
+                                                        <TextBlock
+                                                            Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                            Text="{Binding Totals}"
+                                                            TextWrapping="WrapWholeWords" />
+                                                    </StackPanel>
+                                                    <Button
+                                                        x:Uid="InternalPage_PruneCachedIconProviderButton"
+                                                        Grid.Column="1"
+                                                        VerticalAlignment="Top"
+                                                        Command="{Binding PruneCommand}"
+                                                        Content="Prune now" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </controls:SettingsCard>
+                        </controls:SettingsExpander.Items>
+                    </controls:SettingsExpander>
 
                     <!--  Data Section  -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Data and Files" />
@@ -71,7 +135,7 @@
                         x:Name="ConfigurationFolderSettingsCard"
                         Header="Configuration folder"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF73D;}">
-                        <Button Click="OpenConfigFolderCardClick" Content="Open folder" />
+                        <Button Command="{x:Bind ViewModel.OpenConfigFolderCommand}" Content="Open folder" />
                     </controls:SettingsCard>
 
 
