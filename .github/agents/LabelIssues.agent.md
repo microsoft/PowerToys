@@ -59,6 +59,29 @@ Report: `Found N issues without Product-* labels.`
 
 If more than 50 issues match, warn the user and ask whether to proceed or narrow the scope.
 
+### Step 2.5 — Dynamically discover labels and template fields
+
+**Do this once at the start of every run** so the mapping is always current:
+
+1. **Fetch all `Product-*` labels from the repo:**
+   ```bash
+   gh label list --repo microsoft/PowerToys --search "Product-" --json name --limit 200 --jq '.[].name'
+   ```
+   Store these as the set of **valid labels**.
+
+2. **Fetch the current bug report template dropdown values:**
+   ```bash
+   gh api repos/microsoft/PowerToys/contents/.github/ISSUE_TEMPLATE/bug_report.yml --jq '.content' | base64 -d
+   ```
+   Parse the YAML to extract the `options` list under the "Area(s) with issue?" dropdown field. These are the **template values**.
+
+3. **Build the live mapping** by matching each template value to a `Product-*` label:
+   - First, check the **override mapping** in `.github/agents/references/product-label-mapping.md` — this file ONLY contains non-obvious name mismatches (e.g., `Keyboard Manager` → `Product-Keyboard Shortcut Manager`)
+   - Then, try direct match: prepend `Product-` to the template value and check if it exists in the valid labels set
+   - If neither matches, the template value has no mapping (treat as needing content analysis)
+
+This approach ensures new modules and labels are picked up automatically — the only maintenance needed is when a template dropdown value has a **different name** from its `Product-*` label.
+
 ### Step 3 — Determine product labels
 
 For each issue, determine the correct `Product-*` label using two methods:
@@ -73,13 +96,17 @@ Parse the issue body for the structured **"Area(s) with issue?"** field from the
 Command Palette, FancyZones
 ```
 
-Extract the text between `### Area(s) with issue?` and the next `###` heading (or end of body). Split by commas. Map each value using the reference mapping in `.github/agents/references/product-label-mapping.md`.
+Extract the text between `### Area(s) with issue?` and the next `###` heading (or end of body). Split by commas. Map each value using the **live mapping built in Step 2.5**.
 
 If all selected areas map to known labels → **HIGH confidence**.
 
 #### Method B: Content analysis (variable confidence)
 
 When Method A produces no result (e.g., feature requests without the area field, or free-form issues), analyze the issue title and body yourself to infer the product.
+
+Use the **valid labels list from Step 2.5** as the universe of possible labels — never invent a label that doesn't exist.
+
+Optionally consult the keyword hints in `.github/agents/references/product-label-mapping.md` for guidance on ambiguous terms.
 
 **HIGH confidence** — assign automatically when:
 - The issue title or body explicitly and unambiguously names a single PowerToys product (e.g., "FancyZones crashes when...")
@@ -144,9 +171,14 @@ Total processed:                17
 
 ## Reference
 
-Read the product label mapping from: `.github/agents/references/product-label-mapping.md`
+Read the override mapping and keyword hints from: `.github/agents/references/product-label-mapping.md`
 
-This file contains the authoritative mapping from issue template "Area(s) with issue?" dropdown values to `Product-*` labels, validated against the actual labels in the repository.
+This file contains:
+- **Override mappings** for template values whose names don't match their `Product-*` label (e.g., `Keyboard Manager` → `Product-Keyboard Shortcut Manager`)
+- **Keyword hints** for content analysis when the structured field is absent
+- **Non-product template values** that need special handling (Installer, System tray, Welcome window)
+
+The file does NOT need to list every template value — most map directly by prepending `Product-`. Only non-obvious mismatches need entries. Labels and template values are discovered dynamically at runtime (Step 2.5).
 
 ## Prerequisites
 

@@ -1,48 +1,29 @@
-# Product Label Mapping
+# Product Label Mapping — Overrides & Hints
 
-Authoritative mapping from the bug report template "Area(s) with issue?" dropdown values
-to `Product-*` labels. Validated against the actual labels in the `microsoft/PowerToys` repository.
+This file contains **only the non-obvious mappings** between the bug report template
+"Area(s) with issue?" dropdown values and `Product-*` labels. Most template values
+map directly by prepending `Product-` — only mismatches are listed here.
 
-## Template Field → Label Mapping
+Labels and template values are discovered dynamically at runtime by the agent.
+
+## Override Mappings (template value ≠ label name)
+
+These template dropdown values have `Product-*` labels with **different names**:
 
 | Template Dropdown Value | Product Label |
 |------------------------|---------------|
-| Advanced Paste | `Product-Advanced Paste` |
-| Always on Top | `Product-Always On Top` |
-| Awake | `Product-Awake` |
 | ColorPicker | `Product-Color Picker` |
 | Command not found | `Product-CommandNotFound` |
-| Command Palette | `Product-Command Palette` |
-| Crop and Lock | `Product-CropAndLock` |
-| Environment Variables | `Product-Environment Variables` |
-| FancyZones | `Product-FancyZones` |
 | FancyZones Editor | `Product-FancyZones` |
-| File Locksmith | `Product-File Locksmith` |
 | File Explorer: Preview Pane | `Product-File Explorer` |
 | File Explorer: Thumbnail preview | `Product-File Explorer` |
-| General | `Product-General` |
-| Grab And Move | `Product-Grab And Move` |
 | Hosts File Editor | `Product-Hosts File Editor` |
-| Image Resizer | `Product-Image Resizer` |
 | Keyboard Manager | `Product-Keyboard Shortcut Manager` |
-| Light Switch | `Product-LightSwitch` |
-| Mouse Utilities | `Product-Mouse Utilities` |
-| Mouse Without Borders | `Product-Mouse Without Borders` |
-| New+ | `Product-New+` |
-| Peek | `Product-Peek` |
 | Power Display | `Product-PowerDisplay` |
-| PowerRename | `Product-PowerRename` |
-| PowerToys Run | `Product-PowerToys Run` |
-| Quick Accent | `Product-Quick Accent` |
-| Registry Preview | `Product-Registry Preview` |
-| Screen ruler | `Product-Screen Ruler` |
-| Settings | `Product-Settings` |
-| Shortcut Guide | `Product-Shortcut Guide` |
 | TextExtractor | `Product-Text Extractor` |
-| Workspaces | `Product-Workspaces` |
-| ZoomIt | `Product-ZoomIt` |
+| Screen ruler | `Product-Screen Ruler` |
 
-## Non-Product Areas
+## Non-Product Template Values
 
 These template values do NOT map to a product label. Use content analysis instead:
 
@@ -92,45 +73,4 @@ When the structured field is not available, use these keyword patterns to infer 
 | brightness, monitor, display, DDC | `Product-PowerDisplay` |
 | cursor wrap, edge wrap, multi-monitor cursor | `Product-Cursor Wrap` |
 
-## All Valid Product Labels (in repo)
-
-For reference, these are the actual `Product-*` labels that exist in the repository:
-
-- `Product-Advanced Paste`
-- `Product-Always On Top`
-- `Product-Awake`
-- `Product-Color Picker`
-- `Product-Command Palette`
-- `Product-CommandNotFound`
-- `Product-CropAndLock`
-- `Product-Cursor Wrap`
-- `Product-Environment Variables`
-- `Product-FancyZones`
-- `Product-File Actions Menu`
-- `Product-File Explorer`
-- `Product-File Locksmith`
-- `Product-Find My Mouse`
-- `Product-General`
-- `Product-Grab And Move`
-- `Product-Hosts File Editor`
-- `Product-Image Resizer`
-- `Product-Keyboard Shortcut Manager`
-- `Product-LightSwitch`
-- `Product-Mouse Highlighter`
-- `Product-Mouse Jump`
-- `Product-Mouse Pointer Crosshairs`
-- `Product-Mouse Utilities`
-- `Product-Mouse Without Borders`
-- `Product-New+`
-- `Product-Peek`
-- `Product-PowerDisplay`
-- `Product-PowerRename`
-- `Product-PowerToys Run`
-- `Product-Quick Accent`
-- `Product-Registry Preview`
-- `Product-Screen Ruler`
-- `Product-Settings`
-- `Product-Shortcut Guide`
-- `Product-Text Extractor`
-- `Product-Workspaces`
-- `Product-ZoomIt`
+<!-- Valid Product-* labels are discovered dynamically at runtime via gh label list -->
