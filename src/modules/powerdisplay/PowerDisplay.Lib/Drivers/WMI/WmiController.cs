@@ -261,18 +261,14 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 continue;
                             }
 
-                            if (!string.IsNullOrEmpty(displayInfo.DevicePath))
-                            {
-                                seenDevicePaths.Add(displayInfo.DevicePath);
-                            }
+                            // DevicePath is guaranteed non-empty here: the PnP-key lookup above
+                            // only succeeds for targets whose key was derived from a populated
+                            // DevicePath.
+                            seenDevicePaths.Add(displayInfo.DevicePath);
+                            string uniqueId = MonitorIdentity.FromDevicePath(displayInfo.DevicePath);
 
                             int monitorNumber = displayInfo.MonitorNumber;
                             string gdiDeviceName = displayInfo.GdiDeviceName ?? string.Empty;
-
-                            // DevicePath is guaranteed non-empty here: the PnP-key lookup above
-                            // only succeeds for targets whose key was derived from a populated
-                            // DevicePath, so we can hand it straight to MonitorIdentity.
-                            string uniqueId = MonitorIdentity.FromDevicePath(displayInfo.DevicePath);
 
                             // Name is left blank: MonitorViewModel injects a localized
                             // "Built-in Display" string for internal displays.
@@ -306,12 +302,12 @@ namespace PowerDisplay.Common.Drivers.WMI
                     Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message}");
                 }
 
-                // Post-loop: warn about every internal target the driver didn't expose via WMI.
-                // Keyed on DevicePath (per-target unique) so dual-internal-panel devices report
-                // each missing panel individually instead of being collapsed by EdidId.
+                // Warn about every internal target the driver didn't expose via WMI.
+                // DevicePath is per-target unique, so dual-internal-panel devices report each
+                // missing panel separately.
                 foreach (var target in targets)
                 {
-                    if (string.IsNullOrEmpty(target.DevicePath) || seenDevicePaths.Contains(target.DevicePath))
+                    if (seenDevicePaths.Contains(target.DevicePath))
                     {
                         continue;
                     }

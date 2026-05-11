@@ -107,18 +107,17 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Phase 0 + Phase 1: classify all displays via OutputTechnology, then dispatch
-        /// strictly-scoped target lists to each controller (WMI = internal only,
-        /// DDC/CI = external only).
+        /// Classify all displays via OutputTechnology using a single QueryDisplayConfig
+        /// call, then dispatch strictly-scoped target lists to each controller in parallel
+        /// (WMI = internal only, DDC/CI = external only).
         /// </summary>
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
         {
-            // Phase 0: single QueryDisplayConfig call + classification logging.
             var inventory = DdcCiNative.GetAllMonitorDisplayInfo();
 
             if (inventory.Count == 0)
             {
-                Logger.LogWarning("[MonitorManager] Phase 0 classification produced no displays — discovery aborted");
+                Logger.LogWarning("[MonitorManager] QueryDisplayConfig returned no displays — discovery aborted");
                 return new List<Monitor>();
             }
 

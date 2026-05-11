@@ -288,10 +288,6 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             try
             {
-                // External-only targets supplied by MonitorManager Phase 0. We never call
-                // GetAllMonitorDisplayInfo here — all classification decisions are upstream.
-                var externalTargets = targets;
-
                 // Phase 1: Collect candidate monitors
                 var monitorHandles = EnumerateMonitorHandles();
                 if (monitorHandles.Count == 0)
@@ -300,7 +296,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
 
                 var candidateMonitors = await CollectCandidateMonitorsAsync(
-                    monitorHandles, externalTargets, cancellationToken);
+                    monitorHandles, targets, cancellationToken);
 
                 if (candidateMonitors.Count == 0)
                 {
