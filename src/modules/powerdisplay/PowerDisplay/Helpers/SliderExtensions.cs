@@ -125,7 +125,7 @@ namespace PowerDisplay.Helpers
             }
 
             // Claim the gesture so an enclosing ScrollViewer does not also scroll —
-            // even sub-threshold events must be swallowed, otherwise a precision
+            // even sub-threshold events must be swallowed; otherwise a precision
             // touchpad would scroll the flyout while the pointer is on a slider.
             e.Handled = true;
 
