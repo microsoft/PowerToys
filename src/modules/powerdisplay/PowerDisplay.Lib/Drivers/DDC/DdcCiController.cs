@@ -27,7 +27,7 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// <summary>
     /// DDC/CI monitor controller for controlling external monitors
     /// </summary>
-    public partial class DdcCiController : IDdcController, IDisposable
+    public partial class DdcCiController : IMonitorController, IDisposable
     {
         /// <summary>
         /// Represents a candidate monitor discovered during Phase 1 of monitor enumeration.
