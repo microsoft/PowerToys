@@ -169,7 +169,13 @@ namespace PowerDisplay.Common.Drivers.DDC
             var results = await Task.WhenAll(pipelines);
 
             var monitors = results.SelectMany(r => r).ToList();
-            _handleManager.UpdateHandleMap(monitors.ToDictionary(m => m.Id, m => m.Handle));
+            var newHandleMap = new Dictionary<string, IntPtr>();
+            foreach (var m in monitors)
+            {
+                newHandleMap[m.Id] = m.Handle;
+            }
+
+            _handleManager.UpdateHandleMap(newHandleMap);
 
             Logger.LogInfo(
                 $"DDC: Discovery complete in {stopwatch.ElapsedMilliseconds}ms — " +
