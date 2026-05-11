@@ -407,6 +407,84 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Full per-physical-monitor pipeline: fetch DDC/CI capabilities (slow I2C, ~4 s),
+        /// construct the Monitor object, and read the supported VCP feature values.
+        /// Returns null if capabilities are invalid, the Monitor can't be constructed, or
+        /// any exception occurs (logged at Error level with the device path).
+        /// </summary>
+        /// <remarks>
+        /// Pure synchronous work — callers wrap this in <see cref="Task.Run"/> to dispatch
+        /// to the threadpool. Within a single physical monitor the VCP reads serialize on
+        /// one I2C bus; parallelism across physical monitors happens at the caller.
+        /// </remarks>
+        private Monitor? BuildMonitorFromPhysical(PHYSICAL_MONITOR physical, MonitorDisplayInfo info)
+        {
+            try
+            {
+                var capResult = DdcCiNative.FetchCapabilities(physical.HPhysicalMonitor);
+                if (!capResult.IsValid)
+                {
+                    return null;
+                }
+
+                var monitor = _discoveryHelper.CreateMonitorFromPhysical(physical, info);
+                if (monitor == null)
+                {
+                    return null;
+                }
+
+                if (!string.IsNullOrEmpty(capResult.CapabilitiesString))
+                {
+                    monitor.CapabilitiesRaw = capResult.CapabilitiesString;
+                }
+
+                if (capResult.VcpCapabilitiesInfo != null)
+                {
+                    monitor.VcpCapabilitiesInfo = capResult.VcpCapabilitiesInfo;
+                    UpdateMonitorCapabilitiesFromVcp(monitor, capResult.VcpCapabilitiesInfo);
+
+                    if (monitor.SupportsInputSource)
+                    {
+                        InitializeInputSource(monitor, physical.HPhysicalMonitor);
+                    }
+
+                    if (monitor.SupportsColorTemperature)
+                    {
+                        InitializeColorTemperature(monitor, physical.HPhysicalMonitor);
+                    }
+
+                    if (monitor.SupportsPowerState)
+                    {
+                        InitializePowerState(monitor, physical.HPhysicalMonitor);
+                    }
+
+                    if (monitor.SupportsContrast)
+                    {
+                        InitializeContrast(monitor, physical.HPhysicalMonitor);
+                    }
+
+                    if (monitor.SupportsVolume)
+                    {
+                        InitializeVolume(monitor, physical.HPhysicalMonitor);
+                    }
+                }
+
+                if (monitor.SupportsBrightness)
+                {
+                    InitializeBrightness(monitor, physical.HPhysicalMonitor);
+                }
+
+                return monitor;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogError(
+                    $"DDC: [DevicePath={info.DevicePath}] BuildMonitorFromPhysical exception: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Initialize input source value for a monitor using VCP 0x60.
         /// </summary>
         private static void InitializeInputSource(Monitor monitor, IntPtr handle)
