@@ -48,7 +48,7 @@ public class MonitorIdentityTests
     }
 
     [TestMethod]
-    public void PnpHardwareKeyFromInstanceName_StripsSuffixAndNormalisesSeparator()
+    public void PnpHardwareKeyFromInstanceName_StripsSuffixAndNormalizesSeparator()
     {
         var input = @"DISPLAY\BOE0900\4&40f4dee&0&UID8388688_0";
         var expected = @"BOE0900#4&40f4dee&0&UID8388688";

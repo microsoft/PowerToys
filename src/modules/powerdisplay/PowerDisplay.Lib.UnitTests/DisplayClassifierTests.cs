@@ -35,7 +35,7 @@ public class DisplayClassifierTests
     // External: OTHER (-1) cast to uint
     [DataRow(0xFFFFFFFFu, false, DisplayName = "OTHER (-1 cast to uint)")]
 
-    // External: unrecognised values default to external
+    // External: unrecognized values default to external
     [DataRow(0xDEADBEEFu, false, DisplayName = "Unknown value defaults to external")]
 
     // External: INTERNAL flag combined with an undocumented subtype is treated as external

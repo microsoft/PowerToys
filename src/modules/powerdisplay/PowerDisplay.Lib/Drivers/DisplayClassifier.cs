@@ -56,9 +56,8 @@ namespace PowerDisplay.Common.Drivers
 
         /// <summary>
         /// Returns a human-readable name for the OutputTechnology value (used for logging).
-        /// If the INTERNAL high-bit is OR'd with a documented subtype, returns a composite
-        /// name like "INTERNAL|DISPLAYPORT_EMBEDDED".
-        /// Unknown values render as "Unknown(0xXXXXXXXX)".
+        /// If the INTERNAL high-bit is combined with a documented subtype, returns a composite
+        /// name like "INTERNAL|DISPLAYPORT_EMBEDDED". Unknown values render as a hex literal.
         /// </summary>
         public static string GetOutputTechnologyName(uint outputTechnology)
         {
