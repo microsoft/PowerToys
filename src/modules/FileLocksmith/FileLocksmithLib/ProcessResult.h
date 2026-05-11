@@ -6,7 +6,7 @@
 struct ProcessResult
 {
     std::wstring name;
-    DWORD pid;
+    DWORD pid{};
     std::wstring user;
     std::vector<std::wstring> files;
 };
