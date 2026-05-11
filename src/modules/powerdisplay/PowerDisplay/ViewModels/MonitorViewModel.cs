@@ -207,6 +207,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     // Property to access IsInteractionEnabled from parent ViewModel
     public bool IsInteractionEnabled => _mainViewModel?.IsInteractionEnabled ?? true;
 
+    // Per-notch wheel step from settings (1/2/3/5/10). Forwarded from MainViewModel
+    // so the slider's MouseWheelChange attached property can bind through the per-monitor
+    // DataContext. Hot-reloaded via OnMainViewModelPropertyChanged.
+    public int WheelScrollStep => Math.Max(1, _mainViewModel?.WheelScrollStep ?? 1);
+
     public MonitorViewModel(Monitor monitor, MonitorManager monitorManager, MainViewModel mainViewModel)
     {
         _monitor = monitor;
@@ -789,6 +794,10 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             // Monitor count changed, update display name to show/hide number suffix
             OnPropertyChanged(nameof(DisplayName));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.WheelScrollStep))
+        {
+            OnPropertyChanged(nameof(WheelScrollStep));
         }
     }
 
