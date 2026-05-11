@@ -36,7 +36,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         /// <param name="Handle">Physical monitor handle for DDC/CI communication</param>
         /// <param name="PhysicalMonitor">Native physical monitor structure with description</param>
-        /// <param name="MonitorInfo">Display info from QueryDisplayConfig (EdidId, FriendlyName, MonitorNumber)</param>
+        /// <param name="MonitorInfo">Display info from QueryDisplayConfig (DevicePath, FriendlyName, MonitorNumber)</param>
         private readonly record struct CandidateMonitor(
             IntPtr Handle,
             PHYSICAL_MONITOR PhysicalMonitor,

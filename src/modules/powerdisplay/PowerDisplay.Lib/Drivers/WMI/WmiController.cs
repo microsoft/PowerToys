@@ -313,7 +313,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                     }
 
                     Logger.LogWarning(
-                        $"Internal display {target.EdidId} (\"{target.FriendlyName}\") was classified internal " +
+                        $"Internal display \"{target.FriendlyName}\" ({target.DevicePath}) was classified internal " +
                         "but is not exposed via WmiMonitorBrightness — driver may not support brightness control");
                 }
 

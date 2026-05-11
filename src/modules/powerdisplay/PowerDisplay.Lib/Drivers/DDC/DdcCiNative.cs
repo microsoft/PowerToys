@@ -161,12 +161,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Gets friendly name, EDID ID, device path, and output technology for a monitor target.
+        /// Gets friendly name, device path, and output technology for a monitor target.
         /// </summary>
         /// <param name="adapterId">Adapter ID</param>
         /// <param name="targetId">Target ID</param>
-        /// <returns>Tuple of (friendlyName, edidId, devicePath, outputTechnology), values may be null/0 if retrieval fails</returns>
-        private static unsafe (string? FriendlyName, string? EdidId, string? DevicePath, uint OutputTechnology) GetTargetDeviceInfo(LUID adapterId, uint targetId)
+        /// <returns>Tuple of (friendlyName, devicePath, outputTechnology), values may be null/0 if retrieval fails</returns>
+        private static unsafe (string? FriendlyName, string? DevicePath, uint OutputTechnology) GetTargetDeviceInfo(LUID adapterId, uint targetId)
         {
             try
             {
@@ -184,45 +184,17 @@ namespace PowerDisplay.Common.Drivers.DDC
                 var result = DisplayConfigGetDeviceInfo(&deviceName);
                 if (result == 0)
                 {
-                    // Extract friendly name
-                    var friendlyName = deviceName.GetMonitorFriendlyDeviceName();
-
-                    // Extract device path (unique per target, used as key)
-                    var devicePath = deviceName.GetMonitorDevicePath();
-
-                    // Extract EDID ID from EDID data
-                    var manufacturerId = deviceName.EdidManufactureId;
-                    var manufactureCode = ConvertManufactureIdToString(manufacturerId);
-                    var productCode = deviceName.EdidProductCodeId.ToString("X4", System.Globalization.CultureInfo.InvariantCulture);
-                    var edidId = $"{manufactureCode}{productCode}";
-
-                    return (friendlyName, edidId, devicePath, deviceName.OutputTechnology);
+                    return (
+                        deviceName.GetMonitorFriendlyDeviceName(),
+                        deviceName.GetMonitorDevicePath(),
+                        deviceName.OutputTechnology);
                 }
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
             }
 
-            return (null, null, null, 0u);
-        }
-
-        /// <summary>
-        /// Converts manufacturer ID to 3-character manufacturer code
-        /// </summary>
-        /// <param name="manufacturerId">Manufacturer ID</param>
-        /// <returns>3-character manufacturer code</returns>
-        private static string ConvertManufactureIdToString(ushort manufacturerId)
-        {
-            // EDID manufacturer ID requires byte order swap first
-            manufacturerId = (ushort)(((manufacturerId & 0xff00) >> 8) | ((manufacturerId & 0x00ff) << 8));
-
-            // Extract three 5-bit characters (each character is A-Z, where A=1, B=2, ..., Z=26)
-            var char1 = (char)('A' - 1 + ((manufacturerId >> 0) & 0x1f));
-            var char2 = (char)('A' - 1 + ((manufacturerId >> 5) & 0x1f));
-            var char3 = (char)('A' - 1 + ((manufacturerId >> 10) & 0x1f));
-
-            // Combine characters in correct order
-            return $"{char3}{char2}{char1}";
+            return (null, null, 0u);
         }
 
         /// <summary>
@@ -273,8 +245,8 @@ namespace PowerDisplay.Common.Drivers.DDC
                         continue;
                     }
 
-                    // Get target info (friendly name, EDID ID, device path, output technology)
-                    var (friendlyName, edidId, devicePath, outputTechnology) = GetTargetDeviceInfo(path.TargetInfo.AdapterId, path.TargetInfo.Id);
+                    // Get target info (friendly name, device path, output technology)
+                    var (friendlyName, devicePath, outputTechnology) = GetTargetDeviceInfo(path.TargetInfo.AdapterId, path.TargetInfo.Id);
 
                     // Use device path as key - unique per target, supports mirror mode
                     if (string.IsNullOrEmpty(devicePath))
@@ -287,7 +259,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                         DevicePath = devicePath,
                         GdiDeviceName = gdiDeviceName,
                         FriendlyName = friendlyName ?? string.Empty,
-                        EdidId = edidId ?? string.Empty,
                         AdapterId = path.TargetInfo.AdapterId,
                         TargetId = path.TargetInfo.Id,
                         MonitorNumber = i + 1, // 1-based, matches Windows Display Settings

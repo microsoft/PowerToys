@@ -166,8 +166,8 @@ namespace PowerDisplay.Helpers
                 var classification = info.IsInternal ? "Internal" : "External";
 
                 Logger.LogInfo(
-                    $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\" " +
-                    $"(EdidId={info.EdidId}): OutputTechnology={techValue} ({techName}) → {classification}");
+                    $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
+                    $"OutputTechnology={techValue} ({techName}) → {classification}");
 
                 if (info.IsInternal)
                 {
