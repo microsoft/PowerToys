@@ -327,6 +327,13 @@ public partial class DockItemViewModel : CommandItemViewModel
     {
         _showTitle = showTitle;
         _showSubtitle = showSubtitle;
+        PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName is nameof(Title) or nameof(Subtitle))
+            {
+                UpdateProperty(nameof(Tooltip));
+            }
+        };
     }
 }
 

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -20,6 +21,8 @@ using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using Windows.System;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -33,13 +36,17 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private readonly MonitorManager _monitorManager;
     private readonly MainViewModel? _mainViewModel;
 
-    private readonly WheelDebouncer _brightnessWheel;
-    private readonly WheelDebouncer _contrastWheel;
-    private readonly WheelDebouncer _volumeWheel;
-
     private int _brightness;
     private int _contrast;
     private int _volume;
+
+    // Debounce timers — each user-driven setter restarts the matching timer so a drag
+    // or held arrow key collapses into a single DDC/CI write once the user stops moving.
+    // External / programmatic apply paths (SetBrightnessAsync etc.) bypass the setters
+    // and therefore never schedule a debounced commit.
+    private DispatcherQueueTimer? _brightnessCommitTimer;
+    private DispatcherQueueTimer? _contrastCommitTimer;
+    private DispatcherQueueTimer? _volumeCommitTimer;
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
@@ -233,10 +240,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         _brightness = monitor.CurrentBrightness;
         _contrast = monitor.CurrentContrast;
         _volume = monitor.CurrentVolume;
-
-        _brightnessWheel = new WheelDebouncer(WheelCommitDelay, v => Brightness = v);
-        _contrastWheel = new WheelDebouncer(WheelCommitDelay, v => Contrast = v);
-        _volumeWheel = new WheelDebouncer(WheelCommitDelay, v => Volume = v);
     }
 
     public string Id => _monitor.Id;
@@ -416,7 +419,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_brightness != value)
             {
-                _ = SetBrightnessAsync(value);
+                _brightness = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _brightnessCommitTimer, () => SetBrightnessAsync(_brightness));
             }
         }
     }
@@ -726,7 +731,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_contrast != value)
             {
-                _ = SetContrastAsync(value);
+                _contrast = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _contrastCommitTimer, () => SetContrastAsync(_contrast));
             }
         }
     }
@@ -738,7 +745,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_volume != value)
             {
-                _ = SetVolumeAsync(value);
+                _volume = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _volumeCommitTimer, () => SetVolumeAsync(_volume));
             }
         }
     }
@@ -799,180 +808,23 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         }
     }
 
-    // Slider commit handlers — fire hardware update only on pointer release or arrow key up
-    public void HandleBrightnessPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    // Slider commit handlers — debounced via ScheduleCommit. The setters store the
+    // value, raise PropertyChanged, and (re)start a per-metric DispatcherQueueTimer
+    // that fires the hardware write once the user stops moving. The commit closure
+    // reads the latest field at fire-time so intermediate values are coalesced.
+    private void ScheduleCommit(ref DispatcherQueueTimer? timer, Func<Task> commit)
     {
-        if (sender is Slider slider)
+        if (timer == null)
         {
-            Brightness = (int)slider.Value;
+            timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+            timer.IsRepeating = false;
+            timer.Interval = TimeSpan.FromMilliseconds(AppConstants.UI.SliderCommitDebounceMs);
+            timer.Tick += (_, _) => _ = commit();
         }
+
+        timer.Stop();
+        timer.Start();
     }
-
-    public void HandleBrightnessKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            Brightness = (int)slider.Value;
-        }
-    }
-
-    public void HandleContrastPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-    {
-        if (sender is Slider slider)
-        {
-            Contrast = (int)slider.Value;
-        }
-    }
-
-    public void HandleContrastKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            Contrast = (int)slider.Value;
-        }
-    }
-
-    public void HandleVolumePointerCaptureLost(object sender, PointerRoutedEventArgs e)
-    {
-        if (sender is Slider slider)
-        {
-            Volume = (int)slider.Value;
-        }
-    }
-
-    public void HandleVolumeKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            Volume = (int)slider.Value;
-        }
-    }
-
-    // Mouse wheel: accumulate delta across events and step the slider once per WHEEL_DELTA (120),
-    // so high-precision wheels and touchpads (which emit small fractional deltas) feel like notched
-    // input. Hardware DDC/CI commit is debounced — fires WheelCommitDelay after scrolling stops,
-    // mirroring the drag commit-on-release pattern.
-    private static readonly TimeSpan WheelCommitDelay = TimeSpan.FromMilliseconds(200);
-
-    public void HandleBrightnessPointerWheel(object sender, PointerRoutedEventArgs e)
-        => HandleWheel(sender, e, _brightnessWheel);
-
-    public void HandleContrastPointerWheel(object sender, PointerRoutedEventArgs e)
-        => HandleWheel(sender, e, _contrastWheel);
-
-    public void HandleVolumePointerWheel(object sender, PointerRoutedEventArgs e)
-        => HandleWheel(sender, e, _volumeWheel);
-
-    private void HandleWheel(object sender, PointerRoutedEventArgs e, WheelDebouncer? debouncer)
-    {
-        if (sender is not Slider slider || debouncer == null)
-        {
-            return;
-        }
-
-        // Always swallow the event so it doesn't bubble to the outer ScrollViewer
-        // and scroll the flyout while the pointer is on a slider.
-        e.Handled = true;
-
-        int delta = e.GetCurrentPoint(slider).Properties.MouseWheelDelta;
-        int magnitude = Math.Max(1, _mainViewModel?.WheelScrollStep ?? 1);
-        debouncer.TryStep(slider, delta, magnitude);
-    }
-
-    /// <summary>
-    /// Per-slider wheel handler: accumulates raw deltas, applies a step every WHEEL_DELTA (120),
-    /// and debounces a hardware-commit callback that fires after the gesture ends.
-    /// </summary>
-    private sealed class WheelDebouncer : IDisposable
-    {
-        // WHEEL_DELTA: accumulated raw delta required to advance the slider by one step.
-        private const int WheelDeltaThreshold = 120;
-
-        private readonly TimeSpan _commitDelay;
-        private readonly Action<int> _commit;
-        private DispatcherTimer? _timer;
-        private Slider? _slider;
-        private int _accumulator;
-
-        public WheelDebouncer(TimeSpan commitDelay, Action<int> commit)
-        {
-            _commitDelay = commitDelay;
-            _commit = commit;
-        }
-
-        public void TryStep(Slider slider, int rawDelta, int magnitude)
-        {
-            if (rawDelta == 0)
-            {
-                return;
-            }
-
-            _accumulator += rawDelta;
-            _slider = slider;
-
-            // Always (re)arm — even for sub-threshold deltas — so the accumulator gets cleared
-            // after the gesture ends. Otherwise, a stalled half-notch would bleed into the next
-            // gesture (e.g. user gives up scrolling at +80, comes back later, first nudge feels off).
-            ArmTimer();
-
-            int notches = _accumulator / WheelDeltaThreshold;
-            if (notches == 0)
-            {
-                return;
-            }
-
-            _accumulator -= notches * WheelDeltaThreshold;
-
-            int min = (int)slider.Minimum;
-            int max = (int)slider.Maximum;
-            int current = (int)slider.Value;
-            int next = Math.Clamp(current + (notches * magnitude), min, max);
-            if (next != current)
-            {
-                slider.Value = next;
-            }
-        }
-
-        private void ArmTimer()
-        {
-            if (_timer == null)
-            {
-                _timer = new DispatcherTimer { Interval = _commitDelay };
-                _timer.Tick += OnTick;
-            }
-
-            _timer.Stop();
-            _timer.Start();
-        }
-
-        private void OnTick(object? sender, object e)
-        {
-            // DispatcherTimer is repeating by default — stop so we don't tick again until the
-            // next wheel event re-arms.
-            _timer?.Stop();
-            _accumulator = 0;
-            if (_slider != null)
-            {
-                _commit((int)_slider.Value);
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_timer != null)
-            {
-                _timer.Stop();
-                _timer.Tick -= OnTick;
-                _timer = null;
-            }
-
-            _slider = null;
-        }
-    }
-
-    private static bool IsArrowKey(VirtualKey key) =>
-        key == VirtualKey.Left || key == VirtualKey.Right ||
-        key == VirtualKey.Up || key == VirtualKey.Down;
 
     // Rotation button handlers — one per orientation to avoid Tag string parsing
     public async void HandleRotation0Click(object sender, RoutedEventArgs e) => await CommitRotationClickAsync(0);
@@ -1038,6 +890,13 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        // Drop any pending debounced commits — if we're being disposed the monitor is
+        // gone (unplug/refresh) or the app is shutting down, so a hardware write would
+        // race a half-torn-down MonitorManager.
+        _brightnessCommitTimer?.Stop();
+        _contrastCommitTimer?.Stop();
+        _volumeCommitTimer?.Stop();
+
         // Unsubscribe from MainViewModel events
         if (_mainViewModel != null)
         {
@@ -1046,10 +905,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
         // Unsubscribe from underlying Monitor events
         _monitor.PropertyChanged -= OnMonitorPropertyChanged;
-
-        _brightnessWheel.Dispose();
-        _contrastWheel.Dispose();
-        _volumeWheel.Dispose();
 
         GC.SuppressFinalize(this);
     }
