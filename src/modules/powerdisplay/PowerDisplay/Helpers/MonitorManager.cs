@@ -113,7 +113,7 @@ namespace PowerDisplay.Helpers
         /// </summary>
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
         {
-            var inventory = DdcCiNative.GetAllMonitorDisplayInfo();
+            var inventory = DisplayConfigInventory.GetAllMonitorDisplayInfo();
 
             if (inventory.Count == 0)
             {
