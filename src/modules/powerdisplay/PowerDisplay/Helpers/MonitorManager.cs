@@ -121,14 +121,14 @@ namespace PowerDisplay.Helpers
                 return new List<Monitor>();
             }
 
-            LogClassificationSummary(inventory);
-
             IReadOnlyList<MonitorDisplayInfo> internalTargets = inventory.Values
                 .Where(i => i.IsInternal)
                 .ToList();
             IReadOnlyList<MonitorDisplayInfo> externalTargets = inventory.Values
                 .Where(i => !i.IsInternal)
                 .ToList();
+
+            LogClassificationSummary(internalTargets, externalTargets);
 
             var tasks = new List<Task<IEnumerable<Monitor>>>();
 
@@ -150,14 +150,13 @@ namespace PowerDisplay.Helpers
         /// Logs the result of Phase 0 classification at Info level, one line per display
         /// plus a summary. Used for diagnostic traceability of internal/external decisions.
         /// </summary>
-        private static void LogClassificationSummary(Dictionary<string, MonitorDisplayInfo> inventory)
+        private static void LogClassificationSummary(
+            IReadOnlyList<MonitorDisplayInfo> internalTargets,
+            IReadOnlyList<MonitorDisplayInfo> externalTargets)
         {
-            var ordered = inventory.Values.OrderBy(i => i.MonitorNumber).ToList();
-            int internalCount = 0;
-            int externalCount = 0;
+            Logger.LogInfo($"[DisplayClassification] Found {internalTargets.Count + externalTargets.Count} displays:");
 
-            Logger.LogInfo($"[DisplayClassification] Found {ordered.Count} displays:");
-            foreach (var info in ordered)
+            foreach (var info in internalTargets.Concat(externalTargets).OrderBy(i => i.MonitorNumber))
             {
                 var techValue = info.OutputTechnology >= 0x80000000u
                     ? "0x" + info.OutputTechnology.ToString("X", CultureInfo.InvariantCulture)
@@ -167,18 +166,9 @@ namespace PowerDisplay.Helpers
                 Logger.LogInfo(
                     $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
                     $"OutputTechnology={techValue} → {classification}");
-
-                if (info.IsInternal)
-                {
-                    internalCount++;
-                }
-                else
-                {
-                    externalCount++;
-                }
             }
 
-            Logger.LogInfo($"[DisplayClassification] Summary: {internalCount} internal, {externalCount} external");
+            Logger.LogInfo($"[DisplayClassification] Summary: {internalTargets.Count} internal, {externalTargets.Count} external");
         }
 
         /// <summary>
