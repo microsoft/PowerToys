@@ -357,8 +357,9 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         var currentSettings = _settingsService.Settings.DockSettings;
 
         var reconciled = MonitorConfigReconciler.Reconcile(currentSettings.MonitorConfigs, monitors);
+        var currentMonitorConfigs = currentSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
 
-        if (!reconciled.SequenceEqual(currentSettings.MonitorConfigs))
+        if (!reconciled.SequenceEqual(currentMonitorConfigs))
         {
             _settingsService.UpdateSettings(s => s with
             {

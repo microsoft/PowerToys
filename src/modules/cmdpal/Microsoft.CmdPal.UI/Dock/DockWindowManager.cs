@@ -22,10 +22,9 @@ public sealed partial class DockWindowManager : IDisposable
     private readonly IMonitorService _monitorService;
     private readonly ISettingsService _settingsService;
     private readonly DispatcherQueue _dispatcherQueue;
-    private readonly Dictionary<string, DockWindow> _dockWindows = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, DockViewModel> _dockViewModels = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, (DockWindow Window, DockViewModel ViewModel)> _docks = new(StringComparer.OrdinalIgnoreCase);
     private bool _disposed;
-    private bool _syncing;
+    private int _syncing;
 
     public DockWindowManager(
         IMonitorService monitorService,
@@ -60,19 +59,13 @@ public sealed partial class DockWindowManager : IDisposable
     /// </summary>
     public void HideDocks()
     {
-        foreach (var kvp in _dockWindows)
+        foreach (var (_, (window, viewModel)) in _docks)
         {
-            kvp.Value.Close();
+            window.Close();
+            viewModel.Dispose();
         }
 
-        _dockWindows.Clear();
-
-        foreach (var kvp in _dockViewModels)
-        {
-            kvp.Value.Dispose();
-        }
-
-        _dockViewModels.Clear();
+        _docks.Clear();
     }
 
     /// <summary>
@@ -80,19 +73,18 @@ public sealed partial class DockWindowManager : IDisposable
     /// </summary>
     public void SyncDocksToSettings()
     {
-        if (_syncing)
+        if (Interlocked.CompareExchange(ref _syncing, 1, 0) != 0)
         {
             return;
         }
 
-        _syncing = true;
         try
         {
             SyncDocksToSettingsCore();
         }
         finally
         {
-            _syncing = false;
+            Interlocked.Exchange(ref _syncing, 0);
         }
     }
 
@@ -126,9 +118,9 @@ public sealed partial class DockWindowManager : IDisposable
         var desiredMonitorIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // Refresh settings on existing ViewModels so they pick up new pins/changes
-        foreach (var kvp in _dockViewModels)
+        foreach (var (_, (_, viewModel)) in _docks)
         {
-            kvp.Value.UpdateSettings(dockSettings);
+            viewModel.UpdateSettings(dockSettings);
         }
 
         for (var i = 0; i < configs.Count; i++)
@@ -147,7 +139,7 @@ public sealed partial class DockWindowManager : IDisposable
 
             desiredMonitorIds.Add(config.MonitorDeviceId);
 
-            if (!_dockWindows.ContainsKey(config.MonitorDeviceId))
+            if (!_docks.ContainsKey(config.MonitorDeviceId))
             {
                 CreateDockForMonitor(config.MonitorDeviceId, dockSettings);
             }
@@ -155,7 +147,7 @@ public sealed partial class DockWindowManager : IDisposable
 
         // Remove dock windows for monitors that are no longer desired
         var toRemove = new List<string>();
-        foreach (var id in _dockWindows.Keys)
+        foreach (var id in _docks.Keys)
         {
             if (!desiredMonitorIds.Contains(id))
             {
@@ -166,14 +158,10 @@ public sealed partial class DockWindowManager : IDisposable
         for (var i = 0; i < toRemove.Count; i++)
         {
             var id = toRemove[i];
-            if (_dockWindows.Remove(id, out var window))
+            if (_docks.Remove(id, out var dock))
             {
-                window.Close();
-            }
-
-            if (_dockViewModels.Remove(id, out var vm))
-            {
-                vm.Dispose();
+                dock.Window.Close();
+                dock.ViewModel.Dispose();
             }
         }
     }
@@ -195,23 +183,12 @@ public sealed partial class DockWindowManager : IDisposable
     private void CreateDockForMonitor(string monitorDeviceId, DockSettings dockSettings)
     {
         var viewModel = CreateDockViewModel(monitorDeviceId);
-        _dockViewModels[monitorDeviceId] = viewModel;
 
         var monitor = _monitorService.GetMonitorByDeviceId(monitorDeviceId);
-        DockSide? sideOverride = null;
-        var monitorConfigs = dockSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
-        for (var i = 0; i < monitorConfigs.Count; i++)
-        {
-            var cfg = monitorConfigs[i];
-            if (string.Equals(cfg.MonitorDeviceId, monitorDeviceId, System.StringComparison.OrdinalIgnoreCase))
-            {
-                sideOverride = cfg.Side;
-                break;
-            }
-        }
+        var sideOverride = dockSettings.GetSideForMonitor(monitorDeviceId);
 
         var window = new DockWindow(viewModel, monitor, sideOverride);
-        _dockWindows[monitorDeviceId] = window;
+        _docks[monitorDeviceId] = (window, viewModel);
         window.Show();
 
         viewModel.InitializeBands();

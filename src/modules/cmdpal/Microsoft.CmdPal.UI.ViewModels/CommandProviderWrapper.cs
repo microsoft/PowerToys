@@ -505,35 +505,26 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         // Prevent duplicate pins — check the target destination's bands.
         // When pinning to a specific monitor, check that monitor's resolved bands
         // (which include forked-from-global bands). Otherwise, check global bands.
-        bool alreadyPinned;
+        DockMonitorConfig? targetConfig = null;
         if (monitorDeviceId is not null)
         {
-            var configs = dockSettings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
-            DockMonitorConfig? targetConfig = null;
-            foreach (var cfg in configs)
+            foreach (var cfg in dockSettings.MonitorConfigs)
             {
-                if (string.Equals(cfg.MonitorDeviceId, monitorDeviceId, System.StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(cfg.MonitorDeviceId, monitorDeviceId, StringComparison.OrdinalIgnoreCase))
                 {
                     targetConfig = cfg;
                     break;
                 }
             }
+        }
 
-            // Resolve the bands for the target monitor (per-monitor if customized, else global)
-            var resolvedStart = targetConfig?.ResolveStartBands(dockSettings.StartBands) ?? dockSettings.StartBands;
-            var resolvedCenter = targetConfig?.ResolveCenterBands(dockSettings.CenterBands) ?? dockSettings.CenterBands;
-            var resolvedEnd = targetConfig?.ResolveEndBands(dockSettings.EndBands) ?? dockSettings.EndBands;
+        var resolvedStart = targetConfig?.ResolveStartBands(dockSettings.StartBands) ?? dockSettings.StartBands;
+        var resolvedCenter = targetConfig?.ResolveCenterBands(dockSettings.CenterBands) ?? dockSettings.CenterBands;
+        var resolvedEnd = targetConfig?.ResolveEndBands(dockSettings.EndBands) ?? dockSettings.EndBands;
 
-            alreadyPinned = resolvedStart.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
+        var alreadyPinned = resolvedStart.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
                             resolvedCenter.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
                             resolvedEnd.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId);
-        }
-        else
-        {
-            alreadyPinned = dockSettings.StartBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
-                            dockSettings.CenterBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId) ||
-                            dockSettings.EndBands.Any(b => b.CommandId == commandId && b.ProviderId == this.ProviderId);
-        }
 
         if (alreadyPinned)
         {

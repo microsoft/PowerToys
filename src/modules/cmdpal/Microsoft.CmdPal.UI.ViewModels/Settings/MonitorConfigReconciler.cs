@@ -61,38 +61,35 @@ public static class MonitorConfigReconciler
             return existingConfigs;
         }
 
-        // Build sets for tracking
+        // Build a DeviceId → index lookup for O(1) matching in Phase 1
+        var configIndexByDeviceId = new Dictionary<string, int>(existingConfigs.Count, StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < existingConfigs.Count; i++)
+        {
+            configIndexByDeviceId.TryAdd(existingConfigs[i].MonitorDeviceId, i);
+        }
+
         var matchedMonitorDeviceIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var matchedConfigIndices = new HashSet<int>();
         var result = new List<DockMonitorConfig>(currentMonitors.Count);
 
-        // Convert to mutable working list for easier manipulation
-        var configs = new List<DockMonitorConfig>(existingConfigs);
-
-        // Phase 1: Exact DeviceId match
+        // Phase 1: Exact DeviceId match (O(N) with dictionary lookup)
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
-            for (var ci = 0; ci < configs.Count; ci++)
+            if (configIndexByDeviceId.TryGetValue(monitor.DeviceId, out var ci) && !matchedConfigIndices.Contains(ci))
             {
-                if (matchedConfigIndices.Contains(ci))
-                {
-                    continue;
-                }
-
-                if (string.Equals(configs[ci].MonitorDeviceId, monitor.DeviceId, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Update IsPrimary and LastSeen to current state
-                    result.Add(configs[ci] with { IsPrimary = monitor.IsPrimary, LastSeen = utcNow });
-                    matchedMonitorDeviceIds.Add(monitor.DeviceId);
-                    matchedConfigIndices.Add(ci);
-                    break;
-                }
+                // Update IsPrimary and LastSeen to current state
+                result.Add(existingConfigs[ci] with { IsPrimary = monitor.IsPrimary, LastSeen = utcNow });
+                matchedMonitorDeviceIds.Add(monitor.DeviceId);
+                matchedConfigIndices.Add(ci);
             }
         }
 
-        // Phase 2: Fuzzy match by IsPrimary for unmatched configs (primary only).
-        // Non-primary monitors are not interchangeable, so we only fuzzy-match the primary.
+        // Phase 2: Fuzzy match — recover primary monitor config when its DeviceId changed.
+        // Windows can reassign DeviceId strings across reboots, driver updates, or cable
+        // swaps. When the primary monitor's DeviceId no longer matches any saved config,
+        // we look for an unmatched config that was previously marked as primary and
+        // reassociate it. Secondary monitors are not interchangeable, so we skip them.
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
@@ -101,17 +98,17 @@ public static class MonitorConfigReconciler
                 continue;
             }
 
-            for (var ci = 0; ci < configs.Count; ci++)
+            for (var ci = 0; ci < existingConfigs.Count; ci++)
             {
                 if (matchedConfigIndices.Contains(ci))
                 {
                     continue;
                 }
 
-                if (configs[ci].IsPrimary)
+                if (existingConfigs[ci].IsPrimary)
                 {
                     // Reassociate: update DeviceId, IsPrimary, and LastSeen
-                    result.Add(configs[ci] with
+                    result.Add(existingConfigs[ci] with
                     {
                         MonitorDeviceId = monitor.DeviceId,
                         IsPrimary = monitor.IsPrimary,
@@ -166,14 +163,14 @@ public static class MonitorConfigReconciler
 
         // Phase 4: Retain disconnected monitor configs so settings survive reconnection.
         // Prune entries not seen for longer than StaleThreshold (6 months).
-        for (var ci = 0; ci < configs.Count; ci++)
+        for (var ci = 0; ci < existingConfigs.Count; ci++)
         {
             if (matchedConfigIndices.Contains(ci))
             {
                 continue;
             }
 
-            var config = configs[ci];
+            var config = existingConfigs[ci];
             var lastSeen = config.LastSeen ?? utcNow; // Treat legacy entries (no LastSeen) as fresh
             if ((utcNow - lastSeen) < StaleThreshold)
             {

@@ -85,6 +85,7 @@ public sealed class MonitorService : IMonitorService
             _cachedSnapshot = null;
         }
 
+        Logger.LogDebug("Display topology changed, invalidating monitor cache");
         MonitorsChanged?.Invoke(this, EventArgs.Empty);
     }
 

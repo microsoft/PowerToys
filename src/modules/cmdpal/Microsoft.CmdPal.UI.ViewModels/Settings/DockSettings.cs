@@ -105,6 +105,23 @@ public record DockSettings
         init => _monitorConfigs = value ?? ImmutableList<DockMonitorConfig>.Empty;
     }
 
+    /// <summary>
+    /// Gets the dock side override for a specific monitor, or <c>null</c> if the
+    /// monitor has no override (inherits global <see cref="Side"/>).
+    /// </summary>
+    public DockSide? GetSideForMonitor(string deviceId)
+    {
+        foreach (var cfg in MonitorConfigs)
+        {
+            if (string.Equals(cfg.MonitorDeviceId, deviceId, StringComparison.OrdinalIgnoreCase))
+            {
+                return cfg.Side;
+            }
+        }
+
+        return null;
+    }
+
     [JsonIgnore]
     public IEnumerable<(string ProviderId, string CommandId)> AllPinnedCommands
     {

@@ -28,6 +28,7 @@ using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 using WinRT.Interop;
 using WinUIEx;
+using MonitorInfo = Microsoft.CmdPal.UI.ViewModels.Models.MonitorInfo;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -70,7 +71,7 @@ public sealed partial class DockWindow : WindowEx,
     /// <summary>
     /// The monitor this dock window is displayed on. Null means primary monitor (legacy behavior).
     /// </summary>
-    private ViewModels.Models.MonitorInfo? _targetMonitor;
+    private MonitorInfo? _targetMonitor;
 
     /// <summary>
     /// Per-monitor dock side override. Null means use the global setting.
@@ -97,7 +98,7 @@ public sealed partial class DockWindow : WindowEx,
     {
     }
 
-    public DockWindow(DockViewModel dockViewModel, ViewModels.Models.MonitorInfo? targetMonitor, DockSide? sideOverride)
+    public DockWindow(DockViewModel dockViewModel, MonitorInfo? targetMonitor, DockSide? sideOverride)
     {
         _targetMonitor = targetMonitor;
         _sideOverride = sideOverride;
@@ -514,17 +515,7 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        _sideOverride = null;
-        var monitorConfigs = _settings.MonitorConfigs ?? System.Collections.Immutable.ImmutableList<DockMonitorConfig>.Empty;
-        for (var i = 0; i < monitorConfigs.Count; i++)
-        {
-            var cfg = monitorConfigs[i];
-            if (string.Equals(cfg.MonitorDeviceId, _targetMonitor.DeviceId, System.StringComparison.OrdinalIgnoreCase))
-            {
-                _sideOverride = cfg.Side;
-                break;
-            }
-        }
+        _sideOverride = _settings.GetSideForMonitor(_targetMonitor.DeviceId);
     }
 
     /// <summary>
