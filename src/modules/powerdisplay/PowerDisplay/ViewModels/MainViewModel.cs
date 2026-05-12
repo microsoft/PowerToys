@@ -192,7 +192,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var displayAreas = DisplayArea.FindAll();
 
             // Get all monitor info from QueryDisplayConfig
-            var allDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo().Values.ToList();
+            var allDisplayInfo = DisplayConfigInventory.GetAllMonitorDisplayInfo().Values.ToList();
 
             // Build GDI name to MonitorNumber(s) mapping
             // Note: In mirror mode, multiple monitors may share the same GdiDeviceName
