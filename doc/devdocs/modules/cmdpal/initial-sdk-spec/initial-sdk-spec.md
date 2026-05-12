@@ -360,7 +360,7 @@ On a cold launch, DevPal will do the following:
      * Start it up.
      * Check if it's fresh or frozen.
      * Call `TopLevelCommands`, and put all of them in the list
-     * Create a extension cache entry for that app.
+     * Create an extension cache entry for that app.
      * If the provider is frozen: we can actually release the
        `ICommandProvider` instance at this point.
    * And of course, if we don't find all the packages we had cached, then delete
@@ -461,7 +461,7 @@ ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette
 
 to open the store to a list of extensions. However, we can't list those
 ourselves directly. Our friends in DevHome suggested it could be possible to
-stand up a azure service which could query the store for us, and return a list
+stand up an azure service which could query the store for us, and return a list
 of extensions. This is not something that they currently have planned, nor would
 it be cheap from an engineering standpoint.
 
@@ -1787,7 +1787,7 @@ class MyAppSettings {
         /* You can save the settings to the file here */
         var mySettingsFilePath = /* whatever */;
         string mySettingsJson = mySettings.Settings.GetState();
-        // Or you could raise a event to indicate to the rest of your app that settings have changed.
+        // Or you could raise an event to indicate to the rest of your app that settings have changed.
     }
 }
 
@@ -2013,7 +2013,7 @@ class CommandWithOnlyProperties : IExtendedAttributesProvider { ... }
 
 will populate the WinRT type cache in Command Palette with the type information
 for `ICommandWithProperties`. In fact, if Command Palette has the
-`IExtendedAttributesProvider` type info in it's cache, and then later receives a new
+`IExtendedAttributesProvider` type info in its cache, and then later receives a new
 `MyCommandWithProperties` object, it'll actually be able to know that
 `MyCommandWithProperties` is an `IExtendedAttributesProvider`. WinRT is just weird
 like that some times.
@@ -2533,7 +2533,7 @@ follow - these are not part of the current SDK spec.
 
 > [!NOTE]
 >
-> A thought: what if a action returns a `CommandResult.Entity`, then that takes
+> A thought: what if an action returns a `CommandResult.Entity`, then that takes
 > devpal back home, but leaves the entity in the query box. This would allow for
 > a Quicksilver-like "thing, do" flow. That command would prepopulate the
 > parameters. So we would then filter top-level commands based on things that can
