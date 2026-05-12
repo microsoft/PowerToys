@@ -8,10 +8,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:props="clr-namespace:WorkspacesLauncherUI.Properties"
     Title="{x:Static props:Resources.LauncherWindowTitle}"
-    Width="350"
+    Width="360"
     Height="340"
     BorderBrush="Red"
-    BorderThickness="5"
+    BorderThickness="4"
     Closing="Window_Closing"
     ResizeMode="NoResize"
     Topmost="True"
@@ -22,7 +22,7 @@
         <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
     </Window.Resources>
 
-    <Grid Margin="5" Background="Transparent">
+    <Grid Margin="4" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
@@ -84,8 +84,7 @@
         <Button
             x:Name="CancelButton"
             Grid.Row="1"
-            Height="36"
-            Margin="5,5,5,5"
+            Margin="4"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.CancelLaunch}"
             Click="CancelButtonClicked"
@@ -94,8 +93,7 @@
             x:Name="DismissButton"
             Grid.Row="1"
             Grid.Column="1"
-            Height="36"
-            Margin="5,5,5,5"
+            Margin="4"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.Dismiss}"
             Click="DismissButtonClicked"

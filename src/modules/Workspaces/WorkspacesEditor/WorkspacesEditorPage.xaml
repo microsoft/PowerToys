@@ -65,6 +65,7 @@
                                     <TextBlock Text="{Binding AppName}" />
                                     <TextBlock
                                         Grid.Column="2"
+                                        Margin="8,0,0,0"
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -206,7 +207,7 @@
             AppTemplate="{StaticResource appTemplate}"
             HeaderTemplate="{StaticResource headerTemplate}" />
     </Page.Resources>
-    <Grid Margin="24,0,24,24">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -214,38 +215,36 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Margin="-12,0,0,24">
+        <Grid Grid.Row="0" Margin="24,0,24,24">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal">
+            <!--  faux BreadcrumbBar  -->
+            <StackPanel VerticalAlignment="Top" Orientation="Horizontal">
                 <Button
+                    Padding="0"
                     VerticalAlignment="Center"
                     Click="CancelButtonClicked"
                     Content="{x:Static props:Resources.Workspaces}"
-                    FontSize="20"
+                    FontSize="24"
                     Style="{DynamicResource SubtleButtonStyle}" />
                 <TextBlock
-                    Margin="0,6,0,0"
+                    Margin="8,6,0,0"
                     VerticalAlignment="Center"
                     FontFamily="{DynamicResource SymbolThemeFontFamily}"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="&#xE76C;" />
                 <TextBlock
-                    Margin="8,1,0,0"
+                    Margin="8,0,0,0"
                     VerticalAlignment="Center"
-                    FontSize="20"
+                    FontSize="24"
                     FontWeight="SemiBold"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{Binding EditorWindowTitle}" />
             </StackPanel>
-            <StackPanel
-                Grid.Row="4"
-                Margin="24,0,0,0"
-                HorizontalAlignment="Right"
-                Orientation="Horizontal">
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                 <Button
                     x:Name="SaveButton"
                     AutomationProperties.Name="{x:Static props:Resources.Save_Workspace}"
@@ -254,13 +253,14 @@
                     Style="{DynamicResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock
-                            Margin="0,4,0,0"
+                            VerticalAlignment="Center"
                             AutomationProperties.Name="{x:Static props:Resources.CreateWorkspace}"
                             FontFamily="{DynamicResource SymbolThemeFontFamily}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Text="&#xE74E;" />
                         <TextBlock
-                            Margin="8,0,0,0"
+                            Margin="8,-1,0,0"
+                            VerticalAlignment="Center"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Text="{x:Static props:Resources.Save_Workspace}" />
                     </StackPanel>
@@ -270,15 +270,19 @@
                     Margin="8,0,0,0"
                     AutomationProperties.Name="{x:Static props:Resources.Cancel}"
                     Click="CancelButtonClicked"
-                    Content="{x:Static props:Resources.Cancel}"
-                    Style="{StaticResource SubtleButtonStyle}" />
+                    Content="{x:Static props:Resources.Cancel}" />
 
             </StackPanel>
         </Grid>
+
+        <!--  preview  -->
         <Border
             Grid.Row="1"
+            Margin="24,0"
             HorizontalAlignment="Stretch"
             Background="{DynamicResource LayerFillColorDefaultBrush}"
+            BorderBrush="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+            BorderThickness="1"
             CornerRadius="8">
             <DockPanel Margin="16">
                 <Image
@@ -295,8 +299,7 @@
                     Click="RevertButtonClicked"
                     Content="{x:Static props:Resources.Revert}"
                     DockPanel.Dock="Right"
-                    IsEnabled="{Binding IsRevertEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
-                    Style="{StaticResource SubtleButtonStyle}" />
+                    IsEnabled="{Binding IsRevertEnabled, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                 <Button
                     x:Name="LaunchEditButton"
                     Margin="0,0,8,0"
@@ -307,15 +310,16 @@
                     DockPanel.Dock="Right" />
             </DockPanel>
         </Border>
+
+        <!--  properties  -->
         <DockPanel
             Grid.Row="2"
-            Margin="0,16,0,0"
+            Margin="24,16,24,0"
             HorizontalAlignment="Stretch">
             <StackPanel Orientation="Vertical">
                 <TextBlock
                     Margin="0,0,0,8"
                     FontWeight="SemiBold"
-                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{x:Static props:Resources.WorkspaceName}" />
                 <TextBox
                     x:Name="EditNameTextBox"
@@ -336,19 +340,19 @@
                     Content="{x:Static props:Resources.CreateShortcut}"
                     IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <CheckBox
-                    Margin="24,0,0,0"
+                    Margin="16,0,0,0"
                     VerticalAlignment="Bottom"
                     Content="{x:Static props:Resources.MoveIfExist}"
                     IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}" />
             </StackPanel>
         </DockPanel>
+
         <ScrollViewer
             Grid.Row="3"
-            Margin="-24,24,-24,-24"
-            Padding="24,0,24,0"
+            Margin="0,24,0,0"
             PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
             VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="0,0,0,24" Orientation="Vertical">
+            <StackPanel Margin="24,0,24,24" Orientation="Vertical">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />

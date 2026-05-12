@@ -8,6 +8,8 @@
     AllowsTransparency="True"
     Background="Transparent"
     WindowStyle="None"
+    ShowInTaskbar="False"
+    ShowActivated="False"
     mc:Ignorable="d">
     <Border
         Background="Transparent"

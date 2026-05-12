@@ -8,14 +8,13 @@
     xmlns:props="clr-namespace:WorkspacesEditor.Properties"
     Title="{x:Static props:Resources.SnapshotWindowTitle}"
     Width="420"
-    BorderBrush="Red"
-    BorderThickness="4"
     Closing="Window_Closing"
+    ShowInTaskbar="False"
     ResizeMode="NoResize"
     SizeToContent="Height"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Grid Margin="5" Background="Transparent">
+    <Grid Margin="4">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
@@ -26,15 +25,13 @@
         </Grid.ColumnDefinitions>
         <TextBlock
             Grid.ColumnSpan="2"
-            Margin="8,8,8,16"
-            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+            Margin="8,16,8,16"
             Text="{x:Static props:Resources.SnapshotDescription}"
             TextAlignment="Center"
             TextWrapping="Wrap" />
         <Button
             x:Name="SnapshotButton"
             Grid.Row="1"
-            Height="36"
             Margin="8,8,4,8"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.Take_Snapshot}"
@@ -45,7 +42,6 @@
             x:Name="CancelButton"
             Grid.Row="1"
             Grid.Column="1"
-            Height="36"
             Margin="4,8,8,8"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.Cancel}"

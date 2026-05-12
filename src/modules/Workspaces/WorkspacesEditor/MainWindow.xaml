@@ -15,9 +15,7 @@
     ResizeMode="CanResize"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-    <Border BorderThickness="1" CornerRadius="20">
-        <Grid Margin="0,10,0,0">
+        <Grid Margin="0,16,0,0">
             <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden" />
         </Grid>
-    </Border>
 </Window>
