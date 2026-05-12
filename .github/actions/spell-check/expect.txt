@@ -1218,6 +1218,7 @@ NOTSRCERASE
 Notupdated
 notwindows
 NOTXORPEN
+Nouveaut
 nowarn
 NOZORDER
 NPH
