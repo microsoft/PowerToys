@@ -37,7 +37,7 @@ namespace RemappingLogicTests
             std::vector<INPUT> inputs;
 
             // List of extended keys
-            WORD keyCodes[nInputs] = { VK_RCONTROL, VK_RMENU, VK_NUMLOCK, VK_SNAPSHOT, VK_CANCEL, VK_INSERT, VK_HOME, VK_PRIOR, VK_DELETE, VK_END, VK_NEXT, VK_LEFT, VK_DOWN, VK_RIGHT, VK_UP };
+            WORD keyCodes[nInputs] = { VK_RCONTROL, VK_RMENU, VK_LWIN, VK_RWIN, VK_APPS, VK_NUMLOCK, VK_SNAPSHOT, VK_CANCEL, VK_INSERT, VK_HOME, VK_PRIOR, VK_DELETE, VK_END, VK_NEXT, VK_LEFT, VK_DOWN, VK_RIGHT, VK_UP };
 
             for (int i = 0; i < nInputs; i++)
             {
