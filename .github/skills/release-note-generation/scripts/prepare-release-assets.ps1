@@ -42,7 +42,12 @@ function Invoke-Az {
     $tmpErr = [System.IO.Path]::GetTempFileName()
     try {
         $output = & az @args 2>$tmpErr
-        $script:LastAzError = (Get-Content $tmpErr -Raw -ErrorAction SilentlyContinue).Trim()
+        # Get-Content -Raw returns $null for an empty file, and calling .Trim()
+        # on $null throws under $ErrorActionPreference = 'Stop' -- which would
+        # turn every successful (no-stderr) az call into a fatal error. Guard
+        # explicitly so $script:LastAzError is always a (possibly empty) string.
+        $rawErr = Get-Content $tmpErr -Raw -ErrorAction SilentlyContinue
+        $script:LastAzError = if ($null -eq $rawErr) { '' } else { $rawErr.Trim() }
         return $output
     }
     finally {
