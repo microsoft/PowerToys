@@ -264,8 +264,8 @@
             "Workspaces.ModuleServices.dll",
             "Microsoft.CommandPalette.Extensions.dll",
             "Microsoft.CommandPalette.Extensions.Toolkit.dll",
-            "Microsoft.CmdPal.Ext.PowerToys.dll",
-            "Microsoft.CmdPal.Ext.PowerToys.exe",
+            "WinUI3Apps\\Microsoft.CmdPal.Ext.PowerToys.dll",
+            "WinUI3Apps\\Microsoft.CmdPal.Ext.PowerToys.exe",
             "*Microsoft.CmdPal.UI_*.msix",
 
             "PowerToys.DSC.dll",

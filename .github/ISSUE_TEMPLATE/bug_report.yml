@@ -57,6 +57,7 @@ body:
       - Environment Variables
       - FancyZones
       - FancyZones Editor 
+      - Grab And Move
       - File Locksmith 
       - "File Explorer: Preview Pane"
       - "File Explorer: Thumbnail preview"
@@ -69,6 +70,7 @@ body:
       - Mouse Without Borders
       - New+
       - Peek
+      - Power Display
       - PowerRename
       - PowerToys Run
       - Quick Accent
