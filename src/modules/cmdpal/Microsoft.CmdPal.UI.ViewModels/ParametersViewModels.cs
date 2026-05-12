@@ -61,6 +61,7 @@ public abstract partial class ParameterRunViewModel : ExtensionObjectViewModel
     {
         try
         {
+            CoreLogger.LogDebug($"[{GetType().Name}] PropChanged: {args.PropertyName}");
             FetchProperty(args.PropertyName);
         }
         catch (Exception ex)
@@ -267,11 +268,58 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
     private ICommandProviderContext _providerContext;
     private IContextMenuFactory _contextMenuFactory;
 
+    public bool IsListParameter => _listViewModel != null;
+
+    public ListViewModel? ListViewModel => _listViewModel;
+
     public string DisplayText { get; set; } = string.Empty;
 
     public IconInfoViewModel Icon { get; set; } = new(null);
 
     public string ButtonLabel => !string.IsNullOrEmpty(DisplayText) ? DisplayText : string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user is actively editing this
+    /// list parameter (browsing the list to pick a new value). This is separate
+    /// from NeedsValue — a param can have a value but still be in editing mode.
+    /// </summary>
+    public bool IsEditing { get; set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the textbox (rather than the button)
+    /// should be shown. True when the param still needs a value, or the user
+    /// is actively re-picking.
+    /// </summary>
+    public bool ShowTextBox => NeedsValue || IsEditing;
+
+    /// <summary>
+    /// Enters editing mode — switches the UI from button to textbox so the
+    /// user can browse the list to re-pick a value.
+    /// </summary>
+    public void BeginEditing()
+    {
+        CoreLogger.LogDebug($"[CommandParameterRunVM] BeginEditing");
+        IsEditing = true;
+        UpdateProperty(nameof(IsEditing), nameof(ShowTextBox));
+    }
+
+    /// <summary>
+    /// Exits editing mode — switches the UI back to button if the param
+    /// already has a value.
+    /// </summary>
+    public void CancelEditing()
+    {
+        CoreLogger.LogDebug($"[CommandParameterRunVM] CancelEditing (was editing: {IsEditing})");
+        IsEditing = false;
+        UpdateProperty(nameof(IsEditing), nameof(ShowTextBox));
+    }
+
+    /// <summary>
+    /// Raised when the extension updates value-related properties (DisplayText,
+    /// Icon, or NeedsValue). Used by ParametersPageViewModel to exit editing
+    /// mode and advance focus.
+    /// </summary>
+    public event EventHandler? ValueChanged;
 
     public string SearchBoxText
     {
@@ -341,6 +389,7 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         {
             case nameof(ICommandParameterRun.DisplayText):
                 DisplayText = model.DisplayText;
+                UpdateProperty(nameof(ButtonLabel));
                 break;
             case nameof(ICommandParameterRun.Icon):
                 Icon = new(model.Icon);
@@ -355,6 +404,21 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         // call the base class at the end, because ParameterValueRunViewModel
         // will handle calling UpdateProperty for the property name
         base.FetchProperty(propertyName);
+
+        // When the extension updates any value-related property, exit editing
+        // mode and notify the page.
+        if (propertyName is nameof(NeedsValue)
+                         or nameof(ICommandParameterRun.DisplayText)
+                         or nameof(ICommandParameterRun.Icon))
+        {
+            CoreLogger.LogDebug($"[CommandParameterRunVM] Value-related prop changed: {propertyName}, NeedsValue={NeedsValue}, IsEditing={IsEditing}, raising ValueChanged (has subscribers: {ValueChanged != null})");
+            CancelEditing();
+            ValueChanged?.Invoke(this, EventArgs.Empty);
+        }
+        else
+        {
+            CoreLogger.LogDebug($"[CommandParameterRunVM] FetchProperty: {propertyName} (not value-related, no ValueChanged)");
+        }
     }
 
     private string GetSearchText()
@@ -408,6 +472,33 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         IsLoading == false &&
         !NeedsAnyValues()
         ;
+
+    private ListViewModel? _activeListViewModel;
+
+    public ListViewModel? ActiveListViewModel
+    {
+        get => _activeListViewModel;
+        private set
+        {
+            if (_activeListViewModel != value)
+            {
+                _activeListViewModel = value;
+                UpdateProperty(nameof(ActiveListViewModel));
+                UpdateProperty(nameof(HasActiveList));
+            }
+        }
+    }
+
+    public bool HasActiveList => _activeListViewModel != null;
+
+    private CommandParameterRunViewModel? _activeListParam;
+
+    public void SetActiveListParameter(CommandParameterRunViewModel? param)
+    {
+        CoreLogger.LogDebug($"[ParametersPageVM] SetActiveListParameter: {(param != null ? "setting" : "clearing")} (was {(_activeListParam != null ? "set" : "null")})");
+        _activeListParam = param;
+        ActiveListViewModel = param?.ListViewModel;
+    }
 
     private readonly Lock _listLock = new();
 
@@ -465,6 +556,11 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                     itemVm.InitializeProperties();
                     newViewModels.Add(itemVm);
                     itemVm.PropertyChanged += ItemPropertyChanged;
+
+                    if (itemVm is CommandParameterRunViewModel cmdParamVm)
+                    {
+                        cmdParamVm.ValueChanged += ListParamValueChanged;
+                    }
                 }
                 else
                 {
@@ -489,6 +585,11 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
             foreach (var removedItem in removedItems)
             {
                 removedItem.PropertyChanged -= ItemPropertyChanged;
+                if (removedItem is CommandParameterRunViewModel removedCmdParam)
+                {
+                    removedCmdParam.ValueChanged -= ListParamValueChanged;
+                }
+
                 removedItem.SafeCleanup();
             }
         }
@@ -532,10 +633,56 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
     private void ItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
+        CoreLogger.LogDebug($"[ParametersPageVM] ItemPropertyChanged: {e.PropertyName} from {sender?.GetType().Name}, _activeListParam set: {_activeListParam != null}");
+
         if (e.PropertyName == nameof(ParameterValueRunViewModel.NeedsValue))
         {
-            UpdateCommand();
+            // Marshal to UI thread — PropChanged events from the extension
+            // arrive on a background thread, but FocusNextParameter sends a
+            // message that ultimately touches UI controls.
+            DoOnUiThread(() =>
+            {
+                // First-time pick for a list param (NeedsValue true -> false).
+                if (sender is CommandParameterRunViewModel cmdParam &&
+                    cmdParam == _activeListParam &&
+                    !cmdParam.NeedsValue)
+                {
+                    CoreLogger.LogDebug($"[ParametersPageVM] First-time list param pick, clearing active list");
+                    SetActiveListParameter(null);
+                    FocusNextParameter(cmdParam);
+                }
+
+                UpdateCommand();
+            });
         }
+    }
+
+    private void ListParamValueChanged(object? sender, EventArgs e)
+    {
+        CoreLogger.LogDebug($"[ParametersPageVM] ListParamValueChanged from {sender?.GetType().Name}, _activeListParam set: {_activeListParam != null}, same: {sender == _activeListParam}");
+
+        // Marshal to UI thread — ValueChanged is raised from the extension's
+        // PropChanged callback on a background thread, but FocusNextParameter
+        // sends a message that ultimately calls ContainerFromItem on a UI control.
+        DoOnUiThread(() =>
+        {
+            // The extension confirmed a value on a list param. If it's the
+            // active one (whether first pick or re-pick), clear the list and
+            // move focus forward.
+            if (sender is CommandParameterRunViewModel cmdParam &&
+                cmdParam == _activeListParam &&
+                !cmdParam.NeedsValue)
+            {
+                CoreLogger.LogDebug($"[ParametersPageVM] Clearing active list param after value change");
+                SetActiveListParameter(null);
+                FocusNextParameter(cmdParam);
+                UpdateCommand();
+            }
+            else
+            {
+                CoreLogger.LogDebug($"[ParametersPageVM] ListParamValueChanged: no action (NeedsValue={(sender as CommandParameterRunViewModel)?.NeedsValue}, isActive={sender == _activeListParam})");
+            }
+        });
     }
 
     private bool NeedsAnyValues()

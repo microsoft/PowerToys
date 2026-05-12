@@ -151,11 +151,11 @@ public partial class SamplesListPage : ListPage
         },
 
         // List parameters aren't yet supported
-        // new ListItem(new CreateNoteParametersPage())
-        // {
-        //     Title = "Create note sample",
-        //     Subtitle = "A parameter page with both a string and list parameter",
-        // },
+        new ListItem(new CreateNoteParametersPage())
+        {
+            Title = "Create note sample",
+            Subtitle = "A parameter page with both a string and list parameter",
+        },
 
         // Evil edge cases
         // Anything weird that might break the palette - put that in here.

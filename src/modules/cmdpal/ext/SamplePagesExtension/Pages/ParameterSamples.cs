@@ -191,6 +191,8 @@ public sealed partial class CreateNoteParametersPage : ParametersPage
 
     public override IListItem Command => _item;
 
+    public override IconInfo Icon => new("\uE70B"); // QuickNote
+
     public CreateNoteParametersPage()
     {
         _titleParameter = new StringParameterRun()
@@ -205,7 +207,11 @@ public sealed partial class CreateNoteParametersPage : ParametersPage
         };
 
         _command = new() { TitleParameter = _titleParameter, FolderParameter = _folderParameter };
-        _item = new(_command);
+        _item = new(_command)
+        {
+            Title = "Create note",
+            Subtitle = "Create a new note in the selected folder",
+        };
 
         _parameters = new List<IParameterRun>
         {
@@ -220,6 +226,7 @@ public sealed partial class CreateNoteParametersPage : ParametersPage
                 _folderParameter.Value = folder;
                 _folderParameter.Icon = folder.Icon;
                 _folderParameter.DisplayText = folder.Name;
+                _item.Subtitle = $"Create note in '{folder.Name}'";
             };
     }
 }
@@ -237,7 +244,9 @@ internal sealed partial class CreateNoteCommand : InvokableCommand
 
     internal required CommandParameterRun FolderParameter { get; init; } // set by the parameters page
 
-    public override IconInfo Icon => new("NoteAdd");
+    public override string Name => "Create note";
+
+    public override IconInfo Icon => new("\uE70B"); // QuickNote
 
     public override ICommandResult Invoke()
     {
@@ -278,7 +287,7 @@ public sealed partial class SelectFolderPage : ListPage
 
         public override IconInfo Icon => _folder?.Icon ?? new(string.Empty);
 
-        public string Title => _folder?.Name ?? string.Empty;
+        public override string Name => _folder?.Name ?? string.Empty;
 
         public SelectFolderCommand(Folder folder)
         {
