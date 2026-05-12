@@ -160,7 +160,23 @@ namespace Peek.FilePreviewer
             }
             else if (Item != null)
             {
-                _ = UpdateTooltipAsync(_cancellationTokenSource.Token);
+                _ = SafeUpdateTooltipAsync();
+            }
+        }
+
+        private async Task SafeUpdateTooltipAsync()
+        {
+            try
+            {
+                await UpdateTooltipAsync(_cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected during navigation
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Tooltip update failed: " + ex.Message);
             }
         }
 
@@ -419,6 +435,11 @@ namespace Peek.FilePreviewer
             string fileSizeFormatted = string.IsNullOrEmpty(fileSize) ? string.Empty : "\n" + ReadableStringHelper.FormatResourceString("PreviewTooltip_FileSize", fileSize);
             sb.Append(fileSizeFormatted);
 
+            if (!ShowFilePreviewTooltip)
+            {
+                return;
+            }
+
             InfoTooltip = sb.ToString();
         }
 
@@ -433,6 +454,12 @@ namespace Peek.FilePreviewer
                 var toolTip = ToolTipService.GetToolTip(previewControl) as ToolTip;
                 if (toolTip != null)
                 {
+                    if (string.IsNullOrEmpty(toolTip.Content as string))
+                    {
+                        toolTip.IsOpen = false;
+                        return;
+                    }
+
                     var pos = e.GetCurrentPoint(previewControl).Position;
                     toolTip.Placement = pos.Y < previewControl.ActualHeight / 2 ?
                         PlacementMode.Bottom : PlacementMode.Top;
