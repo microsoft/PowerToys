@@ -126,6 +126,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => SetSettingsProperty(_settings.Properties.RestoreSettingsOnStartup, value, v => _settings.Properties.RestoreSettingsOnStartup = v);
         }
 
+        public bool MaxCompatibilityMode
+        {
+            get => _settings.Properties.MaxCompatibilityMode;
+            set => SetSettingsProperty(_settings.Properties.MaxCompatibilityMode, value, v => _settings.Properties.MaxCompatibilityMode = v);
+        }
+
         public bool ShowSystemTrayIcon
         {
             get => _settings.Properties.ShowSystemTrayIcon;
