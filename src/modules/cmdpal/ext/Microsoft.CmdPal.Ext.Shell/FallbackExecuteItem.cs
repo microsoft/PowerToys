@@ -3,8 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Ext.Run;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
-using Microsoft.CmdPal.Ext.Shell.Pages;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
@@ -14,11 +15,12 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     private const string _id = "com.microsoft.cmdpal.builtin.shell.fallback";
     private static readonly char[] _systemDirectoryRoots = ['\\', '/'];
 
-    private readonly Action<string>? _addToHistory;
+    private readonly IRunHistoryService _historyService;
     private readonly ITelemetryService _telemetryService;
     private CancellationTokenSource? _cancellationTokenSource;
+    private RunExeItem? _currentExeItem;
 
-    public FallbackExecuteItem(SettingsManager settings, Action<string>? addToHistory, ITelemetryService telemetryService)
+    public FallbackExecuteItem(IRunHistoryService historyService, ITelemetryService telemetryService)
         : base(
             new NoOpCommand() { Id = _id },
             ResourceLoaderInstance.GetString("shell_command_display_title"),
@@ -26,8 +28,8 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
     {
         Title = string.Empty;
         Subtitle = ResourceLoaderInstance.GetString("generic_run_command");
-        Icon = Icons.RunV2Icon; // Defined in Icons.cs and contains the execute command icon.
-        _addToHistory = addToHistory;
+        Icon = Icons.RunV2Icon;
+        _historyService = historyService;
         _telemetryService = telemetryService;
     }
 
@@ -68,39 +70,28 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             return;
         }
 
-        ShellListPageHelpers.NormalizeCommandLineAndArgs(searchText, out var exe, out var args);
-
-        // Check for cancellation before file system operations
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var exeExists = false;
-        var fullExePath = string.Empty;
-        var pathIsDir = false;
+        // Use the same parsing logic as RunListPage to resolve the command line
+        ParseCommandlineResult? parseResult = null;
 
         try
         {
-            // Create a timeout for file system operations (200ms)
             using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(200));
             using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
             var timeoutToken = combinedCts.Token;
 
-            exeExists = ShellListPageHelpers.FileExistInPath(exe, out fullExePath, cancellationToken);
-            pathIsDir = Directory.Exists(exe);
+            var pathResolutionTask = Task.Run(
+                () => { parseResult = _historyService.ParseCommandline(searchText, string.Empty); },
+                CancellationToken.None);
+
+            pathResolutionTask.Wait(timeoutToken);
         }
-        catch (TimeoutException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            // Timeout occurred - use defaults
             return;
         }
-        catch (OperationCanceledException)
+        catch
         {
-            // Timeout occurred (from WaitAsync) - use defaults
-            return;
-        }
-        catch (Exception)
-        {
-            // Handle any other exceptions that might bubble up
-            return;
+            // Timeout or other error - continue with null parseResult
         }
 
         // Check for cancellation before updating UI properties
@@ -109,35 +100,45 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             return;
         }
 
-        if (exeExists)
+        // Unsubscribe from the old item's property changes
+        if (_currentExeItem is not null)
         {
-            // TODO we need to probably get rid of the settings for this provider entirely
-            var exeItem = ShellListPage.CreateExeItem(exe, args, fullExePath, _addToHistory, telemetryService: _telemetryService);
-            Title = exeItem.Title;
-            Subtitle = exeItem.Subtitle;
-            Icon = exeItem.Icon;
-            Command = exeItem.Command;
-            MoreCommands = exeItem.MoreCommands;
+            _currentExeItem.PropChanged -= OnExeItemPropChanged;
+            _currentExeItem = null;
         }
-        else if (pathIsDir)
+
+        string filePath;
+        string args;
+
+        if (parseResult is ParseCommandlineResult res)
         {
-            var pathItem = new PathListItem(exe, query, _addToHistory, _telemetryService);
-            Command = pathItem.Command;
-            MoreCommands = pathItem.MoreCommands;
-            Title = pathItem.Title;
-            Subtitle = pathItem.Subtitle;
-            Icon = pathItem.Icon;
-        }
-        else if (System.Uri.TryCreate(searchText, UriKind.Absolute, out var uri))
-        {
-            Command = new OpenUrlWithHistoryCommand(searchText, _addToHistory, _telemetryService) { Result = CommandResult.Dismiss() };
-            Title = searchText;
+            filePath = res.FilePath;
+            args = res.Arguments;
         }
         else
         {
-            Command = null;
-            Title = string.Empty;
+            filePath = searchText;
+            args = string.Empty;
         }
+
+        // Create a RunExeItem to resolve the icon from the file path
+        _currentExeItem = new RunExeItem(
+            filePath,
+            args,
+            filePath,
+            (s) => _historyService.AddRunHistoryItem(s),
+            _telemetryService);
+        _currentExeItem.PropChanged += OnExeItemPropChanged;
+
+        Title = "Run command";
+        Subtitle = searchText;
+        Command = _currentExeItem.Command;
+        MoreCommands = _currentExeItem.MoreCommands;
+
+        // Trigger the lazy icon load by accessing the Icon property.
+        // FileItem loads icons asynchronously and raises PropChanged when done.
+        var icon = _currentExeItem.Icon;
+        Icon = icon ?? Icons.RunV2Icon;
 
         // Final cancellation check
         if (cancellationToken.IsCancellationRequested)
@@ -146,10 +147,22 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
     }
 
+    private void OnExeItemPropChanged(object sender, IPropChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(Icon) && _currentExeItem is not null)
+        {
+            Icon = _currentExeItem.Icon ?? Icons.RunV2Icon;
+        }
+    }
+
     public void Dispose()
     {
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
+        if (_currentExeItem is not null)
+        {
+            _currentExeItem.PropChanged -= OnExeItemPropChanged;
+        }
     }
 
     internal static bool SuppressFileFallbackIf(string query)

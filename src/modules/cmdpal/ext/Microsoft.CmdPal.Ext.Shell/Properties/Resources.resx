@@ -193,4 +193,45 @@
   <data name="copy_path_command_name" xml:space="preserve">
     <value>Copy path</value>
   </data>
+
+  <data name="Run_plugin_name" xml:space="preserve">
+    <value>Run commands</value>
+  </data>
+  <data name="Run_plugin_description" xml:space="preserve">
+    <value>Executes commands (e.g. 'ping', 'cmd')</value>
+  </data>
+  <data name="Run_run_as_administrator" xml:space="preserve">
+    <value>Run as administrator</value>
+  </data>
+  <data name="Run_command_not_found" xml:space="preserve">
+    <value>Command not found</value>
+  </data>
+  <data name="Run_run_as_user" xml:space="preserve">
+    <value>Run as different user</value>
+  </data>
+  <data name="Run_command_name" xml:space="preserve">
+    <value>Run commands</value>
+  </data>
+  <data name="Run_generic_run_command" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="Run_list_placeholder_text" xml:space="preserve">
+    <value>Type the name of a command to run</value>
+  </data>
+  <data name="Run_command_display_title" xml:space="preserve">
+    <value>Run commands</value>
+  </data>
+  <data name="Run_copy_path_command_name" xml:space="preserve">
+    <value>Copy path</value>
+  </data>
+  <data name="Run_Command_OpenProperties" xml:space="preserve">
+    <value>Properties</value>
+  </data>
+  <data name="Run_Command_OpenWith" xml:space="preserve">
+    <value>Open with</value>
+  </data>
+  <data name="Run_Command_OpenPathInConsole" xml:space="preserve">
+    <value>Open path in console</value>
+  </data>
+
 </root>
