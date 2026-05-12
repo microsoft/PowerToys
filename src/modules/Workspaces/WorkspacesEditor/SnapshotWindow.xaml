@@ -9,8 +9,8 @@
     Title="{x:Static props:Resources.SnapshotWindowTitle}"
     Width="420"
     Closing="Window_Closing"
-    ShowInTaskbar="False"
     ResizeMode="NoResize"
+    ShowInTaskbar="False"
     SizeToContent="Height"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">

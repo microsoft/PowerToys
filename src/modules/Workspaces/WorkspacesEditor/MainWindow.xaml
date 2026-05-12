@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="WorkspacesEditor.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,7 +15,7 @@
     ResizeMode="CanResize"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
-        <Grid Margin="0,16,0,0">
-            <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden" />
-        </Grid>
+    <Grid Margin="0,16,0,0">
+        <Frame x:Name="ContentFrame" NavigationUIVisibility="Hidden" />
+    </Grid>
 </Window>

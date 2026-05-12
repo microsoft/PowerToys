@@ -65,7 +65,6 @@
                                     <TextBlock Text="{Binding AppName}" />
                                     <TextBlock
                                         Grid.Column="2"
-                                        Margin="8,0,0,0"
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -231,7 +230,7 @@
                     FontSize="24"
                     Style="{DynamicResource SubtleButtonStyle}" />
                 <TextBlock
-                    Margin="8,6,0,0"
+                    Margin="8,0,0,0"
                     VerticalAlignment="Center"
                     FontFamily="{DynamicResource SymbolThemeFontFamily}"
                     Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -259,7 +258,7 @@
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Text="&#xE74E;" />
                         <TextBlock
-                            Margin="8,-1,0,0"
+                            Margin="8,0,0,0"
                             VerticalAlignment="Center"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Text="{x:Static props:Resources.Save_Workspace}" />

@@ -221,16 +221,7 @@
                                             PlacementTarget="{Binding ElementName=MoreButton}"
                                             StaysOpen="False">
                                             <Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                                                <Grid.OpacityMask>
-                                                    <VisualBrush Visual="{Binding ElementName=OpacityBorder}" />
-                                                </Grid.OpacityMask>
-                                                <Border
-                                                    x:Name="OpacityBorder"
-                                                    HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Stretch"
-                                                    Background="Black"
-                                                    CornerRadius="5" />
-                                                <StackPanel Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" Orientation="Vertical">
+                                                <StackPanel Orientation="Vertical">
                                                     <Button
                                                         Padding="8,4,24,4"
                                                         HorizontalAlignment="Stretch"
