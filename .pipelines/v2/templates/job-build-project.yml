@@ -528,15 +528,26 @@ jobs:
     displayName: Locate the AdvancedPaste MSIX
 
   - pwsh: |-
-      $Packages = Get-ChildItem -Recurse -Filter "Microsoft.CmdPal.UI_*.msix"
+      $SearchRoot = "$(Build.SourcesDirectory)/$(BuildPlatform)/$(BuildConfiguration)"
+      Write-Host "Searching for CmdPal MSIX in: $SearchRoot"
+      if (-not (Test-Path $SearchRoot)) {
+        Write-Warning "Search root does not exist: $SearchRoot"
+        $SearchRoot = "$(Build.SourcesDirectory)"
+        Write-Host "Falling back to: $SearchRoot"
+      }
+
+      $Packages = Get-ChildItem -Path $SearchRoot -Recurse -Filter "Microsoft.CmdPal.UI_*.msix" -ErrorAction SilentlyContinue
       Write-Host "Found $($Packages.Count) CmdPal MSIX package(s):"
       foreach ($pkg in $Packages) {
           Write-Host "  - $($pkg.FullName)"
       }
       
       if ($Packages.Count -gt 0) {
-          # Priority: Look for platform-specific MSIX (x64/arm64) first, then fall back to any
-          $PlatformPackage = $Packages | Where-Object { $_.Name -match "Microsoft\.CmdPal\.UI_.*_(x64|arm64)\.msix$" } | Select-Object -First 1
+        $TargetPlatform = "$(BuildPlatform)".ToLowerInvariant()
+        $PlatformPattern = if ($TargetPlatform -eq "x64") { "Microsoft\.CmdPal\.UI_.*_x64\.msix$" } else { "Microsoft\.CmdPal\.UI_.*_arm64\.msix$" }
+
+        # Priority: current platform first, then any CmdPal package
+        $PlatformPackage = $Packages | Where-Object { $_.Name -match $PlatformPattern } | Select-Object -First 1
           if ($PlatformPackage) {
               $Package = $PlatformPackage
               Write-Host "Using platform-specific package: $($Package.FullName)"
@@ -546,9 +557,12 @@ jobs:
           }
           
           $PackageFilename = $Package.FullName
+            $PackageDirectory = Split-Path -Parent $PackageFilename
           Write-Host "##vso[task.setvariable variable=CmdPalPackagePath]${PackageFilename}"
+            Write-Host "##vso[task.setvariable variable=CmdPalPackageDir]${PackageDirectory}"
       } else {
-          Write-Warning "No CmdPal MSIX packages found!"
+            Write-Error "No CmdPal MSIX packages found! The build may have failed to generate the CmdPal package."
+            exit 1
       }
     displayName: Locate the CmdPal MSIX
 
