@@ -637,17 +637,23 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
 
         if (e.PropertyName == nameof(ParameterValueRunViewModel.NeedsValue))
         {
-            // First-time pick for a list param (NeedsValue true -> false).
-            if (sender is CommandParameterRunViewModel cmdParam &&
-                cmdParam == _activeListParam &&
-                !cmdParam.NeedsValue)
+            // Marshal to UI thread — PropChanged events from the extension
+            // arrive on a background thread, but FocusNextParameter sends a
+            // message that ultimately touches UI controls.
+            DoOnUiThread(() =>
             {
-                CoreLogger.LogDebug($"[ParametersPageVM] First-time list param pick, clearing active list");
-                SetActiveListParameter(null);
-                FocusNextParameter(cmdParam);
-            }
+                // First-time pick for a list param (NeedsValue true -> false).
+                if (sender is CommandParameterRunViewModel cmdParam &&
+                    cmdParam == _activeListParam &&
+                    !cmdParam.NeedsValue)
+                {
+                    CoreLogger.LogDebug($"[ParametersPageVM] First-time list param pick, clearing active list");
+                    SetActiveListParameter(null);
+                    FocusNextParameter(cmdParam);
+                }
 
-            UpdateCommand();
+                UpdateCommand();
+            });
         }
     }
 
@@ -655,22 +661,28 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         CoreLogger.LogDebug($"[ParametersPageVM] ListParamValueChanged from {sender?.GetType().Name}, _activeListParam set: {_activeListParam != null}, same: {sender == _activeListParam}");
 
-        // The extension confirmed a value on a list param. If it's the
-        // active one (whether first pick or re-pick), clear the list and
-        // move focus forward.
-        if (sender is CommandParameterRunViewModel cmdParam &&
-            cmdParam == _activeListParam &&
-            !cmdParam.NeedsValue)
+        // Marshal to UI thread — ValueChanged is raised from the extension's
+        // PropChanged callback on a background thread, but FocusNextParameter
+        // sends a message that ultimately calls ContainerFromItem on a UI control.
+        DoOnUiThread(() =>
         {
-            CoreLogger.LogDebug($"[ParametersPageVM] Clearing active list param after value change");
-            SetActiveListParameter(null);
-            FocusNextParameter(cmdParam);
-            UpdateCommand();
-        }
-        else
-        {
-            CoreLogger.LogDebug($"[ParametersPageVM] ListParamValueChanged: no action (NeedsValue={(sender as CommandParameterRunViewModel)?.NeedsValue}, isActive={sender == _activeListParam})");
-        }
+            // The extension confirmed a value on a list param. If it's the
+            // active one (whether first pick or re-pick), clear the list and
+            // move focus forward.
+            if (sender is CommandParameterRunViewModel cmdParam &&
+                cmdParam == _activeListParam &&
+                !cmdParam.NeedsValue)
+            {
+                CoreLogger.LogDebug($"[ParametersPageVM] Clearing active list param after value change");
+                SetActiveListParameter(null);
+                FocusNextParameter(cmdParam);
+                UpdateCommand();
+            }
+            else
+            {
+                CoreLogger.LogDebug($"[ParametersPageVM] ListParamValueChanged: no action (NeedsValue={(sender as CommandParameterRunViewModel)?.NeedsValue}, isActive={sender == _activeListParam})");
+            }
+        });
     }
 
     private bool NeedsAnyValues()
