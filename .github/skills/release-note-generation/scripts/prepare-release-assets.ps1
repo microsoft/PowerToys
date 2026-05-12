@@ -137,7 +137,7 @@ if (-not $ext) {
     Write-Host "Installing azure-devops extension..." -ForegroundColor Yellow
     Invoke-Az extension add --name azure-devops --yes | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to install azure-devops extension.`naz: $script:LastAzError"
+        Write-Error "Failed to install azure-devops extension. (az: $script:LastAzError)"
         exit 1
     }
 }
@@ -145,7 +145,7 @@ if (-not $ext) {
 # Configure az devops defaults
 Invoke-Az devops configure --defaults organization=$Organization project=$Project | Out-Null
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to configure az devops defaults.`naz: $script:LastAzError"
+    Write-Error "Failed to configure az devops defaults. (az: $script:LastAzError)"
     exit 1
 }
 
@@ -153,7 +153,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Fetching build $BuildId info..." -ForegroundColor Cyan
 $buildJson = Invoke-Az pipelines build show --id $BuildId --output json
 if (-not $buildJson) {
-    Write-Error "Could not fetch build $BuildId. Are you logged in (az login)?`naz: $script:LastAzError"
+    Write-Error "Could not fetch build $BuildId. Are you logged in (az login)? (az: $script:LastAzError)"
     exit 1
 }
 $build = $buildJson | ConvertFrom-Json
@@ -169,7 +169,7 @@ Write-Host "  Version: $versionParam" -ForegroundColor DarkGray
 Write-Host "Fetching artifact metadata..." -ForegroundColor Cyan
 $artifactsJson = Invoke-Az pipelines runs artifact list --run-id $BuildId --output json
 if (-not $artifactsJson) {
-    Write-Error "Could not list artifacts for build $BuildId.`naz: $script:LastAzError"
+    Write-Error "Could not list artifacts for build $BuildId. (az: $script:LastAzError)"
     exit 1
 }
 $artifacts = $artifactsJson | ConvertFrom-Json
@@ -184,7 +184,7 @@ Write-Host "  Destination: $destFolder" -ForegroundColor DarkGray
 # --- Step 4: Get an ADO access token once ---
 $token = Invoke-Az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query accessToken -o tsv
 if (-not $token) {
-    Write-Error "Failed to acquire ADO access token. Run 'az login' first.`naz: $script:LastAzError"
+    Write-Error "Failed to acquire ADO access token. Run 'az login' first. (az: $script:LastAzError)"
     exit 1
 }
 
