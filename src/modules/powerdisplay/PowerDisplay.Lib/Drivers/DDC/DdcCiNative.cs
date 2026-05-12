@@ -5,107 +5,60 @@
 using System;
 using System.Runtime.InteropServices;
 using ManagedCommon;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
+using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
-    /// DDC/CI native API wrapper
+    /// DDC/CI native API wrapper — Win32 primitives only. All retry / fallback
+    /// orchestration lives in <see cref="DdcCiController"/>.
     /// </summary>
     public static class DdcCiNative
     {
+        // Continuous-range VCP features probed when running in max-compatibility mode.
+        // Discrete-value features (0x14 color preset, 0x60 input source) are excluded
+        // — GetVCPFeatureAndVCPFeatureReply returns only current+max, so we cannot
+        // synthesize a meaningful supported-value list for them. Friendly names come
+        // from VcpNames.GetCodeName to keep a single source of truth.
+        private static readonly byte[] ProbeableContinuousVcpCodes =
+        {
+            VcpCodeBrightness,
+            VcpCodeContrast,
+            VcpCodeVolume,
+            VcpCodePowerMode,
+        };
+
         /// <summary>
-        /// Fetches VCP capabilities string from a monitor and returns a validation result.
-        /// This is the slow I2C operation (~4 seconds per monitor) that should only be done once.
-        /// The result is cached regardless of success or failure.
+        /// One attempt to get the capabilities string from a physical monitor handle.
+        /// Returns null on any failure. The orchestrator owns retry + warn-level
+        /// logging; per-attempt failures are logged at Debug here so retries do not
+        /// spam the log.
         /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <returns>Validation result with capabilities data (or failure status)</returns>
-        public static DdcCiValidationResult FetchCapabilities(IntPtr hPhysicalMonitor)
+        public static string? TryGetCapabilitiesString(IntPtr hPhysicalMonitor)
         {
             if (hPhysicalMonitor == IntPtr.Zero)
             {
-                Logger.LogWarning("DDC: Monitor ignored - null physical monitor handle");
-                return DdcCiValidationResult.Invalid;
-            }
-
-            var handleHex = $"0x{hPhysicalMonitor:X}";
-
-            try
-            {
-                // Try to get capabilities string (slow I2C operation)
-                var capsString = TryGetCapabilitiesString(hPhysicalMonitor);
-                if (string.IsNullOrEmpty(capsString))
-                {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - empty capabilities string from DDC/CI");
-                    return DdcCiValidationResult.Invalid;
-                }
-
-                Logger.LogInfo($"DDC: Capabilities raw (handle={handleHex}, length={capsString.Length}): {capsString}");
-
-                // Parse the capabilities string
-                var parseResult = Utils.MccsCapabilitiesParser.Parse(capsString);
-                var capabilities = parseResult.Capabilities;
-
-                if (capabilities == null || capabilities.SupportedVcpCodes.Count == 0)
-                {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - parsed capabilities have no VCP codes (parseErrors={parseResult.Errors.Count})");
-                    return DdcCiValidationResult.Invalid;
-                }
-
-                // Check if brightness (VCP 0x10) is supported - determines DDC/CI validity
-                bool supportsBrightness = capabilities.SupportsVcpCode(NativeConstants.VcpCodeBrightness);
-                bool supportsContrast = capabilities.SupportsVcpCode(NativeConstants.VcpCodeContrast);
-                bool supportsColorTemperature = capabilities.SupportsVcpCode(NativeConstants.VcpCodeSelectColorPreset);
-                bool supportsVolume = capabilities.SupportsVcpCode(NativeConstants.VcpCodeVolume);
-
-                Logger.LogInfo(
-                    $"DDC: Capabilities parsed (handle={handleHex}) - " +
-                    $"Brightness={supportsBrightness} Contrast={supportsContrast} " +
-                    $"ColorTemperature={supportsColorTemperature} Volume={supportsVolume}");
-
-                if (!supportsBrightness)
-                {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - brightness (VCP 0x10) not advertised in capabilities");
-                }
-
-                return new DdcCiValidationResult(supportsBrightness, capsString, capabilities);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                Logger.LogError($"DDC: Monitor ignored (handle={handleHex}) - exception during FetchCapabilities: {ex.Message}");
-                return DdcCiValidationResult.Invalid;
-            }
-        }
-
-        /// <summary>
-        /// Try to get capabilities string from a physical monitor handle.
-        /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <returns>Capabilities string, or null if failed</returns>
-        private static string? TryGetCapabilitiesString(IntPtr hPhysicalMonitor)
-        {
-            if (hPhysicalMonitor == IntPtr.Zero)
-            {
+                Logger.LogDebug("DDC: TryGetCapabilitiesString called with IntPtr.Zero");
                 return null;
             }
 
             try
             {
-                // Get capabilities string length
                 if (!GetCapabilitiesStringLength(hPhysicalMonitor, out uint length) || length == 0)
                 {
-                    Logger.LogWarning($"DDC: GetCapabilitiesStringLength failed (handle=0x{hPhysicalMonitor:X}, length={length})");
+                    Logger.LogDebug($"DDC: GetCapabilitiesStringLength failed (handle=0x{hPhysicalMonitor:X}, length={length})");
                     return null;
                 }
 
-                // Allocate buffer and get capabilities string
                 var buffer = Marshal.AllocHGlobal((int)length);
                 try
                 {
                     if (!CapabilitiesRequestAndCapabilitiesReply(hPhysicalMonitor, buffer, length))
                     {
-                        Logger.LogWarning($"DDC: CapabilitiesRequestAndCapabilitiesReply failed (handle=0x{hPhysicalMonitor:X})");
+                        Logger.LogDebug($"DDC: CapabilitiesRequestAndCapabilitiesReply failed (handle=0x{hPhysicalMonitor:X})");
                         return null;
                     }
 
@@ -121,6 +74,50 @@ namespace PowerDisplay.Common.Drivers.DDC
                 Logger.LogError($"DDC: TryGetCapabilitiesString exception (handle=0x{hPhysicalMonitor:X}): {ex.Message}");
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Sequentially probes each VCP code in <see cref="ProbeableContinuousVcpCodes"/>
+        /// via GetVCPFeatureAndVCPFeatureReply. Used as the max-compatibility-mode fallback
+        /// when the cap string is empty or unparseable. Returns null if zero probes succeed;
+        /// otherwise returns a synthetic <see cref="VcpCapabilities"/> with only the codes
+        /// that responded.
+        /// </summary>
+        /// <remarks>
+        /// Sequential, not parallel — physical monitors share an I²C arbitration bus,
+        /// concurrent reads cause spurious failures.
+        /// </remarks>
+        public static VcpCapabilities? ProbeSupportedVcpFeatures(IntPtr hPhysicalMonitor)
+        {
+            if (hPhysicalMonitor == IntPtr.Zero)
+            {
+                Logger.LogDebug("DDC: ProbeSupportedVcpFeatures called with IntPtr.Zero");
+                return null;
+            }
+
+            var caps = new VcpCapabilities();
+
+            foreach (var code in ProbeableContinuousVcpCodes)
+            {
+                try
+                {
+                    if (GetVCPFeatureAndVCPFeatureReply(hPhysicalMonitor, code, IntPtr.Zero, out uint _, out uint _))
+                    {
+                        caps.SupportedVcpCodes[code] = new VcpCodeInfo(code, VcpNames.GetCodeName(code));
+                    }
+                    else
+                    {
+                        var lastError = Marshal.GetLastWin32Error();
+                        Logger.LogDebug($"DDC: [max-compat] probe of VCP 0x{code:X2} failed (handle=0x{hPhysicalMonitor:X}, error={lastError})");
+                    }
+                }
+                catch (Exception ex) when (ex is not OutOfMemoryException)
+                {
+                    Logger.LogError($"DDC: [max-compat] probe of VCP 0x{code:X2} threw (handle=0x{hPhysicalMonitor:X}): {ex.Message}");
+                }
+            }
+
+            return caps.SupportedVcpCodes.Count > 0 ? caps : null;
         }
     }
 }
