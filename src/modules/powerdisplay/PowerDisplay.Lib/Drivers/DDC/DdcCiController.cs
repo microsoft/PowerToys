@@ -268,19 +268,13 @@ namespace PowerDisplay.Common.Drivers.DDC
                     monitor.VcpCapabilitiesInfo = capResult.VcpCapabilitiesInfo;
                     UpdateMonitorCapabilitiesFromVcp(monitor, capResult.VcpCapabilitiesInfo);
 
-                    if (monitor.SupportsInputSource)
+                    // Initialize current values for every VCP feature the device reports
+                    // support for, ordered continuous-range first (percent-scaled),
+                    // then discrete-enum VCPs. Each guard is independent — a controller
+                    // can support any subset.
+                    if (monitor.SupportsBrightness)
                     {
-                        InitializeInputSource(monitor, physical.HPhysicalMonitor);
-                    }
-
-                    if (monitor.SupportsColorTemperature)
-                    {
-                        InitializeColorTemperature(monitor, physical.HPhysicalMonitor);
-                    }
-
-                    if (monitor.SupportsPowerState)
-                    {
-                        InitializePowerState(monitor, physical.HPhysicalMonitor);
+                        InitializeBrightness(monitor, physical.HPhysicalMonitor);
                     }
 
                     if (monitor.SupportsContrast)
@@ -292,11 +286,21 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         InitializeVolume(monitor, physical.HPhysicalMonitor);
                     }
-                }
 
-                if (monitor.SupportsBrightness)
-                {
-                    InitializeBrightness(monitor, physical.HPhysicalMonitor);
+                    if (monitor.SupportsColorTemperature)
+                    {
+                        InitializeColorTemperature(monitor, physical.HPhysicalMonitor);
+                    }
+
+                    if (monitor.SupportsInputSource)
+                    {
+                        InitializeInputSource(monitor, physical.HPhysicalMonitor);
+                    }
+
+                    if (monitor.SupportsPowerState)
+                    {
+                        InitializePowerState(monitor, physical.HPhysicalMonitor);
+                    }
                 }
 
                 return monitor;

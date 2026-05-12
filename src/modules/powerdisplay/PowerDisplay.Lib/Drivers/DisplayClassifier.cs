@@ -34,9 +34,15 @@ namespace PowerDisplay.Common.Drivers
 
         /// <summary>
         /// Returns true if the given OutputTechnology value indicates an internal display.
-        /// Per Microsoft docs the INTERNAL flag is technically redundant when an embedded
-        /// subtype is reported, but we check both defensively because some legacy drivers
-        /// may set only the high-bit flag without an embedded subtype.
+        /// Conservative rule: a value is internal only when it is either
+        /// (a) the bare INTERNAL high-bit flag (0x80000000) with no subtype,
+        /// (b) the INTERNAL flag combined with a documented embedded subtype
+        ///     (DISPLAYPORT_EMBEDDED 11 or UDI_EMBEDDED 13), or
+        /// (c) one of those embedded subtypes on its own.
+        /// Any other value — including the INTERNAL flag combined with an
+        /// undocumented subtype — is treated as external. Misclassifying an
+        /// external display as internal would silently drop it from DDC/CI
+        /// discovery (WMI has no fallback), so we err on the side of external.
         /// LVDS (6) is intentionally NOT classified as internal — the official docs
         /// describe it only as a connector type, not as an internal-display marker.
         /// </summary>

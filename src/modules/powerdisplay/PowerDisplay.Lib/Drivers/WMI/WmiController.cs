@@ -242,9 +242,13 @@ namespace PowerDisplay.Common.Drivers.WMI
                     var brightnessQuery = $"SELECT InstanceName, CurrentBrightness FROM {BrightnessQueryClass}";
                     var brightnessResults = connection.CreateQuery(brightnessQuery).ToList();
 
-                    // Create monitor objects for each supported brightness instance
+                    // Create monitor objects for each supported brightness instance.
+                    // Check cancellation per iteration since WMI work inside Task.Run
+                    // doesn't respond to the token after the loop starts.
                     foreach (var obj in brightnessResults)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         try
                         {
                             var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
@@ -297,7 +301,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                 {
                     Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message} (HResult: 0x{ex.HResult:X})");
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message}");
                 }

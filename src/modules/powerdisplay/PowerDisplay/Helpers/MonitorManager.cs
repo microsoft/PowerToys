@@ -121,12 +121,9 @@ namespace PowerDisplay.Helpers
                 return new List<Monitor>();
             }
 
-            IReadOnlyList<MonitorDisplayInfo> internalTargets = inventory.Values
-                .Where(i => i.IsInternal)
-                .ToList();
-            IReadOnlyList<MonitorDisplayInfo> externalTargets = inventory.Values
-                .Where(i => !i.IsInternal)
-                .ToList();
+            var byKind = inventory.Values.ToLookup(i => i.IsInternal);
+            IReadOnlyList<MonitorDisplayInfo> internalTargets = byKind[true].ToList();
+            IReadOnlyList<MonitorDisplayInfo> externalTargets = byKind[false].ToList();
 
             LogClassificationSummary(internalTargets, externalTargets);
 

@@ -121,9 +121,14 @@ namespace PowerDisplay.Common.Drivers
                 {
                     return sourceName.GetViewGdiDeviceName();
                 }
+
+                Logger.LogWarning(
+                    $"DisplayConfigInventory: GetSourceGdiDeviceName failed (adapter.low=0x{adapterId.LowPart:X}, source={sourceId}, win32={result})");
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogWarning(
+                    $"DisplayConfigInventory: GetSourceGdiDeviceName exception (adapter.low=0x{adapterId.LowPart:X}, source={sourceId}): {ex.Message}");
             }
 
             return null;
@@ -155,9 +160,14 @@ namespace PowerDisplay.Common.Drivers
                         deviceName.GetMonitorDevicePath(),
                         deviceName.OutputTechnology);
                 }
+
+                Logger.LogWarning(
+                    $"DisplayConfigInventory: GetTargetDeviceInfo failed (adapter.low=0x{adapterId.LowPart:X}, target={targetId}, win32={result})");
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
+                Logger.LogWarning(
+                    $"DisplayConfigInventory: GetTargetDeviceInfo exception (adapter.low=0x{adapterId.LowPart:X}, target={targetId}): {ex.Message}");
             }
 
             return (null, null, 0u);
