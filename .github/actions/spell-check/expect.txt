@@ -26,7 +26,6 @@ advfirewall
 AFeature
 affordances
 AFX
-agentic
 agentskills
 AGGREGATABLE
 AHK
@@ -573,7 +572,6 @@ FOF
 FOFX
 FOLDERID
 folderpath
-followups
 FONTTYPE
 FORCEFILESYSTEM
 FORCEMINIMIZE
@@ -2153,7 +2151,6 @@ xxxxxx
 ycombinator
 yinle
 yinyue
-yuleng
 YVIRTUALSCREEN
 zamora
 Zenbook
