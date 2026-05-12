@@ -197,7 +197,7 @@
                                     Margin="12,12,12,12"
                                     Orientation="Horizontal">
                                     <Button
-                                        Margin="0,0,12,0"
+                                        Margin="0,0,8,0"
                                         AutomationProperties.Name="{x:Static props:Resources.Launch}"
                                         Click="LaunchButton_Click"
                                         Content="{x:Static props:Resources.Launch}" />
@@ -220,53 +220,63 @@
                                             Placement="Left"
                                             PlacementTarget="{Binding ElementName=MoreButton}"
                                             StaysOpen="False">
-                                            <Grid Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
-                                                <StackPanel Orientation="Vertical">
-                                                    <Button
-                                                        Padding="8,4,24,4"
-                                                        HorizontalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Left"
-                                                        AutomationProperties.Name="{x:Static props:Resources.Edit}"
-                                                        Click="EditButtonClicked"
-                                                        Style="{DynamicResource SubtleButtonStyle}">
-                                                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                                                            <TextBlock
-                                                                VerticalAlignment="Center"
-                                                                AutomationProperties.Name="{x:Static props:Resources.Edit}"
-                                                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="&#xE70F;" />
-                                                            <TextBlock
-                                                                Margin="8,0,0,0"
-                                                                VerticalAlignment="Center"
-                                                                AutomationProperties.Name="{x:Static props:Resources.Edit}"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{x:Static props:Resources.Edit}" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                    <Button
-                                                        Padding="8,4,24,4"
-                                                        HorizontalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Left"
-                                                        AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                                        Click="DeleteButtonClicked"
-                                                        Style="{DynamicResource SubtleButtonStyle}">
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <TextBlock
-                                                                VerticalAlignment="Center"
-                                                                AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                                                FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="&#xE74D;" />
-                                                            <TextBlock
-                                                                Margin="8,0,0,0"
-                                                                VerticalAlignment="Center"
-                                                                AutomationProperties.Name="{x:Static props:Resources.Delete}"
-                                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                                                Text="{x:Static props:Resources.Delete}" />
-                                                        </StackPanel>
-                                                    </Button>
-                                                </StackPanel>
+                                            <Grid>
+                                                <Border
+                                                    Background="{DynamicResource SolidBackgroundFillColorSecondaryBrush}"
+                                                    BorderBrush="{DynamicResource SurfaceStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="8">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <Button
+                                                            Padding="8,8,24,8"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Left"
+                                                            AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                            Click="EditButtonClicked"
+                                                            Style="{DynamicResource SubtleButtonStyle}">
+                                                            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    VerticalAlignment="Center"
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="&#xE70F;" />
+                                                                <TextBlock
+                                                                    Margin="8,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Edit}"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{x:Static props:Resources.Edit}" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                        <Rectangle
+                                                            Height="1"
+                                                            HorizontalAlignment="Stretch"
+                                                            Fill="{DynamicResource DividerStrokeColorDefaultBrush}" />
+                                                        <Button
+                                                            Padding="8,8,24,8"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Left"
+                                                            AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                            Click="DeleteButtonClicked"
+                                                            Style="{DynamicResource SubtleButtonStyle}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock
+                                                                    VerticalAlignment="Center"
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                                    FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="&#xE74D;" />
+                                                                <TextBlock
+                                                                    Margin="8,0,0,0"
+                                                                    VerticalAlignment="Center"
+                                                                    AutomationProperties.Name="{x:Static props:Resources.Delete}"
+                                                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                                                    Text="{x:Static props:Resources.Delete}" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </StackPanel>
+                                                </Border>
                                             </Grid>
                                         </Popup>
                                     </StackPanel>
