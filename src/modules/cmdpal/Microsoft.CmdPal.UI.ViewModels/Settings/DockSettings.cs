@@ -45,7 +45,7 @@ public record DockSettings
     public string? BackgroundImagePath { get; init; }
 
     // </Theme settings>
-    public ImmutableList<DockBandSettings> StartBands { get; init; } = ImmutableList.Create(
+    private ImmutableList<DockBandSettings>? _startBands = ImmutableList.Create(
         new DockBandSettings
         {
             ProviderId = "com.microsoft.cmdpal.builtin.core",
@@ -55,12 +55,24 @@ public record DockSettings
         {
             ProviderId = "WinGet",
             CommandId = "com.microsoft.cmdpal.winget",
-            ShowLabels = false,
+            ShowTitles = false,
         });
 
-    public ImmutableList<DockBandSettings> CenterBands { get; init; } = ImmutableList<DockBandSettings>.Empty;
+    public ImmutableList<DockBandSettings> StartBands
+    {
+        get => _startBands ?? ImmutableList<DockBandSettings>.Empty;
+        init => _startBands = value;
+    }
 
-    public ImmutableList<DockBandSettings> EndBands { get; init; } = ImmutableList.Create(
+    private ImmutableList<DockBandSettings>? _centerBands = ImmutableList<DockBandSettings>.Empty;
+
+    public ImmutableList<DockBandSettings> CenterBands
+    {
+        get => _centerBands ?? ImmutableList<DockBandSettings>.Empty;
+        init => _centerBands = value;
+    }
+
+    private ImmutableList<DockBandSettings>? _endBands = ImmutableList.Create(
         new DockBandSettings
         {
             ProviderId = "PerformanceMonitor",
@@ -71,6 +83,12 @@ public record DockSettings
             ProviderId = "com.microsoft.cmdpal.builtin.datetime",
             CommandId = "com.microsoft.cmdpal.timedate.dockBand",
         });
+
+    public ImmutableList<DockBandSettings> EndBands
+    {
+        get => _endBands ?? ImmutableList<DockBandSettings>.Empty;
+        init => _endBands = value;
+    }
 
     public bool ShowLabels { get; init; } = true;
 
@@ -102,16 +120,6 @@ public record DockBandSettings
     /// If null, falls back to dock-wide ShowLabels setting.
     /// </summary>
     public bool? ShowSubtitles { get; init; }
-
-    /// <summary>
-    /// Gets a value for backward compatibility. Maps to ShowTitles.
-    /// </summary>
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool? ShowLabels
-    {
-        get => ShowTitles;
-        init => ShowTitles = value;
-    }
 
     /// <summary>
     /// Resolves the effective value of <see cref="ShowTitles"/> for this band.

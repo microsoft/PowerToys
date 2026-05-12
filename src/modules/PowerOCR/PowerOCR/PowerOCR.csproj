@@ -30,7 +30,6 @@
 	
   <ItemGroup>
     <PackageReference Include="System.ComponentModel.Composition" />
-    <PackageReference Include="System.Drawing.Common" />
   </ItemGroup>
 	
   <ItemGroup>
