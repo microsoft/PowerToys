@@ -26,6 +26,7 @@ advfirewall
 AFeature
 affordances
 AFX
+agentic
 agentskills
 AGGREGATABLE
 AHK
@@ -572,6 +573,7 @@ FOF
 FOFX
 FOLDERID
 folderpath
+followups
 FONTTYPE
 FORCEFILESYSTEM
 FORCEMINIMIZE
@@ -1856,6 +1858,7 @@ themeresources
 THH
 thickframe
 THISCOMPONENT
+threadpool
 throughs
 TILEDWINDOW
 TILLSON
@@ -1911,6 +1914,7 @@ ucrtd
 uefi
 uesc
 UIA
+UIDs
 UIEx
 uild
 uitests
@@ -2149,8 +2153,10 @@ xxxxxx
 ycombinator
 yinle
 yinyue
+yuleng
 YVIRTUALSCREEN
 zamora
+Zenbook
 ZEROINIT
 zonability
 zonable

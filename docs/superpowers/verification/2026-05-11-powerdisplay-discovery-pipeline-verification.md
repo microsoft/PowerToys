@@ -1,7 +1,7 @@
 # PowerDisplay Discovery Pipeline — Manual Verification
 
 **Date**: 2026-05-11
-**Scope**: Verify the per-monitor pipeline refactor of `DdcCiController.DiscoverMonitorsAsync` (commits `e6ec90fdb2..13e34836d9`)
+**Scope**: Verify the per-monitor pipeline refactor of `DdcCiController.DiscoverMonitorsAsync` (commits `e6ec90f..13e3483`)
 **Related**:
 - Spec: [../specs/2026-05-11-powerdisplay-discovery-pipeline-design.md](../specs/2026-05-11-powerdisplay-discovery-pipeline-design.md)
 - Plan: [../plans/2026-05-11-powerdisplay-discovery-pipeline.md](../plans/2026-05-11-powerdisplay-discovery-pipeline.md)
@@ -148,7 +148,7 @@ T2 No blocking sleep: Pass / Fail / Inconclusive
 
 If something fails, the most actionable signals:
 
-1. **Perf is worse than baseline** → confirm Release|x64 build (Debug builds are dramatically slower). Then check log for repeated retries (e.g., `GetPhysicalMonitors attempt 2 retrying`) — if a single hMonitor retries 3× × 200 ms, that's an extra 400 ms per pipeline.
+1. **Perf is worse than baseline** → confirm Release|x64 build; Debug builds are dramatically slower. Then check log for repeated retries (e.g., `GetPhysicalMonitors attempt 2 retrying`) — if a single hMonitor retries 3× × 200 ms, that's an extra 400 ms per pipeline.
 
 2. **Discovery completes but monitor count is wrong** → check log for:
    - `Failed to get GDI device name for hMonitor=0x...`
@@ -158,7 +158,7 @@ If something fails, the most actionable signals:
 
 3. **App crashes / hangs during discovery** → grab a dump. Most likely candidates:
    - Win32 `CapabilitiesRequestAndCapabilitiesReply` hung at firmware level (out of scope, monitor-specific)
-   - Deadlock in `_handleManager.UpdateHandleMap` lock (the lock semantics are unchanged from pre-refactor, so this would be a pre-existing bug surfaced by parallel timing)
+   - Deadlock in `_handleManager.UpdateHandleMap` lock (the lock semantics are unchanged from pre-refactor, so this would be a preexisting bug surfaced by parallel timing)
 
 4. **`OperationCanceledException` shows up in log unexpectedly** → check that the consumer isn't canceling the token early. `MainViewModel.RefreshMonitorsAsync` shouldn't cancel its own request; if it does, that's a separate bug.
 

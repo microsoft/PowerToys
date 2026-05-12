@@ -601,7 +601,7 @@ Switch the orchestrator from three sequential phases to one `Task.WhenAll` over 
 
 ## Task 6: Manual verification
 
-The 86 unit tests don't exercise `DiscoverMonitorsAsync` (they cover `DisplayClassifier` only). Functional correctness must be verified by running the app against real hardware. This task has no code steps — it's a checklist the implementer (or a reviewer) runs after the refactor commits land.
+The 86 unit tests don't exercise `DiscoverMonitorsAsync` (they cover `DisplayClassifier` only). Functional correctness must be verified by running the app against real hardware. This task has no code steps — it's a checklist that the implementer (or a reviewer) runs after the refactor commits land.
 
 **Files:** none.
 
