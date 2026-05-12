@@ -97,8 +97,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             try
             {
-                // Get EDID ID and friendly name directly from MonitorDisplayInfo
-                string edidId = monitorInfo.EdidId ?? string.Empty;
+                // Get friendly name directly from MonitorDisplayInfo
                 string name = physicalMonitor.GetDescription() ?? string.Empty;
 
                 // Use FriendlyName from QueryDisplayConfig if available and not generic
@@ -108,10 +107,18 @@ namespace PowerDisplay.Common.Drivers.DDC
                     name = monitorInfo.FriendlyName;
                 }
 
-                // Generate unique monitor Id: "DDC_{EdidId}_{MonitorNumber}"
-                string monitorId = !string.IsNullOrEmpty(edidId)
-                    ? $"DDC_{edidId}_{monitorInfo.MonitorNumber}"
-                    : $"DDC_Unknown_{monitorInfo.MonitorNumber}";
+                // Generate stable monitor Id from the DevicePath (Windows PnP instance path).
+                // If DevicePath is missing we cannot produce a stable Id, so the monitor is
+                // skipped — better to drop one entry than to persist settings under a key
+                // that won't survive the next reboot.
+                if (string.IsNullOrEmpty(monitorInfo.DevicePath))
+                {
+                    Logger.LogWarning(
+                        $"DDC: Skipping monitor #{monitorInfo.MonitorNumber} (name='{name}', edid='{monitorInfo.EdidId}') — DevicePath unavailable, cannot generate stable Id");
+                    return null;
+                }
+
+                string monitorId = MonitorIdentity.FromDevicePath(monitorInfo.DevicePath);
 
                 // If still no good name, use default value
                 if (string.IsNullOrEmpty(name) || name.Contains("Generic") || name.Contains("PnP"))
@@ -124,9 +131,6 @@ namespace PowerDisplay.Common.Drivers.DDC
                     Id = monitorId,
                     Name = name.Trim(),
                     CurrentBrightness = 50, // Default value, will be updated by MonitorManager after discovery
-                    MinBrightness = 0,
-                    MaxBrightness = 100,
-                    IsAvailable = true,
                     Handle = physicalMonitor.HPhysicalMonitor,
                     Capabilities = MonitorCapabilities.DdcCi,
                     CommunicationMethod = "DDC/CI",

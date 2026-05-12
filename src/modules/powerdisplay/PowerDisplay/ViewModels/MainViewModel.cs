@@ -47,6 +47,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly SettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
+    private readonly ISystemClock _clock;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasMonitors))]
@@ -77,7 +78,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public event EventHandler? InitializationCompleted;
 
     public MainViewModel()
+        : this(new SystemClock())
     {
+    }
+
+    internal MainViewModel(ISystemClock clock)
+    {
+        _clock = clock;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         _cancellationTokenSource = new CancellationTokenSource();
         Monitors = new ObservableCollection<MonitorViewModel>();
