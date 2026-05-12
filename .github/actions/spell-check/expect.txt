@@ -407,6 +407,7 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+DISPLAYPORT
 divyan
 DLGFRAME
 dlgmodalframe
@@ -844,6 +845,7 @@ jjw
 jobject
 JOBOBJECT
 jpe
+JPN
 jpnime
 jrsoftware
 Jsons
@@ -973,6 +975,7 @@ LTEXT
 LTRREADING
 luid
 lusrmgr
+LVDS
 LWA
 LWIN
 LZero
@@ -1036,6 +1039,7 @@ MINMAXINFO
 minwindef
 Mip
 Miracast
+MIRACAST
 mkdn
 mlcfg
 mmc
@@ -1583,6 +1587,7 @@ scrollviewer
 sddl
 SDKDDK
 sdns
+SDTVDONGLE
 searchterm
 SEARCHUI
 secondaryclickaction
@@ -1785,6 +1790,7 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVIDEO
 SVSI
 SWFO
 swp
@@ -1850,6 +1856,7 @@ themeresources
 THH
 thickframe
 THISCOMPONENT
+threadpool
 throughs
 TILEDWINDOW
 TILLSON
@@ -1905,6 +1912,7 @@ ucrtd
 uefi
 uesc
 UIA
+UIDs
 UIEx
 uild
 uitests
@@ -1927,6 +1935,7 @@ UNLEN
 UNORM
 unremapped
 unsubscribes
+untriaged
 unvirtualized
 unwide
 unzoom
@@ -2145,6 +2154,7 @@ yinle
 yinyue
 YVIRTUALSCREEN
 zamora
+Zenbook
 ZEROINIT
 zonability
 zonable
