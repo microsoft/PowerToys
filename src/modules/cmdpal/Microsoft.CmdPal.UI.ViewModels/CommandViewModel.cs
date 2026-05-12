@@ -129,6 +129,10 @@ public partial class CommandViewModel : ExtensionObjectViewModel
                 Icon = new(iconInfo);
                 Icon.InitializeProperties();
                 break;
+            case nameof(_properties):
+                UpdatePropertiesFromExtension(model as IExtendedAttributesProvider);
+
+                break;
         }
 
         UpdateProperty(propertyName);
