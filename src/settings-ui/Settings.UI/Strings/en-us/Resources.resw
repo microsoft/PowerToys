@@ -5487,6 +5487,15 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
+  <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibilityMode.Header" xml:space="preserve">
+    <value>Maximum compatibility mode</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibilityMode.Description" xml:space="preserve">
+    <value>Some monitors do not return a standard capabilities string. Enable this to force Power Display to probe each supported feature directly. This increases discovery time for monitors that already work, so leave it off unless a monitor is missing from Power Display.</value>
+  </data>
   <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
     <value>Profiles</value>
   </data>
