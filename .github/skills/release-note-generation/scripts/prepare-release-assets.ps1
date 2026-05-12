@@ -33,6 +33,84 @@ param(
 $ErrorActionPreference = "Stop"
 $env:AZURE_CORE_NO_PROMPT = "true"
 
+# --- Helpers -----------------------------------------------------------------
+
+# Invoke an `az` CLI command and capture stderr in $script:LastAzError so
+# callers can surface the underlying message (expired login, blocked extension,
+# tenant policy, ...) instead of swallowing it with `2>$null`.
+function Invoke-Az {
+    $tmpErr = [System.IO.Path]::GetTempFileName()
+    try {
+        $output = & az @args 2>$tmpErr
+        $script:LastAzError = (Get-Content $tmpErr -Raw -ErrorAction SilentlyContinue).Trim()
+        return $output
+    }
+    finally {
+        Remove-Item $tmpErr -Force -ErrorAction SilentlyContinue
+    }
+}
+
+# Build an ADO artifact download URL from scratch instead of regex-replacing
+# the URL returned by `az pipelines runs artifact list`. Preserves any other
+# query parameters and only swaps `format` and `subPath`, so we don't break if
+# the upstream URL shape ever changes.
+function Get-ArtifactDownloadUrl {
+    param(
+        [Parameter(Mandatory)][string]$BaseUrl,
+        [Parameter(Mandatory)][string]$SubPath,
+        [Parameter(Mandatory)][ValidateSet('file', 'zip')][string]$Format
+    )
+    $encodedSubPath = [Uri]::EscapeDataString($SubPath)
+    $idx = $BaseUrl.IndexOf('?')
+    if ($idx -lt 0) {
+        return "${BaseUrl}?format=${Format}&subPath=${encodedSubPath}"
+    }
+    $base = $BaseUrl.Substring(0, $idx)
+    $kept = $BaseUrl.Substring($idx + 1) -split '&' | Where-Object {
+        $_ -and -not ($_ -match '^(format|subPath)=')
+    }
+    $kept = @($kept) + @("format=$Format", "subPath=$encodedSubPath")
+    return "${base}?$($kept -join '&')"
+}
+
+# Download a single ADO artifact file with bearer auth and a small retry/backoff
+# loop. A transient network blip on a ~200 MB installer or symbol zip otherwise
+# aborts the entire release-prep run.
+function Invoke-AdoDownload {
+    param(
+        [Parameter(Mandatory)][string]$Url,
+        [Parameter(Mandatory)][string]$DestPath,
+        [Parameter(Mandatory)][string]$Token,
+        [int]$MaxAttempts = 3
+    )
+    $lastError = $null
+    for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+        $webClient = New-Object System.Net.WebClient
+        $webClient.Headers.Add("Authorization", "Bearer $Token")
+        try {
+            $webClient.DownloadFile($Url, $DestPath)
+            return
+        }
+        catch {
+            $lastError = $_
+            if (Test-Path $DestPath) {
+                Remove-Item $DestPath -Force -ErrorAction SilentlyContinue
+            }
+            if ($attempt -lt $MaxAttempts) {
+                $backoffSec = [int][Math]::Pow(2, $attempt)  # 2, 4, 8 ...
+                Write-Host "  Attempt $attempt failed: $($_.Exception.Message). Retrying in ${backoffSec}s..." -ForegroundColor Yellow
+                Start-Sleep -Seconds $backoffSec
+            }
+        }
+        finally {
+            $webClient.Dispose()
+        }
+    }
+    throw "Download failed after $MaxAttempts attempts. Last error: $($lastError.Exception.Message)`nURL: $Url"
+}
+
+# -----------------------------------------------------------------------------
+
 # Work around broken az extensions: if the default extension dir has
 # inaccessible files, redirect to a clean directory.
 $defaultExtDir = "$env:USERPROFILE\.azure\cliextensions"
@@ -49,20 +127,28 @@ if (-not $env:AZURE_EXTENSION_DIR -and (Test-Path $defaultExtDir)) {
 }
 
 # Ensure azure-devops extension is installed
-$ext = az extension list --query "[?name=='azure-devops']" -o tsv 2>$null
+$ext = Invoke-Az extension list --query "[?name=='azure-devops']" -o tsv
 if (-not $ext) {
     Write-Host "Installing azure-devops extension..." -ForegroundColor Yellow
-    az extension add --name azure-devops --yes 2>$null
+    Invoke-Az extension add --name azure-devops --yes | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to install azure-devops extension.`naz: $script:LastAzError"
+        exit 1
+    }
 }
 
 # Configure az devops defaults
-az devops configure --defaults organization=$Organization project=$Project 2>$null
+Invoke-Az devops configure --defaults organization=$Organization project=$Project | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Failed to configure az devops defaults.`naz: $script:LastAzError"
+    exit 1
+}
 
 # --- Step 1: Get build info to determine version ---
 Write-Host "Fetching build $BuildId info..." -ForegroundColor Cyan
-$buildJson = az pipelines build show --id $BuildId --output json 2>$null
+$buildJson = Invoke-Az pipelines build show --id $BuildId --output json
 if (-not $buildJson) {
-    Write-Error "Could not fetch build $BuildId. Are you logged in (az login)?"
+    Write-Error "Could not fetch build $BuildId. Are you logged in (az login)?`naz: $script:LastAzError"
     exit 1
 }
 $build = $buildJson | ConvertFrom-Json
@@ -76,7 +162,11 @@ Write-Host "  Version: $versionParam" -ForegroundColor DarkGray
 
 # --- Step 2: Get artifact metadata once ---
 Write-Host "Fetching artifact metadata..." -ForegroundColor Cyan
-$artifactsJson = az pipelines runs artifact list --run-id $BuildId --output json 2>$null
+$artifactsJson = Invoke-Az pipelines runs artifact list --run-id $BuildId --output json
+if (-not $artifactsJson) {
+    Write-Error "Could not list artifacts for build $BuildId.`naz: $script:LastAzError"
+    exit 1
+}
 $artifacts = $artifactsJson | ConvertFrom-Json
 
 # --- Step 3: Prepare destination folder ---
@@ -87,18 +177,18 @@ if (-not (Test-Path $destFolder)) {
 Write-Host "  Destination: $destFolder" -ForegroundColor DarkGray
 
 # --- Step 4: Get an ADO access token once ---
-$token = az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query accessToken -o tsv 2>$null
+$token = Invoke-Az account get-access-token --resource "499b84ac-1321-427f-aa17-267ca6975798" --query accessToken -o tsv
 if (-not $token) {
-    Write-Error "Failed to acquire ADO access token. Run 'az login' first."
+    Write-Error "Failed to acquire ADO access token. Run 'az login' first.`naz: $script:LastAzError"
     exit 1
 }
 
 # --- Step 5: Define the four installers to download ---
 $targets = @(
-    [pscustomobject]@{ Description = "Per user - x64";     Scope = "perUser";    Arch = "x64";    Artifact = "build-x64-Release";   FileName = "PowerToysUserSetup-$versionParam-x64.exe";   Ref = "ptUserX64" }
-    [pscustomobject]@{ Description = "Per user - ARM64";   Scope = "perUser";    Arch = "arm64";  Artifact = "build-arm64-Release"; FileName = "PowerToysUserSetup-$versionParam-arm64.exe"; Ref = "ptUserArm64" }
-    [pscustomobject]@{ Description = "Machine wide - x64"; Scope = "perMachine"; Arch = "x64";    Artifact = "build-x64-Release";   FileName = "PowerToysSetup-$versionParam-x64.exe";       Ref = "ptMachineX64" }
-    [pscustomobject]@{ Description = "Machine wide - ARM64"; Scope = "perMachine"; Arch = "arm64"; Artifact = "build-arm64-Release"; FileName = "PowerToysSetup-$versionParam-arm64.exe";    Ref = "ptMachineArm64" }
+    [pscustomobject]@{ Description = "Per user - x64";       Scope = "perUser";    Arch = "x64";   Artifact = "build-x64-Release";   FileName = "PowerToysUserSetup-$versionParam-x64.exe" }
+    [pscustomobject]@{ Description = "Per user - ARM64";     Scope = "perUser";    Arch = "arm64"; Artifact = "build-arm64-Release"; FileName = "PowerToysUserSetup-$versionParam-arm64.exe" }
+    [pscustomobject]@{ Description = "Machine wide - x64";   Scope = "perMachine"; Arch = "x64";   Artifact = "build-x64-Release";   FileName = "PowerToysSetup-$versionParam-x64.exe" }
+    [pscustomobject]@{ Description = "Machine wide - ARM64"; Scope = "perMachine"; Arch = "arm64"; Artifact = "build-arm64-Release"; FileName = "PowerToysSetup-$versionParam-arm64.exe" }
 )
 
 # --- Step 6: Download each installer (skip if already present) ---
@@ -117,23 +207,15 @@ foreach ($t in $targets) {
         exit 1
     }
 
-    $baseDownloadUrl = $artifact.resource.downloadUrl
-    $encodedSubPath = [Uri]::EscapeDataString("/$($t.FileName)")
-    $fileUrl = $baseDownloadUrl -replace "format=zip", "format=file&subPath=$encodedSubPath"
+    $fileUrl = Get-ArtifactDownloadUrl -BaseUrl $artifact.resource.downloadUrl -SubPath "/$($t.FileName)" -Format file
 
     Write-Host "Downloading $($t.FileName) ..." -ForegroundColor Cyan
-    $webClient = New-Object System.Net.WebClient
-    $webClient.Headers.Add("Authorization", "Bearer $token")
     try {
-        $webClient.DownloadFile($fileUrl, $destPath)
+        Invoke-AdoDownload -Url $fileUrl -DestPath $destPath -Token $token
     }
     catch {
         Write-Error "Download failed for $($t.FileName): $_"
-        Write-Host "URL: $fileUrl" -ForegroundColor DarkGray
         exit 1
-    }
-    finally {
-        $webClient.Dispose()
     }
 
     $sizeMB = [math]::Round((Get-Item $destPath).Length / 1MB, 1)
@@ -160,71 +242,64 @@ foreach ($s in $symbolTargets) {
         exit 1
     }
 
-    $baseDownloadUrl = $artifact.resource.downloadUrl
-    $encodedSubPath = [Uri]::EscapeDataString($s.SubPath)
     # Symbols are downloaded as a folder => keep format=zip and append subPath
-    if ($baseDownloadUrl -match "subPath=") {
-        $symbolsUrl = $baseDownloadUrl -replace "subPath=[^&]*", "subPath=$encodedSubPath"
-    }
-    else {
-        $sep = if ($baseDownloadUrl.Contains("?")) { "&" } else { "?" }
-        $symbolsUrl = "$baseDownloadUrl$sep" + "subPath=$encodedSubPath"
-    }
+    $symbolsUrl = Get-ArtifactDownloadUrl -BaseUrl $artifact.resource.downloadUrl -SubPath $s.SubPath -Format zip
 
     $tmpZip = Join-Path ([System.IO.Path]::GetTempPath()) ("ptsym-$($s.Arch)-$([Guid]::NewGuid().ToString('N')).zip")
     $tmpExtract = Join-Path ([System.IO.Path]::GetTempPath()) ("ptsym-$($s.Arch)-$([Guid]::NewGuid().ToString('N'))")
+    $stageRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("ptsym-stage-$([Guid]::NewGuid().ToString('N'))")
 
-    Write-Host "Downloading symbols-$($s.Arch).zip ..." -ForegroundColor Cyan
-    $webClient = New-Object System.Net.WebClient
-    $webClient.Headers.Add("Authorization", "Bearer $token")
     try {
-        $webClient.DownloadFile($symbolsUrl, $tmpZip)
+        Write-Host "Downloading symbols-$($s.Arch).zip ..." -ForegroundColor Cyan
+        try {
+            Invoke-AdoDownload -Url $symbolsUrl -DestPath $tmpZip -Token $token
+        }
+        catch {
+            Write-Error "Symbols download failed for $($s.Arch): $_"
+            exit 1
+        }
+
+        Write-Host "  Extracting..." -ForegroundColor DarkGray
+        Expand-Archive -Path $tmpZip -DestinationPath $tmpExtract -Force
+
+        # Walk down while the current dir holds exactly one subfolder and no files.
+        $current = Get-Item $tmpExtract
+        while ($true) {
+            $children = Get-ChildItem -LiteralPath $current.FullName -Force
+            $subDirs = @($children | Where-Object { $_.PSIsContainer })
+            $files = @($children | Where-Object { -not $_.PSIsContainer })
+            if ($subDirs.Count -eq 1 -and $files.Count -eq 0) {
+                $current = $subDirs[0]
+            }
+            else {
+                break
+            }
+        }
+
+        # Stage to a folder named symbols-<arch> so the zip extracts to that name.
+        $stageInner = Join-Path $stageRoot "symbols-$($s.Arch)"
+        New-Item -ItemType Directory -Path $stageInner -Force | Out-Null
+        Get-ChildItem -LiteralPath $current.FullName -Force | ForEach-Object {
+            Copy-Item -LiteralPath $_.FullName -Destination $stageInner -Recurse -Force
+        }
+
+        Write-Host "  Repacking to $finalZip ..." -ForegroundColor DarkGray
+        if (Test-Path $finalZip) { Remove-Item $finalZip -Force }
+        Compress-Archive -Path "$stageInner\*" -DestinationPath $finalZip -CompressionLevel Optimal
+
+        $sizeMB = [math]::Round((Get-Item $finalZip).Length / 1MB, 1)
+        Write-Host "  Saved symbols-$($s.Arch).zip ($sizeMB MB)" -ForegroundColor Green
     }
     catch {
-        Write-Error "Symbols download failed for $($s.Arch): $_"
-        Write-Host "URL: $symbolsUrl" -ForegroundColor DarkGray
-        exit 1
+        # Don't leave a half-built zip behind if anything in the pipeline blew up.
+        if (Test-Path $finalZip) { Remove-Item $finalZip -Force -ErrorAction SilentlyContinue }
+        throw
     }
     finally {
-        $webClient.Dispose()
+        Remove-Item $tmpZip -Force -ErrorAction SilentlyContinue
+        Remove-Item $tmpExtract -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item $stageRoot -Recurse -Force -ErrorAction SilentlyContinue
     }
-
-    Write-Host "  Extracting..." -ForegroundColor DarkGray
-    if (Test-Path $tmpExtract) { Remove-Item $tmpExtract -Recurse -Force }
-    Expand-Archive -Path $tmpZip -DestinationPath $tmpExtract -Force
-
-    # Walk down while the current dir holds exactly one subfolder and no files.
-    $current = Get-Item $tmpExtract
-    while ($true) {
-        $children = Get-ChildItem -LiteralPath $current.FullName -Force
-        $subDirs = @($children | Where-Object { $_.PSIsContainer })
-        $files = @($children | Where-Object { -not $_.PSIsContainer })
-        if ($subDirs.Count -eq 1 -and $files.Count -eq 0) {
-            $current = $subDirs[0]
-        }
-        else {
-            break
-        }
-    }
-
-    # Stage to a folder named symbols-<arch> so the zip extracts to that name.
-    $stageRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("ptsym-stage-$([Guid]::NewGuid().ToString('N'))")
-    $stageInner = Join-Path $stageRoot "symbols-$($s.Arch)"
-    New-Item -ItemType Directory -Path $stageInner -Force | Out-Null
-    Get-ChildItem -LiteralPath $current.FullName -Force | ForEach-Object {
-        Copy-Item -LiteralPath $_.FullName -Destination $stageInner -Recurse -Force
-    }
-
-    Write-Host "  Repacking to $finalZip ..." -ForegroundColor DarkGray
-    if (Test-Path $finalZip) { Remove-Item $finalZip -Force }
-    Compress-Archive -Path "$stageInner\*" -DestinationPath $finalZip -CompressionLevel Optimal
-
-    Remove-Item $tmpZip -Force -ErrorAction SilentlyContinue
-    Remove-Item $tmpExtract -Recurse -Force -ErrorAction SilentlyContinue
-    Remove-Item $stageRoot -Recurse -Force -ErrorAction SilentlyContinue
-
-    $sizeMB = [math]::Round((Get-Item $finalZip).Length / 1MB, 1)
-    Write-Host "  Saved symbols-$($s.Arch).zip ($sizeMB MB)" -ForegroundColor Green
 }
 
 # --- Step 7: Compute SHA256 and build markdown ---
@@ -233,8 +308,8 @@ Write-Host "`nComputing SHA256 hashes..." -ForegroundColor Cyan
 $sb = [System.Text.StringBuilder]::new()
 [void]$sb.AppendLine("## Installer Hashes")
 [void]$sb.AppendLine("")
-[void]$sb.AppendLine("|  Description   | Filename | sha256 hash |")
-[void]$sb.AppendLine("|----------------|----------|----------|")
+[void]$sb.AppendLine("| Description | Filename | sha256 hash |")
+[void]$sb.AppendLine("| --- | --- | --- |")
 
 foreach ($t in $targets) {
     $destPath = Join-Path $destFolder $t.FileName
@@ -250,3 +325,5 @@ Set-Content -Path $mdPath -Value $markdown -Encoding UTF8
 Write-Host "`nMarkdown written to: $mdPath" -ForegroundColor Green
 Write-Host "`n----- Installer Hashes -----`n" -ForegroundColor Yellow
 Write-Host $markdown
+
+Write-Host "Draft a new GitHub release at: https://github.com/$GitHubRepo/releases/new?tag=v$versionParam" -ForegroundColor Green
