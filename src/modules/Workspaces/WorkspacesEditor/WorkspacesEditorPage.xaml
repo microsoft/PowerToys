@@ -64,6 +64,7 @@
                                     <TextBlock Text="{Binding AppName}" />
                                     <TextBlock
                                         Grid.Column="2"
+                                        Margin="8,0,0,0"
                                         VerticalAlignment="Center"
                                         Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                         Text="{Binding RepeatIndexString, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -71,14 +72,22 @@
                                         Margin="8,0,0,0"
                                         VerticalAlignment="Center"
                                         FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                        Foreground="#EED202"
+                                        Foreground="{DynamicResource SystemFillColorCautionBrush}"
                                         Text="&#xE7BA;"
-                                        ToolTip="{x:Static props:Resources.NotFoundTooltip}"
-                                        Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <TextBlock.ToolTip>
+                                            <ToolTip>
+                                                <TextBlock
+                                                    FontFamily="Segoe UI Variable,SegoeUI"
+                                                    Text="{x:Static props:Resources.NotFoundTooltip}"
+                                                    TextWrapping="Wrap" />
+                                            </ToolTip>
+                                        </TextBlock.ToolTip>
+                                    </TextBlock>
                                 </StackPanel>
                                 <TextBlock
                                     FontSize="12"
-                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                    Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"
                                     Text="{Binding AppMainParams, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
                                     Visibility="{Binding IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
                             </StackPanel>
