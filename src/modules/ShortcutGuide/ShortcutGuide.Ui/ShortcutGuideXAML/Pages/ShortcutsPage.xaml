@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="ShortcutGuide.Pages.ShortcutsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:ShortcutGuide.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:ShortcutGuide.Models"
+    xmlns:vm="using:ShortcutGuide.ViewModels"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <DataTemplate x:Key="ShortcutItemTemplate" x:DataType="models:ShortcutEntry">
+            <controls:ShortcutItemView Shortcut="{x:Bind}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="SectionTemplate" x:DataType="vm:ShortcutSection">
+            <StackPanel Orientation="Vertical">
+                <TextBlock
+                    Margin="16,12,16,4"
+                    FontWeight="SemiBold"
+                    Text="{x:Bind Title}" />
+                <TextBlock
+                    Margin="16,2,16,8"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind Subtitle}"
+                    Visibility="{x:Bind HasSubtitle, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <ItemsRepeater
+                    ItemTemplate="{StaticResource ShortcutItemTemplate}"
+                    ItemsSource="{x:Bind Items}"
+                    Visibility="{x:Bind HasItems, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+                <TextBlock
+                    Margin="16,0,16,8"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind EmptyText}"
+                    Visibility="{x:Bind ShowEmptyText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
+            </StackPanel>
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <ItemsRepeater
+            Margin="0,16,0,16"
+            ItemTemplate="{StaticResource SectionTemplate}"
+            ItemsSource="{x:Bind Sections, Mode=OneWay}" />
+    </ScrollViewer>
+</Page>

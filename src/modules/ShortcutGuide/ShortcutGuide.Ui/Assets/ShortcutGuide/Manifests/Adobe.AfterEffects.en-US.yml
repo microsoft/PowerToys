@@ -1,0 +1,1623 @@
+PackageName: Adobe.AfterEffects
+Name: Adobe After Effects
+WindowFilter: "afterfx.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: General
+    Properties:
+      - Name: Select all
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl A
+      - Name: Deselect all
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F2
+      - Name: "Duplicate selected layers, masks, effects, text selectors, animators, puppet meshes, shapes, render items, output modules, or compositions"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl D
+      - Name: Quit
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Q
+      - Name: Undo
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Z
+      - Name: Redo
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift Z
+      - Name: Interrupt running a script
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Escape>"
+      - Name: Display filename corresponding to the frame at the current time in the Info panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt E
+  - SectionName: Projects
+    Properties:
+      - Name: New project
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt N
+      - Name: Open project
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl O
+      - Name: Find in Project panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl F
+  - SectionName: "Panels, viewers, workspaces"
+    Properties:
+      - Name: Open or close Project panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 0
+      - Name: Open or close Render Queue panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt 0
+      - Name: Open or close Tools panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 1
+      - Name: Open or close Info panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 2
+      - Name: Open or close Preview panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 3
+      - Name: Open or close Audio panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 4
+      - Name: "Open or close Effects & Presets panel"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 5
+      - Name: Open or close Character panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 6
+      - Name: Open or close Paragraph panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 7
+      - Name: Open or close Paint panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 8
+      - Name: Open or close Brushes panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl 9
+      - Name: Open or close Effect Controls panel for selected layer
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F3
+      - Name: Open Flowchart panel for project flowchart
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl F11
+      - Name: Switch to workspace
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift F10
+      - Name: Close active viewer or panel (closes content first)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl W
+      - Name: "Close active panel or all viewers of type of active viewer (closes content first). For example, if a Timeline panel is active, this command closes all Timeline panels."
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift W
+      - Name: "Cycle to previous or next item in active viewer (for example, cycle through open compositions)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+
+      - Name: "Cycle to previous or next panel in active frame (for example, cycle through open Timeline panels)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt Shift
+  - SectionName: Activate
+    Properties:
+      - Name: Activate Selection tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - V
+      - Name: Activate Hand tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - H
+      - Name: Activate Zoom In tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Z
+      - Name: Activate Rotation tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - W
+      - Name: Activate Roto Brush tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt W
+      - Name: Activate Refine Edge tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt W
+      - Name: "Activate and cycle through Camera tools (Unified Camera, Orbit Camera, Track XY Camera, and Track Z Camera)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - C
+      - Name: Activate Pan Behind tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Y
+      - Name: "Activate and cycle through mask and shape tools (Rectangle, Rounded Rectangle, Ellipse, Polygon, Star)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Q
+      - Name: Activate and cycle through Type tools (Horizontal and Vertical)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl T
+      - Name: "Activate and cycle between the Pen and Mask Feather tools. (Note: You can turn off this setting in the Preferences dialog box.)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - G
+      - Name: Temporarily activate Selection tool when a pen tool is selected
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+
+      - Name: Temporarily activate Pen tool when the Selection tool is selected and pointer is over a path (Add Vertex tool when pointer is over a segment; Convert Vertex tool when pointer is over a vertex)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt
+      - Name: "Activate and cycle through Brush, Clone Stamp, and Eraser tools"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl B
+      - Name: Activate and cycle through Puppet tools
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl P
+  - SectionName: Composition
+    Properties:
+      - Name: New composition
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl N
+      - Name: Open Composition Settings dialog box for selected composition
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl K
+      - Name: Set beginning or end of work area to current time
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - B
+      - Name: "Set work area to duration of selected layers or, if no layers are selected, set work area to composition duration"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt B
+      - Name: Open Composition Mini-Flowchart for active composition
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Tab
+      - Name: Activate the most recently active composition that is in the same composition hierarchy (network of nested compositions) as the currently active composition
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift Esc
+      - Name: Trim Composition to work area
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift X
+      - Name: New Composition from selection
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt \
+  - SectionName: Time navigation
+    Properties:
+      - Name: Go to specific time
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt Shift J
+      - Name: Go to beginning or end of work area
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift Home
+      - Name: "Go to previous or next visible item in time ruler (keyframe, layer marker, work area beginning or end)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - J
+      - Name: "Go to beginning of composition, layer, or footage item"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Home
+      - Name: "Go to end of composition, layer, or footage item"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - End
+      - Name: Go forward 1 frame
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - PageDown
+      - Name: Go backward 1 frame
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - PageUp
+      - Name: Go to layer In point
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - I
+      - Name: Go to layer Out point
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - O
+      - Name: Scroll to current time in Timeline panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - D
+  - SectionName: Previews
+    Properties:
+      - Name: Start or stop preview
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Space>"
+      - Name: Take snapshot
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift F5
+      - Name: Display snapshot in active viewer
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F5
+      - Name: "Fast Previews > Off"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt 1
+      - Name: "Fast Previews > Adaptive Resolution"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt 2
+      - Name: "Fast Previews > Draft"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt 3
+      - Name: "Fast Previews > Fast Draft"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt 4
+      - Name: "Fast Previews > Wireframe"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt 5
+  - SectionName: Views
+    Properties:
+      - Name: "Show red, green, blue, or alpha channel as grayscale"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt 1
+      - Name: "Show colorized red, green, or blue channel"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt Shift 1
+      - Name: Toggle showing straight RGB color
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt Shift 4
+      - Name: Show alpha boundary (outline between transparent and opaque regions) in Layer panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt 5
+      - Name: Show alpha overlay (colored overlay on transparent regions) in Layer panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt 6
+      - Name: Show Refine Edge X-ray
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt X
+      - Name: "Set resolution to Full, Half, or Custom in Composition panel"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl J
+      - Name: Open View Options dialog box for active Composition panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt U
+      - Name: Prevent images from being rendered for previews in viewer panels
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Caps Lock
+      - Name: Show or hide rulers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl R
+      - Name: "Show or hide layer controls (masks, motion paths, light and camera wireframes, effect control points, and layer handles)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift H
+  - SectionName: Footage
+    Properties:
+      - Name: Import one file or image sequence
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl I
+      - Name: Import multiple files or image sequences
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt I
+      - Name: Open Interpret Footage dialog box for selected footage item
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt G
+      - Name: Remember footage interpretation
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt C
+      - Name: Edit selected footage item in application with which it’s associated (Edit Original)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl E
+      - Name: Replace selected footage item
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl H
+      - Name: Reload selected footage items
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt L
+      - Name: Set proxy for selected footage item
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt P
+  - SectionName: Effects and animation presets
+    Properties:
+      - Name: Delete all effects from selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift E
+  - SectionName: Layers
+    Properties:
+      - Name: New solid layer
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Y
+      - Name: New adjustment layer
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt Y
+      - Name: Deselect all layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift A
+      - Name: Scroll topmost selected layer to top of Timeline panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - X
+      - Name: Show or hide Parent column
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift F4
+      - Name: Show or hide Layer Switches and Modes columns
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F4
+      - Name: Setting the sampling method for selected layers (Best/Bilinear)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt B
+      - Name: Setting the sampling method for selected layers (Best/Bicubic)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt Shift B
+      - Name: Turn off Video switch for all video layers other than selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift V
+      - Name: "Open settings dialog box for selected solid, light, camera, null, or adjustment layer"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift Y
+      - Name: Paste layers at current time
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt V
+      - Name: "Split selected layers. (If no layers are selected, split all layers.)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift D
+      - Name: Precompose selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift C
+      - Name: Open Effect Controls panel for selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift T
+      - Name: Reverse selected layers in time
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt R
+      - Name: Enable time remapping for selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt T
+      - Name: Set In point or Out point by time-stretching
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift
+      - Name: Move selected layers so that their In point is at beginning of composition
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt Home
+      - Name: Move selected layers so that their Out point is at end of composition
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt End
+      - Name: Lock selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl L
+      - Name: Unlock all layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift L
+      - Name: "Set Quality to Best, Draft, or Wireframe for selected layers"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl U
+      - Name: Find in Timeline panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl F
+  - SectionName: Showing properties and groups in the Timeline panel
+    Properties:
+      - Name: Find in Timeline panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl F
+      - Name: "Show only Anchor Point property (for lights and cameras, Point Of Interest)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - A
+      - Name: Show only Audio Levels property
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - L
+      - Name: Show only Mask Feather property
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F
+      - Name: Show only Mask Path property
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - M
+      - Name: Show only Mask Opacity property
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - TT
+      - Name: "Show only Opacity property (for lights, Intensity)"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - T
+      - Name: Show only Position property
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - P
+      - Name: Show only Rotation and Orientation properties
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - R
+      - Name: Show only Scale property
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - S
+      - Name: Show only Time Remap property
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - RR
+      - Name: Show only instances of missing effects
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - FF
+      - Name: Show only Effects property group
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - E
+      - Name: Show only mask property groups
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - MM
+      - Name: Show only Material Options property group
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - AA
+      - Name: Show only expressions
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - EE
+      - Name: Show properties with keyframes
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - U
+      - Name: Show only modified properties
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - UU
+      - Name: "Show only paint strokes, Roto Brush strokes, and Puppet pins"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - PP
+      - Name: Show only audio waveform
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - LL
+      - Name: Show only selected properties and groups
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - SS
+  - SectionName: Modifying layer properties
+    Properties:
+      - Name: Open Auto-Orientation dialog box for selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt O
+      - Name: Open Opacity dialog box for selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift O
+      - Name: Open Rotation dialog box for selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift R
+      - Name: Open Position dialog box for selected layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift P
+      - Name: Center-selected layers in view (modifies Position property to place anchor points of selected layers in center of current view)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Home
+      - Name: Move selected layers 1 pixel at current magnification (Position)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Arrow key
+      - Name: Move selected layers 1 frame earlier or later
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt Page Up
+      - Name: Increase or decrease Rotation (Z Rotation) of selected layers by 1°
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - (plus)
+      - Name: Increase or decrease Rotation (Z Rotation) of selected layers by 10°
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift (plus)
+      - Name: "Increase Scale of selected layers by 1%"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl (plus)
+      - Name: Scale and reposition selected layers to fit composition
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt F
+  - SectionName: 3D Layers
+    Properties:
+      - Name: Switch to 3D view 1 (defaults to Front)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F10
+      - Name: Switch to 3D view 2 (defaults to Custom View 1)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F11
+      - Name: Switch to 3D view 3 (defaults to Active Camera)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F12
+      - Name: Return to previous view
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Escape>"
+      - Name: "With a camera tool selected, move the camera and its point of interest to look at selected 3D layers"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F
+      - Name: "With a camera tool selected, move the camera and its point of interest to look at all 3D layers"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift F
+      - Name: Turn Casts Shadows property on or off for selected 3D layers
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Alt Shift C
+  - SectionName: Keyframes and the Graph Editor
+    Properties:
+      - Name: Toggle between Graph Editor and layer bar modes
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift F3
+      - Name: Select all visible keyframes and properties
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt A
+      - Name: "Deselect all keyframes, properties, and property groups"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift F2
+      - Name: Set interpolation for selected keyframes (layer bar mode)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt K
+      - Name: Set keyframe interpolation method to hold or Auto Bezier
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt H
+      - Name: Easy ease selected keyframes
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F9
+      - Name: Easy ease selected keyframes in
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift F9
+      - Name: Set velocity for selected keyframes
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift K
+  - SectionName: Text
+    Properties:
+      - Name: "Align selected horizontal text left, center, or right"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift L
+      - Name: "Align selected vertical text top, center, or bottom"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift L
+      - Name: Select text from insertion point to beginning or end of line
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Shift Home
+      - Name: Move insertion point to beginning or end of line
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Home
+      - Name: "In horizontal text, move insertion point one character left or right; one line up or down; one word left or right; or one paragraph up or down"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Left Arrow
+      - Name: "In vertical text, move insertion point one character up or down; one left or right; one word up or down; or one paragraph left or right"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Up Arrow
+      - Name: Turn All Caps on or off for selected text
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift K
+      - Name: "Set horizontal scale to 100% for selected text"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift X
+      - Name: Reset tracking to 0 for selected text
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift Q
+      - Name: Justify paragraph; left align last line
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift J
+      - Name: Justify paragraph; force last line
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift F
+      - Name: Decrease or increase font size of selected text by 2 units
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift
+  - SectionName: Masks
+    Properties:
+      - Name: New mask
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift N
+      - Name: Exit free-transform mask editing mode
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Escape>"
+      - Name: Move selected path points 1 pixel at current magnification
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Arrow key
+      - Name: Invert selected mask
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift I
+      - Name: Open Mask Feather dialog box for selected mask
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift F
+      - Name: Open Mask Shape dialog box for selected mask
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift M
+      - Name: Subtract mode
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - S
+      - Name: Darken mode
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - D
+      - Name: Difference mode
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F
+      - Name: Add mode
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - A
+      - Name: Intersect mode
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - I
+      - Name: None
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - N
+  - SectionName: Paint tools
+    Properties:
+      - Name: Swap paint background color and foreground colors
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - X
+      - Name: Set paint foreground color to black and background color to white
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - D
+      - Name: Momentarily activate Eraser tool with Last Stroke Only option
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift
+      - Name: Activate a specific Clone Stamp tool preset
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - 3
+      - Name: Move earlier or later by number of frames specified for stroke Duration
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Page Up
+  - SectionName: Shape Layers
+    Properties:
+      - Name: Group selected shapes
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl G
+      - Name: Ungroup selected shapes
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift G
+  - SectionName: Motion Tracking
+    Properties:
+      - Name: "Move feature region, search region, and attach point 1 pixel at current magnification"
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Arrow key
+  - SectionName: "Saving, exporting, and rendering"
+    Properties:
+      - Name: Save project
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl S
+      - Name: Save As
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift S
+      - Name: Add current frame to render queue
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt S
+      - Name: Duplicate render item with same output filename as original
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Shift D
+      - Name: Add a composition to the Adobe Media Encoder encoding queue
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Ctrl Alt M
