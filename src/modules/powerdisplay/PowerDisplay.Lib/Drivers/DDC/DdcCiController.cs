@@ -693,9 +693,9 @@ namespace PowerDisplay.Common.Drivers.DDC
                 }
             }
 
-            return lastError == 0
-                ? MonitorOperationResult.Failure(lastMessage ?? $"Failed to set VCP 0x{vcpCode:X2}")
-                : MonitorOperationResult.Failure(lastMessage ?? $"Failed to set VCP 0x{vcpCode:X2}", lastError);
+            return MonitorOperationResult.Failure(
+                lastMessage ?? $"Failed to set VCP 0x{vcpCode:X2}",
+                lastError == 0 ? null : lastError);
         }
 
         public void Dispose()
