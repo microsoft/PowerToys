@@ -47,6 +47,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly SettingsUtils _settingsUtils;
     private readonly MonitorStateManager _stateManager;
     private readonly DisplayChangeWatcher _displayChangeWatcher;
+    private readonly ISystemClock _clock;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasMonitors))]
@@ -77,7 +78,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public event EventHandler? InitializationCompleted;
 
     public MainViewModel()
+        : this(new SystemClock())
     {
+    }
+
+    internal MainViewModel(ISystemClock clock)
+    {
+        _clock = clock;
         _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
         _cancellationTokenSource = new CancellationTokenSource();
         Monitors = new ObservableCollection<MonitorViewModel>();
@@ -185,7 +192,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             var displayAreas = DisplayArea.FindAll();
 
             // Get all monitor info from QueryDisplayConfig
-            var allDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo().Values.ToList();
+            var allDisplayInfo = DisplayConfigInventory.GetAllMonitorDisplayInfo().Values.ToList();
 
             // Build GDI name to MonitorNumber(s) mapping
             // Note: In mirror mode, multiple monitors may share the same GdiDeviceName
@@ -228,10 +235,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 // Format display text: single number for normal mode, "1|2" for mirror mode
                 var displayText = string.Join("|", monitorNumbers);
 
-                // Create and position identify window
+                // Create and position identify window.
+                // Position before Activate so the window appears directly at the target
+                // location — avoiding a visible flicker from the default spawn position
+                // and skipping a WM_DPICHANGED round-trip when crossing DPI monitors.
                 var identifyWindow = new IdentifyWindow(displayText);
-                identifyWindow.Activate();
                 identifyWindow.PositionOnDisplay(displayArea);
+                identifyWindow.Activate();
                 windowsCreated++;
             }
         }

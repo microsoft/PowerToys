@@ -102,11 +102,14 @@ namespace ImageResizer.Models
                     using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                     {
                         var winrtOutputStream = outputStream.AsRandomAccessStream();
+                        bool forceFresh = encoderGuid == BitmapEncoder.JpegEncoderId && !noTransformNeeded;
+
                         await EncodeToStreamAsync(
                             decoder,
                             winrtInputStream,
                             winrtOutputStream,
                             encoderGuid,
+                            forceFresh,
                             async (encoder, isTranscode) =>
                             {
                                 if (isTranscode)
@@ -120,14 +123,6 @@ namespace ImageResizer.Models
                                         if (cropBounds.HasValue)
                                         {
                                             encoder.BitmapTransform.Bounds = cropBounds.Value;
-                                        }
-
-                                        // Apply codec-specific properties (e.g., JPEG quality).
-                                        // Must be set after transforms since re-encoding will occur.
-                                        var encoderProps = GetEncoderPropertySet(encoderGuid);
-                                        if (encoderProps != null)
-                                        {
-                                            await encoder.BitmapProperties.SetPropertiesAsync(encoderProps);
                                         }
                                     }
                                 }
@@ -188,11 +183,15 @@ namespace ImageResizer.Models
                 using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                 {
                     var winrtOutputStream = outputStream.AsRandomAccessStream();
+
+                    // SetSoftwareBitmap requires a fresh encoder; the transcode encoder only
+                    // accepts BitmapTransform. Also forces quality to apply for JPEG output.
                     await EncodeToStreamAsync(
                         decoder,
                         winrtInputStream,
                         winrtOutputStream,
                         encoderGuid,
+                        forceFresh: true,
                         (encoder, _) =>
                         {
                             encoder.SetSoftwareBitmap(aiResult);
@@ -214,10 +213,12 @@ namespace ImageResizer.Models
             IRandomAccessStream inputStream,
             IRandomAccessStream outputStream,
             Guid encoderGuid,
+            bool forceFresh,
             Func<BitmapEncoder, bool, Task> writeContent)
         {
             var decoderEncoderId = CodecHelper.GetEncoderIdForDecoder(decoder);
-            bool canTranscode = !_settings.RemoveMetadata
+            bool canTranscode = !forceFresh
+                && !_settings.RemoveMetadata
                 && decoderEncoderId.HasValue
                 && decoderEncoderId.Value == encoderGuid;
 
@@ -257,7 +258,8 @@ namespace ImageResizer.Models
 
         /// <summary>
         /// Fresh encoder path: creates a blank encoder and manually writes pixel data.
-        /// Used when metadata must be stripped (RemoveMetadata) or format doesn't match (ICO→PNG).
+        /// Used when codec options (e.g. JPEG quality) must apply, when metadata must be
+        /// stripped (RemoveMetadata), or when the format doesn't match (ICO→PNG).
         /// The <paramref name="writeContent"/> callback receives isTranscode=false and should
         /// call <see cref="EncodeFramesAsync"/> or <see cref="BitmapEncoder.SetSoftwareBitmap"/>.
         /// </summary>
@@ -267,22 +269,18 @@ namespace ImageResizer.Models
             Guid encoderGuid,
             Func<BitmapEncoder, bool, Task> writeContent)
         {
-            // Read rendering-critical metadata before encoding so we can restore it on
-            // the blank encoder. Only needed for RemoveMetadata; format-mismatch files
-            // (e.g. ICO) rarely carry meaningful EXIF data.
-            BitmapPropertySet renderingMetadata = null;
-            if (_settings.RemoveMetadata)
-            {
-                renderingMetadata = await ReadMetadataAsync(decoder, RenderingMetadataProperties);
-            }
+            // The blank encoder inherits nothing from the source, so we have to carry
+            // metadata over ourselves. RemoveMetadata keeps only the rendering-critical
+            // properties (orientation/colorspace); otherwise mirror the transcode path's
+            // best-effort EXIF preservation.
+            var propsToPreserve = _settings.RemoveMetadata
+                ? RenderingMetadataProperties
+                : KnownMetadataProperties;
+            var preservedMetadata = await ReadMetadataAsync(decoder, propsToPreserve);
 
             var encoder = await CreateFreshEncoderAsync(encoderGuid, outputStream);
             await writeContent(encoder, false);
-
-            if (renderingMetadata != null)
-            {
-                await WriteMetadataAsync(encoder, renderingMetadata);
-            }
+            await WriteMetadataAsync(encoder, preservedMetadata);
 
             await encoder.FlushAsync();
         }

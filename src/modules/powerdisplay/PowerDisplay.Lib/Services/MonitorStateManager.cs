@@ -35,13 +35,13 @@ namespace PowerDisplay.Common.Services
         /// </summary>
         private sealed class MonitorState
         {
-            public int Brightness { get; set; }
+            public int? Brightness { get; set; }
 
-            public int ColorTemperatureVcp { get; set; }
+            public int? ColorTemperatureVcp { get; set; }
 
-            public int Contrast { get; set; }
+            public int? Contrast { get; set; }
 
-            public int Volume { get; set; }
+            public int? Volume { get; set; }
 
             public string? CapabilitiesRaw { get; set; }
         }
@@ -65,10 +65,10 @@ namespace PowerDisplay.Common.Services
 
         /// <summary>
         /// Update monitor parameter and schedule debounced save to disk.
-        /// Uses Monitor.Id as the stable key (e.g., "DDC_GSM5C6D_1", "WMI_BOE0900_2").
+        /// Uses Monitor.Id as the stable key (new DevicePath-based Id, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).
         /// Debounced-save strategy reduces disk I/O by batching rapid updates (e.g., during slider drag).
         /// </summary>
-        /// <param name="monitorId">The monitor's unique Id (e.g., "DDC_GSM5C6D_1").</param>
+        /// <param name="monitorId">The monitor's unique Id (new DevicePath-based format, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).</param>
         /// <param name="property">The property name to update (Brightness, ColorTemperature, Contrast, or Volume).</param>
         /// <param name="value">The new value.</param>
         public void UpdateMonitorParameter(string monitorId, string property, int value)
@@ -126,9 +126,9 @@ namespace PowerDisplay.Common.Services
         /// <summary>
         /// Get saved parameters for a monitor using Monitor.Id.
         /// </summary>
-        /// <param name="monitorId">The monitor's unique Id (e.g., "DDC_GSM5C6D_1").</param>
+        /// <param name="monitorId">The monitor's unique Id (new DevicePath-based format, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).</param>
         /// <returns>A tuple of (Brightness, ColorTemperatureVcp, Contrast, Volume) or null if not found.</returns>
-        public (int Brightness, int ColorTemperatureVcp, int Contrast, int Volume)? GetMonitorParameters(string monitorId)
+        public (int? Brightness, int? ColorTemperatureVcp, int? Contrast, int? Volume)? GetMonitorParameters(string monitorId)
         {
             if (string.IsNullOrEmpty(monitorId))
             {

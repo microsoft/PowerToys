@@ -43,6 +43,8 @@ public sealed partial class ListPage : Page,
 
     private ListItemViewModel? _stickySelectedItem;
     private ListItemViewModel? _lastPushedToVm;
+    private long _pendingContextMenuOpenRequestId;
+    private Action? _cancelPendingContextMenuOpen;
 
     // A single search-text change can produce multiple ItemsUpdated calls
     // dispatched as separate UI-thread callbacks. A later "soft" update
@@ -123,6 +125,8 @@ public sealed partial class ListPage : Page,
     protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
     {
         base.OnNavigatingFrom(e);
+
+        CancelPendingContextMenuOpen();
 
         WeakReferenceMessenger.Default.Unregister<NavigateNextCommand>(this);
         WeakReferenceMessenger.Default.Unregister<NavigatePreviousCommand>(this);
@@ -283,17 +287,7 @@ public sealed partial class ListPage : Page,
             ViewModel?.UpdateSelectedItemCommand.Execute(item);
 
             var pos = e.GetPosition(element);
-
-            _ = DispatcherQueue.TryEnqueue(
-                () =>
-                {
-                    WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
-                        new OpenContextMenuMessage(
-                            element,
-                            FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                            pos,
-                            ContextMenuFilterLocation.Top));
-                });
+            RequestContextMenuOpen(item, element, pos);
         }
     }
 
@@ -1014,21 +1008,14 @@ public sealed partial class ListPage : Page,
             pos = new(0, element.ActualHeight);
         }
 
-        _ = DispatcherQueue.TryEnqueue(
-            () =>
-            {
-                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
-                    new OpenContextMenuMessage(
-                        element,
-                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
-                        pos,
-                        ContextMenuFilterLocation.Top));
-            });
+        ViewModel?.UpdateSelectedItemCommand.Execute(item);
+        RequestContextMenuOpen(item, element, pos);
         e.Handled = true;
     }
 
     private void Items_OnContextCanceled(UIElement sender, RoutedEventArgs e)
     {
+        CancelPendingContextMenuOpen();
         _ = DispatcherQueue.TryEnqueue(() => WeakReferenceMessenger.Default.Send<CloseContextMenuMessage>());
     }
 
@@ -1208,6 +1195,87 @@ public sealed partial class ListPage : Page,
 
         // disableAnimation: true prevents a visible jump animation
         scroll.ChangeView(horizontalOffset: null, verticalOffset: 0, zoomFactor: null, disableAnimation: true);
+    }
+
+    private void RequestContextMenuOpen(ListItemViewModel item, FrameworkElement element, Point pos)
+    {
+        // BEAR LOADING: Right-click can arrive before the selected item's slow
+        // context-menu hydration completes, especially for out-of-proc
+        // providers. Keep this exact open request alive until the same
+        // selected item becomes context-openable instead of dropping the first
+        // click.
+        CancelPendingContextMenuOpen();
+        var requestId = Interlocked.Increment(ref _pendingContextMenuOpenRequestId);
+
+        System.ComponentModel.PropertyChangedEventHandler? onItemChanged = null;
+        Action? detach = null;
+        detach = () =>
+        {
+            if (onItemChanged is not null)
+            {
+                item.PropertyChanged -= onItemChanged;
+            }
+
+            if (ReferenceEquals(_cancelPendingContextMenuOpen, detach))
+            {
+                _cancelPendingContextMenuOpen = null;
+            }
+        };
+
+        onItemChanged = (_, args) =>
+        {
+            if (args.PropertyName is nameof(ListItemViewModel.CanOpenContextMenu) or nameof(ListItemViewModel.AllCommands) &&
+                TryOpenContextMenuIfReady(item, element, pos, requestId))
+            {
+                detach();
+            }
+        };
+
+        item.PropertyChanged += onItemChanged;
+        _cancelPendingContextMenuOpen = detach;
+
+        if (TryOpenContextMenuIfReady(item, element, pos, requestId))
+        {
+            detach();
+        }
+    }
+
+    private bool TryOpenContextMenuIfReady(ListItemViewModel item, FrameworkElement element, Point pos, long requestId)
+    {
+        // Ignore stale requests so rapid selection changes or cancelled opens
+        // can't resurrect an old context menu on the wrong item.
+        if (requestId != Volatile.Read(ref _pendingContextMenuOpenRequestId) ||
+            !ReferenceEquals(ItemView.SelectedItem, item) ||
+            !item.CanOpenContextMenu)
+        {
+            return false;
+        }
+
+        _ = DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                if (requestId != Volatile.Read(ref _pendingContextMenuOpenRequestId) ||
+                    !ReferenceEquals(ItemView.SelectedItem, item))
+                {
+                    return;
+                }
+
+                WeakReferenceMessenger.Default.Send<OpenContextMenuMessage>(
+                    new OpenContextMenuMessage(
+                        element,
+                        FlyoutPlacementMode.BottomEdgeAlignedLeft,
+                        pos,
+                        ContextMenuFilterLocation.Top));
+            });
+
+        return true;
+    }
+
+    private void CancelPendingContextMenuOpen()
+    {
+        Interlocked.Increment(ref _pendingContextMenuOpenRequestId);
+        _cancelPendingContextMenuOpen?.Invoke();
+        _cancelPendingContextMenuOpen = null;
     }
 
     private IDisposable SuppressSelectionChangedScope()

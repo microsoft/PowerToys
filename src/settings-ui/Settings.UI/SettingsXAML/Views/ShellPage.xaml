@@ -168,6 +168,13 @@
                             </AnimatedIcon.FallbackIconSource>
                         </AnimatedIcon>
                     </NavigationViewItem.Icon>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge
+                            x:Name="UpdateInfoBadge"
+                            Margin="0,0,2,0"
+                            Style="{StaticResource UpdateInfoBadgeStyle}"
+                            Visibility="Collapsed" />
+                    </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
 
@@ -249,6 +256,9 @@
                     AutomationProperties.AutomationId="WindowingAndLayoutsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="AlwaysOnTopNavigationItem"
@@ -269,17 +279,21 @@
                             AutomationProperties.AutomationId="FancyZonesNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
                         <NavigationViewItem
+                            x:Name="GrabAndMoveNavigationItem"
+                            x:Uid="Shell_GrabAndMove"
+                            helpers:NavHelper.NavigateTo="views:GrabAndMovePage"
+                            AutomationProperties.AutomationId="GrabAndMoveNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
+                        <NavigationViewItem
                             x:Name="WorkspacesNavigationItem"
                             x:Uid="Shell_Workspaces"
                             helpers:NavHelper.NavigateTo="views:WorkspacesPage"
                             AutomationProperties.AutomationId="WorkspacesNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Workspaces.png}" />
-                        <NavigationViewItem
-                            x:Name="GrabAndMoveNavigationItem"
-                            x:Uid="Shell_GrabAndMove"
-                            helpers:NavHelper.NavigateTo="views:GrabAndMovePage"
-                            AutomationProperties.AutomationId="GrabAndMoveNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}" />
                     </NavigationViewItem.MenuItems>
                 </NavigationViewItem>
 

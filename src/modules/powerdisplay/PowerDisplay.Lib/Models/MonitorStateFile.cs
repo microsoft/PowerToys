@@ -16,7 +16,7 @@ namespace PowerDisplay.Common.Models
     {
         /// <summary>
         /// Gets or sets the monitor states dictionary.
-        /// Key is the monitor's unique Id (e.g., "DDC_GSM5C6D_1", "WMI_BOE0900_2").
+        /// Key is the monitor's unique Id (new DevicePath-based format, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).
         /// </summary>
         [JsonPropertyName("monitors")]
         public Dictionary<string, MonitorStateEntry> Monitors { get; set; } = new();
