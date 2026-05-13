@@ -112,6 +112,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         int delaySeconds = Math.Clamp(settings?.Properties?.MonitorRefreshDelay ?? 5, 1, 30);
         _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue, TimeSpan.FromSeconds(delaySeconds));
         _displayChangeWatcher.DisplayChanged += OnDisplayChanged;
+        _displayChangeWatcher.ResumeDetected += OnResumeDetected;
 
         // Start initial discovery
         _ = InitializeAsync(_cancellationTokenSource.Token);
@@ -268,7 +269,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Dispose each resource independently to ensure all get cleaned up
         try
         {
-            _displayChangeWatcher?.Dispose();
+            if (_displayChangeWatcher is not null)
+            {
+                _displayChangeWatcher.ResumeDetected -= OnResumeDetected;
+                _displayChangeWatcher.DisplayChanged -= OnDisplayChanged;
+                _displayChangeWatcher.Dispose();
+            }
         }
         catch
         {
@@ -362,6 +368,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[Settings] Failed to load UI display settings: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Invoked synchronously the moment the console display transitions to ON
+    /// (before the debounce delay elapses). Locks the interactive UI by
+    /// setting IsScanning = true so the user cannot operate on stale DDC/CI
+    /// handles between wake and the actual rediscovery pass that
+    /// <see cref="OnDisplayChanged"/> will run once debounce completes.
+    /// </summary>
+    private void OnResumeDetected(object? sender, EventArgs e)
+    {
+        if (!IsScanning)
+        {
+            Logger.LogInfo("[MainViewModel] Wake detected — locking UI ahead of rediscovery");
+            IsScanning = true;
         }
     }
 
