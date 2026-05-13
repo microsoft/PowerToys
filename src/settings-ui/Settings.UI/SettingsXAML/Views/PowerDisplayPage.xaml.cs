@@ -254,10 +254,34 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void MaxCompatibilityMode_Toggled(object sender, RoutedEventArgs e)
         {
+            // Guard against the re-entry caused by HandleDangerousFeatureClickAsync's revert()
+            // path synchronously setting toggleSwitch.IsOn = false, which fires Toggled again.
+            if (_isRestoringDangerousFeatureControl)
+            {
+                return;
+            }
+
+            if (sender is not ToggleSwitch toggleSwitch)
+            {
+                return;
+            }
+
+            bool clickedTo = toggleSwitch.IsOn;
+
             await HandleDangerousFeatureClickAsync(
                 sender,
                 "PowerDisplay_MaxCompatibility",
                 value => ViewModel.MaxCompatibilityMode = value);
+
+            // If the user clicked the toggle ON and then cancelled the confirmation
+            // dialog, HandleDangerousFeatureClickAsync has reverted IsOn back to false.
+            // Net effect: no change, no rescan needed.
+            if (clickedTo && !toggleSwitch.IsOn)
+            {
+                return;
+            }
+
+            ViewModel.SignalRescanRequest();
         }
 
         private async Task HandleDangerousFeatureClickAsync(
