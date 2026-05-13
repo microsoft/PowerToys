@@ -308,10 +308,7 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         GetHwndMessage msg = new();
         WeakReferenceMessenger.Default.Send(msg);
         var command = commandRun.GetSelectValueCommand((ulong)msg.Hwnd);
-        if (command == null)
-        {
-        }
-        else if (command is IListPage list)
+        if (command is IListPage list)
         {
             if (PageContext.TryGetTarget(out var pageContext))
             {
@@ -492,9 +489,9 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 removedItem.SafeCleanup();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Handle exceptions (e.g., log them)
+            CoreLogger.LogError($"Error fetching parameter items: {ex.Message}");
         }
 
         DoOnUiThread(
