@@ -255,7 +255,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void MaxCompatibilityMode_Toggled(object sender, RoutedEventArgs e)
         {
             // Guard against the re-entry caused by HandleDangerousFeatureClickAsync's revert()
-            // path synchronously setting toggleSwitch.IsOn = false, which fires Toggled again.
+            // path synchronously setting toggleSwitch.IsOn = false, which fires Toggled again
+            // mid-execution. Without this guard the re-entrant call would fall through to
+            // SignalRescanRequest() with clickedTo=false, triggering a spurious rescan on cancel.
             if (_isRestoringDangerousFeatureControl)
             {
                 return;
