@@ -49,20 +49,12 @@
                         Tapped="Settings_Tapped" />
                 </NavigationView.FooterMenuItems>
                 <NavigationView.Content>
-                    <NavigationView
-                        x:Name="SubNav"
-                        IsBackButtonVisible="Collapsed"
-                        IsSettingsVisible="False"
-                        PaneDisplayMode="Top"
-                        SelectionChanged="SubNav_SelectionChanged">
-                        <Frame
-                            x:Name="ContentFrame"
-                            Margin="4,8,0,0"
-                            Background="{ThemeResource LayerFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8,0,0,0" />
-                    </NavigationView>
+                    <Frame
+                        x:Name="ContentFrame"
+                        Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1,1,0,0"
+                        CornerRadius="8,0,0,0" />
                 </NavigationView.Content>
                 <NavigationView.Resources>
                     <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />

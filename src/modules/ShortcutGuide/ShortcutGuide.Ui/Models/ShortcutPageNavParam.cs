@@ -15,7 +15,5 @@ namespace ShortcutGuide.Models
         public string AppName { get; set; } = string.Empty;
 
         public ShortcutFile ShortcutFile { get; set; }
-
-        public int PageIndex { get; set; }
     }
 }

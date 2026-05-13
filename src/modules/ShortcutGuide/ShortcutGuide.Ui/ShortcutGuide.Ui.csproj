@@ -105,11 +105,6 @@
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Page Update="ShortcutGuideXAML\Pages\OverviewPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="ShortcutGuideXAML\CustomNavigationViewStyle.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

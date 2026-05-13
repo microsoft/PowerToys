@@ -16,6 +16,7 @@
             </ResourceDictionary.MergedDictionaries>
             <!--  Other app resources here  -->
 
+            <tkconverters:BoolToVisibilityConverter x:Name="BoolToVisibilityConverter" />
             <tkconverters:DoubleToVisibilityConverter
                 x:Name="DoubleToVisibilityConverter"
                 FalseValue="Collapsed"

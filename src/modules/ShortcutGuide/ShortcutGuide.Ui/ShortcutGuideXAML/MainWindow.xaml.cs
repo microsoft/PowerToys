@@ -222,75 +222,37 @@ namespace ShortcutGuide
             this.MoveAndResize(xPosition, (int)monitorRect.Y, Width, Height);
         }
 
-        private void WindowSelector_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
-        {
-            if (args.SelectedItem is NavigationViewItem selectedItem)
-            {
-                this._selectedAppName = selectedItem.Name;
-                App.CurrentAppName = this._selectedAppName;
-                this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
-                this.PopulateCategorySelector();
-            }
-        }
-
-        private void PopulateCategorySelector()
-        {
-            this.SubNav.MenuItems.Clear();
-            this.SubNav.MenuItems.Add(new NavigationViewItem()
-            {
-                Content = ResourceLoaderInstance.ResourceLoader.GetString("Overview"),
-                Tag = -1,
-            });
-
-            int i = 0;
-
-            if (this._shortcutFile is ShortcutFile file)
-            {
-                foreach (var category in file.Shortcuts)
-                {
-                    // Skip internal/meta sections delimited by angle brackets (e.g. "<TASKBAR1-9>").
-                    string name = category.SectionName;
-                    if (!(name.StartsWith('<') && name.EndsWith('>')))
-                    {
-                        this.SubNav.MenuItems.Add(new NavigationViewItem() { Content = name, Tag = i });
-                    }
-
-                    i++;
-                }
-
-                if (this.SubNav.MenuItems.Count > 0)
-                {
-                    this.SubNav.SelectedItem = this.SubNav.MenuItems[0];
-                }
-            }
-        }
-
         /// <summary>
         /// Tracks whether the taskbar window was activated. So that the main window does not close.
         /// </summary>
         private bool _taskBarWindowActivated;
 
-        private void SubNav_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        private void WindowSelector_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            if (args.SelectedItem is NavigationViewItem selectedItem && selectedItem.Tag is int param && this._shortcutFile is ShortcutFile file)
+            if (args.SelectedItem is not NavigationViewItem selectedItem)
             {
-                Type selectedPage = typeof(ShortcutsPage);
-                App.TaskBarWindow.Hide();
-                if (param == -1)
-                {
-                    selectedPage = typeof(OverviewPage);
+                return;
+            }
 
-                    // We only show the taskbar button window when the overview page of Windows is selected.
-                    if (this._shortcutFile is not null && this._shortcutFile.Value.Shortcuts.Any(c => c.SectionName.Contains("<TASKBAR1-9>")))
-                    {
-                        this._taskBarWindowActivated = true;
-                        App.TaskBarWindow.Activate();
-                    }
+            this._selectedAppName = selectedItem.Name;
+            App.CurrentAppName = this._selectedAppName;
+            this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
+
+            App.TaskBarWindow.Hide();
+            if (this._shortcutFile is ShortcutFile file)
+            {
+                // Show the taskbar button window only when the selected app exposes the <TASKBAR1-9> section.
+                if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName == "<TASKBAR1-9>"))
+                {
+                    this._taskBarWindowActivated = true;
+                    App.TaskBarWindow.Activate();
                 }
 
-                // Set window position so that the taskbar window does not potentially clip into the main window
+                // Reposition before navigating so the taskbar window does not clip into the main window.
                 this.SetWindowPosition();
-                this.ContentFrame.Navigate(selectedPage, new ShortcutPageNavParam() { ShortcutFile = file, PageIndex = param, AppName = this._selectedAppName });
+                this.ContentFrame.Navigate(
+                    typeof(ShortcutsPage),
+                    new ShortcutPageNavParam { ShortcutFile = file, AppName = this._selectedAppName });
             }
         }
 
