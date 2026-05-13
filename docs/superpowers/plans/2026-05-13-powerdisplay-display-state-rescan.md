@@ -48,6 +48,7 @@ Create `src/modules/powerdisplay/PowerDisplay.Lib/Helpers/PowerSettingsNative.cs
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace PowerDisplay.Common.Helpers;
@@ -60,6 +61,10 @@ namespace PowerDisplay.Common.Helpers;
 /// Uses <see cref="LibraryImportAttribute"/> (source-generated, AOT-compatible)
 /// matching the convention established in <c>PowerDisplay.Common.Drivers.PInvoke</c>.
 /// </summary>
+[SuppressMessage(
+    "Interoperability",
+    "CA1401:P/Invokes should not be visible",
+    Justification = "Exposed for cross-assembly use by PowerToys.PowerDisplay; the main app subscribes/unsubscribes the notification from DisplayChangeWatcher. Pattern matches cmdpal/launcher NativeMethods.cs.")]
 public static partial class PowerSettingsNative
 {
     /// <summary>
