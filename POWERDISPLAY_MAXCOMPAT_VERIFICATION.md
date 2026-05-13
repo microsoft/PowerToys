@@ -101,6 +101,124 @@ These verify the new toggle-driven rescan behaviour.
 
 ---
 
+## 8. Display-state rescan + VCP write retry (sleep/wake recovery)
+
+This section verifies the changes from
+`docs/superpowers/plans/2026-05-13-powerdisplay-display-state-rescan.md`:
+
+- `GUID_CONSOLE_DISPLAY_STATE` replaces `SystemEvents.PowerModeChanged`.
+- UI locks immediately on display-on transition, ahead of the debounce delay.
+- `SetVCPFeature` retries 3× with 200ms spacing.
+
+Run each subsection on **a representative S3 device** (`powercfg /a` shows
+S3 available, S0ix unavailable). If a second machine is available with the
+opposite power profile (S0ix available), repeat sections 8.2 and 8.3 there
+as a separate pass.
+
+### 8.1 Cold-boot baseline — no false wake-trigger
+
+- [ ] Launch PowerToys; open the PowerDisplay flyout.
+- [ ] In `%LOCALAPPDATA%\Microsoft\PowerToys\PowerDisplay\Logs\<version>\log.txt`,
+      look for `[DisplayChangeWatcher] Subscribed to GUID_CONSOLE_DISPLAY_STATE`.
+- [ ] **Negative check:** the log must NOT contain
+      `[DisplayChangeWatcher] Console display ON (was on); ...` —
+      the subscription's initial state echo (if any) must not trigger a
+      rescan because `_lastDisplayState` is seeded to `DisplayStateOn`.
+- [ ] Confirm monitors appear normally after the initial discovery.
+
+### 8.2 System sleep / resume
+
+- [ ] Open the flyout, ensure at least one external monitor is detected
+      with controls visible (brightness or input source).
+- [ ] Run `rundll32 powrprof.dll,SetSuspendState 0,1,0` or use Start menu
+      → Sleep to enter S3.
+- [ ] Wait ≥ 30 seconds. Wake the machine (mouse / keyboard).
+- [ ] **Within 1 second** of seeing the desktop, observe the PowerDisplay
+      flyout:
+  - The flyout must show the "Scanning monitors..." spinner — proving
+    `IsScanning = true` fired synchronously, well before the 5-second
+    debounce.
+  - All previously-interactive controls must be disabled (greyed out).
+- [ ] Wait for the spinner to clear (~5-10s depending on
+      `MonitorRefreshDelay` setting and hardware).
+- [ ] Verify the log shows in order:
+  1. `[DisplayChangeWatcher] Console display ON (was off); firing ResumeDetected and scheduling rescan`
+  2. `[MainViewModel] Wake detected — locking UI ahead of rediscovery`
+  3. `DDC: Discovery start — ... candidate handles, ... external targets`
+  4. `DDC: Discovery complete in ...ms — N/M monitors`
+- [ ] Verify input-source switch (or any other control) works on the first
+      try after the spinner clears.
+
+### 8.3 Idle blank → wake (system did NOT sleep)
+
+This is the scenario the user originally reported.
+
+- [ ] In Settings → System → Power & battery → Screen and sleep, set
+      "On battery / On AC: Turn off screen after" to **1 minute** for the
+      duration of this test.
+- [ ] Open the PowerDisplay flyout; verify monitors are interactive.
+- [ ] Walk away for >1 minute. Screen turns off but system does NOT sleep
+      (verify by checking system-time clock continues; this is **idle blank
+      only**).
+- [ ] Move the mouse or press a key to wake the display.
+- [ ] **Expected — this is the bug being fixed:** the flyout transitions
+      to the scanning spinner immediately, performs a rediscovery, and
+      restores interactive controls with fresh handles.
+- [ ] Verify log entries match section 8.2 step 5 — `Console display ON
+      (was off)` must appear.
+- [ ] **Negative control:** before this fix, the log would NOT contain a
+      `Console display ON` line in this scenario because the underlying
+      signal source (`PowerModeChanged.Resume`) does not fire when system
+      never sleeps. Confirm the new behaviour by checking the log.
+- [ ] Restore the original screen-off timeout when finished.
+
+### 8.4 Laptop lid open / close (laptops only)
+
+- [ ] Settings → System → Power & battery → Lid behaviour: configure
+      "When I close the lid: Turn off the display" (NOT "Sleep").
+- [ ] Open flyout, close lid → screen off → wait 10s → open lid.
+- [ ] Same expected outcome as 8.3: UI locks on lid open, rediscovers,
+      and restores interactive controls.
+- [ ] Restore original lid behaviour.
+
+### 8.5 SetVCPFeature retry — induced bus failure
+
+This step is hard to reproduce reliably without specialised hardware. If you
+have a monitor known to fail VCP writes occasionally right after wake,
+exercise it here. Otherwise, this is a code-review-only check:
+
+- [ ] In a debug build, breakpoint `SetVcpFeatureAsync` and step through
+      one user-initiated brightness/input change. Confirm the retry loop
+      executes correctly on a forced `SetVCPFeature returned false`
+      (modify the local result to false during stepping).
+- [ ] Verify log shows `DDC: SetVCPFeature(VCP=0xNN) attempt 1 failed
+      (lastError=0xN); retrying in 200ms`.
+- [ ] Verify subsequent successful attempt logs `DDC: SetVCPFeature(VCP=0xNN)
+      succeeded on attempt 2`.
+
+### 8.6 Regression — no double-rescan or thrash
+
+- [ ] With the flyout open, hot-plug a monitor in/out three times rapidly.
+- [ ] Verify only one rescan triggers after the debounce settles (proves
+      `ScheduleDisplayChanged` debounce still coalesces).
+- [ ] Toggle screen off/on three times rapidly via Win+L lock screen.
+- [ ] Verify same coalescing — UI locks, debounce settles, one rediscovery.
+- [ ] Check Task Manager: PowerToys.PowerDisplay.exe CPU usage idles back
+      to near-zero within 5s after the last event.
+
+### 8.7 Modern Standby (S0ix) — opportunistic
+
+If you have access to a Modern Standby device (Surface, recent Intel Evo
+laptop, etc.) where `powercfg /a` reports `Standby (S0 Low Power Idle)
+Network Connected` as available:
+
+- [ ] Repeat section 8.2. The expected behaviour is **identical** to S3 —
+      this is the whole point of switching signal sources. If the spinner
+      does not appear on wake or the log does not show `Console display
+      ON`, the fix has regressed on S0ix.
+
+---
+
 ## What this verification does NOT cover
 
 - Hardware that returns *wrong* VCP values when probed. The probe accepts any `true` return from `GetVCPFeatureAndVCPFeatureReply`; if a monitor responds to brightness probe but rejects the write, that monitor will get added with a non-functional brightness slider. Users with such monitors should leave the toggle OFF.
