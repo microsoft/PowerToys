@@ -347,7 +347,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
 
     private void UpdateHotkey()
     {
-        var hotkey = _settingsService.Settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
+        var hotkey = _settingsService.Settings.CommandHotkeys.FirstOrDefault(hk => hk.CommandId == Id);
         if (hotkey is not null)
         {
             _hotkey = hotkey.Hotkey;
@@ -477,28 +477,29 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     }
 
     /// <summary>
-    /// Helper to convert our context menu viewmodels back into the API
+    /// Helper to convert our context menu view models back into the API
     /// interfaces that ICommandItem expects.
     /// </summary>
     private IContextItem?[] BuildContextMenu()
     {
-        List<IContextItem?> contextItems = new();
+        List<IContextItemViewModel> contextItems = [.. _commandItemViewModel.MoreCommands];
 
-        foreach (var item in _commandItemViewModel.MoreCommands)
+        _contextMenuFactory.AddMoreCommandsToTopLevel(this, ProviderContext, contextItems);
+
+        List<IContextItem?> result = [];
+        foreach (var item in contextItems)
         {
-            if (item is ISeparatorContextItem)
+            if (item is ISeparatorContextItem separator)
             {
-                contextItems.Add(item as IContextItem);
+                result.Add(separator);
             }
             else if (item is CommandContextItemViewModel commandItem)
             {
-                contextItems.Add(commandItem.Model.Unsafe);
+                result.Add(commandItem.Model.Unsafe);
             }
         }
 
-        _contextMenuFactory.AddMoreCommandsToTopLevel(this, this.ProviderContext, contextItems);
-
-        return contextItems.ToArray();
+        return [.. result];
     }
 
     internal ICommandItem ToPinnedDockBandItem()

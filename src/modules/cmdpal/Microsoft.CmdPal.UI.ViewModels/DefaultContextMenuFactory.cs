@@ -44,7 +44,7 @@ public partial class DefaultContextMenuFactory : IContextMenuFactory
     public void AddMoreCommandsToTopLevel(
         TopLevelViewModel topLevelItem,
         ICommandProviderContext providerContext,
-        List<IContextItem?> contextItems)
+        List<IContextItemViewModel> contextItems)
     {
         // do nothing
     }

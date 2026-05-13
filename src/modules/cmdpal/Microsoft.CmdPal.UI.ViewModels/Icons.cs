@@ -15,4 +15,8 @@ public static class Icons
     public static IconInfo SettingsIcon => new("\uE713"); // Settings icon
 
     public static IconInfo EditIcon => new("\uE70F"); // Edit icon
+
+    public static IconInfo AliasIcon => new("\uE751"); // Enter key
+
+    public static IconInfo GlobalHotkeyIcon => new("\uEDA7"); // Keyboard shortcut
 }
