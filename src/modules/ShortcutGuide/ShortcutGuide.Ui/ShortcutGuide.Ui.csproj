@@ -86,8 +86,6 @@
 	<PackageReference Include="CommunityToolkit.WinUI.Animations" />
 	<PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="WinUIEx" />
-    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
-    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="YamlDotNet" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>

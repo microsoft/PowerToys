@@ -49,12 +49,13 @@ namespace ShortcutGuide.ShortcutGuideXAML
                 return;
             }
 
+            float dpi = this.DPI;
             double windowsLogoColumnWidth = this.WindowsLogoColumnWidth.Width.Value;
             double windowHeight = 58;
-            double windowMargin = 8 * this.DPI;
+            double windowMargin = 8 * dpi;
             double windowWidth = windowsLogoColumnWidth;
-            double xPosition = buttons[0].X - (windowsLogoColumnWidth * this.DPI);
-            double yPosition = this.WorkArea.Bottom - (windowHeight * this.DPI);
+            double xPosition = buttons[0].X - (windowsLogoColumnWidth * dpi);
+            double yPosition = this.WorkArea.Bottom - (windowHeight * dpi);
 
             this.KeyHolder.Children.Clear();
 
@@ -63,15 +64,15 @@ namespace ShortcutGuide.ShortcutGuideXAML
                 TaskbarIndicator indicator = new()
                 {
                     Label = b.Keynum >= 10 ? "0" : b.Keynum.ToString(CultureInfo.InvariantCulture),
-                    Height = b.Height / this.DPI,
-                    Width = b.Width / this.DPI,
+                    Height = b.Height / dpi,
+                    Width = b.Width / dpi,
                 };
 
                 windowWidth += indicator.Width;
 
                 this.KeyHolder.Children.Add(indicator);
 
-                double indicatorPos = (b.X - xPosition) / this.DPI;
+                double indicatorPos = (b.X - xPosition) / dpi;
                 Canvas.SetLeft(indicator, indicatorPos - windowsLogoColumnWidth);
             }
 

@@ -198,57 +198,28 @@ namespace ShortcutGuide
             var hwnd = WindowNative.GetWindowHandle(this);
             float dpi = DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
-            if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X < AppWindow.Position.X + Width && App.ShortcutGuideProperties.WindowPosition.Value == "left")
+
+            string windowPosition = App.ShortcutGuideProperties.WindowPosition.Value;
+            var taskbarWindow = App.TaskBarWindow.AppWindow;
+            bool taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == "left";
+            bool taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == "right";
+
+            double newHeight = monitorRect.Height / dpi;
+            if (taskbarOnLeft || taskbarOnRight)
             {
-                MaxHeight = (monitorRect.Height / dpi) - App.TaskBarWindow.AppWindow.Size.Height;
-                MinHeight = MaxHeight;
-                Height = MaxHeight;
-            }
-            else if (App.TaskBarWindow.AppWindow.IsVisible && App.TaskBarWindow.AppWindow.Position.X + App.TaskBarWindow.AppWindow.Size.Width > AppWindow.Position.X && App.ShortcutGuideProperties.WindowPosition.Value == "right")
-            {
-                MaxHeight = (monitorRect.Height / dpi) - App.TaskBarWindow.AppWindow.Size.Height;
-                MinHeight = MaxHeight;
-                Height = MaxHeight;
-            }
-            else
-            {
-                MaxHeight = monitorRect.Height / DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
-                MinHeight = MaxHeight;
-                Height = MaxHeight;
+                newHeight -= taskbarWindow.Size.Height;
             }
 
-            int xPosition = App.ShortcutGuideProperties.WindowPosition.Value == "right"
+            MaxHeight = newHeight;
+            MinHeight = newHeight;
+            Height = newHeight;
+
+            int xPosition = windowPosition == "right"
                 ? (int)(monitorRect.X + monitorRect.Width) - (int)(Width * dpi)
                 : (int)monitorRect.X;
 
             this.MoveAndResize(xPosition, (int)monitorRect.Y, Width, Height);
         }
-
-        /*private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            // TO DO: should the results of this be shown on a separate results page? Or as part of the suggested items of the search box?
-            // The current UX is a bit weird as search is about the content that is selected on the page, vs. global search (which a search box in the title bar communicates).
-            // Also, the results indicate that they can be clicked - but they cannot, so this needs more UX thinking on having the right model.
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput && !string.IsNullOrWhiteSpace(SearchBox.Text))
-            {
-                ObservableCollection<ShortcutEntry> searchResults = new ObservableCollection<ShortcutEntry>();
-
-                if (_shortcutFile is ShortcutFile file)
-                {
-                    foreach (var shortcut in file.Shortcuts.SelectMany(list => list.Properties.Where(s => s.Name.Contains(SearchBox.Text, StringComparison.InvariantCultureIgnoreCase))))
-                    {
-                        searchResults.Add(shortcut);
-                    }
-
-                    SearchBox.ItemsSource = searchResults;
-                }
-            }
-        }
-
-        private void SearchBox_KeyboardAcceleratorInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
-        {
-            SearchBox.Focus(FocusState.Programmatic);
-        }*/
 
         private void WindowSelector_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
@@ -275,15 +246,11 @@ namespace ShortcutGuide
             {
                 foreach (var category in file.Shortcuts)
                 {
-                    switch (category.SectionName)
+                    // Skip internal/meta sections delimited by angle brackets (e.g. "<TASKBAR1-9>").
+                    string name = category.SectionName;
+                    if (!(name.StartsWith('<') && name.EndsWith('>')))
                     {
-                        case { } name when name.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal):
-                            break;
-                        case { } name when name.StartsWith('<') && name.EndsWith('>'):
-                            break;
-                        default:
-                            this.SubNav.MenuItems.Add(new NavigationViewItem() { Content = category.SectionName, Tag = i });
-                            break;
+                        this.SubNav.MenuItems.Add(new NavigationViewItem() { Content = name, Tag = i });
                     }
 
                     i++;

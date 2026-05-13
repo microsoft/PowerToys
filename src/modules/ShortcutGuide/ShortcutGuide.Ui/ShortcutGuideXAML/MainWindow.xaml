@@ -22,33 +22,7 @@
                 <RowDefinition Height="48" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TitleBar x:Uid="TitleBar">
-                <!--<TitleBar.Content>
-
-                    <AutoSuggestBox
-                        x:Name="SearchBox"
-                        x:Uid="SearchBox"
-                        Width="300"
-                        VerticalAlignment="Center"
-                        QueryIcon="Find"
-                        TextChanged="SearchBox_TextChanged">
-                        <AutoSuggestBox.KeyboardAccelerators>
-                            <KeyboardAccelerator
-                                Key="F"
-                                Invoked="SearchBox_KeyboardAcceleratorInvoked"
-                                Modifiers="Control" />
-                        </AutoSuggestBox.KeyboardAccelerators>
-                        <AutoSuggestBox.ItemTemplate>
-                            <DataTemplate x:DataType="models:ShortcutEntry">
-                                <Grid>
-                                    <TextBlock Text="{x:Bind Name}" />
-                                     TO DO: Add shortcuts / description
-                                </Grid>
-                            </DataTemplate>
-                        </AutoSuggestBox.ItemTemplate>
-                    </AutoSuggestBox>
-                </TitleBar.Content>-->
-            </TitleBar>
+            <TitleBar x:Uid="TitleBar" />
 
             <NavigationView
                 x:Name="WindowSelector"

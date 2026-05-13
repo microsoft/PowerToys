@@ -71,20 +71,17 @@ namespace ShortcutGuide.Controls
 
         private void SetVisualStates()
         {
-            if (this != null)
+            if (this.IsInvalid)
             {
-                if (this.IsInvalid)
-                {
-                    VisualStateManager.GoToState(this, InvalidState, true);
-                }
-                else if (!IsEnabled)
-                {
-                    VisualStateManager.GoToState(this, DisabledState, true);
-                }
-                else
-                {
-                    VisualStateManager.GoToState(this, NormalState, true);
-                }
+                VisualStateManager.GoToState(this, InvalidState, true);
+            }
+            else if (!IsEnabled)
+            {
+                VisualStateManager.GoToState(this, DisabledState, true);
+            }
+            else
+            {
+                VisualStateManager.GoToState(this, NormalState, true);
             }
         }
 
