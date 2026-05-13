@@ -235,6 +235,7 @@ Skia
 Spotify
 taskmgr
 tldr
+Troms
 Vanara
 wangyi
 WEX
