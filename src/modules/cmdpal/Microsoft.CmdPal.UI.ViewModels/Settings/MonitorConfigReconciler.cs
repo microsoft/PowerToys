@@ -11,9 +11,9 @@ namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 
 /// <summary>
 /// Reconciles persisted <see cref="DockMonitorConfig"/> entries against the
-/// set of currently connected monitors. Handles stale device IDs that may change
-/// across reboots by using the <see cref="DockMonitorConfig.IsPrimary"/> flag as
-/// a secondary matching key.
+/// set of currently connected monitors. Uses <see cref="MonitorInfo.StableId"/>
+/// (hardware device path) for persistent identification, with automatic
+/// migration from legacy GDI device names (<c>\\.\DISPLAYn</c>).
 /// </summary>
 /// <remarks>
 /// All operations are pure — they return new immutable lists rather than
@@ -30,7 +30,8 @@ public static class MonitorConfigReconciler
     /// <summary>
     /// Reconciles persisted monitor configs against the current set of connected monitors.
     /// <para>
-    /// <b>Phase 1</b>: Exact DeviceId matching — keep IsPrimary up-to-date.<br/>
+    /// <b>Phase 1</b>: Exact StableId matching — keep IsPrimary up-to-date.<br/>
+    /// <b>Phase 1.5</b>: Legacy migration — match configs with GDI-style IDs by GDI name, then rewrite to StableId.<br/>
     /// <b>Phase 2</b>: Fuzzy matching — reassociate unmatched configs by IsPrimary flag.<br/>
     /// <b>Phase 3</b>: Create default configs for monitors that have no matching config.<br/>
     /// <b>Phase 4</b>: Retain disconnected monitor configs for future reconnection; prune entries not seen for 6+ months.
@@ -61,39 +62,63 @@ public static class MonitorConfigReconciler
             return existingConfigs;
         }
 
-        // Build a DeviceId → index lookup for O(1) matching in Phase 1
-        var configIndexByDeviceId = new Dictionary<string, int>(existingConfigs.Count, StringComparer.OrdinalIgnoreCase);
+        // Build a MonitorDeviceId → index lookup for O(1) matching
+        var configIndexById = new Dictionary<string, int>(existingConfigs.Count, StringComparer.OrdinalIgnoreCase);
         for (var i = 0; i < existingConfigs.Count; i++)
         {
-            configIndexByDeviceId.TryAdd(existingConfigs[i].MonitorDeviceId, i);
+            configIndexById.TryAdd(existingConfigs[i].MonitorDeviceId, i);
         }
 
-        var matchedMonitorDeviceIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var matchedMonitorStableIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var matchedConfigIndices = new HashSet<int>();
         var result = new List<DockMonitorConfig>(currentMonitors.Count);
 
-        // Phase 1: Exact DeviceId match (O(N) with dictionary lookup)
+        // Phase 1: Exact match on StableId (configs already migrated to stable paths)
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
-            if (configIndexByDeviceId.TryGetValue(monitor.DeviceId, out var ci) && !matchedConfigIndices.Contains(ci))
+            if (configIndexById.TryGetValue(monitor.StableId, out var ci) && !matchedConfigIndices.Contains(ci))
             {
-                // Update IsPrimary and LastSeen to current state
                 result.Add(existingConfigs[ci] with { IsPrimary = monitor.IsPrimary, LastSeen = utcNow });
-                matchedMonitorDeviceIds.Add(monitor.DeviceId);
+                matchedMonitorStableIds.Add(monitor.StableId);
                 matchedConfigIndices.Add(ci);
             }
         }
 
-        // Phase 2: Fuzzy match — recover primary monitor config when its DeviceId changed.
-        // Windows can reassign DeviceId strings across reboots, driver updates, or cable
-        // swaps. When the primary monitor's DeviceId no longer matches any saved config,
+        // Phase 1.5: Legacy migration — match configs that still have GDI-style IDs
+        // (e.g. "\\.\DISPLAY1") by matching against the monitor's GDI DeviceId,
+        // then rewrite the MonitorDeviceId to the monitor's stable hardware path.
+        for (var mi = 0; mi < currentMonitors.Count; mi++)
+        {
+            var monitor = currentMonitors[mi];
+            if (matchedMonitorStableIds.Contains(monitor.StableId))
+            {
+                continue;
+            }
+
+            if (configIndexById.TryGetValue(monitor.DeviceId, out var ci) && !matchedConfigIndices.Contains(ci))
+            {
+                // Migrate: rewrite from GDI name to stable path
+                result.Add(existingConfigs[ci] with
+                {
+                    MonitorDeviceId = monitor.StableId,
+                    IsPrimary = monitor.IsPrimary,
+                    LastSeen = utcNow,
+                });
+                matchedMonitorStableIds.Add(monitor.StableId);
+                matchedConfigIndices.Add(ci);
+            }
+        }
+
+        // Phase 2: Fuzzy match — recover primary monitor config when its ID changed.
+        // Windows can reassign device paths across driver updates or cable swaps.
+        // When the primary monitor's StableId no longer matches any saved config,
         // we look for an unmatched config that was previously marked as primary and
         // reassociate it. Secondary monitors are not interchangeable, so we skip them.
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
-            if (!monitor.IsPrimary || matchedMonitorDeviceIds.Contains(monitor.DeviceId))
+            if (!monitor.IsPrimary || matchedMonitorStableIds.Contains(monitor.StableId))
             {
                 continue;
             }
@@ -107,14 +132,13 @@ public static class MonitorConfigReconciler
 
                 if (existingConfigs[ci].IsPrimary)
                 {
-                    // Reassociate: update DeviceId, IsPrimary, and LastSeen
                     result.Add(existingConfigs[ci] with
                     {
-                        MonitorDeviceId = monitor.DeviceId,
+                        MonitorDeviceId = monitor.StableId,
                         IsPrimary = monitor.IsPrimary,
                         LastSeen = utcNow,
                     });
-                    matchedMonitorDeviceIds.Add(monitor.DeviceId);
+                    matchedMonitorStableIds.Add(monitor.StableId);
                     matchedConfigIndices.Add(ci);
                     break;
                 }
@@ -128,17 +152,16 @@ public static class MonitorConfigReconciler
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
-            if (matchedMonitorDeviceIds.Contains(monitor.DeviceId))
+            if (matchedMonitorStableIds.Contains(monitor.StableId))
             {
                 continue;
             }
 
             if (monitor.IsPrimary)
             {
-                // Primary: inherit global bands (IsCustomized = false)
                 result.Add(new DockMonitorConfig
                 {
-                    MonitorDeviceId = monitor.DeviceId,
+                    MonitorDeviceId = monitor.StableId,
                     Enabled = true,
                     IsPrimary = true,
                     LastSeen = utcNow,
@@ -146,10 +169,9 @@ public static class MonitorConfigReconciler
             }
             else
             {
-                // Secondary: start with empty bands so users choose what to pin per-monitor
                 result.Add(new DockMonitorConfig
                 {
-                    MonitorDeviceId = monitor.DeviceId,
+                    MonitorDeviceId = monitor.StableId,
                     Enabled = true,
                     IsPrimary = false,
                     IsCustomized = true,

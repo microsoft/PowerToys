@@ -131,7 +131,7 @@ public sealed partial class DockWindowManager : IDisposable
                 continue;
             }
 
-            var monitor = _monitorService.GetMonitorByDeviceId(config.MonitorDeviceId);
+            var monitor = _monitorService.GetMonitorByStableId(config.MonitorDeviceId);
             if (monitor is null)
             {
                 continue;
@@ -184,7 +184,7 @@ public sealed partial class DockWindowManager : IDisposable
     {
         var viewModel = CreateDockViewModel(monitorDeviceId);
 
-        var monitor = _monitorService.GetMonitorByDeviceId(monitorDeviceId);
+        var monitor = _monitorService.GetMonitorByStableId(monitorDeviceId);
         var sideOverride = dockSettings.GetSideForMonitor(monitorDeviceId);
 
         var window = new DockWindow(viewModel, monitor, sideOverride);
@@ -250,7 +250,7 @@ public sealed partial class DockWindowManager : IDisposable
         {
             new DockMonitorConfig
             {
-                MonitorDeviceId = primary.DeviceId,
+                MonitorDeviceId = primary.StableId,
                 Enabled = true,
                 Side = null,
                 IsPrimary = true,

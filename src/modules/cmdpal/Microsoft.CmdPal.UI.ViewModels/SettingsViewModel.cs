@@ -371,7 +371,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         foreach (var monitor in monitors)
         {
             var config = reconciled.FirstOrDefault(c =>
-                string.Equals(c.MonitorDeviceId, monitor.DeviceId, StringComparison.OrdinalIgnoreCase));
+                string.Equals(c.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase));
 
             if (config is not null)
             {

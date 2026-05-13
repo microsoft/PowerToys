@@ -44,6 +44,21 @@ public sealed class MonitorService : IMonitorService
     }
 
     /// <inheritdoc/>
+    public MonitorInfo? GetMonitorByStableId(string stableId)
+    {
+        var monitors = GetMonitors();
+        foreach (var monitor in monitors)
+        {
+            if (string.Equals(monitor.StableId, stableId, StringComparison.OrdinalIgnoreCase))
+            {
+                return monitor;
+            }
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc/>
     public MonitorInfo? GetMonitorByDeviceId(string deviceId)
     {
         var monitors = GetMonitors();
@@ -92,7 +107,7 @@ public sealed class MonitorService : IMonitorService
     private static unsafe List<MonitorInfo> EnumerateMonitors()
     {
         var monitors = new List<MonitorInfo>();
-        var friendlyNames = BuildFriendlyNameMap();
+        var displayInfo = BuildDisplayInfoMap();
 
         PInvoke.EnumDisplayMonitors(
             HDC.Null,
@@ -115,13 +130,26 @@ public sealed class MonitorService : IMonitorService
 
                     var isPrimary = (infoEx.monitorInfo.dwFlags & PrimaryFlag) != 0;
                     var deviceName = new string(infoEx.szDevice.AsSpan()).TrimEnd('\0');
-                    var displayName = FormatDisplayName(deviceName, isPrimary, friendlyNames);
+
+                    var friendlyName = string.Empty;
+                    var stableId = deviceName; // Fall back to GDI name
+                    if (displayInfo.TryGetValue(deviceName, out var info))
+                    {
+                        friendlyName = info.FriendlyName;
+                        if (!string.IsNullOrEmpty(info.DevicePath))
+                        {
+                            stableId = info.DevicePath;
+                        }
+                    }
+
+                    var displayName = FormatDisplayName(deviceName, isPrimary, friendlyName);
                     var rcMonitor = infoEx.monitorInfo.rcMonitor;
                     var rcWork = infoEx.monitorInfo.rcWork;
 
                     monitors.Add(new MonitorInfo
                     {
                         DeviceId = deviceName,
+                        StableId = stableId,
                         DisplayName = displayName,
                         Bounds = new ScreenRect(
                             rcMonitor.left,
@@ -146,13 +174,13 @@ public sealed class MonitorService : IMonitorService
     }
 
     /// <summary>
-    /// Builds a map from GDI device name (e.g. <c>\\.\DISPLAY1</c>) to the hardware
-    /// friendly name (e.g. <c>DELL U2723QE</c>) using the Display Configuration APIs.
+    /// Builds a map from GDI device name (e.g. <c>\\.\DISPLAY1</c>) to display metadata
+    /// (friendly name and stable device path) using the Display Configuration APIs.
     /// Returns an empty dictionary on failure so callers can fall back gracefully.
     /// </summary>
-    private static unsafe Dictionary<string, string> BuildFriendlyNameMap()
+    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath)> BuildDisplayInfoMap()
     {
-        var map = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var map = new Dictionary<string, (string FriendlyName, string DevicePath)>(StringComparer.OrdinalIgnoreCase);
 
         try
         {
@@ -221,27 +249,28 @@ public sealed class MonitorService : IMonitorService
                 }
 
                 var friendly = new string(targetName.monitorFriendlyDeviceName.AsSpan()).TrimEnd('\0');
-                if (!string.IsNullOrEmpty(friendly))
+                var devicePath = new string(targetName.monitorDevicePath.AsSpan()).TrimEnd('\0');
+                if (!string.IsNullOrEmpty(friendly) || !string.IsNullOrEmpty(devicePath))
                 {
-                    map.TryAdd(gdiName, friendly);
+                    map.TryAdd(gdiName, (friendly ?? string.Empty, devicePath ?? string.Empty));
                 }
             }
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            Logger.LogError($"BuildFriendlyNameMap failed: {ex.Message}");
+            Logger.LogError($"BuildDisplayInfoMap failed: {ex.Message}");
         }
 
         return map;
     }
 
-    private static string FormatDisplayName(string deviceName, bool isPrimary, Dictionary<string, string> friendlyNames)
+    private static string FormatDisplayName(string deviceName, bool isPrimary, string friendlyName)
     {
         string name;
 
-        if (friendlyNames.TryGetValue(deviceName, out var friendly))
+        if (!string.IsNullOrEmpty(friendlyName))
         {
-            name = friendly;
+            name = friendlyName;
         }
         else if (deviceName.StartsWith(@"\\.\DISPLAY", StringComparison.OrdinalIgnoreCase))
         {

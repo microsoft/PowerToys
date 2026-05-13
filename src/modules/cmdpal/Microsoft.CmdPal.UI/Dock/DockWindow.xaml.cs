@@ -500,7 +500,7 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        var refreshed = _monitorService.GetMonitorByDeviceId(_targetMonitor.DeviceId);
+        var refreshed = _monitorService.GetMonitorByStableId(_targetMonitor.StableId);
         if (refreshed is not null)
         {
             _targetMonitor = refreshed;
@@ -515,7 +515,7 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        _sideOverride = _settings.GetSideForMonitor(_targetMonitor.DeviceId);
+        _sideOverride = _settings.GetSideForMonitor(_targetMonitor.StableId);
     }
 
     /// <summary>

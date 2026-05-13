@@ -17,7 +17,13 @@ public interface IMonitorService
     IReadOnlyList<MonitorInfo> GetMonitors();
 
     /// <summary>
-    /// Gets a specific monitor by its device identifier.
+    /// Gets a specific monitor by its stable hardware identifier.
+    /// </summary>
+    MonitorInfo? GetMonitorByStableId(string stableId);
+
+    /// <summary>
+    /// Gets a specific monitor by its GDI device name (e.g. <c>\\.\DISPLAY1</c>).
+    /// Prefer <see cref="GetMonitorByStableId"/> for persistent lookups.
     /// </summary>
     MonitorInfo? GetMonitorByDeviceId(string deviceId);
 

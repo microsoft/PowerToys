@@ -12,9 +12,20 @@ namespace Microsoft.CmdPal.UI.ViewModels.Models;
 public sealed record MonitorInfo
 {
     /// <summary>
-    /// Gets the device identifier (e.g. <c>\\.\DISPLAY1</c>).
+    /// Gets the GDI device name (e.g. <c>\\.\DISPLAY1</c>).
+    /// This is volatile and may change across reboots or plug/unplug events.
+    /// Use <see cref="StableId"/> for persistent identification.
     /// </summary>
     public required string DeviceId { get; init; }
+
+    /// <summary>
+    /// Gets a stable hardware identifier derived from the Display Configuration API
+    /// device path (e.g. <c>\\?\DISPLAY#GSM1388#4&amp;125707d6&amp;0&amp;UID8388688#{guid}</c>).
+    /// Unlike <see cref="DeviceId"/>, this value survives reboots, driver updates,
+    /// and plug/unplug events on the same GPU port. Falls back to <see cref="DeviceId"/>
+    /// when the Display Configuration API is unavailable.
+    /// </summary>
+    public required string StableId { get; init; }
 
     /// <summary>
     /// Gets the human-readable display name (e.g. <c>DELL U2723QE</c>).
