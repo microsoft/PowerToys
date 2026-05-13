@@ -1125,7 +1125,7 @@ opera.exe</value>
     <value>Inactive color</value>
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
-    <value>Shows a help overlay with shortcuts for your apps and Windows.</value>
+    <value>Displays an overlay with keyboard shortcuts for Windows and your apps.</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
