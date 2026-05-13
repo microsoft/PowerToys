@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
@@ -94,7 +93,7 @@ public sealed partial class ParametersPage : Page
         var prop = e.PropertyName;
         if (prop == nameof(ViewModel.ShowCommand))
         {
-            Debug.WriteLine($"ViewModel.ShowCommand {ViewModel?.ShowCommand}");
+            CoreLogger.LogDebug($"ViewModel.ShowCommand {ViewModel?.ShowCommand}");
         }
     }
 }
