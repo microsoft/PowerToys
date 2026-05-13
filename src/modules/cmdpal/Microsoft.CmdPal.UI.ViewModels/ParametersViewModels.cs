@@ -73,6 +73,20 @@ public abstract partial class ParameterRunViewModel : ExtensionObjectViewModel
     {
         // Override in derived classes
     }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        // Unsubscribe from the extension model's PropChanged event so we
+        // don't keep this view model alive for as long as the extension
+        // object lives.
+        var model = _model.Unsafe;
+        if (model is not null)
+        {
+            model.PropChanged -= Model_PropChanged;
+        }
+    }
 }
 
 /// <summary>
@@ -376,10 +390,18 @@ public partial class CommandParameterRunViewModel : ParameterValueRunViewModel, 
         WeakReferenceMessenger.Default.Send(m);
     }
 
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        _listViewModel?.Dispose();
+        _listViewModel = null;
+    }
+
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        _listViewModel?.Dispose();
+        SafeCleanup();
     }
 }
 
