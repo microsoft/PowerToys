@@ -13,7 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 /// Reconciles persisted <see cref="DockMonitorConfig"/> entries against the
 /// set of currently connected monitors. Uses <see cref="MonitorInfo.StableId"/>
 /// (hardware device path) for persistent identification, with automatic
-/// migration from legacy GDI device names (<c>\\.\DISPLAYn</c>).
+/// migration from legacy GDI device names (e.g. <c>\\.\DISPLAY1</c>).
 /// </summary>
 /// <remarks>
 /// All operations are pure — they return new immutable lists rather than
