@@ -192,7 +192,7 @@ public class DockMultiMonitorTests
         Assert.AreEqual(2, result.Count);
         var newConfig = result[1];
         Assert.AreEqual(SecondaryMonitor.StableId, newConfig.MonitorDeviceId);
-        Assert.IsTrue(newConfig.Enabled);
+        Assert.IsFalse(newConfig.Enabled, "New secondary monitor should be disabled by default");
     }
 
     [TestMethod]
@@ -568,10 +568,18 @@ public class DockMultiMonitorTests
 
         Assert.AreEqual(3, reconciled.Count, "Should create configs for all 3 monitors");
 
-        // All monitors should be enabled by default
+        // Only the primary monitor should be enabled by default
         foreach (var config in reconciled)
         {
-            Assert.IsTrue(config.Enabled, $"Monitor {config.MonitorDeviceId} should be enabled");
+            if (config.IsPrimary)
+            {
+                Assert.IsTrue(config.Enabled, $"Primary monitor {config.MonitorDeviceId} should be enabled");
+            }
+            else
+            {
+                Assert.IsFalse(config.Enabled, $"Secondary monitor {config.MonitorDeviceId} should be disabled by default");
+            }
+
             Assert.IsNull(config.Side, $"Monitor {config.MonitorDeviceId} should inherit global side");
         }
 
@@ -615,7 +623,7 @@ public class DockMultiMonitorTests
 
         var secondaryConfig = reconciled.Find(c => !c.IsPrimary);
         Assert.IsNotNull(secondaryConfig, "Secondary config should be created");
-        Assert.IsTrue(secondaryConfig.Enabled, "Secondary should be enabled by default");
+        Assert.IsFalse(secondaryConfig.Enabled, "Secondary should be disabled by default");
         Assert.IsTrue(secondaryConfig.IsCustomized, "Secondary should start with custom (empty) bands");
     }
 
