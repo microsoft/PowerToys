@@ -8,6 +8,9 @@
 
     <!-- Suppress DynamicallyAccessedMemberTypes.PublicParameterlessConstructor in fallback code path of Windows SDK projection -->
     <!-- Suppress CA1416 for Windows-specific APIs that are used in PowerToys which only runs on Windows 10.0.19041.0+ -->
-    <WarningsNotAsErrors>IL2081;CsWinRT1028;CA1416;$(WarningsNotAsErrors)</WarningsNotAsErrors>
+    <!-- IL2104 is the per-assembly roll-up warning emitted by ILLink ("Assembly X produced trim warnings"). The
+         Windows SDK projection assemblies (Microsoft.Windows.SDK.NET, WinRT.Runtime) ship with known trim warnings
+         that we can't fix, so we allow IL2104 through as a warning rather than failing the build. -->
+    <WarningsNotAsErrors>IL2081;IL2104;CsWinRT1028;CA1416;$(WarningsNotAsErrors)</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>
