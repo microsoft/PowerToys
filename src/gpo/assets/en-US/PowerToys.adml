@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation.
      Licensed under the MIT License. -->
-<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.19" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
+<policyDefinitionResources xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" revision="1.20" schemaVersion="1.0" xmlns="http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions">
   <displayName>PowerToys</displayName>
   <description>PowerToys</description>
   <resources>
@@ -78,7 +78,7 @@ If enabled, per-user installation is not allowed.
 
 If disabled or not configured, per-user installation is allowed.
 </string>
-      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether the automatic download and installation of available updates is disabled or not. (On metered connections updates are never downloaded.)
+      <string id="DisableAutomaticUpdateDownloadDescription">This policy configures whether or not the automatic download and installation of available updates is disabled. (On metered connections updates are never downloaded.)
 
 If enabled, automatic download and installation is disabled.
 
@@ -94,7 +94,7 @@ Note: The notification about new major versions is always displayed.
 
 This policy has no effect if the update notification is disabled by the policy "Disable Action Center notification for new updates" or the user setting.
 </string>
-      <string id="DisableNewUpdateToastDescription">This policy configures whether the action center notification for new updates is shown or not.
+      <string id="DisableNewUpdateToastDescription">This policy configures whether or not the action center notification for new updates is shown.
 
 If enabled, the notification is disabled.
 

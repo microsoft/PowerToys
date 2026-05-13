@@ -75,7 +75,6 @@ AUTOMATIONPROPERTIES
 AUTORADIOBUTTON
 AUTOTICKS
 AUTOUPDATE
-AValid
 AWAYMODE
 Abug
 Acceleratorkeys
@@ -240,11 +239,13 @@ DEFAULTFLAGS
 DEFAULTICON
 DEFAULTONLY
 DEFAULTSIZE
+DEFAULTTONEAREST
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
 DELA
+DELD
 DELETEDKEYIMAGE
 DELETESCANS
 DEMOTYPE
@@ -269,6 +270,7 @@ DISPLAYCHANGE
 DISPLAYFLAGS
 DISPLAYFREQUENCY
 DISPLAYORIENTATION
+DISPLAYPORT
 DLGFRAME
 DMy
 DNLEN
@@ -301,6 +303,7 @@ DWMWCP
 DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
+DWRITE
 Dac
 Datasheet
 Dayof
@@ -431,6 +434,7 @@ HBRBACKGROUND
 HCRYPTHASH
 HCRYPTPROV
 HDEVNOTIFY
+HDROP
 HGFE
 HHmmssfff
 HIBYTE
@@ -456,6 +460,7 @@ HOTKEYF
 HPAINTBUFFER
 HPhysical
 HRAWINPUT
+HREDRAW
 HROW
 HSCROLL
 HSpeed
@@ -549,6 +554,7 @@ Innolux
 Inste
 Interlop
 JOBOBJECT
+JPN
 Jsons
 KBSC
 KEYBDDATA
@@ -622,8 +628,10 @@ LSTATUS
 LTEXT
 LTRREADING
 LUMA
+LVDS
 LVal
 LWA
+LWIN
 LZero
 Lbuttondown
 Lclean
@@ -642,7 +650,6 @@ MAPPEDTOSAMEKEY
 MAPTOSAMESHORTCUT
 MAPVK
 MARKDOWNPREVIEWHANDLERCPP
-MAXDWORD
 MAXSHORTCUTSIZE
 MBM
 MBR
@@ -656,6 +663,7 @@ MIIM
 MINIMIZEEND
 MINIMIZESTART
 MINMAXINFO
+MIRACAST
 MMdd
 MODALFRAME
 MODESPRUNED
@@ -774,7 +782,6 @@ NOTOPMOST
 NOTRACK
 NOTSRCCOPY
 NOTSRCERASE
-NOTXORPEN
 NOZORDER
 NPH
 NPU
@@ -888,6 +895,7 @@ Popups
 Powrprof
 Prefixer
 Premul
+Prereq
 Progman
 Prt
 Psr
@@ -938,6 +946,7 @@ ROUNDSMALL
 RRF
 RTLREADING
 RUNLEVEL
+RWIN
 Rasterize
 Rbuttondown
 Redist
@@ -952,6 +961,7 @@ SAVEFAILED
 SCID
 SCREENFONTS
 SDKDDK
+SDTVDONGLE
 SEARCHUI
 SECONDARYDISPLAY
 SEEMASKINVOKEIDLIST
@@ -1058,6 +1068,7 @@ SUBMODULEUPDATE
 SUPPRESSMSGBOXES
 SVGIO
 SVGIn
+SVIDEO
 SVSI
 SWFO
 SWPNOSIZE
@@ -1131,6 +1142,7 @@ UError
 UFlags
 UHash
 UIA
+UIDs
 UIEx
 UITo
 ULONGLONG
@@ -1158,6 +1170,7 @@ Uniquifies
 Uptool
 Usb
 VARTYPE
+VCENTER
 VCINSTALLDIR
 VCRT
 VDesktop
@@ -1174,6 +1187,7 @@ VIRTUALDESK
 VISEGRADRELAY
 VMs
 VOS
+VREDRAW
 VSC
 VSCBD
 VSCROLL
@@ -1271,6 +1285,7 @@ YTimer
 YVIRTUALSCREEN
 ZEROINIT
 ZOOMITX
+Zenbook
 Zoneszonabletester
 Zoomin
 Zorder
@@ -1368,6 +1383,7 @@ clientedge
 clientside
 closesocket
 clp
+clsids
 cmder
 cmdpal
 cmph
@@ -1398,6 +1414,7 @@ coppied
 copyable
 coreclr
 cotaskmem
+couldnt
 countof
 covrun
 cpcontrols
@@ -1865,6 +1882,7 @@ ploca
 plocm
 pluginsmodel
 pnid
+popups
 powerdisplay
 powerocr
 powerpnt
@@ -2121,10 +2139,10 @@ tgamma
 tgz
 themeresources
 thickframe
+threadpool
 throughs
 timedate
 timediff
-timespan
 timeutil
 tkcontrols
 tkconverters
@@ -2132,12 +2150,13 @@ tlb
 tlbimp
 tlc
 tmain
+tontrager
 toolwindow
+touchpads
 tracelogging
 tracerpt
 trackbar
 trafficmanager
-traies
 transicc
 triaging
 trl
@@ -2151,7 +2170,6 @@ uap
 ubrk
 ucrt
 ucrtd
-udit
 uefi
 uesc
 uild
@@ -2166,6 +2184,7 @@ unitconverter
 unittests
 unremapped
 unsubscribes
+untriaged
 unvirtualized
 unwide
 unzoom
@@ -2180,6 +2199,7 @@ uxtheme
 vabdq
 validmodulename
 valuegenerator
+vbcscompiler
 vcamp
 vcenter
 vcgtq

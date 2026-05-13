@@ -272,6 +272,9 @@
                                     TickPlacement="Outside"
                                     Value="{x:Bind ViewModel.RecordScaling, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordAspectRatio" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Record_AspectRatio" IsChecked="{x:Bind ViewModel.RecordAspectRatio, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItRecordFormat" x:Uid="ZoomIt_Record_Format">
                                 <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.RecordFormatIndex, Mode=TwoWay}">
                                     <ComboBoxItem>GIF</ComboBoxItem>
@@ -284,11 +287,11 @@
                             <tkcontrols:SettingsCard Name="ZoomItRecordCaptureAudio" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="ZoomItRecordMicMonoMix" ContentAlignment="Left">
-                                <CheckBox
-                                    x:Uid="ZoomIt_Record_MicMonoMix"
-                                    IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}"
-                                    Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}" />
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordMicMonoMix"
+                                ContentAlignment="Left"
+                                Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}">
+                                <CheckBox x:Uid="ZoomIt_Record_MicMonoMix" IsChecked="{x:Bind ViewModel.RecordMicMonoMix, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
                                 Name="ZoomItRecordMicrophone"
@@ -300,6 +303,54 @@
                                     ItemsSource="{x:Bind ViewModel.MicrophoneList}"
                                     SelectedValue="{x:Bind ViewModel.RecordMicrophoneDeviceId, Mode=TwoWay}"
                                     SelectedValuePath="Item1" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="ZoomItRecordWebcamOverlay" ContentAlignment="Left">
+                                <CheckBox x:Uid="ZoomIt_Record_WebcamOverlay" IsChecked="{x:Bind ViewModel.WebcamOverlay, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamDevice"
+                                x:Uid="ZoomIt_Record_WebcamDevice"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    DisplayMemberPath="Item2"
+                                    ItemsSource="{x:Bind ViewModel.WebcamList}"
+                                    SelectedValue="{x:Bind ViewModel.WebcamDeviceSymLink, Mode=TwoWay}"
+                                    SelectedValuePath="Item1" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamPosition"
+                                x:Uid="ZoomIt_Record_WebcamPosition"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.WebcamPosition, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamPosition_TopLeft" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamPosition_TopRight" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamPosition_BottomLeft" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamPosition_BottomRight" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamSize"
+                                x:Uid="ZoomIt_Record_WebcamSize"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.WebcamSize, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamSize_Small" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamSize_Medium" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamSize_Large" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamSize_XLarge" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamSize_FullScreen" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamShape"
+                                x:Uid="ZoomIt_Record_WebcamShape"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.WebcamShape, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamShape_Rectangle" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamShape_RoundedRectangle" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamShape_RoundedSquare" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamShape_Circle" />
+                                </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
@@ -314,35 +365,34 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_SnipGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander
+                    <tkcontrols:SettingsCard
                         Name="ZoomItSnipShortcut"
                         x:Uid="ZoomIt_Snip_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}"
-                        IsExpanded="True">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}">
+                        <tkcontrols:SettingsCard.Description>
+                            <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
+                        </tkcontrols:SettingsCard.Description>
                         <controls:ShortcutControl HotkeySettings="{x:Bind ViewModel.SnipToggleKey, Mode=TwoWay}" />
-                        <tkcontrols:SettingsExpander.Items>
-                            <tkcontrols:SettingsCard Name="ZoomItSnipShortcutSave">
-                                <tkcontrols:SettingsCard.Description>
-                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Snip_Shortcut_Save}" />
-                                </tkcontrols:SettingsCard.Description>
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
-                    <tkcontrols:SettingsExpander
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         Name="ZoomItSnipOcrShortcut"
                         x:Uid="ZoomIt_SnipOcr_Shortcut"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xF7ED;}"
-                        IsExpanded="True">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8AC;}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
-                    </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
-                <controls:SettingsGroup x:Uid="ZoomIt_PanoramaGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsExpander
                         Name="ZoomItPanoramaShortcut"
                         x:Uid="ZoomIt_Panorama_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}"
                         IsExpanded="True">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipPanoramaToggleKey, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard>
+                                <tkcontrols:SettingsCard.Description>
+                                    <tkcontrols:MarkdownTextBlock Config="{StaticResource DescriptionTextMarkdownConfig}" Text="{x:Bind ViewModel.SnipPanoramaToggleKeySave, Mode=OneWay, Converter={StaticResource HotkeySettingsToLocalizedStringConverter}, ConverterParameter=ZoomIt_Panorama_Shortcut_Save}" />
+                                </tkcontrols:SettingsCard.Description>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
             </StackPanel>

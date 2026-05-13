@@ -38,6 +38,11 @@
 	  <DefineConstants>$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
+  <!-- Added to ensure telemetry events are triggered from AOT build -->
+  <PropertyGroup>
+    <EventSourceSupport>true</EventSourceSupport>
+  </PropertyGroup>
+
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
 	<!-- <PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>

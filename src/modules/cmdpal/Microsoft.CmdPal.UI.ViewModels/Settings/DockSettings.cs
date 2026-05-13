@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Windows.UI;
 
@@ -18,9 +19,7 @@ public record DockSettings
 {
     public DockSide Side { get; init; } = DockSide.Top;
 
-    public DockSize DockSize { get; init; } = DockSize.Small;
-
-    public DockSize DockIconsSize { get; init; } = DockSize.Small;
+    public DockSize DockSize { get; init; } = DockSize.Default;
 
     public bool AlwaysOnTop { get; set; } = true;
 
@@ -46,7 +45,7 @@ public record DockSettings
     public string? BackgroundImagePath { get; init; }
 
     // </Theme settings>
-    public ImmutableList<DockBandSettings> StartBands { get; init; } = ImmutableList.Create(
+    private ImmutableList<DockBandSettings>? _startBands = ImmutableList.Create(
         new DockBandSettings
         {
             ProviderId = "com.microsoft.cmdpal.builtin.core",
@@ -56,12 +55,24 @@ public record DockSettings
         {
             ProviderId = "WinGet",
             CommandId = "com.microsoft.cmdpal.winget",
-            ShowLabels = false,
+            ShowTitles = false,
         });
 
-    public ImmutableList<DockBandSettings> CenterBands { get; init; } = ImmutableList<DockBandSettings>.Empty;
+    public ImmutableList<DockBandSettings> StartBands
+    {
+        get => _startBands ?? ImmutableList<DockBandSettings>.Empty;
+        init => _startBands = value;
+    }
 
-    public ImmutableList<DockBandSettings> EndBands { get; init; } = ImmutableList.Create(
+    private ImmutableList<DockBandSettings>? _centerBands = ImmutableList<DockBandSettings>.Empty;
+
+    public ImmutableList<DockBandSettings> CenterBands
+    {
+        get => _centerBands ?? ImmutableList<DockBandSettings>.Empty;
+        init => _centerBands = value;
+    }
+
+    private ImmutableList<DockBandSettings>? _endBands = ImmutableList.Create(
         new DockBandSettings
         {
             ProviderId = "PerformanceMonitor",
@@ -72,6 +83,12 @@ public record DockSettings
             ProviderId = "com.microsoft.cmdpal.builtin.datetime",
             CommandId = "com.microsoft.cmdpal.timedate.dockBand",
         });
+
+    public ImmutableList<DockBandSettings> EndBands
+    {
+        get => _endBands ?? ImmutableList<DockBandSettings>.Empty;
+        init => _endBands = value;
+    }
 
     public bool ShowLabels { get; init; } = true;
 
@@ -105,16 +122,6 @@ public record DockBandSettings
     public bool? ShowSubtitles { get; init; }
 
     /// <summary>
-    /// Gets a value for backward compatibility. Maps to ShowTitles.
-    /// </summary>
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool? ShowLabels
-    {
-        get => ShowTitles;
-        init => ShowTitles = value;
-    }
-
-    /// <summary>
     /// Resolves the effective value of <see cref="ShowTitles"/> for this band.
     /// If this band doesn't have a specific value set, we'll fall back to the
     /// dock-wide setting (passed as <paramref name="defaultValue"/>).
@@ -137,11 +144,50 @@ public enum DockSide
     Bottom = 3,
 }
 
+[JsonConverter(typeof(DockSizeJsonConverter))]
 public enum DockSize
 {
-    Small,
-    Medium,
-    Large,
+    Default,
+    Compact,
+}
+
+/// <summary>
+/// Custom converter for <see cref="DockSize"/> that preserves backward
+/// compatibility with previously-persisted values. Earlier builds shipped a
+/// <c>Small</c>/<c>Medium</c>/<c>Large</c> enum; those values are migrated to
+/// <see cref="DockSize.Default"/> so existing settings.json files continue to
+/// load instead of failing the entire deserialization.
+/// </summary>
+internal sealed class DockSizeJsonConverter : JsonConverter<DockSize>
+{
+    public override DockSize Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            var value = reader.GetString();
+            if (Enum.TryParse<DockSize>(value, ignoreCase: true, out var parsed))
+            {
+                return parsed;
+            }
+
+            // Legacy values from the original Small/Medium/Large enum, or any
+            // other unknown string — fall back to Default so the user's
+            // settings file remains loadable after upgrading.
+            return DockSize.Default;
+        }
+
+        if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out var number))
+        {
+            return Enum.IsDefined(typeof(DockSize), number) ? (DockSize)number : DockSize.Default;
+        }
+
+        return DockSize.Default;
+    }
+
+    public override void Write(Utf8JsonWriter writer, DockSize value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString());
+    }
 }
 
 public enum DockBackdrop

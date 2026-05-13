@@ -365,6 +365,8 @@ installer/*/*.wxs.bk
 **/.claude/settings.local.json
 
 # Squad / Copilot agents — local-only, not committed
-.squad/
+.copilot
+.squad
 .squad-workstream
-.github/agents/
+.github/agents/**squad**.md
+.github/workflows/**squad**.yml
