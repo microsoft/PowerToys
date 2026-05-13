@@ -30,6 +30,14 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public partial class DdcCiController : IMonitorController, IDisposable
     {
+        // Retry tuning for user-initiated VCP writes. The DDC/CI I²C bus is
+        // fragile around monitor power transitions; even a fresh handle can
+        // fail its first write if the bus has not yet stabilised. The bus
+        // typically re-stabilises within ~100-300ms, so 3 attempts at 200ms
+        // cover the slow tail without user-visible latency.
+        private const int MaxSetVcpAttempts = 3;
+        private const int SetVcpRetryDelayMs = 200;
+
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
 
@@ -722,8 +730,15 @@ namespace PowerDisplay.Common.Drivers.DDC
 
         /// <summary>
         /// Generic method to set VCP feature value directly.
+        ///
+        /// Retries up to <see cref="MaxSetVcpAttempts"/> times with
+        /// <see cref="SetVcpRetryDelayMs"/> backoff between attempts. Truly
+        /// stale handles are caught upstream by the
+        /// <c>DisplayChangeWatcher.ResumeDetected</c> path, which locks the UI
+        /// for the duration of the rediscovery; this retry covers transient
+        /// I²C errors on otherwise-valid handles, not stale-handle recovery.
         /// </summary>
-        private Task<MonitorOperationResult> SetVcpFeatureAsync(
+        private async Task<MonitorOperationResult> SetVcpFeatureAsync(
             Monitor monitor,
             byte vcpCode,
             int value,
@@ -731,30 +746,61 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             ArgumentNullException.ThrowIfNull(monitor);
 
-            return Task.Run(
-                () =>
-                {
-                    if (monitor.Handle == IntPtr.Zero)
-                    {
-                        return MonitorOperationResult.Failure("Invalid monitor handle");
-                    }
+            if (monitor.Handle == IntPtr.Zero)
+            {
+                return MonitorOperationResult.Failure("Invalid monitor handle");
+            }
 
-                    try
+            int lastError = 0;
+            string? lastMessage = null;
+
+            for (int attempt = 1; attempt <= MaxSetVcpAttempts; attempt++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                try
+                {
+                    bool ok = await Task.Run(
+                        () => SetVCPFeature(monitor.Handle, vcpCode, (uint)value),
+                        cancellationToken);
+
+                    if (ok)
                     {
-                        if (SetVCPFeature(monitor.Handle, vcpCode, (uint)value))
+                        if (attempt > 1)
                         {
-                            return MonitorOperationResult.Success();
+                            Logger.LogInfo(
+                                $"DDC: SetVCPFeature(VCP=0x{vcpCode:X2}) succeeded on attempt {attempt}");
                         }
 
-                        var lastError = Marshal.GetLastWin32Error();
-                        return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", lastError);
+                        return MonitorOperationResult.Success();
                     }
-                    catch (Exception ex)
-                    {
-                        return MonitorOperationResult.Failure($"Exception setting VCP 0x{vcpCode:X2}: {ex.Message}");
-                    }
-                },
-                cancellationToken);
+
+                    lastError = Marshal.GetLastWin32Error();
+                    lastMessage = $"Failed to set VCP 0x{vcpCode:X2}";
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    lastError = 0;
+                    lastMessage = $"Exception setting VCP 0x{vcpCode:X2}: {ex.Message}";
+                }
+
+                if (attempt < MaxSetVcpAttempts)
+                {
+                    Logger.LogWarning(
+                        $"DDC: SetVCPFeature(VCP=0x{vcpCode:X2}) attempt {attempt} failed " +
+                        $"(lastError=0x{lastError:X}); retrying in {SetVcpRetryDelayMs}ms");
+
+                    await Task.Delay(SetVcpRetryDelayMs, cancellationToken);
+                }
+            }
+
+            return lastError == 0
+                ? MonitorOperationResult.Failure(lastMessage ?? $"Failed to set VCP 0x{vcpCode:X2}")
+                : MonitorOperationResult.Failure(lastMessage ?? $"Failed to set VCP 0x{vcpCode:X2}", lastError);
         }
 
         public void Dispose()
