@@ -2,12 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
@@ -20,11 +23,13 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 {
     private readonly ISettingsService _settingsService;
     private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly IMonitorService? _monitorService;
 
-    public CommandPaletteContextMenuFactory(ISettingsService settingsService, TopLevelCommandManager topLevelCommandManager)
+    public CommandPaletteContextMenuFactory(ISettingsService settingsService, TopLevelCommandManager topLevelCommandManager, IMonitorService? monitorService = null)
     {
         _settingsService = settingsService;
         _topLevelCommandManager = topLevelCommandManager;
+        _monitorService = monitorService;
     }
 
     /// <summary>
@@ -212,7 +217,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             PinLocation.Dock,
             _settingsService,
             _topLevelCommandManager,
-            commandItemViewModel: commandItem);
+            commandItemViewModel: commandItem,
+            monitorService: _monitorService);
 
         var contextItem = new PinToContextItem(pinToTopLevelCommand, commandItem);
         moreCommands.Add(contextItem);
@@ -261,6 +267,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly string _providerId;
         private readonly ISettingsService _settingsService;
         private readonly TopLevelCommandManager _topLevelCommandManager;
+        private readonly IMonitorService? _monitorService;
         private readonly bool _pin;
         private readonly PinLocation _pinLocation;
         private readonly CommandItemViewModel? _commandItemViewModel;
@@ -282,7 +289,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             PinLocation pinLocation,
             ISettingsService settingsService,
             TopLevelCommandManager topLevelCommandManager,
-            CommandItemViewModel? commandItemViewModel = null)
+            CommandItemViewModel? commandItemViewModel = null,
+            IMonitorService? monitorService = null)
         {
             _commandId = commandId;
             _providerId = providerId;
@@ -291,6 +299,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             _topLevelCommandManager = topLevelCommandManager;
             _pin = pin;
             _commandItemViewModel = commandItemViewModel;
+            _monitorService = monitorService;
         }
 
         public override CommandResult Invoke()
@@ -346,7 +355,8 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var subtitle = _commandItemViewModel?.Subtitle ?? string.Empty;
             var icon = _commandItemViewModel?.Icon;
             var dockSide = _settingsService.Settings.DockSettings.Side;
-            ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide);
+            IReadOnlyList<MonitorInfo>? monitors = _monitorService?.GetMonitors();
+            ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide, monitors);
             WeakReferenceMessenger.Default.Send(message);
         }
 

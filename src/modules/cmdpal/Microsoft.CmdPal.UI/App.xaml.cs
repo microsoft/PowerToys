@@ -257,6 +257,14 @@ public partial class App : Application, IDisposable
         services.AddSingleton<DockViewModel>();
         services.AddSingleton<IContextMenuFactory, CommandPaletteContextMenuFactory>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+
+        // Multi-monitor dock support
+        services.AddSingleton<IMonitorService, MonitorService>();
+        services.AddSingleton<Dock.DockWindowManager>(sp =>
+            new Dock.DockWindowManager(
+                sp.GetRequiredService<IMonitorService>(),
+                sp.GetRequiredService<ISettingsService>(),
+                Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()));
     }
 
     public void Dispose()
