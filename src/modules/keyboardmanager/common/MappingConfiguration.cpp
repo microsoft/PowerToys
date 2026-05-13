@@ -10,6 +10,89 @@
 #include "RemapShortcut.h"
 #include "Helpers.h"
 
+namespace
+{
+    // Escapes all non-ASCII characters (code points > U+007F) in a wide string to their
+    // JSON \uXXXX escape-sequence equivalents. This prevents Windows.Data.Json from
+    // silently corrupting characters such as U+FFFD (REPLACEMENT CHARACTER) during
+    // Stringify() or Parse(). Surrogate pairs are emitted as two consecutive \uXXXX
+    // sequences so that any conformant JSON parser can reconstruct the original text.
+    std::wstring EscapeNonAscii(const std::wstring& input)
+    {
+        // Each non-ASCII code unit may expand to 6 wide chars (\uXXXX); a surrogate
+        // pair expands to 12. Reserve the theoretical maximum to avoid reallocations.
+        std::wstring result;
+        result.reserve(input.size() * 6);
+        for (size_t i = 0; i < input.size(); ++i)
+        {
+            const wchar_t c = input[i];
+            if (c > 0x7F)
+            {
+                // Handle UTF-16 surrogate pairs (code points outside the BMP).
+                if (c >= 0xD800 && c <= 0xDBFF && i + 1 < input.size())
+                {
+                    const wchar_t low = input[i + 1];
+                    if (low >= 0xDC00 && low <= 0xDFFF)
+                    {
+                        // Buffer: 2 x (backslash + 'u' + 4 hex digits) + null = 13 wchar_t.
+                        wchar_t buf[13];
+                        swprintf_s(buf, 13, L"\\u%04X\\u%04X",
+                                   static_cast<unsigned int>(c),
+                                   static_cast<unsigned int>(low));
+                        result += buf;
+                        ++i; // consume the low surrogate
+                        continue;
+                    }
+                }
+                // Buffer: backslash + 'u' + 4 hex digits + null = 7 wchar_t.
+                wchar_t buf[7];
+                swprintf_s(buf, 7, L"\\u%04X", static_cast<unsigned int>(c));
+                result += buf;
+            }
+            else
+            {
+                result += c;
+            }
+        }
+        return result;
+    }
+
+    // Reads the KBM config JSON file, pre-escaping any non-ASCII characters before
+    // handing the text to Windows.Data.Json, which may not round-trip them correctly.
+    std::optional<json::JsonObject> KbmFromFile(const std::wstring& filePath)
+    {
+        try
+        {
+            std::ifstream file(filePath, std::ios::binary);
+            if (!file.is_open())
+            {
+                return std::nullopt;
+            }
+            using isbi = std::istreambuf_iterator<char>;
+            std::string obj_str{ isbi{ file }, isbi{} };
+            std::wstring json_wstr{ winrt::to_hstring(obj_str).c_str() };
+            // Strip a leading UTF-8/UTF-16 BOM (U+FEFF) if one is present.
+            if (!json_wstr.empty() && json_wstr[0] == L'\uFEFF')
+            {
+                json_wstr.erase(0, 1);
+            }
+            return json::JsonValue::Parse(EscapeNonAscii(json_wstr)).GetObjectW();
+        }
+        catch (...)
+        {
+            return std::nullopt;
+        }
+    }
+
+    // Writes the KBM config JSON file, post-escaping any non-ASCII characters that
+    // Stringify() emitted as literal UTF-16 code units so the file is fully ASCII-safe.
+    void KbmToFile(const std::wstring& filePath, const json::JsonObject& obj)
+    {
+        const std::wstring obj_str = EscapeNonAscii(std::wstring{ obj.Stringify().c_str() });
+        std::ofstream{ filePath, std::ios::binary } << winrt::to_string(obj_str);
+    }
+}
+
 // Function to clear the OS Level shortcut remapping table
 void MappingConfiguration::ClearOSLevelShortcuts()
 {
@@ -423,7 +506,7 @@ bool MappingConfiguration::LoadSettings()
         currentConfig = *current_config;
 
         // Read the config file and load the remaps.
-        auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
+        auto configFile = KbmFromFile(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
         if (!configFile)
         {
             return false;
@@ -639,7 +722,7 @@ bool MappingConfiguration::SaveSettingsToFile()
 
     try
     {
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json"), configJson);
+        KbmToFile((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json"), configJson);
     }
     catch (...)
     {
