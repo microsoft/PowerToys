@@ -72,7 +72,7 @@
     <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
     <CsWinRTAotWarningLevel>2</CsWinRTAotWarningLevel>
     <!-- Suppress DynamicallyAccessedMemberTypes.PublicParameterlessConstructor in fallback code path of Windows SDK projection -->
-    <WarningsNotAsErrors>IL2081;$(WarningsNotAsErrors)</WarningsNotAsErrors>
+    <WarningsNotAsErrors>IL2081;IL2104;$(WarningsNotAsErrors)</WarningsNotAsErrors>
 
     <!-- When publishing trimmed, make sure to treat trimming warnings as build errors -->
     <ILLinkTreatWarningsAsErrors>true</ILLinkTreatWarningsAsErrors>
