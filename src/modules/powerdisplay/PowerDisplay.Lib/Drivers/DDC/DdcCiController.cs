@@ -760,8 +760,15 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 try
                 {
-                    bool ok = await Task.Run(
-                        () => SetVCPFeature(monitor.Handle, vcpCode, (uint)value),
+                    // Capture GetLastWin32Error on the same thread as SetVCPFeature —
+                    // LastError is thread-local, and the await may resume on a
+                    // different threadpool worker which would have a stale TLS slot.
+                    (bool ok, int win32Error) = await Task.Run(
+                        () =>
+                        {
+                            bool succeeded = SetVCPFeature(monitor.Handle, vcpCode, (uint)value);
+                            return (succeeded, succeeded ? 0 : Marshal.GetLastWin32Error());
+                        },
                         cancellationToken);
 
                     if (ok)
@@ -775,7 +782,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                         return MonitorOperationResult.Success();
                     }
 
-                    lastError = Marshal.GetLastWin32Error();
+                    lastError = win32Error;
                     lastMessage = $"Failed to set VCP 0x{vcpCode:X2}";
                 }
                 catch (OperationCanceledException)
