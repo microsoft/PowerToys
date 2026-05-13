@@ -971,8 +971,15 @@ Replace with:
 
                 try
                 {
-                    bool ok = await Task.Run(
-                        () => SetVCPFeature(monitor.Handle, vcpCode, (uint)value),
+                    // Capture GetLastWin32Error on the same thread as SetVCPFeature —
+                    // LastError is thread-local, and the await may resume on a
+                    // different threadpool worker which would have a stale TLS slot.
+                    (bool ok, int win32Error) = await Task.Run(
+                        () =>
+                        {
+                            bool succeeded = SetVCPFeature(monitor.Handle, vcpCode, (uint)value);
+                            return (succeeded, succeeded ? 0 : Marshal.GetLastWin32Error());
+                        },
                         cancellationToken);
 
                     if (ok)
@@ -986,7 +993,7 @@ Replace with:
                         return MonitorOperationResult.Success();
                     }
 
-                    lastError = Marshal.GetLastWin32Error();
+                    lastError = win32Error;
                     lastMessage = $"Failed to set VCP 0x{vcpCode:X2}";
                 }
                 catch (OperationCanceledException)
@@ -1009,9 +1016,9 @@ Replace with:
                 }
             }
 
-            return lastError == 0
-                ? MonitorOperationResult.Failure(lastMessage ?? $"Failed to set VCP 0x{vcpCode:X2}")
-                : MonitorOperationResult.Failure(lastMessage ?? $"Failed to set VCP 0x{vcpCode:X2}", lastError);
+            return MonitorOperationResult.Failure(
+                lastMessage ?? $"Failed to set VCP 0x{vcpCode:X2}",
+                lastError == 0 ? null : lastError);
         }
 ```
 
@@ -1062,7 +1069,7 @@ Open `POWERDISPLAY_MAXCOMPAT_VERIFICATION.md`. Add this section after the existi
 ```markdown
 ---
 
-## 7. Display-state rescan + VCP write retry (sleep/wake recovery)
+## 8. Display-state rescan + VCP write retry (sleep/wake recovery)
 
 This section verifies the changes from
 `docs/superpowers/plans/2026-05-13-powerdisplay-display-state-rescan.md`:
@@ -1073,10 +1080,10 @@ This section verifies the changes from
 
 Run each subsection on **a representative S3 device** (`powercfg /a` shows
 S3 available, S0ix unavailable). If a second machine is available with the
-opposite power profile (S0ix available), repeat sections 7.2 and 7.3 there
+opposite power profile (S0ix available), repeat sections 8.2 and 8.3 there
 as a separate pass.
 
-### 7.1 Cold-boot baseline — no false wake-trigger
+### 8.1 Cold-boot baseline — no false wake-trigger
 
 - [ ] Launch PowerToys; open the PowerDisplay flyout.
 - [ ] In `%LOCALAPPDATA%\Microsoft\PowerToys\PowerDisplay\Logs\<version>\log.txt`,
@@ -1087,7 +1094,7 @@ as a separate pass.
       rescan because `_lastDisplayState` is seeded to `DisplayStateOn`.
 - [ ] Confirm monitors appear normally after the initial discovery.
 
-### 7.2 System sleep / resume
+### 8.2 System sleep / resume
 
 - [ ] Open the flyout, ensure at least one external monitor is detected
       with controls visible (brightness or input source).
@@ -1110,7 +1117,7 @@ as a separate pass.
 - [ ] Verify input-source switch (or any other control) works on the first
       try after the spinner clears.
 
-### 7.3 Idle blank → wake (system did NOT sleep)
+### 8.3 Idle blank → wake (system did NOT sleep)
 
 This is the scenario the user originally reported.
 
@@ -1125,7 +1132,7 @@ This is the scenario the user originally reported.
 - [ ] **Expected — this is the bug being fixed:** the flyout transitions
       to the scanning spinner immediately, performs a rediscovery, and
       restores interactive controls with fresh handles.
-- [ ] Verify log entries match section 7.2 step 5 — `Console display ON
+- [ ] Verify log entries match section 8.2 step 5 — `Console display ON
       (was off)` must appear.
 - [ ] **Negative control:** before this fix, the log would NOT contain a
       `Console display ON` line in this scenario because the underlying
@@ -1133,16 +1140,16 @@ This is the scenario the user originally reported.
       never sleeps. Confirm the new behaviour by checking the log.
 - [ ] Restore the original screen-off timeout when finished.
 
-### 7.4 Laptop lid open / close (laptops only)
+### 8.4 Laptop lid open / close (laptops only)
 
 - [ ] Settings → System → Power & battery → Lid behaviour: configure
       "When I close the lid: Turn off the display" (NOT "Sleep").
 - [ ] Open flyout, close lid → screen off → wait 10s → open lid.
-- [ ] Same expected outcome as 7.3: UI locks on lid open, rediscovers,
+- [ ] Same expected outcome as 8.3: UI locks on lid open, rediscovers,
       and restores interactive controls.
 - [ ] Restore original lid behaviour.
 
-### 7.5 SetVCPFeature retry — induced bus failure
+### 8.5 SetVCPFeature retry — induced bus failure
 
 This step is hard to reproduce reliably without specialised hardware. If you
 have a monitor known to fail VCP writes occasionally right after wake,
@@ -1157,7 +1164,7 @@ exercise it here. Otherwise, this is a code-review-only check:
 - [ ] Verify subsequent successful attempt logs `DDC: SetVCPFeature(VCP=0xNN)
       succeeded on attempt 2`.
 
-### 7.6 Regression — no double-rescan or thrash
+### 8.6 Regression — no double-rescan or thrash
 
 - [ ] With the flyout open, hot-plug a monitor in/out three times rapidly.
 - [ ] Verify only one rescan triggers after the debounce settles (proves
@@ -1167,13 +1174,13 @@ exercise it here. Otherwise, this is a code-review-only check:
 - [ ] Check Task Manager: PowerToys.PowerDisplay.exe CPU usage idles back
       to near-zero within 5s after the last event.
 
-### 7.7 Modern Standby (S0ix) — opportunistic
+### 8.7 Modern Standby (S0ix) — opportunistic
 
 If you have access to a Modern Standby device (Surface, recent Intel Evo
 laptop, etc.) where `powercfg /a` reports `Standby (S0 Low Power Idle)
 Network Connected` as available:
 
-- [ ] Repeat section 7.2. The expected behaviour is **identical** to S3 —
+- [ ] Repeat section 8.2. The expected behaviour is **identical** to S3 —
       this is the whole point of switching signal sources. If the spinner
       does not appear on wake or the log does not show `Console display
       ON`, the fix has regressed on S0ix.
@@ -1195,13 +1202,13 @@ The implementation is complete when:
 1. All 5 `DisplayStateTransitionTests` pass.
 2. All existing tests in `PowerDisplay.Lib.UnitTests` still pass.
 3. Both `PowerDisplay` and `PowerDisplay.Lib` build clean on `x64|Debug`.
-4. Section 7.2 (system S3 sleep/wake) and 7.3 (idle-blank wake) of the
+4. Section 8.2 (system S3 sleep/wake) and 8.3 (idle-blank wake) of the
    manual checklist both pass on the verifying engineer's S3 device.
 5. `git grep -n PowerModeChanged src/modules/powerdisplay` returns zero
    matches in the modified source files — the legacy path is gone.
 6. `git grep -n 'using Microsoft.Win32;' src/modules/powerdisplay/PowerDisplay/Helpers/DisplayChangeWatcher.cs` returns zero matches — the unused import is gone.
 
-If section 7.7 (Modern Standby) is also exercised, that constitutes
+If section 8.7 (Modern Standby) is also exercised, that constitutes
 additional coverage but is not required for done.
 
 ---
