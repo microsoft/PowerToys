@@ -5604,6 +5604,23 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
     <value>Enable input source control for this monitor?</value>
   </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningTitle" xml:space="preserve">
+    <value>Confirm maximum compatibility mode</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This may cause unstable monitor behavior.</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningDescription" xml:space="preserve">
+    <value>Maximum compatibility mode bypasses your monitor's capabilities string and sends a probe for every supported VCP feature. Some monitors do not handle this well, which may cause:</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningList" xml:space="preserve">
+    <value>• The screen may go black or briefly lose signal during discovery.
+• The monitor may respond unpredictably, including unwanted changes to brightness, contrast, or input source.
+• The monitor may stop responding to DDC/CI until it is power-cycled.</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningConfirm" xml:space="preserve">
+    <value>Only enable this if a monitor is missing from Power Display and you fully understand the side effects listed above. Continue?</value>
+  </data>
   <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>

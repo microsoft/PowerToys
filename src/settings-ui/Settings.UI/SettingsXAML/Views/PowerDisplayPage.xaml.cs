@@ -209,53 +209,79 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Flag to prevent reentrant Click handling while we programmatically restore
-        // a checkbox after the user cancels a dangerous-feature confirmation dialog.
-        private bool _isRestoringDangerousFeatureCheckbox;
+        // Flag to prevent reentrant Click/Toggled handling while we programmatically restore
+        // a control after the user cancels a dangerous-feature confirmation dialog.
+        private bool _isRestoringDangerousFeatureControl;
 
         private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
         {
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
+            {
+                return;
+            }
+
             await HandleDangerousFeatureClickAsync(
                 sender,
                 "PowerDisplay_ColorTemperature",
-                (monitor, value) => monitor.EnableColorTemperature = value);
+                value => monitor.EnableColorTemperature = value);
         }
 
         private async void EnablePowerState_Click(object sender, RoutedEventArgs e)
         {
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
+            {
+                return;
+            }
+
             await HandleDangerousFeatureClickAsync(
                 sender,
                 "PowerDisplay_PowerState",
-                (monitor, value) => monitor.EnablePowerState = value);
+                value => monitor.EnablePowerState = value);
         }
 
         private async void EnableInputSource_Click(object sender, RoutedEventArgs e)
         {
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
+            {
+                return;
+            }
+
             await HandleDangerousFeatureClickAsync(
                 sender,
                 "PowerDisplay_InputSource",
-                (monitor, value) => monitor.EnableInputSource = value);
+                value => monitor.EnableInputSource = value);
+        }
+
+        private async void MaxCompatibilityMode_Toggled(object sender, RoutedEventArgs e)
+        {
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_MaxCompatibility",
+                value => ViewModel.MaxCompatibilityMode = value);
         }
 
         private async Task HandleDangerousFeatureClickAsync(
             object sender,
             string resourceKeyPrefix,
-            Action<MonitorInfo, bool> setter)
+            Action<bool> setter)
         {
-            if (_isRestoringDangerousFeatureCheckbox)
-            {
-                return;
-            }
-
-            if (sender is not CheckBox checkBox || checkBox.Tag is not MonitorInfo monitor)
+            if (_isRestoringDangerousFeatureControl)
             {
                 return;
             }
 
             // Only show the warning when the user is enabling the feature.
-            if (checkBox.IsChecked != true)
+            Action revert;
+            switch (sender)
             {
-                return;
+                case CheckBox checkBox when checkBox.IsChecked == true:
+                    revert = () => checkBox.IsChecked = false;
+                    break;
+                case ToggleSwitch toggleSwitch when toggleSwitch.IsOn:
+                    revert = () => toggleSwitch.IsOn = false;
+                    break;
+                default:
+                    return;
             }
 
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
@@ -303,16 +329,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (result != ContentDialogResult.Primary)
             {
-                // User cancelled: revert checkbox to unchecked.
-                _isRestoringDangerousFeatureCheckbox = true;
+                // User cancelled: revert the control to the off state.
+                _isRestoringDangerousFeatureControl = true;
                 try
                 {
-                    checkBox.IsChecked = false;
-                    setter(monitor, false);
+                    revert();
+                    setter(false);
                 }
                 finally
                 {
-                    _isRestoringDangerousFeatureCheckbox = false;
+                    _isRestoringDangerousFeatureControl = false;
                 }
             }
         }
