@@ -45,8 +45,10 @@ Keep the toggle OFF for this section. Plug in the previously-undetectable monito
 
 ## 3. Maximum compatibility mode recovers permanently-broken-caps monitors
 
-- [ ] Toggle **Maximum compatibility mode** ON in Settings.
-- [ ] Trigger a fresh discovery (toggle the PowerDisplay enable switch off → on, or hot-plug the monitor).
+- [ ] Toggle **Maximum compatibility mode** ON in Settings. Confirm the warning dialog with **Enable**.
+- [ ] A full rescan should trigger automatically — no hot-plug or enable-switch toggle is needed. In the PowerDisplay log, verify that immediately after the dialog confirmation:
+  - `[NativeEventWaiter] Event SIGNALED: Local\PowerToysPowerDisplay-RescanMonitorsEvent-...`
+  - `IsScanning` transitions true → false (visible in the open flyout as the spinner).
 - [ ] In the log, verify the following sequence appears for the affected monitor:
   - `DDC: cap string still empty after 3 attempts (handle=0x…)`
   - `DDC: [max-compat] caps unusable for handle=0x…; probing VCP features directly`
@@ -83,6 +85,19 @@ If anything regresses, the most likely cause is the `BuildMonitorFromPhysical` s
 - [ ] Toggle **Maximum compatibility mode** OFF.
 - [ ] Confirm `settings.json` shows `"max_compatibility_mode": false`.
 - [ ] Confirm Settings UI reflects OFF state after Settings is closed and reopened.
+
+## 7. Auto-rescan trigger — cancel and toggle-OFF cases
+
+These verify the new toggle-driven rescan behaviour.
+
+- [ ] Toggle **Maximum compatibility mode** ON, then click **Cancel** in the warning dialog. Verify:
+  - The toggle returns to OFF.
+  - `settings.json` shows `"max_compatibility_mode": false`.
+  - The log does **not** contain any `Event SIGNALED: ...RescanMonitorsEvent-...` lines for this toggle attempt (no rescan was triggered).
+- [ ] Toggle ON, confirm with **Enable**. After the auto-rescan completes (section 3 covers the log evidence), toggle **OFF**. Verify:
+  - The log contains a new `Event SIGNALED: ...RescanMonitorsEvent-...` line.
+  - `IsScanning` transitions true → false again.
+  - If a monitor was only previously visible thanks to the probe path, it disappears from the flyout after the rescan completes (no usable cap string + max-compat OFF = no entry).
 
 ---
 
