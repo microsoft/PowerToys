@@ -12,6 +12,7 @@ public partial class StaticParameterList<T> : ListPage
 
     private readonly IEnumerable<T> _values;
     private readonly List<IListItem> _items = new();
+    private readonly Lock _initializeLock = new();
     private bool _isInitialized;
     private Func<T, ListItem, ListItem> _customizeListItemsCallback;
 
@@ -34,13 +35,16 @@ public partial class StaticParameterList<T> : ListPage
 
     public override IListItem[] GetItems()
     {
-        if (!_isInitialized)
+        lock (_initializeLock)
         {
-            Initialize(_values, _customizeListItemsCallback);
-            _isInitialized = true;
-        }
+            if (!_isInitialized)
+            {
+                Initialize(_values, _customizeListItemsCallback);
+                _isInitialized = true;
+            }
 
-        return _items.ToArray();
+            return _items.ToArray();
+        }
     }
 
     private void Initialize(IEnumerable<T> values, Func<T, ListItem, ListItem> customizeListItem)
