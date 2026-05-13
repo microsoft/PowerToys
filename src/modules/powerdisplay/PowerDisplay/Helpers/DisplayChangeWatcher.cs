@@ -44,6 +44,9 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     private IntPtr _displayStateRegistration;
     private PowerSettingsNative.DeviceNotifyCallbackRoutine? _displayStateCallback;
     private GCHandle _displayStateCallbackHandle;
+
+    // Seeded to ON so Windows' initial-state echo on subscription does not
+    // trigger a spurious rescan. Mutated only on the dispatcher thread.
     private uint _lastDisplayState = PowerSettingsNative.DisplayStateOn;
 
     /// <summary>
@@ -385,7 +388,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
                 if (unregisterResult != 0)
                 {
                     Logger.LogWarning(
-                        $"[DisplayChangeWatcher] PowerSettingUnregisterNotification returned 0x{unregisterResult:X}");
+                        $"[DisplayChangeWatcher] PowerSettingUnregisterNotification failed: 0x{unregisterResult:X}");
                 }
             }
             catch (Exception ex)
