@@ -1377,6 +1377,14 @@ opera.exe</value>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
   </data>
+  <data name="General_LastCheckedDate_TodayAt" xml:space="preserve">
+    <value>Today at {0}</value>
+    <comment>Friendly date format when the last update check was today. {0} is the localized short time, e.g. "Today at 1:22 PM".</comment>
+  </data>
+  <data name="General_LastCheckedDate_YesterdayAt" xml:space="preserve">
+    <value>Yesterday at {0}</value>
+    <comment>Friendly date format when the last update check was yesterday. {0} is the localized short time, e.g. "Yesterday at 3:45 PM".</comment>
+  </data>
   <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
     <value>Created at:</value>
   </data>
@@ -4604,7 +4612,7 @@ Press **Shift + a color key** for a translucent highlighter, **X** for blur, or 
 Press **Shift** for a line, **Ctrl** for a rectangle, **Tab** for an ellipse, or **Shift + Ctrl** for an arrow.
 
 **Screen**
-Press **W** or **K** for a white or black sketch pad.
+Press **K** or **W** for a black or white sketch pad.
 Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop.
     </value>
   </data>
@@ -4807,6 +4815,66 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Microphones_Default_Name" xml:space="preserve">
     <value>Default</value>
   </data>
+  <data name="ZoomIt_Record_WebcamOverlay.Content" xml:space="preserve">
+    <value>Show webcam overlay (Ctrl+C toggles)</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamDevice.Header" xml:space="preserve">
+    <value>Camera</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamDevices_Default_Name" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition.Header" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize.Header" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape.Header" xml:space="preserve">
+    <value>Shape</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_TopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_TopRight.Content" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_BottomLeft.Content" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_BottomRight.Content" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Small.Content" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Medium.Content" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Large.Content" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_XLarge.Content" xml:space="preserve">
+    <value>X-Large</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_FullScreen.Content" xml:space="preserve">
+    <value>Full screen</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_Rectangle.Content" xml:space="preserve">
+    <value>Rectangle</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_RoundedRectangle.Content" xml:space="preserve">
+    <value>Rounded rectangle</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_RoundedSquare.Content" xml:space="preserve">
+    <value>Rounded square</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_Circle.Content" xml:space="preserve">
+    <value>Circle</value>
+  </data>
+  <data name="ZoomIt_Record_AspectRatio.Content" xml:space="preserve">
+    <value>Lock region selection to 16:9 aspect ratio</value>
+  </data>
   <data name="ZoomIt_Break_LockWorkstation.Content" xml:space="preserve">
     <value>Lock workstation during break</value>
   </data>
@@ -4820,25 +4888,25 @@ The break timer font matches the text font.</value>
     <value>Snip activation</value>
   </data>
   <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
-    <value>Press **{0}** to save the snip to a file instead of the clipboard.</value>
+    <value>Press **{0}** to save the snip to a file</value>
+  </data>
+  <data name="ZoomIt_Panorama_Shortcut_Save" xml:space="preserve">
+    <value>Press **{0}** to save the scrolling screenshot to a file</value>
   </data>
   <data name="ZoomIt_SnipOcr_Shortcut.Header" xml:space="preserve">
-    <value>Snip OCR activation</value>
+    <value>Text recognition and extraction</value>
   </data>
   <data name="ZoomIt_SnipOcr_Shortcut.Description" xml:space="preserve">
-    <value>Copy text from the selected region to the clipboard.</value>
-  </data>
-  <data name="ZoomIt_PanoramaGroup.Header" xml:space="preserve">
-    <value>Panorama</value>
+    <value>Copy text from the selected region to the clipboard</value>
   </data>
   <data name="ZoomIt_PanoramaGroup.Description" xml:space="preserve">
     <value>Capture a scrolling panorama of a selected screen region.</value>
   </data>
   <data name="ZoomIt_Panorama_Shortcut.Header" xml:space="preserve">
-    <value>Panorama activation</value>
+    <value>Scrolling screenshot</value>
   </data>
   <data name="ZoomIt_Panorama_Shortcut.Description" xml:space="preserve">
-    <value>Select the area, then scroll the content. Move slowly and consistently, and do not rewind to previously covered areas. Press the hotkey again or with Shift to save to a file.</value>
+    <value>Select an area, then slowly scroll through the content without rewinding, and press the hotkey again to copy the screenshot to your clipboard</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -4967,6 +5035,9 @@ The break timer font matches the text font.</value>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
     <value>Learn more about Command Palette</value>
   </data>
+	<data name="LearnMore_CmdPalContent.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
     <value>Command Palette</value>
     <comment>Product name: Navigation view item name for Command Palette</comment>
@@ -5050,9 +5121,12 @@ The break timer font matches the text font.</value>
     <value>You're up to date</value>
   </data>
   <data name="UpdateAvailableTextBlock.Text" xml:space="preserve">
-    <value>Update Available</value>
+    <value>Update available</value>
   </data>
-  <data name="GeneralVersion.Text" xml:space="preserve">
+  <data name="UpdateAvailableInfoBar.Title" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+	<data name="GeneralVersion.Text" xml:space="preserve">
     <value>Version</value>
   </data>
   <data name="LearnWhatsNew.Text" xml:space="preserve">
@@ -5074,7 +5148,7 @@ The break timer font matches the text font.</value>
     <value>No actions to show..</value>
   </data>
   <data name="NoShortcutsToShow.Text" xml:space="preserve">
-    <value>No shortcuts to show..</value>
+    <value>No shortcuts to show.</value>
   </data>
   <data name="HighlightMode.Description" xml:space="preserve">
     <value>Highlight the cursor or dim the screen to spotlight it</value>
@@ -5289,7 +5363,7 @@ The break timer font matches the text font.</value>
     <value>If any shortcut conflicts are detected, they’ll appear below. Conflicts can happen between PowerToys utilities or Windows system shortcuts, and may cause unexpected behavior. If everything works as expected, you can safely ignore the conflict.</value>
   </data>
   <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
-    <value>Conflicts found for</value>
+    <value>conflicts</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
     <value>System shortcut</value>
@@ -5377,16 +5451,18 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay.ModuleTitle" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay.ModuleDescription" xml:space="preserve">
     <value>A display management utility for brightness and power control</value>
   </data>
   <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
     <value>Enable Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
     <value>Toggle Power Display</value>
-    <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
+    <comment>Dashboard: Label for the PowerDisplay activation hotkey. {Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -5394,15 +5470,19 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
 	<data name="PowerDisplay_LaunchButton.Content" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
     <value>Launch the Power Display utility</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_RestoreSettingsOnStartup.Content" xml:space="preserve">
     <value>Restore monitor brightness and color temperature when Power Display launches</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ShowSystemTrayIcon.Content" xml:space="preserve">
     <value>Show system tray icon</value>
@@ -5417,10 +5497,11 @@ The break timer font matches the text font.</value>
     <value>Profiles</value>
   </data>
   <data name="PowerDisplay_QuickProfiles.Header" xml:space="preserve">
-    <value>Quick apply profiles</value>
+    <value>Profiles</value>
   </data>
   <data name="PowerDisplay_QuickProfiles.Description" xml:space="preserve">
-    <value>Click a profile button to quickly apply saved monitor settings</value>
+    <value>Click the profile button in the Power Display flyout to quickly apply saved monitor settings</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
     <value>Add profile</value>
@@ -5433,21 +5514,26 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LearnMore_PowerDisplay.Text" xml:space="preserve">
     <value>Learn more about Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay.Title" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay.Description" xml:space="preserve">
     <value>Power Display provides unified control over display settings across multiple monitors. Adjust brightness, contrast, volume, color temperature, and input source for all connected displays from a single overlay. Supports DDC/CI for external monitors and WMI for laptop displays, with profile support for quick configuration switching and LightSwitch integration for automatic theme-based adjustments.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay_Activation.Text" xml:space="preserve">
     <value>to open the Power Display overlay.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay_TipsAndTricks.Text" xml:space="preserve">
     <value>**Create profiles** to save your preferred display settings, then configure them in **LightSwitch** to automatically switch profiles when the system theme changes.</value>
   </data>
   <data name="Launch_PowerDisplay.Content" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_Monitor_EnableContrast.Content" xml:space="preserve">
     <value>Display contrast slider</value>
@@ -5487,7 +5573,41 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable color temperature control for this monitor?</value>
   </data>
-  <data name="PowerDisplay_ColorTemperature_EnableButton" xml:space="preserve">
+  <data name="PowerDisplay_PowerState_WarningTitle" xml:space="preserve">
+    <value>Confirm power state control</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This action may be unsafe.</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
+    <value>Enabling power state control may lead to unexpected behavior, including:</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningList" xml:space="preserve">
+    <value>• Monitor may enter standby and not wake via software.
+• You may need to press the monitor’s power button or reconnect the cable to recover.
+• Some monitors may not restore the previous state correctly.</value>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
+    <value>Enable power state control for this monitor?</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningTitle" xml:space="preserve">
+    <value>Confirm input source control</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This action may be unsafe.</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningDescription" xml:space="preserve">
+    <value>Switching input sources may cause unintended results, including:</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningList" xml:space="preserve">
+    <value>• Screen may go black if the selected input has no signal.
+• Software control may be lost until you switch back using the monitor’s physical buttons.
+• Some monitors may not reliably expose all input sources.</value>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
+    <value>Enable input source control for this monitor?</value>
+  </data>
+  <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>
   <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
@@ -5606,9 +5726,11 @@ The break timer font matches the text font.</value>
   </data>
 	<data name="PowerDisplayGroupHeader.Header" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplayFlyoutHeader.Header" xml:space="preserve">
     <value>Power Display flyout</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
     <value>Define custom display names for color temperature presets and input sources</value>
@@ -5814,7 +5936,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_Description.Text" xml:space="preserve">
-    <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
+    <value>Find files, launch apps, and do so much more with the most extensible launcher and dock.</value>
   </data>
   <data name="CmdPal.ModuleTitle" xml:space="preserve">
     <value>Command Palette</value>
@@ -5825,7 +5947,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
-    <value>Powerful extensions help you do more</value>
+    <value>Rich ecosystem of extensions help you do more</value>
   </data>
   <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
     <value>Extensible</value>
@@ -5912,5 +6034,94 @@ Text uses the current drawing color.</value>
   </data>
   <data name="ZoomIt_Type_DemoSample.Text" xml:space="preserve">
     <value>Sample</value>
+  </data>
+  <data name="GrabAndMove.ModuleDescription" xml:space="preserve">
+    <value>Move and resize windows by holding a modifier key and dragging. Left-click to move, right-click to resize.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove.ModuleTitle" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Shell_GrabAndMove.Content" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove_TouchpadInfoBar.Title" xml:space="preserve">
+    <value>Touchpad support</value>
+  </data>
+  <data name="GrabAndMove_TouchpadInfoBar.Message" xml:space="preserve">
+    <value>Grab And Move may not work reliably with some touchpads.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_GrabAndMove.Text" xml:space="preserve">
+    <value>Learn more about Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove.Title" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>Product name. Do not localize this string</comment>
+  </data>
+  <data name="Oobe_GrabAndMove.Description" xml:space="preserve">
+    <value>Grab And Move lets you move and resize windows by holding a modifier key and dragging anywhere inside the window, without needing to target the title bar or window edges.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove_HowToUse.Text" xml:space="preserve">
+    <value>Hold the **activation modifier key** and **left-click drag** anywhere inside a window to move it. Hold the **activation modifier key** and **right-click drag** to resize it from the nearest edge or corner.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove_TipsAndTricks.Text" xml:space="preserve">
+    <value>Grab And Move works on any window, including maximized windows — dragging a maximized window will automatically restore it first. You can customize the activation shortcut and excluded apps in the settings.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="GrabAndMove_ModifierKey.Header" xml:space="preserve">
+    <value>Activation modifier key</value>
+    <comment>Drop-down to choose which modifier key (Alt or Win) activates Grab And Move drag and resize. "Activation" here means to enable/trigger the feature (활성화 in Korean), NOT product authentication/genuine certification (정품인증 in Korean).</comment>
+  </data>
+  <data name="GrabAndMove_ModifierKey_Alt.Content" xml:space="preserve">
+    <value>Alt</value>
+    <comment>The Alt key on the keyboard</comment>
+  </data>
+  <data name="GrabAndMove_ModifierKey_Win.Content" xml:space="preserve">
+    <value>Windows key</value>
+    <comment>The Windows key on the keyboard</comment>
+  </data>
+  <data name="GrabAndMove_ShouldAbsorbAlt.Content" xml:space="preserve">
+    <value>Prevent Alt from activating the window menu after a drag or resize operation</value>
+  </data>
+  <data name="GrabAndMove_DoNotActivateOnGameMode.Header" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>Game Mode is a Windows feature</comment>
+  </data>
+  <data name="GrabAndMove_ShowGeometry.Header" xml:space="preserve">
+    <value>Show window geometry</value>
+    <comment>When enabled, Grab And Move displays the window position (X, Y) and size (W, H) on the overlay during move and resize.</comment>
+  </data>
+  <data name="GrabAndMove_ShowGeometry.Description" xml:space="preserve">
+    <value>Display the window position and size on the overlay during drag and resize operations</value>
+  </data>
+  <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
+    <value>Resize windows with the modifier key + right-click</value>
+    <comment>Hold the modifier key and right-click, then drag from the nearest edge or corner to resize the window</comment>
+  </data>
+  <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
+    <value>Hold the modifier key and drag with the right mouse button from the nearest edge or corner to resize the window</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps.Description" xml:space="preserve">
+    <value>Excludes an application from being moved or resized by Grab And Move - add one application name per line</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook</value>
+    <comment>{Locked="outlook"}</comment>
   </data>
 </root>

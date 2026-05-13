@@ -227,7 +227,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_Z => new[] { "ʒ", "ǯ", "ℤ", "ᶻ" },
                 LetterKey.VK_COMMA => new[] { "∙", "₋", "⁻", "–", "√", "‟", "《", "》", "‛", "〈", "〉", "″", "‴", "⁗" }, // – is in VK_MINUS for other languages, but not VK_COMMA, so we add it here.
                 LetterKey.VK_PERIOD => new[] { "…", "⁝", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C" },
-                LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "—", "―", "⁓", "−", "⸺", "⸻", "∓", "₋", "⁻" },
+                LetterKey.VK_MINUS => new[] { "~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻", "∓", "₋", "⁻" },
                 LetterKey.VK_SLASH_ => new[] { "÷", "√" },
                 LetterKey.VK_DIVIDE_ => new[] { "÷", "√" },
                 LetterKey.VK_MULTIPLY_ => new[] { "×", "⋅", "ˣ", "ₓ" },
@@ -744,6 +744,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_I => new[] { "í" },
                 LetterKey.VK_O => new[] { "ó", "ő", "ö" },
                 LetterKey.VK_U => new[] { "ú", "ű", "ü" },
+                LetterKey.VK_Y => new[] { "ÿ", "ý" },
                 LetterKey.VK_COMMA => new[] { "„", "”", "»", "«" },
                 _ => Array.Empty<string>(),
             };

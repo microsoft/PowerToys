@@ -57,6 +57,12 @@ BOOLEAN g_CaptureSystemAudio = TRUE;
 BOOLEAN g_CaptureAudio = FALSE;
 BOOLEAN g_MicMonoMix = FALSE;
 TCHAR	g_MicrophoneDeviceId[MAX_PATH] = {0};
+BOOLEAN g_WebcamOverlay = FALSE;
+DWORD   g_WebcamPosition = 3; // 0=TL, 1=TR, 2=BL, 3=BR
+DWORD   g_WebcamSize = 1;     // 0=Small(15%), 1=Medium(25%), 2=Large(33%), 3=XLarge(50%)
+DWORD   g_WebcamShape = 0;    // 0=Square, 1=RoundedRect, 2=RoundedSquare, 3=Circle
+TCHAR   g_WebcamDeviceSymLink[MAX_PATH] = {0};
+BOOLEAN g_RecordAspectRatio = FALSE; // Lock region selection to 16:9
 TCHAR	g_RecordingSaveLocationBuffer[MAX_PATH] = {0};
 TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
 DWORD	g_ThemeOverride = 2; // 0=light, 1=dark, 2=system default
@@ -110,6 +116,12 @@ REG_SETTING RegSettings[] = {
     { L"CaptureSystemAudio", SETTING_TYPE_BOOLEAN, 0, &g_CaptureSystemAudio, static_cast<DOUBLE>(g_CaptureSystemAudio) },
     { L"MicMonoMix", SETTING_TYPE_BOOLEAN, 0, &g_MicMonoMix, static_cast<DOUBLE>(g_MicMonoMix) },
     { L"MicrophoneDeviceId", SETTING_TYPE_STRING, sizeof(g_MicrophoneDeviceId), g_MicrophoneDeviceId, static_cast<DOUBLE>(0) },
+    { L"WebcamOverlay", SETTING_TYPE_BOOLEAN, 0, &g_WebcamOverlay, static_cast<DOUBLE>(g_WebcamOverlay) },
+    { L"WebcamPosition", SETTING_TYPE_DWORD, 0, &g_WebcamPosition, static_cast<DOUBLE>(g_WebcamPosition) },
+    { L"WebcamSize", SETTING_TYPE_DWORD, 0, &g_WebcamSize, static_cast<DOUBLE>(g_WebcamSize) },
+    { L"WebcamShape", SETTING_TYPE_DWORD, 0, &g_WebcamShape, static_cast<DOUBLE>(g_WebcamShape) },
+    { L"WebcamDeviceSymLink", SETTING_TYPE_STRING, sizeof(g_WebcamDeviceSymLink), g_WebcamDeviceSymLink, static_cast<DOUBLE>(0) },
+    { L"RecordAspectRatio", SETTING_TYPE_BOOLEAN, 0, &g_RecordAspectRatio, static_cast<DOUBLE>(g_RecordAspectRatio) },
     { L"RecordingSaveLocation", SETTING_TYPE_STRING, sizeof(g_RecordingSaveLocationBuffer), g_RecordingSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"ScreenshotSaveLocation", SETTING_TYPE_STRING, sizeof(g_ScreenshotSaveLocationBuffer), g_ScreenshotSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"Theme", SETTING_TYPE_DWORD, 0, &g_ThemeOverride, static_cast<DOUBLE>(g_ThemeOverride) },
