@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace PowerDisplay.Common.Helpers;
@@ -11,8 +12,15 @@ namespace PowerDisplay.Common.Helpers;
 /// P/Invoke surface for the console-display-state power-setting notification.
 /// Centralises the powrprof.dll bindings, GUIDs, and structures used by the
 /// PowerDisplay module's display-change watcher. No business logic lives here.
+///
+/// Uses <see cref="LibraryImportAttribute"/> (source-generated, AOT-compatible)
+/// matching the convention established in <c>PowerDisplay.Common.Drivers.PInvoke</c>.
 /// </summary>
-public static class PowerSettingsNative
+[SuppressMessage(
+    "Interoperability",
+    "CA1401:P/Invokes should not be visible",
+    Justification = "Exposed for cross-assembly use by PowerToys.PowerDisplay; the main app subscribes/unsubscribes the notification from DisplayChangeWatcher. Pattern matches cmdpal/launcher NativeMethods.cs.")]
+public static partial class PowerSettingsNative
 {
     /// <summary>
     /// GUID_CONSOLE_DISPLAY_STATE — Windows fires this whenever the console
@@ -23,6 +31,12 @@ public static class PowerSettingsNative
     public static readonly Guid GuidConsoleDisplayState =
         new("6fe69556-704a-47a0-8f24-c28d936fda47");
 
+    /// <summary>
+    /// Console display state values. Typed <c>uint</c> to match the read-then-widen
+    /// pattern in <c>DisplayChangeWatcher</c> (single-byte payload read via
+    /// <see cref="Marshal.ReadByte(IntPtr, int)"/> and stored in a <c>uint</c>
+    /// field for comparison).
+    /// </summary>
     public const uint DisplayStateOff = 0;
     public const uint DisplayStateOn = 1;
     public const uint DisplayStateDimmed = 2;
@@ -44,6 +58,13 @@ public static class PowerSettingsNative
     /// Windows invokes this on an internal worker thread — implementations
     /// must marshal to their own thread before touching UI / VM state.
     /// </summary>
+    /// <remarks>
+    /// <see cref="Marshal.GetFunctionPointerForDelegate"/> does NOT root the
+    /// delegate against GC. Callers must keep the managed delegate alive (e.g.
+    /// via <c>GCHandle.Alloc</c>) for the entire lifetime of the registration,
+    /// or Windows will eventually invoke a collected delegate and produce an
+    /// access violation.
+    /// </remarks>
     /// <param name="context">Opaque context supplied at registration.</param>
     /// <param name="type">Notification type (e.g. PBT_POWERSETTINGCHANGE).</param>
     /// <param name="setting">Pointer to a POWERBROADCAST_SETTING.</param>
@@ -65,15 +86,29 @@ public static class PowerSettingsNative
     /// </summary>
     public const int PowerBroadcastSettingDataOffset = 20;
 
-#pragma warning disable CA1401 // P/Invokes should not be visible — exposed because PowerDisplay.exe (separate assembly) registers/unregisters the notification.
-    [DllImport("powrprof.dll", SetLastError = false)]
-    public static extern uint PowerSettingRegisterNotification(
+    /// <summary>
+    /// Registers a callback to receive notifications when a specific power
+    /// setting changes. Free the registration with
+    /// <see cref="PowerSettingUnregisterNotification"/> when no longer needed.
+    /// </summary>
+    /// <returns>
+    /// <c>ERROR_SUCCESS</c> (0) on success, otherwise a Win32 error code
+    /// (the function returns the error directly; <c>GetLastError</c> is not used).
+    /// </returns>
+    [LibraryImport("powrprof.dll")]
+    public static partial uint PowerSettingRegisterNotification(
         ref Guid settingGuid,
         uint flags,
         ref DeviceNotifySubscribeParameters recipient,
         out IntPtr registrationHandle);
 
-    [DllImport("powrprof.dll", SetLastError = false)]
-    public static extern uint PowerSettingUnregisterNotification(IntPtr registrationHandle);
-#pragma warning restore CA1401 // P/Invokes should not be visible
+    /// <summary>
+    /// Cancels a registration previously returned by
+    /// <see cref="PowerSettingRegisterNotification"/>.
+    /// </summary>
+    /// <returns>
+    /// <c>ERROR_SUCCESS</c> (0) on success, otherwise a Win32 error code.
+    /// </returns>
+    [LibraryImport("powrprof.dll")]
+    public static partial uint PowerSettingUnregisterNotification(IntPtr registrationHandle);
 }
