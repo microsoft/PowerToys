@@ -26,5 +26,4 @@
                 TextAlignment="Center" />
         </Border>
     </Grid>
-
 </UserControl>

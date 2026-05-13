@@ -226,6 +226,7 @@ namespace ShortcutGuide
             if (args.SelectedItem is NavigationViewItem selectedItem)
             {
                 this._selectedAppName = selectedItem.Name;
+                App.CurrentAppName = this._selectedAppName;
                 this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
                 this.PopulateCategorySelector();
             }

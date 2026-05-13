@@ -11,72 +11,7 @@
     mc:Ignorable="d">
     <Page.Resources>
         <DataTemplate x:Key="ShortcutItemTemplate" x:DataType="models:ShortcutEntry">
-            <Grid
-                Padding="16,8,16,8"
-                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-                BorderThickness="0,0,0,1"
-                Tag="{x:Bind}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="160" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.ContextFlyout>
-                    <MenuFlyout Opening="PinFlyout_Opening">
-                        <MenuFlyoutItem
-                            x:Uid="PinShortcut"
-                            Click="Pin_Click"
-                            CommandParameter="{x:Bind}" />
-                    </MenuFlyout>
-                </Grid.ContextFlyout>
-                <StackPanel
-                    Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Orientation="Vertical">
-                    <TextBlock Text="{x:Bind Name}" TextWrapping="Wrap" />
-                    <TextBlock
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        Text="{x:Bind Description}"
-                        TextWrapping="Wrap"
-                        Visibility="{x:Bind Description, Converter={StaticResource StringVisibilityConverter}}" />
-                </StackPanel>
-                <ItemsControl
-                    Grid.Column="0"
-                    VerticalAlignment="Center"
-                    ItemsSource="{x:Bind Shortcut}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Vertical" Spacing="4" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="models:ShortcutDescription">
-                            <Grid>
-                                <ItemsControl Grid.Column="1" ItemsSource="{Binding Converter={StaticResource ShortcutDescriptionToKeysConverter}}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <StackPanel Orientation="Horizontal" Spacing="4" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <controls:KeyVisual
-                                                Padding="4"
-                                                Background="{ThemeResource ControlFillColorInputActiveBrush}"
-                                                BorderBrush="{ThemeResource ControlElevationBorderBrush}"
-                                                Content="{Binding}"
-                                                CornerRadius="{StaticResource ControlCornerRadius}"
-                                                FontSize="12"
-                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                Style="{StaticResource DefaultKeyVisualStyle}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Grid>
+            <controls:ShortcutItemView Shortcut="{x:Bind}" />
         </DataTemplate>
     </Page.Resources>
     <Grid>

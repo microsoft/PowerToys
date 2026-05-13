@@ -24,6 +24,8 @@ namespace ShortcutGuide
 
         internal static TaskbarWindow TaskBarWindow { get; private set; } = null!;
 
+        internal static string CurrentAppName { get; set; } = string.Empty;
+
         public App()
         {
             this.InitializeComponent();

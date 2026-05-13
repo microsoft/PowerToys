@@ -30,11 +30,6 @@ namespace ShortcutGuide.Pages
             this.InitializeComponent();
         }
 
-        private void OnPropertyChanged(string propertyName)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -64,31 +59,32 @@ namespace ShortcutGuide.Pages
                 {
                 }
             }
+
+            PinnedShortcutsHelper.PinnedShortcutsChanged += this.OnPinnedShortcutsChanged;
         }
 
-        private void PinFlyout_Opening(object sender, object e)
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (sender is MenuFlyout fl && fl.Target is Grid g && g.Tag is ShortcutEntry dataObject && fl.Items[0] is MenuFlyoutItem pinItem)
-            {
-                bool isItemPinned = App.PinnedShortcuts.TryGetValue(this._appName, out var pinned) && pinned.Any(x => x.Equals(dataObject));
-                pinItem.Text = isItemPinned ? ResourceLoaderInstance.ResourceLoader.GetString("UnpinShortcut") : ResourceLoaderInstance.ResourceLoader.GetString("PinShortcut");
-                pinItem.Icon = new SymbolIcon(isItemPinned ? Symbol.UnPin : Symbol.Pin);
-            }
+            PinnedShortcutsHelper.PinnedShortcutsChanged -= this.OnPinnedShortcutsChanged;
         }
 
-        private void Pin_Click(object sender, RoutedEventArgs e)
+        private void OnPinnedShortcutsChanged(object? sender, string appName)
         {
-            if (sender is MenuFlyoutItem { CommandParameter: ShortcutEntry shortcutEntry })
+            if (appName != this._appName)
             {
-                PinnedShortcutsHelper.UpdatePinnedShortcuts(this._appName, shortcutEntry);
-
-                // Update ListView to reflect changes
-                this._pinnedShortcuts = App.PinnedShortcuts.TryGetValue(this._appName, out var updated)
-                    ? [.. updated]
-                    : new ObservableCollection<ShortcutEntry>();
-                this.PinnedShortcutsListView.ItemsSource = this._pinnedShortcuts;
-                this.OnPropertyChanged(nameof(this.PinnedShortcutsCount));
+                return;
             }
+
+            this._pinnedShortcuts = App.PinnedShortcuts.TryGetValue(this._appName, out var updated)
+                ? [.. updated]
+                : new ObservableCollection<ShortcutEntry>();
+            this.PinnedShortcutsListView.ItemsSource = this._pinnedShortcuts;
+            this.OnPropertyChanged(nameof(this.PinnedShortcutsCount));
+        }
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

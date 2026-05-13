@@ -16,6 +16,12 @@ namespace ShortcutGuide.Helpers
 {
     public static class PinnedShortcutsHelper
     {
+        /// <summary>
+        /// Raised after the pinned-shortcut list for an application has been updated and persisted.
+        /// The string argument is the affected application name.
+        /// </summary>
+        public static event EventHandler<string>? PinnedShortcutsChanged;
+
         public static void UpdatePinnedShortcuts(string appName, ShortcutEntry shortcutEntry)
         {
             if (!App.PinnedShortcuts.TryGetValue(appName, out var list))
@@ -30,6 +36,7 @@ namespace ShortcutGuide.Helpers
             }
 
             Save();
+            PinnedShortcutsChanged?.Invoke(null, appName);
         }
 
         public static void Save()
