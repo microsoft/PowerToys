@@ -3,19 +3,31 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using Microsoft.Win32;
+using PowerDisplay.Common.Helpers;
 using Windows.Devices.Display;
 using Windows.Devices.Enumeration;
 
 namespace PowerDisplay.Helpers;
 
 /// <summary>
-/// Watches for display/monitor connection changes using WinRT DeviceWatcher.
-/// Triggers DisplayChanged event when monitors are added, removed, or updated.
+/// Watches for display/monitor configuration changes and emits coalesced refresh
+/// signals. Two independent sources feed in:
+///
+/// 1. <see cref="DeviceWatcher"/> over <c>DisplayMonitor</c> — picks up device
+///    enumeration changes (plug, unplug, GPU rebind).
+/// 2. <see cref="PowerSettingsNative.GuidConsoleDisplayState"/> — fires whenever
+///    the console display transitions on/off/dimmed. Reliable on both S3 and
+///    S0ix and the only signal that catches idle-blank or lid recovery.
+///
+/// On display turning ON, the watcher first fires <see cref="ResumeDetected"/>
+/// synchronously (so the ViewModel can lock interactive UI immediately), then
+/// schedules a debounced <see cref="DisplayChanged"/> so callers re-discover
+/// hardware once it has stabilised.
 /// </summary>
 public sealed partial class DisplayChangeWatcher : IDisposable
 {
@@ -28,31 +40,42 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     private bool _disposed;
     private bool _initialEnumerationComplete;
 
+    // Console-display-state subscription
+    private IntPtr _displayStateRegistration;
+    private PowerSettingsNative.DeviceNotifyCallbackRoutine? _displayStateCallback;
+    private GCHandle _displayStateCallbackHandle;
+    private uint _lastDisplayState = PowerSettingsNative.DisplayStateOn;
+
     /// <summary>
     /// Event triggered when display configuration changes (after debounce period).
+    /// Subscribers (typically the ViewModel) should re-run monitor discovery.
     /// </summary>
     public event EventHandler? DisplayChanged;
+
+    /// <summary>
+    /// Event triggered the moment we detect the console display transitioning
+    /// to ON. Fires on the dispatcher thread, synchronously, BEFORE the debounce
+    /// delay elapses — gives subscribers a chance to lock interactive UI so
+    /// users can't act on now-stale DDC/CI handles during the rediscovery
+    /// window.
+    /// </summary>
+    public event EventHandler? ResumeDetected;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DisplayChangeWatcher"/> class.
     /// </summary>
     /// <param name="dispatcherQueue">The dispatcher queue for UI thread marshalling.</param>
-    /// <param name="debounceDelay">Delay before triggering DisplayChanged event. This allows hardware to stabilize after monitor plug/unplug.</param>
+    /// <param name="debounceDelay">Delay before triggering DisplayChanged event. Allows hardware to stabilize after plug/unplug or wake.</param>
     public DisplayChangeWatcher(DispatcherQueue dispatcherQueue, TimeSpan debounceDelay)
     {
         _dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
         _debounceDelay = debounceDelay;
-        SystemEvents.PowerModeChanged += OnPowerModeChanged;
+
+        RegisterDisplayStateNotification();
     }
 
-    /// <summary>
-    /// Gets a value indicating whether the watcher is currently running.
-    /// </summary>
     public bool IsRunning => _isRunning;
 
-    /// <summary>
-    /// Starts watching for display changes.
-    /// </summary>
     public void Start()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -64,24 +87,18 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
         try
         {
-            // Get the device selector for display monitors
             string selector = DisplayMonitor.GetDeviceSelector();
 
-            // Create the device watcher
             _deviceWatcher = DeviceInformation.CreateWatcher(selector);
-
-            // Subscribe to events
             _deviceWatcher.Added += OnDeviceAdded;
             _deviceWatcher.Removed += OnDeviceRemoved;
             _deviceWatcher.Updated += OnDeviceUpdated;
             _deviceWatcher.EnumerationCompleted += OnEnumerationCompleted;
             _deviceWatcher.Stopped += OnWatcherStopped;
 
-            // Reset state before starting (must be before Start() to avoid race)
             _initialEnumerationComplete = false;
             _isRunning = true;
 
-            // Start watching
             _deviceWatcher.Start();
         }
         catch (Exception ex)
@@ -91,9 +108,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         }
     }
 
-    /// <summary>
-    /// Stops watching for display changes.
-    /// </summary>
     public void Stop()
     {
         if (!_isRunning || _deviceWatcher == null)
@@ -103,10 +117,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
         try
         {
-            // Cancel any pending debounce
             CancelDebounce();
-
-            // Stop the watcher
             _deviceWatcher.Stop();
         }
         catch (Exception ex)
@@ -117,10 +128,8 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     private void OnDeviceAdded(DeviceWatcher sender, DeviceInformation args)
     {
-        // Dispatch to UI thread to ensure thread-safe state access
         _dispatcherQueue.TryEnqueue(() =>
         {
-            // Ignore events during initial enumeration or after disposal
             if (_disposed || !_initialEnumerationComplete)
             {
                 return;
@@ -132,10 +141,8 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     private void OnDeviceRemoved(DeviceWatcher sender, DeviceInformationUpdate args)
     {
-        // Dispatch to UI thread to ensure thread-safe state access
         _dispatcherQueue.TryEnqueue(() =>
         {
-            // Ignore events during initial enumeration or after disposal
             if (_disposed || !_initialEnumerationComplete)
             {
                 return;
@@ -147,14 +154,12 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     private void OnDeviceUpdated(DeviceWatcher sender, DeviceInformationUpdate args)
     {
-        // Only trigger refresh for significant updates, not every property change.
-        // For now, we'll skip updates to avoid excessive refreshes.
-        // The Added and Removed events are the primary triggers for monitor changes.
+        // Property-level updates fire frequently and are not actionable here.
+        // Added/Removed are the primary device-level triggers.
     }
 
     private void OnEnumerationCompleted(DeviceWatcher sender, object args)
     {
-        // Dispatch to UI thread to ensure thread-safe state access
         _dispatcherQueue.TryEnqueue(() =>
         {
             _initialEnumerationComplete = true;
@@ -163,21 +168,15 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     private void OnWatcherStopped(DeviceWatcher sender, object args)
     {
-        // Dispatch to UI thread to ensure thread-safe state access
         _dispatcherQueue.TryEnqueue(() =>
         {
             _isRunning = false;
 
-            // If not disposed, this is an unexpected stop (e.g., during sleep/wake)
-            // Try to auto-restart the watcher
             if (!_disposed)
             {
                 Logger.LogInfo("[DisplayChangeWatcher] Watcher stopped unexpectedly, attempting restart");
-
-                // Clean up the old watcher
                 CleanupDeviceWatcher();
 
-                // Restart after a short delay to allow system to stabilize
                 Task.Run(async () =>
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
@@ -197,37 +196,108 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         });
     }
 
-    /// <summary>
-    /// Handles system power mode changes (suspend/resume).
-    /// </summary>
-    private void OnPowerModeChanged(object? sender, PowerModeChangedEventArgs e)
+    private void RegisterDisplayStateNotification()
     {
-        if (_disposed)
+        _displayStateCallback = OnDisplayStateChangedNative;
+        _displayStateCallbackHandle = GCHandle.Alloc(_displayStateCallback);
+
+        var subscribeParams = new PowerSettingsNative.DeviceNotifySubscribeParameters
         {
-            return;
+            Callback = Marshal.GetFunctionPointerForDelegate(_displayStateCallback),
+            Context = IntPtr.Zero,
+        };
+
+        var guid = PowerSettingsNative.GuidConsoleDisplayState;
+        uint result = PowerSettingsNative.PowerSettingRegisterNotification(
+            ref guid,
+            PowerSettingsNative.DeviceNotifyCallback,
+            ref subscribeParams,
+            out _displayStateRegistration);
+
+        if (result != 0)
+        {
+            Logger.LogWarning(
+                $"[DisplayChangeWatcher] PowerSettingRegisterNotification failed: 0x{result:X}");
+            _displayStateRegistration = IntPtr.Zero;
         }
-
-        if (e.Mode == PowerModes.Resume)
+        else
         {
-            Logger.LogInfo("[DisplayChangeWatcher] System resumed from sleep, scheduling display refresh");
-
-            // Schedule a display refresh after system resumes
-            // Use a longer delay to allow hardware to fully reinitialize
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                if (!_disposed)
-                {
-                    // Trigger a display changed event after wake-up
-                    // The debounce mechanism will handle rapid successive events
-                    ScheduleDisplayChanged();
-                }
-            });
+            Logger.LogInfo("[DisplayChangeWatcher] Subscribed to GUID_CONSOLE_DISPLAY_STATE");
         }
     }
 
     /// <summary>
-    /// Cleans up the current device watcher and unsubscribes from events.
+    /// Callback invoked by Windows on an internal worker thread when the
+    /// console display power state changes. Reads the new state, marshals to
+    /// the dispatcher, and lets <see cref="HandleDisplayStateChange"/> apply
+    /// the policy.
     /// </summary>
+    private uint OnDisplayStateChangedNative(IntPtr context, uint type, IntPtr setting)
+    {
+        if (type != PowerSettingsNative.PbtPowerSettingChange || setting == IntPtr.Zero)
+        {
+            return 0;
+        }
+
+        uint newState;
+        try
+        {
+            newState = Marshal.ReadByte(setting, PowerSettingsNative.PowerBroadcastSettingDataOffset);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[DisplayChangeWatcher] Failed to read POWERBROADCAST_SETTING data: {ex.Message}");
+            return 0;
+        }
+
+        _dispatcherQueue.TryEnqueue(() =>
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            HandleDisplayStateChange(newState);
+        });
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Runs on the dispatcher thread. Compares the new state against the last
+    /// seen state, fires ResumeDetected synchronously if appropriate, and
+    /// schedules the debounced DisplayChanged.
+    /// </summary>
+    private void HandleDisplayStateChange(uint newState)
+    {
+        uint lastState = _lastDisplayState;
+        _lastDisplayState = newState;
+
+        if (!DisplayStateTransition.ShouldTriggerOn(newState, lastState))
+        {
+            return;
+        }
+
+        Logger.LogInfo(
+            $"[DisplayChangeWatcher] Console display ON (was {DescribeState(lastState)}); " +
+            $"firing ResumeDetected and scheduling rescan");
+
+        // Synchronously notify subscribers that a wake transition has happened
+        // BEFORE we start the debounce — gives the ViewModel a chance to lock
+        // interactive UI for the entire rediscovery window.
+        ResumeDetected?.Invoke(this, EventArgs.Empty);
+
+        ScheduleDisplayChanged();
+    }
+
+    private static string DescribeState(uint state) => state switch
+    {
+        PowerSettingsNative.DisplayStateOff => "off",
+        PowerSettingsNative.DisplayStateOn => "on",
+        PowerSettingsNative.DisplayStateDimmed => "dimmed",
+        _ => $"unknown(0x{state:X})",
+    };
+
     private void CleanupDeviceWatcher()
     {
         if (_deviceWatcher != null)
@@ -242,27 +312,20 @@ public sealed partial class DisplayChangeWatcher : IDisposable
             }
             catch
             {
-                // Ignore errors during cleanup
+                // Ignore cleanup errors.
             }
 
             _deviceWatcher = null;
         }
     }
 
-    /// <summary>
-    /// Schedules a DisplayChanged event with debouncing.
-    /// Multiple rapid changes will only trigger one event after the debounce period.
-    /// </summary>
     private void ScheduleDisplayChanged()
     {
-        // Cancel any pending debounce
         CancelDebounce();
 
-        // Create new cancellation token
         _debounceCts = new CancellationTokenSource();
         var token = _debounceCts.Token;
 
-        // Schedule the event after debounce delay
         Task.Run(async () =>
         {
             try
@@ -271,7 +334,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
                 if (!token.IsCancellationRequested)
                 {
-                    // Dispatch to UI thread
                     _dispatcherQueue.TryEnqueue(() =>
                     {
                         if (!_disposed)
@@ -283,7 +345,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
             }
             catch (OperationCanceledException)
             {
-                // Debounce was cancelled by a newer event, this is expected
+                // Expected — a newer event superseded this one.
             }
             catch (Exception ex)
             {
@@ -302,13 +364,10 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         }
         catch (ObjectDisposedException)
         {
-            // Already disposed, ignore
+            // Already disposed.
         }
     }
 
-    /// <summary>
-    /// Disposes resources used by the watcher.
-    /// </summary>
     public void Dispose()
     {
         if (_disposed)
@@ -318,16 +377,32 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
         _disposed = true;
 
-        // Unsubscribe from power mode changes
-        SystemEvents.PowerModeChanged -= OnPowerModeChanged;
+        if (_displayStateRegistration != IntPtr.Zero)
+        {
+            try
+            {
+                uint unregisterResult = PowerSettingsNative.PowerSettingUnregisterNotification(_displayStateRegistration);
+                if (unregisterResult != 0)
+                {
+                    Logger.LogWarning(
+                        $"[DisplayChangeWatcher] PowerSettingUnregisterNotification returned 0x{unregisterResult:X}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[DisplayChangeWatcher] Unregister failed: {ex.Message}");
+            }
 
-        // Stop watching
+            _displayStateRegistration = IntPtr.Zero;
+        }
+
+        if (_displayStateCallbackHandle.IsAllocated)
+        {
+            _displayStateCallbackHandle.Free();
+        }
+
         Stop();
-
-        // Unsubscribe from device watcher events
         CleanupDeviceWatcher();
-
-        // Cancel debounce
         CancelDebounce();
     }
 }
