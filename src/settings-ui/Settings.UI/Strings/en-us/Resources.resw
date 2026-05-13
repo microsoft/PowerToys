@@ -5451,16 +5451,18 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay.ModuleTitle" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay.ModuleDescription" xml:space="preserve">
     <value>A display management utility for brightness and power control</value>
   </data>
   <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
     <value>Enable Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
     <value>Toggle Power Display</value>
-    <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
+    <comment>Dashboard: Label for the PowerDisplay activation hotkey. {Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -5468,15 +5470,19 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
 	<data name="PowerDisplay_LaunchButton.Content" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
     <value>Launch the Power Display utility</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_RestoreSettingsOnStartup.Content" xml:space="preserve">
     <value>Restore monitor brightness and color temperature when Power Display launches</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ShowSystemTrayIcon.Content" xml:space="preserve">
     <value>Show system tray icon</value>
@@ -5495,6 +5501,7 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_QuickProfiles.Description" xml:space="preserve">
     <value>Click the profile button in the Power Display flyout to quickly apply saved monitor settings</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
     <value>Add profile</value>
@@ -5507,21 +5514,26 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LearnMore_PowerDisplay.Text" xml:space="preserve">
     <value>Learn more about Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay.Title" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay.Description" xml:space="preserve">
     <value>Power Display provides unified control over display settings across multiple monitors. Adjust brightness, contrast, volume, color temperature, and input source for all connected displays from a single overlay. Supports DDC/CI for external monitors and WMI for laptop displays, with profile support for quick configuration switching and LightSwitch integration for automatic theme-based adjustments.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay_Activation.Text" xml:space="preserve">
     <value>to open the Power Display overlay.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay_TipsAndTricks.Text" xml:space="preserve">
     <value>**Create profiles** to save your preferred display settings, then configure them in **LightSwitch** to automatically switch profiles when the system theme changes.</value>
   </data>
   <data name="Launch_PowerDisplay.Content" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_Monitor_EnableContrast.Content" xml:space="preserve">
     <value>Display contrast slider</value>
@@ -5714,9 +5726,11 @@ The break timer font matches the text font.</value>
   </data>
 	<data name="PowerDisplayGroupHeader.Header" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplayFlyoutHeader.Header" xml:space="preserve">
     <value>Power Display flyout</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
     <value>Define custom display names for color temperature presets and input sources</value>
