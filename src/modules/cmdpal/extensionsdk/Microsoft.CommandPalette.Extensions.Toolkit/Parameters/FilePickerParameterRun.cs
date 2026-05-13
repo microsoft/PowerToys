@@ -67,7 +67,7 @@ public partial class FilePickerParameterRun : CommandParameterRun
             return CommandResult.KeepOpen();
         }
 
-        private async void PickFileAsync()
+        private async Task PickFileAsync()
         {
             var picker = new FileOpenPicker() { };
 
