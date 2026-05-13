@@ -307,6 +307,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     revert = () => toggleSwitch.IsOn = false;
                     break;
                 default:
+                    // Control is already in the OFF state (or not a recognized type).
+                    // For a ToggleSwitch toggled OFF, the TwoWay x:Bind already applied the
+                    // new value to the ViewModel before Toggled fired - nothing to revert or set.
                     return;
             }
 
