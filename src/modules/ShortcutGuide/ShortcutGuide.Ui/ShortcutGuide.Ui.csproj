@@ -24,11 +24,9 @@
 
   <ItemGroup>
     <Content Remove="Assets\CopilotKey.png" />
-    <Content Remove="Assets\ShortcutGuide\+WindowsNT.Shell.en-US.yml" />
-    <Content Remove="Assets\ShortcutGuide\+WindowsNT.WindowsExplorer.en-US.yml" />
     <Content Remove="Assets\ShortcutGuide\HeroImage.png" />
-    <Content Remove="Assets\ShortcutGuide\Microsoft.PowerToys.en-US.yml" />
     <Content Remove="Assets\ShortcutGuide\ShortcutGuide.ico" />
+    <Content Remove="Assets\ShortcutGuide\Manifests\*.yml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,6 +35,9 @@
     <None Remove="ShortcutGuideXAML\TaskbarIndicator.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarWindow.xaml" />
     <None Include="Assets\ShortcutGuide\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Assets\ShortcutGuide\Manifests\*.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

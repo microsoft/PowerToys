@@ -17,25 +17,6 @@ namespace ShortcutGuide
 {
     public sealed class Program
     {
-        private static readonly string[] InbuiltManifestFiles = [
-            "+WindowsNT.Shell.en-US.yml",
-            "+WindowsNT.WindowsExplorer.en-US.yml",
-            "+WindowsNT.Notepad.en-US.yml",
-            "Microsoft.Access.en-US.yml",
-            "Microsoft.Excel.en-US.yml",
-            "Microsoft.OneNote.en-US.yml",
-            "Microsoft.Outlook.en-US.yml",
-            "Microsoft.Paint.en-US.yml",
-            "Microsoft.PowerPoint.en-US.yml",
-            "Microsoft.PowerToys.en-US.yml",
-            "Microsoft.Project.en-US.yml",
-            "Microsoft.Publisher.en-US.yml",
-            "Microsoft.Teams.en-US.yml",
-            "Microsoft.Visio.en-US.yml",
-            "Microsoft.WindowsTerminal.en-US.yml",
-            "Microsoft.Word.en-US.yml",
-        ];
-
         [STAThread]
         public static void Main()
         {
@@ -52,11 +33,26 @@ namespace ShortcutGuide
                 return;
             }
 
+            // Copy every shipped manifest from the install directory to the per-user manifest folder.
+            // Enumerating the source folder avoids drift between the deployed assets and a hard-coded list.
             // Todo: Only copy files after an update.
-            // Todo: Handle error
-            foreach (var file in InbuiltManifestFiles)
+            string sourceManifestFolder = Path.Combine(
+                Path.GetDirectoryName(Environment.ProcessPath)!,
+                "Assets",
+                "ShortcutGuide",
+                "Manifests");
+
+            try
             {
-                File.Copy(Path.GetDirectoryName(Environment.ProcessPath) + "\\Assets\\ShortcutGuide\\" + file, ManifestInterpreter.PathOfManifestFiles + "\\" + file, true);
+                foreach (string sourceFile in Directory.EnumerateFiles(sourceManifestFolder, "*.yml"))
+                {
+                    string destinationFile = Path.Combine(ManifestInterpreter.PathOfManifestFiles, Path.GetFileName(sourceFile));
+                    File.Copy(sourceFile, destinationFile, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to copy bundled shortcut manifests from '{sourceManifestFolder}'.", ex);
             }
 
             Process indexGeneration = Process.Start(Path.GetDirectoryName(Environment.ProcessPath) + "\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
