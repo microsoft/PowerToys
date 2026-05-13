@@ -16,7 +16,7 @@ public static class Icons
 
     public static IconInfo MoveDownIcon => new("\uE74B"); // Down icon
 
-    public static IconInfo MoveToTopIcon => new("\uE898"); // Down icon
+    public static IconInfo MoveToTopIcon => new("\uE898"); // Move to top icon
 
     public static IconInfo SettingsIcon => new("\uE713"); // Settings icon
 

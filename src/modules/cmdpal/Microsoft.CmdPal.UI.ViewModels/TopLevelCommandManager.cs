@@ -48,7 +48,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
 
-    private HashSet<PinnedCommandSettings> _pinnedCommandSet = [];
+    private HashSet<(string ProviderId, string CommandId)> _pinnedCommandSet = [];
 
     public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
@@ -86,13 +86,13 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     internal bool IsPinned(string providerId, string commandId)
     {
-        return _pinnedCommandSet.Contains(new PinnedCommandSettings(providerId, commandId));
+        return _pinnedCommandSet.Contains((providerId, commandId));
     }
 
     internal void RebuildPinnedCache()
     {
         var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
-        _pinnedCommandSet = new(settings.PinnedCommands);
+        _pinnedCommandSet = new(settings.PinnedCommands.Select(p => (p.ProviderId, p.CommandId)));
         ListHelpers.InPlaceUpdateList(PinnedCommands, settings.PinnedCommands);
     }
 

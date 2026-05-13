@@ -154,8 +154,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         // Add pin/unpin commands for pinning items to the top-level or to
         // the dock.
         var providerId = providerContext.ProviderId;
-        var commandProvider = _topLevelCommandManager.LookupProvider(providerId);
-        if (commandProvider is CommandProviderWrapper)
+        if (_topLevelCommandManager.LookupProvider(providerId) is CommandProviderWrapper)
         {
             TryAddMovePinnedCommands(itemId, providerId, commandItem, moreCommands);
             TryAddUnpinFromHomeCommand(itemId, providerId, commandItem, moreCommands);
