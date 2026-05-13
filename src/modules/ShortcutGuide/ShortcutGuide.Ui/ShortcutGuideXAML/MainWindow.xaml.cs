@@ -163,8 +163,9 @@ namespace ShortcutGuide
                             IconElement icon = BuildNavIcon(executablePath);
                             this.WindowSelector.MenuItems.Add(new NavigationViewItem { Name = item, Content = ManifestInterpreter.GetShortcutsOfApplication(item).Name, Icon = icon });
                         }
-                        catch (IOException)
+                        catch (IOException ex)
                         {
+                            Logger.LogError($"Failed to build nav item for application '{item}' (executable '{executablePath}').", ex);
                         }
                     }
                 }

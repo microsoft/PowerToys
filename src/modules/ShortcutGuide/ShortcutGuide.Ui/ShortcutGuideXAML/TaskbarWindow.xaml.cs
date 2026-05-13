@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Globalization;
+using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -39,8 +41,9 @@ namespace ShortcutGuide.ShortcutGuideXAML
             {
                 buttons = TasklistPositions.GetButtons();
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogError("Failed to enumerate taskbar buttons via TasklistPositions.GetButtons.", ex);
             }
 
             if (buttons.Length == 0)

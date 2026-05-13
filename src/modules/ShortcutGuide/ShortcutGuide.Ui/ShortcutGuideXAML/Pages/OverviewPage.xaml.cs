@@ -6,6 +6,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -55,8 +56,9 @@ namespace ShortcutGuide.Pages
                         ];
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logger.LogError($"Failed to load pinned/taskbar shortcuts for application '{this._appName}'.", ex);
                 }
             }
 
