@@ -167,23 +167,18 @@ public sealed class MonitorService : IMonitorService
 
             var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
             var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+            DISPLAYCONFIG_TOPOLOGY_ID topologyId = default;
 
-            fixed (DISPLAYCONFIG_PATH_INFO* pathsPtr = paths)
+            result = PInvoke.QueryDisplayConfig(
+                QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+                ref pathCount,
+                paths.AsSpan(),
+                ref modeCount,
+                modes.AsSpan(),
+                ref topologyId);
+            if (result != WIN32_ERROR.NO_ERROR)
             {
-                fixed (DISPLAYCONFIG_MODE_INFO* modesPtr = modes)
-                {
-                    result = PInvoke.QueryDisplayConfig(
-                        QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
-                        ref pathCount,
-                        pathsPtr,
-                        ref modeCount,
-                        modesPtr,
-                        null);
-                    if (result != WIN32_ERROR.NO_ERROR)
-                    {
-                        return map;
-                    }
-                }
+                return map;
             }
 
             for (var i = 0; i < pathCount; i++)
