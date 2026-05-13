@@ -396,6 +396,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
         }
 
+        /// <summary>
+        /// Signal PowerDisplay.exe to perform a full hardware rescan. Used when a
+        /// setting changes that affects monitor discovery (currently: max-compatibility
+        /// mode). Distinct from <see cref="SignalSettingsUpdated"/>, which only fires
+        /// the lightweight settings-applied path on the module side.
+        /// </summary>
+        public void SignalRescanRequest()
+        {
+            SignalNamedEvent(Constants.RescanPowerDisplayMonitorsEvent());
+            Logger.LogInfo("Signaled RescanPowerDisplayMonitorsEvent (max-compat toggle finalized)");
+        }
+
         private static void SignalNamedEvent(string eventName)
         {
             try
