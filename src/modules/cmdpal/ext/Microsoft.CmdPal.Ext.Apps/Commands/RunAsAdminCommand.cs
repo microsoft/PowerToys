@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -51,9 +52,14 @@ internal sealed partial class RunAsAdminCommand : InvokableCommand
                     Process.Start(info);
                 }
             }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
+            {
+                // ERROR_CANCELLED: user dismissed the UAC prompt — not an error
+                Logger.LogDebug("Run as administrator cancelled by user.");
+            }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to run as administrator: {ex.Message}");
+                Logger.LogError("Failed to run as administrator", ex);
             }
         });
     }
