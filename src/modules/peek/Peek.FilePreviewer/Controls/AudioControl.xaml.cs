@@ -28,9 +28,9 @@ namespace Peek.FilePreviewer.Controls
             set { SetValue(SourceProperty, value); }
         }
 
-        public string ToolTipText
+        public string? ToolTipText
         {
-            get { return (string)GetValue(ToolTipTextProperty); }
+            get { return (string?)GetValue(ToolTipTextProperty); }
             set { SetValue(ToolTipTextProperty, value); }
         }
 
