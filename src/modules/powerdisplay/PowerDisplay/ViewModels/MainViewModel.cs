@@ -389,16 +389,13 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Handles display configuration changes detected by the DisplayChangeWatcher.
-    /// The DisplayChangeWatcher already applies the configured delay (MonitorRefreshDelay)
-    /// to allow hardware to stabilize, so we can refresh immediately here.
+    /// Handles display configuration changes once the DisplayChangeWatcher's
+    /// debounce delay has elapsed. IsScanning was already set by
+    /// <see cref="OnDisplayChanging"/> when the change was first detected, so
+    /// we just run discovery here.
     /// </summary>
     private async void OnDisplayChanged(object? sender, EventArgs e)
     {
-        // Set scanning state to provide visual feedback
-        IsScanning = true;
-
-        // Perform refresh - DisplayChangeWatcher has already waited for hardware to stabilize
         await RefreshMonitorsAsync(skipScanningCheck: true);
     }
 

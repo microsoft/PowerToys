@@ -93,7 +93,7 @@ public partial class MainViewModel
     /// <summary>
     /// Refresh monitors list asynchronously.
     /// </summary>
-    /// <param name="skipScanningCheck">If true, skip the IsScanning check (used by OnDisplayChanged which sets IsScanning before calling).</param>
+    /// <param name="skipScanningCheck">If true, skip the IsScanning reentry guard. Used by the watcher path where IsScanning was already set upstream by <see cref="MainViewModel.OnDisplayChanging"/>.</param>
     public async Task RefreshMonitorsAsync(bool skipScanningCheck = false)
     {
         if (!skipScanningCheck && IsScanning)
