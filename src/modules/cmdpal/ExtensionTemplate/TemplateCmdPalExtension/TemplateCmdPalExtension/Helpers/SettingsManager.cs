@@ -9,7 +9,7 @@ namespace TemplateCmdPalExtension;
 
 internal sealed partial class SettingsManager : JsonSettingsManager
 {
-    private static readonly string _namespace = "templatecmdpalextension";
+    private static readonly string _namespace = "TemplateCmdPalExtension";
 
     private static string Namespaced(string propertyName) => $"{_namespace}.{propertyName}";
 
