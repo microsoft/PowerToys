@@ -32,6 +32,15 @@ namespace PowerLauncher.Helper
 
         public event Common.UI.ThemeChangedHandler ThemeChanged;
 
+        internal static ThemeMode GetThemeMode(Theme theme) => theme switch
+        {
+            Theme.Light => ThemeMode.Light,
+            Theme.Dark => ThemeMode.Dark,
+            Theme.HighContrastBlack or Theme.HighContrastWhite or Theme.HighContrastOne or
+                Theme.HighContrastTwo => ThemeMode.None,
+            _ => ThemeMode.Dark,
+        };
+
         public ThemeManager(PowerToysRunSettings settings, MainWindow mainWindow)
         {
             _settings = settings;
@@ -65,7 +74,7 @@ namespace PowerLauncher.Helper
                 // Need to disable WPF0001 since setting Application.Current.ThemeMode is experimental
                 // https://learn.microsoft.com/en-us/dotnet/desktop/wpf/whats-new/net90#set-in-code
 #pragma warning disable WPF0001
-                Application.Current.ThemeMode = theme == Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
+                Application.Current.ThemeMode = GetThemeMode(theme);
 #pragma warning restore WPF0001
 
                 if (!OSVersionHelper.IsWindows11())
@@ -83,7 +92,7 @@ namespace PowerLauncher.Helper
                 // For high-contrast themes, disable WPF's Fluent theme manager to avoid conflicts
                 // with the custom high-contrast resource dictionaries.
 #pragma warning disable WPF0001
-                Application.Current.ThemeMode = ThemeMode.None;
+                Application.Current.ThemeMode = GetThemeMode(theme);
 #pragma warning restore WPF0001
 
                 _isHighContrastMode = true;

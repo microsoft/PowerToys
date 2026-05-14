@@ -154,17 +154,13 @@ namespace PowerLauncher
 
                 _mainVM = new MainViewModel(_settings, NativeThreadCTS.Token);
 
-                // Set ThemeMode before MainWindow creation so Fluent static resources
-                // (e.g. DefaultTextBoxStyle, CaptionTextBlockStyle) are available for XAML
-                // parsing. ThemeManager will apply the correct final theme asynchronously.
-                // For high-contrast themes, Dark is used as a temporary fallback because
-                // ThemeManager will switch to ThemeMode.None and apply custom high-contrast
-                // resource dictionaries once it processes the actual theme. Dark is chosen
-                // because the high-contrast themes are visually closer to dark than light.
+                // Set ThemeMode before MainWindow creation so the initial theme state is
+                // consistent with ThemeManager. This avoids preloading Dark Fluent resources
+                // when Windows starts in a High Contrast theme.
                 var themeHelper = new ThemeHelper();
                 var initialTheme = themeHelper.DetermineTheme(_settings.Theme);
 #pragma warning disable WPF0001
-                Application.Current.ThemeMode = initialTheme == Theme.Light ? ThemeMode.Light : ThemeMode.Dark;
+                Application.Current.ThemeMode = ThemeManager.GetThemeMode(initialTheme);
 #pragma warning restore WPF0001
 
                 _mainWindow = new MainWindow(_settings, _mainVM, NativeThreadCTS.Token);
