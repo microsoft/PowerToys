@@ -296,6 +296,9 @@
     <value>Results</value>
     <comment>Section title for list of all search results that doesn't fall into any other category</comment>
   </data>
+  <data name="home_sections_pinned_title" xml:space="preserve">
+    <value>Pinned</value>
+  </data>
   <data name="home_sections_commands_title" xml:space="preserve">
     <value>Commands</value>
   </data>
