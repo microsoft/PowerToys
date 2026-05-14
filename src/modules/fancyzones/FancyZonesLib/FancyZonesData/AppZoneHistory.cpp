@@ -324,7 +324,6 @@ void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
     }
 }
 
-
 std::wstring AppZoneHistory::GetProcessPathWithAUMID(HWND window) noexcept
 {
     auto processPath = get_process_path_waiting_uwp(window);
@@ -340,7 +339,7 @@ std::wstring AppZoneHistory::GetProcessPathWithAUMID(HWND window) noexcept
             processPath.append(L"?").append(pv.pwszVal);
         }
     }
-    
+
     return processPath;
 }
 
