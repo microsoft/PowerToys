@@ -55,7 +55,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     public event EventHandler? DisplayChanged;
 
     /// <summary>
-    /// Event triggered the moment a display configuration change is detected
+    /// Event triggered as soon as a display configuration change is detected
     /// (device added/removed, or console display turning ON). Fires on the
     /// dispatcher thread, synchronously, BEFORE the debounce delay elapses —
     /// gives subscribers a chance to lock interactive UI so users can't act on

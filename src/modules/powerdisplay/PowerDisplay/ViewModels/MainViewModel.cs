@@ -372,7 +372,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Invoked synchronously the moment a display configuration change is
+    /// Invoked synchronously as soon as a display configuration change is
     /// detected (device added/removed, or wake from sleep), before the debounce
     /// delay elapses. Locks the interactive UI by setting IsScanning = true so
     /// the user cannot operate on monitors that are about to disappear or be
