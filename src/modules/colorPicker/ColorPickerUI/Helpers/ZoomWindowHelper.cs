@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 using ColorPicker.ViewModelContracts;
@@ -82,7 +83,23 @@ namespace ColorPicker.Helpers
                 var x = (int)point.X - (BaseZoomImageSize / 2);
                 var y = (int)point.Y - (BaseZoomImageSize / 2);
 
-                _graphics.CopyFromScreen(x, y, 0, 0, _bmp.Size, CopyPixelOperation.SourceCopy);
+                // Temporarily hide the color picker UI to avoid capturing it in the zoom
+                var mainWindow = System.Windows.Application.Current.MainWindow;
+                var originalOpacity = mainWindow.Opacity;
+                
+                // Stop any running opacity animations and set opacity to 0
+                mainWindow.BeginAnimation(UIElement.OpacityProperty, null);
+                mainWindow.Opacity = 0;
+
+                try
+                {
+                    _graphics.CopyFromScreen(x, y, 0, 0, _bmp.Size, CopyPixelOperation.SourceCopy);
+                }
+                finally
+                {
+                    // Restore the original opacity
+                    mainWindow.Opacity = originalOpacity;
+                }
 
                 _zoomViewModel.ZoomArea = BitmapToImageSource(_bmp);
             }
