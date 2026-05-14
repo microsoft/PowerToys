@@ -139,6 +139,47 @@ std::wstring NtdllExtensions::file_handle_to_kernel_name(HANDLE file_handle)
     return file_handle_to_kernel_name(file_handle, buffer);
 }
 
+std::wstring NtdllExtensions::file_handle_to_path(HANDLE file_handle, std::vector<BYTE>& buffer)
+{
+    if (file_handle == NULL || file_handle == INVALID_HANDLE_VALUE)
+    {
+        return L"";
+    }
+
+    // Try to get the friendly DOS path first.
+    DWORD dw_chars_required = GetFinalPathNameByHandleW(file_handle, nullptr, 0, VOLUME_NAME_DOS);
+    if (dw_chars_required > 0)
+    {
+        std::wstring path_buffer;
+        path_buffer.resize(dw_chars_required);
+
+        DWORD dw_result = GetFinalPathNameByHandleW(file_handle, &path_buffer[0], dw_chars_required, VOLUME_NAME_DOS);
+
+        // Ensure success and that we actually got the string.
+        if (dw_result > 0 && dw_result < dw_chars_required)
+        {
+            path_buffer.resize(dw_result);
+
+            // Remove the \\?\ prefix
+            if (path_buffer.compare(0, 4, L"\\\\?\\") == 0)
+            {
+                // Handle UNC paths
+                if (path_buffer.compare(4, 4, L"UNC\\") == 0)
+                {
+                    return L"\\\\" + path_buffer.substr(8);
+                }
+
+                return path_buffer.substr(4);
+            }
+
+            return path_buffer;
+        }
+    }
+
+    // Fallback to kernel name if DOS path retrieval failed
+    return file_handle_to_kernel_name(file_handle, buffer);
+}
+
 std::wstring NtdllExtensions::path_to_kernel_name(LPCWSTR path)
 {
     HANDLE file_handle = CreateFileW(path, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
@@ -240,8 +281,12 @@ std::vector<NtdllExtensions::HandleInfo> NtdllExtensions::handles() noexcept
 
                 if (type_name == L"File")
                 {
-                    file_name = file_handle_to_kernel_name(handle_copy, object_info_buffer);
-                    result.push_back(HandleInfo{ pid, handle_info->HandleValue, type_name, file_name });
+                    file_name = file_handle_to_path(handle_copy, object_info_buffer);
+
+                    if (!file_name.empty())
+                    {
+                        result.push_back(HandleInfo{ pid, handle_info->HandleValue, type_name, file_name });
+                    }
                 }
 
                 CloseHandle(handle_copy);

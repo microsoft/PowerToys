@@ -24,6 +24,9 @@ private:
 
     std::wstring file_handle_to_kernel_name(HANDLE file_handle, std::vector<BYTE>& buffer);
 
+    // Converts a file handle to a friendly DOS path, falling back to kernel name if needed.
+    std::wstring file_handle_to_path(HANDLE file_handle, std::vector<BYTE>& buffer);
+
 public:
     struct ProcessInfo
     {
