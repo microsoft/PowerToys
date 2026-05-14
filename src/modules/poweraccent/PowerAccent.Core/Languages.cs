@@ -738,6 +738,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_S => new string[] { "σ", "ς", "ϛ", "ϲ", "ϡ" },
                 LetterKey.VK_T => new string[] { "τ", "θ", "ϑ" },
                 LetterKey.VK_U => new string[] { "υ", "ὐ", "ὑ", "ὺ", "ύ", "ῦ", "ῡ", "ῠ", "ὒ", "ὓ", "ὔ", "ὕ", "ὖ", "ὗ", "ϋ", "ΰ", "ῢ", "ῧ" },
+                LetterKey.VK_V => new string[] { "β", "ϝ" },
                 LetterKey.VK_W => new string[] { "ω", "ὠ", "ὡ", "ὼ", "ώ", "ῶ", "ὢ", "ὣ", "ὤ", "ὥ", "ὦ", "ὧ", "ῳ", "ᾠ", "ᾡ", "ῴ", "ῲ", "ῷ", "ᾤ", "ᾥ", "ᾢ", "ᾣ", "ᾦ", "ᾧ" },
                 LetterKey.VK_X => new string[] { "ξ", "χ" },
                 LetterKey.VK_Y => new string[] { "υ", "ὐ", "ὑ", "ὺ", "ύ", "ῦ", "ῡ", "ῠ", "ὒ", "ὓ", "ὔ", "ὕ", "ὖ", "ὗ", "ϋ", "ΰ", "ῢ", "ῧ" },
