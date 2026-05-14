@@ -9,7 +9,7 @@ the in-app **Extension gallery** page.
   HTTPS URL, parses it, and renders the entries.
 - The default feed lives in the external repo
   **`microsoft/CmdPal-Extensions`** at
-  `https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json`.
+  `https://aka.ms/CmdPal-ExtensionsJson`.
 - Feed content + icon images are cached on disk so the page works offline and
   survives short network hiccups.
 - There is no WinGet discovery, no per-extension `manifest.json` fetch, and no
@@ -32,7 +32,7 @@ the in-app **Extension gallery** page.
    exposed via the hidden `InternalPage` settings page). Any non-empty value
    wins. Mostly used for local testing against a custom feed.
 2. Otherwise, the built-in default
-   `https://raw.githubusercontent.com/microsoft/CmdPal-Extensions/refs/heads/main/extensions.json`.
+   `https://aka.ms/CmdPal-ExtensionsJson`.
 
 Local `file://` URIs are allowed too — `FetchFeedDocumentAsync` reads the file
 directly and bypasses the HTTP cache.
