@@ -112,7 +112,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         int delaySeconds = Math.Clamp(settings?.Properties?.MonitorRefreshDelay ?? 5, 1, 30);
         _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue, TimeSpan.FromSeconds(delaySeconds));
         _displayChangeWatcher.DisplayChanged += OnDisplayChanged;
-        _displayChangeWatcher.ResumeDetected += OnResumeDetected;
+        _displayChangeWatcher.DisplayChanging += OnDisplayChanging;
 
         // Start initial discovery
         _ = InitializeAsync(_cancellationTokenSource.Token);
@@ -271,7 +271,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             if (_displayChangeWatcher is not null)
             {
-                _displayChangeWatcher.ResumeDetected -= OnResumeDetected;
+                _displayChangeWatcher.DisplayChanging -= OnDisplayChanging;
                 _displayChangeWatcher.DisplayChanged -= OnDisplayChanged;
                 _displayChangeWatcher.Dispose();
             }
@@ -372,17 +372,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Invoked synchronously the moment the console display transitions to ON
-    /// (before the debounce delay elapses). Locks the interactive UI by
-    /// setting IsScanning = true so the user cannot operate on stale DDC/CI
-    /// handles between wake and the actual rediscovery pass that
-    /// <see cref="OnDisplayChanged"/> will run once debounce completes.
+    /// Invoked synchronously the moment a display configuration change is
+    /// detected (device added/removed, or wake from sleep), before the debounce
+    /// delay elapses. Locks the interactive UI by setting IsScanning = true so
+    /// the user cannot operate on monitors that are about to disappear or be
+    /// re-enumerated by the rediscovery pass <see cref="OnDisplayChanged"/>
+    /// will run once debounce completes.
     /// </summary>
-    private void OnResumeDetected(object? sender, EventArgs e)
+    private void OnDisplayChanging(object? sender, EventArgs e)
     {
         if (!IsScanning)
         {
-            Logger.LogInfo("[MainViewModel] Wake detected — locking UI ahead of rediscovery");
+            Logger.LogInfo("[MainViewModel] Display change detected — locking UI ahead of rediscovery");
             IsScanning = true;
         }
     }

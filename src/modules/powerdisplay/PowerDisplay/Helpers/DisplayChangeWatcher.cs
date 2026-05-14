@@ -23,10 +23,10 @@ namespace PowerDisplay.Helpers;
 ///    the console display transitions on/off/dimmed. Reliable on both S3 and
 ///    S0ix and the only signal that catches idle-blank or lid recovery.
 ///
-/// On display turning ON, the watcher first fires <see cref="ResumeDetected"/>
-/// synchronously (so the ViewModel can lock interactive UI immediately), then
-/// schedules a debounced <see cref="DisplayChanged"/> so callers re-discover
-/// hardware once it has settled.
+/// Every detected change fires <see cref="DisplayChanging"/> synchronously
+/// (so the ViewModel can lock interactive UI immediately) and then schedules
+/// a debounced <see cref="DisplayChanged"/> for callers to re-discover hardware
+/// once it has settled.
 /// </summary>
 public sealed partial class DisplayChangeWatcher : IDisposable
 {
@@ -55,13 +55,13 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     public event EventHandler? DisplayChanged;
 
     /// <summary>
-    /// Event triggered the moment we detect the console display turning ON.
-    /// Fires on the dispatcher thread, synchronously, BEFORE the debounce
-    /// delay elapses — gives subscribers a chance to lock interactive UI so
-    /// users can't act on now-stale DDC/CI handles during the rediscovery
-    /// window.
+    /// Event triggered the moment a display configuration change is detected
+    /// (device added/removed, or console display turning ON). Fires on the
+    /// dispatcher thread, synchronously, BEFORE the debounce delay elapses —
+    /// gives subscribers a chance to lock interactive UI so users can't act on
+    /// monitors that are about to disappear, change, or be re-enumerated.
     /// </summary>
-    public event EventHandler? ResumeDetected;
+    public event EventHandler? DisplayChanging;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DisplayChangeWatcher"/> class.
@@ -137,7 +137,8 @@ public sealed partial class DisplayChangeWatcher : IDisposable
                 return;
             }
 
-            ScheduleDisplayChanged();
+            Logger.LogInfo("[DisplayChangeWatcher] Device added; scheduling rescan");
+            NotifyAndSchedule();
         });
     }
 
@@ -150,7 +151,8 @@ public sealed partial class DisplayChangeWatcher : IDisposable
                 return;
             }
 
-            ScheduleDisplayChanged();
+            Logger.LogInfo("[DisplayChangeWatcher] Device removed; scheduling rescan");
+            NotifyAndSchedule();
         });
     }
 
@@ -267,8 +269,8 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
     /// <summary>
     /// Runs on the dispatcher thread. Compares the new state against the last
-    /// seen state, fires ResumeDetected synchronously if appropriate, and
-    /// schedules the debounced DisplayChanged.
+    /// seen state, and on a wake transition fires <see cref="DisplayChanging"/>
+    /// synchronously then schedules the debounced <see cref="DisplayChanged"/>.
     /// </summary>
     private void HandleDisplayStateChange(uint newState)
     {
@@ -285,14 +287,19 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         }
 
         Logger.LogInfo(
-            $"[DisplayChangeWatcher] Console display ON (was {DescribeState(lastState)}); " +
-            $"firing ResumeDetected and scheduling rescan");
+            $"[DisplayChangeWatcher] Console display ON (was {DescribeState(lastState)}); scheduling rescan");
 
-        // Synchronously notify subscribers that a wake transition has happened
-        // BEFORE we start the debounce — gives the ViewModel a chance to lock
-        // interactive UI for the entire rediscovery window.
-        ResumeDetected?.Invoke(this, EventArgs.Empty);
+        NotifyAndSchedule();
+    }
 
+    /// <summary>
+    /// Fires <see cref="DisplayChanging"/> synchronously so subscribers can lock
+    /// UI immediately, then schedules the debounced <see cref="DisplayChanged"/>.
+    /// Order matters — UI lock must take effect before the rescan eventually runs.
+    /// </summary>
+    private void NotifyAndSchedule()
+    {
+        DisplayChanging?.Invoke(this, EventArgs.Empty);
         ScheduleDisplayChanged();
     }
 
