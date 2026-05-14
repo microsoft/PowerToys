@@ -64,7 +64,7 @@ namespace Wox.Plugin
         public static readonly string Version = FileVersionInfo.GetVersionInfo(Assembly.Location.NonNull()).ProductVersion;
 
         public static readonly int ThumbnailSize = 64;
-        public static readonly string ErrorIcon = Path.Combine(ProgramDirectory, "Assets", "PowerLauncher", "app_error.dark.png");
-        public static readonly string LightThemedErrorIcon = Path.Combine(ProgramDirectory, "Assets", "PowerLauncher", "app_error.light.png");
+        public static readonly string ErrorIcon = PathNormalization.NormalizePath(Path.Combine(ProgramDirectory, "Assets", "PowerLauncher", "app_error.dark.png"));
+        public static readonly string LightThemedErrorIcon = PathNormalization.NormalizePath(Path.Combine(ProgramDirectory, "Assets", "PowerLauncher", "app_error.light.png"));
     }
 }

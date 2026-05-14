@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Wox.Infrastructure.Image;
+using Wox.Plugin;
 
 namespace Wox.Test
 {
@@ -32,7 +32,7 @@ namespace Wox.Test
         public void GetNormalizedPath_ShouldStripExtendedLengthPrefix(string input, string expected)
         {
             // Act
-            string result = ImageLoader.GetNormalizedPath(input);
+            string result = PathNormalization.NormalizePath(input);
 
             // Assert
             Assert.AreEqual(expected, result);

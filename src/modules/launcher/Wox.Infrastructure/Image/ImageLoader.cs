@@ -55,22 +55,9 @@ namespace Wox.Infrastructure.Image
             return fs.Read(buffer, 0, buffer.Length) == buffer.Length && pngSignature.SequenceEqual(buffer);
         }
 
-        // Strips the Windows extended-length path prefix (\\?\UNC\ or \\?\) so that
-        // System.Uri can parse the resulting path. The prefix is used by Windows for
-        // paths longer than MAX_PATH but is not understood by System.Uri.
         internal static string GetNormalizedPath(string path)
         {
-            if (path.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase))
-            {
-                return @"\\" + path.Substring(8);
-            }
-
-            if (path.StartsWith(@"\\?\", StringComparison.OrdinalIgnoreCase))
-            {
-                return path.Substring(4);
-            }
-
-            return path;
+            return PathNormalization.NormalizePath(path);
         }
 
         public static void Initialize()
