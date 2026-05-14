@@ -3,24 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace PowerDisplay.Common.Helpers;
+namespace PowerDisplay.Helpers;
 
 /// <summary>
-/// P/Invoke surface for the console-display-state power-setting notification.
-/// Holds the Powrprof.dll bindings, GUIDs, and structures used by the
-/// PowerDisplay module's display-change watcher. No business logic lives here.
-///
-/// Uses <see cref="LibraryImportAttribute"/> (source-generated, AOT-compatible)
-/// matching the convention established in <c>PowerDisplay.Common.Drivers.PInvoke</c>.
+/// P/Invoke for the console-display-state power-setting notification used by
+/// <see cref="DisplayChangeWatcher"/>.
 /// </summary>
-[SuppressMessage(
-    "Interoperability",
-    "CA1401:P/Invokes should not be visible",
-    Justification = "Exposed for cross-assembly use by PowerToys.PowerDisplay; the main app subscribes/unsubscribes the notification from DisplayChangeWatcher. Pattern matches cmdpal/launcher NativeMethods.cs.")]
-public static partial class PowerSettingsNative
+internal static partial class PowerSettingsNative
 {
     /// <summary>
     /// GUID_CONSOLE_DISPLAY_STATE — Windows fires this whenever the console
@@ -28,30 +19,24 @@ public static partial class PowerSettingsNative
     /// Reliable on both S3 and S0ix, and also fires for idle-blank / lid /
     /// screensaver transitions that never enter system sleep.
     /// </summary>
-    public static readonly Guid GuidConsoleDisplayState =
+    internal static readonly Guid GuidConsoleDisplayState =
         new("6fe69556-704a-47a0-8f24-c28d936fda47");
 
-    /// <summary>
-    /// Console display state values. Typed <c>uint</c> to match the read-then-widen
-    /// pattern in <c>DisplayChangeWatcher</c> (single-byte payload read via
-    /// <see cref="Marshal.ReadByte(IntPtr, int)"/> and stored in a <c>uint</c>
-    /// field for comparison).
-    /// </summary>
-    public const uint DisplayStateOff = 0;
-    public const uint DisplayStateOn = 1;
-    public const uint DisplayStateDimmed = 2;
+    internal const uint DisplayStateOff = 0;
+    internal const uint DisplayStateOn = 1;
+    internal const uint DisplayStateDimmed = 2;
 
     /// <summary>
     /// DEVICE_NOTIFY_CALLBACK — Recipient is a pointer to
     /// DEVICE_NOTIFY_SUBSCRIBE_PARAMETERS containing a callback delegate.
     /// </summary>
-    public const uint DeviceNotifyCallback = 0x00000002;
+    internal const uint DeviceNotifyCallback = 0x00000002;
 
     /// <summary>
     /// Power-broadcast type value passed as the <c>type</c> parameter of the
     /// callback when a subscribed power setting changes.
     /// </summary>
-    public const uint PowerSettingChangeNotification = 0x8013;
+    internal const uint PowerSettingChangeNotification = 0x8013;
 
     /// <summary>
     /// Callback signature for power-setting notifications.
@@ -70,10 +55,10 @@ public static partial class PowerSettingsNative
     /// <param name="setting">Pointer to a POWERBROADCAST_SETTING.</param>
     /// <returns>Reserved — must return 0.</returns>
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate uint DeviceNotifyCallbackRoutine(IntPtr context, uint type, IntPtr setting);
+    internal delegate uint DeviceNotifyCallbackRoutine(IntPtr context, uint type, IntPtr setting);
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct DeviceNotifySubscribeParameters
+    internal struct DeviceNotifySubscribeParameters
     {
         public IntPtr Callback;
         public IntPtr Context;
@@ -84,7 +69,7 @@ public static partial class PowerSettingsNative
     /// PowerSetting (16 bytes) + DataLength (4 bytes) precede a variable-length
     /// Data array whose first byte holds the new display state.
     /// </summary>
-    public const int PowerBroadcastSettingDataOffset = 20;
+    internal const int PowerBroadcastSettingDataOffset = 20;
 
     /// <summary>
     /// Registers a callback to receive notifications when a specific power
@@ -96,7 +81,7 @@ public static partial class PowerSettingsNative
     /// (the function returns the error directly; <c>GetLastError</c> is not used).
     /// </returns>
     [LibraryImport("Powrprof.dll")]
-    public static partial uint PowerSettingRegisterNotification(
+    internal static partial uint PowerSettingRegisterNotification(
         ref Guid settingGuid,
         uint flags,
         ref DeviceNotifySubscribeParameters recipient,
@@ -110,5 +95,5 @@ public static partial class PowerSettingsNative
     /// <c>ERROR_SUCCESS</c> (0) on success; otherwise a Win32 error code.
     /// </returns>
     [LibraryImport("Powrprof.dll")]
-    public static partial uint PowerSettingUnregisterNotification(IntPtr registrationHandle);
+    internal static partial uint PowerSettingUnregisterNotification(IntPtr registrationHandle);
 }

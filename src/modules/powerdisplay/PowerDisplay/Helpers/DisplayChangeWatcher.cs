@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using PowerDisplay.Common.Helpers;
 using Windows.Devices.Display;
 using Windows.Devices.Enumeration;
 
