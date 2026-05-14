@@ -1694,6 +1694,7 @@ SKEXP
 SKIPOWNPROCESS
 sku
 SLGP
+slideshow
 sln
 slnf
 slnx

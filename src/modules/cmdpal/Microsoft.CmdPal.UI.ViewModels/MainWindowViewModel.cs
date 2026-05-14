@@ -72,22 +72,31 @@ public partial class MainWindowViewModel : ObservableObject, IDisposable
 
     private void ThemeService_ThemeChanged(object? sender, ThemeChangedEventArgs e)
     {
-        _uiDispatcherQueue.TryEnqueue(() =>
+        if (_uiDispatcherQueue.HasThreadAccess)
         {
-            BackgroundImageSource = _themeService.Current.BackgroundImageSource;
-            BackgroundImageStretch = _themeService.Current.BackgroundImageStretch;
-            BackgroundImageOpacity = _themeService.Current.BackgroundImageOpacity;
+            ApplyCurrentThemeSnapshot();
+        }
+        else
+        {
+            _uiDispatcherQueue.TryEnqueue(ApplyCurrentThemeSnapshot);
+        }
+    }
 
-            BackgroundImageBrightness = _themeService.Current.BackgroundBrightness;
-            BackgroundImageTint = _themeService.Current.Tint;
-            BackgroundImageTintIntensity = _themeService.Current.TintIntensity;
-            BackgroundImageBlurAmount = _themeService.Current.BlurAmount;
+    private void ApplyCurrentThemeSnapshot()
+    {
+        BackgroundImageSource = _themeService.Current.BackgroundImageSource;
+        BackgroundImageStretch = _themeService.Current.BackgroundImageStretch;
+        BackgroundImageOpacity = _themeService.Current.BackgroundImageOpacity;
 
-            BackdropStyle = _themeService.Current.BackdropParameters.Style;
-            BackdropOpacity = _themeService.Current.BackdropOpacity;
+        BackgroundImageBrightness = _themeService.Current.BackgroundBrightness;
+        BackgroundImageTint = _themeService.Current.Tint;
+        BackgroundImageTintIntensity = _themeService.Current.TintIntensity;
+        BackgroundImageBlurAmount = _themeService.Current.BlurAmount;
 
-            ShowBackgroundImage = BackgroundImageSource != null;
-        });
+        BackdropStyle = _themeService.Current.BackdropParameters.Style;
+        BackdropOpacity = _themeService.Current.BackdropOpacity;
+
+        ShowBackgroundImage = BackgroundImageSource != null;
     }
 
     public void Dispose()

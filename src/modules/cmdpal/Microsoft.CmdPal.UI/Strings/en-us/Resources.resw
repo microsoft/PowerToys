@@ -718,8 +718,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Settings_GeneralPage_ColorizationMode_Image.Content" xml:space="preserve">
     <value>Image</value>
   </data>
+  <data name="Settings_GeneralPage_ColorizationMode_Slideshow.Content" xml:space="preserve">
+    <value>Slideshow</value>
+  </data>
   <data name="Settings_GeneralPage_BackgroundImage_ChooseImageButton.Content" xml:space="preserve">
     <value>Browse...</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImage_ChooseFolderButton.Content" xml:space="preserve">
+    <value>Browse folder...</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_ResetImageButton.Content" xml:space="preserve">
     <value>Remove image</value>
@@ -731,7 +737,10 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Choose a custom background color or use the current accent color</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_SettingsCard.Header" xml:space="preserve">
-    <value>Background image</value>
+    <value>Choose a picture</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundSlideshowFolder_SettingsCard.Header" xml:space="preserve">
+    <value>Choose a picture album for a slideshow</value>
   </data>
   <data name="Settings_GeneralPage_NoBackground_DescriptionTextBlock.Text" xml:space="preserve">
     <value>No additional settings are available.</value>
@@ -756,6 +765,27 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   </data>
   <data name="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard.Header" xml:space="preserve">
     <value>Background image brightness</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageChangeInterval_SettingsCard.Header" xml:space="preserve">
+    <value>Change picture every</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageChangeInterval_Activation.Content" xml:space="preserve">
+    <value>On activation</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageChangeInterval_1Minute.Content" xml:space="preserve">
+    <value>1 minute</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageChangeInterval_10Minutes.Content" xml:space="preserve">
+    <value>10 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageChangeInterval_30Minutes.Content" xml:space="preserve">
+    <value>30 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageChangeInterval_60Minutes.Content" xml:space="preserve">
+    <value>60 minutes</value>
+  </data>
+  <data name="Settings_GeneralPage_BackgroundImageShuffle_SettingsCard.Header" xml:space="preserve">
+    <value>Shuffle the picture order</value>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard.Header" xml:space="preserve">
     <value>Restore defaults</value>

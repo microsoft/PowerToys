@@ -10,4 +10,5 @@ public enum ColorizationMode
     WindowsAccentColor,
     CustomColor,
     Image,
+    Slideshow,
 }
