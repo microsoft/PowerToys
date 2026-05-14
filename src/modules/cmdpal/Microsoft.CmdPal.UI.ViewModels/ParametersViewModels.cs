@@ -195,11 +195,19 @@ public partial class ParameterValueRunViewModel : ParameterRunViewModel
     }
 }
 
-public partial class StringParameterRunViewModel : ParameterValueRunViewModel
+public partial class StringParameterRunViewModel : ParameterValueRunViewModel, IDisposable
 {
+    // Exclusive scheduler ensures writes to the extension's Text property are
+    // serialized in the order they were submitted from the UI, so rapid
+    // typing can't deliver updates out of order.
+    private readonly TaskFactory _writeTaskFactory = new(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+
     private ExtensionObject<IStringParameterRun> _model;
 
     private string _modelText = string.Empty;
+
+    // For cancelling in-flight writes when a newer value arrives.
+    private CancellationTokenSource? _writeCancellationTokenSource;
 
     public string TextForUI { get => _modelText; set => SetTextFromUi(value); }
 
@@ -225,19 +233,74 @@ public partial class StringParameterRunViewModel : ParameterValueRunViewModel
 
     public void SetTextFromUi(string value)
     {
-        if (value != _modelText)
+        if (value == _modelText)
         {
-            _modelText = value;
-
-            _ = Task.Run(() =>
-            {
-                var stringRun = _model.Unsafe;
-                if (stringRun != null)
-                {
-                    stringRun.Text = value;
-                }
-            });
+            return;
         }
+
+        _modelText = value;
+
+        // Cancel any pending write that hasn't started yet, so we don't push
+        // stale values to the extension.
+        CancelAndDisposeTokenSource(ref _writeCancellationTokenSource);
+        var writeCts = _writeCancellationTokenSource = new CancellationTokenSource();
+        var writeToken = writeCts.Token;
+
+        // Hop off to an exclusive scheduler background thread to update the
+        // extension. The exclusive scheduler ensures writes are serialized
+        // and in-order (mirroring ListViewModel.OnSearchTextBoxUpdated).
+        _ = _writeTaskFactory.StartNew(
+            () =>
+            {
+                if (writeToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                try
+                {
+                    var stringRun = _model.Unsafe;
+                    if (stringRun != null)
+                    {
+                        stringRun.Text = value;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    ShowException(ex);
+                }
+            },
+            writeToken,
+            TaskCreationOptions.None,
+            _writeTaskFactory.Scheduler!);
+    }
+
+    private static void CancelAndDisposeTokenSource(ref CancellationTokenSource? tokenSource)
+    {
+        var tokenSourceToDispose = Interlocked.Exchange(ref tokenSource, null);
+        if (tokenSourceToDispose is null)
+        {
+            return;
+        }
+
+        tokenSourceToDispose.Cancel();
+        tokenSourceToDispose.Dispose();
+    }
+
+    protected override void UnsafeCleanup()
+    {
+        base.UnsafeCleanup();
+
+        CancelAndDisposeTokenSource(ref _writeCancellationTokenSource);
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        SafeCleanup();
     }
 
     protected override void FetchProperty(string propertyName)
