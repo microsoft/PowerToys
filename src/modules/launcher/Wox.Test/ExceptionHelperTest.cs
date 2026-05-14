@@ -11,6 +11,7 @@ using PowerLauncher.Helper;
 namespace Wox.Test;
 
 [TestClass]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "Test code intentionally constructs COMException instances to verify exception-handling logic")]
 public class ExceptionHelperTest
 {
     private const int DwmCompositionDisabledHResult = unchecked((int)0x80263001);
@@ -62,6 +63,36 @@ public class ExceptionHelperTest
     public void IsRecoverableDwmCompositionException_TargetInvocationWithNullInner_ReturnsFalse()
     {
         var ex = new TargetInvocationException(null);
+        Assert.IsFalse(ExceptionHelper.IsRecoverableDwmCompositionException(ex));
+    }
+
+    /// <summary>
+    /// A <see cref="COMException"/> with HRESULT 0xD0000701 (STATUS_MESSAGE_LOST) and Source
+    /// "PresentationFramework" must be identified as recoverable.
+    /// </summary>
+    [TestMethod]
+    public void IsRecoverableDwmCompositionException_StatusMessageLostFromPresentationFramework_ReturnsTrue()
+    {
+        var ex = new COMException("Status message lost", StatusMessageLostHResult)
+        {
+            Source = "PresentationFramework",
+        };
+
+        Assert.IsTrue(ExceptionHelper.IsRecoverableDwmCompositionException(ex));
+    }
+
+    /// <summary>
+    /// A <see cref="COMException"/> with HRESULT 0xD0000701 (STATUS_MESSAGE_LOST) but a
+    /// non-PresentationFramework source must NOT be identified as recoverable.
+    /// </summary>
+    [TestMethod]
+    public void IsRecoverableDwmCompositionException_StatusMessageLostFromOtherSource_ReturnsFalse()
+    {
+        var ex = new COMException("Status message lost", StatusMessageLostHResult)
+        {
+            Source = "SomeOtherAssembly",
+        };
+
         Assert.IsFalse(ExceptionHelper.IsRecoverableDwmCompositionException(ex));
     }
 
