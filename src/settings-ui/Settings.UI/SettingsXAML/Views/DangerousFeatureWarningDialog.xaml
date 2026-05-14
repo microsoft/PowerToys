@@ -1,4 +1,4 @@
-<ContentDialog
+﻿<ContentDialog
     x:Class="Microsoft.PowerToys.Settings.UI.Views.DangerousFeatureWarningDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,9 +14,7 @@
             FontWeight="Bold"
             Foreground="{ThemeResource SystemFillColorCriticalBrush}"
             TextWrapping="Wrap" />
-        <TextBlock
-            x:Name="WarningDescription"
-            TextWrapping="Wrap" />
+        <TextBlock x:Name="WarningDescription" TextWrapping="Wrap" />
         <TextBlock
             x:Name="WarningList"
             Margin="20,0,0,0"

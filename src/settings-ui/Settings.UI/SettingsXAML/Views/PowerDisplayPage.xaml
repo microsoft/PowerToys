@@ -85,8 +85,7 @@
 
                 <controls:SettingsGroup x:Uid="PowerDisplay_AdvancedSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_MaxCompatibilityMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7B5;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=OneWay}"
-                                      Toggled="MaxCompatibilityMode_Toggled" />
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=OneWay}" Toggled="MaxCompatibilityMode_Toggled" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
