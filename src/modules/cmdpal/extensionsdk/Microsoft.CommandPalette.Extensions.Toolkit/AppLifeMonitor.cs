@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -84,9 +85,8 @@ public sealed class AppLifeMonitor : IDisposable
         nint hInstance,
         nint lpParam);
 
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetMessageW(out MSG lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern int GetMessageW(out MSG lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 
     [DllImport("user32.dll")]
     private static extern nint DispatchMessageW(ref MSG lpmsg);
@@ -158,14 +158,14 @@ public sealed class AppLifeMonitor : IDisposable
         // is loaded multiple times in the same session.
         var className = $"AppLifeMonitor_{Environment.ProcessId}";
         var classNamePtr = Marshal.StringToHGlobalUni(className);
+        var hInstance = GetModuleHandleW(0);
+        var classRegistered = false;
 
         try
         {
             // Store the delegate in a field so it is not collected by the GC.
             _wndProcDelegate = HandleMessage;
             var wndProcPtr = Marshal.GetFunctionPointerForDelegate(_wndProcDelegate);
-
-            var hInstance = GetModuleHandleW(0);
 
             var wndClass = new WNDCLASSW
             {
@@ -177,10 +177,11 @@ public sealed class AppLifeMonitor : IDisposable
             var atom = RegisterClassW(ref wndClass);
             if (atom == 0)
             {
-                // Window class registration failed. The monitor is non-operational, but the
-                // extension continues to run normally — just without graceful shutdown support.
+                Trace.TraceWarning("AppLifeMonitor: RegisterClassW failed with error {0}", Marshal.GetLastWin32Error());
                 return;
             }
+
+            classRegistered = true;
 
             // Create a 0×0 invisible pop-up window.
             // This must NOT be a message-only window (HWND_MESSAGE parent) because
@@ -201,9 +202,7 @@ public sealed class AppLifeMonitor : IDisposable
 
             if (_hwnd == 0)
             {
-                // Window creation failed. The monitor is non-operational, but the extension
-                // continues to run normally — just without graceful shutdown support.
-                UnregisterClassW(classNamePtr, hInstance);
+                Trace.TraceWarning("AppLifeMonitor: CreateWindowExW failed with error {0}", Marshal.GetLastWin32Error());
                 return;
             }
 
@@ -211,17 +210,27 @@ public sealed class AppLifeMonitor : IDisposable
             // The constructor's WaitOne() unblocks here.
             _windowCreated.Set();
 
-            // Run the message loop until PostQuitMessage is called (WM_QUIT).
-            while (GetMessageW(out var msg, nint.Zero, 0, 0))
+            // Run the message loop until PostQuitMessage is called (WM_QUIT) or an error occurs.
+            int ret;
+            while ((ret = GetMessageW(out var msg, nint.Zero, 0, 0)) > 0)
             {
                 TranslateMessage(ref msg);
                 DispatchMessageW(ref msg);
             }
 
-            UnregisterClassW(classNamePtr, hInstance);
+            if (ret == -1)
+            {
+                Trace.TraceWarning("AppLifeMonitor: GetMessageW failed with error {0}", Marshal.GetLastWin32Error());
+            }
+
         }
         finally
         {
+            if (classRegistered)
+            {
+                UnregisterClassW(classNamePtr, hInstance);
+            }
+
             // Always signal so the constructor's WaitOne() unblocks even on failure paths.
             // Set() is idempotent, so calling it again after an early Set() in the try block is safe.
             // Note: _windowCreated is not disposed here because there is a theoretical window
