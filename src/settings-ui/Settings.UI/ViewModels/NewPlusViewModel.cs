@@ -330,6 +330,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private static readonly string ExplorerExePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+
         private bool _isNewPlusEnabled;
         private string _templateLocation;
         private bool _hideFileExtension;
@@ -356,12 +358,21 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 CopyTemplateExamples(_templateLocation);
 
-                Process.Start("explorer.exe", _templateLocation);
+                Process.Start(CreateExplorerProcessStartInfo(_templateLocation));
             }
             catch (Exception ex)
             {
                 Logger.LogError("Failed to show NewPlus template folder.", ex);
             }
+        }
+
+        private static ProcessStartInfo CreateExplorerProcessStartInfo(string templateLocation)
+        {
+            return new ProcessStartInfo
+            {
+                FileName = ExplorerExePath,
+                Arguments = $"\"{templateLocation}\"",
+            };
         }
 
         private async void PickNewTemplateFolder()
