@@ -87,11 +87,33 @@ namespace PowerLauncher.Helper
         /// </summary>
         private static bool IsExceptionFromUserPlugin(Exception e)
         {
-            if (e == null)
+            var current = e;
+            while (current != null)
             {
-                return false;
+                if (HasPluginStackFrames(current))
+                {
+                    return true;
+                }
+
+                if (current is AggregateException aggregateException)
+                {
+                    foreach (var innerException in aggregateException.InnerExceptions)
+                    {
+                        if (IsExceptionFromUserPlugin(innerException))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                current = current.InnerException;
             }
 
+            return false;
+        }
+
+        private static bool HasPluginStackFrames(Exception e)
+        {
             try
             {
                 var pluginsDir = Constant.PluginsDirectory;
