@@ -160,7 +160,7 @@ namespace Microsoft.Plugin.Program.Programs
                                 {
                                     ProgramLogger.Exception($"Unable to run {DisplayName} as administrator", e, MethodBase.GetCurrentMethod().DeclaringType, command);
                                     var name = "Plugin: " + Properties.Resources.wox_plugin_program_plugin_name;
-                                    var message = $"{Properties.Resources.powertoys_run_plugin_program_start_failed}: {DisplayName}";
+                                    var message = Properties.Resources.powertoys_run_plugin_program_uwp_run_as_admin_not_supported;
                                     api.ShowMsg(name, message, string.Empty);
                                 }
 

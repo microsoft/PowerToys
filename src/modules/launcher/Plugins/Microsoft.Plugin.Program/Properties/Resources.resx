@@ -165,6 +165,9 @@
   <data name="powertoys_run_plugin_program_uwp_failed" xml:space="preserve">
     <value>Can't start UWP</value>
   </data>
+  <data name="powertoys_run_plugin_program_uwp_run_as_admin_not_supported" xml:space="preserve">
+    <value>Unable to run as administrator. Packaged UWP apps do not support elevated launch via this method.</value>
+  </data>
   <data name="wox_plugin_program_run_as_user" xml:space="preserve">
     <value>Run as different user (Ctrl+Shift+U)</value>
   </data>
