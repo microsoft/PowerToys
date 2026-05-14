@@ -261,7 +261,7 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock
                             VerticalAlignment="Center"
-                            AutomationProperties.Name="{x:Static props:Resources.CreateWorkspace}"
+                            AutomationProperties.Name="{x:Static props:Resources.Save_Workspace}"
                             FontFamily="{DynamicResource SymbolThemeFontFamily}"
                             Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
                             Text="&#xE74E;" />

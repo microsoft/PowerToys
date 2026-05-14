@@ -70,6 +70,7 @@
                 <TextBox
                     x:Name="SearchTextBox"
                     Width="320"
+                    Text="{Binding SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     ToolTip="{x:Static props:Resources.SearchExplanation}" />
                 <TextBlock
                     Margin="12,0,0,0"
