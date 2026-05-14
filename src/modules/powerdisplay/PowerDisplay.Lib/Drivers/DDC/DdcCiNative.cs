@@ -19,16 +19,15 @@ namespace PowerDisplay.Common.Drivers.DDC
     public static class DdcCiNative
     {
         // Continuous-range VCP features probed when running in max-compatibility mode.
-        // Discrete-value features (0x14 color preset, 0x60 input source) are excluded
-        // — GetVCPFeatureAndVCPFeatureReply returns only current+max, so we cannot
-        // synthesize a meaningful supported-value list for them. Friendly names come
-        // from VcpNames.GetCodeName to keep a single source of truth.
+        // Discrete-value features (0x14 color preset, 0x60 input source, 0xD6 power mode)
+        // are excluded — GetVCPFeatureAndVCPFeatureReply returns only current+max, so we
+        // cannot synthesize a meaningful supported-value list for them. Friendly names
+        // come from VcpNames.GetCodeName to keep a single source of truth.
         private static readonly byte[] ProbeableContinuousVcpCodes =
         {
             VcpCodeBrightness,
             VcpCodeContrast,
             VcpCodeVolume,
-            VcpCodePowerMode,
         };
 
         /// <summary>
