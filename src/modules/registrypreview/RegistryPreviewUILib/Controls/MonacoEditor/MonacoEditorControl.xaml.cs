@@ -16,6 +16,7 @@ using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using Windows.UI;
+using Windows.UI.ViewManagement;
 
 namespace RegistryPreviewUILib
 {
@@ -148,8 +149,33 @@ namespace RegistryPreviewUILib
 
         private async Task SetThemeAsync()
         {
-            var theme = Application.Current.RequestedTheme == ApplicationTheme.Light ? "vs" : "vs-dark";
+            var theme = GetMonacoTheme();
             await Browser.CoreWebView2.ExecuteScriptAsync($"monaco.editor.setTheme('{theme}')");
+        }
+
+        private static string GetMonacoTheme()
+        {
+            var uiSettings = new UISettings();
+            var highContrast = uiSettings.HighContrast;
+
+            if (highContrast)
+            {
+                // In high contrast mode, check if it's a dark or light high contrast theme
+                var foreground = uiSettings.GetColorValue(UIColorType.Foreground);
+                var background = uiSettings.GetColorValue(UIColorType.Background);
+
+                // Determine if it's a dark theme by comparing luminance
+                // Dark themes have light foreground and dark background
+                var foregroundLuminance = (0.299 * foreground.R + 0.587 * foreground.G + 0.114 * foreground.B) / 255;
+                var backgroundLuminance = (0.299 * background.R + 0.587 * background.G + 0.114 * background.B) / 255;
+
+                return backgroundLuminance < foregroundLuminance ? "hc-black" : "hc-light";
+            }
+            else
+            {
+                // Normal mode: use standard themes based on app theme
+                return Application.Current.RequestedTheme == ApplicationTheme.Light ? "vs" : "vs-dark";
+            }
         }
 
         private void OnTextChangedThrottleElapsed(object sender, ElapsedEventArgs e)

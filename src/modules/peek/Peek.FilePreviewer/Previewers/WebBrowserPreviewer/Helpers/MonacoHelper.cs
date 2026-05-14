@@ -75,7 +75,7 @@ namespace Peek.FilePreviewer.Previewers
             }
 
             string base64FileCode = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(fileContent));
-            string theme = ThemeManager.GetWindowsBaseColor().ToLowerInvariant();
+            string theme = ThemeManager.GetMonacoTheme();
 
             // prepping index html to load in
             string html = Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.ReadIndexHtml();
