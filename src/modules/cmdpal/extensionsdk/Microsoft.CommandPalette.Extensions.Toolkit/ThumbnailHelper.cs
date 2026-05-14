@@ -61,12 +61,10 @@ public static class ThumbnailHelper
     // these are windows constants and mangling them is goofy
 #pragma warning disable SA1310 // Field names should not contain underscore
 #pragma warning disable SA1306 // Field names should begin with lower-case letter
-    private const uint SHGFI_ICON = 0x000000100;
-    private const uint SHGFI_LARGEICON = 0x000000000;
-    private const uint SHGFI_SHELLICONSIZE = 0x000000004;
     private const uint SHGFI_SYSICONINDEX = 0x000004000;
     private const uint SHGFI_PIDL = 0x000000008;
-    private const int SHIL_JUMBO = 4;
+    private const int SHIL_LARGE = 0;   // 32×32 px system large-icon list
+    private const int SHIL_JUMBO = 4;   // 256×256 px jumbo-icon list
     private const int ILD_TRANSPARENT = 1;
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 #pragma warning restore SA1310 // Field names should not contain underscore
@@ -114,15 +112,16 @@ public static class ThumbnailHelper
             }
             else
             {
-                hIcon = TryGetShellSizedIcon(pidl);
+                hIcon = GetNormalSizeIcon(pidl);
             }
 
-            // We intentionally do NOT fall back to SHGetFileInfo with SHGFI_ICON for jumbo
-            // icons here. SHGetFileInfo with SHGFI_ICON invokes shell icon overlay handlers
-            // (IShellIconOverlayIdentifier), and some third-party extensions (e.g. PlasticSCM /
-            // Unity Version Control) can throw during that path. For normal-sized icons we still
-            // try the PIDL-based shell lookup so virtual shell items keep their Explorer icons,
-            // but if it fails we return null so the caller can fall back gracefully.
+            // Both GetLargestIcon and GetNormalSizeIcon use SHGFI_SYSICONINDEX|SHGFI_PIDL (which
+            // does NOT trigger IShellIconOverlayIdentifier handlers) to obtain the icon index, then
+            // retrieve the icon from the system image list. This avoids the SHGFI_ICON path that
+            // fatally aborts the process in .NET 9 when certain third-party shell extensions (e.g.
+            // PlasticSCM / Unity Version Control) are installed. The crash is a C-runtime
+            // STATUS_STACK_BUFFER_OVERRUN / __fastfail that bypasses all .NET exception handlers
+            // and cannot be caught; it must be prevented by not invoking the unsafe path.
             if (hIcon == 0)
             {
                 return null;
@@ -143,23 +142,24 @@ public static class ThumbnailHelper
         }
     }
 
-    private static nint TryGetShellSizedIcon(IntPtr pidl)
+    private static nint GetNormalSizeIcon(IntPtr pidl)
     {
-        try
+        var shinfo = default(NativeMethods.SHFILEINFO);
+
+        // SHGFI_SYSICONINDEX with SHGFI_PIDL returns the system image list index without
+        // loading icon overlay handlers. We then retrieve the icon directly from the system
+        // large-icon image list, which is safe even with third-party shell extensions installed.
+        NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_SYSICONINDEX | SHGFI_PIDL);
+
+        var hIcon = IntPtr.Zero;
+        var iID_IImageList = IID_IImageList;
+
+        if (NativeMethods.SHGetImageList(SHIL_LARGE, ref iID_IImageList, out var imageListPtr) == 0 && imageListPtr != IntPtr.Zero)
         {
-            var shinfo = default(NativeMethods.SHFILEINFO);
-            var fileInfoResult = NativeMethods.SHGetFileInfo(pidl, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SHELLICONSIZE | SHGFI_LARGEICON | SHGFI_PIDL);
-            if (fileInfoResult != IntPtr.Zero && shinfo.hIcon != IntPtr.Zero)
-            {
-                return shinfo.hIcon;
-            }
-        }
-        catch (Exception)
-        {
-            // Ignore and allow the caller to fall back to the file-path-based extraction.
+            hIcon = NativeMethods.ImageList_GetIcon(imageListPtr, shinfo.iIcon, ILD_TRANSPARENT);
         }
 
-        return 0;
+        return hIcon;
     }
 
     private static async Task<IRandomAccessStream?> GetFileIconStreamUsingFilePath(string filePath, bool jumbo)
@@ -281,7 +281,7 @@ public static class ThumbnailHelper
             return null;
         }
 
-        // if it's and .exe and without a path, let's find on path:
+        // if it's an .exe and without a path, let's find on path:
         if (Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase) && !Path.IsPathRooted(path))
         {
             var paths = Environment.GetEnvironmentVariable("PATH")?.Split(';') ?? [];
