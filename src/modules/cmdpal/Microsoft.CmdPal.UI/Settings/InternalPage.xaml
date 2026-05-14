@@ -65,6 +65,20 @@
                         <Button Click="ToggleDevRibbonClicked" Content="Toggle dev ribbon" />
                     </controls:SettingsCard>
 
+                    <!--  Gallery Section  -->
+                    <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Extension Gallery" />
+                    <controls:SettingsCard
+                        Description="Override the default extension gallery feed URL. Leave empty to use the default feed."
+                        Header="Custom gallery feed URL"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE71B;}">
+                        <TextBox
+                            x:Name="GalleryFeedUrlTextBox"
+                            MinWidth="400"
+                            LostFocus="GalleryFeedUrlTextBox_LostFocus"
+                            PlaceholderText="https://..."
+                            Text="{x:Bind GalleryFeedUrl, Mode=OneTime}" />
+                    </controls:SettingsCard>
+
                     <!--  Data Section  -->
                     <TextBlock Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" Text="Data and Files" />
                     <controls:SettingsCard

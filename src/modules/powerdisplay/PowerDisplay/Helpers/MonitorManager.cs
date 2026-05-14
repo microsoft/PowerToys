@@ -72,6 +72,19 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Pushes the max-compatibility-mode flag onto the DDC/CI controller. Called by
+        /// <see cref="ViewModels.MainViewModel"/> before each discovery so the value is
+        /// current. No-op if the DDC controller failed to initialize.
+        /// </summary>
+        public void SetMaxCompatibilityMode(bool enabled)
+        {
+            if (_ddcController != null)
+            {
+                _ddcController.MaxCompatibilityMode = enabled;
+            }
+        }
+
+        /// <summary>
         /// Discover all monitors from all controllers.
         /// Each controller is responsible for fully initializing its monitors
         /// (including brightness, capabilities, input source, color temperature, etc.)

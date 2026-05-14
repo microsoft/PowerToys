@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -8,7 +8,7 @@ using Windows.Win32;
 using Windows.Win32.System.Com;
 using WinRT;
 
-namespace WindowsPackageManager.Interop;
+namespace Microsoft.CmdPal.Common.WinGet.Interop;
 
 public class WindowsPackageManagerStandardFactory : WindowsPackageManagerFactory
 {

@@ -105,7 +105,18 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
     /// </summary>
     internal void SaveShowLabels()
     {
-        ReplaceBandInSettings(_bandSettings with { ShowTitles = _showTitles, ShowSubtitles = _showSubtitles });
+        // Only write to settings if the label values actually changed from
+        // the snapshot. When multiple non-customized monitors share global
+        // bands, an unconditional save would overwrite changes made by
+        // another monitor's ViewModel (last-save-wins clobber).
+        var changed = _showTitlesSnapshot is null
+                   || _showTitles != _showTitlesSnapshot
+                   || _showSubtitles != _showSubtitlesSnapshot;
+        if (changed)
+        {
+            ReplaceBandInSettings(_bandSettings with { ShowTitles = _showTitles, ShowSubtitles = _showSubtitles });
+        }
+
         _showTitlesSnapshot = null;
         _showSubtitlesSnapshot = null;
     }
@@ -135,15 +146,52 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
             s =>
                 {
                     var dockSettings = s.DockSettings;
-                    return s with
+
+                    // Update in global bands
+                    var updatedDock = dockSettings with
                     {
-                        DockSettings = dockSettings with
-                        {
-                            StartBands = ReplaceBandInList(dockSettings.StartBands, commandId, newSettings),
-                            CenterBands = ReplaceBandInList(dockSettings.CenterBands, commandId, newSettings),
-                            EndBands = ReplaceBandInList(dockSettings.EndBands, commandId, newSettings),
-                        },
+                        StartBands = ReplaceBandInList(dockSettings.StartBands, commandId, newSettings),
+                        CenterBands = ReplaceBandInList(dockSettings.CenterBands, commandId, newSettings),
+                        EndBands = ReplaceBandInList(dockSettings.EndBands, commandId, newSettings),
                     };
+
+                    // Also update in per-monitor bands for customized monitors
+                    var configs = updatedDock.MonitorConfigs ?? ImmutableList<DockMonitorConfig>.Empty;
+                    var configsChanged = false;
+                    for (var i = 0; i < configs.Count; i++)
+                    {
+                        var config = configs[i];
+                        if (!config.IsCustomized)
+                        {
+                            continue;
+                        }
+
+                        var start = config.StartBands ?? ImmutableList<DockBandSettings>.Empty;
+                        var center = config.CenterBands ?? ImmutableList<DockBandSettings>.Empty;
+                        var end = config.EndBands ?? ImmutableList<DockBandSettings>.Empty;
+
+                        var newStart = ReplaceBandInList(start, commandId, newSettings);
+                        var newCenter = ReplaceBandInList(center, commandId, newSettings);
+                        var newEnd = ReplaceBandInList(end, commandId, newSettings);
+
+                        if (newStart != start || newCenter != center || newEnd != end)
+                        {
+                            configs = configs.SetItem(i, config with
+                            {
+                                StartBands = newStart,
+                                CenterBands = newCenter,
+                                EndBands = newEnd,
+                            });
+                            configsChanged = true;
+                        }
+                    }
+
+                    if (configsChanged)
+                    {
+                        updatedDock = updatedDock with { MonitorConfigs = configs };
+                    }
+
+                    return s with { DockSettings = updatedDock };
                 },
             false);
         _bandSettings = newSettings;
