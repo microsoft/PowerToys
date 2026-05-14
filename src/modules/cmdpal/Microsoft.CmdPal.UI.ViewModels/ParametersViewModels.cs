@@ -670,6 +670,14 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
                 if (removedItem is CommandParameterRunViewModel removedCmdParam)
                 {
                     removedCmdParam.ValueChanged -= ListParamValueChanged;
+
+                    // If the active list param is being removed, clear the
+                    // active references so we don't hold on to a disposed
+                    // ListViewModel.
+                    if (removedCmdParam == _activeListParam)
+                    {
+                        SetActiveListParameter(null);
+                    }
                 }
 
                 removedItem.SafeCleanup();
@@ -837,11 +845,20 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     {
         base.UnsafeCleanup();
 
+        // Drop the active list param reference before disposing items so we
+        // don't end up pointing at a disposed ListViewModel.
+        SetActiveListParameter(null);
+
         lock (_listLock)
         {
             foreach (var item in Items)
             {
                 item.PropertyChanged -= ItemPropertyChanged;
+                if (item is CommandParameterRunViewModel cmdParam)
+                {
+                    cmdParam.ValueChanged -= ListParamValueChanged;
+                }
+
                 item.SafeCleanup();
             }
 
