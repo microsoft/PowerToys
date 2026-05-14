@@ -62,6 +62,28 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 
     auto state = UpdateState::read();
 
+    // Handle readyToInstall first — the installer is already on disk,
+    // so we don't need a GitHub API call (which may fail if offline).
+    if (state.state == UpdateState::readyToInstall)
+    {
+        fs::path installer{ get_pending_updates_path() / state.downloadedInstallerFilename };
+        if (fs::is_regular_file(installer))
+        {
+            return std::move(installer);
+        }
+        else
+        {
+            Logger::error(L"Couldn't find a downloaded installer {}", installer.native());
+            return std::nullopt;
+        }
+    }
+
+    if (state.state == UpdateState::upToDate)
+    {
+        isUpToDate = true;
+        return std::nullopt;
+    }
+
     const auto new_version_info = std::move(get_github_version_info_async()).get();
 
     // Check for error BEFORE dereferencing — the old code crashed here
@@ -91,24 +113,6 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
         }
 
         return downloaded_installer;
-    }
-    else if (state.state == UpdateState::readyToInstall)
-    {
-        fs::path installer{ get_pending_updates_path() / state.downloadedInstallerFilename };
-        if (fs::is_regular_file(installer))
-        {
-            return std::move(installer);
-        }
-        else
-        {
-            Logger::error(L"Couldn't find a downloaded installer {}", installer.native());
-            return std::nullopt;
-        }
-    }
-    else if (state.state == UpdateState::upToDate)
-    {
-        isUpToDate = true;
-        return std::nullopt;
     }
 
     Logger::error("Invoked with -update_now argument, but update state was invalid");
