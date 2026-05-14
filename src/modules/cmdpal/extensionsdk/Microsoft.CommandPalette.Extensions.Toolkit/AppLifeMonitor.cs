@@ -17,7 +17,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 /// Extensions run as COM out-of-process servers with <c>[MTAThread]</c>, which means the main
 /// thread has no Win32 message loop. Without a message loop, the process cannot receive
 /// <c>WM_QUERYENDSESSION</c> or <c>WM_ENDSESSION</c> messages when the OS shuts down, causing
-/// hang reports (MOAPPLICATION_HANG / HANG_QUIESCE) and delayed Store updates.
+/// hang reports and delayed Store updates.
 ///
 /// This class creates a dedicated hidden window on a background STA thread whose message loop
 /// handles those messages and signals <paramref name="extensionDisposedEvent"/> so the
@@ -89,7 +89,7 @@ public sealed class AppLifeMonitor : IDisposable
     private static extern int GetMessageW(out MSG lpMsg, nint hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
 
     [DllImport("user32.dll")]
-    private static extern nint DispatchMessageW(ref MSG lpmsg);
+    private static extern nint DispatchMessageW(ref MSG msg);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
