@@ -63,7 +63,7 @@ public partial class FilePickerParameterRun : CommandParameterRun
 
         public override ICommandResult Invoke()
         {
-            PickFileAsync();
+            PickFileAsync().GetAwaiter().GetResult();
             return CommandResult.KeepOpen();
         }
 
