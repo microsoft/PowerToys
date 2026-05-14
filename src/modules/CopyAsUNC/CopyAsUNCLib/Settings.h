@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+#include <common/utils/gpo.h>
+
 class CopyAsUNCSettings
 {
 public:
