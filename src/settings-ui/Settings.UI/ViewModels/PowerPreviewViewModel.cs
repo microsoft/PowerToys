@@ -76,6 +76,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _mdRenderIsEnabled = Settings.Properties.EnableMdPreview;
             }
 
+            _mdLocalImagesEnabled = Settings.Properties.EnableMdLocalImages;
+
             _monacoRenderEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredMonacoPreviewEnabledValue();
             if (_monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _monacoRenderEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
@@ -254,6 +256,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _mdRenderIsGpoEnabled;
         private bool _mdRenderIsGpoDisabled;
         private bool _mdRenderIsEnabled;
+        private bool _mdLocalImagesEnabled;
 
         private GpoRuleConfigured _monacoRenderEnabledGpoRuleConfiguration;
         private bool _monacoRenderEnabledStateIsGPOConfigured;
@@ -544,6 +547,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 return _mdRenderIsGpoDisabled;
+            }
+        }
+
+        public bool MDLocalImagesIsEnabled
+        {
+            get
+            {
+                return _mdLocalImagesEnabled;
+            }
+
+            set
+            {
+                if (_mdLocalImagesEnabled != value)
+                {
+                    _mdLocalImagesEnabled = value;
+                    Settings.Properties.EnableMdLocalImages = value;
+                    RaisePropertyChanged();
+                }
             }
         }
 

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
+using System.Text.RegularExpressions;
 
 using Markdig;
 
@@ -25,13 +26,14 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// </summary>
         private static readonly string HtmlFooter = "</div></body></html>";
 
-        public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack)
+        public static string MarkdownHtml(string fileContent, string theme, string filePath, ImagesBlockedCallBack imagesBlockedCallBack, bool allowLocalImages = false)
         {
             var htmlHeader = theme == "dark" ? HtmlDarkHeader : HtmlLightHeader;
 
             // Extension to modify markdown AST.
             HTMLParsingExtension extension = new HTMLParsingExtension(imagesBlockedCallBack);
             extension.FilePath = Path.GetDirectoryName(filePath) ?? string.Empty;
+            extension.AllowLocalImages = allowLocalImages;
 
             // if you have a string with double space, some people view it as a new line.
             // while this is against spec, even GH supports this. Technically looks like GH just trims whitespace
@@ -45,6 +47,15 @@ namespace Microsoft.PowerToys.FilePreviewCommon
 
             MarkdownPipeline pipeline = pipelineBuilder.Build();
             string parsedMarkdown = Markdown.ToHtml(fileContent, pipeline);
+
+            if (allowLocalImages)
+            {
+                string virtualHost = "https://localmdimages/";
+                parsedMarkdown = Regex.Replace(
+                    parsedMarkdown,
+                    @"src=""(?!https?://|data:|file://|#|javascript:)([^""]+)""",
+                    m => $"src=\"{virtualHost}{m.Groups[1].Value}\"");
+            }
 
             string markdownHTML = $"{htmlHeader}{parsedMarkdown}{HtmlFooter}";
             return markdownHTML;

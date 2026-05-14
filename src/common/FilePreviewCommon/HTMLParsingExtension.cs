@@ -2,6 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.IO;
+
 using Markdig;
 using Markdig.Extensions.Figures;
 using Markdig.Extensions.Tables;
@@ -42,6 +45,26 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         /// Gets or sets path to directory containing markdown file.
         /// </summary>
         public string FilePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether local images should be rendered.
+        /// </summary>
+        public bool AllowLocalImages { get; set; }
+
+        private static bool IsLocalImage(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+
+            if (url.Contains("://") && !url.StartsWith("file://", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         /// <inheritdoc/>
         public void Setup(MarkdownPipelineBuilder pipeline)
@@ -92,9 +115,29 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                     {
                         if (link.IsImage)
                         {
-                            link.Url = "#";
-                            link.GetAttributes().AddClass("img-fluid");
-                            imagesBlockedCallBack();
+                            if (AllowLocalImages && IsLocalImage(link.Url))
+                            {
+                                string resolvedPath = Path.GetFullPath(Path.Combine(FilePath, link.Url));
+
+                                if (resolvedPath.StartsWith(FilePath, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    string relativePath = resolvedPath.Substring(FilePath.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Replace('\\', '/');
+                                    link.Url = "https://localmdimages/" + relativePath;
+                                    link.GetAttributes().AddClass("img-fluid");
+                                }
+                                else
+                                {
+                                    link.Url = "#";
+                                    link.GetAttributes().AddClass("img-fluid");
+                                    imagesBlockedCallBack();
+                                }
+                            }
+                            else
+                            {
+                                link.Url = "#";
+                                link.GetAttributes().AddClass("img-fluid");
+                                imagesBlockedCallBack();
+                            }
                         }
                     }
                 }

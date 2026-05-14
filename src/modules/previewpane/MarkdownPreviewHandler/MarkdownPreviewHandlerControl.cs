@@ -56,6 +56,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         /// </summary>
         private bool _infoBarDisplayed;
 
+        private string _markdownDirectory;
+        private bool _allowLocalImages;
+
         /// <summary>
         /// Gets the path of the current assembly.
         /// </summary>
@@ -116,14 +119,21 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     throw new ArgumentException($"{nameof(dataSource)} for {nameof(MarkdownPreviewHandlerControl)} must be a string but was a '{typeof(T)}'");
                 }
 
+                _allowLocalImages = Settings.GetLocalImagesEnabled();
+                _markdownDirectory = Path.GetDirectoryName(filePath) ?? string.Empty;
+
                 string fileText = File.ReadAllText(filePath);
-                Regex imageTagRegex = new Regex(@"<[ ]*img.*>");
-                if (imageTagRegex.IsMatch(fileText))
+
+                if (!_allowLocalImages)
                 {
-                    _infoBarDisplayed = true;
+                    Regex imageTagRegex = new Regex(@"<[ ]*img.*>");
+                    if (imageTagRegex.IsMatch(fileText))
+                    {
+                        _infoBarDisplayed = true;
+                    }
                 }
 
-                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Settings.GetTheme(), filePath, ImagesBlockedCallBack);
+                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Settings.GetTheme(), filePath, ImagesBlockedCallBack, _allowLocalImages);
 
                 _browser = new WebView2()
                 {
@@ -143,6 +153,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                         _webView2Environment = webView2EnvironmentAwaiter.GetResult();
                         await _browser.EnsureCoreWebView2Async(_webView2Environment).ConfigureAwait(true);
                         _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
+                        if (_allowLocalImages)
+                        {
+                            _browser.CoreWebView2.SetVirtualHostNameToFolderMapping("localmdimages", _markdownDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                        }
+
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
                         _browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
                         _browser.CoreWebView2.Settings.AreDevToolsEnabled = false;
@@ -152,15 +167,24 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                         _browser.CoreWebView2.Settings.IsScriptEnabled = false;
                         _browser.CoreWebView2.Settings.IsWebMessageEnabled = false;
 
-                        // Don't load any resources.
+                        // Don't load any resources except virtual host mapped ones.
                         _browser.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
                         _browser.CoreWebView2.WebResourceRequested += (object sender, CoreWebView2WebResourceRequestedEventArgs e) =>
                         {
-                            // Show local file we've saved with the markdown contents. Block all else.
-                            if (new Uri(e.Request.Uri) != _localFileURI)
+                            // Allow the local HTML file
+                            if (_localFileURI != null && new Uri(e.Request.Uri) == _localFileURI)
                             {
-                                e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
+                                return;
                             }
+
+                            // Allow virtual host requests (localmdimages)
+                            if (_allowLocalImages && e.Request.Uri.StartsWith("https://localmdimages/", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return;
+                            }
+
+                            // Block everything else
+                            e.Response = _browser.CoreWebView2.Environment.CreateWebResourceResponse(null, 403, "Forbidden", null);
                         };
 
                         _browser.CoreWebView2.ContextMenuRequested += (object sender, CoreWebView2ContextMenuRequestedEventArgs args) =>

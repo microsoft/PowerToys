@@ -1012,6 +1012,12 @@ opera.exe</value>
     <value>.md, .markdown, .mdown, .mkdn, .mkd, .mdwn, .mdtxt, .mdtext</value>
     <comment>{Locked}</comment>
   </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_MD_LocalImages.Header" xml:space="preserve">
+    <value>Show local images</value>
+  </data>
+  <data name="FileExplorerPreview_ToggleSwitch_Preview_MD_LocalImages.Description" xml:space="preserve">
+    <value>Display images from the document's folder in Markdown preview. Only local files are allowed; remote URLs remain blocked.</value>
+  </data>
   <data name="FileExplorerPreview_ToggleSwitch_Preview_Monaco.Header" xml:space="preserve">
     <value>Source code files (Monaco)</value>
     <comment>File type, do not translate</comment>
