@@ -1,0 +1,35 @@
+# NOTE: This workflow depends on .github/scripts/telemetry-pr-check.js for telemetry detection and PR comments.
+# Keep this workflow and script behavior in sync when making changes.
+name: Telemetry PR Check
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull Request Number to test against"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: telemetry-pr-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  detect-telemetry-events:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Detect telemetry event changes and comment PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/telemetry-pr-check.js
