@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerLauncher.Helper;
@@ -11,6 +13,7 @@ using PowerLauncher.Helper;
 namespace Wox.Test;
 
 [TestClass]
+[SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Win32 naming conventions")]
 public class ExceptionHelperTest
 {
     private const int DWM_E_COMPOSITIONDISABLED = unchecked((int)0x80263001);
@@ -53,6 +56,25 @@ public class ExceptionHelperTest
     }
 
     [TestMethod]
+    public void IsRecoverableDwmCompositionException_TargetInvocationException_WrappingMessageLostFromPresentationFramework_ReturnsTrue()
+    {
+        var inner = new COMException("Message lost", STATUS_MESSAGE_LOST_HR)
+        {
+            Source = PresentationFrameworkSource,
+        };
+        var ex = new TargetInvocationException("Invocation failed", inner);
+        Assert.IsTrue(ExceptionHelper.IsRecoverableDwmCompositionException(ex));
+    }
+
+    [TestMethod]
+    public void IsRecoverableDwmCompositionException_TargetInvocationException_WrappingDwmCompositionChangedStackTrace_ReturnsTrue()
+    {
+        var inner = CreateDwmCompositionChangedComException();
+        var ex = new TargetInvocationException("Invocation failed", inner);
+        Assert.IsTrue(ExceptionHelper.IsRecoverableDwmCompositionException(ex));
+    }
+
+    [TestMethod]
     public void IsRecoverableDwmCompositionException_TargetInvocationException_WrappingUnrelatedCOMException_ReturnsFalse()
     {
         var inner = new COMException("Unrelated", unchecked((int)0x80004005));
@@ -73,5 +95,24 @@ public class ExceptionHelperTest
     {
         var ex = new TargetInvocationException("No inner", null);
         Assert.IsFalse(ExceptionHelper.IsRecoverableDwmCompositionException(ex));
+    }
+
+    private static COMException CreateDwmCompositionChangedComException()
+    {
+        try
+        {
+            ThrowDwmCompositionChangedComException();
+            throw new AssertFailedException("Expected COMException to be thrown.");
+        }
+        catch (COMException ex)
+        {
+            return ex;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowDwmCompositionChangedComException()
+    {
+        throw new COMException("DWM composition changed", unchecked((int)0x80004005));
     }
 }

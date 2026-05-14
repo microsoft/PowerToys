@@ -161,10 +161,14 @@ namespace PowerLauncher.Helper
                 }
                 catch (Exception ex) when (ExceptionHelper.IsRecoverableDwmCompositionException(ex))
                 {
+                    var logHResult = (ex is System.Reflection.TargetInvocationException tie && tie.InnerException != null)
+                        ? tie.InnerException.HResult
+                        : ex.HResult;
+
                     switch (attempt)
                     {
                         case 1:
-                            Log.Warn($"Desktop composition is disabled (HRESULT: 0x{ex.HResult:X}). Scheduling retries for theme update.", typeof(ThemeManager));
+                            Log.Warn($"Desktop composition is disabled (HRESULT: 0x{logHResult:X}). Scheduling retries for theme update.", typeof(ThemeManager));
                             delayMs = InitialDelayMs;
                             break;
                         case < maxAttempts:
