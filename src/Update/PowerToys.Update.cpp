@@ -276,7 +276,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
         if (!failed)
         {
-
             // Relaunch PowerToys from the install directory
             if (updating::CanRelaunchAfterUpdate(nArgs))
             {
