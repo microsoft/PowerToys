@@ -29,6 +29,11 @@ namespace ipc
         try
         {
             m_stream = std::ofstream(path, std::ios::binary);
+            if (!m_stream.is_open())
+            {
+                return E_FAIL;
+            }
+
             return S_OK;
         }
         catch (...)

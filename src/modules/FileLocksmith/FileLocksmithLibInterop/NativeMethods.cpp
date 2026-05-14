@@ -98,7 +98,7 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
  
     bool NativeMethods::StartAsElevated(array_view<hstring const> paths)
     {
-        std::ofstream stream(paths_file());
+        std::ofstream stream(paths_file(), std::ios::binary);
         const WCHAR newline = L'\n';
 
         for (uint32_t i = 0; i < paths.size(); i++)
