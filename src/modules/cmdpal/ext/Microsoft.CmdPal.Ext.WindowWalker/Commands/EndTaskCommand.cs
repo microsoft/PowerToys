@@ -66,6 +66,10 @@ internal sealed partial class EndTaskCommand : InvokableCommand
         {
             window.Process.KillThisProcess(SettingsManager.Instance.KillProcessTree);
         }
+        catch (ArgumentException)
+        {
+            // The process already exited between the existence check and the kill attempt.
+        }
         catch (Win32Exception ex)
         {
             ExtensionHost.LogMessage(new LogMessage { Message = $"Failed to kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}): {ex.Message}" });

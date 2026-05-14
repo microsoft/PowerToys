@@ -209,10 +209,14 @@ namespace Microsoft.Plugin.WindowWalker.Components
         /// <param name="killProcessTree">Kill process and sub processes.</param>
         internal void KillThisProcess(bool killProcessTree)
         {
+            string killTree = killProcessTree ? " /t" : string.Empty;
+
             if (IsFullAccessDenied)
             {
-                string killTree = killProcessTree ? " /t" : string.Empty;
-                Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, Helper.ShellRunAsType.Administrator, true);
+                if (!Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, Helper.ShellRunAsType.Administrator, true))
+                {
+                    throw new InvalidOperationException($"Failed to start elevated taskkill for process ID {ProcessID}.");
+                }
             }
             else
             {
@@ -225,8 +229,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
                 {
                     // Error 5 = ERROR_ACCESS_DENIED
                     // Fall back to elevated taskkill when direct kill is denied
-                    string killTree = killProcessTree ? " /t" : string.Empty;
-                    Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, Helper.ShellRunAsType.Administrator, true);
+                    if (!Helper.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, Helper.ShellRunAsType.Administrator, true))
+                    {
+                        throw new InvalidOperationException($"Failed to start elevated taskkill for process ID {ProcessID}.", ex);
+                    }
                 }
             }
         }

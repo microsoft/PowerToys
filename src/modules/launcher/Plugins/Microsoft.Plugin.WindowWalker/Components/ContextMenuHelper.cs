@@ -107,6 +107,10 @@ namespace Microsoft.Plugin.WindowWalker.Components
             {
                 window.Process.KillThisProcess(WindowWalkerSettings.Instance.KillProcessTree);
             }
+            catch (ArgumentException)
+            {
+                // The process already exited between the existence check and the kill attempt.
+            }
             catch (Win32Exception ex)
             {
                 Log.Exception($"Failed to kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}).", ex, typeof(ContextMenuHelper));
