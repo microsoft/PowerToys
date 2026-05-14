@@ -4783,22 +4783,13 @@ The break timer font matches the text font.</value>
     <value>Record video of the screen.</value>
   </data>
   <data name="ZoomIt_Record_Shortcut.Header" xml:space="preserve">
-    <value>Record full screen or current zoom activation</value>
-  </data>
-  <data name="ZoomIt_Record_Shortcut_FullScreen" xml:space="preserve">
-    <value>Press **{0}** to start or stop screen or zoom recording</value>
-  </data>
-  <data name="ZoomIt_Record_Shortcut_Crop" xml:space="preserve">
-    <value>Press **{0}** to record a portion of the screen</value>
-  </data>
-  <data name="ZoomIt_Record_Shortcut_Window" xml:space="preserve">
-    <value>Press **{0}** to record a specific window</value>
+    <value>Record full screen or current zoom shortcut</value>
   </data>
   <data name="ZoomIt_Record_Crop_Shortcut.Header" xml:space="preserve">
-    <value>Record a portion of the screen activation</value>
+    <value>Record screen region shortcut</value>
   </data>
   <data name="ZoomIt_Record_Window_Shortcut.Header" xml:space="preserve">
-    <value>Record a specific window activation</value>
+    <value>Record window shortcut</value>
   </data>
   <data name="ZoomIt_Record_Scaling.Header" xml:space="preserve">
     <value>Scaling</value>

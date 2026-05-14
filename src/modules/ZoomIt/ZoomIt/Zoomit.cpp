@@ -5315,15 +5315,29 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 break;
 
             }
-            else if( newRecordToggleKey &&
-                (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY,      newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, newRecordCropToggleMod | MOD_NOREPEAT, newRecordCropToggleKey & 0xFF) ||
-                 !RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, newRecordWindowToggleMod | MOD_NOREPEAT, newRecordWindowToggleKey & 0xFF))) {
+            else if( newRecordToggleKey ) {
 
-                MessageBox(hDlg, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
-                    APPNAME, MB_ICONERROR);
-                UnregisterAllHotkeys(GetParent(hDlg));
-                break;
+                PCWSTR recordHotkeyError = nullptr;
+                if (!RegisterHotKey(GetParent(hDlg), RECORD_HOTKEY, newRecordToggleMod | MOD_NOREPEAT, newRecordToggleKey & 0xFF))
+                {
+                    recordHotkeyError = L"The specified record hotkey is already in use.\nSelect a different record hotkey.";
+                }
+                else if (!RegisterHotKey(GetParent(hDlg), RECORD_CROP_HOTKEY, newRecordCropToggleMod | MOD_NOREPEAT, newRecordCropToggleKey & 0xFF))
+                {
+                    recordHotkeyError = L"The specified record crop hotkey is already in use.\nSelect a different record crop hotkey.";
+                }
+                else if (!RegisterHotKey(GetParent(hDlg), RECORD_WINDOW_HOTKEY, newRecordWindowToggleMod | MOD_NOREPEAT, newRecordWindowToggleKey & 0xFF))
+                {
+                    recordHotkeyError = L"The specified record window hotkey is already in use.\nSelect a different record window hotkey.";
+                }
+
+                if (recordHotkeyError)
+                {
+                    MessageBox(hDlg, recordHotkeyError,
+                        APPNAME, MB_ICONERROR);
+                    UnregisterAllHotkeys(GetParent(hDlg));
+                    break;
+                }
 
             } else {
 
@@ -7311,14 +7325,28 @@ LRESULT APIENTRY MainWndProc(
                 showOptions = TRUE;
 
             }
-            else if (g_RecordToggleKey &&
-                (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, g_RecordCropToggleMod | MOD_NOREPEAT, g_RecordCropToggleKey & 0xFF) ||
-                 !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, g_RecordWindowToggleMod | MOD_NOREPEAT, g_RecordWindowToggleKey & 0xFF))) {
+            else if (g_RecordToggleKey) {
 
-                MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.",
-                    APPNAME, MB_ICONERROR);
-                showOptions = TRUE;
+                PCWSTR recordHotkeyError = nullptr;
+                if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))
+                {
+                    recordHotkeyError = L"The specified record hotkey is already in use.\nSelect a different record hotkey.";
+                }
+                else if (!RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, g_RecordCropToggleMod | MOD_NOREPEAT, g_RecordCropToggleKey & 0xFF))
+                {
+                    recordHotkeyError = L"The specified record crop hotkey is already in use.\nSelect a different record crop hotkey.";
+                }
+                else if (!RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, g_RecordWindowToggleMod | MOD_NOREPEAT, g_RecordWindowToggleKey & 0xFF))
+                {
+                    recordHotkeyError = L"The specified record window hotkey is already in use.\nSelect a different record window hotkey.";
+                }
+
+                if (recordHotkeyError)
+                {
+                    MessageBox(hWnd, recordHotkeyError,
+                        APPNAME, MB_ICONERROR);
+                    showOptions = TRUE;
+                }
             }
             if( showOptions ) {
 
@@ -9891,13 +9919,25 @@ LRESULT APIENTRY MainWndProc(
         }
         if (g_RecordToggleKey)
         {
-            if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, g_RecordCropToggleMod | MOD_NOREPEAT, g_RecordCropToggleKey & 0xFF) ||
-                !RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, g_RecordWindowToggleMod | MOD_NOREPEAT, g_RecordWindowToggleKey & 0xFF))
+            PCWSTR recordHotkeyError = nullptr;
+            if (!RegisterHotKey(hWnd, RECORD_HOTKEY, g_RecordToggleMod | MOD_NOREPEAT, g_RecordToggleKey & 0xFF))
+            {
+                recordHotkeyError = L"The specified record hotkey is already in use.\nSelect a different record hotkey.";
+            }
+            else if (!RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, g_RecordCropToggleMod | MOD_NOREPEAT, g_RecordCropToggleKey & 0xFF))
+            {
+                recordHotkeyError = L"The specified record crop hotkey is already in use.\nSelect a different record crop hotkey.";
+            }
+            else if (!RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, g_RecordWindowToggleMod | MOD_NOREPEAT, g_RecordWindowToggleKey & 0xFF))
+            {
+                recordHotkeyError = L"The specified record window hotkey is already in use.\nSelect a different record window hotkey.";
+            }
+
+            if (recordHotkeyError)
             {
                 if(!g_StartedByPowerToys)
                 {
-                    MessageBox(hWnd, L"The specified record hotkey is already in use.\nSelect a different record hotkey.", APPNAME, MB_ICONERROR);
+                    MessageBox(hWnd, recordHotkeyError, APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
             }
