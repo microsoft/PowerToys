@@ -61,7 +61,7 @@ namespace winrt::PowerToys::FileLocksmithLib::Interop::implementation
 
     com_array<hstring> NativeMethods::ReadPathsFromFile()
     {
-        std::ifstream stream(paths_file());
+        std::ifstream stream(paths_file(), std::ios::binary);
 
         std::vector<std::wstring> result_cpp;
         std::wstring line;
