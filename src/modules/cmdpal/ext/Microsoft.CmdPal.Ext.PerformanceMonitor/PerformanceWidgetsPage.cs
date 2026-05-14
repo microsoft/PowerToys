@@ -1100,7 +1100,17 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
 
     private static string GetTimeRemainingText(BatteryStats stats)
     {
-        if (stats.IsCharging || stats.IsOnAcPower || stats.SecondsRemaining < 0)
+        if (stats.IsCharging)
+        {
+            return Resources.GetResource("Battery_Time_Remaining_Charging");
+        }
+
+        if (stats.IsOnAcPower)
+        {
+            return Resources.GetResource("Battery_Time_Remaining_OnAc");
+        }
+
+        if (stats.SecondsRemaining < 0)
         {
             return Resources.GetResource("Battery_Time_Remaining_Unknown");
         }

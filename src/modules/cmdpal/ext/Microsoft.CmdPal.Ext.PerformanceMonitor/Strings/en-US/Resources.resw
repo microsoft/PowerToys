@@ -298,6 +298,12 @@
   <data name="Battery_Time_Remaining_Unknown" xml:space="preserve">
     <value>Calculating time remaining…</value>
   </data>
+  <data name="Battery_Time_Remaining_Charging" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="Battery_Time_Remaining_OnAc" xml:space="preserve">
+    <value>Not discharging</value>
+  </data>
   <data name="Battery_Status_Charging" xml:space="preserve">
     <value>Charging</value>
   </data>
