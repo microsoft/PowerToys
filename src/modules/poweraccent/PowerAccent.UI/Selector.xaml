@@ -13,8 +13,8 @@
     ExtendsContentIntoTitleBar="True"
     ResizeMode="NoResize"
     ShowInTaskbar="False"
-    SizeToContent="WidthAndHeight"
     SizeChanged="Window_SizeChanged"
+    SizeToContent="WidthAndHeight"
     Visibility="Collapsed"
     WindowBackdropType="None"
     WindowStyle="None"
@@ -52,9 +52,9 @@
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"
             Background="Transparent"
-            ScrollViewer.HorizontalScrollBarVisibility="Auto"
             Focusable="False"
-            IsHitTestVisible="False">
+            IsHitTestVisible="False"
+            ScrollViewer.HorizontalScrollBarVisibility="Auto">
             <ListBox.ItemContainerStyle>
                 <Style TargetType="ListBoxItem">
                     <Setter Property="Focusable" Value="False" />
