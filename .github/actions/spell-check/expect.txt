@@ -360,7 +360,6 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTSIZE
-DEFAULTTONEAREST
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -1587,7 +1586,6 @@ scrollviewer
 sddl
 SDKDDK
 sdns
-SDTVDONGLE
 searchterm
 SEARCHUI
 secondaryclickaction
@@ -1933,6 +1931,7 @@ unitconverter
 unittests
 UNLEN
 UNORM
+unparsable
 unremapped
 unsubscribes
 untriaged

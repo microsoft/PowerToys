@@ -46,7 +46,11 @@ internal sealed partial class CPUStats : PerformanceCounterSourceBase, IDisposab
             new ProcessStats()
         ];
 
-        _procPerf = CreatePerformanceCounter("Processor Information", "% Processor Utility", "_Total");
+        // Use "% Processor Time" instead of "% Processor Utility": the latter is unbounded above 100%
+        // when cores boost above their nominal base frequency (it is scaled by % Processor Performance),
+        // which produced values like 144% in the dock under heavy load. % Processor Time is the same
+        // counter Task Manager renders and is naturally bounded to 0-100%. See issue #46381.
+        _procPerf = CreatePerformanceCounter("Processor Information", "% Processor Time", "_Total");
         _procPerformance = CreatePerformanceCounter("Processor Information", "% Processor Performance", "_Total");
         _procFrequency = CreatePerformanceCounter("Processor Information", "Processor Frequency", "_Total");
     }
