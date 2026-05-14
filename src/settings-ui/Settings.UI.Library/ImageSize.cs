@@ -41,7 +41,7 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     }
 
     private int _id;
-    private string _name;
+    private string _name = string.Empty;
     private ResizeFit _fit;
     private double _height;
     private double _width;
