@@ -23,6 +23,7 @@ public static class TransformHelpers
         return format switch
         {
             PasteFormats.PlainText => await ToPlainTextAsync(clipboardData),
+            PasteFormats.PlainTextTrimmed => await ToTrimmedPlainTextAsync(clipboardData),
             PasteFormats.Markdown => await ToMarkdownAsync(clipboardData),
             PasteFormats.Json => await ToJsonAsync(clipboardData),
             PasteFormats.ImageToText => await ImageToTextAsync(clipboardData, cancellationToken),
@@ -41,6 +42,13 @@ public static class TransformHelpers
     {
         Logger.LogTrace();
         return CreateDataPackageFromText(await clipboardData.GetTextOrEmptyAsync());
+    }
+
+    private static async Task<DataPackage> ToTrimmedPlainTextAsync(DataPackageView clipboardData)
+    {
+        Logger.LogTrace();
+        var text = await clipboardData.GetTextOrEmptyAsync();
+        return CreateDataPackageFromText(text.Trim());
     }
 
     private static async Task<DataPackage> ToMarkdownAsync(DataPackageView clipboardData)
