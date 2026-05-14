@@ -742,7 +742,7 @@ namespace PowerAccent.Core
                 LetterKey.VK_X => new string[] { "ξ", "χ" },
                 LetterKey.VK_Y => new string[] { "υ", "ὐ", "ὑ", "ὺ", "ύ", "ῦ", "ῡ", "ῠ", "ὒ", "ὓ", "ὔ", "ὕ", "ὖ", "ὗ", "ϋ", "ΰ", "ῢ", "ῧ" },
                 LetterKey.VK_Z => new string[] { "ζ" },
-                LetterKey.VK_COMMA => new[] { "“", "”", "‘", "’", ";", "`", "´" },
+                LetterKey.VK_COMMA => new string[] { "“", "”", "‘", "’", ";", "`", "´" },
                 LetterKey.VK_PERIOD => new string[] { "·" },
                 _ => Array.Empty<string>(),
             };
