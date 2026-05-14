@@ -62,7 +62,8 @@ internal class WindowsRecycleBinService : IRecycleBinService
         }
 
         // Move to the Recycle Bin and warn about permanent deletes.
-        var flags = (ushort)(FOF_ALLOWUNDO | FOF_SILENT | FOF_NOERRORUI | FOF_NO_CONFIRMATION | FOF_WANTNUKEWARNING);
+        var flags = (ushort)(FOF_ALLOWUNDO | FOF_SILENT | FOF_NOERRORUI |
+            FOF_NO_CONFIRMATION | FOF_WANTNUKEWARNING);
 
         // Paths must be double-null terminated.
         string filePathTerminated = filePath + "\0\0";
