@@ -324,7 +324,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Fetches DDC/CI capabilities with retry, falling back to direct VCP probing
         /// when <see cref="MaxCompatibilityMode"/> is on and the cap string is missing
-        /// or unparseable. Cancellation is honored both during the cap-string fetch
+        /// or unparsable. Cancellation is honored both during the cap-string fetch
         /// (cooperative — checked between attempts) and during the 1 s delay between
         /// retries.
         /// </summary>

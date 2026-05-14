@@ -55,7 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <summary>
         /// Gets or sets a value indicating whether PowerDisplay should aggressively probe each
         /// supported VCP feature when a monitor's DDC/CI capabilities string is empty or
-        /// unparseable. Disabled by default; enabling it increases monitor discovery time but
+        /// unparsable. Disabled by default; enabling it increases monitor discovery time but
         /// can surface monitors whose firmware does not advertise capabilities correctly.
         /// </summary>
         [JsonPropertyName("max_compatibility_mode")]

@@ -78,7 +78,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// <summary>
         /// Sequentially probes each VCP code in <see cref="ProbeableContinuousVcpCodes"/>
         /// via GetVCPFeatureAndVCPFeatureReply. Used as the max-compatibility-mode fallback
-        /// when the cap string is empty or unparseable. Returns null if zero probes succeed;
+        /// when the cap string is empty or unparsable. Returns null if zero probes succeed;
         /// otherwise returns a synthetic <see cref="VcpCapabilities"/> with only the codes
         /// that responded.
         /// </summary>
