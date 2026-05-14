@@ -109,7 +109,7 @@ cacheable icon URLs are cached.
 | Cache root | `{AppCache}\GalleryCache\` | `ExtensionGalleryHttpClient.CacheDirectoryName` |
 | Feed TTL | 4 hours | `ExtensionGalleryHttpClient.DefaultTimeToLive` |
 | Icon TTL | 24 hours | `ExtensionGalleryService.IconCacheTtl` |
-| HTTP timeout | 30 s | `ExtensionGalleryHttpClient` |
+| HTTP timeout | 15 s | `ExtensionGalleryHttpClient` |
 | `User-Agent` | `PowerToys-CmdPal/1.0` | `ExtensionGalleryHttpClient` |
 
 `{AppCache}` resolves to `ApplicationData.Current.LocalCacheFolder` when
