@@ -143,9 +143,17 @@ static std::pair<int, int> update_sun_times(auto& settings)
 
         Logger::info(L"[LightSwitchService] Updated sun times and saved to config.");
     }
+    catch (const winrt::hresult_error& e)
+    {
+        Logger::error(L"[LightSwitchService] Exception during sun time update: hresult_error 0x{:08X} - {}", e.code(), e.message().c_str());
+    }
+    catch (const std::exception& e)
+    {
+        Logger::error(L"[LightSwitchService] Exception during sun time update: std::exception - {}", winrt::to_hstring(e.what()).c_str());
+    }
     catch (...)
     {
-        Logger::error(L"[LightSwitchService] Exception during sun time update.");
+        Logger::error(L"[LightSwitchService] Exception during sun time update: unknown exception");
     }
 
     return { newLightTime, newDarkTime };
