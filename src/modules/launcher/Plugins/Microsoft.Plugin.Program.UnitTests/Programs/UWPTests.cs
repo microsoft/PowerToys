@@ -4,11 +4,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 using Castle.Core.Internal;
 using Microsoft.Plugin.Program.Programs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Wox.Infrastructure;
+using Wox.Plugin;
+using Wox.Plugin.Common.Win32;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
@@ -92,6 +96,66 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
 
             // Assert
             Assert.AreEqual(0, applications.Length);
+        }
+
+        [TestMethod]
+        public void UwpResultActionShouldHandleEmptyUserModelIdGracefully()
+        {
+            // Arrange
+            string displayName = "PackagedApp";
+            string emptyUserModelId = string.Empty;
+            string logoUri = "Assets\\Logo.png";
+            string description = "Description";
+            string backgroundColor = "transparent";
+            string entryPoint = string.Empty;
+
+            StringMatcher.Instance = new StringMatcher();
+
+            var manifestApp = new Mock<IAppxManifestApplication>();
+            manifestApp.Setup(x => x.GetAppUserModelId(out emptyUserModelId)).Returns(HRESULT.S_OK);
+            manifestApp.Setup(x => x.GetStringValue("DisplayName", out displayName)).Returns(HRESULT.S_OK);
+            manifestApp.Setup(x => x.GetStringValue("Description", out description)).Returns(HRESULT.S_OK);
+            manifestApp.Setup(x => x.GetStringValue("BackgroundColor", out backgroundColor)).Returns(HRESULT.S_OK);
+            manifestApp.Setup(x => x.GetStringValue("EntryPoint", out entryPoint)).Returns(HRESULT.S_OK);
+            manifestApp.Setup(x => x.GetStringValue("Square44x44Logo", out logoUri)).Returns(HRESULT.S_OK);
+
+            var package = new UWP(PackagedApp)
+            {
+                Location = PackagedApp.InstalledLocation,
+                LocationLocalized = PackagedApp.InstalledLocation,
+                Version = UWP.PackageVersion.Windows10,
+            };
+
+            var application = new UWPApplication(manifestApp.Object, package)
+            {
+                DisplayName = displayName,
+                Description = description,
+                UserModelId = string.Empty,
+            };
+            using var showMessageCalled = new ManualResetEventSlim();
+            var api = new Mock<IPublicAPI>();
+            api.Setup(x => x.ShowMsg(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+                .Callback<string, string, string, bool>((_, _, _, _) => showMessageCalled.Set());
+
+            // Assert
+            Assert.AreEqual(displayName, application.DisplayName);
+            Assert.AreEqual(description, application.Description);
+
+            // Act
+            var result = application.Result(displayName, string.Empty, api.Object);
+
+            // Assert
+            Assert.IsNotNull(result);
+            var actionResult = result.Action(new ActionContext());
+            Assert.IsTrue(actionResult);
+            Assert.IsTrue(showMessageCalled.Wait(TimeSpan.FromSeconds(5)));
+            api.Verify(
+                x => x.ShowMsg(
+                    It.IsAny<string>(),
+                    It.Is<string>(message => message.Contains(displayName, StringComparison.Ordinal)),
+                    string.Empty,
+                    It.IsAny<bool>()),
+                Times.Once);
         }
     }
 }
