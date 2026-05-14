@@ -10,7 +10,6 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
-ACR
 acrt
 ACTIVATEAPP
 ACTIVATEOPTIONS
@@ -88,7 +87,6 @@ AShortcut
 ASSOCCHANGED
 ASSOCF
 ASSOCSTR
-ASUS
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -202,7 +200,6 @@ checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
-Chunghwa
 CIBUILD
 cidl
 CIELCh
@@ -308,7 +305,6 @@ Crossdevice
 crt
 csdevkit
 cso
-CSOT
 CSRW
 cswin
 CTEXT
@@ -364,14 +360,13 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTSIZE
-defaulttonearest
-DEFAULTTONEAREST
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+DELD
 DELETEDKEYIMAGE
 DELETESCANS
 DEMOTYPE
@@ -411,6 +406,7 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+DISPLAYPORT
 divyan
 DLGFRAME
 dlgmodalframe
@@ -644,7 +640,6 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
-Hann
 Hantai
 Hanzi
 Hardlines
@@ -746,7 +741,6 @@ HWNDLAST
 HWNDNEXT
 HWNDPARENT
 HWNDPREV
-HWP
 hyjiacan
 IAI
 icf
@@ -842,7 +836,6 @@ istep
 ith
 IUI
 IUWP
-IVO
 IWIC
 jeli
 jfif
@@ -851,6 +844,7 @@ jjw
 jobject
 JOBOBJECT
 jpe
+JPN
 jpnime
 jrsoftware
 Jsons
@@ -980,6 +974,7 @@ LTEXT
 LTRREADING
 luid
 lusrmgr
+LVDS
 LWA
 LWIN
 LZero
@@ -1043,6 +1038,7 @@ MINMAXINFO
 minwindef
 Mip
 Miracast
+MIRACAST
 mkdn
 mlcfg
 mmc
@@ -1116,7 +1112,6 @@ myorg
 myrepo
 NAMECHANGE
 namespaceanddescendants
-Nanjing
 nao
 NCACTIVATE
 ncc
@@ -1217,7 +1212,6 @@ NOTSRCCOPY
 NOTSRCERASE
 Notupdated
 notwindows
-NOTXORPEN
 nowarn
 NOZORDER
 NPH
@@ -1338,7 +1332,6 @@ pguid
 phbm
 phbmp
 phicon
-PHL
 Photoshop
 phwnd
 pici
@@ -1368,6 +1361,7 @@ POINTERUPDATE
 Pokedex
 Pomodoro
 Popups
+popups
 POPUPWINDOW
 POSITIONITEM
 POWERBROADCAST
@@ -1462,7 +1456,6 @@ PWSTR
 pwsz
 pwtd
 qdc
-QDS
 qit
 QITAB
 QITABENT
@@ -1796,6 +1789,7 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVIDEO
 SVSI
 SWFO
 swp
@@ -1861,8 +1855,8 @@ themeresources
 THH
 thickframe
 THISCOMPONENT
+threadpool
 throughs
-Tianma
 TILEDWINDOW
 TILLSON
 timedate
@@ -1917,6 +1911,7 @@ ucrtd
 uefi
 uesc
 UIA
+UIDs
 UIEx
 uild
 uitests
@@ -1937,8 +1932,10 @@ unitconverter
 unittests
 UNLEN
 UNORM
+unparsable
 unremapped
 unsubscribes
+untriaged
 unvirtualized
 unwide
 unzoom
@@ -1965,6 +1962,7 @@ vabdq
 validmodulename
 valuegenerator
 VARTYPE
+vbcscompiler
 vcamp
 VCENTER
 vcgtq
@@ -2156,6 +2154,7 @@ yinle
 yinyue
 YVIRTUALSCREEN
 zamora
+Zenbook
 ZEROINIT
 zonability
 zonable

@@ -61,6 +61,11 @@ public partial class MainViewModel
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ApplyUIConfiguration(settings);
 
+            // Push the toggle to the DDC/CI controller so the next refresh / hot-plug
+            // discovery picks it up. The value is also re-read inside InitializeAsync /
+            // RefreshMonitorsAsync, so this is a no-op-safe redundant push.
+            _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
+
             // Reload profiles in case they were added/updated/deleted in Settings UI
             LoadProfiles();
 
@@ -356,16 +361,13 @@ public partial class MainViewModel
                 monitors.Add(monitorInfo);
             }
 
-            // Also add hidden monitors from existing settings (monitors that are hidden but still connected)
-            // Only include those with valid IDs
-            foreach (var existingMonitor in settings.Properties.Monitors.Where(m => m.IsHidden && !string.IsNullOrEmpty(m.Id)))
-            {
-                // Only add if not already in the list (to avoid duplicates)
-                if (!monitors.Any(m => m.Id == existingMonitor.Id))
-                {
-                    monitors.Add(existingMonitor);
-                }
-            }
+            // Replace the manually-built `monitors` list with the rebuilt list that
+            // applies the 30-day retention rule for non-hidden disconnected monitors.
+            monitors = MonitorSettingsRebuilder.Rebuild(
+                currentlyDiscovered: monitors,
+                existing: settings.Properties.Monitors,
+                clock: _clock,
+                retentionDays: PowerDisplaySettings.MonitorEntryRetentionDays);
 
             // Update monitors list
             settings.Properties.Monitors = monitors;
@@ -415,16 +417,21 @@ public partial class MainViewModel
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             SupportsPowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
 
-            // Default Enable* to match Supports* for new monitors (first-time setup)
-            // ApplyPreservedUserSettings will override these with saved user preferences if they exist
+            // Default Enable* for new monitors (first-time setup):
+            // - Contrast / Volume: enabled if the monitor advertises the VCP code (low-risk features).
+            // - InputSource / ColorTemperature / PowerState: always disabled by default. These can leave
+            //   the monitor in a state recoverable only via physical buttons; users opt-in via the
+            //   Settings UI checkbox, which raises a confirmation dialog (HandleDangerousFeatureClickAsync).
+            // ApplyPreservedUserSettings will override these with saved user preferences if they exist.
             EnableContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
             EnableVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
-            EnableInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
-            EnableColorTemperature = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x14) ?? false,
-            EnablePowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
+            EnableInputSource = false,
+            EnableColorTemperature = false,
+            EnablePowerState = false,
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
+            LastSeenUtc = _clock.UtcNow,
         };
 
         return monitorInfo;
