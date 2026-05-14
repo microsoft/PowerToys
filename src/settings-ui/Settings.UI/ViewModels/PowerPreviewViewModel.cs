@@ -232,6 +232,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // Get the enabled state from GPO.
                 _copyAsUNCEnabledStateIsGPOConfigured = true;
                 _isCopyAsUNCEnabled = _copyAsUNCEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _copyAsUNCIsGpoEnabled = _copyAsUNCEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+                _copyAsUNCIsGpoDisabled = _copyAsUNCEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled;
             }
 
             _qoiThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQoiThumbnailsEnabledValue();
@@ -1113,6 +1115,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GpoRuleConfigured _copyAsUNCEnabledGpoRuleConfiguration;
         private bool _copyAsUNCEnabledStateIsGPOConfigured;
+        private bool _copyAsUNCIsGpoEnabled;
+        private bool _copyAsUNCIsGpoDisabled;
         private bool _isCopyAsUNCEnabled;
 
         public bool IsCopyAsUNCEnabled
@@ -1140,6 +1144,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public bool IsCopyAsUNCEnabledGpoConfigured
         {
             get => _copyAsUNCEnabledStateIsGPOConfigured;
+        }
+
+        public bool CopyAsUNCIsGpoEnabled
+        {
+            get
+            {
+                return _copyAsUNCIsGpoEnabled;
+            }
+        }
+
+        // Used to disable the settings card on forced disabled state.
+        public bool CopyAsUNCIsGpoDisabled
+        {
+            get
+            {
+                return _copyAsUNCIsGpoDisabled;
+            }
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)

@@ -86,3 +86,12 @@ $newPlusContextMenuAppManifestReadFileLocation = $newPlusContextMenuAppManifestW
 $newPlusContextMenuAppManifest.Package.Identity.Version = $versionNumber + '.0'
 Write-Host "NewPlusContextMenu version" $newPlusContextMenuAppManifest.Package.Identity.Version
 $newPlusContextMenuAppManifest.Save($newPlusContextMenuAppManifestWriteFileLocation);
+
+# Set CopyAsUNCContextMenu package version in AppManifest.xml
+$copyAsUNCContextMenuAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/CopyAsUNC/CopyAsUNCContextMenu/AppxManifest.xml';
+$copyAsUNCContextMenuAppManifestReadFileLocation = $copyAsUNCContextMenuAppManifestWriteFileLocation;
+
+[XML]$copyAsUNCContextMenuAppManifest = Get-Content $copyAsUNCContextMenuAppManifestReadFileLocation
+$copyAsUNCContextMenuAppManifest.Package.Identity.Version = $versionNumber + '.0'
+Write-Host "CopyAsUNCContextMenu version" $copyAsUNCContextMenuAppManifest.Package.Identity.Version
+$copyAsUNCContextMenuAppManifest.Save($copyAsUNCContextMenuAppManifestWriteFileLocation);

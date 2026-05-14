@@ -156,7 +156,10 @@ public:
                         {
                             memcpy(locked, uncPath.c_str(), byteLen);
                             GlobalUnlock(hMem);
-                            SetClipboardData(CF_UNICODETEXT, hMem);
+                            if (!SetClipboardData(CF_UNICODETEXT, hMem))
+                            {
+                                GlobalFree(hMem);
+                            }
                         }
                         else
                         {
