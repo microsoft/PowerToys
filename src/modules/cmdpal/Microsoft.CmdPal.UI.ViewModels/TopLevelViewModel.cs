@@ -334,7 +334,7 @@ public sealed partial class TopLevelViewModel : ObservableObject, IListItem, IEx
     /// <summary>
     /// Clears the alias for this command without triggering a recursive save back to settings.
     /// Called by <see cref="AliasManager"/> after it has already updated settings atomically,
-    /// to avoid re-entrant calls into <see cref="AliasManager.UpdateAlias"/> via the <see cref="AliasText"/> setter.
+    /// to avoid reentrant calls into <see cref="AliasManager.UpdateAlias"/> via the <see cref="AliasText"/> setter.
     /// </summary>
     internal void ClearAlias()
     {

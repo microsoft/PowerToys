@@ -118,7 +118,7 @@ public partial class AliasManager : ObservableObject
         }
 
         var keysToRemove = new List<string>();
-        var commandsToDeassociate = new List<string>();
+        var commandsToDisassociate = new List<string>();
 
         foreach (var kv in aliases)
         {
@@ -132,7 +132,7 @@ public partial class AliasManager : ObservableObject
             if (newAlias is not null && kv.Value.Alias == newAlias.Alias && kv.Value.CommandId != commandId)
             {
                 keysToRemove.Add(kv.Key);
-                commandsToDeassociate.Add(kv.Value.CommandId);
+                commandsToDisassociate.Add(kv.Value.CommandId);
             }
         }
 
@@ -152,9 +152,9 @@ public partial class AliasManager : ObservableObject
         });
 
         // After the settings update is complete, notify conflicting ViewModels to clear
-        // their alias text. Doing this after UpdateSettings avoids re-entrant calls back
+        // their alias text. Doing this after UpdateSettings avoids reentrant calls back
         // into UpdateAlias (and Save) via the AliasText setter.
-        foreach (var conflictingCommandId in commandsToDeassociate)
+        foreach (var conflictingCommandId in commandsToDisassociate)
         {
             var topLevelCommand = _topLevelCommandManager.LookupCommand(conflictingCommandId);
             topLevelCommand?.ClearAlias();
