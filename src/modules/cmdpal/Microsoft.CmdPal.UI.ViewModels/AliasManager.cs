@@ -52,10 +52,11 @@ public partial class AliasManager : ObservableObject
                     WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
                     return true;
                 }
-                else
+                else if (_topLevelCommandManager.HasFinishedLoadingCommands)
                 {
                     // The command no longer exists (e.g. extension uninstalled or command renamed).
-                    // Remove the orphaned alias so it can be freely reassigned.
+                    // Only remove the orphaned alias once extension loading has fully settled,
+                    // otherwise valid aliases can be deleted while commands are still arriving.
                     _settingsService.UpdateSettings(
                         s => s with { Aliases = s.Aliases.Remove(searchText) },
                         hotReload: false);
