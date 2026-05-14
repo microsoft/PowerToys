@@ -23,6 +23,35 @@
         <MicaBackdrop />
     </winuiex:WindowEx.SystemBackdrop>
     <Grid x:Name="RootElement">
+        <Grid.Resources>
+            <Storyboard x:Key="BreadcrumbFadeInStoryboard">
+                <DoubleAnimation
+                    Storyboard.TargetName="BreadcrumbContainer"
+                    Storyboard.TargetProperty="Opacity"
+                    To="1"
+                    Duration="0:0:0.25">
+                    <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseOut" />
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+            <Storyboard x:Key="BreadcrumbFadeOutStoryboard">
+                <DoubleAnimation
+                    Storyboard.TargetName="BreadcrumbContainer"
+                    Storyboard.TargetProperty="Opacity"
+                    To="0"
+                    Duration="0:0:0.2">
+                    <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseIn" />
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <ObjectAnimationUsingKeyFrames
+                    Storyboard.TargetName="BreadcrumbContainer"
+                    Storyboard.TargetProperty="Visibility">
+                    <DiscreteObjectKeyFrame KeyTime="0:0:0.2" Value="Collapsed" />
+                </ObjectAnimationUsingKeyFrames>
+            </Storyboard>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
