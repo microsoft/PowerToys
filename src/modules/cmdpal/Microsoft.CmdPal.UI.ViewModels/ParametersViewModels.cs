@@ -683,6 +683,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
+        SafeCleanup();
     }
 
     protected override void UnsafeCleanup()
@@ -693,6 +694,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         {
             foreach (var item in Items)
             {
+                item.PropertyChanged -= ItemPropertyChanged;
                 item.SafeCleanup();
             }
 

@@ -25,7 +25,10 @@
                 Color="{ThemeResource SystemAccentColor}" />
             <SolidColorBrush x:Key="ParameterBackgroundFocused" Color="{ThemeResource SolidBackgroundFillColorSecondary}" />
         </ResourceDictionary>
-        <ResourceDictionary x:Key="HighContrast" />
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="ParameterBackground" Color="{ThemeResource SystemColorButtonFaceColor}" />
+            <SolidColorBrush x:Key="ParameterBackgroundFocused" Color="{ThemeResource SystemColorHighlightColor}" />
+        </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
     <converters:StringVisibilityConverter
