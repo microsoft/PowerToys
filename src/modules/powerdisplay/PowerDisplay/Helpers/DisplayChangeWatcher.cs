@@ -276,7 +276,11 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         uint lastState = _lastDisplayState;
         _lastDisplayState = newState;
 
-        if (!DisplayStateTransition.ShouldTriggerOn(newState, lastState))
+        // Wake = transition INTO ON from any other state. ON→ON is a
+        // subscription echo, ON→OFF / ON→DIMMED are blanking (no rescan needed).
+        bool isWakeTransition = newState == PowerSettingsNative.DisplayStateOn
+                                && lastState != PowerSettingsNative.DisplayStateOn;
+        if (!isWakeTransition)
         {
             return;
         }
