@@ -519,11 +519,33 @@ namespace winrt::PowerRenameUI::implementation
             {
                 const DWORD BUFSIZE = 4096;
                 TCHAR buffer[BUFSIZE] = TEXT("");
-                auto retval = GetFullPathName(file.c_str(), BUFSIZE, buffer, NULL);
-                if (retval != 0 && PathFileExists(buffer))
+                std::wstring fullPath;
+                const DWORD needed = GetFullPathName(file.c_str(), BUFSIZE, buffer, nullptr);
+                if (needed == 0)
+                {
+                    continue;
+                }
+
+                if (needed >= BUFSIZE)
+                {
+                    std::vector<wchar_t> dynBuffer(needed);
+                    const DWORD result = GetFullPathName(file.c_str(), needed, dynBuffer.data(), nullptr);
+                    if (result == 0 || result >= needed)
+                    {
+                        continue;
+                    }
+
+                    fullPath = std::wstring(dynBuffer.data());
+                }
+                else
+                {
+                    fullPath = std::wstring(buffer);
+                }
+
+                if (PathFileExists(fullPath.c_str()))
                 {
                     PIDLIST_ABSOLUTE pidl = nullptr;
-                    if (SUCCEEDED(SHParseDisplayName(buffer, nullptr, &pidl, 0, nullptr)))
+                    if (SUCCEEDED(SHParseDisplayName(fullPath.c_str(), nullptr, &pidl, 0, nullptr)))
                     {
                         itemList[itemsCnt++] = pidl;
                     }
@@ -549,7 +571,7 @@ namespace winrt::PowerRenameUI::implementation
                 }
             }
         }
-        else if (itemsCnt == 0)
+        else if (SUCCEEDED(hr) && itemsCnt == 0)
         {
             Logger::error(L"No valid file paths could be resolved; all entries either do not exist or could not be parsed by the shell.");
             hr = E_FAIL;
