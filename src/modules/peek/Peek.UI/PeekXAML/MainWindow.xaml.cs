@@ -265,6 +265,25 @@ namespace Peek.UI
             WindowHelpers.BringToForeground(this.GetWindowHandle());
         }
 
+        /// <summary>
+        /// Handle FullScreenChanged event to toggle the window fullscreen mode.
+        /// </summary>
+        /// <param name="sender">object</param>
+        /// <param name="isFullScreen">bool indicating if fullscreen is requested</param>
+        private void FilePreviewer_FullScreenChanged(object sender, bool isFullScreen)
+        {
+            if (isFullScreen)
+            {
+                // Enter fullscreen mode
+                AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+            }
+            else
+            {
+                // Exit fullscreen mode and return to default overlapped window
+                AppWindow.SetPresenter(AppWindowPresenterKind.Default);
+            }
+        }
+
         private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)
         {
             var titleBarHeight = TitleBarControl.ActualHeight;

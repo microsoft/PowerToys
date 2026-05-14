@@ -47,6 +47,7 @@
 
         <fp:FilePreview
             Grid.Row="1"
+            FullScreenChanged="FilePreviewer_FullScreenChanged"
             Item="{x:Bind ViewModel.CurrentItem, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"
             PreviewSizeChanged="FilePreviewer_PreviewSizeChanged"
