@@ -27,7 +27,7 @@ namespace PowerDisplay.Helpers;
 /// On display turning ON, the watcher first fires <see cref="ResumeDetected"/>
 /// synchronously (so the ViewModel can lock interactive UI immediately), then
 /// schedules a debounced <see cref="DisplayChanged"/> so callers re-discover
-/// hardware once it has stabilised.
+/// hardware once it has settled.
 /// </summary>
 public sealed partial class DisplayChangeWatcher : IDisposable
 {
@@ -56,8 +56,8 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     public event EventHandler? DisplayChanged;
 
     /// <summary>
-    /// Event triggered the moment we detect the console display transitioning
-    /// to ON. Fires on the dispatcher thread, synchronously, BEFORE the debounce
+    /// Event triggered the moment we detect the console display turning ON.
+    /// Fires on the dispatcher thread, synchronously, BEFORE the debounce
     /// delay elapses — gives subscribers a chance to lock interactive UI so
     /// users can't act on now-stale DDC/CI handles during the rediscovery
     /// window.
@@ -237,7 +237,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
     /// </summary>
     private uint OnDisplayStateChangedNative(IntPtr context, uint type, IntPtr setting)
     {
-        if (type != PowerSettingsNative.PbtPowerSettingChange || setting == IntPtr.Zero)
+        if (type != PowerSettingsNative.PowerSettingChangeNotification || setting == IntPtr.Zero)
         {
             return 0;
         }

@@ -10,7 +10,7 @@ namespace PowerDisplay.Common.Helpers;
 
 /// <summary>
 /// P/Invoke surface for the console-display-state power-setting notification.
-/// Centralises the powrprof.dll bindings, GUIDs, and structures used by the
+/// Holds the Powrprof.dll bindings, GUIDs, and structures used by the
 /// PowerDisplay module's display-change watcher. No business logic lives here.
 ///
 /// Uses <see cref="LibraryImportAttribute"/> (source-generated, AOT-compatible)
@@ -48,10 +48,10 @@ public static partial class PowerSettingsNative
     public const uint DeviceNotifyCallback = 0x00000002;
 
     /// <summary>
-    /// PBT_POWERSETTINGCHANGE — the Type parameter of the callback when a
-    /// subscribed power setting changes.
+    /// Power-broadcast type value passed as the <c>type</c> parameter of the
+    /// callback when a subscribed power setting changes.
     /// </summary>
-    public const uint PbtPowerSettingChange = 0x8013;
+    public const uint PowerSettingChangeNotification = 0x8013;
 
     /// <summary>
     /// Callback signature for power-setting notifications.
@@ -66,7 +66,7 @@ public static partial class PowerSettingsNative
     /// access violation.
     /// </remarks>
     /// <param name="context">Opaque context supplied at registration.</param>
-    /// <param name="type">Notification type (e.g. PBT_POWERSETTINGCHANGE).</param>
+    /// <param name="type">Notification type (e.g. <see cref="PowerSettingChangeNotification"/>).</param>
     /// <param name="setting">Pointer to a POWERBROADCAST_SETTING.</param>
     /// <returns>Reserved — must return 0.</returns>
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
@@ -92,10 +92,10 @@ public static partial class PowerSettingsNative
     /// <see cref="PowerSettingUnregisterNotification"/> when no longer needed.
     /// </summary>
     /// <returns>
-    /// <c>ERROR_SUCCESS</c> (0) on success, otherwise a Win32 error code
+    /// <c>ERROR_SUCCESS</c> (0) on success; otherwise a Win32 error code
     /// (the function returns the error directly; <c>GetLastError</c> is not used).
     /// </returns>
-    [LibraryImport("powrprof.dll")]
+    [LibraryImport("Powrprof.dll")]
     public static partial uint PowerSettingRegisterNotification(
         ref Guid settingGuid,
         uint flags,
@@ -107,8 +107,8 @@ public static partial class PowerSettingsNative
     /// <see cref="PowerSettingRegisterNotification"/>.
     /// </summary>
     /// <returns>
-    /// <c>ERROR_SUCCESS</c> (0) on success, otherwise a Win32 error code.
+    /// <c>ERROR_SUCCESS</c> (0) on success; otherwise a Win32 error code.
     /// </returns>
-    [LibraryImport("powrprof.dll")]
+    [LibraryImport("Powrprof.dll")]
     public static partial uint PowerSettingUnregisterNotification(IntPtr registrationHandle);
 }

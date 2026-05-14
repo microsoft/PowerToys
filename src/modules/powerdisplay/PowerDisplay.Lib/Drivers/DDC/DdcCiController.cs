@@ -32,8 +32,8 @@ namespace PowerDisplay.Common.Drivers.DDC
     {
         // Retry tuning for user-initiated VCP writes. The DDC/CI I²C bus is
         // fragile around monitor power transitions; even a fresh handle can
-        // fail its first write if the bus has not yet stabilised. The bus
-        // typically re-stabilises within ~100-300ms, so 3 attempts at 200ms
+        // fail its first write if the bus has not yet settled. The bus
+        // typically recovers within ~100-300ms, so 3 attempts at 200ms
         // cover the slow tail without user-visible latency.
         private const int MaxSetVcpAttempts = 3;
         private const int SetVcpRetryDelayMs = 200;
