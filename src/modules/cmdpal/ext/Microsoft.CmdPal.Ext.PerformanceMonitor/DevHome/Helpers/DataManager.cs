@@ -61,6 +61,14 @@ internal sealed partial class DataManager : IDisposable
         }
     }
 
+    private void GetBatteryData()
+    {
+        lock (_systemData.BatteryStats)
+        {
+            _systemData.BatteryStats.GetData();
+        }
+    }
+
     private void UpdateTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
         var firstUpdateBlockSuffix = GetFirstUpdateBlockSuffix();
@@ -98,6 +106,12 @@ internal sealed partial class DataManager : IDisposable
                         GetNetworkData();
                         break;
                     }
+
+                case DataType.Battery:
+                    {
+                        GetBatteryData();
+                        break;
+                    }
             }
 
             if (isTracked)
@@ -132,6 +146,7 @@ internal sealed partial class DataManager : IDisposable
             DataType.GPU => "GPU.FirstUpdate",
             DataType.Memory => "Memory.FirstUpdate",
             DataType.Network => "Network.FirstUpdate",
+            DataType.Battery => "Battery.FirstUpdate",
             _ => null,
         };
     }
@@ -165,6 +180,14 @@ internal sealed partial class DataManager : IDisposable
         lock (_systemData.CpuStats)
         {
             return _systemData.CpuStats;
+        }
+    }
+
+    internal BatteryStats GetBatteryStats()
+    {
+        lock (_systemData.BatteryStats)
+        {
+            return _systemData.BatteryStats;
         }
     }
 

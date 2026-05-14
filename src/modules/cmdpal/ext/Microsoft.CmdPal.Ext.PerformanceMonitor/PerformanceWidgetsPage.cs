@@ -49,6 +49,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemGPUUsageWidgetPage _gpuPage = new();
     private readonly ListItem _gpuItem;
 
+    private readonly SystemBatteryUsageWidgetPage _batteryPage = new();
+    private readonly ListItem _batteryItem;
+
     // For bands, we want two bands, one for up and one for down
     private ListItem? _networkUpItem;
     private ListItem? _networkDownItem;
@@ -107,6 +110,18 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
         };
 
+        _batteryItem = new ListItem(_batteryPage)
+        {
+            Title = _batteryPage.GetItemTitle(isBandPage),
+            Icon = _batteryPage.CurrentIcon,
+        };
+
+        _batteryPage.Updated += (s, e) =>
+        {
+            _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
+            _batteryItem.Icon = _batteryPage.CurrentIcon;
+        };
+
         if (_isBandPage)
         {
             // add subtitles to them all
@@ -114,6 +129,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
             _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
             _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
+            _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
         }
     }
 
@@ -123,6 +139,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _memoryPage.PushActivate();
         _networkPage.PushActivate();
         _gpuPage.PushActivate();
+        _batteryPage.PushActivate();
     }
 
     protected override void Unloaded()
@@ -131,6 +148,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _memoryPage.PopActivate();
         _networkPage.PopActivate();
         _gpuPage.PopActivate();
+        _batteryPage.PopActivate();
     }
 
     public override IListItem[] GetItems()
@@ -138,7 +156,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         if (!_isBandPage)
         {
             // TODO add details
-            return new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem };
+            return new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem, _batteryItem };
         }
         else
         {
@@ -156,7 +174,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage.Commands,
             };
 
-            return new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem };
+            return new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem, _batteryItem };
         }
     }
 
@@ -166,6 +184,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _memoryPage.Dispose();
         _networkPage.Dispose();
         _gpuPage.Dispose();
+        _batteryPage.Dispose();
     }
 }
 
@@ -979,6 +998,153 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             _page.HandleNextGPU();
             return CommandResult.KeepOpen();
         }
+    }
+}
+
+internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDisposable
+{
+    public override string Id => "com.microsoft.cmdpal.battery_widget";
+
+    public override string Title => Resources.GetResource("Battery_Usage_Title");
+
+    public override IconInfo Icon => Icons.BatteryIcon;
+
+    public IconInfo CurrentIcon { get; private set; } = Icons.BatteryIcon;
+
+    private readonly DataManager _dataManager;
+
+    public SystemBatteryUsageWidgetPage()
+    {
+        _dataManager = new(DataType.Battery, () => UpdateWidget());
+    }
+
+    protected override void LoadContentData()
+    {
+        try
+        {
+            ContentData.Clear();
+
+            var stats = _dataManager.GetBatteryStats();
+
+            CurrentIcon = Icons.BatteryGlyph(stats.ChargePercent, stats.IsCharging, stats.HasBattery);
+
+            if (!stats.HasBattery)
+            {
+                ContentData["batteryCharge"] = "—";
+                ContentData["batteryStatus"] = Resources.GetResource("Battery_Usage_Unknown");
+                ContentData["batteryTimeRemaining"] = string.Empty;
+                return;
+            }
+
+            ContentData["batteryCharge"] = stats.ChargePercent >= 0
+                ? FloatToPercentString(stats.ChargePercent)
+                : "—";
+
+            ContentData["batteryStatus"] = GetStatusText(stats);
+            ContentData["batteryTimeRemaining"] = GetTimeRemainingText(stats);
+        }
+        catch (Exception e)
+        {
+            ContentData.Clear();
+            ContentData["errorMessage"] = e.Message;
+            CurrentIcon = Icons.BatteryGlyph(-1, false, false);
+            return;
+        }
+    }
+
+    protected override string GetTemplatePath(WidgetPageState page)
+    {
+        return page switch
+        {
+            WidgetPageState.Content => @"DevHome\Templates\SystemBatteryTemplate.json",
+            WidgetPageState.Loading => @"DevHome\Templates\SystemBatteryTemplate.json",
+            _ => throw new NotImplementedException(),
+        };
+    }
+
+    public string GetItemTitle(bool isBandPage)
+    {
+        if (!ContentData.TryGetValue("batteryCharge", out var charge))
+        {
+            return isBandPage ? Resources.GetResource("Battery_Usage_Unknown") : Resources.GetResource("Battery_Usage_Unknown_Label");
+        }
+
+        if (charge == "—")
+        {
+            return isBandPage ? Resources.GetResource("Battery_Usage_Unknown") : Resources.GetResource("Battery_Usage_Unknown_Label");
+        }
+
+        if (isBandPage)
+        {
+            return charge;
+        }
+
+        var isCharging = ContentData.TryGetValue("batteryStatus", out var status)
+            && status == Resources.GetResource("Battery_Status_Charging");
+
+        var labelKey = isCharging ? "Battery_Usage_Charging_Label" : "Battery_Usage_Label";
+        return string.Format(CultureInfo.CurrentCulture, Resources.GetResource(labelKey), charge);
+    }
+
+    private static string GetStatusText(BatteryStats stats)
+    {
+        if (stats.IsCharging)
+        {
+            return Resources.GetResource("Battery_Status_Charging");
+        }
+
+        return stats.IsOnAcPower
+            ? Resources.GetResource("Battery_Status_OnAc")
+            : Resources.GetResource("Battery_Status_OnBattery");
+    }
+
+    private static string GetTimeRemainingText(BatteryStats stats)
+    {
+        if (stats.IsCharging || stats.IsOnAcPower || stats.SecondsRemaining < 0)
+        {
+            return Resources.GetResource("Battery_Time_Remaining_Unknown");
+        }
+
+        var totalMinutes = stats.SecondsRemaining / 60;
+        var hours = totalMinutes / 60;
+        var minutes = totalMinutes % 60;
+
+        if (hours > 0)
+        {
+            return string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.GetResource("Battery_Time_Remaining_Format"),
+                hours,
+                minutes);
+        }
+
+        return string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.GetResource("Battery_Time_Remaining_Minutes_Format"),
+            minutes);
+    }
+
+    internal override void PushActivate()
+    {
+        base.PushActivate();
+        if (IsActive)
+        {
+            _dataManager.Start();
+        }
+    }
+
+    internal override void PopActivate()
+    {
+        base.PopActivate();
+        if (!IsActive)
+        {
+            _dataManager.Stop();
+        }
+    }
+
+    public void Dispose()
+    {
+        _dataManager.Dispose();
     }
 }
 
