@@ -9,22 +9,13 @@ public abstract partial class ParameterValueRun : BaseObservable, IParameterValu
 {
     public virtual string PlaceholderText { get; set => SetProperty(ref field, value); } = string.Empty;
 
-    private bool _needsValue = true;
-
-    // _required | _needsValue | out
-    // F         | F           | T
-    // F         | T           | T
-    // T         | F           | F
-    // T         | T           | T
-    public virtual bool NeedsValue
-    {
-        get => !_required || _needsValue;
-        set
-        {
-            _needsValue = value;
-            OnPropertyChanged(nameof(NeedsValue));
-        }
-    }
+    // NeedsValue is computed from the parameter's own state. By default, a
+    // parameter needs a value as long as it is marked Required; derived types
+    // override this getter to incorporate their own value state (e.g.
+    // StringParameterRun checks whether Text is empty). If a derived type
+    // needs to publish NeedsValue changes imperatively, it can re-introduce a
+    // setter or call OnPropertyChanged(nameof(NeedsValue)).
+    public virtual bool NeedsValue => _required;
 
     // Toolkit helper
     private bool _required = true;

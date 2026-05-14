@@ -36,5 +36,21 @@ public partial class StringParameterRun : ParameterValueRun, IStringParameterRun
         Text = string.Empty;
     }
 
-    public override object? Value { get => Text; set => Text = (value is string s) ? s : string.Empty; }
+    public override object? Value
+    {
+        get => Text;
+        set
+        {
+            if (value is string s)
+            {
+                Text = s;
+            }
+            else
+            {
+                var message = $"{nameof(StringParameterRun)}.{nameof(Value)} expected a string but received '{value?.GetType().FullName ?? "null"}'.";
+                ExtensionHost.LogMessage(new LogMessage(message) { State = MessageState.Error });
+                throw new ArgumentException(message, nameof(value));
+            }
+        }
+    }
 }

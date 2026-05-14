@@ -484,7 +484,7 @@ follow - these are not part of the current SDK spec.
 
 > [!NOTE]
 >
-> A thought: what if a action returns a `CommandResult.Entity`, then that takes
+> A thought: what if an action returns a `CommandResult.Entity`, then that takes
 > devpal back home, but leaves the entity in the query box. This would allow for
 > a Quicksilver-like "thing, do" flow. That command would prepopulate the
 > parameters. So we would then filter top-level commands based on things that can

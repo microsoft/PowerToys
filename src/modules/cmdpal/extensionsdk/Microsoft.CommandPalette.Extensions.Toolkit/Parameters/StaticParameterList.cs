@@ -6,12 +6,34 @@ using Windows.Foundation;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
+/// <summary>
+/// A helper class for parameters that display a static list of values. The list
+/// of values is provided at construction time, and cannot be changed after
+/// that. This is useful for parameters that have a fixed set of possible
+/// values, such as an enum parameter.
+///
+/// Here's an example of how to use this class for an enum parameter:
+///
+/// <code>
+/// var parameter = new StaticParameterList&lt;MyEnum&gt;(
+///     Enum.GetValues(typeof(MyEnum)).Cast&lt;MyEnum&gt;(),
+///     (value, listItem) =&gt; {
+///         listItem.Title = value.ToString();
+///         return listItem;
+///     });
+/// parameter.ValueSelected += (s, MyEnum value) =&gt; {
+///     // Do something with the selected value
+/// };
+/// </code>
+///
+// </summary>
 public partial class StaticParameterList<T> : ListPage
 {
     public event TypedEventHandler<object, T>? ValueSelected;
 
     private readonly IEnumerable<T> _values;
     private readonly List<IListItem> _items = new();
+    private readonly Lock _initializeLock = new();
     private bool _isInitialized;
     private Func<T, ListItem, ListItem> _customizeListItemsCallback;
 
@@ -21,8 +43,7 @@ public partial class StaticParameterList<T> : ListPage
         _values = values;
         _customizeListItemsCallback = (value, listItem) =>
         {
-            customizeListItem(value);
-            return listItem;
+            return customizeListItem(value);
         };
     }
 
@@ -34,13 +55,16 @@ public partial class StaticParameterList<T> : ListPage
 
     public override IListItem[] GetItems()
     {
-        if (!_isInitialized)
+        lock (_initializeLock)
         {
-            Initialize(_values, _customizeListItemsCallback);
-            _isInitialized = true;
-        }
+            if (!_isInitialized)
+            {
+                Initialize(_values, _customizeListItemsCallback);
+                _isInitialized = true;
+            }
 
-        return _items.ToArray();
+            return _items.ToArray();
+        }
     }
 
     private void Initialize(IEnumerable<T> values, Func<T, ListItem, ListItem> customizeListItem)

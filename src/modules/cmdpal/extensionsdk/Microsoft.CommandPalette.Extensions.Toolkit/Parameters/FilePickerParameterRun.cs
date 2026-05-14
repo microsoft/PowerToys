@@ -63,11 +63,11 @@ public partial class FilePickerParameterRun : CommandParameterRun
 
         public override ICommandResult Invoke()
         {
-            PickFileAsync();
+            PickFileAsync().GetAwaiter().GetResult();
             return CommandResult.KeepOpen();
         }
 
-        private async void PickFileAsync()
+        private async Task PickFileAsync()
         {
             var picker = new FileOpenPicker() { };
 

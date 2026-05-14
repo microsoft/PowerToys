@@ -38,6 +38,7 @@ internal sealed partial class ActionsTestPage : ListPage
 
         var items = new List<ListItem>();
 
+#if DEBUG
         var actionsDebug = string.Empty;
 
         foreach (var action in actions)
@@ -48,6 +49,7 @@ internal sealed partial class ActionsTestPage : ListPage
         }
 
         Logger.LogDebug(actionsDebug);
+#endif
 
         foreach (var action in actions)
         {
