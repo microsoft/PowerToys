@@ -9834,11 +9834,6 @@ LRESULT APIENTRY MainWndProc(
                 }
                 showOptions = TRUE;
             }
-            else
-            {
-                // Register companion hotkey; silently ignore failure if system has reserved this combination
-                RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomToggleMod ^ MOD_SHIFT, g_LiveZoomToggleKey & 0xFF);
-            }
         }
         if (g_DrawToggleKey)
         {
@@ -9872,11 +9867,6 @@ LRESULT APIENTRY MainWndProc(
                 }
                 showOptions = TRUE;
             }
-            else
-            {
-                // Register companion hotkey; silently ignore failure if system has reserved this combination
-                RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, (g_DemoTypeToggleMod ^ MOD_SHIFT), g_DemoTypeToggleKey & 0xFF);
-            }
         }
         if (g_SnipToggleKey)
         {
@@ -9887,11 +9877,6 @@ LRESULT APIENTRY MainWndProc(
                     MessageBox(hWnd, L"The specified snip hotkey is already in use.\nSelect a different snip hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
-            }
-            else
-            {
-                // Register companion hotkey; silently ignore failure if system has reserved this combination
-                RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, (g_SnipToggleMod ^ MOD_SHIFT), g_SnipToggleKey & 0xFF);
             }
         }
         if (g_SnipPanoramaToggleKey &&
@@ -9904,11 +9889,6 @@ LRESULT APIENTRY MainWndProc(
                     MessageBox(hWnd, L"The specified panorama snip hotkey is already in use.\nSelect a different panorama snip hotkey.", APPNAME, MB_ICONERROR);
                 }
                 showOptions = TRUE;
-            }
-            else
-            {
-                // Register companion hotkey; silently ignore failure if system has reserved this combination
-                RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, (g_SnipPanoramaToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF);
             }
         }
         if (g_SnipOcrToggleKey)
@@ -9932,13 +9912,37 @@ LRESULT APIENTRY MainWndProc(
                 }
                 showOptions = TRUE;
             }
-            else
+        }
+
+        // Register companion/secondary hotkeys derived from the primary hotkeys.
+        // These are silently skipped if registration fails (e.g. when the Win key is used
+        // and the derived combination conflicts with a Windows system shortcut).
+        if (!showOptions)
+        {
+            if (g_LiveZoomToggleKey)
             {
-                // Register companion hotkeys; silently ignore failures if system has reserved these combinations
+                RegisterHotKey(hWnd, LIVE_DRAW_HOTKEY, g_LiveZoomToggleMod ^ MOD_SHIFT, g_LiveZoomToggleKey & 0xFF);
+            }
+            if (g_DemoTypeToggleKey)
+            {
+                RegisterHotKey(hWnd, DEMOTYPE_RESET_HOTKEY, g_DemoTypeToggleMod ^ MOD_SHIFT, g_DemoTypeToggleKey & 0xFF);
+            }
+            if (g_SnipToggleKey)
+            {
+                RegisterHotKey(hWnd, SNIP_SAVE_HOTKEY, g_SnipToggleMod ^ MOD_SHIFT, g_SnipToggleKey & 0xFF);
+            }
+            if (g_SnipPanoramaToggleKey &&
+                (g_SnipPanoramaToggleKey != g_SnipToggleKey || g_SnipPanoramaToggleMod != g_SnipToggleMod))
+            {
+                RegisterHotKey(hWnd, SNIP_PANORAMA_SAVE_HOTKEY, (g_SnipPanoramaToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_SnipPanoramaToggleKey & 0xFF);
+            }
+            if (g_RecordToggleKey)
+            {
                 RegisterHotKey(hWnd, RECORD_CROP_HOTKEY, (g_RecordToggleMod ^ MOD_SHIFT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
                 RegisterHotKey(hWnd, RECORD_WINDOW_HOTKEY, (g_RecordToggleMod ^ MOD_ALT) | MOD_NOREPEAT, g_RecordToggleKey & 0xFF);
             }
         }
+
         if (showOptions)
         {
             // To open the PowerToys settings in the ZoomIt page.
