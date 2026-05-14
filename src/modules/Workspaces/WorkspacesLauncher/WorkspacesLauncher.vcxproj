@@ -4,7 +4,7 @@
   <!-- Props that should be disabled while building on CI server -->
   <Import Project="..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\..\..\packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Target Name="GenerateResourceFiles" BeforeTargets="PrepareForBuild">
-    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted $(SolutionDir)tools\build\convert-resx-to-rc.ps1 $(MSBuildThisFileDirectory) resource.base.h resource.h WorkspacesLauncherResource.base.rc WorkspacesLauncherResource.rc" />
+    <Exec Command="powershell -NonInteractive -executionpolicy Unrestricted &apos;$(SolutionDir)tools\build\convert-resx-to-rc.ps1&apos; &apos;$(MSBuildThisFileDirectory)&apos; resource.base.h resource.h WorkspacesLauncherResource.base.rc WorkspacesLauncherResource.rc" />
   </Target>
   <!-- C++ source compile-specific things for all configurations -->
   <ItemDefinitionGroup>
