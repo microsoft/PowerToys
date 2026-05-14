@@ -21,7 +21,7 @@
 
     <!-- For MVVM Toolkit Partial Properties/AOT support -->
     <LangVersion>preview</LangVersion>
-    
+
     <!-- OutputPath is set in CmdPal.Branding.props  -->
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -44,7 +44,7 @@
   </PropertyGroup>
 
   <!-- For debugging purposes, uncomment this block to enable AOT builds -->
-	<!-- <PropertyGroup>
+  <!-- <PropertyGroup>
     <EnableCmdPalAOT>true</EnableCmdPalAOT>
     <GeneratePackageLocally>true</GeneratePackageLocally>
   </PropertyGroup> -->
@@ -93,6 +93,7 @@
     <None Remove="Controls\ScreenPreview.xaml" />
     <None Remove="Controls\ScrollContainer.xaml" />
     <None Remove="Controls\SearchBar.xaml" />
+    <None Remove="Controls\WinGetOperationsButton.xaml" />
     <None Remove="ExtViews\Controls\ImageContentViewer.xaml" />
     <None Remove="ExtViews\Controls\PlainTextContentViewer.xaml" />
     <None Remove="ListDetailPage.xaml" />
@@ -120,6 +121,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock" />
+    <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
@@ -204,6 +206,9 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\SearchBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Controls\WinGetOperationsButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Controls\DevRibbon.xaml">

@@ -61,6 +61,11 @@ public partial class MainViewModel
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             ApplyUIConfiguration(settings);
 
+            // Push the toggle to the DDC/CI controller so the next refresh / hot-plug
+            // discovery picks it up. The value is also re-read inside InitializeAsync /
+            // RefreshMonitorsAsync, so this is a no-op-safe redundant push.
+            _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
+
             // Reload profiles in case they were added/updated/deleted in Settings UI
             LoadProfiles();
 

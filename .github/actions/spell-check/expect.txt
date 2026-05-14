@@ -215,6 +215,7 @@ clickable
 clickonce
 clientedge
 clientside
+cliextensions
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
@@ -360,7 +361,6 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTSIZE
-DEFAULTTONEAREST
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -1449,6 +1449,7 @@ ptcontrols
 ptd
 PTOKEN
 ptstr
+ptsym
 pui
 pvct
 PWAs
@@ -1533,6 +1534,7 @@ resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
 RETURNONLYFSDIRS
+Revalidates
 RGBQUAD
 rgbs
 rgelt
@@ -1587,7 +1589,6 @@ scrollviewer
 sddl
 SDKDDK
 sdns
-SDTVDONGLE
 searchterm
 SEARCHUI
 secondaryclickaction
@@ -1895,6 +1896,7 @@ trx
 tsa
 tskill
 tstoi
+tsv
 tweakable
 TWF
 tymed
@@ -1933,6 +1935,7 @@ unitconverter
 unittests
 UNLEN
 UNORM
+unparsable
 unremapped
 unsubscribes
 untriaged

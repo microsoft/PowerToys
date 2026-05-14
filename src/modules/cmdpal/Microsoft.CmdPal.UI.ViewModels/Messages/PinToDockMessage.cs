@@ -12,4 +12,5 @@ public record PinToDockMessage(
     bool Pin,
     DockPinSide Side = DockPinSide.Start,
     bool? ShowTitles = null,
-    bool? ShowSubtitles = null);
+    bool? ShowSubtitles = null,
+    string? MonitorDeviceId = null);

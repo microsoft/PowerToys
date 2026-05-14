@@ -1,6 +1,0 @@
-CoCreateInstance
-CoMarshalInterface
-CoUnmarshalInterface
-CreateStreamOnHGlobal
-MSHCTX
-MSHLFLAGS

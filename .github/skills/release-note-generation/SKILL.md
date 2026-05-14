@@ -1,12 +1,12 @@
 ---
 name: release-note-generation
-description: Toolkit for generating PowerToys release notes from GitHub milestone PRs or commit ranges. Use when asked to create release notes, summarize milestone PRs, generate changelog, prepare release documentation, request Copilot reviews for PRs, update README for a new release, manage PR milestones, or collect PRs between commits/tags. Supports PR collection by milestone or commit range, milestone assignment, grouping by label, summarization with external contributor attribution, and README version bumping.
+description: Toolkit for generating PowerToys release notes from GitHub milestone PRs or commit ranges. Use when asked to create release notes, summarize milestone PRs, generate changelog, prepare release documentation, generate PR review summaries locally for release notes, update README for a new release, manage PR milestones, collect PRs between commits/tags, or prepare release assets (download installers and compute installer hashes).
 license: Complete terms in LICENSE.txt
 ---
 
 # Release Note Generation Skill
 
-Generate professional release notes for PowerToys milestones by collecting merged PRs, requesting Copilot code reviews, grouping by label, and producing user-facing summaries.
+Generate professional release notes for PowerToys milestones by collecting merged PRs, summarizing each PR with the local CLI agent, grouping by label, and producing user-facing summaries.
 
 ## Output Directory
 
@@ -26,16 +26,17 @@ Generated Files/ReleaseNotes/
 
 - Generate release notes for a milestone
 - Summarize PRs merged in a release
-- Request Copilot reviews for milestone PRs
+- Generate per-PR review summaries locally for release-notes copy
 - Assign milestones to PRs missing them
 - Collect PRs between two commits/tags
 - Update README.md for a new version
+- Prepare GitHub release assets (download installers/symbols + compute hashes)
 
 ## Prerequisites
 
 - **GitHub CLI (`gh`) installed and authenticated** — The collection script uses `gh pr view` and `gh api graphql` to fetch PR metadata and co-author information. Run `gh auth status` to verify; if not logged in, run `gh auth login` first. See [Step 1.0.0](./references/step1-collection.md) for details.
-- MCP Server: github-mcp-server installed
-- GitHub Copilot code review enabled for the org/repo
+- MCP Server: github-mcp-server installed (used to fetch PR diffs/files for the local-agent review step)
+- For [prepare-release-assets.ps1](./scripts/prepare-release-assets.ps1) only: **Azure CLI** authenticated against the Microsoft tenant (`az login`) with the `azure-devops` extension; access to the `microsoft/Dart` ADO project
 
 ## Required Variables
 
@@ -65,12 +66,12 @@ Generated Files/ReleaseNotes/
 └────────────────────────────────┘
               ↓
 ┌────────────────────────────────┐
-│ 3.1 Request Reviews (Copilot)  │
+│ 3.1 Local-agent PR summaries    │
+│ (writes CopilotSummary)         │
 └────────────────────────────────┘
               ↓
 ┌────────────────────────────────┐
-│ 3.2 Refresh PR data             │
-│ (CopilotSummary)                │
+│ 3.2 (Optional) Refresh PR data  │
 └────────────────────────────────┘
               ↓
 ┌────────────────────────────────┐
@@ -93,7 +94,7 @@ Generated Files/ReleaseNotes/
 | 1.1 | Collect PRs | From previous release tag on `stable` branch → `sorted_prs.csv` |
 | 1.2 | Assign Milestones | Ensure all PRs have correct milestone |
 | 2.1–2.4 | Label PRs | Auto-suggest + human label low-confidence |
-| 3.1–3.3 | Reviews & Grouping | Request Copilot reviews → refresh → group by label |
+| 3.1–3.3 | Reviews & Grouping | Local agent summarizes each PR diff into `CopilotSummary` → (optional refresh) → group by label |
 | 4.1–4.2 | Summaries & Final | Generate grouped summaries, then consolidate |
 
 ## Detailed workflow docs
@@ -114,6 +115,7 @@ Do not read all steps at once—only read the step you are executing.
 | [group-prs-by-label.ps1](./scripts/group-prs-by-label.ps1) | Group PRs into CSVs |
 | [collect-or-apply-milestones.ps1](./scripts/collect-or-apply-milestones.ps1) | Assign milestones |
 | [diff_prs.ps1](./scripts/diff_prs.ps1) | Incremental PR diff |
+| [prepare-release-assets.ps1](./scripts/prepare-release-assets.ps1) | Download installers + symbols from an ADO build, compute SHA256, emit the "Installer Hashes" markdown table for the GitHub release page |
 
 ## References
 
@@ -133,5 +135,6 @@ Do not read all steps at once—only read the step you are executing.
 |-------|----------|
 | `gh` command not found | Install GitHub CLI and add to PATH |
 | No PRs returned | Verify milestone title matches exactly |
-| Empty CopilotSummary | Request Copilot reviews first, then re-run dump |
+| Empty `CopilotSummary` for many PRs | Run Step 3.1 (local-agent summaries). Do **not** use `mcp_github_request_copilot_review` from a CLI/coding agent — the GitHub API rejects bot-initiated review requests, so the column will stay empty. |
 | Many unlabeled PRs | Return to labeling step before grouping |
+| `prepare-release-assets.ps1` fails with "Failed to acquire ADO access token" | Run `az login` and ensure you have access to the `microsoft/Dart` ADO project |
