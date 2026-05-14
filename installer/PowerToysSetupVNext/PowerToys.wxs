@@ -26,15 +26,17 @@
              Note: all VC++ 2015-2022 releases (v14.x) share the same "14.0" registry root even though the
              binaries ship separately for each VS version; finding the key here means at least one is installed. -->
         <?if $(var.Platform) = x64 ?>
-            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" Value="Installed" Result="exists" />
+            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" Value="Installed" Result="exists" Win64="yes" />
             <?define VCRedistDisplayName="Microsoft Visual C++ 2015-2022 Redistributable (x64)"?>
             <?define VCRedistFileName="vc_redist.x64.exe"?>
             <?define VCRedistDownloadUrl="https://aka.ms/vs/17/release/vc_redist.x64.exe"?>
-        <?else?>
-            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\arm64" Value="Installed" Result="exists" />
+        <?elseif $(var.Platform) = arm64 ?>
+            <util:RegistrySearch Variable="VCRedist2022Installed" Root="HKLM" Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\arm64" Value="Installed" Result="exists" Win64="yes" />
             <?define VCRedistDisplayName="Microsoft Visual C++ 2015-2022 Redistributable (ARM64)"?>
             <?define VCRedistFileName="vc_redist.arm64.exe"?>
             <?define VCRedistDownloadUrl="https://aka.ms/vs/17/release/vc_redist.arm64.exe"?>
+        <?else?>
+            <?error Unsupported Platform value for VC++ redistributable: $(var.Platform). Supported values are x64 and arm64.?>
         <?endif?>
 
         <?if $(var.PerUser) = "true" ?>
@@ -83,7 +85,7 @@
                  Note: the download URL points to Microsoft's CDN over HTTPS; a pinned Hash is intentionally omitted
                  here (same approach as the WebView2 entry above) because the aka.ms redirect always points to the
                  latest VS 2022 release and the hash would break on every upstream update. -->
-            <ExePackage DisplayName="$(var.VCRedistDisplayName)" Id="VCRedist2022" Name="$(var.VCRedistFileName)" Compressed="no" PerMachine="yes" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed" DownloadUrl="$(var.VCRedistDownloadUrl)" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
+            <ExePackage DisplayName="$(var.VCRedistDisplayName)" Id="VCRedist2022" Name="$(var.VCRedistFileName)" Compressed="no" PerMachine="$(var.PerMachineYesNo)" Permanent="yes" Vital="no" DetectCondition="VCRedist2022Installed" DownloadUrl="$(var.VCRedistDownloadUrl)" InstallArguments="/install /quiet /norestart" RepairArguments="/repair /quiet /norestart" UninstallArguments="/uninstall /quiet /norestart" />
             <MsiPackage DisplayName="PowerToys MSI" SourceFile="$(var.PowerToysPlatform)\Release\$(var.MSIPath)\$(var.MSIName)" Compressed="yes" bal:DisplayInternalUICondition="false">
                 <MsiProperty Name="BOOTSTRAPPERINSTALLFOLDER" Value="[InstallFolder]" />
                 <MsiProperty Name="MSIRESTARTMANAGERCONTROL" Value="Disable" />
