@@ -46,7 +46,7 @@ public:
     // IExplorerCommand
     IFACEMETHODIMP GetTitle(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* name)
     {
-        return SHStrDup(L"Copy as UNC path", name);
+        return SHStrDup(context_menu_caption.c_str(), name);
     }
 
     IFACEMETHODIMP GetIcon(_In_opt_ IShellItemArray*, _Outptr_result_nullonfailure_ PWSTR* icon)
@@ -152,9 +152,16 @@ public:
                     if (hMem)
                     {
                         void* locked = GlobalLock(hMem);
-                        memcpy(locked, uncPath.c_str(), byteLen);
-                        GlobalUnlock(hMem);
-                        SetClipboardData(CF_UNICODETEXT, hMem);
+                        if (locked)
+                        {
+                            memcpy(locked, uncPath.c_str(), byteLen);
+                            GlobalUnlock(hMem);
+                            SetClipboardData(CF_UNICODETEXT, hMem);
+                        }
+                        else
+                        {
+                            GlobalFree(hMem);
+                        }
                     }
                     CloseClipboard();
                 }
@@ -189,6 +196,7 @@ public:
 
 protected:
     ComPtr<IUnknown> m_site;
+    std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(IDS_COPY_AS_UNC_CONTEXT_MENU_ENTRY, L"Copy as UNC path");
 };
 
 CoCreatableClass(CopyAsUNCContextMenuCommand)

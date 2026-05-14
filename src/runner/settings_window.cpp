@@ -807,6 +807,8 @@ std::string ESettingsWindowNames_to_string(ESettingsWindowNames value)
         return "ZoomIt";
     case ESettingsWindowNames::PowerDisplay:
         return "PowerDisplay";
+    case ESettingsWindowNames::GrabAndMove:
+        return "GrabAndMove";
     case ESettingsWindowNames::CopyAsUNC:
         return "CopyAsUNC";
     default:
@@ -951,6 +953,10 @@ ESettingsWindowNames ESettingsWindowNames_from_string(std::string value)
     else if (value == "PowerDisplay")
     {
         return ESettingsWindowNames::PowerDisplay;
+    }
+    else if (value == "GrabAndMove")
+    {
+        return ESettingsWindowNames::GrabAndMove;
     }
     else if (value == "CopyAsUNC")
     {

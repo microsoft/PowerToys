@@ -226,6 +226,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _stlThumbnailColor = Settings.Properties.StlThumbnailColor.Value;
 
             _isCopyAsUNCEnabled = GeneralSettingsConfig.Enabled.CopyAsUNC;
+            _copyAsUNCEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredCopyAsUNCEnabledValue();
+            if (_copyAsUNCEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _copyAsUNCEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
+            {
+                // Get the enabled state from GPO.
+                _copyAsUNCEnabledStateIsGPOConfigured = true;
+                _isCopyAsUNCEnabled = _copyAsUNCEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled;
+            }
 
             _qoiThumbnailEnabledGpoRuleConfiguration = GPOWrapper.GetConfiguredQoiThumbnailsEnabledValue();
             if (_qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _qoiThumbnailEnabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
@@ -1104,6 +1111,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        private GpoRuleConfigured _copyAsUNCEnabledGpoRuleConfiguration;
+        private bool _copyAsUNCEnabledStateIsGPOConfigured;
         private bool _isCopyAsUNCEnabled;
 
         public bool IsCopyAsUNCEnabled
@@ -1111,6 +1120,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _isCopyAsUNCEnabled;
             set
             {
+                if (_copyAsUNCEnabledStateIsGPOConfigured)
+                {
+                    return;
+                }
+
                 if (_isCopyAsUNCEnabled != value)
                 {
                     _isCopyAsUNCEnabled = value;
@@ -1121,6 +1135,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     SendConfigMSG(outgoing.ToString());
                 }
             }
+        }
+
+        public bool IsCopyAsUNCEnabledGpoConfigured
+        {
+            get => _copyAsUNCEnabledStateIsGPOConfigured;
         }
 
         private void RaisePropertyChanged([CallerMemberName] string propertyName = null)

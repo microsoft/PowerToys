@@ -286,8 +286,9 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CmdPalModuleInterface.dll",
             L"PowerToys.ZoomItModuleInterface.dll",
             L"PowerToys.LightSwitchModuleInterface.dll",
+            L"PowerToys.PowerDisplayModuleInterface.dll",
+            L"PowerToys.GrabAndMoveModuleInterface.dll",
             L"WinUI3Apps/PowerToys.CopyAsUNCExt.dll",
-            // L"PowerToys.PowerDisplayModuleInterface.dll", // TEMPORARILY_DISABLED: PowerDisplay
         };
 
         for (auto moduleSubdir : knownModules)

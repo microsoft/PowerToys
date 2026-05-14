@@ -9,10 +9,9 @@ public:
 
     inline bool GetEnabled()
     {
-        // TODO: Add GPO entry to src/common/utils/gpo.h and uncomment:
-        // auto gpoSetting = powertoys_gpo::getConfiguredCopyAsUNCEnabledValue();
-        // if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)  return true;
-        // if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled) return false;
+        auto gpoSetting = powertoys_gpo::getConfiguredCopyAsUNCEnabledValue();
+        if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)  return true;
+        if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled) return false;
         Reload();
         RefreshEnabledState();
         return settings.enabled;

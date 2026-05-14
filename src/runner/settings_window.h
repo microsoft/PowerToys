@@ -37,6 +37,7 @@ enum class ESettingsWindowNames
     CmdPal,
     ZoomIt,
     PowerDisplay,
+    GrabAndMove,
     CopyAsUNC,
 };
 

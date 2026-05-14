@@ -105,7 +105,6 @@ xcopy /Y "$(ProjectDir)Assets\CopyAsUNC\CopyAsUNC.ico" "$(OutDir)Assets\CopyAsUN
     <None Include="Resources.resx" />
   </ItemGroup>
   <ItemGroup>
-    <!-- TODO: Add CopyAsUNC icon and tile assets to this folder -->
     <None Include="Assets\CopyAsUNC\CopyAsUNC.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
