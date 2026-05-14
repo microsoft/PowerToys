@@ -22,7 +22,7 @@ internal sealed partial class ImageProvider : IImageProvider
             return RtbInlineImageFactory.Create(imageSource.ImageSource, new RtbInlineImageFactory.InlineImageOptions
             {
                 DownscaleOnly = imageSource.Hints.DownscaleOnly ?? true,
-                FitColumnWidth = imageSource.Hints.FitMode is null or "fit",
+                FitColumnWidth = imageSource.Hints.FitMode is null || imageSource.Hints.FitMode.Equals("fit", StringComparison.OrdinalIgnoreCase),
                 MaxWidthDip = imageSource.Hints.MaxPixelWidth,
                 MaxHeightDip = imageSource.Hints.MaxPixelHeight,
                 WidthDip = imageSource.Hints.DesiredPixelWidth,

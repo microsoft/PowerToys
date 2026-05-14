@@ -169,6 +169,7 @@ internal sealed partial class SampleMarkdownImagesPage : ContentPage
             ## Examples
             
             ### No scaling
+            ℹ️ This sample uses the source pixel size, so under non-100% DPI scaling the rendered size can differ from the image's natural visual size.
             ```xml
             ![green rectangle]({{path1}}?--x-cmdpal-fit=none)
             ```
