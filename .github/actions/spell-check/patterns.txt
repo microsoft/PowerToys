@@ -305,3 +305,7 @@ ms-windows-store://\S+
 
 # ANSI color codes
 (?:\\(?:u00|x)1[Bb]|\\03[1-7]|\x1b|\\u\{1[Bb]\})\[\d+(?:;\d+)*m
+
+# Phi Silica internal token/ID literals
+<PhiSilicaLafToken\b[^>]*>[^<]+</PhiSilicaLafToken>
+\bdjwsxzxb4ksa8\b

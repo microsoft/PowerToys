@@ -79,7 +79,7 @@ steps:
       msbuildArgs: >-
         -restore
         /t:PowerToysInstallerVNext
-        /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true;CmdPalPackagePath="$(CmdPalPackagePath)";CmdPalPackageDir="$(CmdPalPackageDir)"
         /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -95,7 +95,7 @@ steps:
       vsVersion: 18.0
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
-        /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true;CmdPalPackagePath="$(CmdPalPackagePath)";CmdPalPackageDir="$(CmdPalPackageDir)"
         /bl:$(LogOutputDirectory)\installer-user-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)

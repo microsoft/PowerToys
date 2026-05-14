@@ -3,6 +3,7 @@
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
   </PropertyGroup>
   <Import Project="$(RepoRoot)src\Version.props" />
+  <Import Project="$(RepoRoot)src\PhiSilicaLaf.props" />
   <PropertyGroup>
     <Copyright>Copyright (C) Microsoft Corporation. All rights reserved.</Copyright>
     <AssemblyCopyright>Copyright (C) Microsoft Corporation. All rights reserved.</AssemblyCopyright>

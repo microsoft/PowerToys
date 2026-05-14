@@ -468,8 +468,6 @@ function Test-CoreFiles {
     $winUI3SignedFiles = @(
         'PowerToys.Settings.dll',
         'PowerToys.Settings.exe',
-        'PowerToys.AdvancedPaste.exe',
-        'PowerToys.AdvancedPaste.dll',
         'PowerToys.HostsModuleInterface.dll',
         'PowerToys.HostsUILib.dll',
         'PowerToys.Hosts.dll',
@@ -724,6 +722,26 @@ function Test-CommandPalettePackages {
     }
 }
 
+function Test-AdvancedPastePackage {
+    param(
+        [string]$InstallPath
+    )
+    
+    $advancedPastePath = Join-Path $InstallPath "WinUI3Apps\AdvancedPaste"
+    if (Test-Path $advancedPastePath) {
+        $msixFiles = Get-ChildItem $advancedPastePath -Filter "*.msix" -ErrorAction SilentlyContinue
+        if ($msixFiles) {
+            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste MSIX Package" -Status 'Pass' -Message "Found $($msixFiles.Count) Advanced Paste MSIX package(s)"
+        }
+        else {
+            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste MSIX Package" -Status 'Warning' -Message "No Advanced Paste MSIX packages found"
+        }
+    }
+    else {
+        Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste Module" -Status 'Warning' -Message "Advanced Paste module not found at: $advancedPastePath"
+    }
+}
+
 function Test-ContextMenuPackages {
     param(
         [string]$InstallPath
@@ -774,6 +792,7 @@ function Main {
             $installPath = Get-PowerToysInstallPath -Scope 'PerMachine'
             if ($installPath) {
                 Test-CommandPalettePackages -InstallPath $installPath
+                Test-AdvancedPastePackage -InstallPath $installPath
                 Test-ContextMenuPackages -InstallPath $installPath
             }
         }
@@ -786,6 +805,7 @@ function Main {
             $installPath = Get-PowerToysInstallPath -Scope 'PerUser'
             if ($installPath) {
                 Test-CommandPalettePackages -InstallPath $installPath
+                Test-AdvancedPastePackage -InstallPath $installPath
                 Test-ContextMenuPackages -InstallPath $installPath
             }
         }

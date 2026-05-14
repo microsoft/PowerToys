@@ -6,6 +6,9 @@
     <!-- MIKE: The file you're looking for is src/modules/cmdpal/custom.props -->
     <CmdPalVersion Condition="'$(CmdPalVersion)'==''">0.0.1.0</CmdPalVersion>
 
+    <AdvancedPasteVersion Condition="'$(AdvancedPasteVersion)'=='' and '$(XES_APPXMANIFESTVERSION)'!=''">$(XES_APPXMANIFESTVERSION)</AdvancedPasteVersion>
+    <AdvancedPasteVersion Condition="'$(AdvancedPasteVersion)'==''">0.0.1.0</AdvancedPasteVersion>
+
     <DevEnvironment>Local</DevEnvironment>
 
     <!-- Forcing for every DLL on by default -->

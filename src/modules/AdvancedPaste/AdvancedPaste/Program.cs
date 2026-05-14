@@ -14,7 +14,7 @@ namespace AdvancedPaste
     public static class Program
     {
         [STAThread]
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             Logger.InitializeLogger("\\AdvancedPaste\\Logs");
 
@@ -23,7 +23,7 @@ namespace AdvancedPaste
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAdvancedPasteEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-                return;
+                return 1;
             }
 
             var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_AdvancedPaste_Instance");
@@ -41,6 +41,8 @@ namespace AdvancedPaste
             {
                 Logger.LogWarning("Another instance of AdvancedPasteUI is running. Exiting.");
             }
+
+            return 0;
         }
     }
 }

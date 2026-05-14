@@ -29,7 +29,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\;..\utils;..\Telemetry;..\..\;..\..\..\deps\;..\..\..\deps\spdlog\include;..\..\..\packages\Microsoft.Windows.ImplementationLibrary.1.0.260126.7\include;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp23</LanguageStandard>
-      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SECURE_SCL=0;SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_HEADER_ONLY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

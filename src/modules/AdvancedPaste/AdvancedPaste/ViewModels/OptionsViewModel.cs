@@ -16,8 +16,8 @@ using System.Threading.Tasks;
 using AdvancedPaste.Helpers;
 using AdvancedPaste.Models;
 using AdvancedPaste.Services;
+using AdvancedPaste.Services.CustomActions;
 using AdvancedPaste.Settings;
-using Common.UI;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
@@ -41,6 +41,7 @@ namespace AdvancedPaste.ViewModels
         private readonly IUserSettings _userSettings;
         private readonly IPasteFormatExecutor _pasteFormatExecutor;
         private readonly IAICredentialsProvider _credentialsProvider;
+        private readonly ICustomActionTransformService _customActionTransformService;
 
         private CancellationTokenSource _pasteActionCancellationTokenSource;
 
@@ -258,11 +259,12 @@ namespace AdvancedPaste.ViewModels
 
         public event EventHandler PreviewRequested;
 
-        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor)
+        public OptionsViewModel(IFileSystem fileSystem, IAICredentialsProvider credentialsProvider, IUserSettings userSettings, IPasteFormatExecutor pasteFormatExecutor, ICustomActionTransformService customActionTransformService)
         {
             _credentialsProvider = credentialsProvider;
             _userSettings = userSettings;
             _pasteFormatExecutor = pasteFormatExecutor;
+            _customActionTransformService = customActionTransformService;
 
             GeneratedResponses = [];
             GeneratedResponses.CollectionChanged += (s, e) =>
@@ -341,11 +343,21 @@ namespace AdvancedPaste.ViewModels
             });
         }
 
-        private PasteFormat CreateStandardPasteFormat(PasteFormats format) =>
-            PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsCustomAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString);
+        private PasteFormat CreateStandardPasteFormat(PasteFormats format)
+        {
+            var providerId = GetProviderIdForFormat(format);
+            return PasteFormat.CreateStandardFormat(format, AvailableClipboardFormats, IsCustomAIServiceEnabled, ResourceLoaderInstance.ResourceLoader.GetString, providerId);
+        }
 
-        private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery) =>
-            PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled);
+        private PasteFormat CreateCustomAIPasteFormat(string name, string prompt, bool isSavedQuery, string providerId = null) =>
+            PasteFormat.CreateCustomAIFormat(CustomAIFormat, name, prompt, isSavedQuery, AvailableClipboardFormats, IsCustomAIServiceEnabled, providerId);
+
+        private string GetProviderIdForFormat(PasteFormats format) =>
+            format switch
+            {
+                PasteFormats.FixSpellingAndGrammar => _userSettings.FixSpellingAndGrammarProviderId,
+                _ => string.Empty,
+            };
 
         private void UpdateAIProviderActiveFlags()
         {
@@ -418,7 +430,7 @@ namespace AdvancedPaste.ViewModels
 
             UpdateFormats(
                 CustomActionPasteFormats,
-                IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true)) : []);
+                IsCustomAIServiceEnabled ? _userSettings.CustomActions.Select(customAction => CreateCustomAIPasteFormat(customAction.Name, customAction.Prompt, isSavedQuery: true, customAction.ProviderId)) : []);
         }
 
         public void Dispose()
@@ -539,6 +551,7 @@ namespace AdvancedPaste.ViewModels
         {
             PasteActionError = PasteActionError.None;
             Query = string.Empty;
+            CoachingExplanation = null;
 
             await ReadClipboardAsync();
 
@@ -616,6 +629,12 @@ namespace AdvancedPaste.ViewModels
         [ObservableProperty]
         private string _customFormatResult;
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasCoachingExplanation))]
+        private string _coachingExplanation;
+
+        public bool HasCoachingExplanation => !string.IsNullOrEmpty(CoachingExplanation);
+
         [RelayCommand]
         public async Task PasteCustomAsync()
         {
@@ -661,17 +680,37 @@ namespace AdvancedPaste.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.AdvancedPaste);
+            try
+            {
+                var exePath = System.IO.Path.Combine(
+                    ManagedCommon.PowerToysPathResolver.GetPowerToysInstallPath(),
+                    "PowerToys.exe");
+
+                if (exePath != null && System.IO.File.Exists(exePath))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = exePath,
+                        Arguments = "--open-settings=AdvancedPaste",
+                        UseShellExecute = false,
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to open settings", ex);
+            }
+
             GetMainWindow()?.Close();
         }
 
-        internal async Task ExecutePasteFormatAsync(PasteFormats format, PasteActionSource source)
+        internal async Task ExecutePasteFormatAsync(PasteFormats format, PasteActionSource source, bool forceCoaching = false)
         {
             await ReadClipboardAsync();
-            await ExecutePasteFormatAsync(CreateStandardPasteFormat(format), source);
+            await ExecutePasteFormatAsync(CreateStandardPasteFormat(format), source, forceCoaching);
         }
 
-        internal async Task ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source)
+        internal async Task ExecutePasteFormatAsync(PasteFormat pasteFormat, PasteActionSource source, bool forceCoaching = false)
         {
             if (IsBusy)
             {
@@ -704,12 +743,30 @@ namespace AdvancedPaste.ViewModels
                 await delayTask;
 
                 var outputText = await dataPackage.GetView().GetTextOrEmptyAsync();
+                bool isCoachingAction = pasteFormat.Format == PasteFormats.FixSpellingAndGrammar &&
+                    (forceCoaching || (_userSettings.FixSpellingAndGrammarCoachingEnabled && !_userSettings.FixSpellingAndGrammarCoachingShortcutSet));
                 bool shouldPreview = pasteFormat.Metadata.CanPreview && _userSettings.ShowCustomPreview && !string.IsNullOrEmpty(outputText) && source != PasteActionSource.GlobalKeyboardShortcut;
+
+                // Coaching mode forces preview even for global keyboard shortcuts
+                if (isCoachingAction && !string.IsNullOrEmpty(outputText))
+                {
+                    shouldPreview = true;
+                }
 
                 if (shouldPreview)
                 {
                     GeneratedResponses.Add(outputText);
                     CurrentResponseIndex = GeneratedResponses.Count - 1;
+
+                    if (isCoachingAction)
+                    {
+                        await GenerateCoachingExplanationAsync(outputText);
+                    }
+                    else
+                    {
+                        CoachingExplanation = null;
+                    }
+
                     PreviewRequested?.Invoke(this, EventArgs.Empty);
                 }
                 else
@@ -728,6 +785,65 @@ namespace AdvancedPaste.ViewModels
             _pasteActionCancellationTokenSource = null;
             elapsedWatch.Stop();
             Logger.LogDebug($"Finished executing {pasteFormat.Format} from source {source}; timeTakenMs={elapsedWatch.ElapsedMilliseconds}");
+        }
+
+        private async Task GenerateCoachingExplanationAsync(string correctedText)
+        {
+            try
+            {
+                var originalText = ClipboardData != null ? await ClipboardData.GetTextOrEmptyAsync() : string.Empty;
+
+                if (string.IsNullOrEmpty(originalText))
+                {
+                    CoachingExplanation = null;
+                    return;
+                }
+
+                static string NormalizeForComparison(string s) =>
+                    s.Replace('\u2018', '\'') // left single quote
+                     .Replace('\u2019', '\'') // right single quote / apostrophe
+                     .Replace('\u201C', '"') // left double quote
+                     .Replace('\u201D', '"') // right double quote
+                     .Replace('\u2013', '-') // en dash
+                     .Replace('\u2014', '-'); // em dash
+
+                if (string.Equals(NormalizeForComparison(originalText), NormalizeForComparison(correctedText), StringComparison.Ordinal))
+                {
+                    CoachingExplanation = null;
+                    return;
+                }
+
+                var coachingInstruction = string.IsNullOrWhiteSpace(_userSettings.FixSpellingAndGrammarCoachingPrompt)
+                    ? AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoaching
+                    : _userSettings.FixSpellingAndGrammarCoachingPrompt;
+                var coachingInputText = $"Original:\n\"{originalText}\"\n\nCorrected:\n\"{correctedText}\"";
+
+                var coachingSystemPrompt = string.IsNullOrWhiteSpace(_userSettings.FixSpellingAndGrammarCoachingSystemPrompt)
+                    ? AdvancedPasteDefaultPrompts.FixSpellingAndGrammarCoachingSystem
+                    : _userSettings.FixSpellingAndGrammarCoachingSystemPrompt;
+
+                var coachingProviderId = _userSettings.FixSpellingAndGrammarCoachingProviderId;
+                if (string.IsNullOrWhiteSpace(coachingProviderId))
+                {
+                    coachingProviderId = _userSettings.FixSpellingAndGrammarProviderId;
+                }
+
+                var result = await _customActionTransformService.TransformAsync(
+                    coachingInstruction,
+                    coachingInputText,
+                    null,
+                    _pasteActionCancellationTokenSource?.Token ?? CancellationToken.None,
+                    null,
+                    coachingSystemPrompt,
+                    string.IsNullOrWhiteSpace(coachingProviderId) ? null : coachingProviderId);
+
+                CoachingExplanation = result?.Content;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error generating coaching explanation", ex);
+                CoachingExplanation = null;
+            }
         }
 
         internal async Task ExecutePasteFormatAsync(VirtualKey key)
