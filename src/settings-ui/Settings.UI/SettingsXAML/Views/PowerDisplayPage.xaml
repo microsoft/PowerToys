@@ -85,7 +85,7 @@
 
                 <controls:SettingsGroup x:Uid="PowerDisplay_AdvancedSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_MaxCompatibilityMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7B5;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=TwoWay}"
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=OneWay}"
                                       Toggled="MaxCompatibilityMode_Toggled" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
@@ -224,7 +224,7 @@
                                             <CheckBox
                                                 x:Uid="PowerDisplay_Monitor_EnableInputSource"
                                                 Click="EnableInputSource_Click"
-                                                IsChecked="{x:Bind EnableInputSource, Mode=TwoWay}"
+                                                IsChecked="{x:Bind EnableInputSource, Mode=OneWay}"
                                                 Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
@@ -234,14 +234,14 @@
                                             <CheckBox
                                                 x:Uid="PowerDisplay_Monitor_EnableColorTemperature"
                                                 Click="EnableColorTemperature_Click"
-                                                IsChecked="{x:Bind EnableColorTemperature, Mode=TwoWay}"
+                                                IsChecked="{x:Bind EnableColorTemperature, Mode=OneWay}"
                                                 Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsPowerState, Mode=OneWay}">
                                             <CheckBox
                                                 x:Uid="PowerDisplay_Monitor_EnablePowerState"
                                                 Click="EnablePowerState_Click"
-                                                IsChecked="{x:Bind EnablePowerState, Mode=TwoWay}"
+                                                IsChecked="{x:Bind EnablePowerState, Mode=OneWay}"
                                                 Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">

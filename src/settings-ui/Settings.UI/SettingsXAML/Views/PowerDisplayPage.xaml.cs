@@ -254,38 +254,30 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private async void MaxCompatibilityMode_Toggled(object sender, RoutedEventArgs e)
         {
-            // Guard against the re-entry caused by HandleDangerousFeatureClickAsync's revert()
-            // path synchronously setting toggleSwitch.IsOn = false, which fires Toggled again
-            // mid-execution. Without this guard the re-entrant call would fall through to
-            // SignalRescanRequest() with clickedTo=false, triggering a spurious rescan on cancel.
+            // Guard against re-entry from the cancel path's programmatic IsOn revert,
+            // which fires Toggled a second time. See HandleDangerousFeatureClickAsync.
             if (_isRestoringDangerousFeatureControl)
             {
                 return;
             }
 
-            if (sender is not ToggleSwitch toggleSwitch)
-            {
-                return;
-            }
-
-            bool clickedTo = toggleSwitch.IsOn;
+            bool before = ViewModel.MaxCompatibilityMode;
 
             await HandleDangerousFeatureClickAsync(
                 sender,
                 "PowerDisplay_MaxCompatibility",
                 value => ViewModel.MaxCompatibilityMode = value);
 
-            // If the user clicked the toggle ON and then cancelled the confirmation
-            // dialog, HandleDangerousFeatureClickAsync has reverted IsOn back to false.
-            // Net effect: no change, no rescan needed.
-            if (clickedTo && !toggleSwitch.IsOn)
+            if (ViewModel.MaxCompatibilityMode != before)
             {
-                return;
+                ViewModel.SignalRescanRequest();
             }
-
-            ViewModel.SignalRescanRequest();
         }
 
+        // The bound CheckBoxes/ToggleSwitch use Mode=OneWay, so the control's new state is NOT
+        // pushed to the ViewModel/model automatically. This handler is the sole commit path:
+        // confirmed enable -> setter(true); any disable -> setter(false); cancelled enable ->
+        // revert the control's UI (the model was never touched).
         private async Task HandleDangerousFeatureClickAsync(
             object sender,
             string resourceKeyPrefix,
@@ -296,74 +288,44 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            // Only show the warning when the user is enabling the feature.
-            Action revert;
+            bool newValue;
+            Action revertUi;
             switch (sender)
             {
-                case CheckBox checkBox when checkBox.IsChecked == true:
-                    revert = () => checkBox.IsChecked = false;
+                case CheckBox cb:
+                    newValue = cb.IsChecked == true;
+                    revertUi = () => cb.IsChecked = !newValue;
                     break;
-                case ToggleSwitch toggleSwitch when toggleSwitch.IsOn:
-                    revert = () => toggleSwitch.IsOn = false;
+                case ToggleSwitch ts:
+                    newValue = ts.IsOn;
+                    revertUi = () => ts.IsOn = !newValue;
                     break;
                 default:
-                    // Control is already in the OFF state (or not a recognized type).
-                    // For a ToggleSwitch toggled OFF, the TwoWay x:Bind already applied the
-                    // new value to the ViewModel before Toggled fired - nothing to revert or set.
                     return;
             }
 
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
+            // Disabling a dangerous feature is always safe and needs no confirmation.
+            if (!newValue)
+            {
+                setter(false);
+                return;
+            }
+
+            var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix)
             {
                 XamlRoot = this.XamlRoot,
-                Title = resourceLoader.GetString($"{resourceKeyPrefix}_WarningTitle"),
-                Content = new StackPanel
-                {
-                    Spacing = 12,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningHeader"),
-                            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
-                            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningDescription"),
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningList"),
-                            TextWrapping = TextWrapping.Wrap,
-                            Margin = new Thickness(20, 0, 0, 0),
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningConfirm"),
-                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                    },
-                },
-                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Enable"),
-                CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
-                DefaultButton = ContentDialogButton.Close,
             };
 
-            var result = await dialog.ShowAsync();
-
-            if (result != ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                // User cancelled: revert the control to the off state.
+                setter(true);
+            }
+            else
+            {
                 _isRestoringDangerousFeatureControl = true;
                 try
                 {
-                    revert();
-                    setter(false);
+                    revertUi();
                 }
                 finally
                 {
