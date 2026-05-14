@@ -720,7 +720,7 @@ namespace PowerAccent.Core
             {
                 LetterKey.VK_A => new string[] { "α", "ἀ", "ἁ", "ὰ", "ά", "ᾶ", "ᾱ", "ᾰ", "ἂ", "ἃ", "ἄ", "ἅ", "ἆ", "ἇ", "ᾳ", "ᾀ", "ᾁ", "ᾴ", "ᾲ", "ᾷ", "ᾄ", "ᾅ", "ᾂ", "ᾃ", "ᾆ", "ᾇ" },
                 LetterKey.VK_B => new string[] { "β" },
-                LetterKey.VK_C => new string[] { "χ" },
+                LetterKey.VK_C => new string[] { "χ", "ϲ" },
                 LetterKey.VK_D => new string[] { "δ" },
                 LetterKey.VK_E => new string[] { "ε", "ἐ", "ἑ", "ὲ", "έ", "ἒ", "ἓ", "ἔ", "ἕ" },
                 LetterKey.VK_F => new string[] { "φ", "ϝ" },
