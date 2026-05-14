@@ -60,6 +60,48 @@ function requireEnv(name) {
   return value;
 }
 
+function validateRepository(repository) {
+  if (!/^[^/]+\/[^/]+$/.test(repository)) {
+    throw new Error(
+      `GITHUB_REPOSITORY must be in owner/repo format, received: ${JSON.stringify(repository)}`
+    );
+  }
+}
+
+function readEventPayload(eventPath) {
+  let raw;
+  try {
+    raw = fs.readFileSync(eventPath, 'utf8');
+  } catch (error) {
+    throw new Error(`Failed to read event payload at ${eventPath}: ${error.message}`);
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`Failed to parse JSON from ${eventPath}: ${error.message}`);
+  }
+}
+
+function resolvePullNumber(event) {
+  const fromPullRequest = event?.pull_request?.number;
+  const fromWorkflowDispatch = event?.inputs?.pr_number;
+  const rawPullNumber = fromPullRequest ?? fromWorkflowDispatch;
+
+  if (rawPullNumber === undefined || rawPullNumber === null || rawPullNumber === '') {
+    throw new Error(
+      'Unable to determine pull request number from event payload. Expected pull_request.number or inputs.pr_number.'
+    );
+  }
+
+  const pullNumber = Number.parseInt(String(rawPullNumber), 10);
+  if (!Number.isInteger(pullNumber) || pullNumber <= 0) {
+    throw new Error(`Invalid pull request number: ${JSON.stringify(rawPullNumber)}`);
+  }
+
+  return pullNumber;
+}
+
 function isTelemetryPath(filePath) {
   return TELEMETRY_PATH_PATTERNS.some((pattern) => pattern.test(filePath));
 }
@@ -86,26 +128,40 @@ function hasTelemetryLineSignal(lines) {
 
 async function apiRequest(url, method = 'GET', body) {
   const token = requireEnv('GITHUB_TOKEN');
-  const response = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (error) {
+    throw new Error(`Network error during ${method} ${url}: ${error.message}`);
+  }
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`${method} ${url} failed (${response.status}): ${text}`);
+    const rateLimitReset = response.headers.get('x-ratelimit-reset');
+    const rateLimitHint =
+      response.status === 403 && rateLimitReset
+        ? ` (rate limit reset at epoch ${rateLimitReset})`
+        : '';
+    throw new Error(`${method} ${url} failed (${response.status})${rateLimitHint}: ${text}`);
   }
 
   if (response.status === 204) {
     return null;
   }
 
-  return response.json();
+  try {
+    return await response.json();
+  } catch (error) {
+    throw new Error(`Failed to parse JSON response for ${method} ${url}: ${error.message}`);
+  }
 }
 
 async function getAllPullFiles(apiBaseUrl, repository, pullNumber) {
@@ -115,7 +171,11 @@ async function getAllPullFiles(apiBaseUrl, repository, pullNumber) {
   while (true) {
     const url = `${apiBaseUrl}/repos/${repository}/pulls/${pullNumber}/files?per_page=100&page=${page}`;
     const batch = await apiRequest(url);
-    if (!Array.isArray(batch) || batch.length === 0) {
+    if (!Array.isArray(batch)) {
+      throw new Error(`Unexpected response while listing PR files on page ${page}.`);
+    }
+
+    if (batch.length === 0) {
       break;
     }
 
@@ -129,6 +189,32 @@ async function getAllPullFiles(apiBaseUrl, repository, pullNumber) {
   }
 
   return files;
+}
+
+async function findExistingTelemetryComment(apiBaseUrl, repository, pullNumber) {
+  let page = 1;
+
+  while (true) {
+    const commentsUrl = `${apiBaseUrl}/repos/${repository}/issues/${pullNumber}/comments?per_page=100&page=${page}`;
+    const comments = await apiRequest(commentsUrl);
+
+    if (!Array.isArray(comments)) {
+      throw new Error(`Unexpected response while listing issue comments on page ${page}.`);
+    }
+
+    const existing = comments.find(
+      (comment) => typeof comment.body === 'string' && comment.body.includes(COMMENT_MARKER)
+    );
+    if (existing) {
+      return existing;
+    }
+
+    if (comments.length < 100) {
+      return null;
+    }
+
+    page += 1;
+  }
 }
 
 function detectTelemetryChanges(files) {
@@ -165,11 +251,7 @@ function hasDataAndPrivacyChange(files) {
 }
 
 async function upsertPrComment(apiBaseUrl, repository, pullNumber, body) {
-  const commentsUrl = `${apiBaseUrl}/repos/${repository}/issues/${pullNumber}/comments?per_page=100`;
-  const comments = await apiRequest(commentsUrl);
-  const existing = (comments || []).find((comment) =>
-    typeof comment.body === 'string' && comment.body.includes(COMMENT_MARKER)
-  );
+  const existing = await findExistingTelemetryComment(apiBaseUrl, repository, pullNumber);
 
   if (existing) {
     const updateUrl = `${apiBaseUrl}/repos/${repository}/issues/comments/${existing.id}`;
@@ -187,16 +269,29 @@ async function main() {
   const eventPath = requireEnv('GITHUB_EVENT_PATH');
   const repository = requireEnv('GITHUB_REPOSITORY');
   const apiBaseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
+  validateRepository(repository);
 
-  const event = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
-  const pullNumber = event?.pull_request?.number;
+  let parsedApiBaseUrl;
+  try {
+    parsedApiBaseUrl = new URL(apiBaseUrl);
+  } catch {
+    throw new Error(`Invalid GITHUB_API_URL: ${JSON.stringify(apiBaseUrl)}`);
+  }
 
-  if (!pullNumber) {
-    console.log('No pull_request payload found; skipping.');
+  const event = readEventPayload(eventPath);
+  const pullNumber = resolvePullNumber(event);
+
+  console.log(`Event name: ${process.env.GITHUB_EVENT_NAME || 'unknown'}`);
+  console.log(`Repository: ${repository}`);
+  console.log(`PR number: ${pullNumber}`);
+
+  const files = await getAllPullFiles(parsedApiBaseUrl.origin, repository, pullNumber);
+
+  if (files.length === 0) {
+    console.log('No changed files found for PR; skipping telemetry comment update.');
     return;
   }
 
-  const files = await getAllPullFiles(apiBaseUrl, repository, pullNumber);
   const matches = detectTelemetryChanges(files);
   const dataAndPrivacyChanged = hasDataAndPrivacyChange(files);
 
@@ -223,6 +318,7 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error('Telemetry PR check failed.');
+  console.error(error instanceof Error ? error.stack || error.message : error);
   process.exit(1);
 });
