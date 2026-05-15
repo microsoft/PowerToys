@@ -2,11 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.Messaging;
-using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels;
-using Microsoft.UI.Dispatching;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -14,12 +12,12 @@ using Microsoft.UI.Xaml.Navigation;
 namespace Microsoft.CmdPal.UI;
 
 /// <summary>
-/// An empty page that can be used on its own or navigated to within a Frame.
+/// Hosts a parameter run, optionally embedding a <see cref="ListItemsView"/> when
+/// a list parameter is active. List rendering, selection, and keyboard navigation
+/// are handled by the embedded <see cref="ListItemsView"/>.
 /// </summary>
 public sealed partial class ParametersPage : Page
 {
-    private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
-
     public ParametersPageViewModel? ViewModel
     {
         get => (ParametersPageViewModel?)GetValue(ViewModelProperty);
@@ -33,14 +31,6 @@ public sealed partial class ParametersPage : Page
     public ParametersPage()
     {
         this.InitializeComponent();
-        this.Unloaded += OnUnloaded;
-    }
-
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
-        // Unhook from everything to ensure nothing can reach us
-        // between this point and our complete and utter destruction.
-        WeakReferenceMessenger.Default.UnregisterAll(this);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -70,30 +60,9 @@ public sealed partial class ParametersPage : Page
 
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is ParametersPage @this)
+        if (d is ParametersPage && e.NewValue is null)
         {
-            if (e.OldValue is ParametersPageViewModel old)
-            {
-                old.PropertyChanged -= @this.ViewModel_PropertyChanged;
-            }
-
-            if (e.NewValue is ParametersPageViewModel page)
-            {
-                page.PropertyChanged += @this.ViewModel_PropertyChanged;
-            }
-            else if (e.NewValue is null)
-            {
-                CoreLogger.LogDebug("cleared view model");
-            }
-        }
-    }
-
-    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        var prop = e.PropertyName;
-        if (prop == nameof(ViewModel.ShowCommand))
-        {
-            CoreLogger.LogDebug($"ViewModel.ShowCommand {ViewModel?.ShowCommand}");
+            CoreLogger.LogDebug("cleared view model");
         }
     }
 }

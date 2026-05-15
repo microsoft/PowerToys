@@ -647,6 +647,124 @@ public sealed partial class SearchBar : UserControl,
         }
     }
 
+    private void ListParameter_GotFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is TextBox textBox &&
+            textBox.DataContext is CommandParameterRunViewModel listParam &&
+            CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        {
+            parametersPage.SetActiveListParameter(listParam);
+        }
+    }
+
+    private void ListParameter_LostFocus(object sender, RoutedEventArgs e)
+    {
+        // Don't clear the active list while editing — the user may have clicked
+        // a list item in the ParametersPage, which steals focus from the textbox.
+        // The active list will be cleared when the extension updates the value
+        // (via ItemPropertyChanged) or when the user presses Escape.
+        if (sender is TextBox { DataContext: CommandParameterRunViewModel { IsEditing: true } })
+        {
+            return;
+        }
+
+        if (CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        {
+            parametersPage.SetActiveListParameter(null);
+        }
+    }
+
+    private void ListParameter_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is TextBox textBox &&
+            textBox.DataContext is CommandParameterRunViewModel listParam)
+        {
+            listParam.SearchBoxText = textBox.Text;
+        }
+    }
+
+    private void ListParameter_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (sender is not TextBox textBox ||
+            CurrentPageViewModel is not ParametersPageViewModel parametersPage)
+        {
+            return;
+        }
+
+        if (e.Key == VirtualKey.Escape)
+        {
+            // If the param already has a value (user was re-picking), cancel
+            // editing and switch back to the button.
+            if (textBox.DataContext is CommandParameterRunViewModel listParam &&
+                !listParam.NeedsValue)
+            {
+                listParam.CancelEditing();
+                parametersPage.SetActiveListParameter(null);
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == VirtualKey.Tab)
+        {
+            // Tab away from a list parameter: dismiss the list panel so it
+            // doesn't linger when the user keyboard-navigates to a different
+            // control. Don't mark e.Handled — let the default Tab behavior
+            // move focus to the next/previous control.
+            if (textBox.DataContext is CommandParameterRunViewModel listParam)
+            {
+                if (!listParam.NeedsValue)
+                {
+                    listParam.CancelEditing();
+                }
+
+                parametersPage.SetActiveListParameter(null);
+            }
+        }
+        else if (e.Key == VirtualKey.Up)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.Down)
+        {
+            WeakReferenceMessenger.Default.Send<NavigateNextCommand>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageDown)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageDownCommand>();
+            e.Handled = true;
+        }
+        else if (e.Key == VirtualKey.PageUp)
+        {
+            WeakReferenceMessenger.Default.Send<NavigatePageUpCommand>();
+            e.Handled = true;
+        }
+    }
+
+    private void ListParameterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button button &&
+            button.DataContext is CommandParameterRunViewModel listParam &&
+            CurrentPageViewModel is ParametersPageViewModel parametersPage)
+        {
+            // Enter editing mode — switch from button to textbox and show the list.
+            // The TextBox's Loaded handler will focus it once it materializes.
+            listParam.BeginEditing();
+            parametersPage.SetActiveListParameter(listParam);
+        }
+    }
+
+    private void ListParameter_Loaded(object sender, RoutedEventArgs e)
+    {
+        // When the SwitchPresenter swaps in the TextBox (either on first
+        // show or re-entering editing mode), focus it directly.
+        if (sender is TextBox textBox &&
+            textBox.DataContext is CommandParameterRunViewModel { IsEditing: true })
+        {
+            textBox.Focus(FocusState.Keyboard);
+        }
+    }
+
     public void Receive(FocusParamMessage message)
     {
         var parameter = message.Parameter;
