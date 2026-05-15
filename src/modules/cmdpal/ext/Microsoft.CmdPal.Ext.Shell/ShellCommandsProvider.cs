@@ -1,22 +1,22 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Ext.Run;
 using Microsoft.CmdPal.Ext.Shell.Helpers;
-using Microsoft.CmdPal.Ext.Shell.Pages;
 using Microsoft.CmdPal.Ext.Shell.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.Shell;
 
-public partial class ShellCommandsProvider : CommandProvider
+public partial class ShellCommandsProvider : CommandProvider, IDisposable
 {
     private readonly CommandItem _shellPageItem;
 
     private readonly SettingsManager _settingsManager = new();
-    private readonly ShellListPage _shellListPage;
+    private readonly RunListPage _runListPage;
     private readonly FallbackCommandItem _fallbackItem;
     private readonly IRunHistoryService _historyService;
     private readonly ITelemetryService _telemetryService;
@@ -31,11 +31,11 @@ public partial class ShellCommandsProvider : CommandProvider
         Icon = Icons.RunV2Icon;
         Settings = _settingsManager.Settings;
 
-        _shellListPage = new ShellListPage(_settingsManager, _historyService, _telemetryService);
+        _runListPage = new RunListPage(runHistoryService, telemetryService, true);
 
-        _fallbackItem = new FallbackExecuteItem(_settingsManager, _shellListPage.AddToHistory, _telemetryService);
+        _fallbackItem = new FallbackExecuteItem(_historyService, _telemetryService);
 
-        _shellPageItem = new CommandItem(_shellListPage)
+        _shellPageItem = new CommandItem(_runListPage)
         {
             Icon = Icons.RunV2Icon,
             Title = Resources.shell_command_name,
@@ -50,4 +50,11 @@ public partial class ShellCommandsProvider : CommandProvider
     public override IFallbackCommandItem[]? FallbackCommands() => [_fallbackItem];
 
     public static bool SuppressFileFallbackIf(string query) => FallbackExecuteItem.SuppressFileFallbackIf(query);
+
+    public override void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        base.Dispose();
+        _runListPage.Dispose();
+    }
 }
