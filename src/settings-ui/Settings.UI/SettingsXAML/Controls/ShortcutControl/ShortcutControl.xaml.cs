@@ -541,7 +541,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
                     if (lastValidSettings.IsValid())
                     {
-                        if (string.Equals(lastValidSettings.ToString(), hotkeySettings.ToString(), StringComparison.OrdinalIgnoreCase))
+                        if (hotkeySettings != null && string.Equals(lastValidSettings.ToString(), hotkeySettings.ToString(), StringComparison.OrdinalIgnoreCase))
                         {
                             c.HasConflict = hotkeySettings.HasConflict;
                             c.ConflictMessage = hotkeySettings.ConflictDescription;
@@ -671,11 +671,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
         {
             c.Keys = null;
-            c.Keys = HotkeySettings.GetKeysList();
+            c.Keys = HotkeySettings?.GetKeysList() ?? new List<object>();
 
             c.IgnoreConflict = IgnoreConflict;
-            c.HasConflict = hotkeySettings.HasConflict;
-            c.ConflictMessage = hotkeySettings.ConflictDescription;
+            c.HasConflict = hotkeySettings?.HasConflict ?? false;
+            c.ConflictMessage = hotkeySettings?.ConflictDescription;
 
             // 92 means the Win key. The logic is: warning should be visible if the shortcut contains Alt AND contains Ctrl AND NOT contains Win.
             // Additional key must be present, as this is a valid, previously used shortcut shown at dialog open. Check for presence of non-modifier-key is not necessary therefore
@@ -688,7 +688,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
         private void C_ResetClick(object sender, RoutedEventArgs e)
         {
-            hotkeySettings = null;
+            // Use an empty HotkeySettings instead of null to avoid a native E_POINTER
+            // crash in the WinUI3 XAML runtime.  Setting the DependencyProperty to null
+            // while the two-way binding is still active causes combase.dll to dereference
+            // a null pointer during property-change notification.  An empty HotkeySettings
+            // (IsEmpty()==true) signals "no shortcut" without breaking the binding chain.
+            hotkeySettings = new HotkeySettings();
 
             SetValue(HotkeySettingsProperty, hotkeySettings);
             SetKeys();
