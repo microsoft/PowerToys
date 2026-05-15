@@ -158,6 +158,9 @@ public sealed partial class ListItemsView : UserControl,
                     }
                 }
             }
+
+            // Ensure the command bar refreshes with the restored page's commands.
+            PushSelectionToVm();
         });
     }
 
