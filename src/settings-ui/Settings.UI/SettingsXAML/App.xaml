@@ -90,10 +90,9 @@
             <tkcontrols:MarkdownConfig x:Key="DescriptionTextMarkdownConfig" Themes="{StaticResource DescriptionTextMarkdownThemeConfig}" />
 
             <TransitionCollection x:Key="SettingsCardsAnimations">
-                <EntranceThemeTransition FromVerticalOffset="50" />
-                <!--  Animates cards when loaded  -->
                 <RepositionThemeTransition IsStaggeringEnabled="False" />
                 <!--  Smoothly animates individual cards upon whenever Expanders are expanded/collapsed  -->
+                <!--  EntranceThemeTransition removed: it replayed on every page navigation, causing a visible "second load" reflow and slowing perceived nav.  -->
             </TransitionCollection>
         </ResourceDictionary>
     </Application.Resources>

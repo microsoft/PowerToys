@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private CancellationTokenSource _foundryModelLoadCts;
         private bool _suppressFoundrySelectionChanged;
         private bool _isFoundryLocalAvailable;
+        private bool _isPasteAIProviderDialogOpen;
         private bool _disposed;
         private const string PasteAiDialogDefaultTitle = "Paste with AI provider configuration";
 
@@ -60,11 +61,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 FoundryLocalPicker.LoadRequested += FoundryLocalPicker_LoadRequested;
             }
 
-            Loaded += async (s, e) =>
+            Loaded += (s, e) =>
             {
                 ViewModel.OnPageLoaded();
-                UpdatePasteAIUIVisibility();
-                await UpdateFoundryLocalUIAsync();
+
+                // Note: UpdatePasteAIUIVisibility() and UpdateFoundryLocalUIAsync() are deliberately
+                // NOT called here. They only affect controls inside PasteAIProviderConfigurationDialog,
+                // which is hidden until the user clicks Add/Edit provider. Both Add/Edit handlers call
+                // them right before ShowAsync(), so running them on every navigation is wasted work
+                // that produced a visible second reflow ("double load") and, for FoundryLocal, an
+                // unnecessary process probe.
             };
 
             Unloaded += (_, _) =>
@@ -81,8 +87,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
-            UpdatePasteAIUIVisibility();
-            _ = UpdateFoundryLocalUIAsync();
+
+            // Only refresh the provider-configuration dialog state if it is currently open;
+            // otherwise this is wasted work (and, for FoundryLocal, an unnecessary process probe)
+            // that fires every time the runner broadcasts a general-settings update.
+            if (_isPasteAIProviderDialogOpen)
+            {
+                UpdatePasteAIUIVisibility();
+                _ = UpdateFoundryLocalUIAsync();
+            }
         }
 
         private void EnableAdvancedPasteAI() => ViewModel.EnableAI();
@@ -1116,6 +1129,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             RefreshDialogBindings();
 
             PasteAIApiKeyPasswordBox.Password = string.Empty;
+            _isPasteAIProviderDialogOpen = true;
             await PasteAIProviderConfigurationDialog.ShowAsync();
         }
 
@@ -1143,6 +1157,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             await UpdateFoundryLocalUIAsync();
             RefreshDialogBindings();
             PasteAIApiKeyPasswordBox.Password = ViewModel.GetPasteAIApiKey(provider.Id, provider.ServiceType);
+            _isPasteAIProviderDialogOpen = true;
             await PasteAIProviderConfigurationDialog.ShowAsync();
         }
 
@@ -1159,6 +1174,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void PasteAIProviderConfigurationDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
+            _isPasteAIProviderDialogOpen = false;
             ViewModel?.CancelPasteAIProviderDraft();
             PasteAIProviderConfigurationDialog.Title = PasteAiDialogDefaultTitle;
             PasteAIApiKeyPasswordBox.Password = string.Empty;
