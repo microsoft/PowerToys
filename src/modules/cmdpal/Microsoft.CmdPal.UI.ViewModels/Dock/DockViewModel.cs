@@ -851,6 +851,11 @@ public sealed partial class DockViewModel : IDisposable
     /// </summary>
     public void RemoveBandById(string bandId)
     {
+        if (FindBandById(bandId) == null)
+        {
+            return;
+        }
+
         EnsureMonitorForked();
 
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();

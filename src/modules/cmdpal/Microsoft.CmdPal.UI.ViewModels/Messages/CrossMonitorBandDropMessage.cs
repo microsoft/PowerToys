@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
 /// <summary>
@@ -16,6 +18,9 @@ public sealed class CrossMonitorBandDropMessage
 
     public CrossMonitorBandDropMessage(string bandId, string sourceMonitorDeviceId)
     {
+        ArgumentNullException.ThrowIfNull(bandId);
+        ArgumentNullException.ThrowIfNull(sourceMonitorDeviceId);
+
         BandId = bandId;
         SourceMonitorDeviceId = sourceMonitorDeviceId;
     }

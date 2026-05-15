@@ -462,8 +462,15 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             _draggedBand = band;
             e.Data.RequestedOperation = DataPackageOperation.Move;
-            e.Data.Properties["DockBandId"] = band.Id;
-            e.Data.Properties["SourceMonitorDeviceId"] = ViewModel.MonitorDeviceId ?? string.Empty;
+
+            // Only advertise cross-monitor data when we have a real monitor ID.
+            // Without one (single-monitor / global dock) the cross-monitor path
+            // cannot safely distinguish source from target.
+            if (ViewModel.MonitorDeviceId is not null)
+            {
+                e.Data.Properties["DockBandId"] = band.Id;
+                e.Data.Properties["SourceMonitorDeviceId"] = ViewModel.MonitorDeviceId;
+            }
         }
     }
 
@@ -609,7 +616,11 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         var dropIndex = GetDropIndex(targetListView, e, targetCollection.Count);
 
         ViewModel.AcceptBandFromMonitor(bandId, targetSide, dropIndex);
-        WeakReferenceMessenger.Default.Send(new CrossMonitorBandDropMessage(bandId, sourceMonitorDeviceId));
+
+        if (!string.IsNullOrEmpty(sourceMonitorDeviceId))
+        {
+            WeakReferenceMessenger.Default.Send(new CrossMonitorBandDropMessage(bandId, sourceMonitorDeviceId));
+        }
 
         e.Handled = true;
     }
@@ -716,8 +727,13 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     public void Receive(CrossMonitorBandDropMessage message)
     {
-        var myMonitorId = ViewModel.MonitorDeviceId ?? string.Empty;
-        if (!string.Equals(myMonitorId, message.SourceMonitorDeviceId, StringComparison.OrdinalIgnoreCase))
+        // Only match if this dock has a real monitor ID that matches the source.
+        if (ViewModel.MonitorDeviceId is null)
+        {
+            return;
+        }
+
+        if (!string.Equals(ViewModel.MonitorDeviceId, message.SourceMonitorDeviceId, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
