@@ -31,7 +31,9 @@ Migrate PowerToys modules from WPF (`System.Windows.*`) to WinUI 3 (`Microsoft.U
 
 ## Migration Strategy
 
-### Recommended Order
+### Phase-by-Phase Scope
+
+Work on bounded problems, not the entire codebase at once. Each phase should compile before moving to the next.
 
 1. **Project file** — Update TFM, NuGet packages, set `<UseWinUI>true</UseWinUI>`
 2. **Data models and business logic** — No UI dependencies, migrate first
@@ -45,79 +47,213 @@ Migrate PowerToys modules from WPF (`System.Windows.*`) to WinUI 3 (`Microsoft.U
 10. **Installer & build pipeline** — Update WiX, signing, build events
 11. **Tests** — Adapt for WinUI 3 runtime, async patterns
 
-### Key Principles
+### Migration Contract: Prohibited Patterns
 
-- **Do NOT overwrite `App.xaml` / `App.xaml.cs`** — WinUI 3 has different application lifecycle boilerplate. Merge your resources and initialization code into the generated WinUI 3 App class.
-- **Do NOT create Exe→WinExe `ProjectReference`** — Extract shared code to a Library project. This causes phantom build artifacts.
-- **Use `Lazy<T>` for resource-dependent statics** — `ResourceLoader` is not available at class-load time in all contexts.
+These rules capture human judgment and must be applied consistently across every file. Do NOT deviate.
+
+**Architecture prohibitions:**
+- **Do NOT overwrite `App.xaml` / `App.xaml.cs`** — WinUI 3 has different lifecycle boilerplate. Merge resources and init code into the generated WinUI 3 App class.
+- **Do NOT create Exe→WinExe `ProjectReference`** — Extract shared code to a Library project. Causes phantom build artifacts.
+- **Do NOT instantiate services directly** — Use DI and CommunityToolkit.Mvvm patterns.
+- **Do NOT create a `Window` subclass for every dialog or sub-page** — use `ContentDialog` for in-app dialogs and `Frame`/`Page` navigation for sub-views. Separate `Window` classes are reserved for distinct top-level surfaces (e.g., FancyZones editor, OOBE).
+- **Do NOT omit `WindowsPackageType=None` and `WindowsAppSDKSelfContained=true`** — Both are mandatory in the csproj for every WinUI 3 module in PowerToys. Without them the app crashes at startup with `COMException: ClassFactory cannot supply requested class` because the WinUI 3 runtime DLLs are not found.
+
+**XAML prohibitions:**
+- **Do NOT use `{DynamicResource}`** — Replace with `{ThemeResource}` (theme-reactive) or `{StaticResource}`.
+- **Do NOT use `{Binding}` in `Setter.Value`** — Not supported in WinUI 3. Use `{StaticResource}`.
+- **Do NOT use `{x:Static}`** — Replace with `{x:Bind}`, `x:Uid`, or code-behind.
+- **Do NOT use `{x:Type}`** — Not supported. Use `x:DataType` for DataTemplate, or code-behind.
+- **Do NOT use `clr-namespace:`** — Replace with `using:` in all xmlns declarations.
+- **Do NOT use `Style.Triggers` / `DataTrigger` / `EventTrigger`** — Replace with `VisualStateManager`.
+- **Do NOT use `MultiBinding`** — Replace with `x:Bind` function binding or computed ViewModel property.
+- **Do NOT use `Visibility="Hidden"`** — WinUI only has `Visible` and `Collapsed`. Use `Opacity="0"` if layout must be preserved.
+- **Do NOT use `IsDefault` / `IsCancel`** — Use `AccentButtonStyle` for primary button; handle Enter/Escape in code-behind.
+- **Do NOT omit `BasedOn` when overriding default styles** — Without it, your style replaces the entire default. Always use `BasedOn="{StaticResource DefaultButtonStyle}"` etc.
+- **Do NOT omit `XamlControlsResources` as first merged dictionary** — It provides default Fluent styles. Without it, controls have no visual appearance.
+
+**Code-behind prohibitions:**
+- **Do NOT use `Application.Current.Dispatcher`** — Store `DispatcherQueue` in a static field explicitly.
+- **Do NOT use `Window.Current`** — Not supported. Use a custom `App.Window` static property.
+- **Do NOT put `DataContext`, `Resources`, or `VisualStateManager` on `Window`** — WinUI 3 `Window` is NOT a `DependencyObject`. Use a root `Page`/`UserControl`/`Grid`.
+- **Do NOT use tunneling/preview events** (`PreviewMouseDown`, `PreviewKeyDown`) — WinUI has no tunneling. Use bubbling equivalents with `Handled` property or `AddHandler(handledEventsToo: true)`.
+
+**Resource prohibitions:**
+- **Do NOT use `Properties.Resources.MyString`** — Replace with `ResourceLoaderInstance.ResourceLoader.GetString("MyString")`.
+- **Do NOT initialize `ResourceLoader`-dependent values as static fields** — Wrap in `Lazy<T>` or null-coalescing property.
+- **Do NOT use `pack://` URIs** — Replace with `ms-appx:///` scheme.
 
 ## Quick Reference Tables
 
 ### Namespace Mapping
 
-| WPF | WinUI 3 |
-|-----|---------|
-| `System.Windows` | `Microsoft.UI.Xaml` |
-| `System.Windows.Controls` | `Microsoft.UI.Xaml.Controls` |
-| `System.Windows.Media` | `Microsoft.UI.Xaml.Media` |
-| `System.Windows.Media.Imaging` | `Microsoft.UI.Xaml.Media.Imaging` (UI) / `Windows.Graphics.Imaging` (processing) |
-| `System.Windows.Input` | `Microsoft.UI.Xaml.Input` |
-| `System.Windows.Data` | `Microsoft.UI.Xaml.Data` |
-| `System.Windows.Threading` | `Microsoft.UI.Dispatching` |
-| `System.Windows.Interop` | `WinRT.Interop` |
+| WPF | WinUI 3 | Notes |
+|-----|---------|-------|
+| `System.Windows` | `Microsoft.UI.Xaml` | Root namespace |
+| `System.Windows.Controls` | `Microsoft.UI.Xaml.Controls` | Core controls |
+| `System.Windows.Controls.Primitives` | `Microsoft.UI.Xaml.Controls.Primitives` | Low-level primitives |
+| `System.Windows.Media` | `Microsoft.UI.Xaml.Media` | Brushes, transforms |
+| `System.Windows.Media.Animation` | `Microsoft.UI.Xaml.Media.Animation` | Storyboard, animations |
+| `System.Windows.Media.Imaging` | `Microsoft.UI.Xaml.Media.Imaging` (UI) / `Windows.Graphics.Imaging` (processing) | Split by purpose |
+| `System.Windows.Media.Media3D` | **No equivalent** | Use Win2D or Composition APIs |
+| `System.Windows.Shapes` | `Microsoft.UI.Xaml.Shapes` | Rectangle, Ellipse, Path |
+| `System.Windows.Input` | `Microsoft.UI.Xaml.Input` | Pointer, keyboard, focus |
+| `System.Windows.Data` | `Microsoft.UI.Xaml.Data` | Binding, IValueConverter |
+| `System.Windows.Documents` | `Microsoft.UI.Xaml.Documents` | Limited — RichTextBlock + Paragraph |
+| `System.Windows.Markup` | `Microsoft.UI.Xaml.Markup` | XAML parsing, markup extensions |
+| `System.Windows.Automation` | `Microsoft.UI.Xaml.Automation` | Accessibility / UI Automation |
+| `System.Windows.Navigation` | **No direct equivalent** | Use `Frame.Navigate()` |
+| `System.Windows.Threading` | `Microsoft.UI.Dispatching` | Dispatcher → DispatcherQueue |
+| `System.Windows.Interop` | `WinRT.Interop` / `Microsoft.UI.Xaml.Hosting` | HWND interop |
+
+### Control Replacements (No 1:1 Mapping)
+
+These WPF controls have no direct counterpart and require a different control or third-party package:
+
+| WPF Control | WinUI 3 Replacement | Notes |
+|-------------|---------------------|-------|
+| `DataGrid` | [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) | Community library; the Toolkit `DataGrid` is no longer maintained. Legacy code may still pin v7 `CommunityToolkit.WinUI.UI.Controls.DataGrid` 7.1.2 |
+| `Ribbon` | `CommandBar` / `NavigationView`, or [Toolkit Labs Ribbon](https://github.com/CommunityToolkit/Labs-Windows/tree/main/components/Ribbon) | No first-party Ribbon in WinUI; Labs component is experimental/partial |
+| `Menu` / `MenuItem` | `MenuBar` / `MenuBarItem` / `MenuFlyout` | `MenuBar` for classic menu, `MenuFlyout` for context |
+| `ContextMenu` | `MenuFlyout` | Assign to `ContextFlyout` property |
+| `ToolBar` / `ToolBarTray` | `CommandBar` + `AppBarButton` | |
+| `StatusBar` | Custom `Grid`/`StackPanel` or `InfoBar` | No StatusBar control |
+| `TabControl` | `TabView` or `NavigationView` (top mode) | `TabView` for closeable tabs |
+| `DocumentViewer` | `WebView2` | Render PDFs/XPS inside WebView2 |
+| `FlowDocument` | `RichTextBlock` | Partial replacement only |
+| `RichTextBox` | `RichEditBox` | Rich text editing |
+| `GroupBox` | `Expander` (built-in) or `HeaderedContentControl` (Toolkit) | See [Layout & Header Controls from CommunityToolkit.WinUI](#layout--header-controls-from-communitytoolkitwinui) below |
+| `Label` | `TextBlock` | WPF `Label` is a `ContentControl`; use `TextBlock` + `AccessKey` |
+| `TreeView` | `TreeView` (native) | Available natively, but data binding model differs significantly |
+| `MessageBox` | `ContentDialog` | Must set `XamlRoot` before `ShowAsync()` |
+| `MediaElement` | `MediaPlayerElement` | Different API |
+| `AccessText` | Not available | Use `AccessKey` property on target control |
+
+### Layout & Header Controls from CommunityToolkit.WinUI
+
+These WPF controls have no built-in WinUI 3 equivalent — install the corresponding CommunityToolkit package. **The NuGet package id and the XAML namespace differ intentionally**: package names end in `.Primitives` / `.HeaderedControls`, but the registered XAML namespace is the shorter `CommunityToolkit.WinUI.Controls` (confirmed in the [official Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/5746230/why-does-communitytoolkit-uwp-controls-primitive-u)).
+
+| WPF Control | WinUI 3 Replacement | NuGet Package | XAML Namespace |
+|-------------|---------------------|---------------|----------------|
+| `WrapPanel` | `WrapPanel` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `UniformGrid` | `UniformGrid` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `DockPanel` | `DockPanel` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `GroupBox` (alt.) | `HeaderedContentControl` | `CommunityToolkit.WinUI.Controls.HeaderedControls` | `using:CommunityToolkit.WinUI.Controls` |
+
+### No Equivalent — Requires Architectural Rework
+
+These WPF features have no WinUI counterpart and require redesign, not find-and-replace:
+
+| WPF Feature | WinUI 3 Replacement Strategy |
+|-------------|------------------------------|
+| `Style.Triggers` / `DataTrigger` | `VisualStateManager` with `StateTrigger` — see [XAML Migration](./references/xaml-migration.md) |
+| `MultiBinding` | `x:Bind` function binding: `{x:Bind local:Converters.Format(VM.A, VM.B), Mode=OneWay}` |
+| `RoutedUICommand` / `CommandBinding` | `ICommand` / `[RelayCommand]` from CommunityToolkit.Mvvm. WinUI also has `StandardUICommand` / `XamlUICommand` for platform commands. |
+| `AdornerLayer` / `Adorner` | Depends on use case: `TeachingTip`/`InfoBar` (validation), `Popup` (overlays), `PlaceholderText` (watermarks), Canvas overlay (decorations) |
+| `Visibility.Hidden` | `Opacity="0"` with `Visibility="Visible"` (preserves layout space) |
+| `Window.Resources` / `Window.DataContext` | Move to root `Grid.Resources` / root `Page`/`UserControl` — WinUI `Window` is NOT a DependencyObject |
+| Tunneling events (`Preview*`) | Use bubbling equivalents + `Handled` property or `AddHandler(handledEventsToo: true)` |
 
 ### Critical API Replacements
 
 | WPF | WinUI 3 | Notes |
 |-----|---------|-------|
-| `Dispatcher.Invoke()` | `DispatcherQueue.TryEnqueue()` | Different return type (`bool`) |
+| `Dispatcher.Invoke()` | `DispatcherQueue.TryEnqueue()` | Different return type (`bool`), async by default |
 | `Dispatcher.CheckAccess()` | `DispatcherQueue.HasThreadAccess` | Property vs method |
 | `Application.Current.Dispatcher` | Store `DispatcherQueue` in static field | See [Threading](./references/threading-and-windowing.md) |
+| `Window.Current` | Custom `App.Window` static property | Not supported in Windows App SDK |
+| `Application.Current.MainWindow` | Custom `App.Window` static property | Must track manually |
 | `MessageBox.Show()` | `ContentDialog` | Must set `XamlRoot` |
+| `System.Windows.Clipboard` | `Windows.ApplicationModel.DataTransfer.Clipboard` | Different API surface |
+| `RoutedUICommand` / `CommandBinding` | `ICommand` / `[RelayCommand]` | Remove `CommandBinding`; bind `ICommand` directly |
+| `Properties.Resources.MyString` | `ResourceLoaderInstance.ResourceLoader.GetString("MyString")` | Lazy-init pattern |
 | `DynamicResource` | `ThemeResource` | Theme-reactive only |
 | `clr-namespace:` | `using:` | XAML namespace prefix |
 | `{x:Static props:Resources.Key}` | `x:Uid` or `ResourceLoader.GetString()` | .resx → .resw |
-| `DataType="{x:Type m:Foo}"` | Remove or use code-behind | `x:Type` not supported |
-| `Properties.Resources.MyString` | `ResourceLoaderInstance.ResourceLoader.GetString("MyString")` | Lazy-init pattern |
-| `Application.Current.MainWindow` | Custom `App.Window` static property | Must track manually |
+| `DataType="{x:Type m:Foo}"` | `x:DataType="m:Foo"` | `x:Type` not supported |
 | `SizeToContent="Height"` | Custom `SizeToContent()` via `AppWindow.Resize()` | See [Windowing](./references/threading-and-windowing.md) |
-| `MouseLeftButtonDown` | `PointerPressed` | Mouse → Pointer events |
 | `Pack URI (pack://...)` | `ms-appx:///` | Resource URI scheme |
 | `Observable` (custom base) | `ObservableObject` + `[ObservableProperty]` | CommunityToolkit.Mvvm |
 | `RelayCommand` (custom) | `[RelayCommand]` source generator | CommunityToolkit.Mvvm |
 | `JpegBitmapEncoder` | `BitmapEncoder.CreateAsync(JpegEncoderId, stream)` | Async, unified API |
 | `encoder.QualityLevel = 85` | `BitmapPropertySet { "ImageQuality", 0.85f }` | int 1-100 → float 0-1 |
 
+### Event Replacements (Mouse → Pointer)
+
+| WPF Event | WinUI 3 Event | Notes |
+|-----------|--------------|-------|
+| `MouseLeftButtonDown` | `PointerPressed` | Check `IsLeftButtonPressed` on args |
+| `MouseLeftButtonUp` | `PointerReleased` | Check pointer properties |
+| `MouseRightButtonDown` | `RightTapped` | Or `PointerPressed` with right button check |
+| `MouseMove` | `PointerMoved` | `MouseEventArgs` → `PointerRoutedEventArgs` |
+| `MouseWheel` | `PointerWheelChanged` | Different event args |
+| `MouseEnter` / `MouseLeave` | `PointerEntered` / `PointerExited` | |
+| `MouseDoubleClick` | `DoubleTapped` | Different event args |
+| `PreviewMouseDown` | `PointerPressed` | No tunneling — use `Handled` or `AddHandler` |
+| `PreviewKeyDown` | `KeyDown` | `KeyEventArgs` → `KeyRoutedEventArgs` |
+
+### Property Replacements
+
+| WPF | WinUI 3 | Context |
+|-----|---------|---------|
+| `Visibility.Hidden` | `Visibility.Collapsed` or `Opacity="0"` | Use `Opacity="0"` to preserve layout |
+| `TextWrapping.WrapWithOverflow` | `TextWrapping.Wrap` | WinUI doesn't distinguish |
+| `Focusable="True"` | `IsTabStop="True"` | Different property name |
+| `ContextMenu=` | `ContextFlyout=` | On any `UIElement` |
+| `MediaElement` | `MediaPlayerElement` | Different API |
+| `SnapsToDevicePixels` | Not available | WinUI handles pixel snapping internally |
+
 ### NuGet Package Migration
 
-| WPF | WinUI 3 |
-|-----|---------|
-| `Microsoft.Xaml.Behaviors.Wpf` | `Microsoft.Xaml.Behaviors.WinUI.Managed` |
-| `WPF-UI` (Lepo) | Remove — use native WinUI 3 controls |
-| `CommunityToolkit.Mvvm` | `CommunityToolkit.Mvvm` (same) |
-| `Microsoft.Toolkit.Wpf.*` | `CommunityToolkit.WinUI.*` |
-| (none) | `Microsoft.WindowsAppSDK` |
-| (none) | `Microsoft.Windows.SDK.BuildTools` |
-| (none) | `WinUIEx` (optional, for window helpers) |
-| (none) | `CommunityToolkit.WinUI.Converters` |
+| WPF | WinUI 3 | Notes |
+|-----|---------|-------|
+| `Microsoft.Xaml.Behaviors.Wpf` | `Microsoft.Xaml.Behaviors.WinUI.Managed` | |
+| `WPF-UI` (Lepo) | **Remove** — use native WinUI 3 controls | |
+| `CommunityToolkit.Mvvm` | `CommunityToolkit.Mvvm` (same) | |
+| `Microsoft.Toolkit.Wpf.*` | `CommunityToolkit.WinUI.*` | |
+| (none) | `Microsoft.WindowsAppSDK` | Required |
+| (none) | `Microsoft.Windows.SDK.BuildTools` | Required |
+| (none) | `WinUIEx` | Optional, window helpers |
+| (none) | `CommunityToolkit.WinUI.Converters` | Optional |
+| (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox` |
+| (none) | `CommunityToolkit.WinUI.Controls.HeaderedControls` | Optional — `HeaderedContentControl`, `HeaderedItemsControl`, `HeaderedTreeView` |
+| (none) | `CommunityToolkit.WinUI.Controls.SettingsControls` | Optional — `SettingsCard`, `SettingsExpander` |
+| (none) | `CommunityToolkit.WinUI.Controls.Sizers` | Optional — `GridSplitter` |
+| (none) | `CommunityToolkit.WinUI.UI.Controls.DataGrid` | Legacy v7 — only for migrating existing `DataGrid` code; prefer `WinUI.TableView` |
 
 ### XAML Syntax Changes
 
-| WPF | WinUI 3 |
-|-----|---------|
-| `xmlns:local="clr-namespace:MyApp"` | `xmlns:local="using:MyApp"` |
-| `{DynamicResource Key}` | `{ThemeResource Key}` |
-| `{x:Static Type.Member}` | `{x:Bind}` or code-behind |
-| `{x:Type local:MyType}` | Not supported |
-| `<Style.Triggers>` / `<DataTrigger>` | `VisualStateManager` |
-| `{Binding}` in `Setter.Value` | Not supported — use `StaticResource` |
-| `Content="{x:Static p:Resources.Cancel}"` | `x:Uid="Cancel"` with `.Content` in `.resw` |
-| `<ui:FluentWindow>` / `<ui:Button>` (WPF-UI) | Native `<Window>` / `<Button>` |
-| `<ui:NumberBox>` / `<ui:ProgressRing>` (WPF-UI) | Native `<NumberBox>` / `<ProgressRing>` |
-| `BasedOn="{StaticResource {x:Type ui:Button}}"` | `BasedOn="{StaticResource DefaultButtonStyle}"` |
-| `IsDefault="True"` / `IsCancel="True"` | `Style="{StaticResource AccentButtonStyle}"` / handle via KeyDown |
-| `<AccessText>` | Not available — use `AccessKey` property |
-| `<behaviors:Interaction.Triggers>` | Migrate to code-behind or WinUI behaviors |
+| WPF | WinUI 3 | Notes |
+|-----|---------|-------|
+| `xmlns:local="clr-namespace:MyApp"` | `xmlns:local="using:MyApp"` | CLR → using syntax |
+| `{DynamicResource Key}` | `{ThemeResource Key}` | Re-evaluates on theme change |
+| `{StaticResource Key}` | `{StaticResource Key}` | Same — resolved once at load |
+| `{x:Static Type.Member}` | `{x:Bind}` or code-behind | |
+| `{x:Type local:MyType}` | Not supported | Use `x:DataType` for DataTemplate |
+| `{x:Array}` | Not supported | Create collections in code-behind |
+| `<Style.Triggers>` / `<DataTrigger>` | `VisualStateManager` | See [XAML Migration](./references/xaml-migration.md) |
+| `{Binding}` in `Setter.Value` | Not supported — use `StaticResource` | |
+| `Content="{x:Static p:Resources.Cancel}"` | `x:Uid="Cancel"` with `.Content` in `.resw` | |
+| `sys:String` / `sys:Int32` / etc. | `x:String` / `x:Int32` / etc. | XAML intrinsic types |
+| `<ui:FluentWindow>` (WPF-UI) | `<Window>` | Native + `ExtendsContentIntoTitleBar` |
+| `<ui:NumberBox>` / `<ui:ProgressRing>` (WPF-UI) | Native `<NumberBox>` / `<ProgressRing>` | |
+| `BasedOn="{StaticResource {x:Type ui:Button}}"` | `BasedOn="{StaticResource DefaultButtonStyle}"` | Named style keys |
+| `IsDefault="True"` / `IsCancel="True"` | `Style="{StaticResource AccentButtonStyle}"` / KeyDown | |
+| `<AccessText>` | Not available — use `AccessKey` property | |
+| `<behaviors:Interaction.Triggers>` | Code-behind or WinUI behaviors | |
+| `Window.Resources` | Root container's `Resources` (e.g. `Grid.Resources`) | Window is not a DependencyObject |
+
+### Binding: {Binding} vs {x:Bind}
+
+Both work in WinUI 3. Prefer `{x:Bind}` for new/migrated code.
+
+| Feature | `{Binding}` | `{x:Bind}` |
+|---------|------------|------------|
+| Default mode | `OneWay` | **`OneTime`** — add `Mode=OneWay` explicitly! |
+| Default source | `DataContext` | Page/UserControl code-behind |
+| Compile-time validation | No | Yes |
+| Function binding | No | Yes (replaces `MultiBinding`) |
+| Performance | Reflection-based | Compiled, no reflection |
+| `MultiBinding` support | No (not in WinUI) | Use function binding |
 
 ## Detailed Reference Docs
 
@@ -151,6 +287,8 @@ Read only the section relevant to your current task:
 | JPEG quality value wrong after migration | WPF: int 1-100; WinRT: float 0.0-1.0 |
 | MSIX packaging fails in PreBuildEvent | Move to PostBuildEvent; artifacts not ready at PreBuild time |
 | RC file icon path with forward slashes | Use double-backslash escaping: `..\\ui\\Assets\\icon.ico` |
+| `COMException: ClassFactory cannot supply requested class` at startup | Missing `<WindowsPackageType>None</WindowsPackageType>` and/or `<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>` in csproj. Without these, the app tries to locate the Windows App SDK framework package (not installed) instead of using bundled runtime DLLs. **Both properties are mandatory for every WinUI 3 module in PowerToys.** |
+| `CombinedGeometry` not available in WinUI 3 | WinUI 3 `UIElement.Clip` only accepts `RectangleGeometry`. For overlay hole effects (exclude region), use a `Path` element with `GeometryGroup FillRule="EvenOdd"` containing two `RectangleGeometry` children — the EvenOdd rule creates a transparent hole where geometries overlap. |
 
 ## Troubleshooting
 
@@ -163,3 +301,4 @@ Read only the section relevant to your current task:
 | NuGet restore failures | Run `build-essentials.cmd` after adding `Microsoft.WindowsAppSDK` package |
 | `Parallel.ForEach` compilation error | Migrate to `Parallel.ForEachAsync` for async imaging operations |
 | Signing check fails on leaked artifacts | Run `generateAllFileComponents.ps1`; verify only `WinUI3Apps\\` paths in signing config |
+| `COMException` / `ClassFactory` error at app launch | Ensure csproj has `<WindowsPackageType>None</WindowsPackageType>` and `<WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>`. These are required for all unpackaged WinUI 3 apps in PowerToys — without them the WinUI 3 COM runtime cannot be found. |

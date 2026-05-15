@@ -4,24 +4,26 @@ Complete reference for mapping WPF types to WinUI 3 equivalents, based on the Im
 
 ## Root Namespace Mapping
 
-| WPF Namespace | WinUI 3 Namespace |
-|---------------|-------------------|
-| `System.Windows` | `Microsoft.UI.Xaml` |
-| `System.Windows.Automation` | `Microsoft.UI.Xaml.Automation` |
-| `System.Windows.Automation.Peers` | `Microsoft.UI.Xaml.Automation.Peers` |
-| `System.Windows.Controls` | `Microsoft.UI.Xaml.Controls` |
-| `System.Windows.Controls.Primitives` | `Microsoft.UI.Xaml.Controls.Primitives` |
-| `System.Windows.Data` | `Microsoft.UI.Xaml.Data` |
-| `System.Windows.Documents` | `Microsoft.UI.Xaml.Documents` |
-| `System.Windows.Input` | `Microsoft.UI.Xaml.Input` |
-| `System.Windows.Markup` | `Microsoft.UI.Xaml.Markup` |
-| `System.Windows.Media` | `Microsoft.UI.Xaml.Media` |
-| `System.Windows.Media.Animation` | `Microsoft.UI.Xaml.Media.Animation` |
-| `System.Windows.Media.Imaging` | `Microsoft.UI.Xaml.Media.Imaging` |
-| `System.Windows.Navigation` | `Microsoft.UI.Xaml.Navigation` |
-| `System.Windows.Shapes` | `Microsoft.UI.Xaml.Shapes` |
-| `System.Windows.Threading` | `Microsoft.UI.Dispatching` |
-| `System.Windows.Interop` | `WinRT.Interop` |
+| WPF Namespace | WinUI 3 Namespace | Notes |
+|---------------|-------------------|-------|
+| `System.Windows` | `Microsoft.UI.Xaml` | Root namespace |
+| `System.Windows.Automation` | `Microsoft.UI.Xaml.Automation` | Accessibility / UI Automation |
+| `System.Windows.Automation.Peers` | `Microsoft.UI.Xaml.Automation.Peers` | |
+| `System.Windows.Controls` | `Microsoft.UI.Xaml.Controls` | Core controls |
+| `System.Windows.Controls.Primitives` | `Microsoft.UI.Xaml.Controls.Primitives` | Low-level primitives |
+| `System.Windows.Data` | `Microsoft.UI.Xaml.Data` | Binding, IValueConverter |
+| `System.Windows.Documents` | `Microsoft.UI.Xaml.Documents` | Limited — RichTextBlock + Paragraph only |
+| `System.Windows.Input` | `Microsoft.UI.Xaml.Input` | Pointer, keyboard, focus |
+| `System.Windows.Markup` | `Microsoft.UI.Xaml.Markup` | XAML parsing, markup extensions |
+| `System.Windows.Media` | `Microsoft.UI.Xaml.Media` | Brushes, transforms |
+| `System.Windows.Media.Animation` | `Microsoft.UI.Xaml.Media.Animation` | Storyboard, animations |
+| `System.Windows.Media.Imaging` | `Microsoft.UI.Xaml.Media.Imaging` | UI display only — use `Windows.Graphics.Imaging` for processing |
+| `System.Windows.Media.Media3D` | **No equivalent** | Use Win2D or Composition APIs |
+| `System.Windows.Navigation` | `Microsoft.UI.Xaml.Navigation` | For Frame navigation events; no `NavigationService` |
+| `System.Windows.Shapes` | `Microsoft.UI.Xaml.Shapes` | Rectangle, Ellipse, Path |
+| `System.Windows.Threading` | `Microsoft.UI.Dispatching` | Dispatcher → DispatcherQueue |
+| `System.Windows.Interop` | `WinRT.Interop` | HWND interop |
+| `System.Windows.Interop` | `Microsoft.UI.Xaml.Hosting` | XAML Islands |
 
 ## Core Type Mapping
 
@@ -45,7 +47,7 @@ Complete reference for mapping WPF types to WinUI 3 equivalents, based on the Im
 
 These controls exist in both frameworks with the same name — change `System.Windows.Controls` to `Microsoft.UI.Xaml.Controls`:
 
-`Button`, `TextBox`, `TextBlock`, `ComboBox`, `CheckBox`, `ListBox`, `ListView`, `Image`, `StackPanel`, `Grid`, `Border`, `ScrollViewer`, `ContentControl`, `UserControl`, `Page`, `Frame`, `Slider`, `ProgressBar`, `ToolTip`, `RadioButton`, `ToggleButton`
+`Button`, `TextBox`, `TextBlock`, `ComboBox`, `CheckBox`, `ListView`, `Image`, `StackPanel`, `Grid`, `Border`, `ScrollViewer`, `ContentControl`, `UserControl`, `Page`, `Frame`, `Slider`, `ProgressBar`, `ToolTip`, `RadioButton`, `ToggleButton`
 
 ### Controls With Different Names or Behavior
 
@@ -56,6 +58,7 @@ These controls exist in both frameworks with the same name — change `System.Wi
 | `TabControl` | `TabView` | Different API |
 | `Menu` | `MenuBar` | Different API |
 | `StatusBar` | Custom `StackPanel` layout | No built-in equivalent |
+| `ListBox` | `ListView` (or `ItemsView`) | **Deprecated in WinUI 3 — do not use.** Prefer `ListView`, or `ItemsView` (WinUI 1.5+) for modern collection scenarios |
 | `AccessText` | Not available | Use `AccessKey` property on target control |
 
 ### WPF-UI (Lepo) to Native WinUI 3
@@ -109,6 +112,43 @@ Last parameter changes from `CultureInfo` to `string` (BCP-47 language tag). All
 | `System.Windows.Interop.WindowInteropHelper` | `WinRT.Interop.WindowNative.GetWindowHandle()` | |
 | `System.Windows.SystemColors` | Resource keys via `ThemeResource` | No direct static class |
 | `System.Windows.SystemParameters` | Win32 API or `DisplayInformation` | No direct equivalent |
+| `System.Windows.Clipboard` | `Windows.ApplicationModel.DataTransfer.Clipboard` | Different API surface |
+| `System.Windows.Input.RoutedUICommand` | `Microsoft.UI.Xaml.Input.StandardUICommand` / `XamlUICommand` | Or use `ICommand` / `[RelayCommand]` |
+| `System.Windows.Input.CommandBinding` | **Remove** | Bind `ICommand` directly in XAML |
+
+## Controls That Need Translation (No 1:1 Mapping)
+
+These controls exist in WPF but require a different control, third-party library, or Community Toolkit package in WinUI 3:
+
+| WPF Control | WinUI 3 Replacement | Package / Notes |
+|-------------|---------------------|-----------------|
+| `DataGrid` | [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) | Community library; the Toolkit `DataGrid` is no longer maintained. PowerToys legacy modules may still pin v7 `CommunityToolkit.WinUI.UI.Controls.DataGrid` 7.1.2 — prefer `WinUI.TableView` for new work. |
+| `Ribbon` | `CommandBar` / `NavigationView`, or [Toolkit Labs Ribbon](https://github.com/CommunityToolkit/Labs-Windows/tree/main/components/Ribbon) | No first-party Ribbon in WinUI; the Labs component is experimental and partial |
+| `Menu` / `MenuItem` | `MenuBar` / `MenuBarItem` / `MenuFlyoutItem` | `MenuBar` for classic menu, `MenuFlyout` for context |
+| `ContextMenu` | `MenuFlyout` | Assign to `ContextFlyout` property |
+| `ToolBar` / `ToolBarTray` | `CommandBar` + `AppBarButton` | |
+| `StatusBar` | Custom `Grid`/`StackPanel` or `InfoBar` | No StatusBar control |
+| `TabControl` | `TabView` or `NavigationView` (top mode) | `TabView` for closeable tabs |
+| `DocumentViewer` | `WebView2` | `Microsoft.Web.WebView2` — render PDFs/XPS |
+| `FlowDocument` | `RichTextBlock` | Partial replacement only |
+| `RichTextBox` | `RichEditBox` | Rich text editing |
+| `GroupBox` | `Expander` (built-in) or `HeaderedContentControl` (Toolkit) | See [Layout & Header Controls from CommunityToolkit.WinUI](#layout--header-controls-from-communitytoolkitwinui) below |
+| `Label` | `TextBlock` | WPF `Label` is a `ContentControl`; use `TextBlock` + `AccessKey` |
+| `TreeView` | `TreeView` (native) | Available natively, but data binding model differs significantly |
+| `MediaElement` | `MediaPlayerElement` | Different API |
+
+## Layout & Header Controls from CommunityToolkit.WinUI
+
+These WPF layout/header controls have no built-in WinUI 3 equivalent — install the corresponding CommunityToolkit package. **The NuGet package id and the XAML namespace differ intentionally**: package names end in `.Primitives` / `.HeaderedControls`, but both packages register their controls in the shorter `CommunityToolkit.WinUI.Controls` XAML namespace (confirmed in the [official Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/5746230/why-does-communitytoolkit-uwp-controls-primitive-u): *"all controls live under `CommunityToolkit.WinUI.Controls` … This is intentional"*).
+
+| WPF Control | WinUI 3 Replacement | NuGet Package | XAML Namespace |
+|-------------|---------------------|---------------|----------------|
+| `WrapPanel` | `WrapPanel` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `UniformGrid` | `UniformGrid` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `DockPanel` | `DockPanel` | `CommunityToolkit.WinUI.Controls.Primitives` | `using:CommunityToolkit.WinUI.Controls` |
+| `GroupBox` (alt.) | `HeaderedContentControl` | `CommunityToolkit.WinUI.Controls.HeaderedControls` | `using:CommunityToolkit.WinUI.Controls` |
+
+Other primitives in `Primitives`: `ConstrainedBox`, `SwitchPresenter`, `WrapLayout`, `StaggeredPanel`. Other Headered controls in `HeaderedControls`: `HeaderedItemsControl`, `HeaderedTreeView`.
 
 ## NuGet Package Migration
 
@@ -124,6 +164,11 @@ Last parameter changes from `CultureInfo` to `string` (BCP-47 language tag). All
 | (none) | `WinUIEx` | Optional, window helpers |
 | (none) | `CommunityToolkit.WinUI.Converters` | Optional |
 | (none) | `CommunityToolkit.WinUI.Extensions` | Optional |
+| (none) | `CommunityToolkit.WinUI.Controls.Primitives` | Optional — `WrapPanel`, `UniformGrid`, `DockPanel`, `ConstrainedBox`, `SwitchPresenter` |
+| (none) | `CommunityToolkit.WinUI.Controls.HeaderedControls` | Optional — `HeaderedContentControl`, `HeaderedItemsControl`, `HeaderedTreeView` |
+| (none) | `CommunityToolkit.WinUI.Controls.SettingsControls` | Optional — `SettingsCard`, `SettingsExpander` |
+| (none) | `CommunityToolkit.WinUI.Controls.Sizers` | Optional — `GridSplitter`, `PropertySizer` |
+| (none) | `CommunityToolkit.WinUI.UI.Controls.DataGrid` | Legacy v7 — only if migrating existing `DataGrid` code; prefer [`WinUI.TableView`](https://github.com/w-ahmad/WinUI.TableView) for new work |
 | (none) | `Microsoft.Web.WebView2` | If using WebView |
 
 ## Project File Changes
@@ -167,8 +212,9 @@ Last parameter changes from `CultureInfo` to `string` (BCP-47 language tag). All
 Key changes:
 - `UseWPF` → `UseWinUI`
 - TFM: `net8.0-windows` → `net8.0-windows10.0.19041.0`
-- Add `WindowsPackageType=None` for unpackaged desktop apps
-- Add `SelfContained=true` + `WindowsAppSDKSelfContained=true`
+- **CRITICAL: Add `WindowsPackageType=None`** — marks the app as unpackaged (no MSIX). Without this, the build produces an MSIX-style package that won't run as a standalone PowerToys module.
+- **CRITICAL: Add `WindowsAppSDKSelfContained=true`** — bundles the Windows App SDK runtime DLLs (e.g. `Microsoft.UI.Xaml.dll`) into the output directory. Without this, the app throws `COMException: ClassFactory cannot supply requested class` at startup because the WinUI 3 COM classes cannot be found.
+- Add `SelfContained=true` (usually via `Common.SelfContained.props`)
 - Add `DISABLE_XAML_GENERATED_MAIN` if using custom `Program.cs` entry point
 - Set `ProjectPriFileName` to match your module's assembly name
 - Move icon from `Resources/` to `Assets/<Module>/`
