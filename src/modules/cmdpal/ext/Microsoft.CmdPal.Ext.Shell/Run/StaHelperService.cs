@@ -152,7 +152,15 @@ internal sealed class StaHelperService
             }
         };
 
-        _staWorkQueue!.Add(workItem, cancellationToken);
+        try
+        {
+            _staWorkQueue!.Add(workItem, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            tcs.TrySetCanceled(cancellationToken);
+            return default;
+        }
 
         try
         {

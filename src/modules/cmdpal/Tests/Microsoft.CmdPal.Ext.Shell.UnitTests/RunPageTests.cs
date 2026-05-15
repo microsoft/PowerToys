@@ -13,8 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Run;
 using Microsoft.CmdPal.Ext.UnitTestBase;
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -92,6 +90,13 @@ public class RunPageTests : CommandPaletteUnitTestBase
     [TestMethod]
     public async Task TestSimple()
     {
+        // Note to future self: are the tests hanging mysteriously? Running
+        // forever, but not actually doing anything, seemingly just spinning on
+        // this case?
+        //
+        // If they are, then you forgot to add a string resource to our .resx
+        // somewhere. Fix that, and the tests will run again.
+
         // Setup
         var nativeService = CreateMockHistoryService().Object;
         using var page = new RunListPage(nativeService, telemetryService: null);
