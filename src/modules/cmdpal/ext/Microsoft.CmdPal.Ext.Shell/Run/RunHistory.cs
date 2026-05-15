@@ -35,7 +35,6 @@ public static class RunHistory
         ulong hwnd,
         bool runAsAdmin)
     {
-        // TODO! Mike, this isn't the whole thing tho, is it? Pretty sure it isn't.
         if (string.IsNullOrEmpty(commandLine))
         {
             return unchecked((int)0x80070057); // E_INVALIDARG

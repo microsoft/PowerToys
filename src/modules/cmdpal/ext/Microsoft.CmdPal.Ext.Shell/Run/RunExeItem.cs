@@ -236,7 +236,7 @@ internal sealed partial class RunCommandLineItem : FileItem
     {
         _addToHistory = addToHistory;
         _telemetryService = telemetryService;
-        Title = "Run command";
+        Title = ResourceLoaderInstance.GetString("Run_command_line_command_title");
         Subtitle = commandline;
         TextToSuggest = commandline;
 

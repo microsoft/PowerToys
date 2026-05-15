@@ -26,7 +26,7 @@ internal abstract partial class FileItem : ListItem, IFileItem
     // When we're asked for the icon, run the Lazy to generate the icon. That
     // lazy will also OnPropertyChanged(Icon) when it is done, so that we
     // won't block the caller on us generating the icon
-    public override IIconInfo? Icon { get => fetchedIcon.Value ? _icon : _icon; set => base.Icon = value; }
+    public override IIconInfo? Icon { get => fetchedIcon.Value ? _icon : _icon; set => throw new NotImplementedException("Hey you shouldn't be setting the Icon on a FileItem"); }
 
     public string FullPath { get; }
 

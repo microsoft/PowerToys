@@ -130,7 +130,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             _telemetryService);
         _currentExeItem.PropChanged += OnExeItemPropChanged;
 
-        Title = "Run command";
+        Title = ResourceLoaderInstance.GetString("Run_command_line_command_title");
         Subtitle = searchText;
         Command = _currentExeItem.Command;
         MoreCommands = _currentExeItem.MoreCommands;

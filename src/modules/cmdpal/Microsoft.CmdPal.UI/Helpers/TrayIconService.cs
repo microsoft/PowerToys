@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Messages;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
@@ -137,11 +136,14 @@ internal sealed partial class TrayIconService
     {
         var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
 
-        // DestroyIconSafeHandle largeIcon;
         Span<HICON> large = new([default]); // 1 size array to accept icon
-        PInvoke.ExtractIconEx(exePath, 0, large);
-        DestroyIconSafeHandle h = new(large[0]);
-        return h;
+        var extractedIconCount = PInvoke.ExtractIconEx(exePath, 0, large);
+        if ((extractedIconCount < 1) || (large[0] == HICON.Null))
+        {
+            return new DestroyIconSafeHandle(HICON.Null);
+        }
+
+        return new DestroyIconSafeHandle(large[0]);
     }
 
     private LRESULT WindowProc(
