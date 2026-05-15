@@ -690,9 +690,10 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         {
             // Use an empty HotkeySettings instead of null to avoid a native E_POINTER
             // crash in the WinUI3 XAML runtime.  Setting the DependencyProperty to null
-            // while the two-way binding is still active causes combase.dll to dereference
-            // a null pointer during property-change notification.  An empty HotkeySettings
-            // (IsEmpty()==true) signals "no shortcut" without breaking the binding chain.
+            // while the two-way binding is still active causes the XAML runtime to
+            // dereference a null pointer during property-change notification.
+            // An empty HotkeySettings (IsEmpty()==true) signals "no shortcut" without
+            // breaking the binding chain.
             hotkeySettings = new HotkeySettings();
 
             SetValue(HotkeySettingsProperty, hotkeySettings);
