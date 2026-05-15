@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 public sealed partial class BuiltInsCommandProvider : CommandProvider
 {
     private readonly OpenSettingsCommand openSettings = new();
+    private readonly OpenGallerySettingsCommand openGallerySettings = new();
     private readonly QuitCommand quitCommand = new();
     private readonly FallbackReloadItem _fallbackReloadItem = new();
     private readonly FallbackLogItem _fallbackLogItem = new();
@@ -23,6 +24,7 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
     public override ICommandItem[] TopLevelCommands() =>
         [
             new CommandItem(openSettings) { },
+            new CommandItem(openGallerySettings) { },
             new CommandItem(_newExtension) { Title = _newExtension.Title },
         ];
 

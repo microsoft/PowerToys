@@ -1,0 +1,213 @@
+name: Auto-label Issues by Area
+
+on:
+  issues:
+    types: [opened, reopened]
+  # Manual trigger: go to Actions → "Auto-label Issues by Area" → Run workflow.
+  # Enter one or more comma-separated issue numbers (e.g. "1234" or "1234,1235,1236")
+  # to apply AI-generated area labels to existing untriaged issues.
+  workflow_dispatch:
+    inputs:
+      issue_numbers:
+        description: 'Comma-separated issue number(s) to label (e.g. 1234 or 1234,1235)'
+        required: true
+
+permissions:
+  models: read
+  issues: write
+
+concurrency:
+  # Each workflow run gets its own concurrency group.
+  # For issue events, group by issue number so a rapid close+reopen only runs once.
+  # For manual dispatch (which may cover multiple issues), use the unique run ID.
+  group: ${{ github.event_name == 'issues' && format('{0}-issue-{1}', github.workflow, github.event.issue.number) || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply area labels with AI
+        uses: actions/github-script@v7
+        env:
+          # actions/github-script does not propagate `github-token` to
+          # process.env. Expose it explicitly so the inline script can
+          # authenticate against the GitHub Models inference endpoint.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // When triggered manually, process each supplied issue number in turn.
+            // When triggered by an issue event, use the event's issue number.
+            let issueNumbers;
+            if (context.eventName === 'workflow_dispatch') {
+              issueNumbers = String(context.payload.inputs.issue_numbers)
+                .split(',')
+                .map(s => parseInt(s.trim(), 10))
+                .filter(n => Number.isFinite(n) && n > 0);
+            } else {
+              issueNumbers = [context.issue.number];
+            }
+
+            if (issueNumbers.length === 0) {
+              console.log('No valid issue numbers to process; skipping.');
+              return;
+            }
+
+            for (const issueNumber of issueNumbers) {
+              console.log(`\n--- Processing issue #${issueNumber} ---`);
+              await labelIssue(issueNumber);
+            }
+
+            async function labelIssue(issueNumber) {
+              // Fetch the issue so both the automatic and manual paths have the same data.
+              const { data: issue } = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issueNumber,
+              });
+
+              const title = issue.title ?? '';
+              const body  = issue.body  ?? '';
+
+              if (!title && !body) {
+                console.log(`Issue #${issueNumber} has no title or body; skipping.`);
+                return;
+              }
+
+              // Truncation limit for issue body sent to the model. Keeps the
+              // prompt within the model's context window and avoids high token usage.
+              const MAX_BODY_LENGTH = 4000;
+
+              // Upper bound on model response tokens. A JSON array of label strings
+              // is compact; 200 tokens is more than enough for any realistic response.
+              const MAX_TOKENS = 200;
+
+              // All valid Product-* and Area-* labels the agent may choose from.
+              const VALID_LABELS = [
+                'Product-Advanced Paste',
+                'Product-Always On Top',
+                'Product-Awake',
+                'Product-ColorPicker',
+                'Product-Command Not Found',
+                'Product-Command Palette',
+                'Product-CropAndLock',
+                'Product-Environment Variables',
+                'Product-FancyZones',
+                'Product-File Explorer',
+                'Product-File Locksmith',
+                'Product-Find My Mouse',
+                'Product-Grab And Move',
+                'Product-Hosts',
+                'Product-Image Resizer',
+                'Product-Keyboard Manager',
+                'Product-LightSwitch',
+                'Product-Mouse Highlighter',
+                'Product-Mouse Jump',
+                'Product-Mouse Pointer Crosshairs',
+                'Product-Mouse Utilities',
+                'Product-Mouse Without Borders',
+                'Product-New+',
+                'Product-Peek',
+                'Product-Power Display',
+                'Product-PowerRename',
+                'Product-PowerToys Run',
+                'Product-Quick Accent',
+                'Product-Registry Preview',
+                'Product-Screen Ruler',
+                'Product-Settings',
+                'Product-Shortcut Guide',
+                'Product-Text Extractor',
+                'Product-Workspaces',
+                'Product-ZoomIt',
+                'Area-Setup/Install',
+                'Area-Localization',
+              ];
+
+              const systemPrompt = `You are a GitHub issue triage assistant for the microsoft/PowerToys repository.
+              Your job is to classify issues by assigning the correct area label(s).
+
+              Rules:
+              - Only return labels from the following list, exactly as written:
+              ${VALID_LABELS.map(l => `  • ${l}`).join('\n')}
+              - Choose only the labels that clearly match the issue content.
+              - If the issue mentions multiple areas, include a label for each one.
+              - If no label fits, return an empty array.
+              - Respond with ONLY a JSON array of label strings, no explanation.
+                Example: ["Product-FancyZones","Product-Settings"]`;
+
+              const userPrompt = `Issue title: ${title}
+
+              Issue body:
+              ${body.slice(0, MAX_BODY_LENGTH)}`;
+
+              // Validate that the token is available before making the API call.
+              const token = process.env.GITHUB_TOKEN;
+              if (!token) {
+                console.log('GITHUB_TOKEN is not set; skipping.');
+                return;
+              }
+
+              // Call the GitHub Models inference endpoint (OpenAI-compatible).
+              const response = await fetch(
+                'https://models.inference.ai.azure.com/chat/completions',
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                      { role: 'system', content: systemPrompt },
+                      { role: 'user',   content: userPrompt   },
+                    ],
+                    max_tokens: MAX_TOKENS,
+                    // temperature: 0 ensures deterministic, consistent label
+                    // classification across similar issues.
+                    temperature: 0,
+                  }),
+                }
+              );
+
+              if (!response.ok) {
+                const errorBody = await response.text();
+                console.log(`GitHub Models API error: ${response.status} ${response.statusText} — ${errorBody}`);
+                return;
+              }
+
+              const data = await response.json();
+              const text = data.choices?.[0]?.message?.content?.trim() ?? '';
+              console.log(`Model response: ${text}`);
+
+              let suggested;
+              try {
+                suggested = JSON.parse(text);
+              } catch {
+                console.log('Could not parse model response as JSON; skipping.');
+                return;
+              }
+
+              if (!Array.isArray(suggested) || suggested.length === 0) {
+                console.log('No labels suggested by the model.');
+                return;
+              }
+
+              // Only apply labels that are in the allow-list.
+              const validSet = new Set(VALID_LABELS);
+              const toApply  = [...new Set(suggested.filter(l => validSet.has(l)))];
+
+              if (toApply.length === 0) {
+                console.log('Model returned no valid labels.');
+                return;
+              }
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: issueNumber,
+                labels: toApply,
+              });
+              console.log(`Issue #${issueNumber}: added labels: ${toApply.join(', ')}`);
+            }

@@ -215,6 +215,7 @@ clickable
 clickonce
 clientedge
 clientside
+cliextensions
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
@@ -360,7 +361,6 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTSIZE
-DEFAULTTONEAREST
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
@@ -407,6 +407,7 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+DISPLAYPORT
 divyan
 DLGFRAME
 dlgmodalframe
@@ -439,6 +440,7 @@ DString
 DSVG
 dto
 DUMMYUNIONNAME
+dumpbin
 dutil
 DVASPECT
 DVASPECTINFO
@@ -709,6 +711,7 @@ HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
+hostfxr
 hostsfileeditor
 hotfixes
 hotkeycontrol
@@ -844,6 +847,7 @@ jjw
 jobject
 JOBOBJECT
 jpe
+JPN
 jpnime
 jrsoftware
 Jsons
@@ -973,6 +977,7 @@ LTEXT
 LTRREADING
 luid
 lusrmgr
+LVDS
 LWA
 LWIN
 LZero
@@ -1019,6 +1024,7 @@ Metadatas
 metafile
 metapackage
 mfc
+mfcm
 Mgmt
 Microwaved
 middleclickaction
@@ -1036,6 +1042,7 @@ MINMAXINFO
 minwindef
 Mip
 Miracast
+MIRACAST
 mkdn
 mlcfg
 mmc
@@ -1445,6 +1452,7 @@ ptcontrols
 ptd
 PTOKEN
 ptstr
+ptsym
 pui
 pvct
 PWAs
@@ -1529,6 +1537,7 @@ resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
 RETURNONLYFSDIRS
+Revalidates
 RGBQUAD
 rgbs
 rgelt
@@ -1785,6 +1794,7 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVIDEO
 SVSI
 SWFO
 swp
@@ -1850,6 +1860,7 @@ themeresources
 THH
 thickframe
 THISCOMPONENT
+threadpool
 throughs
 TILEDWINDOW
 TILLSON
@@ -1888,6 +1899,7 @@ trx
 tsa
 tskill
 tstoi
+tsv
 tweakable
 TWF
 tymed
@@ -1905,6 +1917,7 @@ ucrtd
 uefi
 uesc
 UIA
+UIDs
 UIEx
 uild
 uitests
@@ -1925,8 +1938,10 @@ unitconverter
 unittests
 UNLEN
 UNORM
+unparsable
 unremapped
 unsubscribes
+untriaged
 unvirtualized
 unwide
 unzoom
@@ -2145,6 +2160,7 @@ yinle
 yinyue
 YVIRTUALSCREEN
 zamora
+Zenbook
 ZEROINIT
 zonability
 zonable
