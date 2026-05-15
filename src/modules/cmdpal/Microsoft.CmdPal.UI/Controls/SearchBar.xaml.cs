@@ -703,6 +703,22 @@ public sealed partial class SearchBar : UserControl,
                 e.Handled = true;
             }
         }
+        else if (e.Key == VirtualKey.Tab)
+        {
+            // Tab away from a list parameter: dismiss the list panel so it
+            // doesn't linger when the user keyboard-navigates to a different
+            // control. Don't mark e.Handled — let the default Tab behavior
+            // move focus to the next/previous control.
+            if (textBox.DataContext is CommandParameterRunViewModel listParam)
+            {
+                if (!listParam.NeedsValue)
+                {
+                    listParam.CancelEditing();
+                }
+
+                parametersPage.SetActiveListParameter(null);
+            }
+        }
         else if (e.Key == VirtualKey.Up)
         {
             WeakReferenceMessenger.Default.Send<NavigatePreviousCommand>();

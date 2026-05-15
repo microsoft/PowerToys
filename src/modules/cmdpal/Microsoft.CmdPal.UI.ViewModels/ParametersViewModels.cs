@@ -728,20 +728,17 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         if (e.PropertyName == nameof(ParameterValueRunViewModel.NeedsValue))
         {
             // Marshal to UI thread — PropChanged events from the extension
-            // arrive on a background thread, but FocusNextParameter sends a
-            // message that ultimately touches UI controls.
+            // arrive on a background thread, but UpdateCommand touches UI
+            // controls.
+            //
+            // Note: For CommandParameterRunViewModel, advancing focus and
+            // clearing the active list is handled exclusively by
+            // ListParamValueChanged (subscribed to ValueChanged). That event
+            // fires for NeedsValue, DisplayText, and Icon changes, so it
+            // covers both first-pick and re-pick. Handling it here as well
+            // would risk a double-advance race.
             DoOnUiThread(() =>
             {
-                // First-time pick for a list param (NeedsValue true -> false).
-                if (sender is CommandParameterRunViewModel cmdParam &&
-                    cmdParam == _activeListParam &&
-                    !cmdParam.NeedsValue)
-                {
-                    CoreLogger.LogDebug($"[ParametersPageVM] First-time list param pick, clearing active list");
-                    SetActiveListParameter(null);
-                    FocusNextParameter(cmdParam);
-                }
-
                 UpdateCommand();
             });
         }
