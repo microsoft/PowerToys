@@ -22,7 +22,7 @@
 
 #pragma once
 
-#if defined(_MSC_VER) && _MSC_VER >= 1951
+#if defined(__cplusplus) && defined(_MSC_VER) && _MSC_VER >= 1951
 
 #include <cstddef>
 #include <iterator>
@@ -91,4 +91,4 @@ namespace stdext
     };
 } // namespace stdext
 
-#endif // _MSC_VER >= 1951
+#endif // __cplusplus && _MSC_VER >= 1951
