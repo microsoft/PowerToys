@@ -106,6 +106,9 @@ public sealed partial class ListPage : Page,
                         }
                     }
                 }
+
+                // Ensure the command bar refreshes with the restored page's commands.
+                PushSelectionToVm();
             });
         }
 
