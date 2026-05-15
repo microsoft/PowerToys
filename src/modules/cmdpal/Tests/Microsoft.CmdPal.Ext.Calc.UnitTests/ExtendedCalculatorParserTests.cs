@@ -424,6 +424,21 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         Assert.AreEqual(Properties.Resources.calculator_not_a_number, error);
     }
 
+    [DataTestMethod]
+    [DataRow("factorial(-1)")]
+    [DataRow("factorial(0.5)")]
+    [DataRow("factorial(sqrt(-1))")]
+    [DataRow("sign(sqrt(-1))")]
+    public void Interpret_ReturnsNotANumberError_WhenCustomFunctionArgumentInvalid(string input)
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_not_a_number, error);
+    }
+
     [TestMethod]
     public void Interpret_Rand_ReturnsValueInRange()
     {
@@ -486,12 +501,14 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     [DataRow("randi(0)")]
     [DataRow("randi(0.5)")]
     [DataRow("randi(-1)")]
-    public void Interpret_Randi_ReturnsNoResult_WhenArgumentInvalid(string input)
+    [DataRow("randi(exp(10000))")]
+    public void Interpret_Randi_ReturnsNotANumberError_WhenArgumentInvalid(string input)
     {
         var settings = new Settings();
 
-        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out _);
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
 
         Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_not_a_number, error);
     }
 }

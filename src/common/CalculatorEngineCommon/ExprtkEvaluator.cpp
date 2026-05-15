@@ -11,6 +11,11 @@ namespace ExprtkCalculator::internal
 {
     static double factorial(const double n)
     {
+        if (std::isnan(n) || std::isinf(n))
+        {
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+
         // Only allow non-negative integers
         if (n < 0.0 || std::floor(n) != n)
         {
@@ -21,6 +26,12 @@ namespace ExprtkCalculator::internal
 
     static double sign(const double n)
     {
+        // The sign of NaN is undefined.
+        if (std::isnan(n))
+        {
+            return std::numeric_limits<double>::quiet_NaN();
+        }
+
         if (n > 0.0) return 1.0;
         if (n < 0.0) return -1.0;
         return 0.0;
@@ -56,10 +67,22 @@ namespace ExprtkCalculator::internal
 
         inline double operator()(const double& n) override
         {
-            if (n < 1.0 || std::floor(n) != n)
+            if (std::isnan(n) || std::isinf(n))
             {
                 return std::numeric_limits<double>::quiet_NaN();
             }
+
+            constexpr double maxLongLongAsDouble = static_cast<double>(std::numeric_limits<long long>::max());
+            if (n < 1.0 || n >= maxLongLongAsDouble)
+            {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+
+            if (std::floor(n) != n)
+            {
+                return std::numeric_limits<double>::quiet_NaN();
+            }
+
             std::uniform_int_distribution<long long> dist(0, static_cast<long long>(n) - 1);
             return static_cast<double>(dist(rng));
         }
