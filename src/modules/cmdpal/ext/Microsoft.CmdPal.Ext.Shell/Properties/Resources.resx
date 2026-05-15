@@ -233,5 +233,8 @@
   <data name="Run_Command_OpenPathInConsole" xml:space="preserve">
     <value>Open path in console</value>
   </data>
+  <data name="Run_command_line_command_title" xml:space="preserve">
+    <value>Run command</value>
+  </data>
 
 </root>
