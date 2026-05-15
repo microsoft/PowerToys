@@ -440,6 +440,7 @@ DString
 DSVG
 dto
 DUMMYUNIONNAME
+dumpbin
 dutil
 DVASPECT
 DVASPECTINFO
@@ -710,6 +711,7 @@ HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
+hostfxr
 hostsfileeditor
 hotfixes
 hotkeycontrol
@@ -1022,6 +1024,7 @@ Metadatas
 metafile
 metapackage
 mfc
+mfcm
 Mgmt
 Microwaved
 middleclickaction
