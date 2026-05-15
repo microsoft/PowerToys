@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Apply area labels with AI
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           # actions/github-script does not propagate `github-token` to
           # process.env. Expose it explicitly so the inline script can
