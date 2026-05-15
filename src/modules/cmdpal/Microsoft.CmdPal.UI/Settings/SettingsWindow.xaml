@@ -45,9 +45,7 @@
                         <CubicEase EasingMode="EaseIn" />
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <ObjectAnimationUsingKeyFrames
-                    Storyboard.TargetName="BreadcrumbContainer"
-                    Storyboard.TargetProperty="Visibility">
+                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BreadcrumbContainer" Storyboard.TargetProperty="Visibility">
                     <DiscreteObjectKeyFrame KeyTime="0:0:0.2" Value="Collapsed" />
                 </ObjectAnimationUsingKeyFrames>
             </Storyboard>
