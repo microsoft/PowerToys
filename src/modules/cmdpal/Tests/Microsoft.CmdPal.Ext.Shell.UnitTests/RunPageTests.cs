@@ -637,7 +637,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         // Filtered items should be less than or equal to all items
         Assert.IsTrue(filteredItems.Length <= allItems.Length);
 
-        // All filtered items should contain 'D' (case insensitive)
+        // All filtered items should contain 'D' (case-insensitive)
         foreach (var item in filteredItems)
         {
             StringAssert.Contains(item.Title, "D", StringComparison.OrdinalIgnoreCase);
