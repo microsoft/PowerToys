@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Properties;
 using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -31,21 +33,33 @@ internal sealed partial class RunAsAdminCommand : InvokableCommand
     {
         await Task.Run(() =>
         {
-            if (packaged)
+            try
             {
-                var command = "shell:AppsFolder\\" + target;
-                command = Environment.ExpandEnvironmentVariables(command.Trim());
+                if (packaged)
+                {
+                    var command = "shell:AppsFolder\\" + target;
+                    command = Environment.ExpandEnvironmentVariables(command.Trim());
 
-                var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
-                info.UseShellExecute = true;
-                info.Arguments = string.Empty;
-                Process.Start(info);
+                    var info = ShellCommand.SetProcessStartInfo(command, verb: "runas");
+                    info.UseShellExecute = true;
+                    info.Arguments = string.Empty;
+                    Process.Start(info);
+                }
+                else
+                {
+                    var info = ShellCommand.GetProcessStartInfo(target, parentDir, string.Empty, ShellCommand.RunAsType.Administrator);
+
+                    Process.Start(info);
+                }
             }
-            else
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
             {
-                var info = ShellCommand.GetProcessStartInfo(target, parentDir, string.Empty, ShellCommand.RunAsType.Administrator);
-
-                Process.Start(info);
+                // ERROR_CANCELLED: user dismissed the UAC prompt — not an error
+                Logger.LogDebug("Run as administrator cancelled by user.");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to run as administrator", ex);
             }
         });
     }
