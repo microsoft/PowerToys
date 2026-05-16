@@ -89,7 +89,7 @@ public partial class PowerAccent : IDisposable
 
         _keyboardListener.SetIsLanguageLetterDelegate(new PowerToys.PowerAccentKeyboardService.IsLanguageLetter((LetterKey letterKey, out bool result) =>
         {
-            result = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang).Length > 0;
+            result = CharacterMappings.GetCharacters(letterKey, _settingService.SelectedLang).Length > 0;
         }));
     }
 
@@ -114,7 +114,7 @@ public partial class PowerAccent : IDisposable
 
     private string[] GetCharacters(LetterKey letterKey)
     {
-        var characters = Languages.GetDefaultLetterKey(letterKey, _settingService.SelectedLang);
+        var characters = CharacterMappings.GetCharacters(letterKey, _settingService.SelectedLang);
         if (_settingService.SortByUsageFrequency)
         {
             characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))

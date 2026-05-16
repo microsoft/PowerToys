@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using PowerAccent.Common;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -23,55 +24,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly SettingsUtils _settingsUtils;
 
-        private const string SpecialGroup = "QuickAccent_Group_Special";
-        private const string LanguageGroup = "QuickAccent_Group_Language";
+        /// <summary>
+        /// Maps each currently supported <see cref="LanguageGroup"/> to its resx
+        /// resource key so that group header strings can be looked up by the Settings UI.
+        /// Only groups that already have corresponding Settings UI resources should be
+        /// listed here.
+        /// </summary>
+        private static readonly Dictionary<LanguageGroup, string> _groupResourceKeys = new()
+        {
+            [LanguageGroup.Language] = "QuickAccent_Group_Language",
+            [LanguageGroup.Special] = "QuickAccent_Group_Special",
+        };
 
-        public List<PowerAccentLanguageModel> Languages { get; } = [
-            new PowerAccentLanguageModel("SPECIAL", "QuickAccent_SelectedLanguage_Special", SpecialGroup),
-            new PowerAccentLanguageModel("BG", "QuickAccent_SelectedLanguage_Bulgarian", LanguageGroup),
-            new PowerAccentLanguageModel("CA", "QuickAccent_SelectedLanguage_Catalan", LanguageGroup),
-            new PowerAccentLanguageModel("CRH", "QuickAccent_SelectedLanguage_Crimean", LanguageGroup),
-            new PowerAccentLanguageModel("CUR", "QuickAccent_SelectedLanguage_Currency", SpecialGroup),
-            new PowerAccentLanguageModel("HR", "QuickAccent_SelectedLanguage_Croatian", LanguageGroup),
-            new PowerAccentLanguageModel("CZ", "QuickAccent_SelectedLanguage_Czech", LanguageGroup),
-            new PowerAccentLanguageModel("DK", "QuickAccent_SelectedLanguage_Danish", LanguageGroup),
-            new PowerAccentLanguageModel("GA", "QuickAccent_SelectedLanguage_Gaeilge", LanguageGroup),
-            new PowerAccentLanguageModel("GD", "QuickAccent_SelectedLanguage_Gaidhlig", LanguageGroup),
-            new PowerAccentLanguageModel("NL", "QuickAccent_SelectedLanguage_Dutch", LanguageGroup),
-            new PowerAccentLanguageModel("EL", "QuickAccent_SelectedLanguage_Greek", LanguageGroup),
-            new PowerAccentLanguageModel("EST", "QuickAccent_SelectedLanguage_Estonian", LanguageGroup),
-            new PowerAccentLanguageModel("EPO", "QuickAccent_SelectedLanguage_Esperanto", LanguageGroup),
-            new PowerAccentLanguageModel("FI", "QuickAccent_SelectedLanguage_Finnish", LanguageGroup),
-            new PowerAccentLanguageModel("FR", "QuickAccent_SelectedLanguage_French", LanguageGroup),
-            new PowerAccentLanguageModel("DE", "QuickAccent_SelectedLanguage_German", LanguageGroup),
-            new PowerAccentLanguageModel("HE", "QuickAccent_SelectedLanguage_Hebrew", LanguageGroup),
-            new PowerAccentLanguageModel("HU", "QuickAccent_SelectedLanguage_Hungarian", LanguageGroup),
-            new PowerAccentLanguageModel("IS", "QuickAccent_SelectedLanguage_Icelandic", LanguageGroup),
-            new PowerAccentLanguageModel("IPA", "QuickAccent_SelectedLanguage_IPA", SpecialGroup),
-            new PowerAccentLanguageModel("IT", "QuickAccent_SelectedLanguage_Italian", LanguageGroup),
-            new PowerAccentLanguageModel("KU", "QuickAccent_SelectedLanguage_Kurdish", LanguageGroup),
-            new PowerAccentLanguageModel("LT", "QuickAccent_SelectedLanguage_Lithuanian", LanguageGroup),
-            new PowerAccentLanguageModel("MK", "QuickAccent_SelectedLanguage_Macedonian", LanguageGroup),
-            new PowerAccentLanguageModel("MT", "QuickAccent_SelectedLanguage_Maltese", LanguageGroup),
-            new PowerAccentLanguageModel("MI", "QuickAccent_SelectedLanguage_Maori", LanguageGroup),
-            new PowerAccentLanguageModel("NO", "QuickAccent_SelectedLanguage_Norwegian", LanguageGroup),
-            new PowerAccentLanguageModel("PI", "QuickAccent_SelectedLanguage_Pinyin", LanguageGroup),
-            new PowerAccentLanguageModel("PIE", "QuickAccent_SelectedLanguage_Proto_Indo_European", LanguageGroup),
-            new PowerAccentLanguageModel("PL", "QuickAccent_SelectedLanguage_Polish", LanguageGroup),
-            new PowerAccentLanguageModel("PT", "QuickAccent_SelectedLanguage_Portuguese", LanguageGroup),
-            new PowerAccentLanguageModel("RO", "QuickAccent_SelectedLanguage_Romanian", LanguageGroup),
-            new PowerAccentLanguageModel("ROM", "QuickAccent_SelectedLanguage_Romanization", SpecialGroup),
-            new PowerAccentLanguageModel("SK", "QuickAccent_SelectedLanguage_Slovak", LanguageGroup),
-            new PowerAccentLanguageModel("SL", "QuickAccent_SelectedLanguage_Slovenian", LanguageGroup),
-            new PowerAccentLanguageModel("SP", "QuickAccent_SelectedLanguage_Spanish", LanguageGroup),
-            new PowerAccentLanguageModel("SR", "QuickAccent_SelectedLanguage_Serbian", LanguageGroup),
-            new PowerAccentLanguageModel("SR_CYRL", "QuickAccent_SelectedLanguage_Serbian_Cyrillic", LanguageGroup),
-            new PowerAccentLanguageModel("SV", "QuickAccent_SelectedLanguage_Swedish", LanguageGroup),
-            new PowerAccentLanguageModel("TK", "QuickAccent_SelectedLanguage_Turkish", LanguageGroup),
-            new PowerAccentLanguageModel("VI", "QuickAccent_SelectedLanguage_Vietnamese", LanguageGroup),
-            new PowerAccentLanguageModel("CY", "QuickAccent_SelectedLanguage_Welsh", LanguageGroup),
-        ];
+        /// <summary>
+        /// Gets the flat list of all available languages, derived from
+        /// <see cref="CharacterMappings.All"/>. In the Settings UI, this list is sorted
+        /// alphabetically by the localized display name and arranged into groups based on
+        /// the <see cref="LanguageGroup"/>. Populated by <see cref="InitializeLanguages"/>.
+        /// </summary>
+        public List<PowerAccentLanguageModel> Languages { get; private set; }
 
+        /// <summary>
+        /// Gets the languages arranged into display groups, in the order defined by
+        /// <see cref="CharacterMappings.GroupDisplayOrder"/>. Bound to the Settings UI
+        /// list.
+        /// </summary>
         public PowerAccentLanguageGroupModel[] LanguageGroups { get; private set; }
 
         private readonly string[] _toolbarOptions =
@@ -156,19 +133,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Adds Localized Language Name, sorts by it and splits languages into two groups.
+        /// Builds the Settings UI language models. This resolves localized display names
+        /// for each language, sorts by name within each group, and arranges groups in the
+        /// order defined by <see cref="CharacterMappings.GroupDisplayOrder"/>. The
+        /// resulting list of languages and groups is stored in the
+        /// <see cref="Languages"/> and <see cref="LanguageGroups"/> properties, which are
+        /// bound to the Settings UI.
         /// </summary>
         private void InitializeLanguages()
         {
-            foreach (var item in Languages)
+            // Build the flat list and resolve localized display names.
+            Languages = CharacterMappings.All
+                .Where(lang => _groupResourceKeys.ContainsKey(lang.Group))
+                .Select(lang =>
             {
-                item.Language = ResourceLoaderInstance.ResourceLoader.GetString(item.LanguageResourceID);
-            }
+                string languageResourceId = $"QuickAccent_SelectedLanguage_{lang.Identifier}";
 
+                var model = new PowerAccentLanguageModel(
+                    lang.Id.ToString(),
+                    languageResourceId,
+                    _groupResourceKeys[lang.Group]);
+
+                model.Language = ResourceLoaderInstance.ResourceLoader.GetString(languageResourceId);
+                return model;
+            }).ToList();
+
+            // Sort the flat list alphabetically by the localized display name.
             Languages.Sort((x, y) => string.Compare(x.Language, y.Language, StringComparison.Ordinal));
-            LanguageGroups = Languages
-                .GroupBy(language => language.GroupResourceID)
-                .Select(grp => new PowerAccentLanguageGroupModel(grp.ToList(), ResourceLoaderInstance.ResourceLoader.GetString(grp.Key)))
+
+            // Group them in the explicit order defined by the core library. Note:
+            // PowerAccentLanguageModel does not hold a direct dependency on the
+            // LanguageGroup enum. Instead, we use the stable GroupResourceID as a
+            // decoupled key to map the core groups to the Settings UI models.
+            LanguageGroups = CharacterMappings.GroupDisplayOrder
+                .Where(group => _groupResourceKeys.ContainsKey(group))
+                .Select(group =>
+                {
+                    string groupResourceId = _groupResourceKeys[group];
+                    var groupedLanguages = Languages.Where(lang => lang.GroupResourceID == groupResourceId).ToList();
+
+                    return groupedLanguages.Count > 0
+                        ? new PowerAccentLanguageGroupModel(groupedLanguages, ResourceLoaderInstance.ResourceLoader.GetString(groupResourceId))
+                        : null; // Skip groups with no languages.
+                })
+                .OfType<PowerAccentLanguageGroupModel>()
                 .ToArray();
         }
 

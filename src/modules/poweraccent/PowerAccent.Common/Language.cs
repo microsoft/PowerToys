@@ -1,0 +1,52 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+namespace PowerAccent.Common;
+
+public enum Language
+{
+    SPECIAL,
+    BG,
+    CA,
+    CRH,
+    CUR,
+    CY,
+    CZ,
+    DK,
+    GA,
+    GD,
+    DE,
+    EL,
+    EST,
+    EPO,
+    FI,
+    FR,
+    HR,
+    HE,
+    HU,
+    IS,
+    IPA,
+    IT,
+    KU,
+    LT,
+    MK,
+    MT,
+    MI,
+    NL,
+    NO,
+    PI,
+    PIE,
+    PL,
+    PT,
+    RO,
+    ROM,
+    SK,
+    SL,
+    SP,
+    SR,
+    SR_CYRL,
+    SV,
+    TK,
+    VI,
+}
