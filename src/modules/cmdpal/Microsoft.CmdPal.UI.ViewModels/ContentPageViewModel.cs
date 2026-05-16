@@ -129,8 +129,8 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
 
         UpdateDetails();
 
-        FetchContent();
         model.ItemsChanged += Model_ItemsChanged;
+        FetchContent();
 
         DoOnUiThread(
         () =>
