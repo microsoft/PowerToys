@@ -154,8 +154,8 @@ internal sealed partial class SampleMarkdownImagesPage : ContentPage
             For URIs that support query parameters (file, http, ms-appx, ms-appdata), you can provide hints to control scaling
             
             - `--x-cmdpal-fit`
-              - `none`: no automatic scaling, provides image as is (default)
-              - `fit`: scale to fit the available space
+              - `fit`: scale to fit the available space (default)
+              - `none`: no automatic scaling, provides image as is
             - `--x-cmdpal-upscale`
               - `true`: allow upscaling
               - `false`: downscale only (default)
@@ -169,18 +169,19 @@ internal sealed partial class SampleMarkdownImagesPage : ContentPage
             ## Examples
             
             ### No scaling
+            ℹ️ This sample uses the source pixel size, so under non-100% DPI scaling the rendered size can differ from the image's natural visual size.
             ```xml
-            ![green rectangle]({{path1}})
+            ![green rectangle]({{path1}}?--x-cmdpal-fit=none)
             ```
             
-            ![green rectangle]({{path1}})
+            ![green rectangle]({{path1}}?--x-cmdpal-fit=none)
             
             ### Scale to fit (scaling down only by default)
             ```xml
-            ![green rectangle]({{path1}}?--x-cmdpal-fit=fit)
+            ![green rectangle]({{path1}})
             ```
 
-            ![green rectangle]({{path1}}?--x-cmdpal-fit=fit)
+            ![green rectangle]({{path1}})
             
             ### Scale to fit (in both direction)
             ```xml
