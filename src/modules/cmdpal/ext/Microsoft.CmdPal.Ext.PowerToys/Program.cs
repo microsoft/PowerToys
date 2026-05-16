@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Shmuelie.WinRTServer;
 using Shmuelie.WinRTServer.CsWinRT;
 
@@ -37,6 +38,11 @@ public class Program
                 ManualResetEvent extensionDisposedEvent = new(false);
                 try
                 {
+                    // AppLifeMonitor creates a hidden window on a background STA thread to handle
+                    // WM_QUERYENDSESSION and WM_ENDSESSION. Without it, extensions hang on OS
+                    // shutdown because the MTA main thread has no message loop to receive those messages.
+                    using AppLifeMonitor monitor = new(extensionDisposedEvent);
+
                     PowerToysExtension extensionInstance = new(extensionDisposedEvent);
                     Logger.LogInfo("Registering extension via Shmuelie.WinRTServer.");
                     server.RegisterClass<PowerToysExtension, IExtension>(() => extensionInstance);

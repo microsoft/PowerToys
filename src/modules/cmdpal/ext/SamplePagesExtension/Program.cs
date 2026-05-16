@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Shmuelie.WinRTServer;
 using Shmuelie.WinRTServer.CsWinRT;
 
@@ -20,6 +21,11 @@ public class Program
             global::Shmuelie.WinRTServer.ComServer server = new();
 
             ManualResetEvent extensionDisposedEvent = new(false);
+
+            // AppLifeMonitor creates a hidden window on a background STA thread to handle
+            // WM_QUERYENDSESSION and WM_ENDSESSION. Without it, extensions hang on OS
+            // shutdown because the MTA main thread has no message loop to receive those messages.
+            using AppLifeMonitor monitor = new(extensionDisposedEvent);
 
             // We are instantiating an extension instance once above, and returning it every time the callback in RegisterExtension below is called.
             // This makes sure that only one instance of SampleExtension is alive, which is returned every time the host asks for the IExtension object.
