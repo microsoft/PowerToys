@@ -4,6 +4,7 @@
 #include <ProjectTelemetry.h>
 #include <spdlog/sinks/base_sink.h>
 #include <filesystem>
+#include <fstream>
 #include <string_view>
 
 #include "../../src/common/logger/logger.h"
@@ -1805,6 +1806,223 @@ void initSystemLogger()
             {
                 Logger::init("PowerToysMSI", std::wstring{ temp_path } + L"\\PowerToysMSIInstaller", L"");
             } });
+}
+
+// Naming note: the *Hardlinks* names in this CA, the matching WiX CustomAction Ids
+// in Product.wxs, and the manifest filename "hardlinks.txt" are kept for continuity
+// with the original PR design. The implementation uses fs::copy_file -- not
+// CreateHardLinkW -- because hard-links share an inode (and DACL) between root and
+// WinUI3Apps, which lets MSIX sparse-package registration propagate a rich DACL onto
+// the root copy of files like hostfxr.dll and break LOW-IL prevhost.exe loads,
+// turning the Monaco preview pane blank. Copies create a fresh inode in WinUI3Apps so the root
+// copy keeps its simple DACL. See the in-body comment for the full RCA reference.
+UINT __stdcall CreateWinAppSDKHardlinksCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "CreateWinAppSDKHardlinks");
+    ExitOnFailure(hr, "Failed to initialize");
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    {
+        namespace fs = std::filesystem;
+        const fs::path installDir(installationFolder);
+        const fs::path winui3Dir = installDir / L"WinUI3Apps";
+        const fs::path manifestPath = winui3Dir / L"hardlinks.txt";
+
+        if (!fs::exists(manifestPath))
+        {
+            WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: No hardlinks.txt manifest found, skipping.");
+            goto LExit;
+        }
+
+        std::ifstream manifestFile(manifestPath);  // Read as bytes, then convert UTF-8 -> wide explicitly.
+        std::string narrowLine;
+        int created = 0;
+        int failed = 0;
+
+        // INSTALLFOLDER from MSI typically arrives with a trailing backslash. lexically_normal
+        // preserves that as an empty trailing path component, which would later make the
+        // per-component std::mismatch containment check below reject every legitimate entry.
+        // Strip any trailing separators before normalizing.
+        auto stripTrailingSep = [](fs::path p) {
+            auto s = p.native();
+            while (s.size() > 1 && (s.back() == L'\\' || s.back() == L'/')) s.pop_back();
+            return fs::path(s);
+        };
+
+        // Normalize once so the per-line containment check below is cheap.
+        const fs::path installDirNorm = stripTrailingSep(installDir).lexically_normal();
+        const fs::path winui3DirNorm  = stripTrailingSep(winui3Dir).lexically_normal();
+
+        while (std::getline(manifestFile, narrowLine))
+        {
+            if (narrowLine.empty())
+            {
+                continue;
+            }
+            // Strip CR if the manifest uses CRLF line endings.
+            if (narrowLine.back() == '\r')
+            {
+                narrowLine.pop_back();
+                if (narrowLine.empty()) continue;
+            }
+
+            // Manifest is written as UTF-8 (no BOM) -- convert to wide string explicitly
+            // rather than relying on the locale-default codecvt of std::wifstream, which is
+            // the ANSI code page on Windows and would silently mangle any non-ASCII path.
+            const int wideLen = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, narrowLine.c_str(), -1, nullptr, 0);
+            if (wideLen <= 0)
+            {
+                WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: Skipping non-UTF-8 entry: %hs", narrowLine.c_str());
+                failed++;
+                continue;
+            }
+            std::wstring fileName(static_cast<size_t>(wideLen) - 1, L'\0');
+            MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, narrowLine.c_str(), -1, fileName.data(), wideLen);
+
+            // Defense-in-depth: reject manifest entries that would escape the install root
+            // via "..", absolute paths, or alternate stream syntax. lexically_normal collapses
+            // any "." / ".." / repeated separators, then std::mismatch verifies the resolved
+            // path is still rooted at installDir / winui3Dir respectively.
+            const fs::path source = (installDir / fileName).lexically_normal();
+            const fs::path target = (winui3Dir  / fileName).lexically_normal();
+            const auto sourceIn = std::mismatch(installDirNorm.begin(), installDirNorm.end(), source.begin(), source.end());
+            const auto targetIn = std::mismatch(winui3DirNorm.begin(),  winui3DirNorm.end(),  target.begin(), target.end());
+            if (sourceIn.first != installDirNorm.end() || targetIn.first != winui3DirNorm.end())
+            {
+                WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: Rejecting entry outside install root: %ls", fileName.c_str());
+                failed++;
+                continue;
+            }
+
+            if (!fs::exists(source))
+            {
+                WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: Source not found: %ls", source.c_str());
+                failed++;
+                continue;
+            }
+
+            // Remove existing file if present (leftover from previous install)
+            std::error_code ec;
+            fs::remove(target, ec);
+
+            // Use a regular file copy (not a hard-link). Hard-links share an
+            // NTFS inode -- and therefore one DACL -- between root and
+            // WinUI3Apps, which lets MSIX sparse-package registration
+            // propagate the WinUI3Apps parent's rich (Capability/Package SID)
+            // DACL onto the root path. That trips a kernel "stricter access
+            // evaluation" path that blocks LOW-IL prevhost.exe from loading
+            // hostfxr.dll, so File Explorer Monaco preview goes blank on
+            // Windows 11 23H2. Copying creates a fresh inode in WinUI3Apps,
+            // so the root copy keeps its simple DACL while the WinUI3Apps
+            // copy inherits the rich DACL from its parent (matches 0.99.1
+            // behaviour). See Documents\PR-47233-Handoff.md for full RCA.
+            fs::copy_file(source, target, fs::copy_options::overwrite_existing, ec);
+            if (ec)
+            {
+                WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: Failed to copy: %ls (%hs)", fileName.c_str(), ec.message().c_str());
+                failed++;
+            }
+            else
+            {
+                created++;
+            }
+        }
+
+        WcaLog(LOGMSG_STANDARD, "CreateWinAppSDKHardlinks: Copied %d files, %d failures", created, failed);
+
+        // Catastrophic-case escalation: if every copy failed, the WinUI3Apps tree is
+        // unusable (Monaco preview / context-menu shells will break). Surface this rather
+        // than reporting install success. Per-file failures remain tolerated.
+        if (created == 0 && failed > 0)
+        {
+            hr = E_FAIL;
+            ExitOnFailure(hr, "All WinAppSDK file copies failed; aborting install.");
+        }
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall DeleteWinAppSDKHardlinksCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    std::wstring installationFolder;
+
+    hr = WcaInitialize(hInstall, "DeleteWinAppSDKHardlinks");
+    ExitOnFailure(hr, "Failed to initialize");
+    hr = getInstallFolder(hInstall, installationFolder);
+    ExitOnFailure(hr, "Failed to get installFolder.");
+
+    {
+        namespace fs = std::filesystem;
+        const fs::path winui3Dir = fs::path(installationFolder) / L"WinUI3Apps";
+        const fs::path manifestPath = winui3Dir / L"hardlinks.txt";
+
+        if (!fs::exists(manifestPath))
+        {
+            goto LExit;
+        }
+
+        std::ifstream manifestFile(manifestPath);  // Read as bytes; convert UTF-8 -> wide explicitly.
+        std::string narrowLine;
+
+        // INSTALLFOLDER from MSI typically arrives with a trailing backslash; strip it before
+        // normalizing so the per-line containment check doesn't false-reject every entry.
+        auto stripTrailingSep = [](fs::path p) {
+            auto s = p.native();
+            while (s.size() > 1 && (s.back() == L'\\' || s.back() == L'/')) s.pop_back();
+            return fs::path(s);
+        };
+        const fs::path winui3DirNorm = stripTrailingSep(winui3Dir).lexically_normal();
+
+        while (std::getline(manifestFile, narrowLine))
+        {
+            if (narrowLine.empty())
+            {
+                continue;
+            }
+            if (narrowLine.back() == '\r')
+            {
+                narrowLine.pop_back();
+                if (narrowLine.empty()) continue;
+            }
+
+            const int wideLen = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, narrowLine.c_str(), -1, nullptr, 0);
+            if (wideLen <= 0)
+            {
+                WcaLog(LOGMSG_STANDARD, "DeleteWinAppSDKHardlinks: Skipping non-UTF-8 entry: %hs", narrowLine.c_str());
+                continue;
+            }
+            std::wstring fileName(static_cast<size_t>(wideLen) - 1, L'\0');
+            MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, narrowLine.c_str(), -1, fileName.data(), wideLen);
+
+            // Defense-in-depth: reject entries whose resolved target escapes WinUI3Apps.
+            const fs::path target = (winui3Dir / fileName).lexically_normal();
+            const auto inWinui3 = std::mismatch(winui3DirNorm.begin(), winui3DirNorm.end(), target.begin(), target.end());
+            if (inWinui3.first != winui3DirNorm.end())
+            {
+                WcaLog(LOGMSG_STANDARD, "DeleteWinAppSDKHardlinks: Rejecting entry outside WinUI3Apps: %ls", fileName.c_str());
+                continue;
+            }
+
+            std::error_code ec;
+            fs::remove(target, ec);
+        }
+
+        WcaLog(LOGMSG_STANDARD, "DeleteWinAppSDKHardlinks: Cleaned up deduplicated copy files");
+    }
+
+LExit:
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
 }
 
 // DllMain - Initialize and cleanup WiX custom action utils.
