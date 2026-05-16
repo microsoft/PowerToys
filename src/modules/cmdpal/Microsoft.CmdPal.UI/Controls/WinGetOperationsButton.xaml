@@ -15,15 +15,15 @@
         HorizontalAlignment="Right"
         VerticalAlignment="Bottom"
         Style="{StaticResource AccentButtonStyle}"
-        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasVisibleOperations), Mode=OneWay, FallbackValue=Collapsed}">
+        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasVisibleOperations), Mode=OneWay, FallbackValue=Collapsed}">
         <StackPanel Orientation="Horizontal" Spacing="10">
             <FontIcon FontSize="14" Glyph="&#xE8B7;" />
             <ProgressRing
                 Width="16"
                 Height="16"
-                IsActive="{x:Bind HasActiveOperations, Mode=OneWay}"
-                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasActiveOperations), Mode=OneWay, FallbackValue=Collapsed}" />
-            <TextBlock Text="{x:Bind SummaryText, Mode=OneWay}" />
+                IsActive="{x:Bind ViewModel.HasActiveOperations, Mode=OneWay}"
+                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasActiveOperations), Mode=OneWay, FallbackValue=Collapsed}" />
+            <TextBlock Text="{x:Bind ViewModel.SummaryText, Mode=OneWay}" />
         </StackPanel>
         <Button.Flyout>
             <Flyout Placement="TopEdgeAlignedRight">
@@ -32,7 +32,7 @@
                     MaxHeight="420"
                     Padding="16">
                     <StackPanel Spacing="12">
-                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind FlyoutHeaderText, Mode=OneWay}" />
+                        <TextBlock Style="{StaticResource BodyStrongTextBlockStyle}" Text="{x:Bind ViewModel.FlyoutHeaderText, Mode=OneWay}" />
                         <ScrollViewer MaxHeight="320">
                             <ItemsControl ItemsSource="{x:Bind ViewModel.Operations, Mode=OneWay}">
                                 <ItemsControl.ItemTemplate>
