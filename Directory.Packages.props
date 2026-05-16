@@ -68,8 +68,9 @@
     <!-- Package Microsoft.Win32.SystemEvents added as a hack for being able to exclude the runtime assets so they don't conflict with 8.0.1. This is a dependency of System.Drawing.Common but the 8.0.1 version wasn't published to nuget. -->
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="10.0.7" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
+    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.269" />
     <PackageVersion Include="Microsoft.Windows.Compatibility" Version="10.0.7" />
-    <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.183" />
+
     <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
     <!-- 
       TODO: in Common.Dotnet.CsWinRT.props, on upgrade, verify RemoveCsWinRTPackageAnalyzer is no longer needed.  
