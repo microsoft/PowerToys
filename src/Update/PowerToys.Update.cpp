@@ -14,12 +14,16 @@
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
 #include <common/updating/installer.h>
+#include <common/updating/configBackup.h>
+#include <common/updating/updateLifecycle.h>
 
 #include <common/utils/elevation.h>
 #include <common/utils/HttpClient.h>
 #include <common/utils/process_path.h>
 #include <common/utils/resources.h>
 #include <common/utils/timeutil.h>
+
+#include <wil/resource.h>
 
 #include <common/SettingsAPI/settings_helpers.h>
 
@@ -38,15 +42,16 @@ namespace fs = std::filesystem;
 
 std::optional<fs::path> CopySelfToTempDir()
 {
+    // D5 fix: Use unique temp path with PID to avoid collision on concurrent updates
     std::error_code error;
-    auto dst_path = fs::temp_directory_path() / "PowerToys.Update.exe";
+    auto dst_path = fs::temp_directory_path() / (L"PowerToys.Update." + std::to_wstring(GetCurrentProcessId()) + L".exe");
     fs::copy_file(get_module_filename(), dst_path, fs::copy_options::overwrite_existing, error);
     if (error)
     {
         return std::nullopt;
     }
 
-    return std::move(dst_path);
+    return dst_path;
 }
 
 std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
@@ -58,6 +63,15 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
     auto state = UpdateState::read();
 
     const auto new_version_info = std::move(get_github_version_info_async()).get();
+
+    // Check for error BEFORE dereferencing — the old code crashed here
+    // when GitHub API was unreachable (new_version_info held an error string).
+    if (!new_version_info)
+    {
+        Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
+        return std::nullopt;
+    }
+
     if (std::holds_alternative<version_up_to_date>(*new_version_info))
     {
         isUpToDate = true;
@@ -67,12 +81,6 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 
     if (state.state == UpdateState::readyToDownload || state.state == UpdateState::errorDownloading)
     {
-        if (!new_version_info)
-        {
-            Logger::error(L"Couldn't obtain github version info: {}", new_version_info.error());
-            return std::nullopt;
-        }
-
         // Cleanup old updates before downloading the latest
         updating::cleanup_updates();
 
@@ -116,13 +124,29 @@ bool InstallNewVersionStage1(fs::path installer)
 
         if (pt_main_window != nullptr)
         {
+            // Get the process that owns the tray window so we can wait for it to exit
+            DWORD ptProcessId = 0;
+            GetWindowThreadProcessId(pt_main_window, &ptProcessId);
+
             SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
+
+            // D4 fix: Wait for PT to actually exit before launching installer.
+            // Without this, the installer may find PT files locked.
+            if (ptProcessId != 0)
+            {
+                wil::unique_handle ptProcess{ OpenProcess(SYNCHRONIZE, FALSE, ptProcessId) };
+                if (ptProcess)
+                {
+                    WaitForSingleObject(ptProcess.get(), 10000); // 10 second timeout
+                }
+            }
         }
 
-        std::wstring arguments{ UPDATE_NOW_LAUNCH_STAGE2 };
-        arguments += L" \"";
-        arguments += installer.c_str();
-        arguments += L"\"";
+        // Pass the install directory so Stage 2 can relaunch PowerToys after install
+        const std::wstring installDir = get_module_folderpath();
+
+        std::wstring arguments = updating::BuildStage2Arguments(
+            UPDATE_NOW_LAUNCH_STAGE2, installer, fs::path(installDir));
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
         sei.lpFile = copy_in_temp->c_str();
@@ -190,8 +214,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     LPWSTR* args = CommandLineToArgvW(GetCommandLineW(), &nArgs);
     if (!args || nArgs < 2)
     {
+        if (args)
+        {
+            LocalFree(args);
+        }
         return 1;
     }
+
+    // D3 fix: ensure args is freed on all exit paths
+    auto freeArgs = wil::scope_exit([&] { LocalFree(args); });
 
     std::wstring_view action{ args[1] };
 
@@ -201,6 +232,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     if (action == UPDATE_NOW_LAUNCH_STAGE1)
     {
+        // Backup config files before the update to protect against corruption
+        Logger::info("Backing up config files before update");
+        updating::BackupConfigFiles(fs::path(PTSettingsHelper::get_root_save_folder_location()));
+
         bool isUpToDate = false;
         auto installerPath = ObtainInstaller(isUpToDate);
         bool failed = !installerPath.has_value();
@@ -217,6 +252,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     else if (action == UPDATE_NOW_LAUNCH_STAGE2)
     {
+        if (nArgs < 3)
+        {
+            Logger::error("Stage 2 invoked without installer path argument");
+            return 1;
+        }
+
         using namespace std::string_view_literals;
         const bool failed = !InstallNewVersionStage2(args[2]);
         if (failed)
@@ -226,6 +267,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 state.githubUpdateLastCheckedDate.emplace(timeutil::now());
                 state.state = UpdateState::errorDownloading;
             });
+        }
+
+        // D7 fix: Always check for corrupted configs after Stage 2, regardless
+        // of install success/failure. A failed install may still corrupt configs.
+        Logger::info("Checking for corrupted config files after update");
+        updating::RestoreCorruptedConfigs(fs::path(PTSettingsHelper::get_root_save_folder_location()));
+
+        if (!failed)
+        {
+            // Relaunch PowerToys from the install directory
+            if (updating::CanRelaunchAfterUpdate(nArgs))
+            {
+                std::wstring ptExePath = updating::BuildPowerToysExePath(args[3]);
+
+                Logger::info(L"Relaunching PowerToys after update: {}", ptExePath);
+
+                SHELLEXECUTEINFOW sei{ sizeof(sei) };
+                sei.fMask = { SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC };
+                sei.lpFile = ptExePath.c_str();
+                sei.nShow = SW_SHOWNORMAL;
+                sei.lpParameters = UPDATE_REPORT_SUCCESS;
+
+                if (!ShellExecuteExW(&sei))
+                {
+                    Logger::error(L"Failed to relaunch PowerToys after update");
+                }
+            }
+            else
+            {
+                Logger::warn("Install directory not provided to Stage 2 - cannot relaunch PowerToys");
+            }
         }
         return failed;
     }
