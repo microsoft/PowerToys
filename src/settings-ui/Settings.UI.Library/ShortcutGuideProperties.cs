@@ -19,7 +19,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DisabledApps = new StringProperty();
             OpenShortcutGuide = DefaultOpenShortcutGuide;
             FirstRun = new BoolProperty(true);
-            WindowPosition = new StringProperty("left");
+            WindowPosition = new IntProperty((int)ShortcutGuideWindowPosition.Left);
         }
 
         [JsonPropertyName("open_shortcutguide")]
@@ -34,7 +34,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("first_run")]
         public BoolProperty FirstRun { get; set; }
 
+        // Migrated from StringProperty ("left" / "right") to IntProperty in v3.0.
+        // The converter accepts both shapes so existing users' settings.json keeps working.
         [JsonPropertyName("window_position")]
-        public StringProperty WindowPosition { get; set; }
+        [JsonConverter(typeof(ShortcutGuideWindowPositionConverter))]
+        public IntProperty WindowPosition { get; set; }
     }
 }

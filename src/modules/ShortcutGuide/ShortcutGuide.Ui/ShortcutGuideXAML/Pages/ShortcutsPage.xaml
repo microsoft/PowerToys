@@ -10,38 +10,42 @@
     xmlns:vm="using:ShortcutGuide.ViewModels"
     mc:Ignorable="d">
     <Page.Resources>
-        <DataTemplate x:Key="ShortcutItemTemplate" x:DataType="models:ShortcutEntry">
-            <controls:ShortcutItemView Shortcut="{x:Bind}" />
+        <DataTemplate x:Key="HeaderTemplate" x:DataType="vm:ShortcutListItem">
+            <TextBlock
+                Margin="16,20,16,8"
+                FontWeight="SemiBold"
+                Text="{x:Bind Text}" />
         </DataTemplate>
 
-        <DataTemplate x:Key="SectionTemplate" x:DataType="vm:ShortcutSection">
-            <StackPanel Orientation="Vertical">
-                <TextBlock
-                    Margin="16,12,16,4"
-                    FontWeight="SemiBold"
-                    Text="{x:Bind Title}" />
-                <TextBlock
-                    Margin="16,2,16,8"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind Subtitle}"
-                    Visibility="{x:Bind HasSubtitle, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                <ItemsRepeater
-                    ItemTemplate="{StaticResource ShortcutItemTemplate}"
-                    ItemsSource="{x:Bind Items}"
-                    Visibility="{x:Bind HasItems, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                <TextBlock
-                    Margin="16,0,16,8"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Text="{x:Bind EmptyText}"
-                    Visibility="{x:Bind ShowEmptyText, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-            </StackPanel>
+        <DataTemplate x:Key="SubtitleTemplate" x:DataType="vm:ShortcutListItem">
+            <TextBlock
+                Margin="16,2,16,8"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind Text}" />
         </DataTemplate>
+
+        <DataTemplate x:Key="EmptyTextTemplate" x:DataType="vm:ShortcutListItem">
+            <TextBlock
+                Margin="16,0,16,8"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Text="{x:Bind Text}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="ShortcutTemplate" x:DataType="vm:ShortcutListItem">
+            <controls:ShortcutItemView Shortcut="{x:Bind Shortcut}" />
+        </DataTemplate>
+
+        <vm:ShortcutListItemTemplateSelector
+            x:Key="RowTemplateSelector"
+            EmptyTextTemplate="{StaticResource EmptyTextTemplate}"
+            HeaderTemplate="{StaticResource HeaderTemplate}"
+            ShortcutTemplate="{StaticResource ShortcutTemplate}"
+            SubtitleTemplate="{StaticResource SubtitleTemplate}" />
     </Page.Resources>
-
     <ScrollViewer>
         <ItemsRepeater
-            Margin="0,16,0,16"
-            ItemTemplate="{StaticResource SectionTemplate}"
-            ItemsSource="{x:Bind Sections, Mode=OneWay}" />
+            Margin="0,0,0,24"
+            ItemTemplate="{StaticResource RowTemplateSelector}"
+            ItemsSource="{x:Bind Rows, Mode=OneWay}" />
     </ScrollViewer>
 </Page>

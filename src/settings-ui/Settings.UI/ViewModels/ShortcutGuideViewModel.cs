@@ -65,7 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             switch (Settings.Properties.WindowPosition.Value)
             {
-                case "right": _positionIndex = 1; break;
+                case (int)ShortcutGuideWindowPosition.Right: _positionIndex = 1; break;
                 default: _positionIndex = 0; break;
             }
         }
@@ -189,8 +189,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     switch (value)
                     {
-                        case 1: Settings.Properties.WindowPosition.Value = "right"; break;
-                        default: Settings.Properties.WindowPosition.Value = "left"; break;
+                        case 1: Settings.Properties.WindowPosition.Value = (int)ShortcutGuideWindowPosition.Right; break;
+                        default: Settings.Properties.WindowPosition.Value = (int)ShortcutGuideWindowPosition.Left; break;
                     }
 
                     _positionIndex = value;

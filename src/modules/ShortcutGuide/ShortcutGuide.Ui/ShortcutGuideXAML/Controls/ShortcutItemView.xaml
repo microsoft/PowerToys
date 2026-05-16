@@ -13,8 +13,8 @@
         BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
         BorderThickness="0,0,0,1">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="160" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="160" />
         </Grid.ColumnDefinitions>
         <Grid.ContextFlyout>
             <MenuFlyout Opening="PinFlyout_Opening">
@@ -22,7 +22,7 @@
             </MenuFlyout>
         </Grid.ContextFlyout>
         <StackPanel
-            Grid.Column="1"
+            Grid.Column="0"
             VerticalAlignment="Center"
             Orientation="Vertical">
             <TextBlock Text="{x:Bind Shortcut.Name, Mode=OneWay}" TextWrapping="Wrap" />
@@ -34,7 +34,7 @@
                 Visibility="{x:Bind Shortcut.Description, Mode=OneWay, Converter={StaticResource StringVisibilityConverter}}" />
         </StackPanel>
         <ItemsControl
-            Grid.Column="0"
+            Grid.Column="1"
             VerticalAlignment="Center"
             ItemsSource="{x:Bind Shortcut.Shortcut, Mode=OneWay}">
             <ItemsControl.ItemsPanel>

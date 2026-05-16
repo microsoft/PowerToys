@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using Common.UI;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -200,10 +201,10 @@ namespace ShortcutGuide
             float dpi = DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
 
-            string windowPosition = App.ShortcutGuideProperties.WindowPosition.Value;
+            var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
             var taskbarWindow = App.TaskBarWindow.AppWindow;
-            bool taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == "left";
-            bool taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == "right";
+            bool taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
+            bool taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
 
             double newHeight = monitorRect.Height / dpi;
             if (taskbarOnLeft || taskbarOnRight)
@@ -215,7 +216,7 @@ namespace ShortcutGuide
             MinHeight = newHeight;
             Height = newHeight;
 
-            int xPosition = windowPosition == "right"
+            int xPosition = windowPosition == ShortcutGuideWindowPosition.Right
                 ? (int)(monitorRect.X + monitorRect.Width) - (int)(Width * dpi)
                 : (int)monitorRect.X;
 
@@ -242,7 +243,7 @@ namespace ShortcutGuide
             if (this._shortcutFile is ShortcutFile file)
             {
                 // Show the taskbar button window only when the selected app exposes the <TASKBAR1-9> section.
-                if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName == "<TASKBAR1-9>"))
+                if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true))
                 {
                     this._taskBarWindowActivated = true;
                     App.TaskBarWindow.Activate();

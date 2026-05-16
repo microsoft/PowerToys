@@ -22,7 +22,11 @@
                 <RowDefinition Height="48" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TitleBar x:Uid="TitleBar" />
+            <TitleBar x:Uid="TitleBar">
+                <TitleBar.IconSource>
+                    <ImageIconSource ImageSource="/Assets/ShortcutGuide/ShortcutGuide.ico" />
+                </TitleBar.IconSource>
+            </TitleBar>
 
             <NavigationView
                 x:Name="WindowSelector"
