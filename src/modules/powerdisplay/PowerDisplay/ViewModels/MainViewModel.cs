@@ -112,6 +112,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         int delaySeconds = Math.Clamp(settings?.Properties?.MonitorRefreshDelay ?? 5, 1, 30);
         _displayChangeWatcher = new DisplayChangeWatcher(_dispatcherQueue, TimeSpan.FromSeconds(delaySeconds));
         _displayChangeWatcher.DisplayChanged += OnDisplayChanged;
+        _displayChangeWatcher.DisplayChanging += OnDisplayChanging;
 
         // Start initial discovery
         _ = InitializeAsync(_cancellationTokenSource.Token);
@@ -268,7 +269,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Dispose each resource independently to ensure all get cleaned up
         try
         {
-            _displayChangeWatcher?.Dispose();
+            if (_displayChangeWatcher is not null)
+            {
+                _displayChangeWatcher.DisplayChanging -= OnDisplayChanging;
+                _displayChangeWatcher.DisplayChanged -= OnDisplayChanged;
+                _displayChangeWatcher.Dispose();
+            }
         }
         catch
         {
@@ -366,16 +372,30 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Handles display configuration changes detected by the DisplayChangeWatcher.
-    /// The DisplayChangeWatcher already applies the configured delay (MonitorRefreshDelay)
-    /// to allow hardware to stabilize, so we can refresh immediately here.
+    /// Invoked synchronously as soon as a display configuration change is
+    /// detected (device added/removed, or wake from sleep), before the debounce
+    /// delay elapses. Locks the interactive UI by setting IsScanning = true so
+    /// the user cannot operate on monitors that are about to disappear or be
+    /// re-enumerated by the rediscovery pass <see cref="OnDisplayChanged"/>
+    /// will run once debounce completes.
+    /// </summary>
+    private void OnDisplayChanging(object? sender, EventArgs e)
+    {
+        if (!IsScanning)
+        {
+            Logger.LogInfo("[MainViewModel] Display change detected — locking UI ahead of rediscovery");
+            IsScanning = true;
+        }
+    }
+
+    /// <summary>
+    /// Handles display configuration changes once the DisplayChangeWatcher's
+    /// debounce delay has elapsed. IsScanning was already set by
+    /// <see cref="OnDisplayChanging"/> when the change was first detected, so
+    /// we just run discovery here.
     /// </summary>
     private async void OnDisplayChanged(object? sender, EventArgs e)
     {
-        // Set scanning state to provide visual feedback
-        IsScanning = true;
-
-        // Perform refresh - DisplayChangeWatcher has already waited for hardware to stabilize
         await RefreshMonitorsAsync(skipScanningCheck: true);
     }
 
