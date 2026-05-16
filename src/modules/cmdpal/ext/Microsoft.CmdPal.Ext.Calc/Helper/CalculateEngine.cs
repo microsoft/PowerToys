@@ -51,8 +51,8 @@ public static partial class CalculateEngine
             return default;
         }
 
-        // mages has quirky log representation
-        // mage has log == ln vs log10
+        // ExprTK uses log == ln and log10 for base-10, so we remap here
+        // to match the user-facing names (log → log10, ln → log).
         // Use regex replacements so optional whitespace between the function name and
         // '(' is handled correctly - "log (100)" must map to log10 just like "log(100)"
         // does. The negative lookahead prevents "log10" / "log2" from being touched.
@@ -75,9 +75,15 @@ public static partial class CalculateEngine
         var result = _calculator.EvaluateExpression(input);
 
         // This could happen for some incorrect queries, like pi(2)
-        if (result == "NaN")
+        if (result == "ParseError")
         {
             error = Properties.Resources.calculator_expression_not_complete;
+            return default;
+        }
+
+        if (result == "NaN")
+        {
+            error = Properties.Resources.calculator_not_a_number;
             return default;
         }
 
@@ -90,6 +96,7 @@ public static partial class CalculateEngine
 
         if (string.IsNullOrEmpty(result))
         {
+            error = Properties.Resources.calculator_not_a_number;
             return default;
         }
 
