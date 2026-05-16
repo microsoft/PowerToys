@@ -33,8 +33,9 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
 
     private readonly NavigationViewItem? _internalNavItem;
+    private readonly Storyboard _breadcrumbFadeInStoryboard;
+    private readonly Storyboard _breadcrumbFadeOutStoryboard;
 
-    private Storyboard? _breadcrumbStoryboard;
     private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
     private ExtensionGalleryScreenshotViewModel? _currentScreenshot;
 
@@ -53,6 +54,8 @@ public sealed partial class SettingsWindow : WindowEx,
     public SettingsWindow()
     {
         this.InitializeComponent();
+        _breadcrumbFadeInStoryboard = (Storyboard)RootElement.Resources["BreadcrumbFadeInStoryboard"];
+        _breadcrumbFadeOutStoryboard = (Storyboard)RootElement.Resources["BreadcrumbFadeOutStoryboard"];
         this.ExtendsContentIntoTitleBar = true;
         this.SetIcon();
         var title = RS_.GetString("SettingsWindowTitle");
@@ -320,54 +323,30 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void HideBreadcrumb()
     {
-        _breadcrumbStoryboard?.Stop();
-
-        var fadeOut = new DoubleAnimation
+        if (BreadcrumbContainer.Visibility == Visibility.Collapsed)
         {
-            To = 0,
-            Duration = new Duration(TimeSpan.FromMilliseconds(200)),
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
-        };
-        Storyboard.SetTarget(fadeOut, BreadcrumbContainer);
-        Storyboard.SetTargetProperty(fadeOut, "Opacity");
+            return;
+        }
 
-        _breadcrumbStoryboard = new Storyboard();
-        _breadcrumbStoryboard.Children.Add(fadeOut);
-        _breadcrumbStoryboard.Completed += (_, _) =>
-        {
-            BreadcrumbContainer.Visibility = Visibility.Collapsed;
-            BreadcrumbContainer.Opacity = 1;
-            _breadcrumbStoryboard = null;
-        };
-        _breadcrumbStoryboard.Begin();
+        _breadcrumbFadeInStoryboard.Stop();
+        _breadcrumbFadeOutStoryboard.Stop();
+        _breadcrumbFadeOutStoryboard.Begin();
     }
 
     private void ShowBreadcrumb()
     {
-        _breadcrumbStoryboard?.Stop();
-        _breadcrumbStoryboard = null;
+        _breadcrumbFadeInStoryboard.Stop();
+        _breadcrumbFadeOutStoryboard.Stop();
 
         if (BreadcrumbContainer.Visibility == Visibility.Collapsed)
         {
             BreadcrumbContainer.Opacity = 0;
             BreadcrumbContainer.Visibility = Visibility.Visible;
-
-            var fadeIn = new DoubleAnimation
-            {
-                To = 1,
-                Duration = new Duration(TimeSpan.FromMilliseconds(250)),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
-            };
-            Storyboard.SetTarget(fadeIn, BreadcrumbContainer);
-            Storyboard.SetTargetProperty(fadeIn, "Opacity");
-
-            _breadcrumbStoryboard = new Storyboard();
-            _breadcrumbStoryboard.Children.Add(fadeIn);
-            _breadcrumbStoryboard.Completed += (_, _) => _breadcrumbStoryboard = null;
-            _breadcrumbStoryboard.Begin();
+            _breadcrumbFadeInStoryboard.Begin();
         }
         else
         {
+            BreadcrumbContainer.Visibility = Visibility.Visible;
             BreadcrumbContainer.Opacity = 1;
         }
     }
@@ -382,7 +361,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
         BreadCrumbs.Clear();
-        ShowBreadcrumb();
+        var shouldShowBreadcrumb = true;
 
         if (e.SourcePageType == typeof(GeneralPage))
         {
@@ -405,14 +384,14 @@ public sealed partial class SettingsWindow : WindowEx,
         else if (e.SourcePageType == typeof(ExtensionGalleryPage))
         {
             NavView.SelectedItem = GalleryPageNavItem;
-            HideBreadcrumb();
+            shouldShowBreadcrumb = false;
             var pageType = RS_.GetString("Settings_PageTitles_GalleryPage");
             BreadCrumbs.Add(new(pageType, pageType));
         }
         else if (e.SourcePageType == typeof(ExtensionGalleryItemPage) && e.Parameter is ExtensionGalleryItemViewModel galleryExtension)
         {
             NavView.SelectedItem = GalleryPageNavItem;
-            HideBreadcrumb();
+            shouldShowBreadcrumb = false;
             var galleryPageType = RS_.GetString("Settings_PageTitles_GalleryPage");
             BreadCrumbs.Add(new(galleryPageType, "Gallery"));
             BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));
@@ -440,6 +419,15 @@ public sealed partial class SettingsWindow : WindowEx,
         {
             BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
             Logger.LogError($"Unknown breadcrumb for page type '{e.SourcePageType}'");
+        }
+
+        if (shouldShowBreadcrumb)
+        {
+            ShowBreadcrumb();
+        }
+        else
+        {
+            HideBreadcrumb();
         }
     }
 
