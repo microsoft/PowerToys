@@ -385,7 +385,7 @@ public static partial class CalculateHelper
     public static string UpdateFactorialFunctions(string input)
     {
         // Handle n! -> factorial(n)
-        int startSearch = 0;
+        var startSearch = 0;
         while (true)
         {
             var index = input.IndexOf('!', startSearch);
