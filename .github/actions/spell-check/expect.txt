@@ -10,7 +10,6 @@ ACCESSDENIED
 ACCESSTOKEN
 acfs
 ACIE
-ACR
 acrt
 ACTIVATEAPP
 ACTIVATEOPTIONS
@@ -88,7 +87,6 @@ AShortcut
 ASSOCCHANGED
 ASSOCF
 ASSOCSTR
-ASUS
 ASYNCWINDOWPLACEMENT
 ASYNCWINDOWPOS
 atl
@@ -202,7 +200,6 @@ checkmarks
 CHILDACTIVATE
 CHILDWINDOW
 CHOOSEFONT
-Chunghwa
 CIBUILD
 cidl
 CIELCh
@@ -218,6 +215,7 @@ clickable
 clickonce
 clientedge
 clientside
+cliextensions
 CLIPBOARDUPDATE
 CLIPCHILDREN
 CLIPSIBLINGS
@@ -308,7 +306,6 @@ Crossdevice
 crt
 csdevkit
 cso
-CSOT
 CSRW
 cswin
 CTEXT
@@ -364,14 +361,13 @@ DEFAULTICON
 defaultlib
 DEFAULTONLY
 DEFAULTSIZE
-defaulttonearest
-DEFAULTTONEAREST
 DEFAULTTONULL
 DEFAULTTOPRIMARY
 DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
+DELD
 DELETEDKEYIMAGE
 DELETESCANS
 DEMOTYPE
@@ -411,6 +407,7 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
+DISPLAYPORT
 divyan
 DLGFRAME
 dlgmodalframe
@@ -443,6 +440,7 @@ DString
 DSVG
 dto
 DUMMYUNIONNAME
+dumpbin
 dutil
 DVASPECT
 DVASPECTINFO
@@ -644,7 +642,6 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
-Hann
 Hantai
 Hanzi
 Hardlines
@@ -714,6 +711,7 @@ HOOKPROC
 HORZRES
 HORZSIZE
 Hostbackdropbrush
+hostfxr
 hostsfileeditor
 hotfixes
 hotkeycontrol
@@ -746,7 +744,6 @@ HWNDLAST
 HWNDNEXT
 HWNDPARENT
 HWNDPREV
-HWP
 hyjiacan
 IAI
 icf
@@ -842,7 +839,6 @@ istep
 ith
 IUI
 IUWP
-IVO
 IWIC
 jeli
 jfif
@@ -851,6 +847,7 @@ jjw
 jobject
 JOBOBJECT
 jpe
+JPN
 jpnime
 jrsoftware
 Jsons
@@ -980,6 +977,7 @@ LTEXT
 LTRREADING
 luid
 lusrmgr
+LVDS
 LWA
 LWIN
 LZero
@@ -1026,6 +1024,7 @@ Metadatas
 metafile
 metapackage
 mfc
+mfcm
 Mgmt
 Microwaved
 middleclickaction
@@ -1043,6 +1042,7 @@ MINMAXINFO
 minwindef
 Mip
 Miracast
+MIRACAST
 mkdn
 mlcfg
 mmc
@@ -1116,7 +1116,6 @@ myorg
 myrepo
 NAMECHANGE
 namespaceanddescendants
-Nanjing
 nao
 NCACTIVATE
 ncc
@@ -1217,7 +1216,6 @@ NOTSRCCOPY
 NOTSRCERASE
 Notupdated
 notwindows
-NOTXORPEN
 nowarn
 NOZORDER
 NPH
@@ -1338,7 +1336,6 @@ pguid
 phbm
 phbmp
 phicon
-PHL
 Photoshop
 phwnd
 pici
@@ -1455,6 +1452,7 @@ ptcontrols
 ptd
 PTOKEN
 ptstr
+ptsym
 pui
 pvct
 PWAs
@@ -1463,7 +1461,6 @@ PWSTR
 pwsz
 pwtd
 qdc
-QDS
 qit
 QITAB
 QITABENT
@@ -1540,6 +1537,7 @@ resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
 RETURNONLYFSDIRS
+Revalidates
 RGBQUAD
 rgbs
 rgelt
@@ -1796,6 +1794,7 @@ svchost
 SVGIn
 SVGIO
 svgz
+SVIDEO
 SVSI
 SWFO
 swp
@@ -1861,8 +1860,8 @@ themeresources
 THH
 thickframe
 THISCOMPONENT
+threadpool
 throughs
-Tianma
 TILEDWINDOW
 TILLSON
 timedate
@@ -1900,6 +1899,7 @@ trx
 tsa
 tskill
 tstoi
+tsv
 tweakable
 TWF
 tymed
@@ -1917,6 +1917,7 @@ ucrtd
 uefi
 uesc
 UIA
+UIDs
 UIEx
 uild
 uitests
@@ -1937,8 +1938,10 @@ unitconverter
 unittests
 UNLEN
 UNORM
+unparsable
 unremapped
 unsubscribes
+untriaged
 unvirtualized
 unwide
 unzoom
@@ -2157,6 +2160,7 @@ yinle
 yinyue
 YVIRTUALSCREEN
 zamora
+Zenbook
 ZEROINIT
 zonability
 zonable

@@ -275,6 +275,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::HOTKEY_UPDATED_POWER_DISPLAY_EVENT;
     }
+    hstring Constants::RescanPowerDisplayMonitorsEvent()
+    {
+        return CommonSharedConstants::RESCAN_POWER_DISPLAY_MONITORS_EVENT;
+    }
     hstring Constants::PowerDisplayToggleMessage()
     {
         return CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE;
