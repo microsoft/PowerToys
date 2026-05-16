@@ -182,8 +182,9 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
                         // WebView2.NavigateToString() limitation
                         // See https://learn.microsoft.com/dotnet/api/microsoft.web.webview2.core.corewebview2.navigatetostring?view=webview2-dotnet-1.0.864.35#remarks
-                        // While testing the limit, it turned out it is ~1.5MB, so to be on a safe side we go for 1.5m bytes
-                        if (markdownHTML.Length > 1_500_000)
+                        // While testing the limit, it turned out it is ~1.5MB of UTF-8 encoded content, so to be on the safe side we check the UTF-8 byte count.
+                        // Using character count (string.Length) is not sufficient because multi-byte UTF-8 characters (e.g. CJK) can cause the byte size to exceed the limit even when the character count is below it.
+                        if (System.Text.Encoding.UTF8.GetByteCount(markdownHTML) > 1_500_000)
                         {
                             string filename = _webView2UserDataFolder + "\\" + Guid.NewGuid().ToString() + ".html";
                             File.WriteAllText(filename, markdownHTML);
