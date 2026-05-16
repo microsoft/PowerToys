@@ -2370,5 +2370,145 @@ namespace RemappingLogicTests
             // LWin should be pressed
             Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
         }
+
+        // Tests for AltGr (isAltRightKeyInvoked) flag handling
+
+        // Test that pressing and releasing AltGr without an active shortcut does not leave the shortcut state corrupted
+        TEST_METHOD (AltGrPressedAndReleased_ShouldNotCorruptShortcutState_WhenNoShortcutIsActive)
+        {
+            // Remap LCtrl+Y to Backspace
+            Shortcut src;
+            src.SetKey(VK_LCONTROL);
+            src.SetKey(0x59);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_BACK);
+
+            // Simulate AltGr press (Windows sends LCtrl down then RAlt down) and release
+            std::vector<INPUT> altGrInputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RMENU } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RMENU, .dwFlags = KEYEVENTF_KEYUP } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(altGrInputs);
+
+            // Now invoke the shortcut: LCtrl+Y down, then Y up, then LCtrl up
+            std::vector<INPUT> shortcutDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x59 } },
+            };
+            mockedInputHandler.SendVirtualInput(shortcutDown);
+
+            // Shortcut should have fired: LCtrl released, Backspace pressed
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_BACK));
+
+            // Release Y (action key)
+            std::vector<INPUT> releaseY{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x59, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(releaseY);
+
+            // Backspace should be released
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_BACK));
+
+            // Release LCtrl
+            std::vector<INPUT> releaseCtrl{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(releaseCtrl);
+
+            // Shortcut state should be fully reset
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+            // All keys should be released
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_BACK));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x59));
+        }
+
+        // Test that after AltGr is pressed without a shortcut, a subsequent shortcut-to-key remap still properly reverts state when another key is pressed
+        TEST_METHOD (AltGrPressedAndReleased_ShouldNotPreventStateRevert_WhenShortcutToKeyRemapIsInvokedAndOtherKeyIsPressed)
+        {
+            // Remap LCtrl+Y to Backspace
+            Shortcut src;
+            src.SetKey(VK_LCONTROL);
+            src.SetKey(0x59);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_BACK);
+
+            // Simulate AltGr press and release (no shortcut active)
+            std::vector<INPUT> altGrInputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RMENU } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RMENU, .dwFlags = KEYEVENTF_KEYUP } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(altGrInputs);
+
+            // Invoke shortcut and press an extra key
+            std::vector<INPUT> inputs1{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x59 } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x42 } },
+            };
+            mockedInputHandler.SendVirtualInput(inputs1);
+
+            // Shortcut should be invoked: Backspace and B pressed
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_BACK));
+
+            // Release Y (action key) — should revert to physical keys since B is held
+            std::vector<INPUT> releaseY{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x59, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(releaseY);
+
+            // State should be reverted: Backspace released, Ctrl restored, B still held
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_BACK));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x42));
+        }
+
+        // Test that multiple AltGr press-release cycles do not accumulate corruption
+        TEST_METHOD (MultipleAltGrPressReleaseCycles_ShouldNotCorruptShortcutState)
+        {
+            // Remap LCtrl+Y to Backspace
+            Shortcut src;
+            src.SetKey(VK_LCONTROL);
+            src.SetKey(0x59);
+            testState.AddOSLevelShortcut(src, (DWORD)VK_BACK);
+
+            // Simulate AltGr press-release three times
+            for (int i = 0; i < 3; i++)
+            {
+                std::vector<INPUT> altGrInputs{
+                    { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+                    { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RMENU } },
+                    { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_RMENU, .dwFlags = KEYEVENTF_KEYUP } },
+                    { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+                };
+                mockedInputHandler.SendVirtualInput(altGrInputs);
+            }
+
+            // Invoke shortcut normally
+            std::vector<INPUT> shortcutDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x59 } },
+            };
+            mockedInputHandler.SendVirtualInput(shortcutDown);
+
+            Assert::AreEqual(true, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+
+            // Release Y then Ctrl
+            std::vector<INPUT> releaseAll{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x59, .dwFlags = KEYEVENTF_KEYUP } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LCONTROL, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(releaseAll);
+
+            // State should be fully reset after all releases
+            Assert::AreEqual(false, testState.osLevelShortcutReMap[src].isShortcutInvoked);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_BACK));
+        }
     };
 }
