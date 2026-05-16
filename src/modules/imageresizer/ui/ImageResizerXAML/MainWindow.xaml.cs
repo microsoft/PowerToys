@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using ImageResizer.Helpers;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
 using ManagedCommon;
@@ -42,6 +43,8 @@ namespace ImageResizer
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(titleBar);
             this.SetIcon("Assets/ImageResizer/ImageResizer.ico");
+
+            Title = ResourceLoaderInstance.GetString("ImageResizer");
 
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 

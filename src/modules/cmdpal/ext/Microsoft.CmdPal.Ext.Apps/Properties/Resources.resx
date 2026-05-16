@@ -244,4 +244,10 @@
   <data name="include_non_apps_in_start_menu" xml:space="preserve">
     <value>Also include non-app shortcuts from the Start menu</value>
   </data>
+  <data name="hide_app_descriptions" xml:space="preserve">
+    <value>Hide app description in search results</value>
+  </data>
+  <data name="hide_app_descriptions_description" xml:space="preserve">
+    <value>Hide description text next to app results for a cleaner look</value>
+  </data>
 </root>

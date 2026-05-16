@@ -66,6 +66,14 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["log2(3)", 1.58496250072116M],
             ["log10(3)", 0.47712125471966M],
             ["ln(e)", 1M],
+
+            // Space between function name and '(' must produce the same result
+            // (regression test for the log-mapping bug).
+            ["ln (3)", 1.09861228866811M],
+            ["log (3)", 0.47712125471966M],
+            ["log2 (3)", 1.58496250072116M],
+            ["log10 (3)", 0.47712125471966M],
+
             ["cosh(0)", 1M],
             ["1*10^(-5)", 0.00001M],
             ["1*10^(-15)", 0.0000000000000001M],

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,6 +72,19 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Pushes the max-compatibility-mode flag onto the DDC/CI controller. Called by
+        /// <see cref="ViewModels.MainViewModel"/> before each discovery so the value is
+        /// current. No-op if the DDC controller failed to initialize.
+        /// </summary>
+        public void SetMaxCompatibilityMode(bool enabled)
+        {
+            if (_ddcController != null)
+            {
+                _ddcController.MaxCompatibilityMode = enabled;
+            }
+        }
+
+        /// <summary>
         /// Discover all monitors from all controllers.
         /// Each controller is responsible for fully initializing its monitors
         /// (including brightness, capabilities, input source, color temperature, etc.)
@@ -106,20 +120,36 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Discover monitors from all registered controllers in parallel.
+        /// Classify all displays via OutputTechnology using a single QueryDisplayConfig
+        /// call, then dispatch strictly-scoped target lists to each controller in parallel
+        /// (WMI = internal only, DDC/CI = external only).
         /// </summary>
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
         {
+            var inventory = DisplayConfigInventory.GetAllMonitorDisplayInfo();
+
+            if (inventory.Count == 0)
+            {
+                Logger.LogWarning("[MonitorManager] QueryDisplayConfig returned no displays — discovery aborted");
+                return new List<Monitor>();
+            }
+
+            var byKind = inventory.Values.ToLookup(i => i.IsInternal);
+            IReadOnlyList<MonitorDisplayInfo> internalTargets = byKind[true].ToList();
+            IReadOnlyList<MonitorDisplayInfo> externalTargets = byKind[false].ToList();
+
+            LogClassificationSummary(internalTargets, externalTargets);
+
             var tasks = new List<Task<IEnumerable<Monitor>>>();
 
             if (_ddcController != null)
             {
-                tasks.Add(SafeDiscoverAsync(_ddcController, cancellationToken));
+                tasks.Add(SafeDiscoverAsync(_ddcController, externalTargets, cancellationToken));
             }
 
             if (_wmiController != null)
             {
-                tasks.Add(SafeDiscoverAsync(_wmiController, cancellationToken));
+                tasks.Add(SafeDiscoverAsync(_wmiController, internalTargets, cancellationToken));
             }
 
             var results = await Task.WhenAll(tasks);
@@ -127,15 +157,41 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Logs the result of Phase 0 classification at Info level, one line per display
+        /// plus a summary. Used for diagnostic traceability of internal/external decisions.
+        /// </summary>
+        private static void LogClassificationSummary(
+            IReadOnlyList<MonitorDisplayInfo> internalTargets,
+            IReadOnlyList<MonitorDisplayInfo> externalTargets)
+        {
+            Logger.LogInfo($"[DisplayClassification] Found {internalTargets.Count + externalTargets.Count} displays:");
+
+            foreach (var info in internalTargets.Concat(externalTargets).OrderBy(i => i.MonitorNumber))
+            {
+                var techValue = info.OutputTechnology >= 0x80000000u
+                    ? "0x" + info.OutputTechnology.ToString("X", CultureInfo.InvariantCulture)
+                    : info.OutputTechnology.ToString(CultureInfo.InvariantCulture);
+                var classification = info.IsInternal ? "Internal" : "External";
+
+                Logger.LogInfo(
+                    $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
+                    $"OutputTechnology={techValue} → {classification}");
+            }
+
+            Logger.LogInfo($"[DisplayClassification] Summary: {internalTargets.Count} internal, {externalTargets.Count} external");
+        }
+
+        /// <summary>
         /// Safely discover monitors from a controller, returning empty list on failure.
         /// </summary>
         private static async Task<IEnumerable<Monitor>> SafeDiscoverAsync(
             IMonitorController controller,
+            IReadOnlyList<MonitorDisplayInfo> targets,
             CancellationToken cancellationToken)
         {
             try
             {
-                return await controller.DiscoverMonitorsAsync(cancellationToken);
+                return await controller.DiscoverMonitorsAsync(targets, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -152,11 +208,11 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 brightness,
                 (ctrl, mon, val, ct) => ctrl.SetBrightnessAsync(mon, val, ct),
-                (mon, val) => mon.UpdateStatus(val, true),
+                (mon, val) => mon.CurrentBrightness = val,
                 cancellationToken);
 
         /// <summary>
-        /// Set contrast of the specified monitor
+        /// Set contrast of the specified monitor (DDC/CI controllers only; returns Failure on others).
         /// </summary>
         public Task<MonitorOperationResult> SetContrastAsync(string monitorId, int contrast, CancellationToken cancellationToken = default)
             => ExecuteMonitorOperationAsync(
@@ -167,7 +223,7 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set volume of the specified monitor
+        /// Set volume of the specified monitor (DDC/CI controllers only; returns Failure on others).
         /// </summary>
         public Task<MonitorOperationResult> SetVolumeAsync(string monitorId, int volume, CancellationToken cancellationToken = default)
             => ExecuteMonitorOperationAsync(
@@ -178,7 +234,7 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set monitor color temperature
+        /// Set monitor color temperature (DDC/CI controllers only; returns Failure on others).
         /// </summary>
         public Task<MonitorOperationResult> SetColorTemperatureAsync(string monitorId, int colorTemperature, CancellationToken cancellationToken = default)
             => ExecuteMonitorOperationAsync(
@@ -189,7 +245,7 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set input source for a monitor
+        /// Set input source for a monitor (DDC/CI controllers only; returns Failure on others).
         /// </summary>
         public Task<MonitorOperationResult> SetInputSourceAsync(string monitorId, int inputSource, CancellationToken cancellationToken = default)
             => ExecuteMonitorOperationAsync(
@@ -200,16 +256,15 @@ namespace PowerDisplay.Helpers
                 cancellationToken);
 
         /// <summary>
-        /// Set power state for a monitor using VCP 0xD6.
+        /// Set power state for a monitor using VCP 0xD6 (DDC/CI controllers only; returns Failure on others).
         /// Note: Setting any state other than On (0x01) will turn off the display.
-        /// We don't update monitor state since the display will be off.
         /// </summary>
         public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
             => ExecuteMonitorOperationAsync(
                 monitorId,
                 powerState,
                 (ctrl, mon, val, ct) => ctrl.SetPowerStateAsync(mon, val, ct),
-                (mon, val) => { }, // No state update - display will be off for non-On values
+                (mon, val) => mon.CurrentPowerState = val,
                 cancellationToken);
 
         /// <summary>
@@ -267,7 +322,6 @@ namespace PowerDisplay.Helpers
                 if (currentOrientation >= 0 && currentOrientation != monitor.Orientation)
                 {
                     monitor.Orientation = currentOrientation;
-                    monitor.LastUpdate = DateTime.Now;
                 }
             }
         }
@@ -296,13 +350,15 @@ namespace PowerDisplay.Helpers
 
         /// <summary>
         /// Generic helper to execute monitor operations with common error handling.
-        /// Eliminates code duplication across Set* methods.
+        /// Feature-level capability handling lives on the controller contract itself —
+        /// methods that a controller doesn't implement fall through to the default
+        /// "unsupported" body on <see cref="IDdcController"/> and return a Failure result.
         /// </summary>
-        private async Task<MonitorOperationResult> ExecuteMonitorOperationAsync<T>(
+        private async Task<MonitorOperationResult> ExecuteMonitorOperationAsync<TValue>(
             string monitorId,
-            T value,
-            Func<IMonitorController, Monitor, T, CancellationToken, Task<MonitorOperationResult>> operation,
-            Action<Monitor, T> onSuccess,
+            TValue value,
+            Func<IMonitorController, Monitor, TValue, CancellationToken, Task<MonitorOperationResult>> operation,
+            Action<Monitor, TValue> onSuccess,
             CancellationToken cancellationToken = default)
         {
             var monitor = GetMonitor(monitorId);
@@ -326,18 +382,12 @@ namespace PowerDisplay.Helpers
                 if (result.IsSuccess)
                 {
                     onSuccess(monitor, value);
-                    monitor.LastUpdate = DateTime.Now;
-                }
-                else
-                {
-                    monitor.IsAvailable = false;
                 }
 
                 return result;
             }
             catch (Exception ex)
             {
-                monitor.IsAvailable = false;
                 Logger.LogError($"[MonitorManager] Operation failed for {monitorId}: {ex.Message}");
                 return MonitorOperationResult.Failure($"Exception: {ex.Message}");
             }

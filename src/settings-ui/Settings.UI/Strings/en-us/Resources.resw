@@ -5148,7 +5148,7 @@ The break timer font matches the text font.</value>
     <value>No actions to show..</value>
   </data>
   <data name="NoShortcutsToShow.Text" xml:space="preserve">
-    <value>No shortcuts to show..</value>
+    <value>No shortcuts to show.</value>
   </data>
   <data name="HighlightMode.Description" xml:space="preserve">
     <value>Highlight the cursor or dim the screen to spotlight it</value>
@@ -5451,16 +5451,18 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay.ModuleTitle" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay.ModuleDescription" xml:space="preserve">
     <value>A display management utility for brightness and power control</value>
   </data>
   <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
     <value>Enable Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
     <value>Toggle Power Display</value>
-    <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
+    <comment>Dashboard: Label for the PowerDisplay activation hotkey. {Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -5468,15 +5470,19 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
 	<data name="PowerDisplay_LaunchButton.Content" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
     <value>Launch the Power Display utility</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_RestoreSettingsOnStartup.Content" xml:space="preserve">
     <value>Restore monitor brightness and color temperature when Power Display launches</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ShowSystemTrayIcon.Content" xml:space="preserve">
     <value>Show system tray icon</value>
@@ -5487,6 +5493,15 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
+  <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibilityMode.Header" xml:space="preserve">
+    <value>Maximum compatibility mode</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibilityMode.Description" xml:space="preserve">
+    <value>Some monitors do not return a standard capabilities string. Enable this to force Power Display to probe each supported feature directly. This increases discovery time for monitors that already work, so leave it off unless a monitor is missing from Power Display.</value>
+  </data>
   <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
     <value>Profiles</value>
   </data>
@@ -5495,6 +5510,7 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_QuickProfiles.Description" xml:space="preserve">
     <value>Click the profile button in the Power Display flyout to quickly apply saved monitor settings</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
     <value>Add profile</value>
@@ -5507,21 +5523,26 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LearnMore_PowerDisplay.Text" xml:space="preserve">
     <value>Learn more about Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay.Title" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay.Description" xml:space="preserve">
     <value>Power Display provides unified control over display settings across multiple monitors. Adjust brightness, contrast, volume, color temperature, and input source for all connected displays from a single overlay. Supports DDC/CI for external monitors and WMI for laptop displays, with profile support for quick configuration switching and LightSwitch integration for automatic theme-based adjustments.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay_Activation.Text" xml:space="preserve">
     <value>to open the Power Display overlay.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay_TipsAndTricks.Text" xml:space="preserve">
     <value>**Create profiles** to save your preferred display settings, then configure them in **LightSwitch** to automatically switch profiles when the system theme changes.</value>
   </data>
   <data name="Launch_PowerDisplay.Content" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_Monitor_EnableContrast.Content" xml:space="preserve">
     <value>Display contrast slider</value>
@@ -5594,6 +5615,23 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
     <value>Enable input source control for this monitor?</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningTitle" xml:space="preserve">
+    <value>Confirm maximum compatibility mode</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This may cause unstable monitor behavior.</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningDescription" xml:space="preserve">
+    <value>Maximum compatibility mode bypasses your monitor's capabilities string and sends a probe for every supported VCP feature. Some monitors do not handle this well, which may cause:</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningList" xml:space="preserve">
+    <value>• The screen may go black or briefly lose signal during discovery.
+• The monitor may respond unpredictably, including unwanted changes to brightness, contrast, or input source.
+• The monitor may stop responding to DDC/CI until it is power-cycled.</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningConfirm" xml:space="preserve">
+    <value>Only enable this if a monitor is missing from Power Display and you fully understand the side effects listed above. Continue?</value>
   </data>
   <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
@@ -5714,9 +5752,11 @@ The break timer font matches the text font.</value>
   </data>
 	<data name="PowerDisplayGroupHeader.Header" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplayFlyoutHeader.Header" xml:space="preserve">
     <value>Power Display flyout</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
     <value>Define custom display names for color temperature presets and input sources</value>
@@ -6069,7 +6109,7 @@ Text uses the current drawing color.</value>
   </data>
   <data name="GrabAndMove_ModifierKey.Header" xml:space="preserve">
     <value>Activation modifier key</value>
-    <comment>Drop-down to choose which modifier key (Alt or Win) activates Grab And Move drag and resize.</comment>
+    <comment>Drop-down to choose which modifier key (Alt or Win) activates Grab And Move drag and resize. "Activation" here means to enable/trigger the feature (활성화 in Korean), NOT product authentication/genuine certification (정품인증 in Korean).</comment>
   </data>
   <data name="GrabAndMove_ModifierKey_Alt.Content" xml:space="preserve">
     <value>Alt</value>

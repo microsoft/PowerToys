@@ -17,6 +17,7 @@
                 <ResourceDictionary Source="ms-appx:///Styles/TextBlock.xaml" />
                 <ResourceDictionary Source="ms-appx:///Styles/TextBox.xaml" />
                 <ResourceDictionary Source="ms-appx:///Styles/Settings.xaml" />
+                <ResourceDictionary Source="ms-appx:///Styles/Button.xaml" />
                 <ResourceDictionary Source="ms-appx:///Controls/Tag.xaml" />
                 <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyVisual.xaml" />
                 <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />

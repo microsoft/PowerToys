@@ -32,7 +32,10 @@
 
     <controls:SettingsPageControl x:Uid="PowerDisplay" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerDisplay.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
+            <!--  ChildrenTransitions intentionally omitted: RepositionThemeTransition interacts badly  -->
+            <!--  with the per-monitor SettingsExpanders and PageScrollViewer, causing rubber-band  -->
+            <!--  scrolling when a monitor is expanded.  -->
+            <StackPanel>
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard
                         x:Uid="PowerDisplay_Enable_PowerDisplay"
@@ -78,6 +81,12 @@
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="PowerDisplay_AdvancedSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MaxCompatibilityMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7B5;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=OneWay}" Toggled="MaxCompatibilityMode_Toggled" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <!--  Custom VCP Name Mappings  -->
@@ -214,7 +223,7 @@
                                             <CheckBox
                                                 x:Uid="PowerDisplay_Monitor_EnableInputSource"
                                                 Click="EnableInputSource_Click"
-                                                IsChecked="{x:Bind EnableInputSource, Mode=TwoWay}"
+                                                IsChecked="{x:Bind EnableInputSource, Mode=OneWay}"
                                                 Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
@@ -224,14 +233,14 @@
                                             <CheckBox
                                                 x:Uid="PowerDisplay_Monitor_EnableColorTemperature"
                                                 Click="EnableColorTemperature_Click"
-                                                IsChecked="{x:Bind EnableColorTemperature, Mode=TwoWay}"
+                                                IsChecked="{x:Bind EnableColorTemperature, Mode=OneWay}"
                                                 Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsPowerState, Mode=OneWay}">
                                             <CheckBox
                                                 x:Uid="PowerDisplay_Monitor_EnablePowerState"
                                                 Click="EnablePowerState_Click"
-                                                IsChecked="{x:Bind EnablePowerState, Mode=TwoWay}"
+                                                IsChecked="{x:Bind EnablePowerState, Mode=OneWay}"
                                                 Tag="{x:Bind}" />
                                         </tkcontrols:SettingsCard>
                                         <tkcontrols:SettingsCard ContentAlignment="Left">
