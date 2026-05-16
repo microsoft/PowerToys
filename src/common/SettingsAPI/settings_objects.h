@@ -78,6 +78,10 @@ namespace PowerToysSettings
         {
             json::JsonObject prop_value;
             prop_value.SetNamedValue(L"value", json::value(value));
+            if (!json::has(m_json, L"properties", json::JsonValueType::Object))
+            {
+                m_json.SetNamedValue(L"properties", json::JsonObject{});
+            }
             m_json.GetNamedObject(L"properties").SetNamedValue(name, prop_value);
         }
 
