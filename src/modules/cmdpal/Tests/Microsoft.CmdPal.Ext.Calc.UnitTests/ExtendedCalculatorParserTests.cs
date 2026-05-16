@@ -411,14 +411,38 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     [DataTestMethod]
     [DataRow("171!")]
     [DataRow("1000!")]
-    public void Interpret_ReturnsError_WhenValueOverflowsDecimal(string input)
+    public void Interpret_ReturnsOutOfBoundsError_WhenValueOverflowsDecimal(string input)
     {
         var settings = new Settings();
 
         CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
 
-        Assert.IsFalse(string.IsNullOrEmpty(error));
-        Assert.AreNotEqual(null, error);
+        Assert.AreEqual(Properties.Resources.calculator_not_covert_to_decimal, error);
+    }
+
+    [DataTestMethod]
+    [DataRow("exp(99999)")]
+    [DataRow("-exp(99999)")]
+    public void Interpret_ReturnsOutOfBoundsError_WhenResultIsInfinity(string input)
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_not_covert_to_decimal, error);
+    }
+
+    [DataTestMethod]
+    [DataRow("1 2")]
+    public void Interpret_ReturnsExpressionNotCompleteError_WhenExpressionIsInvalid(string input)
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_expression_not_complete, error);
     }
 
     [TestMethod]
