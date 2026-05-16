@@ -4535,7 +4535,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt.ModuleDescription" xml:space="preserve">
-    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to copy screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt.ModuleTitle" xml:space="preserve">
@@ -4909,7 +4909,7 @@ The break timer font matches the text font.</value>
     <value>Select an area, then slowly scroll through the content without rewinding, and press the hotkey again to copy the screenshot to your clipboard</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
-    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to copy screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="Oobe_ZoomIt.Title" xml:space="preserve">
