@@ -96,6 +96,7 @@ public static partial class CalculateEngine
 
         if (string.IsNullOrEmpty(result))
         {
+            error = Properties.Resources.calculator_not_a_number;
             return default;
         }
 
