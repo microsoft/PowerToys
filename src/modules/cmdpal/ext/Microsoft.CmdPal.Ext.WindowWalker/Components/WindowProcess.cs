@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.CmdPal.Ext.WindowWalker.Commands;
 
@@ -219,14 +221,31 @@ internal sealed class WindowProcess
     /// <param name="killProcessTree">Kill process and sub processes.</param>
     internal void KillThisProcess(bool killProcessTree)
     {
+        var killTree = killProcessTree ? " /t" : string.Empty;
+
         if (IsFullAccessDenied)
         {
-            var killTree = killProcessTree ? " /t" : string.Empty;
-            ExplorerInfoResultCommand.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, ExplorerInfoResultCommand.ShellRunAsType.Administrator, true);
+            if (!ExplorerInfoResultCommand.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, ExplorerInfoResultCommand.ShellRunAsType.Administrator, true))
+            {
+                throw new InvalidOperationException($"Failed to start elevated taskkill for process ID {ProcessID}.");
+            }
         }
         else
         {
-            Process.GetProcessById((int)ProcessID).Kill(killProcessTree);
+            try
+            {
+                using var process = Process.GetProcessById((int)ProcessID);
+                process.Kill(killProcessTree);
+            }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 5)
+            {
+                // Error 5 = ERROR_ACCESS_DENIED
+                // Fall back to elevated taskkill when direct kill is denied
+                if (!ExplorerInfoResultCommand.OpenInShell("taskkill.exe", $"/pid {(int)ProcessID} /f{killTree}", null, ExplorerInfoResultCommand.ShellRunAsType.Administrator, true))
+                {
+                    throw new InvalidOperationException($"Failed to start elevated taskkill for process ID {ProcessID}.", ex);
+                }
+            }
         }
     }
 

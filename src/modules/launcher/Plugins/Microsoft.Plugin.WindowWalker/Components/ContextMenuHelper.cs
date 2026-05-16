@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 
@@ -102,7 +103,25 @@ namespace Microsoft.Plugin.WindowWalker.Components
             }
 
             // Kill process
-            window.Process.KillThisProcess(WindowWalkerSettings.Instance.KillProcessTree);
+            try
+            {
+                window.Process.KillThisProcess(WindowWalkerSettings.Instance.KillProcessTree);
+            }
+            catch (ArgumentException)
+            {
+                // The process already exited between the existence check and the kill attempt.
+            }
+            catch (Win32Exception ex)
+            {
+                Log.Exception($"Failed to kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}).", ex, typeof(ContextMenuHelper));
+                return false;
+            }
+            catch (InvalidOperationException ex)
+            {
+                Log.Exception($"Failed to kill process '{window.Process.Name}' ({window.Process.ProcessID}) of the window '{window.Title}' ({window.Hwnd}).", ex, typeof(ContextMenuHelper));
+                return false;
+            }
+
             return !WindowWalkerSettings.Instance.OpenAfterKillAndClose;
         }
     }
