@@ -8,6 +8,8 @@
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/utils/string_utils.h> // trim 
 
+#include <algorithm>
+
 namespace NonLocalizable
 {
     const static wchar_t* SettingsFileName = L"settings.json";
@@ -15,6 +17,10 @@ namespace NonLocalizable
     const static wchar_t* HotkeyID = L"hotkey";
     const static wchar_t* IncreaseOpacityHotkeyID = L"increase-opacity-hotkey";
     const static wchar_t* DecreaseOpacityHotkeyID = L"decrease-opacity-hotkey";
+    const static wchar_t* CursorDodgeEnabledID = L"cursor-dodge-enabled";
+    const static wchar_t* CursorDodgeAnimationIntervalID = L"cursor-dodge-animation-interval-ms";
+    const static wchar_t* CursorDodgeCornerPaddingHorizontalID = L"cursor-dodge-corner-padding-horizontal";
+    const static wchar_t* CursorDodgeCornerPaddingVerticalID = L"cursor-dodge-corner-padding-vertical";
     const static wchar_t* SoundEnabledID = L"sound-enabled";
     const static wchar_t* ShowInSystemMenuID = L"show-in-system-menu";
     const static wchar_t* FrameEnabledID = L"frame-enabled";
@@ -25,6 +31,19 @@ namespace NonLocalizable
     const static wchar_t* ExcludedAppsID = L"excluded-apps";
     const static wchar_t* FrameAccentColor = L"frame-accent-color";
     const static wchar_t* RoundCornersEnabledID = L"round-corners-enabled";
+}
+
+namespace
+{
+    int ClampCursorDodgeAnimationInterval(int value) noexcept
+    {
+        return std::clamp(value, 8, 100);
+    }
+
+    int ClampCursorDodgeCornerPadding(int value) noexcept
+    {
+        return std::clamp(value, 0, 200);
+    }
 }
 
 // TODO: move to common utils
@@ -117,6 +136,46 @@ void AlwaysOnTopSettings::LoadSettings()
         updateHotkeySetting(NonLocalizable::HotkeyID, updatedSettings->hotkey, SettingId::Hotkey);
         updateHotkeySetting(NonLocalizable::IncreaseOpacityHotkeyID, updatedSettings->increaseOpacityHotkey, SettingId::IncreaseOpacityHotkey);
         updateHotkeySetting(NonLocalizable::DecreaseOpacityHotkeyID, updatedSettings->decreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey);
+
+        if (const auto jsonVal = values.get_bool_value(NonLocalizable::CursorDodgeEnabledID))
+        {
+            auto val = *jsonVal;
+            if (updatedSettings->enableCursorDodge != val)
+            {
+                updatedSettings->enableCursorDodge = val;
+                changedSettings.push_back(SettingId::CursorDodgeEnabled);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(NonLocalizable::CursorDodgeAnimationIntervalID))
+        {
+            const auto val = ClampCursorDodgeAnimationInterval(*jsonVal);
+            if (updatedSettings->cursorDodgeAnimationIntervalMs != val)
+            {
+                updatedSettings->cursorDodgeAnimationIntervalMs = val;
+                changedSettings.push_back(SettingId::CursorDodgeAnimationInterval);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(NonLocalizable::CursorDodgeCornerPaddingHorizontalID))
+        {
+            const auto val = ClampCursorDodgeCornerPadding(*jsonVal);
+            if (updatedSettings->cursorDodgeCornerPaddingHorizontal != val)
+            {
+                updatedSettings->cursorDodgeCornerPaddingHorizontal = val;
+                changedSettings.push_back(SettingId::CursorDodgeCornerPaddingHorizontal);
+            }
+        }
+
+        if (const auto jsonVal = values.get_int_value(NonLocalizable::CursorDodgeCornerPaddingVerticalID))
+        {
+            const auto val = ClampCursorDodgeCornerPadding(*jsonVal);
+            if (updatedSettings->cursorDodgeCornerPaddingVertical != val)
+            {
+                updatedSettings->cursorDodgeCornerPaddingVertical = val;
+                changedSettings.push_back(SettingId::CursorDodgeCornerPaddingVertical);
+            }
+        }
         
         if (const auto jsonVal = values.get_bool_value(NonLocalizable::SoundEnabledID))
         {

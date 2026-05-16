@@ -16,11 +16,19 @@
 #include <trace.h>
 #include <WinHookEventIDs.h>
 
+#include <algorithm>
+#include <cmath>
+#include <optional>
 
 namespace NonLocalizable
 {
     const static wchar_t* TOOL_WINDOW_CLASS_NAME = L"AlwaysOnTopWindow";
     const static wchar_t* WINDOW_IS_PINNED_PROP = L"AlwaysOnTop_Pinned";
+    constexpr UINT_PTR CURSOR_DODGE_TIMER_ID = 1;
+    constexpr UINT CURSOR_DODGE_DEFAULT_TIMER_INTERVAL_MS = 16;
+    constexpr ULONGLONG CURSOR_DODGE_ANIMATION_DURATION_MS = 180;
+    constexpr int CURSOR_DODGE_TRIGGER_DISTANCE = 48;
+    constexpr ULONGLONG CURSOR_DODGE_COOLDOWN_MS = 600;
     constexpr UINT SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND = 0xEFE0;
     constexpr ULONG_PTR SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG = 0x414F5450;
     constexpr DWORD SYSTEM_EVENT_MENU_POPUP_START = 0x0006;
@@ -29,6 +37,32 @@ namespace NonLocalizable
 
 namespace
 {
+    enum class WindowCorner : int
+    {
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight,
+    };
+
+    struct CandidateCorner
+    {
+        POINT origin{};
+        WindowCorner corner{};
+        long long distanceSquared{};
+    };
+
+    UINT GetCursorDodgeTimerIntervalMs() noexcept
+    {
+        const auto settings = AlwaysOnTopSettings::settings();
+        if (!settings)
+        {
+            return NonLocalizable::CURSOR_DODGE_DEFAULT_TIMER_INTERVAL_MS;
+        }
+
+        return static_cast<UINT>(std::clamp(settings->cursorDodgeAnimationIntervalMs, 8, 100));
+    }
+
     void UnsubscribeEvents(std::vector<HWINEVENTHOOK>& hooks) noexcept
     {
         for (const auto hook : hooks)
@@ -64,6 +98,108 @@ namespace
                                 &menuItemInfo) &&
                menuItemInfo.dwItemData == NonLocalizable::SYSTEM_MENU_TOGGLE_ALWAYS_ON_TOP_COMMAND_OWNER_TAG;
     }
+
+    bool GetWindowWorkAreaCandidates(HWND window, std::array<CandidateCorner, 4>& candidates, WindowCorner& currentCorner) noexcept
+    {
+        RECT windowRect{};
+        if (!GetWindowRect(window, &windowRect))
+        {
+            return false;
+        }
+
+        MONITORINFO monitorInfo{};
+        monitorInfo.cbSize = sizeof(monitorInfo);
+
+        const auto monitor = MonitorFromRect(&windowRect, MONITOR_DEFAULTTONEAREST);
+        if (!monitor || !GetMonitorInfoW(monitor, &monitorInfo))
+        {
+            return false;
+        }
+
+        const int windowWidth = windowRect.right - windowRect.left;
+        const int windowHeight = windowRect.bottom - windowRect.top;
+        const auto settings = AlwaysOnTopSettings::settings();
+        const int paddingHorizontal = settings ? std::clamp(settings->cursorDodgeCornerPaddingHorizontal, 0, 200) : 10;
+        const int paddingVertical = settings ? std::clamp(settings->cursorDodgeCornerPaddingVertical, 0, 200) : 10;
+        const int minLeft = monitorInfo.rcWork.left + paddingHorizontal;
+        const int minTop = monitorInfo.rcWork.top + paddingVertical;
+        const int maxLeft = (std::max)(minLeft, static_cast<int>(monitorInfo.rcWork.right) - windowWidth - paddingHorizontal);
+        const int maxTop = (std::max)(minTop, static_cast<int>(monitorInfo.rcWork.bottom) - windowHeight - paddingVertical);
+
+        candidates = {
+            CandidateCorner{ POINT{ minLeft, minTop }, WindowCorner::TopLeft, 0 },
+            CandidateCorner{ POINT{ maxLeft, minTop }, WindowCorner::TopRight, 0 },
+            CandidateCorner{ POINT{ minLeft, maxTop }, WindowCorner::BottomLeft, 0 },
+            CandidateCorner{ POINT{ maxLeft, maxTop }, WindowCorner::BottomRight, 0 },
+        };
+
+        const auto getDistanceToCorner = [&](const CandidateCorner& candidate) -> long long {
+            const long long dx = static_cast<long long>(windowRect.left) - candidate.origin.x;
+            const long long dy = static_cast<long long>(windowRect.top) - candidate.origin.y;
+            return (dx * dx) + (dy * dy);
+        };
+
+        currentCorner = candidates.front().corner;
+        long long bestDistance = getDistanceToCorner(candidates.front());
+        for (const auto& candidate : candidates)
+        {
+            const auto distance = getDistanceToCorner(candidate);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                currentCorner = candidate.corner;
+            }
+        }
+
+        return true;
+    }
+
+    long long GetDistanceSquared(const POINT& a, const POINT& b) noexcept
+    {
+        const long long dx = static_cast<long long>(a.x) - b.x;
+        const long long dy = static_cast<long long>(a.y) - b.y;
+        return (dx * dx) + (dy * dy);
+    }
+
+    double GetDistance(const POINT& a, const POINT& b) noexcept
+    {
+        return std::sqrt(static_cast<double>(GetDistanceSquared(a, b)));
+    }
+
+    bool IsCursorNearRect(const RECT& rect, const POINT& cursorPos) noexcept
+    {
+        RECT triggerRect = rect;
+        InflateRect(&triggerRect, NonLocalizable::CURSOR_DODGE_TRIGGER_DISTANCE, NonLocalizable::CURSOR_DODGE_TRIGGER_DISTANCE);
+        return PtInRect(&triggerRect, cursorPos);
+    }
+
+    constexpr double EaseOutCubic(double progress) noexcept
+    {
+        const double inverted = 1.0 - progress;
+        return 1.0 - (inverted * inverted * inverted);
+    }
+
+    constexpr int Interpolate(int start, int end, double progress) noexcept
+    {
+        return start + static_cast<int>((end - start) * progress);
+    }
+
+    double GetDodgeScore(HWND window,
+                         const CandidateCorner& candidate,
+                         const POINT& candidateCenter,
+                         const POINT& cursorPos,
+                         const POINT& currentCenter,
+                         const std::optional<WindowCorner>& previousCorner,
+                         ULONGLONG tick) noexcept
+    {
+        const double cursorDistance = GetDistance(candidateCenter, cursorPos);
+        const double travelDistance = GetDistance(candidateCenter, currentCenter);
+        const double previousCornerPenalty = previousCorner && candidate.corner == *previousCorner ? 500.0 : 0.0;
+        const auto jitterSeed = (reinterpret_cast<UINT_PTR>(window) >> 4) ^ tick ^ (static_cast<UINT_PTR>(static_cast<int>(candidate.corner)) * 1103515245u);
+        const double jitter = static_cast<double>(static_cast<int>(jitterSeed % 31) - 15);
+
+        return cursorDistance - (travelDistance * 0.25) - previousCornerPenalty + jitter;
+    }
 }
 
 bool isExcluded(HWND window)
@@ -76,7 +212,7 @@ bool isExcluded(HWND window)
 }
 
 AlwaysOnTop::AlwaysOnTop(bool useLLKH, DWORD mainThreadId) :
-    SettingsObserver({ SettingId::FrameEnabled, SettingId::Hotkey, SettingId::IncreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu }),
+    SettingsObserver({ SettingId::FrameEnabled, SettingId::Hotkey, SettingId::IncreaseOpacityHotkey, SettingId::DecreaseOpacityHotkey, SettingId::ExcludeApps, SettingId::ShowInSystemMenu, SettingId::CursorDodgeEnabled, SettingId::CursorDodgeAnimationInterval }),
     m_hinstance(reinterpret_cast<HINSTANCE>(&__ImageBase)),
     m_useCentralizedLLKH(useLLKH),
     m_mainThreadId(mainThreadId),
@@ -156,6 +292,12 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
         RegisterHotkey();
     }
     break;
+    case SettingId::CursorDodgeEnabled:
+    case SettingId::CursorDodgeAnimationInterval:
+    {
+        UpdateCursorDodgeTimerInterval();
+    }
+    break;
     case SettingId::FrameEnabled:
     {
         const auto settings = AlwaysOnTopSettings::settings();
@@ -193,6 +335,10 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
         for (const auto window: toErase)
         {
             m_topmostWindows.erase(window);
+            m_dodgeAnimations.erase(window);
+            m_lastDodgeTicks.erase(window);
+            m_previousDodgeCorners.erase(window);
+            m_windowOriginalLayeredState.erase(window);
         }
     }
     break;
@@ -234,6 +380,10 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     {
         AlwaysOnTopSettings::instance().LoadSettings();
     }
+    else if (message == WM_TIMER && wparam == NonLocalizable::CURSOR_DODGE_TIMER_ID)
+    {
+        PollCursorDodge();
+    }
     
     return 0;
 }
@@ -268,6 +418,9 @@ void AlwaysOnTop::ProcessCommand(HWND window)
             // Restore transparency when unpinning
             RestoreWindowAlpha(window);
             m_windowOriginalLayeredState.erase(window);
+            m_lastDodgeTicks.erase(window);
+            m_dodgeAnimations.erase(window);
+            m_previousDodgeCorners.erase(window);
 
             Trace::AlwaysOnTop::UnpinWindow();
         }
@@ -581,6 +734,9 @@ void AlwaysOnTop::UnpinAll()
     }
 
     m_topmostWindows.clear();
+    m_lastDodgeTicks.clear();
+    m_dodgeAnimations.clear();
+    m_previousDodgeCorners.clear();
     m_windowOriginalLayeredState.clear();
 }
 
@@ -592,6 +748,7 @@ void AlwaysOnTop::CleanUp()
     UnpinAll();
     if (m_window)
     {
+        KillTimer(m_window, NonLocalizable::CURSOR_DODGE_TIMER_ID);
         DestroyWindow(m_window);
         m_window = nullptr;
     }
@@ -643,6 +800,208 @@ bool AlwaysOnTop::IsTracked(HWND window) const noexcept
 {
     auto iter = m_topmostWindows.find(window);
     return (iter != m_topmostWindows.end());
+}
+
+void AlwaysOnTop::UpdateCursorDodgeTimerInterval()
+{
+    if (!m_window)
+    {
+        return;
+    }
+
+    const auto settings = AlwaysOnTopSettings::settings();
+    if (!settings || !settings->enableCursorDodge)
+    {
+        // Ensure windows do not get stuck at an in-between position if dodge is disabled mid-animation.
+        for (const auto& [window, animation] : m_dodgeAnimations)
+        {
+            if (!window || !IsWindow(window) || !IsWindowVisible(window) || !IsPinned(window) || IsIconic(window) || IsZoomed(window))
+            {
+                continue;
+            }
+
+            if (!SetWindowPos(window, HWND_TOPMOST, animation.target.x, animation.target.y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE))
+            {
+                Logger::warn(L"Failed to finalize pinned window dodge, {}", get_last_error_or_default(GetLastError()));
+                continue;
+            }
+
+            auto topmostIter = m_topmostWindows.find(window);
+            if (topmostIter != m_topmostWindows.end() && topmostIter->second)
+            {
+                topmostIter->second->UpdateBorderPosition();
+            }
+        }
+
+        m_dodgeAnimations.clear();
+        KillTimer(m_window, NonLocalizable::CURSOR_DODGE_TIMER_ID);
+        return;
+    }
+
+    SetTimer(m_window, NonLocalizable::CURSOR_DODGE_TIMER_ID, GetCursorDodgeTimerIntervalMs(), nullptr);
+}
+
+void AlwaysOnTop::PollCursorDodge()
+{
+    const auto settings = AlwaysOnTopSettings::settings();
+    if (!settings->enableCursorDodge)
+    {
+        return;
+    }
+
+    UpdateDodgeAnimations();
+
+    if (m_topmostWindows.empty())
+    {
+        return;
+    }
+
+    POINT cursorPos{};
+    if (!GetCursorPos(&cursorPos))
+    {
+        return;
+    }
+
+    for (const auto& [window, border] : m_topmostWindows)
+    {
+        if (TryDodgeWindow(window, cursorPos))
+        {
+            break;
+        }
+    }
+}
+
+void AlwaysOnTop::UpdateDodgeAnimations()
+{
+    const auto now = GetTickCount64();
+    for (auto iter = m_dodgeAnimations.begin(); iter != m_dodgeAnimations.end();)
+    {
+        const auto window = iter->first;
+        const auto& animation = iter->second;
+
+        if (!window || !IsWindow(window) || !IsWindowVisible(window) || !IsPinned(window) || IsIconic(window) || IsZoomed(window))
+        {
+            iter = m_dodgeAnimations.erase(iter);
+            continue;
+        }
+
+        const auto elapsed = now - animation.startTick;
+        const double progress = elapsed >= NonLocalizable::CURSOR_DODGE_ANIMATION_DURATION_MS ?
+                                    1.0 :
+                                    static_cast<double>(elapsed) / NonLocalizable::CURSOR_DODGE_ANIMATION_DURATION_MS;
+        const double easedProgress = EaseOutCubic(progress);
+        const int x = Interpolate(animation.start.x, animation.target.x, easedProgress);
+        const int y = Interpolate(animation.start.y, animation.target.y, easedProgress);
+
+        if (!SetWindowPos(window, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE))
+        {
+            Logger::warn(L"Failed to animate pinned window dodge, {}", get_last_error_or_default(GetLastError()));
+            iter = m_dodgeAnimations.erase(iter);
+            continue;
+        }
+
+        auto topmostIter = m_topmostWindows.find(window);
+        if (topmostIter != m_topmostWindows.end() && topmostIter->second)
+        {
+            topmostIter->second->UpdateBorderPosition();
+        }
+
+        if (progress >= 1.0)
+        {
+            iter = m_dodgeAnimations.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+}
+
+void AlwaysOnTop::StartDodgeAnimation(HWND window, const RECT& windowRect, const POINT& target)
+{
+    m_dodgeAnimations[window] = WindowDodgeAnimation{
+        POINT{ windowRect.left, windowRect.top },
+        target,
+        GetTickCount64(),
+    };
+}
+
+bool AlwaysOnTop::TryDodgeWindow(HWND window, const POINT& cursorPos)
+{
+    if (!window || !IsWindow(window) || !IsWindowVisible(window) || !IsPinned(window) || IsIconic(window) || IsZoomed(window))
+    {
+        return false;
+    }
+
+    if (m_dodgeAnimations.find(window) != m_dodgeAnimations.end())
+    {
+        return false;
+    }
+
+    RECT windowRect{};
+    if (!GetWindowRect(window, &windowRect) || !IsCursorNearRect(windowRect, cursorPos))
+    {
+        return false;
+    }
+
+    const auto now = GetTickCount64();
+    const auto lastMove = m_lastDodgeTicks[window];
+    if ((now - lastMove) < NonLocalizable::CURSOR_DODGE_COOLDOWN_MS)
+    {
+        return false;
+    }
+
+    std::array<CandidateCorner, 4> candidates{};
+    WindowCorner currentCorner{};
+    if (!GetWindowWorkAreaCandidates(window, candidates, currentCorner))
+    {
+        return false;
+    }
+
+    const int windowWidth = windowRect.right - windowRect.left;
+    const int windowHeight = windowRect.bottom - windowRect.top;
+    const POINT currentCenter{
+        windowRect.left + (windowWidth / 2),
+        windowRect.top + (windowHeight / 2),
+    };
+    std::optional<WindowCorner> previousCorner;
+    if (const auto previousCornerIter = m_previousDodgeCorners.find(window); previousCornerIter != m_previousDodgeCorners.end())
+    {
+        previousCorner = static_cast<WindowCorner>(previousCornerIter->second);
+    }
+
+    CandidateCorner* bestCandidate = nullptr;
+    double bestScore = 0.0;
+    for (auto& candidate : candidates)
+    {
+        const POINT candidateCenter{
+            candidate.origin.x + (windowWidth / 2),
+            candidate.origin.y + (windowHeight / 2),
+        };
+
+        if (candidate.corner == currentCorner)
+        {
+            continue;
+        }
+
+        const double score = GetDodgeScore(window, candidate, candidateCenter, cursorPos, currentCenter, previousCorner, now);
+        if (!bestCandidate || score > bestScore)
+        {
+            bestCandidate = &candidate;
+            bestScore = score;
+        }
+    }
+
+    if (!bestCandidate)
+    {
+        return false;
+    }
+
+    m_lastDodgeTicks[window] = now;
+    m_previousDodgeCorners[window] = static_cast<int>(currentCorner);
+    StartDodgeAnimation(window, windowRect, bestCandidate->origin);
+
+    return true;
 }
 
 void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
@@ -740,6 +1099,9 @@ void AlwaysOnTop::HandleWinHookEvent(WinHookEvent* data) noexcept
     for (const auto window : toErase)
     {
         m_topmostWindows.erase(window);
+        m_lastDodgeTicks.erase(window);
+        m_dodgeAnimations.erase(window);
+        m_previousDodgeCorners.erase(window);
         m_windowOriginalLayeredState.erase(window);
     }
 

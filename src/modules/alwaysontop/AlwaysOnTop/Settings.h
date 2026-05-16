@@ -23,6 +23,10 @@ struct Settings
     static constexpr int minTransparencyPercentage = 20; // minimum transparency (can't go below 20%)
     static constexpr int maxTransparencyPercentage = 100; // maximum (fully opaque)
     static constexpr int transparencyStep = 10; // step size for +/- adjustment
+    bool enableCursorDodge = false;
+    int cursorDodgeAnimationIntervalMs = 16;
+    int cursorDodgeCornerPaddingHorizontal = 10;
+    int cursorDodgeCornerPaddingVertical = 10;
     bool showInSystemMenu = false;
     bool enableFrame = true;
     bool enableSound = true;

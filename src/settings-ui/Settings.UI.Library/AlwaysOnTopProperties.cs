@@ -14,6 +14,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static readonly HotkeySettings DefaultIncreaseOpacityHotkeyValue = new HotkeySettings(true, true, false, false, 0xBB);
         public static readonly HotkeySettings DefaultDecreaseOpacityHotkeyValue = new HotkeySettings(true, true, false, false, 0xBD);
         public const bool DefaultFrameEnabled = true;
+        public const bool DefaultCursorDodgeEnabled = false;
+        public const int DefaultCursorDodgeAnimationIntervalMs = 16;
+        public const int DefaultCursorDodgeCornerPaddingHorizontal = 10;
+        public const int DefaultCursorDodgeCornerPaddingVertical = 10;
         public const bool DefaultShowInSystemMenu = false;
         public const int DefaultFrameThickness = 15;
         public const string DefaultFrameColor = "#0099cc";
@@ -28,6 +32,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Hotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
             IncreaseOpacityHotkey = new KeyboardKeysProperty(DefaultIncreaseOpacityHotkeyValue);
             DecreaseOpacityHotkey = new KeyboardKeysProperty(DefaultDecreaseOpacityHotkeyValue);
+            CursorDodgeEnabled = new BoolProperty(DefaultCursorDodgeEnabled);
+            CursorDodgeAnimationIntervalMs = new IntProperty(DefaultCursorDodgeAnimationIntervalMs);
+            CursorDodgeCornerPaddingHorizontal = new IntProperty(DefaultCursorDodgeCornerPaddingHorizontal);
+            CursorDodgeCornerPaddingVertical = new IntProperty(DefaultCursorDodgeCornerPaddingVertical);
             ShowInSystemMenu = new BoolProperty(DefaultShowInSystemMenu);
             FrameEnabled = new BoolProperty(DefaultFrameEnabled);
             FrameThickness = new IntProperty(DefaultFrameThickness);
@@ -48,6 +56,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("decrease-opacity-hotkey")]
         public KeyboardKeysProperty DecreaseOpacityHotkey { get; set; }
+
+        [JsonPropertyName("cursor-dodge-enabled")]
+        public BoolProperty CursorDodgeEnabled { get; set; }
+
+        [JsonPropertyName("cursor-dodge-animation-interval-ms")]
+        public IntProperty CursorDodgeAnimationIntervalMs { get; set; }
+
+        [JsonPropertyName("cursor-dodge-corner-padding-horizontal")]
+        public IntProperty CursorDodgeCornerPaddingHorizontal { get; set; }
+
+        [JsonPropertyName("cursor-dodge-corner-padding-vertical")]
+        public IntProperty CursorDodgeCornerPaddingVertical { get; set; }
 
         [JsonPropertyName("frame-enabled")]
         public BoolProperty FrameEnabled { get; set; }

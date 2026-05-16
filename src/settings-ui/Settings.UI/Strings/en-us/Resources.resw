@@ -5168,6 +5168,33 @@ The break timer font matches the text font.</value>
   <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
     <value>Play a sound when pinning a window</value>
   </data>
+  <data name="AlwaysOnTop_CursorDodge.Header" xml:space="preserve">
+    <value>Dodge cursor</value>
+  </data>
+  <data name="AlwaysOnTop_CursorDodge.Description" xml:space="preserve">
+    <value>Move pinned windows to another corner when the cursor gets close</value>
+  </data>
+  <data name="AlwaysOnTop_CursorDodgeAnimationInterval.Header" xml:space="preserve">
+    <value>Animation update interval (ms)</value>
+    <comment>ms = milliseconds</comment>
+  </data>
+  <data name="AlwaysOnTop_CursorDodgeAnimationInterval.Description" xml:space="preserve">
+    <value>Lower values update more often and feel smoother. Default: 16 ms.</value>
+  </data>
+  <data name="AlwaysOnTop_CursorDodgeCornerPaddingHorizontal.Header" xml:space="preserve">
+    <value>Horizontal corner padding (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="AlwaysOnTop_CursorDodgeCornerPaddingHorizontal.Description" xml:space="preserve">
+    <value>Horizontal space to keep from the screen edge when dodging to a corner. Default: 10 px.</value>
+  </data>
+  <data name="AlwaysOnTop_CursorDodgeCornerPaddingVertical.Header" xml:space="preserve">
+    <value>Vertical corner padding (px)</value>
+    <comment>px = pixels</comment>
+  </data>
+  <data name="AlwaysOnTop_CursorDodgeCornerPaddingVertical.Description" xml:space="preserve">
+    <value>Vertical space to keep from the screen edge when dodging to a corner. Default: 10 px.</value>
+  </data>
   <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
