@@ -18,7 +18,11 @@ public partial class ProviderSettingsViewModel : ObservableObject
 {
     private static readonly IconInfoViewModel EmptyIcon = new(null);
     private static readonly CompositeFormat ExtensionSubtextFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext);
+    private static readonly CompositeFormat ExtensionSubtextSingularFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_singular);
     private static readonly CompositeFormat ExtensionSubtextWithFallbackFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_with_fallback);
+    private static readonly CompositeFormat ExtensionSubtextWithFallbackSingularCommandFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_with_fallback_singular_command);
+    private static readonly CompositeFormat ExtensionSubtextWithFallbackSingularFallbackFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_with_fallback_singular_fallback);
+    private static readonly CompositeFormat ExtensionSubtextWithFallbackSingularBothFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_with_fallback_singular_both);
     private static readonly CompositeFormat ExtensionSubtextDisabledFormat = CompositeFormat.Parse(Resources.builtin_extension_subtext_disabled);
 
     private readonly CommandProviderWrapper _provider;
@@ -47,11 +51,40 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? Resources.builtin_extension_name;
 
-    public string ExtensionSubtext => IsEnabled ?
-        HasFallbackCommands ?
-            string.Format(CultureInfo.CurrentCulture, ExtensionSubtextWithFallbackFormat, ExtensionName, TopLevelCommands.Count, _provider.FallbackItems?.Length ?? 0) :
-            string.Format(CultureInfo.CurrentCulture, ExtensionSubtextFormat, ExtensionName, TopLevelCommands.Count) :
-        string.Format(CultureInfo.CurrentCulture, ExtensionSubtextDisabledFormat, ExtensionName, Resources.builtin_disabled_extension);
+    public string ExtensionSubtext
+    {
+        get
+        {
+            if (!IsEnabled)
+            {
+                return string.Format(CultureInfo.CurrentCulture, ExtensionSubtextDisabledFormat, ExtensionName, Resources.builtin_disabled_extension);
+            }
+
+            int commandCount = TopLevelCommands.Count;
+
+            if (HasFallbackCommands)
+            {
+                int fallbackCount = _provider.FallbackItems?.Length ?? 0;
+                bool commandSingular = commandCount == 1;
+                bool fallbackSingular = fallbackCount == 1;
+
+                CompositeFormat format = (commandSingular, fallbackSingular) switch
+                {
+                    (true, true) => ExtensionSubtextWithFallbackSingularBothFormat,
+                    (true, false) => ExtensionSubtextWithFallbackSingularCommandFormat,
+                    (false, true) => ExtensionSubtextWithFallbackSingularFallbackFormat,
+                    (false, false) => ExtensionSubtextWithFallbackFormat,
+                };
+
+                return string.Format(CultureInfo.CurrentCulture, format, ExtensionName, commandCount, fallbackCount);
+            }
+            else
+            {
+                CompositeFormat format = commandCount == 1 ? ExtensionSubtextSingularFormat : ExtensionSubtextFormat;
+                return string.Format(CultureInfo.CurrentCulture, format, ExtensionName, commandCount);
+            }
+        }
+    }
 
     [MemberNotNullWhen(true, nameof(Extension))]
     public bool IsFromExtension => _provider.Extension is not null;

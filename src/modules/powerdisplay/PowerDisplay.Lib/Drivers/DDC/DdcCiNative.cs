@@ -3,112 +3,61 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using ManagedCommon;
-using Windows.Win32.Foundation;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
 namespace PowerDisplay.Common.Drivers.DDC
 {
     /// <summary>
-    /// DDC/CI native API wrapper
+    /// DDC/CI native API wrapper — Win32 primitives only. All retry / fallback
+    /// orchestration lives in <see cref="DdcCiController"/>.
     /// </summary>
     public static class DdcCiNative
     {
+        // Continuous-range VCP features probed when running in max-compatibility mode.
+        // Discrete-value features (0x14 color preset, 0x60 input source, 0xD6 power mode)
+        // are excluded — GetVCPFeatureAndVCPFeatureReply returns only current+max, so we
+        // cannot synthesize a meaningful supported-value list for them. Friendly names
+        // come from VcpNames.GetCodeName to keep a single source of truth.
+        private static readonly byte[] ProbeableContinuousVcpCodes =
+        {
+            VcpCodeBrightness,
+            VcpCodeContrast,
+            VcpCodeVolume,
+        };
+
         /// <summary>
-        /// Fetches VCP capabilities string from a monitor and returns a validation result.
-        /// This is the slow I2C operation (~4 seconds per monitor) that should only be done once.
-        /// The result is cached regardless of success or failure.
+        /// One attempt to get the capabilities string from a physical monitor handle.
+        /// Returns null on any failure. The orchestrator owns retry + warn-level
+        /// logging; per-attempt failures are logged at Debug here so retries do not
+        /// spam the log.
         /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <returns>Validation result with capabilities data (or failure status)</returns>
-        public static DdcCiValidationResult FetchCapabilities(IntPtr hPhysicalMonitor)
+        public static string? TryGetCapabilitiesString(IntPtr hPhysicalMonitor)
         {
             if (hPhysicalMonitor == IntPtr.Zero)
             {
-                Logger.LogWarning("DDC: Monitor ignored - null physical monitor handle");
-                return DdcCiValidationResult.Invalid;
-            }
-
-            var handleHex = $"0x{hPhysicalMonitor:X}";
-
-            try
-            {
-                // Try to get capabilities string (slow I2C operation)
-                var capsString = TryGetCapabilitiesString(hPhysicalMonitor);
-                if (string.IsNullOrEmpty(capsString))
-                {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - empty capabilities string from DDC/CI");
-                    return DdcCiValidationResult.Invalid;
-                }
-
-                Logger.LogInfo($"DDC: Capabilities raw (handle={handleHex}, length={capsString.Length}): {capsString}");
-
-                // Parse the capabilities string
-                var parseResult = Utils.MccsCapabilitiesParser.Parse(capsString);
-                var capabilities = parseResult.Capabilities;
-
-                if (capabilities == null || capabilities.SupportedVcpCodes.Count == 0)
-                {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - parsed capabilities have no VCP codes (parseErrors={parseResult.Errors.Count})");
-                    return DdcCiValidationResult.Invalid;
-                }
-
-                // Check if brightness (VCP 0x10) is supported - determines DDC/CI validity
-                bool supportsBrightness = capabilities.SupportsVcpCode(NativeConstants.VcpCodeBrightness);
-                bool supportsContrast = capabilities.SupportsVcpCode(NativeConstants.VcpCodeContrast);
-                bool supportsColorTemperature = capabilities.SupportsVcpCode(NativeConstants.VcpCodeSelectColorPreset);
-                bool supportsVolume = capabilities.SupportsVcpCode(NativeConstants.VcpCodeVolume);
-
-                Logger.LogInfo(
-                    $"DDC: Capabilities parsed (handle={handleHex}) - " +
-                    $"Brightness={supportsBrightness} Contrast={supportsContrast} " +
-                    $"ColorTemperature={supportsColorTemperature} Volume={supportsVolume}");
-
-                if (!supportsBrightness)
-                {
-                    Logger.LogWarning($"DDC: Monitor ignored (handle={handleHex}) - brightness (VCP 0x10) not advertised in capabilities");
-                }
-
-                return new DdcCiValidationResult(supportsBrightness, capsString, capabilities);
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                Logger.LogError($"DDC: Monitor ignored (handle={handleHex}) - exception during FetchCapabilities: {ex.Message}");
-                return DdcCiValidationResult.Invalid;
-            }
-        }
-
-        /// <summary>
-        /// Try to get capabilities string from a physical monitor handle.
-        /// </summary>
-        /// <param name="hPhysicalMonitor">Physical monitor handle</param>
-        /// <returns>Capabilities string, or null if failed</returns>
-        private static string? TryGetCapabilitiesString(IntPtr hPhysicalMonitor)
-        {
-            if (hPhysicalMonitor == IntPtr.Zero)
-            {
+                Logger.LogDebug("DDC: TryGetCapabilitiesString called with IntPtr.Zero");
                 return null;
             }
 
             try
             {
-                // Get capabilities string length
                 if (!GetCapabilitiesStringLength(hPhysicalMonitor, out uint length) || length == 0)
                 {
-                    Logger.LogWarning($"DDC: GetCapabilitiesStringLength failed (handle=0x{hPhysicalMonitor:X}, length={length})");
+                    Logger.LogDebug($"DDC: GetCapabilitiesStringLength failed (handle=0x{hPhysicalMonitor:X}, length={length})");
                     return null;
                 }
 
-                // Allocate buffer and get capabilities string
                 var buffer = Marshal.AllocHGlobal((int)length);
                 try
                 {
                     if (!CapabilitiesRequestAndCapabilitiesReply(hPhysicalMonitor, buffer, length))
                     {
-                        Logger.LogWarning($"DDC: CapabilitiesRequestAndCapabilitiesReply failed (handle=0x{hPhysicalMonitor:X})");
+                        Logger.LogDebug($"DDC: CapabilitiesRequestAndCapabilitiesReply failed (handle=0x{hPhysicalMonitor:X})");
                         return null;
                     }
 
@@ -127,178 +76,47 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Gets GDI device name for a source (e.g., "\\.\DISPLAY1").
+        /// Sequentially probes each VCP code in <see cref="ProbeableContinuousVcpCodes"/>
+        /// via GetVCPFeatureAndVCPFeatureReply. Used as the max-compatibility-mode fallback
+        /// when the cap string is empty or unparsable. Returns null if zero probes succeed;
+        /// otherwise returns a synthetic <see cref="VcpCapabilities"/> with only the codes
+        /// that responded.
         /// </summary>
-        /// <param name="adapterId">Adapter ID</param>
-        /// <param name="sourceId">Source ID</param>
-        /// <returns>GDI device name, or null if retrieval fails</returns>
-        private static unsafe string? GetSourceGdiDeviceName(LUID adapterId, uint sourceId)
+        /// <remarks>
+        /// Sequential, not parallel — physical monitors share an I²C arbitration bus,
+        /// concurrent reads cause spurious failures.
+        /// </remarks>
+        public static VcpCapabilities? ProbeSupportedVcpFeatures(IntPtr hPhysicalMonitor)
         {
-            try
+            if (hPhysicalMonitor == IntPtr.Zero)
             {
-                var sourceName = new DisplayConfigSourceDeviceName
+                Logger.LogDebug("DDC: ProbeSupportedVcpFeatures called with IntPtr.Zero");
+                return null;
+            }
+
+            var caps = new VcpCapabilities();
+
+            foreach (var code in ProbeableContinuousVcpCodes)
+            {
+                try
                 {
-                    Header = new DisplayConfigDeviceInfoHeader
+                    if (GetVCPFeatureAndVCPFeatureReply(hPhysicalMonitor, code, IntPtr.Zero, out uint _, out uint _))
                     {
-                        Type = DisplayconfigDeviceInfoGetSourceName,
-                        Size = (uint)sizeof(DisplayConfigSourceDeviceName),
-                        AdapterId = adapterId,
-                        Id = sourceId,
-                    },
-                };
-
-                var result = DisplayConfigGetDeviceInfo(&sourceName);
-                if (result == 0)
-                {
-                    return sourceName.GetViewGdiDeviceName();
-                }
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets friendly name, EDID ID, and device path for a monitor target.
-        /// </summary>
-        /// <param name="adapterId">Adapter ID</param>
-        /// <param name="targetId">Target ID</param>
-        /// <returns>Tuple of (friendlyName, edidId, devicePath), any may be null if retrieval fails</returns>
-        private static unsafe (string? FriendlyName, string? EdidId, string? DevicePath) GetTargetDeviceInfo(LUID adapterId, uint targetId)
-        {
-            try
-            {
-                var deviceName = new DisplayConfigTargetDeviceName
-                {
-                    Header = new DisplayConfigDeviceInfoHeader
+                        caps.SupportedVcpCodes[code] = new VcpCodeInfo(code, VcpNames.GetCodeName(code));
+                    }
+                    else
                     {
-                        Type = DisplayconfigDeviceInfoGetTargetName,
-                        Size = (uint)sizeof(DisplayConfigTargetDeviceName),
-                        AdapterId = adapterId,
-                        Id = targetId,
-                    },
-                };
-
-                var result = DisplayConfigGetDeviceInfo(&deviceName);
-                if (result == 0)
-                {
-                    // Extract friendly name
-                    var friendlyName = deviceName.GetMonitorFriendlyDeviceName();
-
-                    // Extract device path (unique per target, used as key)
-                    var devicePath = deviceName.GetMonitorDevicePath();
-
-                    // Extract EDID ID from EDID data
-                    var manufacturerId = deviceName.EdidManufactureId;
-                    var manufactureCode = ConvertManufactureIdToString(manufacturerId);
-                    var productCode = deviceName.EdidProductCodeId.ToString("X4", System.Globalization.CultureInfo.InvariantCulture);
-                    var edidId = $"{manufactureCode}{productCode}";
-
-                    return (friendlyName, edidId, devicePath);
-                }
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-            }
-
-            return (null, null, null);
-        }
-
-        /// <summary>
-        /// Converts manufacturer ID to 3-character manufacturer code
-        /// </summary>
-        /// <param name="manufacturerId">Manufacturer ID</param>
-        /// <returns>3-character manufacturer code</returns>
-        private static string ConvertManufactureIdToString(ushort manufacturerId)
-        {
-            // EDID manufacturer ID requires byte order swap first
-            manufacturerId = (ushort)(((manufacturerId & 0xff00) >> 8) | ((manufacturerId & 0x00ff) << 8));
-
-            // Extract three 5-bit characters (each character is A-Z, where A=1, B=2, ..., Z=26)
-            var char1 = (char)('A' - 1 + ((manufacturerId >> 0) & 0x1f));
-            var char2 = (char)('A' - 1 + ((manufacturerId >> 5) & 0x1f));
-            var char3 = (char)('A' - 1 + ((manufacturerId >> 10) & 0x1f));
-
-            // Combine characters in correct order
-            return $"{char3}{char2}{char1}";
-        }
-
-        /// <summary>
-        /// Gets complete information for all monitors, keyed by GDI device name (e.g., "\\.\DISPLAY1").
-        /// This allows reliable matching with GetMonitorInfo results.
-        /// </summary>
-        /// <returns>Dictionary keyed by GDI device name containing monitor information</returns>
-        public static unsafe Dictionary<string, MonitorDisplayInfo> GetAllMonitorDisplayInfo()
-        {
-            var monitorInfo = new Dictionary<string, MonitorDisplayInfo>(StringComparer.OrdinalIgnoreCase);
-
-            try
-            {
-                // Get buffer sizes
-                var result = GetDisplayConfigBufferSizes(QdcOnlyActivePaths, out uint pathCount, out uint modeCount);
-                if (result != 0)
-                {
-                    return monitorInfo;
-                }
-
-                // Allocate buffers
-                var paths = new DisplayConfigPathInfo[pathCount];
-                var modes = new DisplayConfigModeInfo[modeCount];
-
-                // Query display configuration using fixed pointer
-                fixed (DisplayConfigPathInfo* pathsPtr = paths)
-                {
-                    fixed (DisplayConfigModeInfo* modesPtr = modes)
-                    {
-                        result = QueryDisplayConfig(QdcOnlyActivePaths, ref pathCount, pathsPtr, ref modeCount, modesPtr, IntPtr.Zero);
-                        if (result != 0)
-                        {
-                            return monitorInfo;
-                        }
+                        var lastError = Marshal.GetLastWin32Error();
+                        Logger.LogDebug($"DDC: [max-compat] probe of VCP 0x{code:X2} failed (handle=0x{hPhysicalMonitor:X}, error={lastError})");
                     }
                 }
-
-                // Get information for each path
-                // The path index corresponds to Windows Display Settings "Identify" number
-                for (int i = 0; i < pathCount; i++)
+                catch (Exception ex) when (ex is not OutOfMemoryException)
                 {
-                    var path = paths[i];
-
-                    // Get GDI device name from source info (e.g., "\\.\DISPLAY1")
-                    var gdiDeviceName = GetSourceGdiDeviceName(path.SourceInfo.AdapterId, path.SourceInfo.Id);
-                    if (string.IsNullOrEmpty(gdiDeviceName))
-                    {
-                        continue;
-                    }
-
-                    // Get target info (friendly name, EDID ID, device path)
-                    var (friendlyName, edidId, devicePath) = GetTargetDeviceInfo(path.TargetInfo.AdapterId, path.TargetInfo.Id);
-
-                    // Use device path as key - unique per target, supports mirror mode
-                    if (string.IsNullOrEmpty(devicePath))
-                    {
-                        continue;
-                    }
-
-                    monitorInfo[devicePath] = new MonitorDisplayInfo
-                    {
-                        DevicePath = devicePath,
-                        GdiDeviceName = gdiDeviceName,
-                        FriendlyName = friendlyName ?? string.Empty,
-                        EdidId = edidId ?? string.Empty,
-                        AdapterId = path.TargetInfo.AdapterId,
-                        TargetId = path.TargetInfo.Id,
-                        MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
-                    };
+                    Logger.LogError($"DDC: [max-compat] probe of VCP 0x{code:X2} threw (handle=0x{hPhysicalMonitor:X}): {ex.Message}");
                 }
             }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-            }
 
-            return monitorInfo;
+            return caps.SupportedVcpCodes.Count > 0 ? caps : null;
         }
     }
 }

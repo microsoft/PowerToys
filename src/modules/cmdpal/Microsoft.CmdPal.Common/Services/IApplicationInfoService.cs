@@ -30,6 +30,12 @@ public interface IApplicationInfoService
     string ConfigDirectory { get; }
 
     /// <summary>
+    /// Gets the directory path where application cache files are stored.
+    /// This location should be safe to recreate and should not be used for durable settings.
+    /// </summary>
+    string CacheDirectory { get; }
+
+    /// <summary>
     /// Gets a value indicating whether the application is running with administrator privileges.
     /// </summary>
     bool IsElevated { get; }
