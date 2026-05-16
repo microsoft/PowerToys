@@ -29,6 +29,11 @@ jobs:
     steps:
       - name: Apply area labels with AI
         uses: actions/github-script@v7
+        env:
+          # actions/github-script does not propagate `github-token` to
+          # process.env. Expose it explicitly so the inline script can
+          # authenticate against the GitHub Models inference endpoint.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
