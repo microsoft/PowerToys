@@ -13,6 +13,8 @@
 #include <shellapi.h>
 #include <common/interop/shared_constants.h>
 
+#include <atomic>
+
 namespace NonLocalizable
 {
     const wchar_t ModulePath[] = L"PowerToys.ZoomIt.exe";
@@ -107,7 +109,7 @@ public:
     // Returns if the powertoy is enabled
     virtual bool is_enabled() override
     {
-        return m_enabled;
+        return m_enabled.load();
     }
 
     // Destroy the powertoy and free memory
@@ -132,9 +134,69 @@ private:
         return false;
     }
 
+    // Called by the thread pool when the ZoomIt process exits.
+    static void CALLBACK OnZoomItProcessExited(PVOID lpParameter, BOOLEAN /*TimerOrWaitFired*/)
+    {
+        if (lpParameter == nullptr)
+        {
+            return;
+        }
+        reinterpret_cast<ZoomItModuleInterface*>(lpParameter)->HandleUnexpectedExit();
+    }
+
+    // Handles an unexpected ZoomIt process exit by restarting it when still enabled.
+    void HandleUnexpectedExit()
+    {
+        // Atomically clear the restart flag. If it was already cleared (e.g. by Disable()),
+        // another thread got here first or an intentional exit is in progress — do nothing.
+        if (!m_restartOnCrash.exchange(false))
+        {
+            return;
+        }
+
+        // The wait handle is auto-deregistered because WT_EXECUTEONLYONCE was used.
+        m_processWaitHandle = NULL;
+
+        if (!m_enabled.load())
+        {
+            // Disable() was called concurrently; do not restart.
+            return;
+        }
+
+        Logger::error(L"ZoomIt process exited unexpectedly. Attempting to restart...");
+
+        // Atomically take ownership of the stale process handle to avoid a double-close
+        // race with Disable(), then release it.
+        HANDLE hOldProcess = reinterpret_cast<HANDLE>(
+            InterlockedExchangePointer(reinterpret_cast<PVOID*>(&m_hProcess), nullptr));
+        if (hOldProcess)
+        {
+            CloseHandle(hOldProcess);
+        }
+
+        Enable();
+    }
+
     void Enable()
     {
         m_enabled = true;
+
+        // Prevent any in-flight callback from the previous session from triggering a
+        // spurious restart, then cancel the old wait (non-blocking, as Enable() may
+        // itself be called from the callback thread).
+        m_restartOnCrash = false;
+        if (m_processWaitHandle)
+        {
+            UnregisterWait(m_processWaitHandle);
+            m_processWaitHandle = NULL;
+        }
+
+        // Close any leftover process handle from a previous run.
+        if (m_hProcess)
+        {
+            CloseHandle(m_hProcess);
+            m_hProcess = nullptr;
+        }
 
         // Log telemetry
         Trace::EnableZoomIt(true);
@@ -164,13 +226,46 @@ private:
         else
         {
             m_hProcess = sei.hProcess;
-        }
 
+            // Register a one-shot thread-pool wait so we are notified if ZoomIt exits
+            // unexpectedly (e.g. due to a crash) and can restart it automatically.
+            m_restartOnCrash = true;
+            if (!RegisterWaitForSingleObject(
+                    &m_processWaitHandle,
+                    m_hProcess,
+                    OnZoomItProcessExited,
+                    this,
+                    INFINITE,
+                    WT_EXECUTEONLYONCE))
+            {
+                m_restartOnCrash = false;
+                Logger::error(L"Failed to register ZoomIt crash monitor: {}", get_last_error_or_default(GetLastError()));
+            }
+        }
     }
 
     void Disable(bool const traceEvent)
     {
         m_enabled = false;
+
+        // Signal that any pending crash-monitoring callback must not restart ZoomIt.
+        m_restartOnCrash = false;
+
+        // Unregister the crash-monitoring wait and block until any in-flight callback
+        // has completed, so we can safely proceed with process teardown without racing.
+        // Use InterlockedExchangePointer to atomically take ownership of the handle,
+        // preventing a TOCTOU race with a concurrently completing callback.
+        {
+            HANDLE waitHandle = reinterpret_cast<HANDLE>(
+                InterlockedExchangePointer(reinterpret_cast<PVOID*>(&m_processWaitHandle), nullptr));
+            if (waitHandle)
+            {
+                // INVALID_HANDLE_VALUE: block until all callbacks for this wait have returned.
+                // Must not be called from within a callback — Disable() always runs on the
+                // main/runner thread, so this is safe.
+                UnregisterWaitEx(waitHandle, INVALID_HANDLE_VALUE);
+            }
+        }
 
         // Log telemetry
         if (traceEvent)
@@ -183,21 +278,27 @@ private:
 
         ResetEvent(m_reload_settings_event_handle);
 
-        // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
-        WaitForSingleObject(m_hProcess, 1500);
-
-        // If process is still running, terminate it
         if (m_hProcess)
         {
-            TerminateProcess(m_hProcess, 0);
-            m_hProcess = nullptr;
-        }
+            // Atomically take ownership of the process handle to avoid a double-close
+            // race with HandleUnexpectedExit().
+            HANDLE hProcess = reinterpret_cast<HANDLE>(
+                InterlockedExchangePointer(reinterpret_cast<PVOID*>(&m_hProcess), nullptr));
+            if (hProcess)
+            {
+                // Wait for 1.5 seconds for the process to end correctly and stop etw tracer
+                WaitForSingleObject(hProcess, 1500);
 
+                // If process is still running, terminate it
+                TerminateProcess(hProcess, 0);
+                CloseHandle(hProcess);
+            }
+        }
     }
 
     bool is_process_running()
     {
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
+        return m_hProcess != nullptr && WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
     virtual void call_custom_action(const wchar_t* action) override
@@ -221,8 +322,10 @@ private:
     std::wstring app_name;
     std::wstring app_key; //contains the non localized key of the powertoy
 
-    bool m_enabled = false;
+    std::atomic<bool> m_enabled{ false };
     HANDLE m_hProcess = nullptr;
+    HANDLE m_processWaitHandle = NULL;
+    std::atomic<bool> m_restartOnCrash{ false };
 
     HANDLE m_reload_settings_event_handle = NULL;
     HANDLE m_exit_event_handle = NULL;
