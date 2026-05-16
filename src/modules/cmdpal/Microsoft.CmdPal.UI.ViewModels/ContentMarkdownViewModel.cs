@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
@@ -25,7 +26,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
             return;
         }
 
-        Body = model.Body;
+        Body = MarkdownTextHelper.SanitizeMarkdown(model.Body);
         UpdateProperty(nameof(Body));
 
         model.PropChanged += Model_PropChanged;
@@ -55,7 +56,7 @@ public partial class ContentMarkdownViewModel(IMarkdownContent _markdown, WeakRe
         switch (propertyName)
         {
             case nameof(Body):
-                Body = model.Body;
+                Body = MarkdownTextHelper.SanitizeMarkdown(model.Body);
                 break;
         }
 
