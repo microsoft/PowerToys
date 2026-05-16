@@ -294,10 +294,9 @@
                                     x:Uid="FancyZones_ExcludeApps_TextBoxControl"
                                     MinWidth="240"
                                     MinHeight="160"
+                                    MaxHeight="320"
                                     AcceptsReturn="True"
-                                    ScrollViewer.IsVerticalRailEnabled="True"
-                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
-                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
                                     Text="{x:Bind ViewModel.ExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap" />
                             </tkcontrols:SettingsCard>
