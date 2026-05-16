@@ -47,6 +47,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private readonly SupersedingAsyncGate _reloadCommandsGate;
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
+    private int _pendingBackgroundExtensionLoads;
 
     private HashSet<(string ProviderId, string CommandId)> _pinnedCommandSet = [];
 
@@ -72,6 +73,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
+
+    public bool HasFinishedLoadingCommands => !IsLoading && Volatile.Read(ref _pendingBackgroundExtensionLoads) == 0;
 
     public IEnumerable<CommandProviderWrapper> CommandProviders
     {
@@ -292,6 +295,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         _extensionLoadCts.Dispose();
         _extensionLoadCts = new();
         _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
+        Interlocked.Exchange(ref _pendingBackgroundExtensionLoads, 0);
 
         var extensionService = _serviceProvider.GetService<IExtensionService>()!;
         await extensionService.SignalStopExtensionsAsync().ConfigureAwait(false);
@@ -378,6 +382,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             }
             else if (r.IsTimedOut)
             {
+                TrackBackgroundExtensionLoad(ct);
                 _ = StartExtensionWhenReadyAsync(r.Extension, r.PendingStartTask, r.Stopwatch, ct);
             }
         }
@@ -457,6 +462,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             // It's weird to repeat the condition here, but it allows the compiler to track nullability of other properties
             if (r.IsTimedOut)
             {
+                TrackBackgroundExtensionLoad(ct);
                 _ = AppendCommandsWhenReadyAsync(r.Wrapper, r.PendingLoadTask, r.Stopwatch, ct);
             }
         }
@@ -515,6 +521,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         catch (Exception ex)
         {
             Logger.LogError($"Background start/load of extension {extension.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
+        }
+        finally
+        {
+            CompleteBackgroundExtensionLoad(ct);
         }
     }
 
@@ -590,6 +600,26 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         catch (Exception ex)
         {
             Logger.LogError($"Background loading of commands and bands from {wrapper.ExtensionHost?.Extension?.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
+        }
+        finally
+        {
+            CompleteBackgroundExtensionLoad(ct);
+        }
+    }
+
+    private void TrackBackgroundExtensionLoad(CancellationToken ct)
+    {
+        if (ct == _currentExtensionLoadCancellationToken)
+        {
+            Interlocked.Increment(ref _pendingBackgroundExtensionLoads);
+        }
+    }
+
+    private void CompleteBackgroundExtensionLoad(CancellationToken ct)
+    {
+        if (ct == _currentExtensionLoadCancellationToken)
+        {
+            Interlocked.Decrement(ref _pendingBackgroundExtensionLoads);
         }
     }
 

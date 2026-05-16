@@ -52,6 +52,15 @@ public partial class AliasManager : ObservableObject
                     WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
                     return true;
                 }
+                else if (_topLevelCommandManager.HasFinishedLoadingCommands)
+                {
+                    // The command no longer exists (e.g. extension uninstalled or command renamed).
+                    // Only remove the orphaned alias once extension loading has fully settled,
+                    // otherwise valid aliases can be deleted while commands are still arriving.
+                    _settingsService.UpdateSettings(
+                        s => s with { Aliases = s.Aliases.Remove(searchText) },
+                        hotReload: false);
+                }
             }
             catch
             {
@@ -109,6 +118,8 @@ public partial class AliasManager : ObservableObject
         }
 
         var keysToRemove = new List<string>();
+        var commandsToDisassociate = new List<string>();
+
         foreach (var kv in aliases)
         {
             // Look for the old aliases for the command, and remove it
@@ -121,26 +132,32 @@ public partial class AliasManager : ObservableObject
             if (newAlias is not null && kv.Value.Alias == newAlias.Alias && kv.Value.CommandId != commandId)
             {
                 keysToRemove.Add(kv.Key);
-
-                // Remove alias from other TopLevelViewModels it may be assigned to
-                var topLevelCommand = _topLevelCommandManager.LookupCommand(kv.Value.CommandId);
-                if (topLevelCommand is not null)
-                {
-                    topLevelCommand.AliasText = string.Empty;
-                }
+                commandsToDisassociate.Add(kv.Value.CommandId);
             }
         }
 
+        // Update settings atomically before touching any ViewModels.
         _settingsService.UpdateSettings(s =>
         {
             var updatedAliases = s.Aliases.RemoveRange(keysToRemove);
 
             if (newAlias is not null)
             {
-                updatedAliases = updatedAliases.Add(newAlias.SearchPrefix, newAlias);
+                // Use SetItem instead of Add to be resilient to any data inconsistencies
+                // (e.g. orphaned aliases whose key matches the new alias's SearchPrefix).
+                updatedAliases = updatedAliases.SetItem(newAlias.SearchPrefix, newAlias);
             }
 
             return s with { Aliases = updatedAliases };
         });
+
+        // After the settings update is complete, notify conflicting ViewModels to clear
+        // their alias text. Doing this after UpdateSettings avoids reentrant calls back
+        // into UpdateAlias (and Save) via the AliasText setter.
+        foreach (var conflictingCommandId in commandsToDisassociate)
+        {
+            var topLevelCommand = _topLevelCommandManager.LookupCommand(conflictingCommandId);
+            topLevelCommand?.ClearAlias();
+        }
     }
 }
