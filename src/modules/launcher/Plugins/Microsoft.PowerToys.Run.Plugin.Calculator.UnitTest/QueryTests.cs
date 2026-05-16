@@ -229,6 +229,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("(1+1)(3+2)", 10)]
         [DataRow("(1+1)cos(pi)", -2)]
         [DataRow("log(100)cos(pi)", -2)]
+        [DataRow(".76*2.4", 1.824)]
+        [DataRow("-.5*2", -1)]
         public void RightAnswerForHumanMultiplicationExpressions(string typedString, double answer)
         {
             // Setup

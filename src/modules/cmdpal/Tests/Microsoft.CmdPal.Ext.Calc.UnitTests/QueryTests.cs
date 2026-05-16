@@ -60,6 +60,19 @@ public class QueryTests : CommandPaletteUnitTestBase
     }
 
     [TestMethod]
+    public void TopLevelPageQuery_AcceptsCommaDecimalSeparator()
+    {
+        var settings = new Settings(outputUseEnglishFormat: true);
+        var page = new CalculatorListPage(settings);
+
+        page.UpdateSearchText(string.Empty, "1,5+1,5");
+        var result = page.GetItems().FirstOrDefault();
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("3", result.Title);
+    }
+
+    [TestMethod]
     public void EmptyQueryTest()
     {
         var settings = new Settings();

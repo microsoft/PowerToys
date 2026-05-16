@@ -134,6 +134,23 @@ public class NumberTranslatorTests
     }
 
     [DataTestMethod]
+    [DataRow("1,5+1,5", "1.5+1.5")]
+    [DataRow("-1,5+2", "-1.5+2")]
+    [DataRow("1,000+2", "1000+2")]
+    public void Translate_ParsesUngroupedCommaAsDecimal_WhenSourceCultureUsesDotDecimal(string input, string expectedResult)
+    {
+        // Arrange
+        var translator = NumberTranslator.Create(new CultureInfo("en-US", false), new CultureInfo("en-US", false));
+
+        // Act
+        var result = translator.Translate(input);
+
+        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedResult, result);
+    }
+
+    [DataTestMethod]
     [DataRow("de-DE", "12,0004", "12.0004")]
     [DataRow("de-DE", "0xF000", "61440")]
     [DataRow("de-DE", "0", "0")]

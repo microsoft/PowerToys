@@ -137,13 +137,69 @@ public class NumberTranslator
                 decimal number;
 
                 outputBuilder.Append(
-                    decimal.TryParse(inner, NumberStyles.Number, cultureFrom, out number)
+                    TryParseNumber(inner, cultureFrom, out number)
                     ? (new string('0', leadingZeroCount) + number.ToString(cultureTo))
                     : inner.Replace(cultureFrom.TextInfo.ListSeparator, cultureTo.TextInfo.ListSeparator));
             }
         }
 
         return outputBuilder.ToString();
+    }
+
+    private static bool TryParseNumber(string input, CultureInfo culture, out decimal number)
+    {
+        if (TryParseCommaDecimal(input, culture, out number))
+        {
+            return true;
+        }
+
+        return decimal.TryParse(input, NumberStyles.Number, culture, out number);
+    }
+
+    private static bool TryParseCommaDecimal(string input, CultureInfo culture, out decimal number)
+    {
+        number = default;
+
+        if (culture.NumberFormat.NumberDecimalSeparator == ",")
+        {
+            return false;
+        }
+
+        var commaIndex = input.IndexOf(',');
+        if (commaIndex <= 0 || commaIndex != input.LastIndexOf(',') || commaIndex == input.Length - 1)
+        {
+            return false;
+        }
+
+        var integerStart = input[0] is '+' or '-' ? 1 : 0;
+        if (commaIndex == integerStart)
+        {
+            return false;
+        }
+
+        for (var i = integerStart; i < commaIndex; i++)
+        {
+            if (!char.IsDigit(input[i]))
+            {
+                return false;
+            }
+        }
+
+        for (var i = commaIndex + 1; i < input.Length; i++)
+        {
+            if (!char.IsDigit(input[i]))
+            {
+                return false;
+            }
+        }
+
+        if (input.Length - commaIndex - 1 == 3)
+        {
+            return false;
+        }
+
+        var normalized = input.Replace(",", culture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
+        return decimal.TryParse(normalized, NumberStyles.Number, culture, out number);
     }
 
     private static Regex GetSplitRegex(CultureInfo culture)
