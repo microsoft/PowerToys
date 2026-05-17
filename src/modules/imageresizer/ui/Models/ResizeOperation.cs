@@ -25,6 +25,37 @@ namespace ImageResizer.Models
 {
     internal class ResizeOperation
     {
+        internal enum EncodeStrategy
+        {
+            Transcode,
+            Reencode,
+        }
+
+        // The resize pipeline needs to carry the same geometry through strategy selection,
+        // pixel writes, WIC metadata copy, and JPEG EXIF fix-up. Keeping it together avoids
+        // subtle drift between the image dimensions written to pixels and the dimensions
+        // written back into metadata.
+        internal readonly record struct TransformPlan(
+            int OriginalWidth,
+            int OriginalHeight,
+            uint ScaledWidth,
+            uint ScaledHeight,
+            BitmapBounds? CropBounds,
+            bool NoTransformNeeded)
+        {
+            public int OutputWidth => NoTransformNeeded
+                ? OriginalWidth
+                : CropBounds.HasValue
+                    ? (int)CropBounds.Value.Width
+                    : (int)ScaledWidth;
+
+            public int OutputHeight => NoTransformNeeded
+                ? OriginalHeight
+                : CropBounds.HasValue
+                    ? (int)CropBounds.Value.Height
+                    : (int)ScaledHeight;
+        }
+
         private readonly IFileSystem _fileSystem = new System.IO.Abstractions.FileSystem();
 
         private readonly string _file;
@@ -38,13 +69,96 @@ namespace ImageResizer.Models
         private static CompositeFormat AiErrorFormat =>
             _aiErrorFormat ??= CompositeFormat.Parse(ResourceLoaderInstance.GetString("Error_AiProcessingFailed"));
 
-        private static readonly string[] RenderingMetadataProperties =
-            [
-                "System.Photo.Orientation",
-                "System.Image.ColorSpace",
-            ];
+        // These canonical property names are the best-effort WinRT/Shell fallback for paths
+        // that still rely on the platform metadata writer. They intentionally cover the
+        // descriptive EXIF fields users notice in Explorer, plus GPS fields needed when the
+        // source metadata can be projected through the platform stack without a custom rewrite.
+        private static readonly string[] KnownMetadataProperties =
+        [
+            "System.Photo.DateTaken",
+            "System.Photo.CameraModel",
+            "System.Photo.CameraManufacturer",
+            "System.Photo.LensModel",
+            "System.Photo.ExposureTime",
+            "System.Photo.FNumber",
+            "System.Photo.ISOSpeed",
+            "System.Photo.ExposureBias",
+            "System.Photo.MeteringMode",
+            "System.Photo.Flash",
+            "System.Photo.FocalLength",
+            "System.Photo.WhiteBalance",
+            "System.GPS.VersionID",
+            "System.GPS.Latitude",
+            "System.GPS.LatitudeRef",
+            "System.GPS.Longitude",
+            "System.GPS.LongitudeRef",
+            "System.GPS.Altitude",
+            "System.GPS.AltitudeRef",
+            "System.Photo.Orientation",
+            "System.Image.ColorSpace",
+            "System.Comment",
+            "System.Author",
+            "System.Copyright",
+        ];
 
-        // Filenames to avoid according to https://learn.microsoft.com/windows/win32/fileio/naming-a-file#file-and-directory-names
+        // These raw query paths are narrower than a full metadata clone on purpose. They are
+        // the EXIF/GPS values that remain valid after a resize; structural tags such as image
+        // dimensions, offsets, and thumbnail references are rewritten or removed elsewhere.
+        private static readonly string[] KnownWritableMetadataQueryPaths =
+        [
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.DateTakenOriginal}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.DateTakenDigitized}}}",
+            $"/app1/ifd/{{ushort={MetadataTagIds.Ifd.DateTime}}}",
+            $"/app1/ifd/{{ushort={MetadataTagIds.Ifd.Make}}}",
+            $"/app1/ifd/{{ushort={MetadataTagIds.Ifd.Model}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.LensModel}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.ExposureTime}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.FNumber}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.IsoSpeed}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.ExposureBias}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.MeteringMode}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.Flash}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.FocalLength}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.WhiteBalance}}}",
+            $"/app1/ifd/{{ushort={MetadataTagIds.Ifd.Orientation}}}",
+            $"/app1/ifd/exif/{{ushort={MetadataTagIds.Exif.ColorSpace}}}",
+            $"/app1/ifd/{{ushort={MetadataTagIds.Ifd.Artist}}}",
+            $"/app1/ifd/{{ushort={MetadataTagIds.Ifd.Copyright}}}",
+            $"/app1/ifd/gps/{{ushort={MetadataTagIds.Gps.VersionId}}}",
+            $"/app1/ifd/gps/{{ushort={MetadataTagIds.Gps.LatitudeRef}}}",
+            $"/app1/ifd/gps/{{ushort={MetadataTagIds.Gps.Latitude}}}",
+            $"/app1/ifd/gps/{{ushort={MetadataTagIds.Gps.LongitudeRef}}}",
+            $"/app1/ifd/gps/{{ushort={MetadataTagIds.Gps.Longitude}}}",
+            $"/app1/ifd/gps/{{ushort={MetadataTagIds.Gps.AltitudeRef}}}",
+            $"/app1/ifd/gps/{{ushort={MetadataTagIds.Gps.Altitude}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.DateTakenOriginal}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.DateTakenDigitized}}}",
+            $"/ifd/{{ushort={MetadataTagIds.Ifd.DateTime}}}",
+            $"/ifd/{{ushort={MetadataTagIds.Ifd.Make}}}",
+            $"/ifd/{{ushort={MetadataTagIds.Ifd.Model}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.LensModel}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.ExposureTime}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.FNumber}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.IsoSpeed}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.ExposureBias}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.MeteringMode}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.Flash}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.FocalLength}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.WhiteBalance}}}",
+            $"/ifd/{{ushort={MetadataTagIds.Ifd.Orientation}}}",
+            $"/ifd/exif/{{ushort={MetadataTagIds.Exif.ColorSpace}}}",
+            $"/ifd/{{ushort={MetadataTagIds.Ifd.Artist}}}",
+            $"/ifd/{{ushort={MetadataTagIds.Ifd.Copyright}}}",
+            $"/ifd/gps/{{ushort={MetadataTagIds.Gps.VersionId}}}",
+            $"/ifd/gps/{{ushort={MetadataTagIds.Gps.LatitudeRef}}}",
+            $"/ifd/gps/{{ushort={MetadataTagIds.Gps.Latitude}}}",
+            $"/ifd/gps/{{ushort={MetadataTagIds.Gps.LongitudeRef}}}",
+            $"/ifd/gps/{{ushort={MetadataTagIds.Gps.Longitude}}}",
+            $"/ifd/gps/{{ushort={MetadataTagIds.Gps.AltitudeRef}}}",
+            $"/ifd/gps/{{ushort={MetadataTagIds.Gps.Altitude}}}",
+        ];
+
+        // Filenames to avoid
         private static readonly string[] _avoidFilenames =
             [
                 "CON", "PRN", "AUX", "NUL",
@@ -86,59 +200,55 @@ namespace ImageResizer.Models
                 {
                     var originalWidth = (int)decoder.PixelWidth;
                     var originalHeight = (int)decoder.PixelHeight;
+                    bool shouldApplyJpegExifFixup = false;
 
-                    var (scaledWidth, scaledHeight, cropBounds, noTransformNeeded) =
-                        CalculateDimensions(originalWidth, originalHeight, decoder.DpiX, decoder.DpiY);
-
-                    var (outputWidth, outputHeight) = noTransformNeeded
-                        ? (originalWidth, originalHeight)
-                        : cropBounds.HasValue
-                            ? ((int)cropBounds.Value.Width, (int)cropBounds.Value.Height)
-                            : ((int)scaledWidth, (int)scaledHeight);
-
-                    path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
+                    var plan = CalculateTransformPlan(originalWidth, originalHeight, decoder.DpiX, decoder.DpiY);
+                    path = GetDestinationPath(encoderGuid, plan.OutputWidth, plan.OutputHeight);
                     _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
 
                     using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                     {
                         var winrtOutputStream = outputStream.AsRandomAccessStream();
-                        bool forceFresh = encoderGuid == BitmapEncoder.JpegEncoderId && !noTransformNeeded;
 
-                        await EncodeToStreamAsync(
+                        var encodeStrategy = await EncodeToStreamAsync(
                             decoder,
                             winrtInputStream,
                             winrtOutputStream,
+                            outputStream,
                             encoderGuid,
-                            forceFresh,
+                            plan,
+                            forceReencode: false,
                             async (encoder, isTranscode) =>
                             {
                                 if (isTranscode)
                                 {
-                                    if (!noTransformNeeded)
+                                    if (!plan.NoTransformNeeded)
                                     {
-                                        encoder.BitmapTransform.ScaledWidth = scaledWidth;
-                                        encoder.BitmapTransform.ScaledHeight = scaledHeight;
+                                        encoder.BitmapTransform.ScaledWidth = plan.ScaledWidth;
+                                        encoder.BitmapTransform.ScaledHeight = plan.ScaledHeight;
                                         encoder.BitmapTransform.InterpolationMode = BitmapInterpolationMode.Fant;
 
-                                        if (cropBounds.HasValue)
+                                        if (plan.CropBounds.HasValue)
                                         {
-                                            encoder.BitmapTransform.Bounds = cropBounds.Value;
+                                            encoder.BitmapTransform.Bounds = plan.CropBounds.Value;
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    await EncodeFramesAsync(
-                                        encoder,
-                                        decoder,
-                                        scaledWidth,
-                                        scaledHeight,
-                                        cropBounds,
-                                        noTransformNeeded,
-                                        originalWidth,
-                                        originalHeight);
+                                    await EncodeFramesAsync(encoder, decoder, plan);
                                 }
                             });
+
+                        shouldApplyJpegExifFixup = ShouldApplyJpegExifFixup(encodeStrategy, encoderGuid, _settings.RemoveMetadata);
+                    }
+
+                    if (shouldApplyJpegExifFixup)
+                    {
+                        // JPEG is the one format where Explorer-facing GPS visibility depends on
+                        // a coherent EXIF/GPS IFD layout, not just preserved raw tags. Rewriting
+                        // EXIF here keeps the metadata in sync with the newly encoded pixels.
+                        _ = JpegExifFixupHelper.TryRewriteExif(_fileSystem, _file, path, (uint)plan.OutputWidth, (uint)plan.OutputHeight);
                     }
                 }
             }
@@ -174,29 +284,44 @@ namespace ImageResizer.Models
                     throw new InvalidOperationException(ResourceLoaderInstance.GetString("Error_AiConversionFailed"));
                 }
 
-                var outputWidth = aiResult.PixelWidth;
-                var outputHeight = aiResult.PixelHeight;
+                var plan = new TransformPlan(
+                    (int)decoder.PixelWidth,
+                    (int)decoder.PixelHeight,
+                    (uint)aiResult.PixelWidth,
+                    (uint)aiResult.PixelHeight,
+                    null,
+                    false);
 
-                var path = GetDestinationPath(encoderGuid, outputWidth, outputHeight);
+                var path = GetDestinationPath(encoderGuid, plan.OutputWidth, plan.OutputHeight);
                 _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(path));
+                bool shouldApplyJpegExifFixup = false;
 
                 using (var outputStream = _fileSystem.File.Open(path, FileMode.CreateNew, FileAccess.ReadWrite))
                 {
                     var winrtOutputStream = outputStream.AsRandomAccessStream();
 
-                    // SetSoftwareBitmap requires a fresh encoder; the transcode encoder only
-                    // accepts BitmapTransform. Also forces quality to apply for JPEG output.
-                    await EncodeToStreamAsync(
+                    // AI output is already materialized as pixels, so we must re-encode rather than
+                    // transcode. This also guarantees JPEG quality settings are applied.
+                    var encodeStrategy = await EncodeToStreamAsync(
                         decoder,
                         winrtInputStream,
                         winrtOutputStream,
+                        outputStream,
                         encoderGuid,
-                        forceFresh: true,
+                        plan,
+                        true,
                         (encoder, _) =>
                         {
                             encoder.SetSoftwareBitmap(aiResult);
                             return Task.CompletedTask;
                         });
+
+                    shouldApplyJpegExifFixup = ShouldApplyJpegExifFixup(encodeStrategy, encoderGuid, _settings.RemoveMetadata);
+                }
+
+                if (shouldApplyJpegExifFixup)
+                {
+                    _ = JpegExifFixupHelper.TryRewriteExif(_fileSystem, _file, path, (uint)plan.OutputWidth, (uint)plan.OutputHeight);
                 }
 
                 return path;
@@ -208,32 +333,71 @@ namespace ImageResizer.Models
             }
         }
 
-        private async Task EncodeToStreamAsync(
+        private async Task<EncodeStrategy> EncodeToStreamAsync(
             BitmapDecoder decoder,
             IRandomAccessStream inputStream,
             IRandomAccessStream outputStream,
+            Stream rawOutputStream,
             Guid encoderGuid,
-            bool forceFresh,
+            TransformPlan plan,
+            bool forceReencode,
             Func<BitmapEncoder, bool, Task> writeContent)
         {
             var decoderEncoderId = CodecHelper.GetEncoderIdForDecoder(decoder);
-            bool canTranscode = !forceFresh
-                && !_settings.RemoveMetadata
-                && decoderEncoderId.HasValue
-                && decoderEncoderId.Value == encoderGuid;
+            var strategy = DetermineEncodeStrategy(
+                encoderGuid,
+                decoderEncoderId,
+                plan.NoTransformNeeded,
+                _settings.RemoveMetadata,
+                forceReencode);
 
-            if (canTranscode)
+            if (strategy == EncodeStrategy.Transcode)
             {
                 await TranscodeAsync(decoder, inputStream, outputStream, writeContent);
             }
             else
             {
-                await FreshEncodeAsync(decoder, outputStream, encoderGuid, writeContent);
+                await ReencodeAsync(
+                    decoder,
+                    outputStream,
+                    rawOutputStream,
+                    encoderGuid,
+                    plan,
+                    writeContent);
             }
+
+            return strategy;
+        }
+
+        private static bool ShouldApplyJpegExifFixup(EncodeStrategy strategy, Guid encoderGuid, bool removeMetadata)
+            => strategy == EncodeStrategy.Reencode
+                && !removeMetadata
+                && encoderGuid == BitmapEncoder.JpegEncoderId;
+
+        internal static EncodeStrategy DetermineEncodeStrategy(
+            Guid encoderGuid,
+            Guid? decoderEncoderId,
+            bool noTransformNeeded,
+            bool removeMetadata,
+            bool forceReencode = false)
+        {
+            // Prefer transcoding when the source and destination codec match and we want to
+            // preserve metadata, because that lets the platform carry the existing container
+            // state forward with less manual reconstruction. Re-encode only when settings or
+            // API constraints require rebuilding the image from decoded pixels.
+            bool mustReencode = forceReencode || (encoderGuid == BitmapEncoder.JpegEncoderId && !noTransformNeeded);
+            bool canTranscode = !mustReencode
+                && !removeMetadata
+                && decoderEncoderId.HasValue
+                && decoderEncoderId.Value == encoderGuid;
+
+            return canTranscode ? EncodeStrategy.Transcode : EncodeStrategy.Reencode;
         }
 
         /// <summary>
-        /// Transcode path: re-encodes pixels via BitmapTransform while preserving all metadata.
+        /// Preferred path when the codec stays the same and we want to preserve metadata.
+        /// WIC can keep most container state intact here, so this path minimizes manual
+        /// metadata reconstruction and is less likely to discard descriptive metadata.
         /// The <paramref name="writeContent"/> callback receives isTranscode=true and should
         /// configure <see cref="BitmapEncoder.BitmapTransform"/> properties only.
         /// </summary>
@@ -247,7 +411,7 @@ namespace ImageResizer.Models
             var encoder = await BitmapEncoder.CreateForTranscodingAsync(outputStream, decoder);
             await writeContent(encoder, true);
 
-            // Safety net: some JPEG files with large/unusual metadata blocks (e.g. 54 KB
+            // Safety net: some JPEG files with large/unusual metadata blocks (e.g. 50+ KB
             // embedded thumbnails) lose EXIF properties during transcode — the WPF equivalent
             // threw InvalidOperationException on encoder.Metadata = decoder.Metadata for these.
             // Re-set known critical properties to ensure they survive.
@@ -257,32 +421,100 @@ namespace ImageResizer.Models
         }
 
         /// <summary>
-        /// Fresh encoder path: creates a blank encoder and manually writes pixel data.
-        /// Used when codec options (e.g. JPEG quality) must apply, when metadata must be
-        /// stripped (RemoveMetadata), or when the format doesn't match (ICO→PNG).
+        /// Re-encode path: creates a blank encoder and writes decoded pixels into a new
+        /// container. This is required when encoder options (for example JPEG quality) must
+        /// apply, when metadata should be stripped, when the format changes, or when the API
+        /// only exposes pixel-writing operations on non-transcoding encoders.
         /// The <paramref name="writeContent"/> callback receives isTranscode=false and should
         /// call <see cref="EncodeFramesAsync"/> or <see cref="BitmapEncoder.SetSoftwareBitmap"/>.
         /// </summary>
-        private async Task FreshEncodeAsync(
+        private async Task ReencodeAsync(
             BitmapDecoder decoder,
             IRandomAccessStream outputStream,
+            Stream rawOutputStream,
             Guid encoderGuid,
+            TransformPlan plan,
             Func<BitmapEncoder, bool, Task> writeContent)
         {
-            // The blank encoder inherits nothing from the source, so we have to carry
-            // metadata over ourselves. RemoveMetadata keeps only the rendering-critical
-            // properties (orientation/colorspace); otherwise mirror the transcode path's
-            // best-effort EXIF preservation.
-            var propsToPreserve = _settings.RemoveMetadata
-                ? RenderingMetadataProperties
-                : KnownMetadataProperties;
-            var preservedMetadata = await ReadMetadataAsync(decoder, propsToPreserve);
+            bool? pngInterlace = encoderGuid == BitmapEncoder.PngEncoderId
+                ? _settings.PngInterlaceOption switch
+                {
+                    PngInterlaceOption.On => true,
+                    PngInterlaceOption.Off => false,
+                    _ => null,
+                }
+                : null;
+
+            if (!_settings.RemoveMetadata)
+            {
+                var usedWic = await WicMetadataCopier.TryReencodeWithMetadataAsync(
+                    _file,
+                    decoder,
+                    rawOutputStream,
+                    encoderGuid,
+                    encoderGuid == BitmapEncoder.JpegEncoderId ? GetJpegQualityFraction() : null,
+                    pngInterlace,
+                    encoderGuid == BitmapEncoder.TiffEncoderId ? MapTiffCompression(_settings.TiffCompressOption) : null,
+                    plan);
+
+                if (usedWic)
+                {
+                    return;
+                }
+            }
 
             var encoder = await CreateFreshEncoderAsync(encoderGuid, outputStream);
             await writeContent(encoder, false);
-            await WriteMetadataAsync(encoder, preservedMetadata);
+
+            if (!_settings.RemoveMetadata)
+            {
+                await CopyAllMetadataToEncoderAsync(decoder, encoder);
+            }
 
             await encoder.FlushAsync();
+        }
+
+        /// <summary>
+        /// Reads all known metadata from <paramref name="decoder"/> and writes it to
+        /// <paramref name="encoder"/> before the stream is flushed.  Writing metadata before
+        /// <see cref="BitmapEncoder.FlushAsync"/> lets WIC allocate the necessary metadata block
+        /// from scratch, avoiding the space constraints of <see cref="IWicFastMetadataEncoder"/>.
+        /// Both WIC query paths and Windows property system names are queried so that low-level
+        /// EXIF/GPS tags and higher-level descriptors (e.g. System.Comment) are all preserved.
+        /// </summary>
+        private async Task CopyAllMetadataToEncoderAsync(BitmapDecoder decoder, BitmapEncoder encoder)
+        {
+            // Write Shell property names first. The Windows property system handles
+            // creation of GPS sub-IFD and other compound metadata structures in the encoder.
+            // Writing Shell properties first establishes the metadata block layout.
+            var shellMetadata = await ReadMetadataAsync(decoder, KnownMetadataProperties);
+            if (shellMetadata != null && shellMetadata.Count > 0)
+            {
+                try
+                {
+                    await encoder.BitmapProperties.SetPropertiesAsync(shellMetadata);
+                }
+                catch
+                {
+                    // Some encoders or formats may not accept all Shell property names.
+                }
+            }
+
+            // Overwrite with WIC query path values for raw EXIF accuracy.
+            // This fallback path still cannot reliably recreate GPS sub-IFDs on a fresh WinRT
+            // encoder, so the primary re-encode path uses the WIC COM helper instead.
+            try
+            {
+                var wicProps = await decoder.BitmapProperties.GetPropertiesAsync(KnownWritableMetadataQueryPaths);
+                if (wicProps.Count > 0)
+                {
+                    await encoder.BitmapProperties.SetPropertiesAsync(wicProps);
+                }
+            }
+            catch
+            {
+                // Some formats (e.g. BMP) or files with unusual metadata may fail WIC path queries.
+            }
         }
 
         /// <summary>
@@ -293,33 +525,28 @@ namespace ImageResizer.Models
         private static async Task EncodeFramesAsync(
             BitmapEncoder encoder,
             BitmapDecoder decoder,
-            uint scaledWidth,
-            uint scaledHeight,
-            BitmapBounds? cropBounds,
-            bool noTransformNeeded,
-            int originalWidth,
-            int originalHeight)
+            TransformPlan plan)
         {
             var transform = new BitmapTransform();
-            if (!noTransformNeeded)
+            if (!plan.NoTransformNeeded)
             {
-                transform.ScaledWidth = scaledWidth;
-                transform.ScaledHeight = scaledHeight;
+                transform.ScaledWidth = plan.ScaledWidth;
+                transform.ScaledHeight = plan.ScaledHeight;
                 transform.InterpolationMode = BitmapInterpolationMode.Fant;
 
-                if (cropBounds.HasValue)
+                if (plan.CropBounds.HasValue)
                 {
-                    transform.Bounds = cropBounds.Value;
+                    transform.Bounds = plan.CropBounds.Value;
                 }
             }
             else
             {
-                transform.ScaledWidth = (uint)originalWidth;
-                transform.ScaledHeight = (uint)originalHeight;
+                transform.ScaledWidth = (uint)plan.OriginalWidth;
+                transform.ScaledHeight = (uint)plan.OriginalHeight;
             }
 
-            uint outWidth = cropBounds?.Width ?? (noTransformNeeded ? (uint)originalWidth : scaledWidth);
-            uint outHeight = cropBounds?.Height ?? (noTransformNeeded ? (uint)originalHeight : scaledHeight);
+            uint outWidth = plan.CropBounds?.Width ?? (plan.NoTransformNeeded ? (uint)plan.OriginalWidth : plan.ScaledWidth);
+            uint outHeight = plan.CropBounds?.Height ?? (plan.NoTransformNeeded ? (uint)plan.OriginalHeight : plan.ScaledHeight);
 
             for (uint i = 0; i < decoder.FrameCount; i++)
             {
@@ -346,16 +573,6 @@ namespace ImageResizer.Models
                     pixelData.DetachPixelData());
             }
         }
-
-        private static readonly string[] KnownMetadataProperties =
-        [
-            "System.Photo.DateTaken",
-            "System.Photo.CameraModel",
-            "System.Photo.CameraManufacturer",
-            "System.Photo.Orientation",
-            "System.Image.ColorSpace",
-            "System.Comment",
-        ];
 
         /// <summary>
         /// Best-effort read of metadata properties from the decoder.
@@ -386,10 +603,13 @@ namespace ImageResizer.Models
         }
 
         /// <summary>
-        /// Best-effort write of metadata properties to the encoder.
+        /// Safety net for the transcode path: re-sets known EXIF properties that
+        /// CreateForTranscodingAsync may silently drop for files with large or
+        /// unusual metadata blocks (see TestMetadataIssue2447.jpg).
         /// </summary>
-        private static async Task WriteMetadataAsync(BitmapEncoder encoder, BitmapPropertySet metadata)
+        private static async Task CopyKnownMetadataAsync(BitmapDecoder decoder, BitmapEncoder encoder)
         {
+            var metadata = await ReadMetadataAsync(decoder, KnownMetadataProperties);
             if (metadata == null || metadata.Count == 0)
             {
                 return;
@@ -401,22 +621,11 @@ namespace ImageResizer.Models
             }
             catch
             {
-                // Some encoders don't support these properties (e.g. BMP).
+                // Some encoders don't support these properties on the transcode path.
             }
         }
 
-        /// <summary>
-        /// Safety net for the transcode path: re-sets known EXIF properties that
-        /// CreateForTranscodingAsync may silently drop for files with large or
-        /// unusual metadata blocks (see TestMetadataIssue2447.jpg).
-        /// </summary>
-        private static async Task CopyKnownMetadataAsync(BitmapDecoder decoder, BitmapEncoder encoder)
-        {
-            var metadata = await ReadMetadataAsync(decoder, KnownMetadataProperties);
-            await WriteMetadataAsync(encoder, metadata);
-        }
-
-        private (uint ScaledWidth, uint ScaledHeight, BitmapBounds? CropBounds, bool NoTransformNeeded) CalculateDimensions(
+        private TransformPlan CalculateTransformPlan(
             int originalWidth, int originalHeight, double dpiX, double dpiY)
         {
             // Convert from the chosen size unit to pixels, if necessary.
@@ -463,7 +672,7 @@ namespace ImageResizer.Models
             {
                 if (scaleX > 1 || scaleY > 1)
                 {
-                    return ((uint)originalWidth, (uint)originalHeight, null, true);
+                    return new TransformPlan(originalWidth, originalHeight, (uint)originalWidth, (uint)originalHeight, null, true);
                 }
 
                 bool isFillCropRequired = _settings.SelectedSize.Fit == ResizeFit.Fill &&
@@ -471,7 +680,7 @@ namespace ImageResizer.Models
 
                 if (scaleX == 1 && scaleY == 1 && !isFillCropRequired)
                 {
-                    return ((uint)originalWidth, (uint)originalHeight, null, true);
+                    return new TransformPlan(originalWidth, originalHeight, (uint)originalWidth, (uint)originalHeight, null, true);
                 }
             }
 
@@ -494,10 +703,10 @@ namespace ImageResizer.Models
                     Height = (uint)height,
                 };
 
-                return (scaledWidth, scaledHeight, cropBounds, false);
+                return new TransformPlan(originalWidth, originalHeight, scaledWidth, scaledHeight, cropBounds, false);
             }
 
-            return (scaledWidth, scaledHeight, null, false);
+            return new TransformPlan(originalWidth, originalHeight, scaledWidth, scaledHeight, null, false);
         }
 
         private async Task<BitmapEncoder> CreateFreshEncoderAsync(Guid encoderGuid, IRandomAccessStream outputStream)
