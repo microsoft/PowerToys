@@ -3,18 +3,27 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading;
 using System.Windows.Forms;
 
-#if !MM_HELPER
+#if MM_HELPER
+using Thread = System.Threading.Thread;
+#else
+#pragma warning disable IDE0005 // using directive is unnecessary
+// this 'using' isn't strictly necessary, but it's left here to make it explicit
+// that references to 'Thread' below are different in MM_HELPER and !MM_HELPER builds
 using Thread = MouseWithoutBorders.Core.Thread;
+#pragma warning restore IDE0005
 #endif
 
 namespace MouseWithoutBorders.Core;
 
 internal static class IpcChannelHelper
 {
-    internal static bool IpcChannelCreated { get; set; }
+    internal static bool IpcChannelCreated
+    {
+        get;
+        set;
+    }
 
     internal static T Retry<T>(string name, Func<T> func, Action<string> log, Action preRetry = null)
     {

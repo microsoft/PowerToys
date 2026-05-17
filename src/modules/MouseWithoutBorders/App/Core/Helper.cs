@@ -8,9 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Windows.Forms;
 
 using Microsoft.Win32;
@@ -31,15 +29,28 @@ internal static class Helper
 {
     internal const string HELPER_FORM_TEXT = "Mouse without Borders Helper";
     internal const string HelperProcessName = "PowerToys.MouseWithoutBordersHelper";
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static bool signalHelperToExit;
-    internal static bool signalWatchDogToExit;
-#pragma warning restore SA1307
-    internal static long WndProcCounter;
+
+    internal static bool SignalHelperToExit
+    {
+        get;
+        set;
+    }
+
+    internal static bool SignalWatchDogToExit
+    {
+        get;
+        set;
+    }
+
+    internal static long WndProcCounter
+    {
+        get;
+        set;
+    }
 
     private static void WatchDogThread()
     {
-        long oldCounter = WndProcCounter;
+        long oldCounter = Helper.WndProcCounter;
 
         do
         {
@@ -47,7 +58,7 @@ internal static class Helper
             {
                 Thread.Sleep(1000);
 
-                if (signalWatchDogToExit)
+                if (Helper.SignalWatchDogToExit)
                 {
                     break;
                 }
@@ -62,7 +73,7 @@ internal static class Helper
             {
                 Process p = Process.GetCurrentProcess();
                 string procInfo = $"{p.PrivateMemorySize64 / 1024 / 1024}MB, {p.TotalProcessorTime}, {Environment.ProcessorCount}.";
-                string threadStacks = $"{procInfo} {Thread.DumpThreadsStack()}";
+                string threadStacks = $"{procInfo}\r\n{Thread.DumpThreadsStack()}\r\n";
                 Logger.TelemetryLogTrace(threadStacks, SeverityLevel.Error);
                 break;
             }
@@ -84,7 +95,7 @@ internal static class Helper
             {
                 _ = Common.EvSwitch.WaitOne(); // Switching to another machine?
 
-                if (signalHelperToExit)
+                if (Helper.SignalHelperToExit)
                 {
                     break;
                 }
@@ -128,7 +139,7 @@ internal static class Helper
             Logger.Log(e);
         }
 
-        signalHelperToExit = false;
+        Helper.SignalHelperToExit = false;
         Logger.LogDebug("^^^Helper Thread exiting...^^^");
     }
 
@@ -248,14 +259,14 @@ internal static class Helper
     {
         try
         {
-            if (Common.toggleIconsIndex < Common.TOGGLE_ICONS_SIZE)
+            if (Common.ToggleIconsIndex < Common.TOGGLE_ICONS_SIZE)
             {
-                Common.DoSomethingInUIThread(() => Common.MainForm.ChangeIcon(Common.toggleIcons[Common.toggleIconsIndex++]));
+                Common.DoSomethingInUIThread(() => Common.MainForm.ChangeIcon(Common.ToggleIcons[Common.ToggleIconsIndex++]));
             }
             else
             {
-                Common.toggleIconsIndex = 0;
-                Common.toggleIcons = null;
+                Common.ToggleIconsIndex = 0;
+                Common.ToggleIcons = null;
             }
         }
         catch (Exception e)
@@ -379,7 +390,7 @@ internal static class Helper
         log += "=============================================================================================================================\r\n";
         log += $"{Application.ProductName} version {Application.ProductVersion}\r\n";
 
-        log += $"{Setting.Values.Username}/{Encryption.GetDebugInfo(Encryption.MyKey)}\r\n";
+        log += $"{Setting.Values.Username}/{Logger.GetChecksum(Encryption.MyKey)}\r\n";
         log += $"{Common.MachineName}/{Common.MachineID}/{Common.DesMachineID}\r\n";
         log += $"Id: {Setting.Values.DeviceId}\r\n";
         log += $"Matrix: {string.Join(",", MachineStuff.MachineMatrix)}\r\n";
@@ -428,9 +439,12 @@ internal static class Helper
         log += Setting.Values.LastPersonalizeLogonScr + "\r\n";
         log += "Name2IP =\r\n" + Setting.Values.Name2IP + "\r\n";
 
+        // note - this doesn't actually log the last 10 messages - it really concatenates the counts of
+        // the first 10 unique messages that were logged, which isn't really very useful so we'll remove it
+        /*
         log += "Last 10 trace messages:\r\n";
-
         log += string.Join(Environment.NewLine, Logger.LogCounter.Select(item => $"({item.Value}): {item.Key}").Take(10));
+        */
 
         log += "\r\n=============================================================================================================================";
 

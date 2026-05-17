@@ -25,9 +25,6 @@ internal static class Encryption
 #pragma warning disable SYSLIB0021
     private static AesCryptoServiceProvider symAl;
 #pragma warning restore SYSLIB0021
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static string myKey;
-#pragma warning restore SA1307
     private static uint magicNumber;
     private static Random ran = new(); // Used for non encryption related functionality.
     internal const int SymAlBlockSize = 16;
@@ -51,6 +48,10 @@ internal static class Encryption
         get => Encryption.magicNumber;
         set => Encryption.magicNumber = value;
     }
+
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+    private static string myKey;
+#pragma warning restore SA1307
 
     internal static string MyKey
     {
@@ -194,11 +195,6 @@ internal static class Encryption
         Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, "magic: {0},{1},{2}", hashValue[0], hashValue[1], hashValue[^1]));
         hash.Clear();
         return (uint)((hashValue[0] << 23) + (hashValue[1] << 16) + (hashValue[^1] << 8) + hashValue[2]);
-    }
-
-    internal static string GetDebugInfo(string st)
-    {
-        return string.IsNullOrEmpty(st) ? st : ((byte)(Common.GetBytesU(st).Sum(value => value) % 256)).ToString(CultureInfo.InvariantCulture);
     }
 
     internal static string CreateDefaultKey()
