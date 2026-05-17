@@ -23,11 +23,17 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
-public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>
+public sealed partial class DockControl : UserControl, IRecipient<CloseContextMenuMessage>, IRecipient<EnterDockEditModeMessage>, IRecipient<ExitDockEditModeMessage>
 {
     private DockViewModel _viewModel;
 
     internal DockViewModel ViewModel => _viewModel;
+
+    /// <summary>
+    /// The HWND of the parent DockWindow that owns this control.
+    /// Used to target palette-show messages to the correct DockWindow in multi-monitor setups.
+    /// </summary>
+    internal IntPtr OwnerHwnd { get; set; }
 
     public static readonly DependencyProperty ItemsOrientationProperty =
         DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal));
@@ -89,6 +95,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         WeakReferenceMessenger.Default.UnregisterAll(this);
         WeakReferenceMessenger.Default.Register<CloseContextMenuMessage>(this);
         WeakReferenceMessenger.Default.Register<EnterDockEditModeMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
@@ -139,6 +146,21 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         DispatcherQueue.TryEnqueue(() =>
         {
             EnterEditMode();
+        });
+    }
+
+    public void Receive(ExitDockEditModeMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (message.Discard)
+            {
+                DiscardEditMode();
+            }
+            else
+            {
+                ExitEditMode();
+            }
         });
     }
 
@@ -231,20 +253,21 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        ExitEditMode();
+        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: false));
     }
 
     private void DiscardEditingButton_Click(object sender, RoutedEventArgs e)
     {
-        DiscardEditMode();
+        WeakReferenceMessenger.Default.Send(new ExitDockEditModeMessage(Discard: true));
     }
 
-    internal void UpdateSettings(DockSettings settings)
+    internal void UpdateSettings(DockSettings settings, DockSide? effectiveSide = null)
     {
-        DockSide = settings.Side;
+        var side = effectiveSide ?? settings.Side;
+        DockSide = side;
 
         // Compact mode is only supported for Top/Bottom positions
-        var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        var isHorizontal = side == DockSide.Top || side == DockSide.Bottom;
         var effectiveSize = isHorizontal ? settings.DockSize : DockSize.Default;
         DockSize = effectiveSize;
 
@@ -378,7 +401,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
             if (isPage)
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, OwnerHwnd));
             }
         }
         catch (COMException e)

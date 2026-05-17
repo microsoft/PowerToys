@@ -305,7 +305,10 @@
                                                 TabFocusNavigation="Local"
                                                 XYFocusKeyboardNavigation="Enabled">
                                                 <!--  Brightness Control  -->
-                                                <Grid Margin="{StaticResource FlyoutSectionTopMargin}" ColumnSpacing="{StaticResource FlyoutStandardSpacing}">
+                                                <Grid
+                                                    Margin="{StaticResource FlyoutSectionTopMargin}"
+                                                    ColumnSpacing="{StaticResource FlyoutStandardSpacing}"
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowBrightness), Mode=OneWay}">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
                                                         <ColumnDefinition Width="*" />

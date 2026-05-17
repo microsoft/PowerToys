@@ -5,41 +5,58 @@
 using System;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Common.WinGet.Models;
+using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
-using Windows.Foundation;
 
 namespace Microsoft.CmdPal.Ext.WinGet.Pages;
 
 public partial class InstallPackageCommand : InvokableCommand
 {
+    private readonly IWinGetPackageManagerService _winGetPackageManagerService;
+    private readonly IWinGetOperationTrackerService _winGetOperationTrackerService;
+    private readonly TaskScheduler _uiScheduler;
     private readonly CatalogPackage _package;
+    private readonly string _packageId;
+    private readonly string _packageName;
     private readonly StatusMessage _installBanner = new();
-    private IAsyncOperationWithProgress<InstallResult, InstallProgress>? _installAction;
-    private IAsyncOperationWithProgress<UninstallResult, UninstallProgress>? _unInstallAction;
+    private readonly object _invokeLock = new();
     private Task? _installTask;
+    private bool _trackerSubscriptionActive;
 
     public PackageInstallCommandState InstallCommandState { get; private set; }
 
     public event EventHandler<InstallPackageCommand>? InstallStateChanged;
 
-    private static readonly CompositeFormat UninstallingPackage = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstalling_package);
-    private static readonly CompositeFormat InstallingPackage = System.Text.CompositeFormat.Parse(Properties.Resources.winget_installing_package);
-    private static readonly CompositeFormat InstallPackageFinished = System.Text.CompositeFormat.Parse(Properties.Resources.winget_install_package_finished);
-    private static readonly CompositeFormat UninstallPackageFinished = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstall_package_finished);
-    private static readonly CompositeFormat QueuedPackageDownload = System.Text.CompositeFormat.Parse(Properties.Resources.winget_queued_package_download);
-    private static readonly CompositeFormat InstallPackageFinishing = System.Text.CompositeFormat.Parse(Properties.Resources.winget_install_package_finishing);
-    private static readonly CompositeFormat QueuedPackageUninstall = System.Text.CompositeFormat.Parse(Properties.Resources.winget_queued_package_uninstall);
-    private static readonly CompositeFormat UninstallPackageFinishing = System.Text.CompositeFormat.Parse(Properties.Resources.winget_uninstall_package_finishing);
-    private static readonly CompositeFormat DownloadProgress = System.Text.CompositeFormat.Parse(Properties.Resources.winget_download_progress);
+    private static readonly CompositeFormat UninstallingPackage = CompositeFormat.Parse(Properties.Resources.winget_uninstalling_package);
+    private static readonly CompositeFormat InstallingPackage = CompositeFormat.Parse(Properties.Resources.winget_installing_package);
+    private static readonly CompositeFormat InstallPackageFinished = CompositeFormat.Parse(Properties.Resources.winget_install_package_finished);
+    private static readonly CompositeFormat UninstallPackageFinished = CompositeFormat.Parse(Properties.Resources.winget_uninstall_package_finished);
+    private static readonly CompositeFormat QueuedPackageDownload = CompositeFormat.Parse(Properties.Resources.winget_queued_package_download);
+    private static readonly CompositeFormat InstallPackageFinishing = CompositeFormat.Parse(Properties.Resources.winget_install_package_finishing);
+    private static readonly CompositeFormat QueuedPackageUninstall = CompositeFormat.Parse(Properties.Resources.winget_queued_package_uninstall);
+    private static readonly CompositeFormat UninstallPackageFinishing = CompositeFormat.Parse(Properties.Resources.winget_uninstall_package_finishing);
+    private static readonly CompositeFormat DownloadProgress = CompositeFormat.Parse(Properties.Resources.winget_download_progress);
 
     internal bool SkipDependencies { get; set; }
 
-    public InstallPackageCommand(CatalogPackage package, PackageInstallCommandState isInstalled)
+    public InstallPackageCommand(
+        IWinGetPackageManagerService winGetPackageManagerService,
+        IWinGetOperationTrackerService winGetOperationTrackerService,
+        TaskScheduler uiScheduler,
+        CatalogPackage package,
+        PackageInstallCommandState isInstalled)
     {
+        _winGetPackageManagerService = winGetPackageManagerService;
+        _winGetOperationTrackerService = winGetOperationTrackerService;
+        _uiScheduler = uiScheduler;
         _package = package;
+        _packageId = package.Id;
+        _packageName = package.Name ?? package.Id;
         InstallCommandState = isInstalled;
         UpdateAppearance();
     }
@@ -76,60 +93,67 @@ public partial class InstallPackageCommand : InvokableCommand
 
     public override ICommandResult Invoke()
     {
-        // TODO: LOCK in here, so this can only be invoked once until the
-        // install / uninstall is done. Just use like, an atomic
-        if (_installTask is not null)
+        lock (_invokeLock)
         {
+            if (_installTask is not null)
+            {
+                return CommandResult.KeepOpen();
+            }
+
+            if (InstallCommandState == PackageInstallCommandState.Uninstall)
+            {
+                _installBanner.State = MessageState.Info;
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, UninstallingPackage, _package.Name);
+                WinGetExtensionHost.Instance.ShowStatus(_installBanner, StatusContext.Extension);
+                _installTask = RunUninstallAsync();
+            }
+            else if (InstallCommandState is PackageInstallCommandState.Install or
+                     PackageInstallCommandState.Update)
+            {
+                _installBanner.State = MessageState.Info;
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, InstallingPackage, _package.Name);
+                WinGetExtensionHost.Instance.ShowStatus(_installBanner, StatusContext.Extension);
+                _installTask = RunInstallAsync();
+            }
+
             return CommandResult.KeepOpen();
         }
-
-        if (InstallCommandState == PackageInstallCommandState.Uninstall)
-        {
-            // Uninstall
-            _installBanner.State = MessageState.Info;
-            _installBanner.Message = string.Format(CultureInfo.CurrentCulture, UninstallingPackage, _package.Name);
-            WinGetExtensionHost.Instance.ShowStatus(_installBanner, StatusContext.Extension);
-
-            var installOptions = WinGetStatics.WinGetFactory.CreateUninstallOptions();
-            installOptions.PackageUninstallScope = PackageUninstallScope.Any;
-            _unInstallAction = WinGetStatics.Manager.UninstallPackageAsync(_package, installOptions);
-
-            var handler = new AsyncOperationProgressHandler<UninstallResult, UninstallProgress>(OnUninstallProgress);
-            _unInstallAction.Progress = handler;
-
-            _installTask = Task.Run(() => TryDoInstallOperation(_unInstallAction));
-        }
-        else if (InstallCommandState is PackageInstallCommandState.Install or
-                 PackageInstallCommandState.Update)
-        {
-            // Install
-            _installBanner.State = MessageState.Info;
-            _installBanner.Message = string.Format(CultureInfo.CurrentCulture, InstallingPackage, _package.Name);
-            WinGetExtensionHost.Instance.ShowStatus(_installBanner, StatusContext.Extension);
-
-            var installOptions = WinGetStatics.WinGetFactory.CreateInstallOptions();
-            installOptions.PackageInstallScope = PackageInstallScope.Any;
-
-            installOptions.SkipDependencies = SkipDependencies;
-
-            _installAction = WinGetStatics.Manager.InstallPackageAsync(_package, installOptions);
-
-            var handler = new AsyncOperationProgressHandler<InstallResult, InstallProgress>(OnInstallProgress);
-            _installAction.Progress = handler;
-
-            _installTask = Task.Run(() => TryDoInstallOperation(_installAction));
-        }
-
-        return CommandResult.KeepOpen();
     }
 
-    private async void TryDoInstallOperation<T_Operation, T_Progress>(
-        IAsyncOperationWithProgress<T_Operation, T_Progress> action)
+    private async Task RunInstallAsync()
     {
+        SubscribeToTracker();
+
         try
         {
-            await action.AsTask();
+            var result = await _winGetPackageManagerService.InstallPackageAsync(_package, SkipDependencies).ConfigureAwait(false);
+            await CompleteInstallOperationAsync(result).ConfigureAwait(false);
+        }
+        finally
+        {
+            UnsubscribeFromTracker();
+        }
+    }
 
+    private async Task RunUninstallAsync()
+    {
+        SubscribeToTracker();
+
+        try
+        {
+            var result = await _winGetPackageManagerService.UninstallPackageAsync(_package).ConfigureAwait(false);
+            await CompleteInstallOperationAsync(result).ConfigureAwait(false);
+        }
+        finally
+        {
+            UnsubscribeFromTracker();
+        }
+    }
+
+    private Task CompleteInstallOperationAsync(WinGetPackageOperationResult result)
+    {
+        if (result.Succeeded)
+        {
             _installBanner.Message = InstallCommandState == PackageInstallCommandState.Uninstall ?
                 string.Format(CultureInfo.CurrentCulture, UninstallPackageFinished, _package.Name) :
                 string.Format(CultureInfo.CurrentCulture, InstallPackageFinished, _package.Name);
@@ -149,13 +173,15 @@ public partial class InstallPackageCommand : InvokableCommand
             });
             InstallStateChanged?.Invoke(this, this);
         }
-        catch (Exception ex)
+        else
         {
             _installBanner.State = MessageState.Error;
             _installBanner.Progress = null;
-            _installBanner.Message = ex.Message;
+            _installBanner.Message = result.ErrorMessage ?? string.Empty;
             _installTask = null;
         }
+
+        return Task.CompletedTask;
     }
 
     private static string FormatBytes(ulong bytes)
@@ -173,72 +199,98 @@ public partial class InstallPackageCommand : InvokableCommand
                     : $"{bytes} bytes";
     }
 
-    private void OnInstallProgress(
-        IAsyncOperationWithProgress<InstallResult, InstallProgress> operation,
-        InstallProgress progress)
+    private void SubscribeToTracker()
     {
-        switch (progress.State)
+        if (_trackerSubscriptionActive)
         {
-            case PackageInstallProgressState.Queued:
-                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, QueuedPackageDownload, _package.Name);
+            return;
+        }
+
+        _trackerSubscriptionActive = true;
+        _winGetOperationTrackerService.OperationStarted += OnTrackedOperationChanged;
+        _winGetOperationTrackerService.OperationUpdated += OnTrackedOperationChanged;
+    }
+
+    private void UnsubscribeFromTracker()
+    {
+        if (!_trackerSubscriptionActive)
+        {
+            return;
+        }
+
+        _trackerSubscriptionActive = false;
+        _winGetOperationTrackerService.OperationStarted -= OnTrackedOperationChanged;
+        _winGetOperationTrackerService.OperationUpdated -= OnTrackedOperationChanged;
+    }
+
+    private void OnTrackedOperationChanged(object? sender, WinGetPackageOperationEventArgs e)
+    {
+        if (!IsMatchingTrackedOperation(e.Operation))
+        {
+            return;
+        }
+
+        _ = Task.Factory.StartNew(
+            () => ApplyTrackedOperationToBanner(e.Operation),
+            CancellationToken.None,
+            TaskCreationOptions.DenyChildAttach,
+            _uiScheduler);
+    }
+
+    private bool IsMatchingTrackedOperation(WinGetPackageOperation operation)
+    {
+        var expectedKind = InstallCommandState == PackageInstallCommandState.Uninstall
+            ? WinGetPackageOperationKind.Uninstall
+            : WinGetPackageOperationKind.Install;
+
+        return operation.Kind == expectedKind
+            && string.Equals(operation.PackageId, _packageId, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ApplyTrackedOperationToBanner(WinGetPackageOperation operation)
+    {
+        switch (operation.State)
+        {
+            case WinGetPackageOperationState.Queued:
+                _installBanner.Message = InstallCommandState == PackageInstallCommandState.Uninstall
+                    ? string.Format(CultureInfo.CurrentCulture, QueuedPackageUninstall, _packageName)
+                    : string.Format(CultureInfo.CurrentCulture, QueuedPackageDownload, _packageName);
+                _installBanner.Progress = new ProgressState() { IsIndeterminate = true };
                 break;
-            case PackageInstallProgressState.Downloading:
-                if (progress.BytesRequired > 0)
+            case WinGetPackageOperationState.Downloading:
+                if (operation.BytesRequired > 0 && operation.BytesDownloaded.HasValue)
                 {
-                    var downloadText = string.Format(CultureInfo.CurrentCulture, DownloadProgress, FormatBytes(progress.BytesDownloaded), FormatBytes(progress.BytesRequired));
+                    var downloadText = string.Format(
+                        CultureInfo.CurrentCulture,
+                        DownloadProgress,
+                        FormatBytes(operation.BytesDownloaded.Value),
+                        FormatBytes(operation.BytesRequired.Value));
                     _installBanner.Progress ??= new ProgressState() { IsIndeterminate = false };
-                    var downloaded = progress.BytesDownloaded / (float)progress.BytesRequired;
-                    var percent = downloaded * 100.0f;
-                    ((ProgressState)_installBanner.Progress).ProgressPercent = (uint)percent;
+                    ((ProgressState)_installBanner.Progress).ProgressPercent = operation.ProgressPercent ?? 0;
                     _installBanner.Message = downloadText;
+                }
+                else
+                {
+                    _installBanner.Progress = new ProgressState() { IsIndeterminate = true };
                 }
 
                 break;
-            case PackageInstallProgressState.Installing:
-                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, InstallingPackage, _package.Name);
+            case WinGetPackageOperationState.Installing:
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, InstallingPackage, _packageName);
                 _installBanner.Progress = new ProgressState() { IsIndeterminate = true };
                 break;
-            case PackageInstallProgressState.PostInstall:
-                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, InstallPackageFinishing, _package.Name);
-                break;
-            case PackageInstallProgressState.Finished:
-                _installBanner.Message = Properties.Resources.winget_install_finished;
-
-                // progressBar.IsIndeterminate(false);
-                _installBanner.Progress = null;
-                _installBanner.State = MessageState.Success;
-                break;
-            default:
-                _installBanner.Message = string.Empty;
-                break;
-        }
-    }
-
-    private void OnUninstallProgress(
-        IAsyncOperationWithProgress<UninstallResult, UninstallProgress> operation,
-        UninstallProgress progress)
-    {
-        switch (progress.State)
-        {
-            case PackageUninstallProgressState.Queued:
-                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, QueuedPackageUninstall, _package.Name);
-                break;
-
-            case PackageUninstallProgressState.Uninstalling:
-                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, UninstallingPackage, _package.Name);
+            case WinGetPackageOperationState.Uninstalling:
+                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, UninstallingPackage, _packageName);
                 _installBanner.Progress = new ProgressState() { IsIndeterminate = true };
                 break;
-            case PackageUninstallProgressState.PostUninstall:
-                _installBanner.Message = string.Format(CultureInfo.CurrentCulture, UninstallPackageFinishing, _package.Name);
-                break;
-            case PackageUninstallProgressState.Finished:
-                _installBanner.Message = Properties.Resources.winget_uninstall_finished;
-                _installBanner.Progress = null;
-                _installBanner.State = MessageState.Success;
+            case WinGetPackageOperationState.PostProcessing:
+                _installBanner.Message = InstallCommandState == PackageInstallCommandState.Uninstall
+                    ? string.Format(CultureInfo.CurrentCulture, UninstallPackageFinishing, _packageName)
+                    : string.Format(CultureInfo.CurrentCulture, InstallPackageFinishing, _packageName);
+                _installBanner.Progress = new ProgressState() { IsIndeterminate = true };
                 break;
             default:
-                _installBanner.Message = string.Empty;
-                break;
+                return;
         }
     }
 }

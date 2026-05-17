@@ -76,6 +76,14 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                 new object[] { "log2(3)", 1.58496250072116M },
                 new object[] { "log10(3)", 0.47712125471966M },
                 new object[] { "ln(e)", 1M },
+
+                // Space between function name and '(' must produce the same result
+                // (regression test for the log-mapping bug).
+                new object[] { "ln (3)",  1.09861228866810M },
+                new object[] { "log (3)", 0.47712125471966M },
+                new object[] { "log2 (3)", 1.58496250072116M },
+                new object[] { "log10 (3)", 0.47712125471966M },
+
                 new object[] { "cosh(0)", 1M },
             };
 
