@@ -12,6 +12,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListItemViewModel : CommandItemViewModel
 {
+    private const int MaxVisibleTags = 3;
+
     public new ExtensionObject<IListItem> Model { get; }
 
     public List<TagViewModel>? Tags { get; set; }
@@ -19,6 +21,10 @@ public partial class ListItemViewModel : CommandItemViewModel
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
     public bool HasTags => (Tags?.Count ?? 0) > 0;
+
+    public List<TagViewModel>? VisibleTags { get; private set; }
+
+    private TagViewModel? _overflowTag;
 
     public string TextToSuggest { get; private set; } = string.Empty;
 
@@ -273,11 +279,43 @@ public partial class ListItemViewModel : CommandItemViewModel
                 // Tags being an ObservableCollection instead of a List lead to
                 // many COM exception issues.
                 Tags = [.. newTags];
+                UpdateVisibleTags();
 
                 // We're already in UI thread, so just raise the events
                 OnPropertyChanged(nameof(Tags));
                 OnPropertyChanged(nameof(HasTags));
+                OnPropertyChanged(nameof(VisibleTags));
             });
+    }
+
+    private void UpdateVisibleTags()
+    {
+        var allTags = Tags;
+        if (allTags is null || allTags.Count == 0)
+        {
+            VisibleTags = null;
+        }
+        else if (allTags.Count <= MaxVisibleTags)
+        {
+            VisibleTags = [.. allTags];
+        }
+        else
+        {
+            _overflowTag?.SafeCleanup();
+            var visible = allTags.Take(MaxVisibleTags).ToList();
+            var overflowCount = allTags.Count - MaxVisibleTags;
+            var hiddenTagNames = allTags.Skip(MaxVisibleTags).Select(t => t.Text);
+            var overflowTag = new TagViewModel(
+                new Tag($"+{overflowCount}")
+                {
+                    ToolTip = string.Join("\n", hiddenTagNames),
+                },
+                PageContext);
+            overflowTag.InitializeProperties();
+            _overflowTag = overflowTag;
+            visible.Add(overflowTag);
+            VisibleTags = visible;
+        }
     }
 
     private void UpdateShowsTitle()
@@ -306,6 +344,7 @@ public partial class ListItemViewModel : CommandItemViewModel
 
         // Tags don't have event handlers or anything to cleanup
         Tags?.ForEach(t => t.SafeCleanup());
+        _overflowTag?.SafeCleanup();
         Details?.SafeCleanup();
 
         var model = Model.Unsafe;
