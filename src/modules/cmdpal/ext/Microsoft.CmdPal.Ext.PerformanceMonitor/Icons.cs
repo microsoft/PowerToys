@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
@@ -23,6 +24,40 @@ internal static class Icons
     internal static IconInfo StackedAreaIcon => new("\uE9D2"); // StackedArea icon
 
     internal static IconInfo GpuIcon => new("\uE950"); // Component icon
+
+    internal static IconInfo BatteryIcon => BatteryIcons[10]; // MobBattery10 (page identity)
+
+    // Pre-built cache so the 1 Hz dock-band update reuses IconInfo instances
+    // instead of allocating one per tick. 11 discharging (MobBattery0..10), 11
+    // charging (MobBatteryCharging0..10), 1 unknown (MobBatteryUnknown).
+    private static readonly IconInfo[] BatteryIcons = BuildBatteryGlyphs(0xEBA0);
+    private static readonly IconInfo[] BatteryChargingIcons = BuildBatteryGlyphs(0xEBAB);
+    private static readonly IconInfo BatteryUnknownIcon = new("\uEC02");
+
+    private static IconInfo[] BuildBatteryGlyphs(int baseCodepoint)
+    {
+        var icons = new IconInfo[11];
+        for (var i = 0; i <= 10; i++)
+        {
+            icons[i] = new IconInfo(char.ConvertFromUtf32(baseCodepoint + i));
+        }
+
+        return icons;
+    }
+
+    // Returns a MobBattery glyph that reflects the actual charge level so the dock-band icon
+    // is never misread as "100%". Range maps 0-100% to MobBattery0..MobBattery10 (\uEBA0..\uEBAA);
+    // charging swaps to MobBatteryCharging0..10 (\uEBAB..\uEBB5); unknown/no battery uses MobBatteryUnknown.
+    internal static IconInfo BatteryGlyph(double percent01, bool isCharging, bool hasBattery)
+    {
+        if (!hasBattery || percent01 < 0)
+        {
+            return BatteryUnknownIcon;
+        }
+
+        var level = (int)Math.Round(Math.Clamp(percent01, 0, 1) * 10);
+        return isCharging ? BatteryChargingIcons[level] : BatteryIcons[level];
+    }
 
     internal static IconInfo NavigateBackwardIcon => new("\uE72B"); // Previous icon
 
