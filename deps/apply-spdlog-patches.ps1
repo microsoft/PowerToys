@@ -11,6 +11,14 @@
 #
 # This script is invoked by deps/spdlog.props' <ApplySpdlogPatches> target
 # before any spdlog source is compiled. Calling it directly is also safe.
+#
+# Concurrency: deps/spdlog.props is imported by ~80 vcxproj files; MSBuild
+# typically builds many of them in parallel, so multiple instances of this
+# script can run at the same time. A named mutex serialises the
+# check-and-apply step across all processes on the same machine to prevent
+# the classic check-then-apply race where two processes both decide the
+# patch needs applying and the second's apply fails because the first
+# already patched the file.
 
 # Note: do NOT set $ErrorActionPreference = 'Stop' here -- git apply --check
 # writes diagnostics to stderr when a patch does not apply, and we use that
@@ -30,8 +38,19 @@ $patches = @(
     Join-Path $PSScriptRoot 'spdlog-msvc-fix.patch'
 )
 
+# Local (not Global\) mutex name so we don't require elevation and only
+# serialise within the current user session, which is the unit of work.
+$mutex = New-Object System.Threading.Mutex($false, 'PowerToys-deps-spdlog-msvc-fix-patch-apply')
+$mutexAcquired = $false
 Push-Location $submoduleRoot
 try {
+    # Wait up to 5 minutes for the mutex; if it takes longer than that
+    # something is wrong upstream and failing fast is better than hanging.
+    $mutexAcquired = $mutex.WaitOne([System.TimeSpan]::FromMinutes(5))
+    if (-not $mutexAcquired) {
+        throw "[apply-spdlog-patches] timed out waiting for patch-apply mutex."
+    }
+
     foreach ($patch in $patches) {
         if (-not (Test-Path $patch)) {
             Write-Warning "[apply-spdlog-patches] missing patch file: $patch"
@@ -56,6 +75,13 @@ try {
         }
         $applyOutput = & git apply --whitespace=nowarn --ignore-whitespace -- $patch 2>&1
         if ($LASTEXITCODE -ne 0) {
+            # Defensive race recovery: even with the mutex, if something else
+            # (e.g. another script outside this mutex's scope) raced us, the
+            # patch may now be applied. Treat that as success.
+            & git apply --reverse --check --whitespace=nowarn --ignore-whitespace -- $patch 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                continue
+            }
             Write-Error ($applyOutput | Out-String)
             throw "[apply-spdlog-patches] git apply of $(Split-Path -Leaf $patch) failed."
         }
@@ -64,4 +90,8 @@ try {
 }
 finally {
     Pop-Location
+    if ($mutexAcquired) {
+        $mutex.ReleaseMutex()
+    }
+    $mutex.Dispose()
 }
