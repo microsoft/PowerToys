@@ -1440,7 +1440,7 @@ HBITMAP CreateFadedDesktopBackground( HDC hdc, LPRECT rcScreen, LPRECT rcCrop )
 //
 // AdjustToMoveBoundary
 //
-// Shifts to accomodate move boundary.
+// Shifts to accommodate move boundary.
 //
 //----------------------------------------------------------------------------
 void AdjustToMoveBoundary( float zoomLevel, int *coordinate, int cursor, int size, int max )
@@ -6119,7 +6119,7 @@ void InvalidateCursorMoveArea( HWND hWnd, float zoomLevel, int width, int height
 
 //----------------------------------------------------------------------------
 //
-// SavCursorArea
+// SaveCursorArea
 //
 //----------------------------------------------------------------------------
 void SaveCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
@@ -8390,7 +8390,7 @@ LRESULT APIENTRY MainWndProc(
                     SelectObject(hdcScreenSaveCompat, hbmpDrawingCompat);
 
                     // Create cursor save bitmap
-                    // (have to accomodate large fonts and LiveZoom pen scaling)
+                    // (have to accommodate large fonts and LiveZoom pen scaling)
                     hbmpCursorCompat = CreateBitmap( MAX_LIVE_PEN_WIDTH+CURSOR_ARM_LENGTH*2,
                         MAX_LIVE_PEN_WIDTH+CURSOR_ARM_LENGTH*2, bmp.bmPlanes,
                         bmp.bmBitsPixel, static_cast<CONST VOID *>(NULL));
@@ -8753,7 +8753,7 @@ LRESULT APIENTRY MainWndProc(
 
                     g_FontScale -= delta;
                     if( g_FontScale == 0 ) g_FontScale = 1;
-                    // Set lParam to 0 as part of message to keyup hander
+                    // Set lParam to 0 as part of message to keyup handler
                     DeleteObject(hTypingFont);
                     g_LogFont.lfHeight = max((int)(height / zoomLevel) / g_FontScale, 12);
                     if (g_LogFont.lfHeight < 20)

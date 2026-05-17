@@ -153,7 +153,7 @@ Here's an example settings implementation:
   }
 ```
 
-### Settings Informations
+### Settings Information
 The PowerToys settings object supports adding additional information to a PowerToys Settings description:
 
 #### name
