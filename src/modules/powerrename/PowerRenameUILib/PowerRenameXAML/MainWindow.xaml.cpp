@@ -16,7 +16,9 @@
 #include <common/Telemetry/EtwTrace/EtwTrace.h>
 
 #include <atlstr.h>
+#include <algorithm>
 #include <exception>
+#include <iterator>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -275,14 +277,29 @@ namespace winrt::PowerRenameUI::implementation
                         // To test PowerRename uncomment DEBUG_BENCHMARK_100K_ENTRIES define
                         if (!g_files.empty())
                         {
-                            if (SUCCEEDED(CreateShellItemArrayFromPaths(std::move(g_files), &shellItemArray)))
+                            // Process files in batches to avoid Windows Shell API limits
+                            // that can cause crashes (STATUS_STACK_BUFFER_OVERRUN) with
+                            // very large file counts (30,000+).
+                            constexpr size_t BATCH_SIZE = 5000;
+                            const size_t totalFiles = g_files.size();
+                            for (size_t batchStart = 0; batchStart < totalFiles; batchStart += BATCH_SIZE)
                             {
-                                CComPtr<IEnumShellItems> enumShellItems;
-                                if (SUCCEEDED(shellItemArray->EnumItems(&enumShellItems)))
+                                size_t batchEnd = std::min(batchStart + BATCH_SIZE, totalFiles);
+                                std::vector<std::wstring> batch(
+                                    std::make_move_iterator(g_files.begin() + batchStart),
+                                    std::make_move_iterator(g_files.begin() + batchEnd));
+
+                                shellItemArray = nullptr;
+                                if (SUCCEEDED(CreateShellItemArrayFromPaths(std::move(batch), &shellItemArray)))
                                 {
-                                    EnumerateShellItems(enumShellItems);
+                                    CComPtr<IEnumShellItems> enumShellItems;
+                                    if (SUCCEEDED(shellItemArray->EnumItems(&enumShellItems)))
+                                    {
+                                        EnumerateShellItems(enumShellItems);
+                                    }
                                 }
                             }
+                            g_files.clear();
                         }
                         else
                         {
@@ -496,15 +513,43 @@ namespace winrt::PowerRenameUI::implementation
         itemList = new (std::nothrow) PIDLIST_ABSOLUTE[files.size()];
         HRESULT hr = itemList ? S_OK : E_OUTOFMEMORY;
         UINT itemsCnt = 0;
-        for (const auto& file : files)
+        if (SUCCEEDED(hr))
         {
-            const DWORD BUFSIZE = 4096;
-            TCHAR buffer[BUFSIZE] = TEXT("");
-            auto retval = GetFullPathName(file.c_str(), BUFSIZE, buffer, NULL);
-            if (retval != 0 && PathFileExists(buffer))
+            for (const auto& file : files)
             {
-                hr = SHParseDisplayName(buffer, nullptr, &itemList[itemsCnt], 0, nullptr);
-                ++itemsCnt;
+                const DWORD BUFSIZE = 4096;
+                TCHAR buffer[BUFSIZE] = TEXT("");
+                std::wstring fullPath;
+                const DWORD needed = GetFullPathName(file.c_str(), BUFSIZE, buffer, nullptr);
+                if (needed == 0)
+                {
+                    continue;
+                }
+
+                if (needed >= BUFSIZE)
+                {
+                    std::vector<wchar_t> dynBuffer(needed);
+                    const DWORD result = GetFullPathName(file.c_str(), needed, dynBuffer.data(), nullptr);
+                    if (result == 0 || result >= needed)
+                    {
+                        continue;
+                    }
+
+                    fullPath = std::wstring(dynBuffer.data());
+                }
+                else
+                {
+                    fullPath = std::wstring(buffer);
+                }
+
+                if (PathFileExists(fullPath.c_str()))
+                {
+                    PIDLIST_ABSOLUTE pidl = nullptr;
+                    if (SUCCEEDED(SHParseDisplayName(fullPath.c_str(), nullptr, &pidl, 0, nullptr)))
+                    {
+                        itemList[itemsCnt++] = pidl;
+                    }
+                }
             }
         }
         if (SUCCEEDED(hr) && itemsCnt > 0)
@@ -520,11 +565,15 @@ namespace winrt::PowerRenameUI::implementation
             else
             {
                 Logger::error(L"Creating ShellItemArray from path list failed.");
+                for (UINT i = 0; i < itemsCnt; i++)
+                {
+                    CoTaskMemFree(itemList[i]);
+                }
             }
         }
-        else
+        else if (SUCCEEDED(hr) && itemsCnt == 0)
         {
-            Logger::error(L"Parsing path list display names failed.");
+            Logger::error(L"No valid file paths could be resolved; all entries either do not exist or could not be parsed by the shell.");
             hr = E_FAIL;
         }
 
