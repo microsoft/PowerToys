@@ -589,20 +589,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             if (!string.IsNullOrEmpty(Settings.Properties.MachinePool?.Value))
             {
-                List<string> availableMachines = new List<string>();
-
                 // Format of this field is "NAME1:ID1,NAME2:ID2,..."
-                // Load the available machines
+                // Build a deduplicated list of available machine names so that a machine
+                // registered under multiple IDs doesn't produce duplicate layout slots.
+                var seenPool = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                List<string> availableMachines = new List<string>();
                 foreach (string availableMachineIdPair in Settings.Properties.MachinePool.Value.Split(","))
                 {
                     string availableMachineName = availableMachineIdPair.Split(':')[0];
-                    availableMachines.Add(availableMachineName);
+                    if (seenPool.Add(availableMachineName))
+                    {
+                        availableMachines.Add(availableMachineName);
+                    }
                 }
 
-                // Start by removing the machines from the matrix that are no longer available to pick.
+                // Remove machines from the matrix that are no longer available, and clear
+                // any duplicate entries that may have been persisted in earlier versions.
+                var seenInMatrix = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 for (int i = 0; i < loadMachineMatrixString.Count; i++)
                 {
-                    if (!availableMachines.Contains(loadMachineMatrixString[i]))
+                    if (string.IsNullOrEmpty(loadMachineMatrixString[i]))
+                    {
+                        continue;
+                    }
+
+                    bool stillAvailable = availableMachines.Contains(loadMachineMatrixString[i], StringComparer.OrdinalIgnoreCase);
+                    bool firstOccurrence = seenInMatrix.Add(loadMachineMatrixString[i]);
+                    if (!stillAvailable || !firstOccurrence)
                     {
                         editedTheMatrix = true;
                         loadMachineMatrixString[i] = string.Empty;
@@ -612,7 +625,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 // If an available machine is not in the matrix already, fill it in the first available spot.
                 foreach (string availableMachineName in availableMachines)
                 {
-                    if (!loadMachineMatrixString.Contains(availableMachineName))
+                    if (!loadMachineMatrixString.Contains(availableMachineName, StringComparer.OrdinalIgnoreCase))
                     {
                         int availableIndex = loadMachineMatrixString.FindIndex(name => string.IsNullOrEmpty(name));
                         if (availableIndex >= 0)
