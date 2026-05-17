@@ -16,6 +16,8 @@
 #include <common/version/version.h>
 #include <common/utils/resources.h>
 
+#include <algorithm>
+
 namespace
 {
     json::JsonValue create_empty_shortcut_array_value()
@@ -62,6 +64,28 @@ namespace
 
         return fallback;
     }
+
+    bool has_low_memory_modules_setting_changed(const json::JsonObject& old_low_memory_settings, const json::JsonObject& new_low_memory_settings, std::wstring_view module_key)
+    {
+        return old_low_memory_settings.GetNamedBoolean(module_key, false) != new_low_memory_settings.GetNamedBoolean(module_key, false);
+    }
+
+    void reapply_low_memory_policy_to_enabled_modules(const json::JsonObject& old_low_memory_settings, const json::JsonObject& new_low_memory_settings)
+    {
+        auto& hkmng = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
+        for (auto& [name, powertoy] : modules())
+        {
+            if (!PTSettingsHelper::is_low_memory_module(name) || !powertoy->is_enabled() || !has_low_memory_modules_setting_changed(old_low_memory_settings, new_low_memory_settings, name))
+            {
+                continue;
+            }
+
+            powertoy->disable();
+            powertoy->enable();
+            hkmng.EnableHotkeyByModule(name);
+            powertoy.UpdateHotkeyEx();
+        }
+    }
 }
 
 // TODO: would be nice to get rid of these globals, since they're basically cached json settings
@@ -75,6 +99,7 @@ static bool show_whats_new_after_updates = true;
 static bool enable_experimentation = true;
 static bool enable_warnings_elevated_apps = true;
 static bool enable_quick_access = true;
+static json::JsonObject low_memory_modules = PTSettingsHelper::create_default_low_memory_module_settings();
 static PowerToysSettings::HotkeyObject quick_access_shortcut;
 static DashboardSortOrder dashboard_sort_order = DashboardSortOrder::Alphabetical;
 static json::JsonObject ignored_conflict_properties = create_default_ignored_conflict_properties();
@@ -85,6 +110,8 @@ json::JsonObject GeneralSettings::to_json()
 
     auto ignoredProps = ignoredConflictProperties;
     ensure_ignored_conflict_properties_shape(ignoredProps);
+    auto lowMemoryModuleSettings = lowMemoryModules;
+    PTSettingsHelper::ensure_low_memory_settings_shape(lowMemoryModuleSettings);
 
     result.SetNamedValue(L"startup", json::value(isStartupEnabled));
     if (!startupDisabledReason.empty())
@@ -111,6 +138,8 @@ json::JsonObject GeneralSettings::to_json()
     result.SetNamedValue(L"is_admin", json::value(isAdmin));
     result.SetNamedValue(L"enable_warnings_elevated_apps", json::value(enableWarningsElevatedApps));
     result.SetNamedValue(L"enable_quick_access", json::value(enableQuickAccess));
+    result.SetNamedValue(L"low_memory_mode", json::value(lowMemoryMode));
+    result.SetNamedValue(L"low_memory_modules", json::value(lowMemoryModuleSettings));
     result.SetNamedValue(L"quick_access_shortcut", quickAccessShortcut.get_json());
     result.SetNamedValue(L"theme", json::value(theme));
     result.SetNamedValue(L"system_theme", json::value(systemTheme));
@@ -137,6 +166,17 @@ json::JsonObject load_general_settings()
     enable_experimentation = loaded.GetNamedBoolean(L"enable_experimentation", true);
     enable_warnings_elevated_apps = loaded.GetNamedBoolean(L"enable_warnings_elevated_apps", true);
     enable_quick_access = loaded.GetNamedBoolean(L"enable_quick_access", true);
+    if (json::has(loaded, L"low_memory_modules", json::JsonValueType::Object))
+    {
+        low_memory_modules = loaded.GetNamedObject(L"low_memory_modules");
+    }
+    else
+    {
+        low_memory_modules = PTSettingsHelper::create_default_low_memory_module_settings();
+    }
+
+    PTSettingsHelper::ensure_low_memory_settings_shape(low_memory_modules);
+    PTSettingsHelper::refresh_low_memory_settings_cache(loaded);
     if (json::has(loaded, L"quick_access_shortcut", json::JsonValueType::Object))
     {
         quick_access_shortcut = PowerToysSettings::HotkeyObject::from_json(loaded.GetNamedObject(L"quick_access_shortcut"));
@@ -169,12 +209,14 @@ GeneralSettings get_general_settings()
         .isAdmin = is_user_admin,
         .enableWarningsElevatedApps = enable_warnings_elevated_apps,
         .enableQuickAccess = enable_quick_access,
+        .lowMemoryMode = PTSettingsHelper::is_any_low_memory_module_enabled(low_memory_modules),
+        .lowMemoryModules = low_memory_modules,
         .quickAccessShortcut = quick_access_shortcut,
         .showNewUpdatesToastNotification = show_new_updates_toast_notification,
         .downloadUpdatesAutomatically = download_updates_automatically && is_user_admin,
         .showWhatsNewAfterUpdates = show_whats_new_after_updates,
         .enableExperimentation = enable_experimentation,
-    .dashboardSortOrder = dashboard_sort_order,
+        .dashboardSortOrder = dashboard_sort_order,
         .theme = settings_theme,
         .systemTheme = WindowsColors::is_dark_mode() ? L"dark" : L"light",
         .powerToysVersion = get_product_version(),
@@ -297,6 +339,9 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         old_settings_json_string = get_general_settings().to_json().Stringify().c_str();
     }
 
+    auto old_low_memory_modules = low_memory_modules;
+    PTSettingsHelper::ensure_low_memory_settings_shape(old_low_memory_modules);
+
     Logger::info(L"apply_general_settings: {}", std::wstring{ general_configs.ToString() });
     run_as_elevated = general_configs.GetNamedBoolean(L"run_elevated", false);
 
@@ -331,6 +376,19 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         }
         update_quick_access_hotkey(enable_quick_access, quick_access_shortcut);
     }
+
+    if (json::has(general_configs, L"low_memory_modules", json::JsonValueType::Object))
+    {
+        low_memory_modules = general_configs.GetNamedObject(L"low_memory_modules");
+    }
+    else
+    {
+        low_memory_modules = PTSettingsHelper::create_default_low_memory_module_settings();
+    }
+
+    PTSettingsHelper::ensure_low_memory_settings_shape(low_memory_modules);
+    PTSettingsHelper::refresh_low_memory_settings_cache(general_configs);
+    const bool low_memory_policy_changed = old_low_memory_modules.Stringify() != low_memory_modules.Stringify();
 
     show_new_updates_toast_notification = general_configs.GetNamedBoolean(L"show_new_updates_toast_notification", true);
 
@@ -494,6 +552,11 @@ void apply_general_settings(const json::JsonObject& general_configs, bool save)
         {
             PTSettingsHelper::save_general_settings(save_settings.to_json());
             Trace::SettingsChanged(save_settings);
+        }
+
+        if (low_memory_policy_changed)
+        {
+            reapply_low_memory_policy_to_enabled_modules(old_low_memory_modules, low_memory_modules);
         }
     }
 }

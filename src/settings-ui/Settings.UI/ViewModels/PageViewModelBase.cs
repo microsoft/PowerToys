@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -20,6 +21,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private readonly Dictionary<string, bool> _hotkeyConflictStatus = new Dictionary<string, bool>();
         private readonly Dictionary<string, string> _hotkeyConflictTooltips = new Dictionary<string, string>();
         private bool _disposed;
+        private GeneralSettings _lowMemoryGeneralSettings;
+        private Func<string, int> _lowMemorySettingsCallback;
+        private ModuleType? _lowMemoryModuleType;
 
         protected abstract string ModuleName { get; }
 
@@ -31,9 +35,37 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool UseLowMemoryMode
+        {
+            get => _lowMemoryGeneralSettings != null && _lowMemoryModuleType.HasValue && ModuleHelper.GetLowMemoryMode(_lowMemoryGeneralSettings, _lowMemoryModuleType.Value);
+            set
+            {
+                if (_lowMemoryGeneralSettings == null || !_lowMemoryModuleType.HasValue)
+                {
+                    return;
+                }
+
+                if (ModuleHelper.SetLowMemoryMode(_lowMemoryGeneralSettings, _lowMemoryModuleType.Value, value))
+                {
+                    _lowMemoryGeneralSettings.LowMemoryMode = ModuleHelper.AnyLowMemoryModeEnabled(_lowMemoryGeneralSettings);
+                    OnPropertyChanged(nameof(UseLowMemoryMode));
+                    _lowMemorySettingsCallback?.Invoke(new OutGoingGeneralSettings(_lowMemoryGeneralSettings).ToString());
+                }
+            }
+        }
+
+        protected void InitializeLowMemorySettings(GeneralSettings generalSettings, Func<string, int> sendConfigMessage, ModuleType moduleType)
+        {
+            _lowMemoryGeneralSettings = generalSettings;
+            _lowMemorySettingsCallback = sendConfigMessage;
+            _lowMemoryModuleType = moduleType;
+            ModuleHelper.EnsureLowMemoryModuleSettings(_lowMemoryGeneralSettings);
+        }
+
         public virtual void OnPageLoaded()
         {
             Debug.WriteLine($"=== PAGE LOADED: {ModuleName} ===");
+            OnPropertyChanged(nameof(UseLowMemoryMode));
             GlobalHotkeyConflictManager.Instance?.RequestAllConflicts();
         }
 

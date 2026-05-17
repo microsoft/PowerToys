@@ -1,9 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.UnitTests.BackwardsCompatibility;
 using Microsoft.PowerToys.Settings.UI.UnitTests.Mocks;
@@ -48,6 +47,23 @@ namespace ViewModelTests
             {
                 return null;
             }
+        }
+
+        private static void AssertLowMemoryModules(LowMemoryModuleSettings modules, bool textExtractor, bool colorPicker, bool advancedPaste, bool peek)
+        {
+            Assert.IsNotNull(modules);
+            Assert.AreEqual(textExtractor, modules.TextExtractor);
+            Assert.AreEqual(colorPicker, modules.ColorPicker);
+            Assert.AreEqual(advancedPaste, modules.AdvancedPaste);
+            Assert.AreEqual(peek, modules.Peek);
+        }
+
+        private static void AssertLowMemoryModules(GeneralViewModel viewModel, bool textExtractor, bool colorPicker, bool advancedPaste, bool peek)
+        {
+            Assert.AreEqual(textExtractor, viewModel.LowMemoryTextExtractor);
+            Assert.AreEqual(colorPicker, viewModel.LowMemoryColorPicker);
+            Assert.AreEqual(advancedPaste, viewModel.LowMemoryAdvancedPaste);
+            Assert.AreEqual(peek, viewModel.LowMemoryPeek);
         }
 
         [TestMethod]
@@ -337,6 +353,91 @@ namespace ViewModelTests
             // Act
             viewModel.ShowSysTrayIcon = false;
             Assert.IsTrue(sawExpectedIpcPayload);
+        }
+
+        [TestMethod]
+        public void LowMemoryModeShouldBeDisabledByDefault()
+        {
+            GeneralSettings settings = new GeneralSettings();
+
+            Assert.IsFalse(settings.LowMemoryMode);
+            AssertLowMemoryModules(settings.LowMemoryModules, false, false, false, false);
+        }
+
+        [TestMethod]
+        public void LowMemorySettingsShouldRoundTripInOutgoingGeneralSettings()
+        {
+            GeneralSettings settings = new GeneralSettings
+            {
+                LowMemoryMode = true,
+            };
+            settings.LowMemoryModules.TextExtractor = true;
+
+            string outgoingSettings = new OutGoingGeneralSettings(settings).ToString();
+            OutGoingGeneralSettings deserializedSettings = JsonSerializer.Deserialize<OutGoingGeneralSettings>(outgoingSettings);
+
+            Assert.IsNotNull(deserializedSettings.GeneralSettings);
+            Assert.IsTrue(deserializedSettings.GeneralSettings.LowMemoryMode);
+            AssertLowMemoryModules(deserializedSettings.GeneralSettings.LowMemoryModules, true, false, false, false);
+        }
+
+        [TestMethod]
+        public void LowMemoryModuleSettingsShouldRoundTripAdditionalModuleKeys()
+        {
+            GeneralSettings settings = new GeneralSettings();
+            settings.LowMemoryModules.SetValue("FutureUtility", true);
+
+            string outgoingSettings = new OutGoingGeneralSettings(settings).ToString();
+            OutGoingGeneralSettings deserializedSettings = JsonSerializer.Deserialize<OutGoingGeneralSettings>(outgoingSettings);
+
+            Assert.IsNotNull(deserializedSettings.GeneralSettings);
+            Assert.IsNotNull(deserializedSettings.GeneralSettings.LowMemoryModules);
+            Assert.IsTrue(deserializedSettings.GeneralSettings.LowMemoryModules.GetValue("FutureUtility"));
+        }
+
+        [TestMethod]
+        public void LowMemoryBulkCommandsShouldNotRunWhenIndividualOverrideChanges()
+        {
+            int ipcMessageCount = 0;
+            Func<string, int> sendMockIPCConfigMSG = msg =>
+            {
+                ipcMessageCount++;
+                return 0;
+            };
+            Func<string, int> sendRestartAdminIPCMessage = msg => 0;
+            Func<string, int> sendCheckForUpdatesIPCMessage = msg => 0;
+            GeneralViewModel viewModel = new TestGeneralViewModel(
+                settingsRepository: SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object),
+                "GeneralSettings_RunningAsAdminText",
+                "GeneralSettings_RunningAsUserText",
+                false,
+                false,
+                sendMockIPCConfigMSG,
+                sendRestartAdminIPCMessage,
+                sendCheckForUpdatesIPCMessage,
+                GeneralSettingsFileName);
+
+            Assert.IsFalse(viewModel.LowMemoryMode);
+
+            viewModel.LowMemoryTextExtractor = true;
+            Assert.AreEqual(1, ipcMessageCount);
+            Assert.IsTrue(viewModel.LowMemoryMode);
+            AssertLowMemoryModules(viewModel, true, false, false, false);
+
+            viewModel.EnableAllLowMemoryModeCommand.Execute(null);
+            Assert.AreEqual(2, ipcMessageCount);
+            Assert.IsTrue(viewModel.LowMemoryMode);
+            AssertLowMemoryModules(viewModel, true, true, true, true);
+
+            viewModel.LowMemoryPeek = false;
+            Assert.AreEqual(3, ipcMessageCount);
+            Assert.IsTrue(viewModel.LowMemoryMode);
+            AssertLowMemoryModules(viewModel, true, true, true, false);
+
+            viewModel.DisableAllLowMemoryModeCommand.Execute(null);
+            Assert.AreEqual(4, ipcMessageCount);
+            Assert.IsFalse(viewModel.LowMemoryMode);
+            AssertLowMemoryModules(viewModel, false, false, false, false);
         }
 
         [TestMethod]

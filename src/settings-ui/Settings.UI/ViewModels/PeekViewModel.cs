@@ -70,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
 
             SendConfigMSG = ipcMSGCallBackFunc;
+            InitializeLowMemorySettings(GeneralSettingsConfig, SendConfigMSG, ModuleType.Peek);
         }
 
         /// <summary>

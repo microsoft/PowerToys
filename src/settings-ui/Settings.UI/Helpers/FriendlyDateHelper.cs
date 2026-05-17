@@ -14,14 +14,14 @@ public static class FriendlyDateHelper
     /// Today → "Today at 1:22 PM", Yesterday → "Yesterday at 3:45 PM",
     /// older dates fall back to the full culture-specific date/time format.
     /// </summary>
-    public static string Format(DateTime? dateTime)
+    public static string Format(DateTime? dateTime, Windows.ApplicationModel.Resources.ResourceLoader resourceLoader = null)
     {
         if (dateTime is not DateTime dt)
         {
             return string.Empty;
         }
 
-        var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+        resourceLoader ??= ResourceLoaderInstance.ResourceLoader;
         var today = DateTime.Now.Date;
         var time = dt.ToString("t", CultureInfo.CurrentCulture);
 

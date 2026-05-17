@@ -32,15 +32,17 @@ namespace
     }
 }
 
-void AdvancedPasteProcessManager::start()
+void AdvancedPasteProcessManager::start(bool exit_after_use)
 {
     m_enabled = true;
+    m_exit_after_use = exit_after_use;
     submit_task([this]() { refresh(); });
 }
 
 void AdvancedPasteProcessManager::stop()
 {
     m_enabled = false;
+    m_exit_after_use = false;
     submit_task([this]() { refresh(); });
 }
 
@@ -100,7 +102,11 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
 {
     const unsigned long powertoys_pid = GetCurrentProcessId();
 
-    const auto executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
+    std::wstring executable_args = std::format(L"{} {}", std::to_wstring(powertoys_pid), pipe_name);
+    if (m_exit_after_use)
+    {
+        executable_args.append(L" --exit-after-use");
+    }
 
     SHELLEXECUTEINFOW sei{ sizeof(sei) };
     sei.fMask = { SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI };
@@ -109,7 +115,6 @@ HRESULT AdvancedPasteProcessManager::start_process(const std::wstring& pipe_name
     sei.lpParameters = executable_args.data();
     if (ShellExecuteExW(&sei))
     {
-        Logger::trace("Successfully started Advanced Paste process");
         terminate_process();
         m_hProcess = sei.hProcess;
         return S_OK;

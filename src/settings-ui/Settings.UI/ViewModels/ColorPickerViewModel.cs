@@ -65,6 +65,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
+            InitializeLowMemorySettings(GeneralSettingsConfig, SendConfigMSG, ModuleType.ColorPicker);
 
             _delayedTimer = new Timer();
             _delayedTimer.Interval = SaveSettingsDelayInMs;

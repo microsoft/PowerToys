@@ -22,7 +22,6 @@ public static class WindowUtilities
             return;
         }
 
-        Logger.LogInfo($"Adding Overlays for each screen");
         foreach (Screen screen in Screen.AllScreens)
         {
             DpiScale dpiScale = screen.GetDpi();
@@ -65,8 +64,10 @@ public static class WindowUtilities
 
         GC.Collect();
 
-        // TODO: Decide when to close the process
-        // System.Windows.Application.Current.Shutdown();
+        if (App.ExitAfterClose)
+        {
+            (System.Windows.Application.Current as App)?.RequestShutdown();
+        }
     }
 
     public static void ActivateWindow(Window window)

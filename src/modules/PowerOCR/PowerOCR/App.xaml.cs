@@ -25,6 +25,10 @@ public partial class App : Application, IDisposable
     private Mutex? _instanceMutex;
     private int _powerToysRunnerPid;
     private ETWTrace etwTrace = new ETWTrace();
+    private const string ActivateOnStartupArgument = "--activate";
+    private const string ExitAfterCloseArgument = "--exit-after-close";
+
+    internal static bool ExitAfterClose { get; private set; }
 
     private CancellationTokenSource NativeThreadCTS { get; set; }
 
@@ -49,7 +53,7 @@ public partial class App : Application, IDisposable
 
         NativeEventWaiter.WaitForEventLoop(
             Constants.TerminatePowerOCRSharedEvent(),
-            this.Shutdown,
+            RequestShutdown,
             this.Dispatcher,
             NativeThreadCTS.Token);
     }
@@ -57,8 +61,23 @@ public partial class App : Application, IDisposable
     public void Dispose()
     {
         GC.SuppressFinalize(this);
+        NativeThreadCTS.Cancel();
+        NativeThreadCTS.Dispose();
         keyboardMonitor?.Dispose();
         etwTrace?.Dispose();
+    }
+
+    internal void RequestShutdown()
+    {
+        NativeThreadCTS.Cancel();
+        if (Dispatcher.CheckAccess())
+        {
+            Shutdown();
+        }
+        else
+        {
+            Dispatcher.BeginInvoke(new Action(Shutdown));
+        }
     }
 
     private void Application_Startup(object sender, StartupEventArgs e)
@@ -66,7 +85,7 @@ public partial class App : Application, IDisposable
         if (PowerToys.GPOWrapperProjection.GPOWrapper.GetConfiguredTextExtractorEnabledValue() == PowerToys.GPOWrapperProjection.GpoRuleConfigured.Disabled)
         {
             Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
-            Shutdown();
+            RequestShutdown();
             return;
         }
 
@@ -76,7 +95,7 @@ public partial class App : Application, IDisposable
         {
             Logger.LogWarning("Another running TextExtractor instance was detected. Exiting TextExtractor");
             _instanceMutex = null;
-            Shutdown();
+            RequestShutdown();
             return;
         }
 
@@ -85,16 +104,34 @@ public partial class App : Application, IDisposable
             try
             {
                 _ = int.TryParse(e.Args[0], out _powerToysRunnerPid);
-                Logger.LogInfo($"TextExtractor started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
+                bool activateOnStartup = Array.Exists(e.Args, arg => string.Equals(arg, ActivateOnStartupArgument, StringComparison.OrdinalIgnoreCase));
+                ExitAfterClose = Array.Exists(e.Args, arg => string.Equals(arg, ExitAfterCloseArgument, StringComparison.OrdinalIgnoreCase));
 
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting TextExtractor");
-                    NativeThreadCTS.Cancel();
-                    Current.Dispatcher.Invoke(() => Shutdown());
+                    RequestShutdown();
                 });
                 var userSettings = new UserSettings(new Helpers.ThrottledActionInvoker());
                 eventMonitor = new EventMonitor(Current.Dispatcher, NativeThreadCTS.Token);
+                if (activateOnStartup)
+                {
+                    Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        try
+                        {
+                            eventMonitor.StartOCRSession();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"TextExtractor startup activation failed: {ex}");
+                            if (ExitAfterClose)
+                            {
+                                RequestShutdown();
+                            }
+                        }
+                    }));
+                }
             }
             catch (Exception ex)
             {
@@ -113,6 +150,7 @@ public partial class App : Application, IDisposable
 
     protected override void OnExit(ExitEventArgs e)
     {
+        NativeThreadCTS.Cancel();
         _instanceMutex?.ReleaseMutex();
         base.OnExit(e);
     }
