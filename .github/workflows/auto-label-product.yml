@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Auto-apply Product labels
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const isManual = context.eventName === 'workflow_dispatch';
