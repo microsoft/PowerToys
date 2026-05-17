@@ -25,6 +25,7 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Properties;
 
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.frmScreen.#ShowMouseWithoutBordersUiOnWinLogonDesktop(System.Boolean)", Justification = "Dotnet port with style preservation")]
@@ -550,7 +551,7 @@ namespace MouseWithoutBorders
 
                     if (count % 20 == 0)
                     {
-                        Logger.LogAll();
+                        Logger.LogStatistics();
 
                         // Need to review this code on why it is needed (moved from MoveToMyNeighbourIfNeeded(...))
                         for (int i = 0; i < MachineStuff.MachineMatrix.Length; i++)
@@ -1215,7 +1216,29 @@ namespace MouseWithoutBorders
 
         private void MenuGenDumpFile_Click(object sender, EventArgs e)
         {
-            Logger.GenerateLog();
+            int l = Setting.Values.DumpObjectsLevel;
+            if (l is > 0 and < 10)
+            {
+                try
+                {
+                    string logFile = Path.Combine(Common.RunWithNoAdminRight ? Path.GetTempPath() : Path.GetDirectoryName(Application.ExecutablePath), "MagicMouse.log");
+                    var log = Logger.DumpObjects(l);
+                    File.WriteAllText(logFile, log);
+                    if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
+                    {
+                        _ = MessageBox.Show("Dump file created: " + logFile, Application.ProductName);
+                    }
+                    else
+                    {
+                        Common.ShowToolTip("Dump file created: " + logFile + " and placed in the Clipboard.", 10000);
+                        Clipboard.SetText(logFile);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _ = MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, Application.ProductName);
+                }
+            }
         }
 
         private void MainMenu_Opening(object sender, CancelEventArgs e)

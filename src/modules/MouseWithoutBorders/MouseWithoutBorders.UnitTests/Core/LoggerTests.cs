@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
@@ -14,6 +15,46 @@ namespace MouseWithoutBorders.UnitTests.Core;
 
 public static class LoggerTests
 {
+    [TestClass]
+    public sealed class GetStackTraceTests
+    {
+        [TestMethod]
+        public void GetStackTraceShouldReturnCorrectValue()
+        {
+            // if we get the stack trace from the current test method with
+            // "new StackTrace()" it's incredibly deep as it contains the
+            // full MSTest call stack so we'll create a Task to capture a
+            // much shallower stack trace from inside the task
+            var stackTrace = default(StackTrace);
+            Task.Run(() =>
+            {
+                void MyMethod1()
+                {
+                    MyMethod2();
+                }
+
+                void MyMethod2()
+                {
+                    stackTrace = new StackTrace();
+                }
+
+                MyMethod1();
+            }).Wait();
+
+            var expected =
+                "Void <GetStackTraceShouldReturnCorrectValue>g__MyMethod2|2() <= " +
+                "Void <GetStackTraceShouldReturnCorrectValue>g__MyMethod1|1() <= " +
+                "Void <GetStackTraceShouldReturnCorrectValue>b__0() <= " +
+                "Void RunFromThreadPoolDispatchLoop(System.Threading.Thread, System.Threading.ExecutionContext, System.Threading.ContextCallback, System.Object) <= " +
+                "Void ExecuteWithThreadLocal(System.Threading.Tasks.Task ByRef, System.Threading.Thread) <= " +
+                "Boolean Dispatch() <= " +
+                "Void WorkerThreadStart()";
+            var actual = Logger.GetStackTrace(stackTrace);
+
+            Assert.AreEqual(expected, actual);
+        }
+    }
+
     [TestClass]
     public sealed class PrivateDumpTests
     {
