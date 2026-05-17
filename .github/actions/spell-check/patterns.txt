@@ -18,6 +18,13 @@ MIcrosoftEdgeLauncherCsharp
 # marker for ignoring a comment to the end of the line
 // #no-spell-check.*$
 
+# JavaScript regex literals that start with \b can be reported as "b..." words.
+# Example: /\bclass\s+.../
+^\s*/\\[b].{3,}?/[gim]*\s*(?:\)(?:;|$)|,$)
+
+# GitHub API header token used in code (not natural language).
+\bx-ratelimit-reset\b
+
 # Gaelic
 Gàidhlig
 
