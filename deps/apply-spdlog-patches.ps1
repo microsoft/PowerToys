@@ -40,19 +40,21 @@ try {
 
         # If the reverse patch applies cleanly the patch is already applied -- skip.
         # Suppress git's stderr diagnostics; we drive the decision off $LASTEXITCODE.
-        & git apply --reverse --check --whitespace=nowarn -- $patch 2>$null
+        # --ignore-whitespace makes context matching tolerant of CRLF vs LF differences
+        # between this patch file and the submodule's checked-out files.
+        & git apply --reverse --check --whitespace=nowarn --ignore-whitespace -- $patch 2>$null
         if ($LASTEXITCODE -eq 0) {
             continue
         }
 
         # Otherwise apply forwards. --check first so a clean failure is reported
         # without leaving the working tree partially modified.
-        $checkOutput = & git apply --check --whitespace=nowarn -- $patch 2>&1
+        $checkOutput = & git apply --check --whitespace=nowarn --ignore-whitespace -- $patch 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Error ($checkOutput | Out-String)
             throw "[apply-spdlog-patches] cannot apply $(Split-Path -Leaf $patch) -- has the spdlog submodule SHA changed?"
         }
-        $applyOutput = & git apply --whitespace=nowarn -- $patch 2>&1
+        $applyOutput = & git apply --whitespace=nowarn --ignore-whitespace -- $patch 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Error ($applyOutput | Out-String)
             throw "[apply-spdlog-patches] git apply of $(Split-Path -Leaf $patch) failed."
