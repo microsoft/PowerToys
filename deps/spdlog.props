@@ -3,7 +3,15 @@
 		<ClCompile>
 			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
 			<PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-			<ForcedIncludeFiles>$(MSBuildThisFileDirectory)spdlog-msvc-fix\include\spdlog-msvc-fix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
 		</ClCompile>
 	</ItemDefinitionGroup>
+	<!--
+	    Apply patches in deps/ to the spdlog submodule before compiling. See
+	    deps/apply-spdlog-patches.ps1 and deps/spdlog-msvc-fix.patch for
+	    details. The patch script is idempotent so concurrent project builds
+	    will only apply each patch once.
+	-->
+	<Target Name="ApplySpdlogPatches" BeforeTargets="PrepareForBuild">
+		<Exec Command="powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)apply-spdlog-patches.ps1&quot;" />
+	</Target>
 </Project>

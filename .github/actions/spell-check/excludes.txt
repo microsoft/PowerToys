@@ -143,4 +143,5 @@ ignore$
 src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs
 ^src/modules/powerrename/unittests/testdata/avif_test\.avif$
 ^src/modules/powerrename/unittests/testdata/heif_test\.heic$
-^deps/spdlog-msvc-fix/
+^deps/apply-spdlog-patches\.ps1$
+^deps/spdlog-msvc-fix\.patch$
