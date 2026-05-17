@@ -75,9 +75,12 @@ namespace ImageResizer
             var page = ViewModel.CurrentPage;
             if (page == null)
             {
+                this.SetIsResizable(false);
                 contentPresenter.Content = null;
                 return;
             }
+
+            this.SetIsResizable(page is ResultsViewModel);
 
             if (page is InputViewModel inputVM)
             {

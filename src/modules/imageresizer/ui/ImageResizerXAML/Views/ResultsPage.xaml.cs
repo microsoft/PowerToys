@@ -15,6 +15,7 @@ namespace ImageResizer.Views
         public ResultsPage()
         {
             InitializeComponent();
+            Loaded += (_, _) => Bindings.Update();
         }
     }
 }

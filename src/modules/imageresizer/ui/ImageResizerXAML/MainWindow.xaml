@@ -18,7 +18,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TitleBar
             x:Name="titleBar"
@@ -28,6 +28,10 @@
                 <ImageIconSource ImageSource="/Assets/ImageResizer/ImageResizer.ico" />
             </TitleBar.IconSource>
         </TitleBar>
-        <ContentPresenter x:Name="contentPresenter" Grid.Row="1" />
+        <ContentPresenter
+            x:Name="contentPresenter"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch" />
     </Grid>
 </winuiex:WindowEx>
