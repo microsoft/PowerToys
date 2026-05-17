@@ -81,7 +81,18 @@ internal sealed partial class WindowWalkerListPage : DynamicListPage, IDisposabl
         return Math.Max(titleScore, processNameScore);
     }
 
-    public override IListItem[] GetItems() => Query(SearchText);
+    public override IListItem[] GetItems()
+    {
+        IsLoading = true;
+        try
+        {
+            return Query(SearchText);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
 
     public void Receive(RefreshWindowsMessage message)
     {
