@@ -161,18 +161,23 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
         if (IncludesMetric(PerformanceMetricKind.Battery))
         {
-            _batteryPage = new SystemBatteryUsageWidgetPage();
-            _batteryItem = new ListItem(_batteryPage)
+            var batteryStats = new BatteryStats();
+            batteryStats.GetData();
+            if (batteryStats.HasBattery)
             {
-                Title = _batteryPage.GetItemTitle(isBandPage),
-                Icon = _batteryPage.CurrentIcon,
-            };
+                _batteryPage = new SystemBatteryUsageWidgetPage();
+                _batteryItem = new ListItem(_batteryPage)
+                {
+                    Title = _batteryPage.GetItemTitle(isBandPage),
+                    Icon = _batteryPage.CurrentIcon,
+                };
 
-            _batteryPage.Updated += (s, e) =>
-            {
-                _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
-                _batteryItem.Icon = _batteryPage.CurrentIcon;
-            };
+                _batteryPage.Updated += (s, e) =>
+                {
+                    _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
+                    _batteryItem.Icon = _batteryPage.CurrentIcon;
+                };
+            }
         }
 
         if (_isBandPage)
@@ -242,7 +247,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         if (!_isBandPage)
         {
             // TODO add details
-            return new IListItem[] { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem!, _batteryItem! };
+            return _batteryItem is not null
+                ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem!, _batteryItem! }
+                : new[] { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem! };
         }
         else
         {
@@ -260,7 +267,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage!.Commands,
             };
 
-            return new IListItem[] { _cpuItem!, _memoryItem!, _networkDownItem, _networkUpItem, _gpuItem!, _batteryItem! };
+            return _batteryItem is not null
+                ? new[] { _cpuItem!, _memoryItem!, _networkDownItem!, _networkUpItem!, _gpuItem!, _batteryItem! }
+                : new[] { _cpuItem!, _memoryItem!, _networkDownItem!, _networkUpItem!, _gpuItem! };
         }
     }
 
