@@ -441,6 +441,30 @@ Write-BuildLog "(If already installed and you changed manifest only): Add-AppxPa
 if ($DevRegister) {
     Write-BuildLog "`nDev registration requested..." -Level Info
 
+    # Ensure the dev certificate is trusted (CurrentUser\TrustedPeople + CurrentUser\Root).
+    # Without trust, sparse identity lookup silently fails at runtime (GetPackageFamilyName
+    # returns APPMODEL_ERROR_NO_PACKAGE) so LAF unlocks like Phi Silica return Unavailable.
+    if (Test-Path $CertCerFile) {
+        try {
+            $devCert = (Get-PfxCertificate -FilePath $CertCerFile -ErrorAction Stop)
+            $devThumbprint = $devCert.Thumbprint
+            foreach ($store in @('TrustedPeople', 'Root')) {
+                $storePath = "Cert:\CurrentUser\$store"
+                $present = Get-ChildItem $storePath -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Thumbprint -eq $devThumbprint }
+                if (-not $present) {
+                    Write-BuildLog "Importing dev certificate ($devThumbprint) into CurrentUser\$store" -Level Info
+                    Import-Certificate -FilePath $CertCerFile -CertStoreLocation $storePath | Out-Null
+                }
+            }
+        } catch {
+            Write-BuildLog "Failed to import dev certificate into trust stores: $($_.Exception.Message)" -Level Warning
+            Write-BuildLog "Sparse identity may not be granted at runtime; LAF unlocks (e.g., Phi Silica) will fail." -Level Warning
+        }
+    } else {
+        Write-BuildLog "Certificate .cer file not found at $CertCerFile; skipping trust-store import." -Level Warning
+    }
+
     # Remove existing registration
     $existing = Get-AppxPackage -Name $script:Config.IdentityName -ErrorAction SilentlyContinue
     if ($existing) {

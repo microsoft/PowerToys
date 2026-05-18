@@ -13,24 +13,25 @@ internal static class PhiSilicaLafHelper
     private const string FeatureId = "com.microsoft.windows.ai.languagemodel";
 
     private static readonly object _lock = new();
-    private static bool _attempted;
     private static bool _unlocked;
 
     public static bool TryUnlock()
     {
-        if (_attempted)
+        // Only cache a successful unlock. Negative results (Unavailable, Unknown, exceptions)
+        // are often transient — e.g., AI feature stack not yet initialized after sign-in or
+        // sparse identity not fully applied to a freshly-started process — and retrying on
+        // the next call lets AP recover without restart.
+        if (_unlocked)
         {
-            return _unlocked;
+            return true;
         }
 
         lock (_lock)
         {
-            if (_attempted)
+            if (_unlocked)
             {
-                return _unlocked;
+                return true;
             }
-
-            _attempted = true;
 
             try
             {

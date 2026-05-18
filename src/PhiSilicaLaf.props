@@ -3,7 +3,7 @@
   <PropertyGroup>
     <!-- Phi Silica Limited Access Feature credentials.
          Local dev defaults below; overridden by /p: in release pipelines. -->
-    <PhiSilicaLafToken Condition="'$(PhiSilicaLafToken)'==''">6mRhg/rVL3rZ+N1LtLghtA==</PhiSilicaLafToken>
-    <PhiSilicaLafAttestation Condition="'$(PhiSilicaLafAttestation)'==''">8wekyb3d8bbwe</PhiSilicaLafAttestation>
+    <PhiSilicaLafToken Condition="'$(PhiSilicaLafToken)'==''">RmToMMYJHZkQSrKP5lWesA==</PhiSilicaLafToken>
+    <PhiSilicaLafAttestation Condition="'$(PhiSilicaLafAttestation)'==''">djwsxzxb4ksa8</PhiSilicaLafAttestation>
   </PropertyGroup>
 </Project>

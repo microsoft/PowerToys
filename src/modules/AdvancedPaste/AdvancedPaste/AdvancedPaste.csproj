@@ -9,32 +9,28 @@
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\AdvancedPaste</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>Assets\AdvancedPaste\AdvancedPaste.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationManifest>AdvancedPaste.dev.manifest</ApplicationManifest>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <EnableMsixTooling>true</EnableMsixTooling>
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <AssemblyName>PowerToys.AdvancedPaste</AssemblyName>
     <AssemblyDescription>PowerToys AdvancedPaste</AssemblyDescription>
     <RootNamespace>AdvancedPaste</RootNamespace>
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- WinUI XAML metadata loader still hard-codes "resources.pri" lookup under sparse identity
+         (WASDK 2.0.1 PR #6376 only fixed MRT GetDefaultPriFile, not the XAML type-info path). -->
+    <ProjectPriFileName>resources.pri</ProjectPriFileName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
     <Version>$(AdvancedPasteVersion)</Version>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CIBuild)'=='true' or '$(GeneratePackageLocally)'=='true'">
-    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
-    <AppxBundle>Never</AppxBundle>
-    <AppxPackageName>PowerToys.AdvancedPaste</AppxPackageName>
-    <AppxPackageTestDir>$(OutputPath)\AppPackages\PowerToys.AdvancedPaste_$(Version)_Test\</AppxPackageTestDir>
+  <PropertyGroup Condition="'$(CIBuild)'=='true'">
+    <ApplicationManifest>AdvancedPaste.prod.manifest</ApplicationManifest>
   </PropertyGroup>
-
-  <ItemGroup>
-    <AppxManifest Include="Package.appxmanifest" Condition="'$(CIBuild)'=='true'" />
-    <AppxManifest Include="Package-Dev.appxmanifest" Condition="'$(CIBuild)'!='true'" />
-  </ItemGroup>
 
   <!-- See https://learn.microsoft.com/windows/apps/develop/platform/csharp-winrt/net-projection-from-cppwinrt-component for more info -->
   <PropertyGroup>

@@ -33,9 +33,7 @@ See the `ExecutePasteFormatAsync(PasteFormat, PasteActionSource)` method in `Opt
 
 ## Debugging
 
-Advanced Paste is packaged as a self-contained MSIX with its own identity (`Microsoft.PowerToys.AdvancedPaste`). This gives it native package identity for Windows AI APIs (Phi Silica) and clean `ms-appx:///` resource resolution without workarounds.
-
-The MSIX is output to `WinUI3Apps/AdvancedPaste/` and registered by the module interface at runtime (or by the installer on release builds).
+Advanced Paste is an unpackaged, self-contained WinUI 3 app (`PowerToys.AdvancedPaste.exe`). To call Windows AI APIs (Phi Silica / `Microsoft.Windows.AI.Text.LanguageModel`) it acquires **package identity** at runtime via a shared sparse MSIX package (`Microsoft.PowerToys.SparseApp`).
 
 ### Running and attaching the debugger
 
@@ -46,57 +44,69 @@ The MSIX is output to `WinUI3Apps/AdvancedPaste/` and registered by the module i
 
 Alternatively, use the VS Code launch configuration **"Run AdvancedPaste"** from [.vscode/launch.json](/.vscode/launch.json) to launch the exe directly — but note that without the Runner, IPC and hotkeys won't work.
 
-### MSIX package identity
+### Sparse package identity (local development)
 
-Advanced Paste uses the Windows AI APIs (Phi Silica / `Microsoft.Windows.AI.Text.LanguageModel`) which require **package identity** at runtime. The app is packaged as a self-contained MSIX (following the same pattern as Command Palette).
+#### Why is this needed?
 
-#### How it works
+- The `LanguageModel` API requires a Limited Access Feature (LAF) unlock, which only succeeds when the calling process has a matching package identity.
+- Advanced Paste is an unpackaged, self-contained WinUI 3 app. The sparse package grants it identity without converting it to a full MSIX.
+- The csproj keeps `<ProjectPriFileName>resources.pri</ProjectPriFileName>` as a defensive workaround: WinUI's XAML type-info loader still hard-codes a `resources.pri` lookup under sparse identity even though WindowsAppSDK 2.0.1 ([PR #6376](https://github.com/microsoft/WindowsAppSDK/pull/6376)) fixed the generic MRT fallback. Without this override, `Microsoft.UI.Xaml.dll` crashes with `REGDB_E_CLASSNOTREG` (`0xC000027B`).
 
-- **Build**: The csproj has `EnableMsixTooling=true` and `GenerateAppxPackageOnBuild=true` (CI builds). This produces an MSIX in `AppPackages/`.
-- **Local dev**: VS registers the package automatically via `Add-AppxPackage -Register AppxManifest.xml` when you build.
-- **Installer**: The WiX installer deploys the MSIX file and a custom action (`InstallAdvancedPastePackageCA`) registers it via `PackageManager`.
+#### One-step dev setup
 
-#### Local development setup
-
-For local debug builds, Visual Studio handles MSIX registration automatically.
-
-1. Build `src/modules/AdvancedPaste/AdvancedPaste/AdvancedPaste.csproj` once.
-2. Select the **"PowerToys.AdvancedPaste (Package)"** launch profile in the debug dropdown.
-3. Press F5.
-
-The required launch profiles are defined in `src/modules/AdvancedPaste/AdvancedPaste/Properties/launchSettings.json` and include `commandName: "MsixPackage"`.
-
-If Visual Studio shows:
-
-"X:\\GitHub\\PowerToys\\src\\modules\\AdvancedPaste\\AdvancedPaste\\Properties\\launchSettings.json was not found. To debug a packaged single-project MSIX solution, a profile with command name MsixPackage in launchSettings.json is required."
-
-restore that file and reload the solution.
-
-To manually register:
 ```powershell
-Add-AppxPackage -Register "ARM64\Debug\WinUI3Apps\AdvancedPaste\AppxManifest.xml"
+pwsh src/PackageIdentity/BuildSparsePackage.ps1 -Platform ARM64 -Configuration Debug -DevRegister
 ```
 
-To manually unregister:
+`-DevRegister`:
+1. Generates a dev certificate under `src/PackageIdentity/.user/` (first run only).
+2. Auto-imports that certificate into `CurrentUser\TrustedPeople` and `CurrentUser\Root` so the OS grants sparse identity to AP (without trust, `GetPackageFamilyName` returns `APPMODEL_ERROR_NO_PACKAGE` and LAF unlock silently fails).
+3. Removes any prior registration.
+4. Rewrites the publisher in a temp copy of `AppxManifest.xml` to match the dev cert subject.
+5. Registers via `Add-AppxPackage -Register … -ExternalLocation X:\…\<Platform>\<Config>\WinUI3Apps`.
+
+After registration verify:
+
 ```powershell
-Get-AppxPackage -Name "*AdvancedPaste*" | Remove-AppxPackage
+$pkg = Get-AppxPackage -Name '*SparseApp*'
+$pkg.PackageFamilyName    # Microsoft.PowerToys.SparseApp_djwsxzxb4ksa8
+$pkg.PublisherId          # djwsxzxb4ksa8
+$pkg.IsDevelopmentMode    # True
 ```
 
-Verify:
+Confirm AP picks up sparse identity at runtime:
+
 ```powershell
-$pkg = Get-AppxPackage -Name "*AdvancedPaste*"
-$pkg.Name               # Microsoft.PowerToys.AdvancedPaste.Dev
-$pkg.IsDevelopmentMode   # True
+& 'ARM64\Debug\WinUI3Apps\AdvancedPaste\PowerToys.AdvancedPaste.exe' --check-phi-silica
+# Exit 0 = Available, 1 = NotReady, 2 = NotSupported
 ```
+
+Re-register after rebuilding AP, changing `src/PackageIdentity/AppxManifest.xml`, or switching platforms/configurations by re-running the same command. Unregister with `-Unregister`.
+
+#### Troubleshooting
+
+| Problem | Cause | Fix |
+|---------|-------|-----|
+| `GetPackageFamilyName` returns `APPMODEL_ERROR_NO_PACKAGE` (15700) at runtime; LAF unlock returns `Unavailable` | Dev certificate not trusted (or sparse package not registered) | Re-run `BuildSparsePackage.ps1 -DevRegister` — auto-imports the cert into `TrustedPeople` and `Root`. |
+| `Microsoft.UI.Xaml.dll` crash with `0xC000027B` / `REGDB_E_CLASSNOTREG` on AP or Settings startup | `<Application>` `Executable` path in `src/PackageIdentity/AppxManifest.xml` does not resolve under the registered `ExternalLocation` (`<Config>\WinUI3Apps\`) | Confirm every `Executable` is relative to `WinUI3Apps\` (per #47177) and the file exists under the build output. |
+| AP launches but never shows a window when triggered via hotkey | Runner's pipe-server wait timed out before AP's cold-start finished bootstrapping WinAppSDK + DI host | Already mitigated by the 15 s pipe timeout in `AdvancedPasteProcessManager.cpp`; warm-start launches connect in well under 1 s. |
+| Per-monitor PRI conflict / `ms-appx:///Microsoft.UI.Xaml/Themes/…` not found | `ProjectPriFileName` override removed; WinUI XAML loader couldn't find `resources.pri` | Keep `<ProjectPriFileName>resources.pri</ProjectPriFileName>` in `AdvancedPaste.csproj`. |
 
 ### How Settings UI checks Phi Silica availability
 
-Settings UI does not have MSIX package identity. To check whether Phi Silica is available, it queries the running Advanced Paste process via a named pipe (`powertoys_advancedpaste_phi_status`).
+Settings UI does not have sparse package identity. To check whether Phi Silica is available, it launches Advanced Paste as a short-lived subprocess:
 
-Advanced Paste checks LAF + `GetReadyState()` for each incoming status request (with MSIX identity), then returns the current state. Settings connects with a 5-second timeout and reads one of:
-- `Available` — model is ready
-- `NotReady` — model needs download via Windows Update
-- `NotSupported` — not a Copilot+ PC, API unavailable, or Advanced Paste not running
+```
+PowerToys.AdvancedPaste.exe --check-phi-silica
+```
+
+`Program.Main` recognizes this flag, calls `PhiSilicaLafHelper.TryUnlock()` + `LanguageModel.GetReadyState()`, prints one of `Available` / `NotReady` / `NotSupported` to stdout, and exits with the matching code (0/1/2). Settings reads stdout with a 10 s wait. Because each call is a fresh process, transient `Unavailable` results are not cached across checks.
+
+### See also
+
+- [`src/PackageIdentity/readme.md`](/src/PackageIdentity/readme.md) — full sparse package documentation
+- [microsoft/microsoft-ui-xaml#10856](https://github.com/microsoft/microsoft-ui-xaml/issues/10856) — original WinUI sparse-identity PRI bug
+- [microsoft/WindowsAppSDK#6376](https://github.com/microsoft/WindowsAppSDK/pull/6376) — partial fix in WASDK 2.0.1 / 1.8.7
 
 ## Settings
 
