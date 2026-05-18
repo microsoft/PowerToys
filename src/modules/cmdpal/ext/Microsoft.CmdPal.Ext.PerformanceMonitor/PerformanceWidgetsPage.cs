@@ -110,7 +110,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
         };
 
-        if (new BatteryStats().HasBattery)
+        var batteryStats = new BatteryStats();
+        batteryStats.GetData();
+        if (batteryStats.HasBattery)
         {
             _batteryPage = new SystemBatteryUsageWidgetPage();
             _batteryItem = new ListItem(_batteryPage)
