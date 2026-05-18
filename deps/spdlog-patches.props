@@ -1,0 +1,16 @@
+<Project>
+	<!--
+	    Standalone props for applying patches to the deps/spdlog submodule's
+	    working tree before compile. Split out from deps/spdlog.props so that
+	    consumers which need the patch applied but cannot inherit spdlog.props'
+	    preprocessor defines (e.g. SPDLOG_COMPILED_LIB) can still pull it in
+	    on its own.
+
+	    See deps/apply-spdlog-patches.ps1 and deps/spdlog-msvc-fix.patch for
+	    details. The patch script is idempotent and uses a named mutex so
+	    concurrent project builds are safe.
+	-->
+	<Target Name="ApplySpdlogPatches" BeforeTargets="PrepareForBuild">
+		<Exec Command="powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)apply-spdlog-patches.ps1&quot;" />
+	</Target>
+</Project>

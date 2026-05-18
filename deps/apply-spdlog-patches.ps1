@@ -46,7 +46,17 @@ Push-Location $submoduleRoot
 try {
     # Wait up to 5 minutes for the mutex; if it takes longer than that
     # something is wrong upstream and failing fast is better than hanging.
-    $mutexAcquired = $mutex.WaitOne([System.TimeSpan]::FromMinutes(5))
+    # If a previous instance was killed mid-apply (Ctrl+C, build cancel,
+    # crash), the OS marks the mutex as abandoned and WaitOne throws
+    # AbandonedMutexException *after* acquiring it. Treat that as a normal
+    # acquire so we don't leave the mutex permanently broken for the rest
+    # of the build.
+    try {
+        $mutexAcquired = $mutex.WaitOne([System.TimeSpan]::FromMinutes(5))
+    }
+    catch [System.Threading.AbandonedMutexException] {
+        $mutexAcquired = $true
+    }
     if (-not $mutexAcquired) {
         throw "[apply-spdlog-patches] timed out waiting for patch-apply mutex."
     }
