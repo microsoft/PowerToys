@@ -252,6 +252,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ShowFilePreviewTooltip
+        {
+            get => _peekSettings.Properties.ShowFilePreviewTooltip.Value;
+            set
+            {
+                if (_peekSettings.Properties.ShowFilePreviewTooltip.Value != value)
+                {
+                    _peekSettings.Properties.ShowFilePreviewTooltip.Value = value;
+                    OnPropertyChanged(nameof(ShowFilePreviewTooltip));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool SourceCodeWrapText
         {
             get => _peekPreviewSettings.SourceCodeWrapText.Value;
