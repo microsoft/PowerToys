@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Common.Logging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Common.WinGet.Services;
+using Microsoft.CmdPal.Ext.Actions;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
@@ -223,6 +224,11 @@ public partial class App : Application, IDisposable
             }
 
             Logger.LogError("Couldn't load performance monitor", ex);
+        }
+
+        if (ActionsCommandsProvider.IsActionsFeatureEnabled)
+        {
+            services.AddSingleton<ICommandProvider, ActionsCommandsProvider>();
         }
     }
 
