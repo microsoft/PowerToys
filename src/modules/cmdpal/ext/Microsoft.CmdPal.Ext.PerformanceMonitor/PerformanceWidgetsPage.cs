@@ -49,8 +49,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemGPUUsageWidgetPage _gpuPage = new();
     private readonly ListItem _gpuItem;
 
-    private readonly SystemBatteryUsageWidgetPage _batteryPage = new();
-    private readonly ListItem _batteryItem;
+    private readonly SystemBatteryUsageWidgetPage? _batteryPage;
+    private readonly ListItem? _batteryItem;
 
     // For bands, we want two bands, one for up and one for down
     private ListItem? _networkUpItem;
@@ -110,17 +110,21 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
         };
 
-        _batteryItem = new ListItem(_batteryPage)
+        if (new BatteryStats().HasBattery)
         {
-            Title = _batteryPage.GetItemTitle(isBandPage),
-            Icon = _batteryPage.CurrentIcon,
-        };
+            _batteryPage = new SystemBatteryUsageWidgetPage();
+            _batteryItem = new ListItem(_batteryPage)
+            {
+                Title = _batteryPage.GetItemTitle(isBandPage),
+                Icon = _batteryPage.CurrentIcon,
+            };
 
-        _batteryPage.Updated += (s, e) =>
-        {
-            _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
-            _batteryItem.Icon = _batteryPage.CurrentIcon;
-        };
+            _batteryPage.Updated += (s, e) =>
+            {
+                _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
+                _batteryItem.Icon = _batteryPage.CurrentIcon;
+            };
+        }
 
         if (_isBandPage)
         {
@@ -129,7 +133,10 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
             _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
             _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
-            _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
+            if (_batteryItem is not null)
+            {
+                _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
+            }
         }
     }
 
@@ -139,7 +146,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _memoryPage.PushActivate();
         _networkPage.PushActivate();
         _gpuPage.PushActivate();
-        _batteryPage.PushActivate();
+        _batteryPage?.PushActivate();
     }
 
     protected override void Unloaded()
@@ -148,7 +155,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _memoryPage.PopActivate();
         _networkPage.PopActivate();
         _gpuPage.PopActivate();
-        _batteryPage.PopActivate();
+        _batteryPage?.PopActivate();
     }
 
     public override IListItem[] GetItems()
@@ -156,7 +163,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         if (!_isBandPage)
         {
             // TODO add details
-            return new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem, _batteryItem };
+            return _batteryItem is not null
+                ? new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem, _batteryItem }
+                : new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem };
         }
         else
         {
@@ -174,7 +183,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage.Commands,
             };
 
-            return new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem, _batteryItem };
+            return _batteryItem is not null
+                ? new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem, _batteryItem }
+                : new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem };
         }
     }
 
@@ -184,7 +195,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _memoryPage.Dispose();
         _networkPage.Dispose();
         _gpuPage.Dispose();
-        _batteryPage.Dispose();
+        _batteryPage?.Dispose();
     }
 }
 
