@@ -83,7 +83,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly SystemBatteryUsageWidgetPage? _batteryPage;
     private readonly ListItem? _batteryItem;
 
-    // For the all-metrics band, we split network into two band items (up/down).
+    // For bands, we want two bands, one for up and one for down
     private ListItem? _networkUpItem;
     private ListItem? _networkDownItem;
     private string _networkUpSpeed = string.Empty;
@@ -178,6 +178,24 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                     _batteryItem.Icon = _batteryPage.CurrentIcon;
                 };
             }
+        }
+
+        var batteryStats = new BatteryStats();
+        batteryStats.GetData();
+        if (batteryStats.HasBattery)
+        {
+            _batteryPage = new SystemBatteryUsageWidgetPage();
+            _batteryItem = new ListItem(_batteryPage)
+            {
+                Title = _batteryPage.GetItemTitle(isBandPage),
+                Icon = _batteryPage.CurrentIcon,
+            };
+
+            _batteryPage.Updated += (s, e) =>
+            {
+                _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
+                _batteryItem.Icon = _batteryPage.CurrentIcon;
+            };
         }
 
         if (_isBandPage)
