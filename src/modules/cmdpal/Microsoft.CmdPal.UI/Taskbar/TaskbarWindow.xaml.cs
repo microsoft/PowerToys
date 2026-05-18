@@ -36,7 +36,6 @@ public sealed partial class TaskbarWindow : WindowEx,
     private readonly uint wMTASKBARRESTART;
     private readonly HWND _hwnd;
     private readonly TaskbarMetrics _taskbarMetrics;
-    private readonly TaskbarWatcher _taskbarWatcher;
     private readonly TaskbarBandControl _bandsControl;
 
     private readonly WNDPROC? _originalWndProc;
@@ -44,12 +43,16 @@ public sealed partial class TaskbarWindow : WindowEx,
     private readonly IThemeService _themeService;
 
     private readonly DispatcherQueueTimer _updateLayoutDebouncer;
+    private readonly DispatcherQueueTimer _autoHidePollTimer;
+
+    private TaskbarWatcher _taskbarWatcher;
 
     private double _lastContentSpace;
     private int _clipVersion;
     private bool _clipSuspended;
     private bool _disposed;
     private TaskbarEdge _lastKnownEdge;
+    private RECT _lastPollTaskbarRect;
 
     internal TaskbarWindow(TaskbarMetrics metrics)
     {
@@ -79,6 +82,10 @@ public sealed partial class TaskbarWindow : WindowEx,
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_EXSTYLE, (int)(exStyle | WINDOW_EX_STYLE.WS_EX_TOOLWINDOW));
 
         _updateLayoutDebouncer = DispatcherQueue.CreateTimer();
+
+        _autoHidePollTimer = DispatcherQueue.CreateTimer();
+        _autoHidePollTimer.Interval = TimeSpan.FromMilliseconds(100);
+        _autoHidePollTimer.Tick += AutoHidePollTick;
 
         MainContent.SizeChanged += MainContent_SizeChanged;
 
@@ -132,7 +139,7 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private void MainContent_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (_bandsControl.IsEditMode || _clipSuspended)
+        if (_clipSuspended)
         {
             return;
         }
@@ -158,19 +165,28 @@ public sealed partial class TaskbarWindow : WindowEx,
             // Detect the current edge cheaply (no UIA/COM) by comparing
             // the taskbar rect to the monitor rect.
             var currentEdge = DetectEdgeFromRect(shellTray, taskbarRect);
-            var isHorizontal = currentEdge is TaskbarEdge.Bottom or TaskbarEdge.Top;
 
-            var isTaskbarVisible = isHorizontal
-                ? taskbarRect.Height > 2
-                : taskbarRect.Width > 2;
+            // Auto-hide taskbars slide off-screen keeping their full
+            // height/width. Check the on-screen intersection, not the
+            // raw rect dimensions.
+            var isTaskbarVisible = IsTaskbarOnScreen(shellTray, taskbarRect);
 
             if (!isTaskbarVisible)
             {
                 PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+
+                // Win11's auto-hide slide-in uses composition animations
+                // that may not fire EVENT_OBJECT_LOCATIONCHANGE. Poll
+                // until the taskbar reappears and settles.
+                _lastPollTaskbarRect = default;
+                _autoHidePollTimer.Start();
                 return;
             }
             else if (!PInvoke.IsWindowVisible(_hwnd))
             {
+                // Event-driven path detected the taskbar reappearing.
+                // Show immediately but let the poll timer keep running
+                // to follow the slide-in animation and reposition.
                 PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
                 MoveToTaskbar();
                 return;
@@ -205,6 +221,73 @@ public sealed partial class TaskbarWindow : WindowEx,
     }
 
     /// <summary>
+    /// Polling fallback for auto-hide. Runs every 100ms while our window
+    /// is hidden (waiting for the taskbar to reappear) and continues
+    /// during the slide-in animation to reposition our window as the
+    /// taskbar moves. Stops once the taskbar rect stabilizes.
+    /// </summary>
+    private void AutoHidePollTick(DispatcherQueueTimer sender, object args)
+    {
+        var shellTray = PInvoke.FindWindow("Shell_TrayWnd", null);
+        if (shellTray.IsNull)
+        {
+            return;
+        }
+
+        PInvoke.GetWindowRect(shellTray, out var taskbarRect);
+
+        if (!IsTaskbarOnScreen(shellTray, taskbarRect))
+        {
+            // Still hidden — keep polling, reset stabilization tracking.
+            _lastPollTaskbarRect = default;
+            return;
+        }
+
+        // Taskbar is at least partially on-screen — show if hidden.
+        if (!PInvoke.IsWindowVisible(_hwnd))
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+        }
+
+        // Reposition to follow the slide-in animation.
+        MoveToTaskbar();
+
+        // Stop once the taskbar rect has stabilized (animation complete).
+        if (taskbarRect.left == _lastPollTaskbarRect.left &&
+            taskbarRect.top == _lastPollTaskbarRect.top &&
+            taskbarRect.right == _lastPollTaskbarRect.right &&
+            taskbarRect.bottom == _lastPollTaskbarRect.bottom)
+        {
+            _autoHidePollTimer.Stop();
+        }
+
+        _lastPollTaskbarRect = taskbarRect;
+    }
+
+    /// <summary>
+    /// Checks whether enough of the taskbar rect is on-screen to be
+    /// considered visible. Auto-hide taskbars slide off-screen keeping
+    /// their full size, so raw rect dimensions are unreliable — we
+    /// compute the intersection with the monitor work area instead.
+    /// </summary>
+    private static bool IsTaskbarOnScreen(HWND taskbarHwnd, RECT taskbarRect)
+    {
+        var monitor = PInvoke.MonitorFromWindow(taskbarHwnd, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
+        var monitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
+        PInvoke.GetMonitorInfo(monitor, ref monitorInfo);
+        var screen = monitorInfo.rcMonitor;
+
+        // Compute the on-screen intersection. Auto-hidden taskbar keeps
+        // its full 40-60px height/width but slides so only ≤2px are
+        // visible on the screen edge.
+        var onScreenWidth = Math.Max(0, Math.Min(taskbarRect.right, screen.right) - Math.Max(taskbarRect.left, screen.left));
+        var onScreenHeight = Math.Max(0, Math.Min(taskbarRect.bottom, screen.bottom) - Math.Max(taskbarRect.top, screen.top));
+
+        var isHorizontal = taskbarRect.Width >= taskbarRect.Height;
+        return isHorizontal ? onScreenHeight > 4 : onScreenWidth > 4;
+    }
+
+    /// <summary>
     /// Lightweight edge detection using only Win32 rect comparisons.
     /// No UIA/COM — safe to call on the UI thread in hot paths.
     /// </summary>
@@ -227,8 +310,11 @@ public sealed partial class TaskbarWindow : WindowEx,
 
     private LRESULT CustomWndProc(HWND hwnd, uint uMsg, WPARAM wParam, LPARAM lParam)
     {
-        if (uMsg == PInvoke.WM_DISPLAYCHANGE)
+        if (uMsg == PInvoke.WM_DISPLAYCHANGE || uMsg == PInvoke.WM_DPICHANGED)
         {
+            // Display resolution or DPI changed — reposition and reclip.
+            // DPI changes invalidate clip regions (physical pixels) and
+            // may not trigger SPI_SETWORKAREA on all OS versions.
             DispatcherQueue.TryEnqueue(() => MoveToTaskbar());
         }
         else if (uMsg == PInvoke.WM_SETTINGCHANGE)
@@ -247,28 +333,33 @@ public sealed partial class TaskbarWindow : WindowEx,
         }
         else if (uMsg == wMTASKBARRESTART)
         {
-            Logger.LogDebug("TaskbarWindow: WM_TASKBAR_RESTART");
-            DispatcherQueue.TryEnqueue(() => this.Close());
+            Logger.LogDebug("TaskbarWindow: explorer restarted — reconnecting");
+            DispatcherQueue.TryEnqueue(() => ReconnectAfterExplorerRestart());
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
     }
 
-    private async Task UpdateLayoutForDPI()
+    /// <summary>
+    /// Handles explorer.exe restart by re-creating the TaskbarWatcher
+    /// (old hooks target the dead PID) and repositioning the window
+    /// onto the new taskbar. The window stays alive — no close/recreate.
+    /// </summary>
+    private void ReconnectAfterExplorerRestart()
     {
-        MoveToTaskbar();
-        await Task.Delay(200);
-        MainContent.Padding = new Thickness(1);
-        await Task.Delay(10);
-        MainContent.Padding = new Thickness(0);
-    }
+        // Dispose the old watcher — its hooks target the old explorer PID.
+        _taskbarWatcher.Changed -= OnTaskbarChanged;
+        _taskbarWatcher.Dispose();
 
-    private void TriggerDebouncedLayoutUpdate()
-    {
-        _updateLayoutDebouncer.Debounce(
-            async () => await UpdateLayoutForDPI(),
-            interval: TimeSpan.FromMilliseconds(200),
-            immediate: false);
+        // Create a fresh watcher scoped to the new explorer.exe PID.
+        _taskbarWatcher = new TaskbarWatcher();
+        _taskbarWatcher.Changed += OnTaskbarChanged;
+
+        // Reset layout state so MoveToTaskbar does a full recalculation.
+        _lastContentSpace = 0;
+        _lastKnownEdge = _taskbarMetrics.Edge;
+
+        MoveToTaskbar();
     }
 
     private void MoveToTaskbar()
@@ -580,7 +671,8 @@ public sealed partial class TaskbarWindow : WindowEx,
                     clipBottom = Math.Min(winRect.Height, overlapBottom);
 
                     FrameworkElement clipToElement = MainContent;
-                    if (clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
+                    if (!_bandsControl.IsEditMode &&
+                        clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
                     {
                         var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
                         var contentLeft = (int)(position.X * scaleFactor);
@@ -605,7 +697,8 @@ public sealed partial class TaskbarWindow : WindowEx,
                     clipBottom = winRect.Height - _taskbarMetrics.TrayWidthInPixels;
 
                     FrameworkElement clipToElement = MainContent;
-                    if (clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
+                    if (!_bandsControl.IsEditMode &&
+                        clipToElement.ActualWidth > 0 && clipToElement.ActualHeight > 0)
                     {
                         var position = clipToElement.TransformToVisual(this.Content).TransformPoint(default);
                         var contentTop = (int)(position.Y * scaleFactor);
@@ -646,13 +739,17 @@ public sealed partial class TaskbarWindow : WindowEx,
     public void Receive(QuitMessage message)
     {
         _updateLayoutDebouncer?.Stop();
+        _autoHidePollTimer?.Stop();
         DispatcherQueue.TryEnqueue(() => Close());
     }
 
     public void Receive(EnterEditModeMessage message)
     {
-        _clipSuspended = true;
+        // Don't freeze the clip — expand it to the full taskbar space.
+        // ClipWindow checks IsEditMode and skips content-based narrowing.
+        _clipSuspended = false;
         _updateLayoutDebouncer?.Stop();
+        ClipWindow().ConfigureAwait(false);
     }
 
     public void Receive(ExitEditModeMessage message)
@@ -788,6 +885,7 @@ public sealed partial class TaskbarWindow : WindowEx,
         {
             _themeService.ThemeChanged -= ThemeService_ThemeChanged;
             _updateLayoutDebouncer?.Stop();
+            _autoHidePollTimer?.Stop();
             _taskbarWatcher.Changed -= OnTaskbarChanged;
             _taskbarWatcher.Dispose();
             _taskbarMetrics.Dispose();
@@ -903,23 +1001,21 @@ public sealed partial class TaskbarWindow : WindowEx,
         _bandsControl.SetCompactMode(isCompact, hideText);
 
         // When compact, WinUI enforces a minimum window size larger than
-        // the taskbar. Anchor the Root Grid to the taskbar edge so content
-        // aligns with the visible clip region instead of centering in the
-        // oversized window.
+        // the taskbar. The clip region starts at (0,0) in window-relative
+        // coords, so anchor the Root Grid to the top-left corner so content
+        // aligns with the visible clip area.
         if (isCompact)
         {
-            Root.VerticalAlignment = _taskbarMetrics.Edge switch
+            if (_taskbarMetrics.IsHorizontal)
             {
-                TaskbarEdge.Top => VerticalAlignment.Top,
-                TaskbarEdge.Bottom => VerticalAlignment.Bottom,
-                _ => VerticalAlignment.Stretch,
-            };
-            Root.HorizontalAlignment = _taskbarMetrics.Edge switch
+                Root.VerticalAlignment = VerticalAlignment.Top;
+                Root.HorizontalAlignment = HorizontalAlignment.Stretch;
+            }
+            else
             {
-                TaskbarEdge.Left => HorizontalAlignment.Left,
-                TaskbarEdge.Right => HorizontalAlignment.Right,
-                _ => HorizontalAlignment.Stretch,
-            };
+                Root.VerticalAlignment = VerticalAlignment.Stretch;
+                Root.HorizontalAlignment = HorizontalAlignment.Left;
+            }
         }
         else
         {
