@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using PowerDisplay.Common.Models;
 using static PowerDisplay.Common.Drivers.NativeConstants;
@@ -63,9 +64,9 @@ namespace PowerDisplay.Common.Services
 
                 if (!EnumDisplaySettings(gdiDeviceName, EnumCurrentSettings, &devMode))
                 {
-                    var error = GetLastError();
+                    var error = Marshal.GetLastWin32Error();
                     Logger.LogError($"SetRotation: EnumDisplaySettings failed for {gdiDeviceName}, error: {error}");
-                    return MonitorOperationResult.Failure($"Failed to get current display settings for {gdiDeviceName}", (int)error);
+                    return MonitorOperationResult.Failure($"Failed to get current display settings for {gdiDeviceName}", error);
                 }
 
                 int currentOrientation = devMode.DmDisplayOrientation;
@@ -144,8 +145,9 @@ namespace PowerDisplay.Common.Services
 
                 return devMode.DmDisplayOrientation;
             }
-            catch
+            catch (Exception ex)
             {
+                Logger.LogWarning($"GetCurrentOrientation: Exception for {gdiDeviceName}: {ex.Message}");
                 return -1;
             }
         }

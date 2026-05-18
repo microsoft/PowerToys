@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -17,11 +18,8 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
-using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using PowerToys.Interop;
-using CustomVcpValueMapping = Microsoft.PowerToys.Settings.UI.Library.CustomVcpValueMapping;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
@@ -37,9 +35,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            // Set up localized VCP code names for UI display
-            VcpNames.LocalizedCodeNameProvider = GetLocalizedVcpCodeName;
-
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
 
@@ -50,10 +45,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            // Initialize monitors collection using property setter for proper subscription setup
-            var loadedMonitors = _settings.Properties.Monitors;
+            // Initialize monitors collection using property setter for proper subscription setup.
+            // Hide legacy-format Ids; the current discovery pipeline only emits "\\?\DISPLAY#..."
+            // DevicePath Ids, so any "DDC_*" / "WMI_*" entries in settings.json are upgrade
+            // duplicates of a "\\?\" entry kept by the rebuilder's retention rule.
+            var loadedMonitors = FilterLegacyIds(_settings.Properties.Monitors).ToList();
 
-            Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings");
+            Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings (filtered)");
 
             Monitors = new ObservableCollection<MonitorInfo>(loadedMonitors);
 
@@ -131,6 +129,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => SetSettingsProperty(_settings.Properties.RestoreSettingsOnStartup, value, v => _settings.Properties.RestoreSettingsOnStartup = v);
         }
 
+        public bool MaxCompatibilityMode
+        {
+            get => _settings.Properties.MaxCompatibilityMode;
+            set => SetSettingsProperty(_settings.Properties.MaxCompatibilityMode, value, v => _settings.Properties.MaxCompatibilityMode = v);
+        }
+
         public bool ShowSystemTrayIcon
         {
             get => _settings.Properties.ShowSystemTrayIcon;
@@ -180,7 +184,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (SetSettingsProperty(_settings.Properties.ActivationShortcut, value, v => _settings.Properties.ActivationShortcut = v))
                 {
                     // Signal PowerDisplay.exe to re-register the hotkey
-                    EventHelper.SignalEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
+                    SignalNamedEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
                     Logger.LogInfo($"ActivationShortcut changed, signaled HotkeyUpdatedPowerDisplayEvent");
                 }
             }
@@ -255,12 +259,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UnsubscribeFromItemPropertyChanged(e.OldItems?.Cast<MonitorInfo>());
 
             HasMonitors = _monitors.Count > 0;
-            _settings.Properties.Monitors = _monitors.ToList();
-            NotifySettingsChanged();
+
+            // Collection mutations during ReloadMonitorsFromSettings come from disk —
+            // don't save back. ReloadMonitorsFromSettings itself rebuilds
+            // _settings.Properties.Monitors when it's done.
+            // Don't sync _settings.Properties.Monitors from _monitors here either —
+            // _monitors is the filtered view and would silently strip legacy entries.
+            if (!_isReloading)
+            {
+                NotifySettingsChanged();
+            }
 
             // Update TotalMonitorCount for dynamic DisplayName
             UpdateTotalMonitorCount();
         }
+
+        /// <summary>
+        /// True for the DevicePath form of Monitor Id ("\\?\DISPLAY#..."). The current
+        /// discovery pipeline only emits this form; older "DDC_*" / "WMI_*" entries in
+        /// settings.json are upgrade-duplicates kept by the rebuilder's retention rule
+        /// and shouldn't be bound to the UI.
+        /// </summary>
+        private static bool IsVisibleMonitorId(string id)
+            => !string.IsNullOrEmpty(id) && id.StartsWith(@"\\?\", StringComparison.Ordinal);
+
+        /// <summary>
+        /// Drop legacy-format Ids. See <see cref="IsVisibleMonitorId"/>.
+        /// </summary>
+        private static IEnumerable<MonitorInfo> FilterLegacyIds(IEnumerable<MonitorInfo> monitors)
+            => monitors.Where(m => IsVisibleMonitorId(m.Id));
 
         /// <summary>
         /// Update TotalMonitorCount on all monitors for dynamic DisplayName formatting.
@@ -333,10 +360,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 Logger.LogDebug($"[PowerDisplayViewModel] Monitor {monitor.Name} property {e.PropertyName} changed");
             }
 
-            // Update the settings object to keep it in sync
-            _settings.Properties.Monitors = _monitors.ToList();
+            // Property changes during ReloadMonitorsFromSettings come from disk
+            // (UpdateFrom), not user input — don't save or signal back out.
+            if (_isReloading)
+            {
+                return;
+            }
 
-            // Save settings when any monitor property changes
+            // MonitorInfo is a reference type shared between _monitors and
+            // _settings.Properties.Monitors — the property change is already visible
+            // in the persisted list, so just trigger save. Rebuilding the list from
+            // _monitors here would silently drop legacy entries the filter hides.
             NotifySettingsChanged();
 
             // For feature visibility properties, explicitly signal PowerDisplay to refresh
@@ -358,8 +392,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SignalSettingsUpdated()
         {
-            EventHelper.SignalEvent(Constants.SettingsUpdatedPowerDisplayEvent());
+            SignalNamedEvent(Constants.SettingsUpdatedPowerDisplayEvent());
             Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
+        }
+
+        /// <summary>
+        /// Signal PowerDisplay.exe to perform a full hardware rescan. Used when a
+        /// setting changes that affects monitor discovery (currently: max-compatibility
+        /// mode). Distinct from <see cref="SignalSettingsUpdated"/>, which only fires
+        /// the lightweight settings-applied path on the module side.
+        /// </summary>
+        public void SignalRescanRequest()
+        {
+            SignalNamedEvent(Constants.RescanPowerDisplayMonitorsEvent());
+            Logger.LogInfo("Signaled RescanPowerDisplayMonitorsEvent (max-compat toggle finalized)");
+        }
+
+        private static void SignalNamedEvent(string eventName)
+        {
+            try
+            {
+                using var handle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+                handle.Set();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to signal event '{eventName}': {ex.Message}");
+            }
         }
 
         public void Launch()
@@ -384,15 +443,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void ReloadMonitorsFromSettings()
         {
+            _isReloading = true;
             try
             {
                 Logger.LogInfo("Reloading monitors from settings file");
 
-                // Read fresh settings from file
+                // Read fresh settings from file. UpdateFrom / Add / Remove below fire
+                // PropertyChanged + CollectionChanged on the existing MonitorInfo
+                // instances; the _isReloading guard above stops those from triggering
+                // saves back to disk. We rebuild _settings.Properties.Monitors at the
+                // end so visible entries keep reference identity with the items inside
+                // _monitors (which user toggles mutate) while legacy entries take fresh
+                // disk references (UI doesn't bind them).
                 var updatedSettings = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-                var updatedMonitors = updatedSettings.Properties.Monitors;
+                var allFromDisk = updatedSettings.Properties.Monitors;
+                var updatedMonitors = allFromDisk.Where(m => IsVisibleMonitorId(m.Id)).ToList();
+                var legacyFromDisk = allFromDisk.Where(m => !IsVisibleMonitorId(m.Id)).ToList();
 
-                Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} monitors from settings");
+                Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} visible + {legacyFromDisk.Count} legacy from settings");
 
                 // Update existing MonitorInfo objects instead of replacing the collection
                 // This preserves XAML x:Bind bindings which reference specific object instances
@@ -435,14 +503,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
                 }
 
-                // Update internal settings reference
-                _settings.Properties.Monitors = updatedMonitors;
+                // Rebuild _settings.Properties.Monitors so visible items share refs
+                // with _monitors (user toggles will be visible to save). Legacy entries
+                // use the freshly-read instances; we never bind them to UI.
+                _settings.Properties.Monitors = _monitors.Concat(legacyFromDisk).ToList();
 
                 Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to reload monitors from settings: {ex.Message}");
+            }
+            finally
+            {
+                _isReloading = false;
             }
         }
 
@@ -452,6 +526,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private PowerDisplaySettings _settings;
         private ObservableCollection<MonitorInfo> _monitors;
         private bool _hasMonitors;
+
+        // True while ReloadMonitorsFromSettings is running. Suppresses PropertyChanged /
+        // CollectionChanged-triggered saves and IPC signals so changes coming from disk
+        // don't get written back as if they were user input.
+        private bool _isReloading;
 
         // Profile-related fields
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
@@ -465,7 +544,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<CustomVcpValueMapping> CustomVcpMappings => _customVcpMappings;
 
         /// <summary>
-        /// Gets whether there are any custom VCP mappings (for UI binding)
+        /// Gets a value indicating whether there are any custom VCP mappings (for UI binding).
         /// </summary>
         public bool HasCustomVcpMappings => _customVcpMappings?.Count > 0;
 
@@ -475,7 +554,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<PowerDisplayProfile> Profiles => _profiles;
 
         /// <summary>
-        /// Gets whether there are any profiles (for UI binding)
+        /// Gets a value indicating whether there are any profiles (for UI binding).
         /// </summary>
         public bool HasProfiles => _profiles?.Count > 0;
 
@@ -505,7 +584,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var profilesData = ProfileService.LoadProfiles();
+                var profilesData = ProfileHelper.LoadProfiles();
 
                 // Load profile objects (no Custom - it's not a profile anymore)
                 Profiles.Clear();
@@ -554,7 +633,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
 
-                Logger.LogInfo($"Profile '{profile.Name}' applied successfully");
+                Logger.LogInfo($"Profile '{profile.Name}' apply request sent via IPC");
             }
             catch (Exception ex)
             {
@@ -577,9 +656,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Creating profile: {profile.Name}");
 
-                var profilesData = ProfileService.LoadProfiles();
-                profilesData.SetProfile(profile);
-                ProfileService.SaveProfiles(profilesData);
+                ProfileHelper.AddOrUpdateProfile(profile);
 
                 // Reload profile list
                 LoadProfiles();
@@ -610,12 +687,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Updating profile: {oldName} -> {newProfile.Name}");
 
-                var profilesData = ProfileService.LoadProfiles();
-
-                // Remove old profile and add updated one
-                profilesData.RemoveProfile(oldName);
-                profilesData.SetProfile(newProfile);
-                ProfileService.SaveProfiles(profilesData);
+                ProfileHelper.RenameAndUpdateProfile(oldName, newProfile);
 
                 // Reload profile list
                 LoadProfiles();
@@ -645,9 +717,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 Logger.LogInfo($"Deleting profile: {profileName}");
 
-                var profilesData = ProfileService.LoadProfiles();
-                profilesData.RemoveProfile(profileName);
-                ProfileService.SaveProfiles(profilesData);
+                ProfileHelper.RemoveProfile(profileName);
 
                 // Reload profile list
                 LoadProfiles();
@@ -749,22 +819,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Signal PowerDisplay to reload settings
             SignalSettingsUpdated();
         }
-
-        /// <summary>
-        /// Provides localized VCP code names for UI display.
-        /// Looks for resource string with pattern "PowerDisplay_VcpCode_Name_0xXX".
-        /// Returns null for unknown codes to use the default MCCS name.
-        /// </summary>
-#nullable enable
-        private static string? GetLocalizedVcpCodeName(byte vcpCode)
-        {
-            var resourceKey = $"PowerDisplay_VcpCode_Name_0x{vcpCode:X2}";
-            var localizedName = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
-
-            // ResourceLoader returns empty string if key not found
-            return string.IsNullOrEmpty(localizedName) ? null : localizedName;
-        }
-#nullable restore
 
         private void NotifySettingsChanged()
         {

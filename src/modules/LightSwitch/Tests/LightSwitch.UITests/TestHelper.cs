@@ -201,7 +201,7 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update time test operation
+        /// Perform an update time test operation
         /// </summary>
         public static void PerformUpdateTimeTest(UITestBase testBase)
         {
@@ -257,7 +257,7 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update manual location test operation
+        /// Perform an update manual location test operation
         /// </summary>
         public static void PerformUserSelectedLocationTest(UITestBase testBase)
         {
@@ -300,7 +300,7 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update geolocation test operation
+        /// Perform an update geolocation test operation
         /// </summary>
         public static void PerformGeolocationTest(UITestBase testBase)
         {
@@ -335,7 +335,7 @@ namespace LightSwitch.UITests
         }
 
         /// <summary>
-        /// Perform a update time test operation
+        /// Perform an update time test operation
         /// </summary>
         public static void PerformOffsetTest(UITestBase testBase)
         {

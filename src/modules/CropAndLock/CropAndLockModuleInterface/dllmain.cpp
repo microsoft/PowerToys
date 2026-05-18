@@ -75,6 +75,12 @@ public:
         return powertoys_gpo::getConfiguredCropAndLockEnabledValue();
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     // Return JSON with the configuration options.
     // These are the settings shown on the settings page along with their current values.
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override

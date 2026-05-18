@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.PowerToys.Settings.UI.Library;
-using PowerDisplay.Common.Models;
+using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {

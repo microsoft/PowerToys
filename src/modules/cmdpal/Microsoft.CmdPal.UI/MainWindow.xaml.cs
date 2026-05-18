@@ -8,8 +8,8 @@ using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
@@ -57,6 +57,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<DragStartedMessage>,
     IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
+    IRecipient<GetHwndMessage>,
     IDisposable,
     IHostWindow
 {
@@ -73,7 +74,11 @@ public sealed partial class MainWindow : WindowEx,
     private readonly HiddenOwnerWindowBehavior _hiddenOwnerBehavior = new();
     private readonly IThemeService _themeService;
     private readonly WindowThemeSynchronizer _windowThemeSynchronizer;
+    private readonly List<long> _breakthroughTimestamps = [];
+
     private bool _ignoreHotKeyWhenFullScreen = true;
+    private bool _ignoreHotKeyWhenBusy;
+    private bool _allowBreakthroughShortcut;
     private bool _suppressDpiChange;
     private bool _themeServiceInitialized;
 
@@ -158,6 +163,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
         WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
+        WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -369,6 +375,8 @@ public sealed partial class MainWindow : WindowEx,
         App.Current.Services.GetService<TrayIconService>()!.SetupTrayIcon(settings.ShowSystemTrayIcon);
 
         _ignoreHotKeyWhenFullScreen = settings.IgnoreShortcutWhenFullscreen;
+        _ignoreHotKeyWhenBusy = settings.IgnoreShortcutWhenBusy;
+        _allowBreakthroughShortcut = settings.AllowBreakthroughShortcut;
 
         _autoGoHomeInterval = settings.AutoGoHomeInterval;
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
@@ -1208,10 +1216,25 @@ public sealed partial class MainWindow : WindowEx,
 
     private void HandleSummon(string commandId)
     {
-        if (_ignoreHotKeyWhenFullScreen)
+        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        if (isRootHotkey && IsPaletteVisibleToUser())
         {
-            // If we're in full screen mode, ignore the hotkey
-            if (WindowHelper.IsWindowFullscreen())
+            HandleSummonCore(commandId);
+            return;
+        }
+
+        var notificationFlags = WindowHelper.GetUserNotificationFlags();
+        var shouldSuppress =
+            (_ignoreHotKeyWhenFullScreen && notificationFlags.IsFullscreenState) ||
+            (_ignoreHotKeyWhenBusy && notificationFlags.IsBusy);
+
+        if (shouldSuppress)
+        {
+            if (_allowBreakthroughShortcut && IsBreakthroughTriggered())
+            {
+                // Rapid-press breakthrough: let it through
+            }
+            else
             {
                 return;
             }
@@ -1220,12 +1243,9 @@ public sealed partial class MainWindow : WindowEx,
         HandleSummonCore(commandId);
     }
 
-    private void HandleSummonCore(string commandId)
+    private bool IsPaletteVisibleToUser()
     {
-        var isRootHotkey = string.IsNullOrEmpty(commandId);
-        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
-
-        var isVisible = this.Visible;
+        var isVisible = Visible;
 
         unsafe
         {
@@ -1239,6 +1259,36 @@ public sealed partial class MainWindow : WindowEx,
                 isVisible = false;
             }
         }
+
+        return isVisible;
+    }
+
+    private bool IsBreakthroughTriggered()
+    {
+        const int requiredPresses = 3;
+        var windowTicks = 2 * Stopwatch.Frequency; // 2 seconds
+        var now = Stopwatch.GetTimestamp();
+
+        _breakthroughTimestamps.Add(now);
+
+        // Prune timestamps outside the window
+        _breakthroughTimestamps.RemoveAll(t => now - t > windowTicks);
+
+        if (_breakthroughTimestamps.Count >= requiredPresses)
+        {
+            _breakthroughTimestamps.Clear();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void HandleSummonCore(string commandId)
+    {
+        var isRootHotkey = string.IsNullOrEmpty(commandId);
+        PowerToysTelemetry.Log.WriteEvent(new CmdPalHotkeySummoned(isRootHotkey));
+
+        var isVisible = IsPaletteVisibleToUser();
 
         // Note to future us: the wParam will have the index of the hotkey we registered.
         // We can use that in the future to differentiate the hotkeys we've pressed
@@ -1359,5 +1409,10 @@ public sealed partial class MainWindow : WindowEx,
         {
             PInvoke.SetForegroundWindow(_hwnd);
         }
+    }
+
+    public void Receive(GetHwndMessage message)
+    {
+        message.Hwnd = this.GetWindowHandle();
     }
 }

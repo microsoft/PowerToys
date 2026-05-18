@@ -236,6 +236,7 @@
                             FontSize="16"
                             FontWeight="SemiBold"
                             IsTabStop="False"
+                            RenderKeyAsGlyph="True"
                             State="{Binding ElementName=ShortcutContentControl, Path=IsError, Mode=OneWay, Converter={StaticResource BoolToKeyVisualStateConverter}, ConverterParameter=Error}"
                             Style="{StaticResource AccentKeyVisualStyle}" />
                     </DataTemplate>

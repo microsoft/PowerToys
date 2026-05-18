@@ -67,6 +67,20 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <!--  Dock Size (only for Top/Bottom positions)  -->
+                    <controls:SettingsCard
+                        x:Name="DockSizeSettingsCard"
+                        x:Uid="DockAppearance_DockSize_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE799;}">
+                        <ComboBox
+                            x:Name="DockSizeComboBox"
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            SelectedIndex="{x:Bind SelectedDockSizeIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="DockAppearance_DockSize_Default" />
+                            <ComboBoxItem x:Uid="DockAppearance_DockSize_Compact" />
+                        </ComboBox>
+                    </controls:SettingsCard>
+
                     <controls:SettingsCard x:Uid="DockAppearance_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
                         <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ThemeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">
@@ -211,6 +225,47 @@
 
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
+
+                    <!--  Behavior Section  -->
+                    <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <controls:SettingsCard x:Uid="DockBehavior_AlwaysOnTop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE840;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
+                    <!--  Monitors Section  -->
+                    <TextBlock x:Uid="DockMonitors_Header" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
+
+                    <ItemsRepeater ItemsSource="{x:Bind ViewModel.MonitorConfigs, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="{StaticResource SettingsCardSpacing}" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="dockVm:DockMonitorConfigViewModel">
+                                <controls:SettingsExpander
+                                    Description="{x:Bind Resolution, Mode=OneWay}"
+                                    Header="{x:Bind DisplayName, Mode=OneWay}"
+                                    HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                                    IsExpanded="False">
+                                    <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                    <controls:SettingsExpander.Items>
+                                        <controls:SettingsCard x:Uid="DockMonitor_Position_SettingsCard">
+                                            <ComboBox
+                                                MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
+                                                SelectedIndex="{x:Bind SideOverrideIndex, Mode=TwoWay}">
+                                                <ComboBoxItem x:Uid="DockMonitor_Position_UseDefault" />
+                                                <ComboBoxItem x:Uid="DockMonitor_Position_Left" />
+                                                <ComboBoxItem x:Uid="DockMonitor_Position_Top" />
+                                                <ComboBoxItem x:Uid="DockMonitor_Position_Right" />
+                                                <ComboBoxItem x:Uid="DockMonitor_Position_Bottom" />
+                                            </ComboBox>
+                                        </controls:SettingsCard>
+                                    </controls:SettingsExpander.Items>
+                                </controls:SettingsExpander>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
 
                     <!--  Bands Section  -->
                     <!--  <TextBlock x:Uid="DockBandsSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />

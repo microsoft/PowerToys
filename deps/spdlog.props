@@ -3,6 +3,7 @@
 		<ClCompile>
 			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
 			<PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<ForcedIncludeFiles>$(MSBuildThisFileDirectory)spdlog-msvc-fix\include\spdlog-msvc-fix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
 		</ClCompile>
 	</ItemDefinitionGroup>
 </Project>
