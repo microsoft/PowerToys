@@ -22,7 +22,7 @@ namespace ShortcutGuide.Helpers
         /// </summary>
         /// <param name="path">Full path to the executable, or <c>null</c>/empty.</param>
         /// <returns>
-        /// A <see cref="BitmapImage"/> when extraction succeeds, otherwise <c>null</c>.
+        /// A <see cref="BitmapImage"/> when extraction succeeds; otherwise <c>null</c>.
         /// Callers should fall back to a glyph icon when this returns <c>null</c>.
         /// </returns>
         public static BitmapImage? TryGetExecutableIcon(string? path)

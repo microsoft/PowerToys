@@ -253,6 +253,7 @@ closesocket
 clp
 CLSCTX
 CLSIDs
+clsids
 Clusion
 cmder
 CMDNOTFOUNDMODULEINTERFACE
@@ -508,6 +509,7 @@ DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
 dwrite
+DWRITE
 dxgi
 Dxva
 eab
@@ -593,6 +595,7 @@ FFFF
 fffffffzzz
 FFh
 Figma
+figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -1062,6 +1065,7 @@ LVal
 LVDS
 LWA
 lwin
+LWIN
 LZero
 MAGTRANSFORM
 makeappx
@@ -1125,6 +1129,7 @@ MINMAXINFO
 minwindef
 Mip
 Miracast
+miracast
 mkdn
 mlcfg
 mmc
@@ -1293,6 +1298,7 @@ NORMALUSER
 NOSEARCH
 NOSENDCHANGING
 NOSIZE
+nosize
 notdefault
 NOTHOUSANDS
 NOTICKS
@@ -1431,6 +1437,7 @@ phbmp
 phicon
 PHL
 Photoshop
+photoshop
 phwnd
 pici
 pidl
@@ -2089,6 +2096,7 @@ VARTYPE
 vbcscompiler
 vcamp
 vcenter
+VCENTER
 vcgtq
 VCINSTALLDIR
 vcp
@@ -2127,6 +2135,7 @@ VOS
 vpaddlq
 vqsubq
 vredraw
+VREDRAW
 vreinterpretq
 VSC
 VSCBD
