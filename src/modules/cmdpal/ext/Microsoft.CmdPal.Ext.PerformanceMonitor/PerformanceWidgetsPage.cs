@@ -22,169 +22,273 @@ namespace Microsoft.CmdPal.Ext.PerformanceMonitor;
 #pragma warning disable SA1402 // File may only contain a single type
 
 /// <summary>
+/// Identifies a single performance metric, used to scope a
+/// <see cref="PerformanceWidgetsPage"/> to just that metric (for per-metric
+/// dock bands).
+/// </summary>
+internal enum PerformanceMetricKind
+{
+    Cpu,
+    Memory,
+    Network,
+    Gpu,
+    Battery,
+}
+
+/// <summary>
 ///  Page for displaying performance monitor widgets. Can be used as both a list
 /// in the main window, or as a band in the dock.
 /// By using OnLoadStaticListPage, we can get onload/onunload events to start/stop
 /// the data gathering.
+///
+/// When <paramref name="singleMetric"/> is supplied, the page only initializes
+/// and surfaces a single metric — used to back per-metric dock bands. When
+/// null, the page surfaces all metrics (the default behavior for both the main
+/// list page and the all-metrics dock band).
 /// </summary>
 internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDisposable
 {
-    public override string Id => "com.microsoft.cmdpal.performanceWidget";
+    private const string BaseId = "com.microsoft.cmdpal.performanceWidget";
+
+    public override string Id => _id;
 
     public override string Title => Resources.GetResource("Performance_Monitor_Title");
 
-    public override IconInfo Icon => Icons.PerformanceMonitorIcon;
+    public override IconInfo Icon => _singleMetric switch
+    {
+        PerformanceMetricKind.Cpu => Icons.CpuIcon,
+        PerformanceMetricKind.Memory => Icons.MemoryIcon,
+        PerformanceMetricKind.Network => Icons.NetworkIcon,
+        PerformanceMetricKind.Gpu => Icons.GpuIcon,
+        PerformanceMetricKind.Battery => _batteryPage?.CurrentIcon ?? Icons.BatteryIcon,
+        _ => Icons.PerformanceMonitorIcon,
+    };
 
+    private readonly string _id;
     private readonly bool _isBandPage;
+    private readonly PerformanceMetricKind? _singleMetric;
 
-    private readonly SystemCPUUsageWidgetPage _cpuPage = new();
-    private readonly ListItem _cpuItem;
+    private readonly SystemCPUUsageWidgetPage? _cpuPage;
+    private readonly ListItem? _cpuItem;
 
-    private readonly SystemMemoryUsageWidgetPage _memoryPage = new();
-    private readonly ListItem _memoryItem;
+    private readonly SystemMemoryUsageWidgetPage? _memoryPage;
+    private readonly ListItem? _memoryItem;
 
-    private readonly SystemNetworkUsageWidgetPage _networkPage;
-    private readonly ListItem _networkItem;
+    private readonly SystemNetworkUsageWidgetPage? _networkPage;
+    private readonly ListItem? _networkItem;
 
-    private readonly SystemGPUUsageWidgetPage _gpuPage = new();
-    private readonly ListItem _gpuItem;
+    private readonly SystemGPUUsageWidgetPage? _gpuPage;
+    private readonly ListItem? _gpuItem;
 
-    private readonly SystemBatteryUsageWidgetPage _batteryPage = new();
-    private readonly ListItem _batteryItem;
+    private readonly SystemBatteryUsageWidgetPage? _batteryPage;
+    private readonly ListItem? _batteryItem;
 
-    // For bands, we want two bands, one for up and one for down
+    // For the all-metrics band, we split network into two band items (up/down).
     private ListItem? _networkUpItem;
     private ListItem? _networkDownItem;
     private string _networkUpSpeed = string.Empty;
     private string _networkDownSpeed = string.Empty;
 
-    public PerformanceWidgetsPage(SettingsManager settingsManager, bool isBandPage = false)
+    public PerformanceWidgetsPage(SettingsManager settingsManager, bool isBandPage = false, PerformanceMetricKind? singleMetric = null)
     {
         _isBandPage = isBandPage;
-        _networkPage = new SystemNetworkUsageWidgetPage(settingsManager);
-        _cpuItem = new ListItem(_cpuPage)
-        {
-            Title = _cpuPage.GetItemTitle(isBandPage),
-            MoreCommands = _cpuPage.Commands,
-        };
+        _singleMetric = singleMetric;
+        _id = singleMetric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(singleMetric.Value)}";
 
-        _cpuPage.Updated += (s, e) =>
+        if (IncludesMetric(PerformanceMetricKind.Cpu))
         {
-            _cpuItem.Title = _cpuPage.GetItemTitle(isBandPage);
-        };
+            _cpuPage = new SystemCPUUsageWidgetPage();
+            _cpuItem = new ListItem(_cpuPage)
+            {
+                Title = _cpuPage.GetItemTitle(isBandPage),
+                MoreCommands = _cpuPage.Commands,
+            };
 
-        _memoryItem = new ListItem(_memoryPage)
-        {
-            Title = _memoryPage.GetItemTitle(isBandPage),
-            MoreCommands = _memoryPage.Commands,
-        };
+            _cpuPage.Updated += (s, e) =>
+            {
+                _cpuItem.Title = _cpuPage.GetItemTitle(isBandPage);
+            };
+        }
 
-        _memoryPage.Updated += (s, e) =>
+        if (IncludesMetric(PerformanceMetricKind.Memory))
         {
-            _memoryItem.Title = _memoryPage.GetItemTitle(isBandPage);
-        };
+            _memoryPage = new SystemMemoryUsageWidgetPage();
+            _memoryItem = new ListItem(_memoryPage)
+            {
+                Title = _memoryPage.GetItemTitle(isBandPage),
+                MoreCommands = _memoryPage.Commands,
+            };
 
-        _networkItem = new ListItem(_networkPage)
-        {
-            Title = _networkPage.GetItemTitle(isBandPage),
-            MoreCommands = _networkPage.Commands,
-        };
+            _memoryPage.Updated += (s, e) =>
+            {
+                _memoryItem.Title = _memoryPage.GetItemTitle(isBandPage);
+            };
+        }
 
-        _networkPage.Updated += (s, e) =>
+        if (IncludesMetric(PerformanceMetricKind.Network))
         {
-            _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
-            _networkUpSpeed = _networkPage.GetUpSpeed();
-            _networkDownSpeed = _networkPage.GetDownSpeed();
-            _networkDownItem?.Title = $"{_networkDownSpeed}";
-            _networkUpItem?.Title = $"{_networkUpSpeed}";
-        };
+            _networkPage = new SystemNetworkUsageWidgetPage(settingsManager);
+            _networkItem = new ListItem(_networkPage)
+            {
+                Title = _networkPage.GetItemTitle(isBandPage),
+                MoreCommands = _networkPage.Commands,
+            };
 
-        _gpuItem = new ListItem(_gpuPage)
-        {
-            Title = _gpuPage.GetItemTitle(isBandPage),
-            MoreCommands = _gpuPage.Commands,
-        };
+            _networkPage.Updated += (s, e) =>
+            {
+                _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
+                _networkUpSpeed = _networkPage.GetUpSpeed();
+                _networkDownSpeed = _networkPage.GetDownSpeed();
+                _networkDownItem?.Title = $"{_networkDownSpeed}";
+                _networkUpItem?.Title = $"{_networkUpSpeed}";
+            };
+        }
 
-        _gpuPage.Updated += (s, e) =>
+        if (IncludesMetric(PerformanceMetricKind.Gpu))
         {
-            _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
-        };
+            _gpuPage = new SystemGPUUsageWidgetPage();
+            _gpuItem = new ListItem(_gpuPage)
+            {
+                Title = _gpuPage.GetItemTitle(isBandPage),
+                MoreCommands = _gpuPage.Commands,
+            };
 
-        _batteryItem = new ListItem(_batteryPage)
-        {
-            Title = _batteryPage.GetItemTitle(isBandPage),
-            Icon = _batteryPage.CurrentIcon,
-        };
+            _gpuPage.Updated += (s, e) =>
+            {
+                _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
+            };
+        }
 
-        _batteryPage.Updated += (s, e) =>
+        if (IncludesMetric(PerformanceMetricKind.Battery))
         {
-            _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
-            _batteryItem.Icon = _batteryPage.CurrentIcon;
-        };
+            _batteryPage = new SystemBatteryUsageWidgetPage();
+            _batteryItem = new ListItem(_batteryPage)
+            {
+                Title = _batteryPage.GetItemTitle(isBandPage),
+                Icon = _batteryPage.CurrentIcon,
+            };
+
+            _batteryPage.Updated += (s, e) =>
+            {
+                _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
+                _batteryItem.Icon = _batteryPage.CurrentIcon;
+            };
+        }
 
         if (_isBandPage)
         {
             // add subtitles to them all
-            _cpuItem.Subtitle = Resources.GetResource("CPU_Usage_Subtitle");
-            _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
-            _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
-            _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
-            _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
+            if (_cpuItem is not null)
+            {
+                _cpuItem.Subtitle = Resources.GetResource("CPU_Usage_Subtitle");
+            }
+
+            if (_memoryItem is not null)
+            {
+                _memoryItem.Subtitle = Resources.GetResource("Memory_Usage_Subtitle");
+            }
+
+            if (_networkItem is not null)
+            {
+                _networkItem.Subtitle = Resources.GetResource("Network_Usage_Subtitle");
+            }
+
+            if (_gpuItem is not null)
+            {
+                _gpuItem.Subtitle = Resources.GetResource("GPU_Usage_Subtitle");
+            }
+
+            if (_batteryItem is not null)
+            {
+                _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
+            }
         }
     }
 
     protected override void Loaded()
     {
-        _cpuPage.PushActivate();
-        _memoryPage.PushActivate();
-        _networkPage.PushActivate();
-        _gpuPage.PushActivate();
-        _batteryPage.PushActivate();
+        _cpuPage?.PushActivate();
+        _memoryPage?.PushActivate();
+        _networkPage?.PushActivate();
+        _gpuPage?.PushActivate();
+        _batteryPage?.PushActivate();
     }
 
     protected override void Unloaded()
     {
-        _cpuPage.PopActivate();
-        _memoryPage.PopActivate();
-        _networkPage.PopActivate();
-        _gpuPage.PopActivate();
-        _batteryPage.PopActivate();
+        _cpuPage?.PopActivate();
+        _memoryPage?.PopActivate();
+        _networkPage?.PopActivate();
+        _gpuPage?.PopActivate();
+        _batteryPage?.PopActivate();
     }
 
     public override IListItem[] GetItems()
     {
+        // Per-metric pages just return the single matching item.
+        if (_singleMetric is PerformanceMetricKind metric)
+        {
+            return metric switch
+            {
+                PerformanceMetricKind.Cpu => new IListItem[] { _cpuItem! },
+                PerformanceMetricKind.Memory => new IListItem[] { _memoryItem! },
+                PerformanceMetricKind.Network => new IListItem[] { _networkItem! },
+                PerformanceMetricKind.Gpu => new IListItem[] { _gpuItem! },
+                PerformanceMetricKind.Battery => new IListItem[] { _batteryItem! },
+                _ => Array.Empty<IListItem>(),
+            };
+        }
+
         if (!_isBandPage)
         {
             // TODO add details
-            return new[] { _cpuItem, _memoryItem, _networkItem, _gpuItem, _batteryItem };
+            return new IListItem[] { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem!, _batteryItem! };
         }
         else
         {
-            _networkUpItem = new ListItem(_networkPage)
+            _networkUpItem = new ListItem(_networkPage!)
             {
                 Title = $"{_networkUpSpeed}",
                 Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                MoreCommands = _networkPage.Commands,
+                MoreCommands = _networkPage!.Commands,
             };
 
-            _networkDownItem = new ListItem(_networkPage)
+            _networkDownItem = new ListItem(_networkPage!)
             {
                 Title = $"{_networkDownSpeed}",
                 Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                MoreCommands = _networkPage.Commands,
+                MoreCommands = _networkPage!.Commands,
             };
 
-            return new[] { _cpuItem, _memoryItem, _networkDownItem, _networkUpItem, _gpuItem, _batteryItem };
+            return new IListItem[] { _cpuItem!, _memoryItem!, _networkDownItem, _networkUpItem, _gpuItem!, _batteryItem! };
         }
     }
 
     public void Dispose()
     {
-        _cpuPage.Dispose();
-        _memoryPage.Dispose();
-        _networkPage.Dispose();
-        _gpuPage.Dispose();
-        _batteryPage.Dispose();
+        _cpuPage?.Dispose();
+        _memoryPage?.Dispose();
+        _networkPage?.Dispose();
+        _gpuPage?.Dispose();
+        _batteryPage?.Dispose();
+    }
+
+    private bool IncludesMetric(PerformanceMetricKind metric)
+    {
+        return _singleMetric is null || _singleMetric == metric;
+    }
+
+    private static string GetMetricSuffix(PerformanceMetricKind metric)
+    {
+        return metric switch
+        {
+            PerformanceMetricKind.Cpu => "cpu",
+            PerformanceMetricKind.Memory => "memory",
+            PerformanceMetricKind.Network => "network",
+            PerformanceMetricKind.Gpu => "gpu",
+            PerformanceMetricKind.Battery => "battery",
+            _ => "unknown",
+        };
     }
 }
 

@@ -23,9 +23,14 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     private readonly Lock _stateLock = new();
     private readonly SettingsManager _settingsManager = new();
     private ICommandItem[] _commands = [];
-    private ICommandItem _band = new CommandItem();
+    private ICommandItem[] _bands = [];
     private PerformanceWidgetsPage? _mainPage;
     private PerformanceWidgetsPage? _bandPage;
+    private PerformanceWidgetsPage? _cpuBandPage;
+    private PerformanceWidgetsPage? _memoryBandPage;
+    private PerformanceWidgetsPage? _networkBandPage;
+    private PerformanceWidgetsPage? _gpuBandPage;
+    private PerformanceWidgetsPage? _batteryBandPage;
     private bool _softDisabled;
 
     public PerformanceMonitorCommandsProvider(bool softDisabled = false)
@@ -58,7 +63,7 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
     {
         lock (_stateLock)
         {
-            return [_band];
+            return _bands;
         }
     }
 
@@ -104,11 +109,14 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
         var page = new PerformanceMonitorDisabledPage(this);
         var band = new PerformanceMonitorDisabledPage(this);
-        _band = new CommandItem(band)
-        {
-            Title = Resources.GetResource("Performance_Monitor_Disabled_Band_Title"),
-            Subtitle = DisplayName,
-        };
+        _bands =
+        [
+            new CommandItem(band)
+            {
+                Title = Resources.GetResource("Performance_Monitor_Disabled_Band_Title"),
+                Subtitle = DisplayName,
+            },
+        ];
         _commands =
         [
             new CommandItem(page)
@@ -126,7 +134,21 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
         _mainPage = new PerformanceWidgetsPage(_settingsManager, false);
         _bandPage = new PerformanceWidgetsPage(_settingsManager, true);
-        _band = new CommandItem(_bandPage) { Title = DisplayName };
+        _cpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Cpu);
+        _memoryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Memory);
+        _networkBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Network);
+        _gpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Gpu);
+        _batteryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Battery);
+
+        _bands =
+        [
+            new CommandItem(_bandPage) { Title = DisplayName },
+            new CommandItem(_cpuBandPage) { Title = Resources.GetResource("CPU_Usage_Title") },
+            new CommandItem(_memoryBandPage) { Title = Resources.GetResource("Memory_Usage_Title") },
+            new CommandItem(_networkBandPage) { Title = Resources.GetResource("Network_Usage_Title") },
+            new CommandItem(_gpuBandPage) { Title = Resources.GetResource("GPU_Usage_Title") },
+            new CommandItem(_batteryBandPage) { Title = Resources.GetResource("Battery_Usage_Title") },
+        ];
         _commands =
         [
             new CommandItem(_mainPage)
@@ -145,5 +167,20 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
 
         _bandPage?.Dispose();
         _bandPage = null;
+
+        _cpuBandPage?.Dispose();
+        _cpuBandPage = null;
+
+        _memoryBandPage?.Dispose();
+        _memoryBandPage = null;
+
+        _networkBandPage?.Dispose();
+        _networkBandPage = null;
+
+        _gpuBandPage?.Dispose();
+        _gpuBandPage = null;
+
+        _batteryBandPage?.Dispose();
+        _batteryBandPage = null;
     }
 }
