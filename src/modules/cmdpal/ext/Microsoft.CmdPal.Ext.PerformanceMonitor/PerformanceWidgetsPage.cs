@@ -180,24 +180,6 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             }
         }
 
-        var batteryStats = new BatteryStats();
-        batteryStats.GetData();
-        if (batteryStats.HasBattery)
-        {
-            _batteryPage = new SystemBatteryUsageWidgetPage();
-            _batteryItem = new ListItem(_batteryPage)
-            {
-                Title = _batteryPage.GetItemTitle(isBandPage),
-                Icon = _batteryPage.CurrentIcon,
-            };
-
-            _batteryPage.Updated += (s, e) =>
-            {
-                _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
-                _batteryItem.Icon = _batteryPage.CurrentIcon;
-            };
-        }
-
         if (_isBandPage)
         {
             // add subtitles to them all

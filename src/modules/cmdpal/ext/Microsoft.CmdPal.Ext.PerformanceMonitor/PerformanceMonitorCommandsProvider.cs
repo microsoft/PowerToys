@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using CoreWidgetProvider.Helpers;
 using Microsoft.CmdPal.Common;
@@ -140,15 +141,22 @@ public partial class PerformanceMonitorCommandsProvider : CommandProvider
         _gpuBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Gpu);
         _batteryBandPage = new PerformanceWidgetsPage(_settingsManager, true, PerformanceMetricKind.Battery);
 
-        _bands =
-        [
+        List<ICommandItem> bands = [
             new CommandItem(_bandPage) { Title = DisplayName },
             new CommandItem(_cpuBandPage) { Title = Resources.GetResource("CPU_Usage_Title") },
             new CommandItem(_memoryBandPage) { Title = Resources.GetResource("Memory_Usage_Title") },
             new CommandItem(_networkBandPage) { Title = Resources.GetResource("Network_Usage_Title") },
-            new CommandItem(_gpuBandPage) { Title = Resources.GetResource("GPU_Usage_Title") },
-            new CommandItem(_batteryBandPage) { Title = Resources.GetResource("Battery_Usage_Title") },
+            new CommandItem(_gpuBandPage) { Title = Resources.GetResource("GPU_Usage_Title") }
         ];
+        var batteryStats = new BatteryStats();
+        batteryStats.GetData();
+        if (batteryStats.HasBattery)
+        {
+            bands.Add(new CommandItem(_batteryBandPage) { Title = Resources.GetResource("Battery_Usage_Title") });
+        }
+
+        _bands = bands.ToArray();
+
         _commands =
         [
             new CommandItem(_mainPage)
