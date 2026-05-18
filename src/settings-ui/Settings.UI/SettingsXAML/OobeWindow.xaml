@@ -95,6 +95,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}"
                     Tag="FileExplorer" />
                 <NavigationViewItem
+                    x:Uid="Shell_GrabAndMove"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}"
+                    Tag="GrabAndMove" />
+                <NavigationViewItem
                     x:Uid="Shell_Hosts"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}"
                     Tag="Hosts" />

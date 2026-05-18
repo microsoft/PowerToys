@@ -313,7 +313,7 @@ public class Win32Program : IProgram
                     }
 
                     // To filter out only those steam shortcuts which have 'run' or 'rungameid' as the hostname
-                    if (InternetShortcutURLPrefixes.Match(urlPath).Success)
+                    if (InternetShortcutURLPrefixes.IsMatch(urlPath))
                     {
                         validApp = true;
                     }

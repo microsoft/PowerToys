@@ -70,6 +70,15 @@ namespace Microsoft.PowerToys.Settings.UI.Panels
 
         private void PreviewTypeSetting_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // The Segmented control can fire SelectionChanged transiently with SelectedIndex == -1
+            // (e.g. during template apply or when items are being initialized/refreshed before the
+            // x:Bind two-way binding restores the persisted value). Ignore those intermediate states
+            // instead of throwing.
+            if (this.PreviewTypeSetting.SelectedIndex < 0)
+            {
+                return;
+            }
+
             // hide or display controls based on whether the "Custom" preview type is selected
             var selectedPreviewType = this.GetSelectedPreviewType();
             var customPreviewTypeSelected = selectedPreviewType == PreviewType.Custom;

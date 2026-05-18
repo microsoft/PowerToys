@@ -209,84 +209,127 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Flag to prevent reentrant handling during programmatic checkbox changes
-        private bool _isRestoringColorTempCheckbox;
+        // Flag to prevent reentrant Click/Toggled handling while we programmatically restore
+        // a control after the user cancels a dangerous-feature confirmation dialog.
+        private bool _isRestoringDangerousFeatureControl;
 
         private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
         {
-            // Skip if we're programmatically restoring the checkbox state
-            if (_isRestoringColorTempCheckbox)
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
             {
                 return;
             }
 
-            if (sender is not CheckBox checkBox || checkBox.Tag is not MonitorInfo monitor)
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_ColorTemperature",
+                value => monitor.EnableColorTemperature = value);
+        }
+
+        private async void EnablePowerState_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
             {
                 return;
             }
 
-            // Only show warning when enabling (checking the box)
-            if (checkBox.IsChecked != true)
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_PowerState",
+                value => monitor.EnablePowerState = value);
+        }
+
+        private async void EnableInputSource_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
             {
                 return;
             }
 
-            // Show confirmation dialog with color temperature warning
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_InputSource",
+                value => monitor.EnableInputSource = value);
+        }
+
+        private async void MaxCompatibilityMode_Toggled(object sender, RoutedEventArgs e)
+        {
+            // Guard against re-entry from the cancel path's programmatic IsOn revert,
+            // which fires Toggled a second time. See HandleDangerousFeatureClickAsync.
+            if (_isRestoringDangerousFeatureControl)
+            {
+                return;
+            }
+
+            bool before = ViewModel.MaxCompatibilityMode;
+
+            await HandleDangerousFeatureClickAsync(
+                sender,
+                "PowerDisplay_MaxCompatibility",
+                value => ViewModel.MaxCompatibilityMode = value);
+
+            if (ViewModel.MaxCompatibilityMode != before)
+            {
+                ViewModel.SignalRescanRequest();
+            }
+        }
+
+        // The bound CheckBoxes/ToggleSwitch use Mode=OneWay, so the control's new state is NOT
+        // pushed to the ViewModel/model automatically. This handler is the sole commit path:
+        // confirmed enable -> setter(true); any disable -> setter(false); cancelled enable ->
+        // revert the control's UI (the model was never touched).
+        private async Task HandleDangerousFeatureClickAsync(
+            object sender,
+            string resourceKeyPrefix,
+            Action<bool> setter)
+        {
+            if (_isRestoringDangerousFeatureControl)
+            {
+                return;
+            }
+
+            bool newValue;
+            Action revertUi;
+            switch (sender)
+            {
+                case CheckBox cb:
+                    newValue = cb.IsChecked == true;
+                    revertUi = () => cb.IsChecked = !newValue;
+                    break;
+                case ToggleSwitch ts:
+                    newValue = ts.IsOn;
+                    revertUi = () => ts.IsOn = !newValue;
+                    break;
+                default:
+                    return;
+            }
+
+            // Disabling a dangerous feature is always safe and needs no confirmation.
+            if (!newValue)
+            {
+                setter(false);
+                return;
+            }
+
+            var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix)
             {
                 XamlRoot = this.XamlRoot,
-                Title = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningTitle"),
-                Content = new StackPanel
-                {
-                    Spacing = 12,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningHeader"),
-                            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
-                            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningDescription"),
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningList"),
-                            TextWrapping = TextWrapping.Wrap,
-                            Margin = new Thickness(20, 0, 0, 0),
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString("PowerDisplay_ColorTemperature_WarningConfirm"),
-                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                    },
-                },
-                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_ColorTemperature_EnableButton"),
-                CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
-                DefaultButton = ContentDialogButton.Close,
             };
 
-            var result = await dialog.ShowAsync();
-
-            if (result != ContentDialogResult.Primary)
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                // User cancelled: revert checkbox to unchecked
-                _isRestoringColorTempCheckbox = true;
+                setter(true);
+            }
+            else
+            {
+                _isRestoringDangerousFeatureControl = true;
                 try
                 {
-                    checkBox.IsChecked = false;
-                    monitor.EnableColorTemperature = false;
+                    revertUi();
                 }
                 finally
                 {
-                    _isRestoringColorTempCheckbox = false;
+                    _isRestoringDangerousFeatureControl = false;
                 }
             }
         }

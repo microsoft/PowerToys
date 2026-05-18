@@ -52,6 +52,7 @@ namespace FileLocksmithCLIUnitTests
             auto result = run_command(1, argv, finder, terminator, strings);
             
             Assert::AreEqual(1, result.exit_code);
+            Assert::AreEqual(std::wstring(L"help"), result.command_name);
         }
 
         TEST_METHOD(TestHelp)
@@ -64,6 +65,7 @@ namespace FileLocksmithCLIUnitTests
             auto result = run_command(2, argv, finder, terminator, strings);
             
             Assert::AreEqual(0, result.exit_code);
+            Assert::AreEqual(std::wstring(L"help"), result.command_name);
         }
 
         TEST_METHOD(TestFindProcesses)
@@ -77,6 +79,7 @@ namespace FileLocksmithCLIUnitTests
             auto result = run_command(2, argv, finder, terminator, strings);
             
             Assert::AreEqual(0, result.exit_code);
+            Assert::AreEqual(std::wstring(L"query"), result.command_name);
             Assert::IsTrue(result.output.find(L"123") != std::wstring::npos);
             Assert::IsTrue(result.output.find(L"process") != std::wstring::npos);
         }
@@ -94,6 +97,7 @@ namespace FileLocksmithCLIUnitTests
             Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(result.output.c_str());
 
             Assert::AreEqual(0, result.exit_code);
+            Assert::AreEqual(std::wstring(L"query-json"), result.command_name);
             Assert::IsTrue(result.output.find(L"\"pid\"") != std::wstring::npos);
             Assert::IsTrue(result.output.find(L"123") != std::wstring::npos);
         }
@@ -109,6 +113,7 @@ namespace FileLocksmithCLIUnitTests
             auto result = run_command(3, argv, finder, terminator, strings);
             
             Assert::AreEqual(0, result.exit_code);
+            Assert::AreEqual(std::wstring(L"kill"), result.command_name);
             Assert::AreEqual((size_t)1, terminator.terminatedPids.size());
             Assert::AreEqual((DWORD)123, terminator.terminatedPids[0]);
         }
@@ -125,6 +130,7 @@ namespace FileLocksmithCLIUnitTests
             auto result = run_command(5, argv, finder, terminator, strings);
             
             Assert::AreEqual(1, result.exit_code);
+            Assert::AreEqual(std::wstring(L"query-wait"), result.command_name);
         }
     };
 }
