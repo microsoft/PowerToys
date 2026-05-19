@@ -21,9 +21,7 @@
     <RootNamespace>AdvancedPaste</RootNamespace>
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- WinUI XAML metadata loader still hard-codes "resources.pri" lookup under sparse identity
-         (WASDK 2.0.1 PR #6376 only fixed MRT GetDefaultPriFile, not the XAML type-info path). -->
-    <ProjectPriFileName>resources.pri</ProjectPriFileName>
+    <ProjectPriFileName>PowerToys.AdvancedPaste.pri</ProjectPriFileName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
     <Version>$(AdvancedPasteVersion)</Version>
   </PropertyGroup>
