@@ -209,10 +209,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Flag to prevent reentrant Click/Toggled handling while we programmatically restore
-        // a control after the user cancels a dangerous-feature confirmation dialog.
-        private bool _isRestoringDangerousFeatureControl;
-
         private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
@@ -220,10 +216,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_ColorTemperature",
-                value => monitor.EnableColorTemperature = value);
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnableColorTemperature,
+                v => monitor.EnableColorTemperature = v,
+                "PowerDisplay_ColorTemperature");
         }
 
         private async void EnablePowerState_Click(object sender, RoutedEventArgs e)
@@ -233,10 +231,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_PowerState",
-                value => monitor.EnablePowerState = value);
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnablePowerState,
+                v => monitor.EnablePowerState = v,
+                "PowerDisplay_PowerState");
         }
 
         private async void EnableInputSource_Click(object sender, RoutedEventArgs e)
@@ -246,92 +246,89 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_InputSource",
-                value => monitor.EnableInputSource = value);
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnableInputSource,
+                v => monitor.EnableInputSource = v,
+                "PowerDisplay_InputSource");
         }
 
         private async void MaxCompatibilityMode_Toggled(object sender, RoutedEventArgs e)
         {
-            // Guard against re-entry from the cancel path's programmatic IsOn revert,
-            // which fires Toggled a second time. See HandleDangerousFeatureClickAsync.
-            if (_isRestoringDangerousFeatureControl)
+            if (sender is not ToggleSwitch ts)
             {
                 return;
             }
 
-            bool before = ViewModel.MaxCompatibilityMode;
+            bool committed = await TryCommitDangerousChangeAsync(
+                ts,
+                ts.IsOn,
+                ViewModel.MaxCompatibilityMode,
+                v => ViewModel.MaxCompatibilityMode = v,
+                "PowerDisplay_MaxCompatibility");
 
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_MaxCompatibility",
-                value => ViewModel.MaxCompatibilityMode = value);
-
-            if (ViewModel.MaxCompatibilityMode != before)
+            if (committed)
             {
                 ViewModel.SignalRescanRequest();
             }
         }
 
-        // The bound CheckBoxes/ToggleSwitch use Mode=OneWay, so the control's new state is NOT
-        // pushed to the ViewModel/model automatically. This handler is the sole commit path:
-        // confirmed enable -> setter(true); any disable -> setter(false); cancelled enable ->
-        // revert the control's UI (the model was never touched).
-        private async Task HandleDangerousFeatureClickAsync(
-            object sender,
-            string resourceKeyPrefix,
-            Action<bool> setter)
+        // Gesture-confirmation flow for "dangerous" controls.
+        //
+        // The bound CheckBoxes/ToggleSwitch use Mode=OneWay, so the model is not auto-updated
+        // from the UI. This method is the sole commit path. It tolerates handler invocations
+        // that originate from programmatic UI changes — initial binding push and post-cancel
+        // revert both fire Click/Toggled in WinUI — by treating "UI already matches model" as
+        // a no-op. No re-entry flag is needed because the recursive revert event short-circuits
+        // at that same check.
+        //
+        // Note: this whole gesture-vs-binding distinction is the price of Mode=OneWay + event
+        // handler. A more idiomatic WinUI design would commit via a Command or a dedicated
+        // user-intent gesture; out of scope for this change.
+        //
+        // Returns true if the model was committed (confirmed enable or any disable).
+        private async Task<bool> TryCommitDangerousChangeAsync(
+            FrameworkElement control,
+            bool desiredValue,
+            bool currentValue,
+            Action<bool> commit,
+            string resourceKeyPrefix)
         {
-            if (_isRestoringDangerousFeatureControl)
+            // UI catching up to the model (initial OneWay binding, post-cancel revert) —
+            // no user gesture, nothing to confirm.
+            if (desiredValue == currentValue)
             {
-                return;
+                return false;
             }
 
-            bool newValue;
-            Action revertUi;
-            switch (sender)
+            // Disabling a dangerous feature is always safe.
+            if (!desiredValue)
             {
-                case CheckBox cb:
-                    newValue = cb.IsChecked == true;
-                    revertUi = () => cb.IsChecked = !newValue;
-                    break;
-                case ToggleSwitch ts:
-                    newValue = ts.IsOn;
-                    revertUi = () => ts.IsOn = !newValue;
-                    break;
-                default:
-                    return;
-            }
-
-            // Disabling a dangerous feature is always safe and needs no confirmation.
-            if (!newValue)
-            {
-                setter(false);
-                return;
+                commit(false);
+                return true;
             }
 
             var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix)
             {
-                XamlRoot = this.XamlRoot,
+                XamlRoot = XamlRoot,
             };
 
             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
             {
-                setter(true);
+                commit(true);
+                return true;
             }
-            else
+
+            // Cancelled — pull the UI back to the model. The resulting programmatic event
+            // re-enters this method but exits at the desiredValue == currentValue check above.
+            switch (control)
             {
-                _isRestoringDangerousFeatureControl = true;
-                try
-                {
-                    revertUi();
-                }
-                finally
-                {
-                    _isRestoringDangerousFeatureControl = false;
-                }
+                case CheckBox cb: cb.IsChecked = currentValue; break;
+                case ToggleSwitch ts: ts.IsOn = currentValue; break;
             }
+
+            return false;
         }
     }
 }
