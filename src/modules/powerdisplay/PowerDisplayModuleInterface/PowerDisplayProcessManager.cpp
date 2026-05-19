@@ -116,6 +116,7 @@ HRESULT PowerDisplayProcessManager::start_process(const std::wstring& pipe_name)
         Logger::trace("Successfully started PowerDisplay process");
         terminate_process();
         m_hProcess = sei.hProcess;
+        start_exit_watch();
         return S_OK;
     }
     else
@@ -123,6 +124,79 @@ HRESULT PowerDisplayProcessManager::start_process(const std::wstring& pipe_name)
         Logger::error(L"PowerDisplay process failed to start. {}", get_last_error_or_default(GetLastError()));
         return E_FAIL;
     }
+}
+
+PowerDisplayProcessManager::~PowerDisplayProcessManager()
+{
+    clear_exit_watch();
+}
+
+void PowerDisplayProcessManager::start_exit_watch()
+{
+    clear_exit_watch();
+
+    if (!DuplicateHandle(GetCurrentProcess(), m_hProcess, GetCurrentProcess(),
+                         &m_exitProcessHandle, SYNCHRONIZE, FALSE, 0))
+    {
+        Logger::error(L"DuplicateHandle for exit watch failed; crash auto-relaunch disabled");
+        return;
+    }
+
+    if (!RegisterWaitForSingleObject(&m_exitWaitRegistration, m_exitProcessHandle,
+                                     &PowerDisplayProcessManager::on_process_exited,
+                                     this, INFINITE, WT_EXECUTEONLYONCE))
+    {
+        Logger::error(L"RegisterWaitForSingleObject failed; crash auto-relaunch disabled");
+        CloseHandle(m_exitProcessHandle);
+        m_exitProcessHandle = nullptr;
+    }
+}
+
+void PowerDisplayProcessManager::clear_exit_watch()
+{
+    if (m_exitWaitRegistration)
+    {
+        // Block until any in-flight callback finishes — required so teardown is safe.
+        UnregisterWaitEx(m_exitWaitRegistration, INVALID_HANDLE_VALUE);
+        m_exitWaitRegistration = nullptr;
+    }
+    if (m_exitProcessHandle)
+    {
+        CloseHandle(m_exitProcessHandle);
+        m_exitProcessHandle = nullptr;
+    }
+}
+
+// Decide whether to auto-relaunch PowerDisplay.exe after it exits. Two skip conditions:
+//   1. m_enabled is false — stop() flipped it before terminating, so the exit was
+//      intentional.
+//   2. exit code 0 — clean exit. Two sources, both must skip:
+//      - Phase 0 auto-disable (Environment.Exit(0) after writing the flag). Relaunching
+//        here would race with the AutoDisable listener and bring up a UI that's about
+//        to be torn down.
+//      - User-driven quit via tray/window close. Module is still enabled in settings
+//        but the user explicitly closed the UI; relaunching would be surprising. The
+//        existing "lazy restart on next send_message" handles that path.
+// Only non-zero exits (FailFast=0xC0000409, TerminateProcess=1, unhandled exception, etc.)
+// trigger a relaunch so the next instance's Phase 0 can detect the orphan lock.
+VOID CALLBACK PowerDisplayProcessManager::on_process_exited(PVOID context, BOOLEAN /*timedOut*/)
+{
+    auto* self = static_cast<PowerDisplayProcessManager*>(context);
+
+    if (!self->m_enabled.load())
+    {
+        return;
+    }
+
+    DWORD exitCode = 0;
+    if (GetExitCodeProcess(self->m_exitProcessHandle, &exitCode) && exitCode == 0)
+    {
+        Logger::trace(L"PowerDisplay exited cleanly; not relaunching");
+        return;
+    }
+
+    Logger::warn(L"PowerDisplay exited unexpectedly (code {}); relaunching so Phase 0 can run", exitCode);
+    self->submit_task([self]() { self->refresh(); });
 }
 
 HRESULT PowerDisplayProcessManager::start_named_pipe_server(const std::wstring& pipe_name)
