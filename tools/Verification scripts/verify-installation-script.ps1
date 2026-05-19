@@ -727,7 +727,7 @@ function Test-AdvancedPastePackage {
         [string]$InstallPath
     )
 
-    $advancedPastePath = Join-Path $InstallPath "WinUI3Apps\AdvancedPaste"
+    $advancedPastePath = Join-Path $InstallPath "WinUI3Apps"
     if (Test-Path $advancedPastePath) {
         $exePath = Join-Path $advancedPastePath "PowerToys.AdvancedPaste.exe"
         if (Test-Path $exePath) {
