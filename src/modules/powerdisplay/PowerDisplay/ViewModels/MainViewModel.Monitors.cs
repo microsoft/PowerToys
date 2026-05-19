@@ -26,6 +26,11 @@ public partial class MainViewModel
         {
             IsScanning = true;
 
+            // Forward the latest max-compatibility flag before each discovery so the
+            // DDC/CI controller picks up toggle changes without a process restart.
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
+
             // Discover monitors
             var monitors = await _monitorManager.DiscoverMonitorsAsync(cancellationToken);
 
@@ -93,7 +98,7 @@ public partial class MainViewModel
     /// <summary>
     /// Refresh monitors list asynchronously.
     /// </summary>
-    /// <param name="skipScanningCheck">If true, skip the IsScanning check (used by OnDisplayChanged which sets IsScanning before calling).</param>
+    /// <param name="skipScanningCheck">If true, skip the IsScanning reentry guard. Used by the watcher path where IsScanning was already set upstream by <see cref="MainViewModel.OnDisplayChanging"/>.</param>
     public async Task RefreshMonitorsAsync(bool skipScanningCheck = false)
     {
         if (!skipScanningCheck && IsScanning)
@@ -104,6 +109,9 @@ public partial class MainViewModel
         try
         {
             IsScanning = true;
+
+            var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+            _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
 
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
 

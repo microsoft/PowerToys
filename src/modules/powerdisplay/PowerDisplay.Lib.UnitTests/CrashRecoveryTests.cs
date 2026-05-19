@@ -177,6 +177,7 @@ public class CrashRecoveryTests
         finally
         {
             Assert.IsTrue(File.Exists(_lockPath), "lock must remain on failure");
+
             // Step 1 (flag) ran before step 2 failed → flag exists, settings is still
             // a directory (no rollback — retry on next start is idempotent).
             Assert.IsTrue(File.Exists(_flagPath));

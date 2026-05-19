@@ -133,6 +133,10 @@ namespace PowerDisplay
                     mw => mw.ReloadHotkeySettings(),
                     "HotkeyUpdated");
                 RegisterViewModelEvent(Constants.PowerDisplaySendSettingsTelemetryEvent(), vm => vm.SendSettingsTelemetry(), "SendSettingsTelemetry");
+                RegisterViewModelEvent(
+                    Constants.RescanPowerDisplayMonitorsEvent(),
+                    vm => _ = vm.RefreshMonitorsAsync(),
+                    "RescanMonitors");
 
                 // LightSwitch integration - apply profiles when theme changes
                 RegisterViewModelEvent(PathConstants.LightSwitchLightThemeEventName, vm => vm.ApplyLightSwitchProfile(isLightMode: true), "LightSwitch-Light");

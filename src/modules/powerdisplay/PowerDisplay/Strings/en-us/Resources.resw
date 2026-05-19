@@ -186,6 +186,7 @@
   </data>
   <data name="AppName" xml:space="preserve">
     <value>Power Display</value>
+    <comment>Product name, do not translate.</comment>
   </data>
   <data name="TrayMenu_Settings" xml:space="preserve">
     <value>Settings</value>
