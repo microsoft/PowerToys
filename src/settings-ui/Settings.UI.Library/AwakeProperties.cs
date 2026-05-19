@@ -20,7 +20,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
             CustomTrayTimes = [];
-            AwakeIndefinitelyEnabled = true;
         }
 
         [JsonPropertyName("keepDisplayOn")]
@@ -41,8 +40,5 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("customTrayTimes")]
         [CmdConfigureIgnore]
         public Dictionary<string, uint> CustomTrayTimes { get; set; }
-
-        [JsonPropertyName("awakeIndefinitelyEnabled")]
-        public bool AwakeIndefinitelyEnabled { get; set; }
     }
 }
