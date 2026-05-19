@@ -362,20 +362,25 @@ public partial class MainViewModel
             }
 
             // One-shot upgrade migration: PowerDisplay versions before PR #47712 wrote
-            // monitor Ids as "{Source}_{EdidId}_{MonitorNumber}". On disk those entries
-            // never resolve against the current DevicePath-based Ids, so without
-            // migration the user silently loses their per-monitor Enable* toggles on
-            // upgrade. Match legacy entries by EdidId and union their preferences onto
-            // the currently-discovered monitors; the consumed entries are dropped from
-            // the retention input so they don't linger for 30 days under stale Ids.
-            var consumedLegacy = MonitorIdMigrator.MergeLegacyPreferences(
-                currentlyDiscovered: monitors,
-                existing: settings.Properties.Monitors,
-                mergeUserPreferencesInto: UnionLegacyUserPreferences);
+            // monitor Ids as "{Source}_{EdidId}_{MonitorNumber}". Copy preferences from
+            // any such legacy entry onto the matching DevicePath-based monitor (first
+            // EdidId match wins) and drop every legacy entry, so the retention pass
+            // never carries one forward under a stale Id.
+            foreach (var legacy in settings.Properties.Monitors
+                .Where(m => MonitorIdentity.IsLegacyId(m.Id))
+                .ToList())
+            {
+                var newId = MonitorIdMigrator.MatchNewId(legacy.Id, monitors.Select(m => m.Id));
+                var target = newId is null ? null : monitors.FirstOrDefault(m => m.Id == newId);
+                if (target != null)
+                {
+                    CopyLegacyUserPreferences(target, legacy);
+                }
+            }
 
-            var retentionInput = consumedLegacy.Count == 0
-                ? (IReadOnlyList<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>)settings.Properties.Monitors
-                : settings.Properties.Monitors.Except(consumedLegacy).ToList();
+            var retentionInput = settings.Properties.Monitors
+                .Where(m => !MonitorIdentity.IsLegacyId(m.Id))
+                .ToList();
 
             // Replace the manually-built `monitors` list with the rebuilt list that
             // applies the 30-day retention rule for non-hidden disconnected monitors.
@@ -473,21 +478,22 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Merge legacy-Id user preferences into a currently-discovered monitor with union
-    /// (OR) semantics, so a user's opt-in to a feature is never silently lost on the
-    /// upgrade from <c>"{Source}_{EdidId}_{MonitorNumber}"</c> Ids to DevicePath-based Ids.
+    /// Copy legacy-Id user preferences onto a currently-discovered monitor. Plain
+    /// assignment is fine: the target was just freshly built by <see cref="CreateMonitorInfo"/>
+    /// with defaulted Enable* flags, and the rebuilder's <see cref="ApplyPreservedUserSettings"/>
+    /// pass (which matches by Id) runs afterwards, so a re-saved new-format entry still wins.
     /// </summary>
-    private static void UnionLegacyUserPreferences(
+    private static void CopyLegacyUserPreferences(
         Microsoft.PowerToys.Settings.UI.Library.MonitorInfo target,
         Microsoft.PowerToys.Settings.UI.Library.MonitorInfo legacy)
     {
-        target.IsHidden |= legacy.IsHidden;
-        target.EnableContrast |= legacy.EnableContrast;
-        target.EnableVolume |= legacy.EnableVolume;
-        target.EnableInputSource |= legacy.EnableInputSource;
-        target.EnableRotation |= legacy.EnableRotation;
-        target.EnableColorTemperature |= legacy.EnableColorTemperature;
-        target.EnablePowerState |= legacy.EnablePowerState;
+        target.IsHidden = legacy.IsHidden;
+        target.EnableContrast = legacy.EnableContrast;
+        target.EnableVolume = legacy.EnableVolume;
+        target.EnableInputSource = legacy.EnableInputSource;
+        target.EnableRotation = legacy.EnableRotation;
+        target.EnableColorTemperature = legacy.EnableColorTemperature;
+        target.EnablePowerState = legacy.EnablePowerState;
     }
 
     /// <summary>
@@ -495,13 +501,9 @@ public partial class MainViewModel
     /// <see cref="SaveMonitorsToSettings"/> does not touch:
     /// <c>profiles.json</c> (user-saved presets) and <c>monitor_state.json</c>
     /// (last-known hardware state used by <c>RestoreSettingsOnStartup</c>).
+    /// Invoked from the first successful discovery; on subsequent runs every entry is
+    /// already in new-format and the filters short-circuit.
     /// </summary>
-    /// <remarks>
-    /// Idempotent. Should be invoked once per process startup, after the first successful
-    /// discovery has populated <see cref="Monitors"/> with new-format Ids. Running on every
-    /// refresh would be harmless but wasteful — file I/O only happens when there is something
-    /// to migrate.
-    /// </remarks>
     private void MigrateLegacyMonitorIdsInSideFiles()
     {
         try
@@ -516,13 +518,7 @@ public partial class MainViewModel
                 return;
             }
 
-            // profiles.json
-            var profiles = ProfileService.LoadProfiles();
-            if (MonitorIdMigrator.MigrateProfileMonitorIds(profiles, discoveredIds))
-            {
-                ProfileService.SaveProfiles(profiles);
-                Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
-            }
+            MigrateLegacyMonitorIdsInProfiles(discoveredIds);
 
             // monitor_state.json — manager owns the dictionary and the debounced save path.
             _stateManager.MigrateLegacyKeys(discoveredIds);
@@ -530,6 +526,56 @@ public partial class MainViewModel
         catch (Exception ex)
         {
             Logger.LogError($"[LegacyMigration] Failed to migrate side files: {ex.Message}");
+        }
+    }
+
+    private static void MigrateLegacyMonitorIdsInProfiles(List<string> discoveredIds)
+    {
+        var profiles = ProfileService.LoadProfiles();
+        if (profiles?.Profiles is null || profiles.Profiles.Count == 0)
+        {
+            return;
+        }
+
+        bool anyChanged = false;
+        foreach (var profile in profiles.Profiles)
+        {
+            if (profile?.MonitorSettings is null)
+            {
+                continue;
+            }
+
+            bool changed = false;
+            foreach (var legacy in profile.MonitorSettings
+                .Where(s => MonitorIdentity.IsLegacyId(s?.MonitorId))
+                .ToList())
+            {
+                var newId = MonitorIdMigrator.MatchNewId(legacy.MonitorId, discoveredIds);
+                if (newId != null && profile.MonitorSettings.All(s => s.MonitorId != newId))
+                {
+                    profile.MonitorSettings.Add(new ProfileMonitorSetting(
+                        newId,
+                        legacy.Brightness,
+                        legacy.ColorTemperatureVcp,
+                        legacy.Contrast,
+                        legacy.Volume));
+                }
+
+                profile.MonitorSettings.Remove(legacy);
+                changed = true;
+            }
+
+            if (changed)
+            {
+                profile.Touch();
+                anyChanged = true;
+            }
+        }
+
+        if (anyChanged)
+        {
+            ProfileService.SaveProfiles(profiles);
+            Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
         }
     }
 
