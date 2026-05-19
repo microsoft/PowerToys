@@ -100,6 +100,8 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
         ContextControl.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
+        ContextControl.ViewModel.CommandInvoking += ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
@@ -112,6 +114,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         WeakReferenceMessenger.Default.UnregisterAll(this);
 
         ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoking -= ContextMenu_CommandInvoking;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
 
@@ -403,16 +406,25 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private void InvokeItem(DockItemViewModel item, Point pos)
     {
         var command = item.Command;
+        var hwnd = OwnerHwnd;
         try
         {
-            PerformCommandMessage m = new(command.Model);
-            m.WithAnimation = false;
-            m.TransientPage = true;
+            PerformCommandMessage m = new(command.Model)
+            {
+                WithAnimation = false,
+                TransientPage = true,
+
+                // If the command is invokable and its result asks for a
+                // confirmation dialog, surface the cmdpal window anchored at
+                // this dock item before the dialog appears.
+                OnBeforeShowConfirmation = () =>
+                    WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd)),
+            };
             WeakReferenceMessenger.Default.Send(m);
 
             if (IsPageCommand(command.Model.Unsafe))
             {
-                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, OwnerHwnd));
+                WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, hwnd));
             }
         }
         catch (COMException e)
@@ -454,6 +466,24 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos.Value, OwnerHwnd));
         }
+    }
+
+    private void ContextMenu_CommandInvoking(object? sender, PerformCommandMessage message)
+    {
+        // The context menu is about to dispatch a command. If it was opened
+        // from a dock band, attach a callback so that an invokable command
+        // whose result is a Confirm surfaces the cmdpal window anchored at the
+        // dock item before the confirmation dialog appears.
+        var pos = _bandContextMenuPalettePos;
+        if (pos is null)
+        {
+            return;
+        }
+
+        var hwnd = OwnerHwnd;
+        var capturedPos = pos.Value;
+        message.OnBeforeShowConfirmation = () =>
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(capturedPos, hwnd));
     }
 
     private void ContextMenuFlyout_Opened(object sender, object e)
