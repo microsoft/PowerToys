@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows.Documents;
+using ManagedCommon;
 using ManagedCommon;
 using Microsoft.UI.Xaml.Data;
 using ShortcutGuide.Models;
