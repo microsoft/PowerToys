@@ -501,4 +501,64 @@
   <data name="CheckServiceBtn.Content" xml:space="preserve">
     <value>Check service status</value>
   </data>
+  <data name="ActionType_RunTemplate.Content" xml:space="preserve">
+    <value>Run from template</value>
+  </data>
+  <data name="ActionType_RunTemplate_Text.Text" xml:space="preserve">
+    <value>Run from template</value>
+  </data>
+  <data name="TemplatePickerButton.Content" xml:space="preserve">
+    <value>PowerToys command</value>
+  </data>
+  <data name="TemplatePickerPlaceholder.Text" xml:space="preserve">
+    <value>Select a template...</value>
+  </data>
+  <data name="TemplatePreviewLabel.Text" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="TemplateMissingInfoBarTitle.Text" xml:space="preserve">
+    <value>Template no longer available</value>
+  </data>
+  <data name="TemplateMissingInfoBarMessage.Text" xml:space="preserve">
+    <value>The template originally used for this mapping is no longer in the catalog.</value>
+  </data>
+  <data name="TemplateMissingChooseButton.Content" xml:space="preserve">
+    <value>Choose template</value>
+  </data>
+  <data name="TemplateMissingKeepButton.Content" xml:space="preserve">
+    <value>Keep as plain command</value>
+  </data>
+  <data name="TemplateModule_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TemplateCmd_Settings_OpenMain" xml:space="preserve">
+    <value>Open Settings</value>
+  </data>
+  <data name="TemplateCmd_Settings_OpenModule" xml:space="preserve">
+    <value>Open Settings for module...</value>
+  </data>
+  <data name="TemplateParam_Module" xml:space="preserve">
+    <value>Module</value>
+  </data>
+  <data name="Module_ColorPicker" xml:space="preserve">
+    <value>Color Picker</value>
+  </data>
+  <data name="Module_FancyZones" xml:space="preserve">
+    <value>FancyZones</value>
+  </data>
+  <data name="Module_KeyboardManager" xml:space="preserve">
+    <value>Keyboard Manager</value>
+  </data>
+  <data name="Module_PowerLauncher" xml:space="preserve">
+    <value>PowerToys Run</value>
+  </data>
+  <data name="Module_Hosts" xml:space="preserve">
+    <value>Hosts File Editor</value>
+  </data>
+  <data name="Module_RegistryPreview" xml:space="preserve">
+    <value>Registry Preview</value>
+  </data>
+  <data name="Module_ZoomIt" xml:space="preserve">
+    <value>ZoomIt</value>
+  </data>
 </root>
