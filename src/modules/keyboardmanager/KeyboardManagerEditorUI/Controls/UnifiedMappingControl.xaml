@@ -212,6 +212,12 @@
                         <TextBlock x:Uid="ActionType_Disable_Text" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem x:Uid="ActionType_RunTemplate" Tag="RunTemplate">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE756;" />
+                        <TextBlock x:Uid="ActionType_RunTemplate_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <!--
                 <ComboBoxItem x:Uid="ActionType_MouseClick" Tag="MouseClick">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -397,6 +403,12 @@
                         x:Uid="DisableDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
+                </tkcontrols:Case>
+                <!--  Run From Template Action  -->
+                <tkcontrols:Case Value="RunTemplate">
+                    <local:CommandTemplatePickerControl
+                        x:Name="TemplatePicker"
+                        MissingTemplateKeepRequested="TemplatePicker_MissingTemplateKeepRequested" />
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
         </StackPanel>
