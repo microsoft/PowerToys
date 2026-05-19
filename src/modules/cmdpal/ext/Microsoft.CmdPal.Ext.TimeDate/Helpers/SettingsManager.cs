@@ -152,8 +152,7 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
         Directory.CreateDirectory(directory);
 
-        // now, the state is just next to the exe
-        return Path.Combine(directory, "settings.json");
+        return Path.Combine(directory, $"{_namespace}.settings.json");
     }
 
     public SettingsManager()
@@ -170,7 +169,6 @@ public class SettingsManager : JsonSettingsManager, ISettingsInterface
         _customFormats.Placeholder = CUSTOMFORMATPLACEHOLDER;
         Settings.Add(_customFormats);
 
-        // Load settings from file upon initialization
         LoadSettings();
 
         Settings.SettingsChanged += (s, a) => this.SaveSettings();

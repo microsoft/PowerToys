@@ -159,6 +159,24 @@
   <data name="Indexer_PlaceholderText" xml:space="preserve">
     <value>Search for files and folders...</value>
   </data>
+  <data name="Indexer_SearchFailedMessage" xml:space="preserve">
+    <value>Search couldn't be completed</value>
+  </data>
+  <data name="Indexer_SearchFailedMessageTip" xml:space="preserve">
+    <value>Windows Search returned an unexpected error. Try again, or open Windows Search settings if the problem continues.</value>
+  </data>
+  <data name="Indexer_SearchIndexingMessage" xml:space="preserve">
+    <value>Windows Search is still indexing files</value>
+  </data>
+  <data name="Indexer_SearchIndexingMessageTip" xml:space="preserve">
+    <value>There are still {0:N0} items waiting to be indexed, so some files and folders might not appear yet.</value>
+  </data>
+  <data name="Indexer_SearchUnavailableMessage" xml:space="preserve">
+    <value>Windows Search is unavailable</value>
+  </data>
+  <data name="Indexer_SearchUnavailableMessageTip" xml:space="preserve">
+    <value>The Windows Search service or connection is unavailable right now. Start the service, then try your search again.</value>
+  </data>
   <data name="Indexer_Settings_FallbackCommand_AlwaysOn" xml:space="preserve">
     <value>Always on</value>
   </data>

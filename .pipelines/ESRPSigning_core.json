@@ -217,7 +217,11 @@
             "PowerToys.PowerAccentModuleInterface.dll",
             "PowerToys.PowerAccentKeyboardService.dll",
 
+            "PowerToys.PowerDisplayModuleInterface.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.dll",
+            "WinUI3Apps\\PowerToys.PowerDisplay.exe",
             "PowerDisplay.Lib.dll",
+            "PowerDisplay.Models.dll",
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
             "WinUI3Apps\\PowerToys.PowerRename.exe",
@@ -246,6 +250,9 @@
             "PowerToys.ZoomItModuleInterface.dll",
             "PowerToys.ZoomItSettingsInterop.dll",
 
+            "PowerToys.GrabAndMove.exe",
+            "PowerToys.GrabAndMoveModuleInterface.dll",
+
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
 
@@ -257,8 +264,8 @@
             "Workspaces.ModuleServices.dll",
             "Microsoft.CommandPalette.Extensions.dll",
             "Microsoft.CommandPalette.Extensions.Toolkit.dll",
-            "Microsoft.CmdPal.Ext.PowerToys.dll",
-            "Microsoft.CmdPal.Ext.PowerToys.exe",
+            "WinUI3Apps\\Microsoft.CmdPal.Ext.PowerToys.dll",
+            "WinUI3Apps\\Microsoft.CmdPal.Ext.PowerToys.exe",
             "*Microsoft.CmdPal.UI_*.msix",
 
             "PowerToys.DSC.dll",

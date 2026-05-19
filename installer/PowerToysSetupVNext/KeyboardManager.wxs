@@ -4,11 +4,11 @@
 
   <?define KeyboardManagerAssetsFiles=?>
   <?define KeyboardManagerAssetsWinUI3Files=?>
-  <?define KeyboardManagerAssetsFilesPath=$(var.BinDir)\Assets\KeyboardManager\?>
+  <?define KeyboardManagerAssetsFilesPath=$(var.BinDir)\WinUI3Apps\Assets\KeyboardManager\?>
   <?define KeyboardManagerAssetsWinUI3FilesPath=$(var.BinDir)\WinUI3Apps\Assets\KeyboardManagerEditor\?>
 
   <Fragment>
-    <DirectoryRef Id="BaseApplicationsAssetsFolder">
+    <DirectoryRef Id="WinUI3AppsAssetsFolder">
       <Directory Id="KeyboardManagerAssetsInstallFolder" Name="KeyboardManager" />
     </DirectoryRef>
     <DirectoryRef Id="WinUI3AppsAssetsFolder">

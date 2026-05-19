@@ -188,10 +188,29 @@ namespace Microsoft.Plugin.Shell
             return history.ToList();
         }
 
+        /// <summary>
+        /// Escapes embedded double-quotes in a string for cmd.exe.
+        /// cmd.exe uses doubled double-quotes ("") for escaping inside a double-quoted string.
+        /// </summary>
+        private static string EscapeCmdArgument(string arg)
+        {
+            return string.IsNullOrEmpty(arg) ? string.Empty : arg.Replace("\"", "\"\"");
+        }
+
+        /// <summary>
+        /// Escapes embedded double-quotes in a string for PowerShell.
+        /// PowerShell honors backslash-escaping (\") when receiving a command string via the -Command/-C parameter.
+        /// </summary>
+        private static string EscapePowerShellArgument(string arg)
+        {
+            return string.IsNullOrEmpty(arg) ? string.Empty : arg.Replace("\"", "\\\"");
+        }
+
         private ProcessStartInfo PrepareProcessStartInfo(string command, RunAsType runAs = RunAsType.None)
         {
             string trimmedCommand = command.Trim();
             command = Environment.ExpandEnvironmentVariables(trimmedCommand);
+
             var workingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
             // Set runAsArg
@@ -208,34 +227,36 @@ namespace Microsoft.Plugin.Shell
             ProcessStartInfo info;
             if (_settings.Shell == ExecutionShell.Cmd)
             {
-                var arguments = _settings.LeaveShellOpen ? $"/k \"{command}\"" : $"/c \"{command}\" & pause";
+                var arguments = _settings.LeaveShellOpen ? $"/k {command}" : $"/c {command} & pause";
 
                 info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.Powershell)
             {
+                string escapedPS = EscapePowerShellArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"-NoExit \"{command}\"";
+                    arguments = $"-NoExit -C \"{escapedPS}\"";
                 }
                 else
                 {
-                    arguments = $"\"{command} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                    arguments = $"-C \"{escapedPS} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("powershell.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.PowerShellSeven)
             {
+                string escapedPS = EscapePowerShellArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"-NoExit -C \"{command}\"";
+                    arguments = $"-NoExit -C \"{escapedPS}\"";
                 }
                 else
                 {
-                    arguments = $"-C \"{command} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
+                    arguments = $"-C \"{escapedPS} ; Read-Host -Prompt \\\"{Resources.run_plugin_cmd_wait_message}\\\"\"";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("pwsh.exe", workingDirectory, arguments, runAsVerbArg);
@@ -245,39 +266,41 @@ namespace Microsoft.Plugin.Shell
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"cmd.exe /k \"{command}\"";
+                    arguments = $"cmd.exe /k {command}";
                 }
                 else
                 {
-                    arguments = $"cmd.exe /c \"{command}\" & pause";
+                    arguments = $"cmd.exe /c {command} & pause";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShell)
             {
+                string escapedPS = EscapePowerShellArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"powershell -NoExit -C \"{command}\"";
+                    arguments = $"powershell -NoExit -C \"{escapedPS}\"";
                 }
                 else
                 {
-                    arguments = $"powershell -C \"{command}\"";
+                    arguments = $"powershell -C \"{escapedPS}\"";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
             }
             else if (_settings.Shell == ExecutionShell.WindowsTerminalPowerShellSeven)
             {
+                string escapedPS = EscapePowerShellArgument(command);
                 string arguments;
                 if (_settings.LeaveShellOpen)
                 {
-                    arguments = $"pwsh.exe -NoExit -C \"{command}\"";
+                    arguments = $"pwsh.exe -NoExit -C \"{escapedPS}\"";
                 }
                 else
                 {
-                    arguments = $"pwsh.exe -C \"{command}\"";
+                    arguments = $"pwsh.exe -C \"{escapedPS}\"";
                 }
 
                 info = ShellCommand.SetProcessStartInfo("wt.exe", workingDirectory, arguments, runAsVerbArg);
@@ -301,7 +324,7 @@ namespace Microsoft.Plugin.Shell
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{filename} {arguments}\"", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k {filename} {arguments}", runAsVerbArg);
                             }
                             else
                             {
@@ -310,10 +333,11 @@ namespace Microsoft.Plugin.Shell
                         }
                         else
                         {
+                            string escapedCmd = EscapeCmdArgument(command);
                             if (_settings.LeaveShellOpen)
                             {
                                 // Wrap the command in a cmd.exe process
-                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{command}\"", runAsVerbArg);
+                                info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k {escapedCmd}", runAsVerbArg);
                             }
                             else
                             {
@@ -323,10 +347,11 @@ namespace Microsoft.Plugin.Shell
                     }
                     else
                     {
+                        string escapedCmd = EscapeCmdArgument(command);
                         if (_settings.LeaveShellOpen)
                         {
                             // Wrap the command in a cmd.exe process
-                            info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k \"{command}\"", runAsVerbArg);
+                            info = ShellCommand.SetProcessStartInfo("cmd.exe", workingDirectory, $"/k {escapedCmd}", runAsVerbArg);
                         }
                         else
                         {
@@ -452,7 +477,7 @@ namespace Microsoft.Plugin.Shell
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.wox_plugin_cmd_run_as_administrator,
-                    Glyph = "\xE7EF",
+                    Glyph = "\uE7EF",
                     FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.Enter,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
@@ -466,7 +491,7 @@ namespace Microsoft.Plugin.Shell
                 {
                     PluginName = Assembly.GetExecutingAssembly().GetName().Name,
                     Title = Properties.Resources.wox_plugin_cmd_run_as_user,
-                    Glyph = "\xE7EE",
+                    Glyph = "\uE7EE",
                     FontFamily = "Segoe Fluent Icons,Segoe MDL2 Assets",
                     AcceleratorKey = Key.U,
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,

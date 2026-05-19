@@ -12,7 +12,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 public static class ShellHelpers
 {
     /// <summary>
-    /// These are the executable file extensions that Windows Shell recognizes. Unlike CMD/PowerShell,
+    /// Gets the executable file extensions that Windows Shell recognizes. Unlike CMD/PowerShell,
     /// Shell does not use PATHEXT, but has a magic fixed list.
     /// </summary>
     public static string[] ExecutableExtensions { get; } = [".PIF", ".COM", ".EXE", ".BAT", ".CMD"];
@@ -246,9 +246,9 @@ public static class ShellHelpers
     /// <summary>
     /// Mimics Windows Shell behavior to resolve an executable name to a full path.
     /// </summary>
-    /// <param name="name"></param>
-    /// <param name="fullPath"></param>
-    /// <returns></returns>
+    /// <param name="name">The name of the executable to resolve.</param>
+    /// <param name="fullPath">When this method returns, contains the full path to the executable if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the executable was resolved to a full path; otherwise, <see langword="false"/>.</returns>
     public static bool TryResolveExecutableAsShell(string name, out string fullPath)
     {
         // First check if we can find the file in the registry

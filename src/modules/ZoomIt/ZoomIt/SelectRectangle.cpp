@@ -36,6 +36,18 @@ static void SelectRectangleDebugLog( const wchar_t* format, ... )
 bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor )
 {
     m_stopping = false;
+    m_borderColor = RGB( 255, 222, 0 ); // Reset to yellow; turns orange once first frame is captured.
+    m_recordingActive = false;           // Reset so SetRecordingActive fires on next recording.
+    m_fullMonitor = fullMonitor;
+
+    // All-builds diagnostic for full-screen recording border.
+    if( fullMonitor )
+    {
+        wchar_t dbg[256];
+        swprintf_s( dbg, L"[RecBorder] SelectRectangle::Start entry fullMonitor=1 owner=%p\n", ownerWindow );
+        OutputDebugStringW( dbg );
+    }
+
     SelectRectangleDebugLog( L"[SelectRectangle] Start owner=%p fullMonitor=%d minSize=%d alpha=%u\n",
                              ownerWindow,
                              fullMonitor ? 1 : 0,
@@ -84,6 +96,17 @@ bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor )
     {
         m_selectedRect = rect;
         ShowSelected();
+
+        // For full-monitor mode, show the border and return immediately.
+        // No message loop needed — there is no user interaction.
+        ShowWindow( m_window.get(), SW_SHOWNA ); // show without activating
+        {
+            wchar_t dbg[256];
+            swprintf_s( dbg, L"[RecBorder] fullMonitor window created hwnd=%p selected=%d\n",
+                        m_window.get(), m_selected ? 1 : 0 );
+            OutputDebugStringW( dbg );
+        }
+        return true;
     }
     else
     {
@@ -237,6 +260,55 @@ void SelectRectangle::ShowSelected()
     RedrawWindow( m_window.get(), nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME );
 }
 
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::SetRecordingActive
+//
+// Changes the border to a thick solid red frame and rebuilds the window
+// region to make the recording state unmistakably visible.
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::SetRecordingActive()
+{
+    if( !m_window || !m_selected || m_recordingActive )
+        return;
+
+    m_recordingActive = true;
+    m_borderColor = RGB( 255, 127, 39 );  // #FF7F27 orange
+
+    // Rebuild the window region: full-screen gets a thick 4px border so the
+    // color change is clearly visible; region recording gets a slim 1px
+    // border to stay unobtrusive.
+    {
+        RECT rect;
+        GetClientRect( m_window.get(), &rect );
+        int borderWidth = ScaleForDpi( m_fullMonitor ? 4 : 1, m_dpi );
+
+        wil::unique_hrgn region{ CreateRectRgnIndirect( &rect ) };
+        RECT inner = rect;
+        InflateRect( &inner, -borderWidth, -borderWidth );
+        // Clamp to prevent inside-out rect on very small windows.
+        if( inner.left >= inner.right || inner.top >= inner.bottom )
+        {
+            SetRectEmpty( &inner );
+        }
+        wil::unique_hrgn insideRegion{ CreateRectRgnIndirect( &inner ) };
+        CombineRgn( region.get(), region.get(), insideRegion.get(), RGN_XOR );
+        SetWindowRgn( m_window.get(), region.release(), true );
+    }
+
+    // Force immediate synchronous repaint with the new color and region.
+    RedrawWindow( m_window.get(), nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW );
+
+    {
+        wchar_t dbg[256];
+        swprintf_s( dbg, L"[RecBorder] SetRecordingActive: orange border applied, fullMonitor=%d dpi=%u\n",
+                    m_fullMonitor ? 1 : 0, m_dpi );
+        OutputDebugStringW( dbg );
+    }
+}
+
 //----------------------------------------------------------------------------
 //
 // SelectRectangle::UpdateOwner
@@ -268,6 +340,12 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
         return 0;
 
     case WM_DESTROY:
+        {
+            wchar_t dbg[256];
+            swprintf_s( dbg, L"[RecBorder] WM_DESTROY hwnd=%p selected=%d cancel=%d\n",
+                        window, m_selected ? 1 : 0, m_cancel ? 1 : 0 );
+            OutputDebugStringW( dbg );
+        }
         SelectRectangleDebugLog( L"[SelectRectangle] WM_DESTROY hwnd=%p\n", window );
         if( m_window.get() == window )
         {
@@ -299,6 +377,41 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
             GetClientRect( window, &rect );
             POINT point{ GET_X_LPARAM( longParam ), GET_Y_LPARAM( longParam ) };
             m_selectedRect = ForceRectInBounds( RectFromPointsMinSize( m_startPoint, point, MinSize() ), rect );
+
+            // Apply aspect ratio constraint if set.
+            if( m_aspectRatio > 0.0 )
+            {
+                LONG w = m_selectedRect.right - m_selectedRect.left;
+                LONG h = m_selectedRect.bottom - m_selectedRect.top;
+                LONG newW, newH;
+
+                if( w >= h )
+                {
+                    // Landscape: width drives, compute height from 16:9.
+                    newW = w;
+                    newH = max( static_cast<LONG>( w / m_aspectRatio + 0.5 ), static_cast<LONG>( MinSize() ) );
+                }
+                else
+                {
+                    // Portrait: height drives, compute width from 9:16.
+                    newH = h;
+                    newW = max( static_cast<LONG>( h / m_aspectRatio + 0.5 ), static_cast<LONG>( MinSize() ) );
+                }
+
+                // Anchor from the start point side.
+                if( point.x >= m_startPoint.x )
+                    m_selectedRect.right = m_selectedRect.left + newW;
+                else
+                    m_selectedRect.left = m_selectedRect.right - newW;
+
+                if( point.y >= m_startPoint.y )
+                    m_selectedRect.bottom = m_selectedRect.top + newH;
+                else
+                    m_selectedRect.top = m_selectedRect.bottom - newH;
+
+                m_selectedRect = ForceRectInBounds( m_selectedRect, rect );
+            }
+
             SelectRectangleDebugLog( L"[SelectRectangle] Drag rect=(%ld,%ld)-(%ld,%ld)\n",
                                      m_selectedRect.left,
                                      m_selectedRect.top,
@@ -322,6 +435,11 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
         return 0;
 
     case WM_KILLFOCUS:
+        {
+            wchar_t dbg[128];
+            swprintf_s( dbg, L"[RecBorder] WM_KILLFOCUS selected=%d\n", m_selected ? 1 : 0 );
+            OutputDebugStringW( dbg );
+        }
         if( !m_selected )
         {
             SelectRectangleDebugLog( L"[SelectRectangle] WM_KILLFOCUS before selection complete\n" );
@@ -361,20 +479,25 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
 
             RECT rect;
             GetClientRect( window, &rect );
-            SelectRectangleDebugLog( L"[SelectRectangle] WM_PAINT selected border rect=(%ld,%ld)-(%ld,%ld)\n",
-                                     rect.left,
-                                     rect.top,
-                                     rect.right,
-                                     rect.bottom );
+            {
+                wchar_t dbg[256];
+                swprintf_s( dbg, L"[SelectRectangle] WM_PAINT borderColor=0x%06X rect=(%ld,%ld)-(%ld,%ld) hwnd=%p\n",
+                            static_cast<unsigned>( m_borderColor ),
+                            rect.left, rect.top, rect.right, rect.bottom, window );
+                OutputDebugStringW( dbg );
+            }
 
             // Draw a border matching the Windows graphics capture API border.
-            // The outer frame is yellow and two logical pixels wide, while the
-            // inner is black and 1 logical pixel wide.
-            wil::unique_hbrush brush{CreateSolidBrush( RGB( 255, 222, 0 ) )};
+            // Default: 1px outer color + 1px inner black.
+            // Recording active: entire 2px border is solid orange for visibility.
+            wil::unique_hbrush brush{CreateSolidBrush( m_borderColor )};
             FillRect( deviceContext, &rect, brush.get() );
-            int width = ScaleForDpi( 1, m_dpi );
-            InflateRect( &rect, -width, -width );
-            FillRect( deviceContext, &rect, static_cast<HBRUSH>(GetStockObject( BLACK_BRUSH )) );
+            if( !m_recordingActive )
+            {
+                int width = ScaleForDpi( 1, m_dpi );
+                InflateRect( &rect, -width, -width );
+                FillRect( deviceContext, &rect, static_cast<HBRUSH>(GetStockObject( BLACK_BRUSH )) );
+            }
 
             EndPaint( window, &paint );
             return 0;

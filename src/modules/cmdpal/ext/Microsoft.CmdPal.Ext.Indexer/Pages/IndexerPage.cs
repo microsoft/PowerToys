@@ -34,10 +34,13 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
     private CommandItem? _noSearchEmptyContent;
     private CommandItem? _nothingFoundEmptyContent;
+    private CommandItem? _noticeEmptyContent;
+    private ListItem? _noticeListItem;
+    private SearchNoticeInfo? _currentNotice;
 
     private bool _deferredLoad;
 
-    public override ICommandItem EmptyContent => _isEmptyQuery ? _noSearchEmptyContent! : _nothingFoundEmptyContent!;
+    public override ICommandItem EmptyContent => _isEmptyQuery ? _noSearchEmptyContent! : _currentNotice is null ? _nothingFoundEmptyContent! : _noticeEmptyContent!;
 
     public IndexerPage()
     {
@@ -94,6 +97,19 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
                 },
                 ],
         };
+
+        _noticeEmptyContent = new CommandItem(new OpenUrlCommand("ms-settings:search") { Name = Resources.Indexer_Command_OpenIndexerSettings! })
+        {
+            Icon = Icon,
+        };
+
+        _noticeListItem = new ListItem(new NoOpCommand())
+        {
+            Icon = Icon,
+            MoreCommands = [
+                new CommandContextItem(new OpenUrlCommand("ms-settings:search") { Name = Resources.Indexer_Command_OpenIndexerSettings! }),
+                ],
+        };
     }
 
     private void StartManualSearch()
@@ -127,7 +143,9 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
             _deferredLoad = false;
         }
 
-        return [.. _indexerListItems];
+        return _currentNotice is null
+            ? [.. _indexerListItems]
+            : [_noticeListItem!, .. _indexerListItems];
     }
 
     private string FullSearchString(string query)
@@ -160,7 +178,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
             offset = _indexerListItems.Count;
         }
 
-        var results = searchEngine?.FetchItems(offset, 20, queryCookie: HardQueryCookie, out hasMore) ?? [];
+        SearchNoticeInfo? notice = null;
+        var results = searchEngine?.FetchItems(offset, 20, queryCookie: HardQueryCookie, out hasMore, out notice) ?? [];
 
         if (ct?.IsCancellationRequested == true)
         {
@@ -176,10 +195,11 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
                 return;
             }
 
+            ApplyNotice(notice);
             _indexerListItems.AddRange(results);
             HasMoreItems = hasMore;
             IsLoading = false;
-            RaiseItemsChanged(_indexerListItems.Count);
+            RaiseItemsChanged(GetVisibleItemCount());
         }
     }
 
@@ -188,7 +208,8 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
         lock (_searchLock)
         {
             _indexerListItems.Clear();
-            _searchEngine?.Query(query, queryCookie: HardQueryCookie);
+            var notice = _searchEngine?.Query(query, queryCookie: HardQueryCookie);
+            ApplyNotice(notice);
         }
     }
 
@@ -226,6 +247,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
                     // If the user hasn't provided any base query text, results should be empty
                     // regardless of the currently selected filter.
                     _isEmptyQuery = string.IsNullOrWhiteSpace(newSearch);
+                    ApplyNotice(null);
 
                     if (_isEmptyQuery)
                     {
@@ -256,6 +278,7 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
                 lock (_searchLock)
                 {
+                    RaiseItemsChanged(GetVisibleItemCount());
                     OnPropertyChanged(nameof(EmptyContent));
                 }
             },
@@ -281,4 +304,21 @@ internal sealed partial class IndexerPage : DynamicListPage, IDisposable
 
         GC.SuppressFinalize(this);
     }
+
+    private void ApplyNotice(SearchNoticeInfo? notice)
+    {
+        _currentNotice = notice;
+        if (notice is null)
+        {
+            return;
+        }
+
+        _noticeEmptyContent!.Title = notice.Value.Title;
+        _noticeEmptyContent.Subtitle = notice.Value.Subtitle;
+
+        _noticeListItem!.Title = notice.Value.Title;
+        _noticeListItem.Subtitle = notice.Value.Subtitle;
+    }
+
+    private int GetVisibleItemCount() => _indexerListItems.Count + (_currentNotice is null ? 0 : 1);
 }

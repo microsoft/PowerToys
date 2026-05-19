@@ -145,6 +145,10 @@ namespace CommonSharedConstants
 
     // Path to the events used by ZoomIt
     const wchar_t ZOOMIT_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysZoomIt-RefreshSettingsEvent-f053a563-d519-4b0d-8152-a54489c13324";
+
+    // Path to the events used by GrabAndMove
+    const wchar_t GRABANDMOVE_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysGrabAndMove-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
+    const wchar_t GRABANDMOVE_EXIT_EVENT[] = L"Local\\PowerToysGrabAndMove-ExitEvent-b8c4d2e3-5f6a-7b8c-9d0e-1f2a3b4c5d6e";
     const wchar_t ZOOMIT_EXIT_EVENT[] = L"Local\\PowerToysZoomIt-ExitEvent-36641ce6-df02-4eac-abea-a3fbf9138220";
     const wchar_t ZOOMIT_ZOOM_EVENT[] = L"Local\\PowerToysZoomIt-ZoomEvent-1e4190d7-94bc-4ad5-adc0-9a8fd07cb393";
     const wchar_t ZOOMIT_DRAW_EVENT[] = L"Local\\PowerToysZoomIt-DrawEvent-56338997-404d-4549-bd9a-d132b6766975";
@@ -161,6 +165,7 @@ namespace CommonSharedConstants
     const wchar_t SETTINGS_UPDATED_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-SettingsUpdatedEvent-2e4d6f8a-1c3b-5e7f-9a1d-4c6e8f0b2d3e";
     const wchar_t POWER_DISPLAY_SEND_SETTINGS_TELEMETRY_EVENT[] = L"Local\\PowerToysPowerDisplay-SettingsTelemetryEvent-8c4f2a1d-5e3b-7f9c-1a6d-3b8e5f2c9a7d";
     const wchar_t HOTKEY_UPDATED_POWER_DISPLAY_EVENT[] = L"Local\\PowerToysPowerDisplay-HotkeyUpdatedEvent-9d5f3a2b-7e1c-4b8a-6f3d-2a9e5c7b1d4f";
+    const wchar_t RESCAN_POWER_DISPLAY_MONITORS_EVENT[] = L"Local\\PowerToysPowerDisplay-RescanMonitorsEvent-7f3e8c5a-1d4b-4a9e-bc6f-5d8a2b9e3c4f";
 
     // IPC Messages used in PowerDisplay (Named Pipe communication)
     const wchar_t POWER_DISPLAY_TOGGLE_MESSAGE[] = L"Toggle";
