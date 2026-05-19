@@ -483,6 +483,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public void PinDockBand(string commandId, IServiceProvider serviceProvider, bool withReload, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null, string? monitorDeviceId = null)
     {
+        Logger.LogDebug($"[DockDrop] CommandProviderWrapper.PinDockBand(commandId): provider='{ProviderId}', commandId='{commandId}', withReload={withReload}, side={side}, monitor='{monitorDeviceId ?? "<global>"}'");
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var settings = settingsService.Settings;
         var dockSettings = settings.DockSettings;
@@ -533,6 +534,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         {
             PinDockBandGlobal(settingsService, bandSettings, side);
         }
+
+        Logger.LogDebug($"[DockDrop] CommandProviderWrapper.PinDockBand(commandId): settings updated for commandId='{commandId}' (withReload={withReload})");
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
         if (withReload)
@@ -645,15 +648,17 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public override int GetHashCode() => _commandProvider.GetHashCode();
 
-    private void CommandProvider_ItemsChanged(object sender, IItemsChangedEventArgs args) =>
-
+    private void CommandProvider_ItemsChanged(object sender, IItemsChangedEventArgs args)
+    {
         // We don't want to handle this ourselves - we want the
         // TopLevelCommandManager to know about this, so they can remove
         // our old commands from their own list.
         //
         // In handling this, a call will be made to `LoadTopLevelCommands` to
         // retrieve the new items.
+        Logger.LogDebug($"[DockDrop] CommandProviderWrapper.CommandProvider_ItemsChanged: provider='{ProviderId}', forwarding to CommandsChanged");
         this.CommandsChanged?.Invoke(this, args);
+    }
 
     internal void PinDockBand(TopLevelViewModel bandVm)
     {

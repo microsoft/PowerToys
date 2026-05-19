@@ -6,6 +6,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Pages;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
@@ -66,6 +67,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     private void OnBookmarkAdded(BookmarkData bookmarkData)
     {
+        Logger.LogDebug($"[DockDrop] BookmarksCommandProvider.OnBookmarkAdded: id={bookmarkData.Id}");
         var newItem = new BookmarkListItem(bookmarkData, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser);
         lock (_bookmarksLock)
         {
@@ -73,6 +75,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         }
 
         NotifyChange();
+        Logger.LogDebug($"[DockDrop] BookmarksCommandProvider.OnBookmarkAdded: completed for id={bookmarkData.Id}");
     }
 
     private void OnBookmarkRemoved(BookmarkData bookmarkData)
@@ -117,6 +120,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     {
         if (Volatile.Read(ref _loadState) != LoadStateLoaded)
         {
+            Logger.LogDebug("[DockDrop] BookmarksCommandProvider.NotifyChange: skipping; provider not loaded yet");
             return;
         }
 
@@ -125,6 +129,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
             _commands = BuildTopLevelCommandsUnsafe();
         }
 
+        Logger.LogDebug($"[DockDrop] BookmarksCommandProvider.NotifyChange: raising ItemsChanged ({_commands.Length} commands)");
         RaiseItemsChanged();
     }
 

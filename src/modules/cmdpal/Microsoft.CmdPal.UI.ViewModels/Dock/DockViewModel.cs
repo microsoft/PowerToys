@@ -66,29 +66,29 @@ public sealed partial class DockViewModel : IDisposable
     {
         if (_isEditing)
         {
-            Logger.LogDebug("Skipping DockBands_CollectionChanged during edit mode");
+            Logger.LogDebug("[DockDrop] DockViewModel.DockBands_CollectionChanged: Skipping during edit mode");
             return;
         }
 
-        Logger.LogDebug("Starting DockBands_CollectionChanged");
+        Logger.LogDebug($"[DockDrop] DockViewModel.DockBands_CollectionChanged: action={e.Action}, refreshing settings and rebuilding bands");
 
         // Refresh settings so newly pinned/unpinned bands are visible.
         // Pin/unpin operations save with hotReload:false (to avoid
         // double-updates), so _settings can be stale here.
         _settings = _settingsService.Settings.DockSettings;
         SetupBands();
-        Logger.LogDebug("Ended DockBands_CollectionChanged");
+        Logger.LogDebug("[DockDrop] DockViewModel.DockBands_CollectionChanged: completed");
     }
 
     public void UpdateSettings(DockSettings settings)
     {
         if (_isEditing)
         {
-            Logger.LogDebug("DockViewModel.UpdateSettings skipped (edit in progress)");
+            Logger.LogDebug("[DockDrop] DockViewModel.UpdateSettings skipped (edit in progress)");
             return;
         }
 
-        Logger.LogDebug($"DockViewModel.UpdateSettings");
+        Logger.LogDebug($"[DockDrop] DockViewModel.UpdateSettings: monitor='{_monitorDeviceId ?? "<global>"}', start={settings.StartBands.Count}, center={settings.CenterBands.Count}, end={settings.EndBands.Count}");
         _settings = settings;
         SetupBands();
     }
@@ -239,8 +239,8 @@ public sealed partial class DockViewModel : IDisposable
 
     private void SetupBands()
     {
-        Logger.LogDebug($"Setting up dock bands");
         var (start, center, end) = GetActiveBands();
+        Logger.LogDebug($"[DockDrop] DockViewModel.SetupBands: monitor='{_monitorDeviceId ?? "<global>"}' settings counts start={start.Count}, center={center.Count}, end={end.Count}");
         SetupBands(start, StartItems);
         SetupBands(center, CenterItems);
         SetupBands(end, EndItems);
@@ -258,7 +258,7 @@ public sealed partial class DockViewModel : IDisposable
 
             if (topLevelCommand is null)
             {
-                Logger.LogWarning($"Failed to find band {commandId}");
+                Logger.LogWarning($"[DockDrop] DockViewModel.SetupBands: failed to find band command '{commandId}' (provider='{band.ProviderId}')");
             }
 
             if (topLevelCommand is not null)

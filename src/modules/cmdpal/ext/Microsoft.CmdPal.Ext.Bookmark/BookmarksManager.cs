@@ -47,12 +47,15 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
     public BookmarkData Add(string name, string bookmark)
     {
         var newBookmark = new BookmarkData(name, bookmark);
+        Logger.LogDebug($"[DockDrop] BookmarksManager.Add: created bookmark id={newBookmark.Id} name='{name}' value='{bookmark}'");
 
         lock (_lock)
         {
             _bookmarksData.Data.Add(newBookmark);
             _ = SaveChangesAsync();
+            Logger.LogDebug($"[DockDrop] BookmarksManager.Add: invoking BookmarkAdded for id={newBookmark.Id}");
             BookmarkAdded?.Invoke(newBookmark);
+            Logger.LogDebug($"[DockDrop] BookmarksManager.Add: BookmarkAdded handlers returned for id={newBookmark.Id}");
             return newBookmark;
         }
     }
