@@ -40,9 +40,50 @@ using namespace cmdArg;
 
 namespace fs = std::filesystem;
 
+void CleanupStaleTempUpdaters()
+{
+    // Remove orphaned PowerToys.Update.*.exe files from previous runs
+    try
+    {
+        std::error_code ec;
+        const auto tempDir = fs::temp_directory_path();
+        for (const auto& entry : fs::directory_iterator(tempDir, ec))
+        {
+            if (ec)
+            {
+                break;
+            }
+
+            if (!entry.is_regular_file())
+            {
+                continue;
+            }
+
+            const auto filename = entry.path().filename().wstring();
+            if (filename.starts_with(L"PowerToys.Update.") && filename.ends_with(L".exe"))
+            {
+                // Skip our own file (current PID)
+                const auto ownFilename = L"PowerToys.Update." + std::to_wstring(GetCurrentProcessId()) + L".exe";
+                if (filename == ownFilename)
+                {
+                    continue;
+                }
+
+                fs::remove(entry.path(), ec);
+                // Failure to delete is expected if another updater is still running
+            }
+        }
+    }
+    catch (...)
+    {
+        // Best-effort cleanup; don't block the update
+    }
+}
+
 std::optional<fs::path> CopySelfToTempDir()
 {
-    // D5 fix: Use unique temp path with PID to avoid collision on concurrent updates
+    CleanupStaleTempUpdaters();
+
     std::error_code error;
     auto dst_path = fs::temp_directory_path() / (L"PowerToys.Update." + std::to_wstring(GetCurrentProcessId()) + L".exe");
     fs::copy_file(get_module_filename(), dst_path, fs::copy_options::overwrite_existing, error);
@@ -61,6 +102,28 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
     isUpToDate = false;
 
     auto state = UpdateState::read();
+
+    // Handle readyToInstall first — the installer is already on disk,
+    // so we don't need a GitHub API call (which may fail if offline).
+    if (state.state == UpdateState::readyToInstall)
+    {
+        fs::path installer{ get_pending_updates_path() / state.downloadedInstallerFilename };
+        if (fs::is_regular_file(installer))
+        {
+            return std::move(installer);
+        }
+        else
+        {
+            Logger::error(L"Couldn't find a downloaded installer {}", installer.native());
+            return std::nullopt;
+        }
+    }
+
+    if (state.state == UpdateState::upToDate)
+    {
+        isUpToDate = true;
+        return std::nullopt;
+    }
 
     const auto new_version_info = std::move(get_github_version_info_async()).get();
 
@@ -92,24 +155,6 @@ std::optional<fs::path> ObtainInstaller(bool& isUpToDate)
 
         return downloaded_installer;
     }
-    else if (state.state == UpdateState::readyToInstall)
-    {
-        fs::path installer{ get_pending_updates_path() / state.downloadedInstallerFilename };
-        if (fs::is_regular_file(installer))
-        {
-            return std::move(installer);
-        }
-        else
-        {
-            Logger::error(L"Couldn't find a downloaded installer {}", installer.native());
-            return std::nullopt;
-        }
-    }
-    else if (state.state == UpdateState::upToDate)
-    {
-        isUpToDate = true;
-        return std::nullopt;
-    }
 
     Logger::error("Invoked with -update_now argument, but update state was invalid");
     return std::nullopt;
@@ -128,9 +173,12 @@ bool InstallNewVersionStage1(fs::path installer)
             DWORD ptProcessId = 0;
             GetWindowThreadProcessId(pt_main_window, &ptProcessId);
 
-            SendMessageW(pt_main_window, WM_CLOSE, 0, 0);
+            // Use SendMessageTimeoutW to avoid blocking indefinitely if the
+            // tray window thread is hung or unresponsive.
+            DWORD_PTR result = 0;
+            SendMessageTimeoutW(pt_main_window, WM_CLOSE, 0, 0, SMTO_ABORTIFHUNG, 5000, &result);
 
-            // D4 fix: Wait for PT to actually exit before launching installer.
+            // Wait for PT to actually exit before launching installer.
             // Without this, the installer may find PT files locked.
             if (ptProcessId != 0)
             {
@@ -234,7 +282,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
         // Backup config files before the update to protect against corruption
         Logger::info("Backing up config files before update");
-        updating::BackupConfigFiles(fs::path(PTSettingsHelper::get_root_save_folder_location()));
+        auto backupResult = updating::BackupConfigFiles(fs::path(PTSettingsHelper::get_root_save_folder_location()));
+        Logger::info("Config backup complete: {} files backed up, {} errors", backupResult.filesBackedUp, backupResult.errors);
 
         bool isUpToDate = false;
         auto installerPath = ObtainInstaller(isUpToDate);
@@ -269,10 +318,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             });
         }
 
-        // D7 fix: Always check for corrupted configs after Stage 2, regardless
+        // Always check for corrupted configs after Stage 2, regardless
         // of install success/failure. A failed install may still corrupt configs.
         Logger::info("Checking for corrupted config files after update");
-        updating::RestoreCorruptedConfigs(fs::path(PTSettingsHelper::get_root_save_folder_location()));
+        auto restoreResult = updating::RestoreCorruptedConfigs(fs::path(PTSettingsHelper::get_root_save_folder_location()));
+        Logger::info("Config restore check complete: {}/{} files restored, {} errors",
+                     restoreResult.filesRestored, restoreResult.filesChecked, restoreResult.errors);
 
         if (!failed)
         {

@@ -4,9 +4,12 @@
 
 #include "pch.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <string>
+#include <vector>
 
 #include <common/updating/configBackup.h>
 #include <common/updating/updateLifecycle.h>
