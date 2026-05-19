@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
+using KeyboardManagerEditorUI.Templates;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
@@ -79,6 +80,7 @@ namespace KeyboardManagerEditorUI.Controls
             OpenApp,
             MouseClick,
             Disable,
+            RunTemplate,
         }
 
         /// <summary>
@@ -132,6 +134,7 @@ namespace KeyboardManagerEditorUI.Controls
                         "OpenApp" => ActionType.OpenApp,
                         "MouseClick" => ActionType.MouseClick,
                         "Disable" => ActionType.Disable,
+                        "RunTemplate" => ActionType.RunTemplate,
                         _ => ActionType.KeyOrShortcut,
                     };
                 }
@@ -175,6 +178,12 @@ namespace KeyboardManagerEditorUI.Controls
             // Set up event handlers for app-specific checkbox
             AppSpecificCheckBox.Checked += AppSpecificCheckBox_Changed;
             AppSpecificCheckBox.Unchecked += AppSpecificCheckBox_Changed;
+
+            // Wire template picker selection changes so validation re-runs when user picks a template.
+            if (TemplatePicker != null)
+            {
+                TemplatePicker.SelectionChanged += (_, _) => RaiseValidationStateChanged();
+            }
 
             // Activate keyboard hook for the trigger input
             if (TriggerKeyToggleBtn.IsChecked == true)
@@ -265,6 +274,16 @@ namespace KeyboardManagerEditorUI.Controls
 
             HideValidationMessage();
             RaiseValidationStateChanged();
+        }
+
+        private void TemplatePicker_MissingTemplateKeepRequested(object sender, EventArgs e)
+        {
+            // The user chose to keep the resolved command but discard the template association.
+            // Switch to OpenApp so they can view/edit the resolved path directly.
+            SetActionType(ActionType.OpenApp);
+
+            // Clear the picker so it doesn't retain stale template state.
+            TemplatePicker?.Reset();
         }
 
         private void ActionKeyToggleBtn_Checked(object sender, RoutedEventArgs e)
@@ -798,6 +817,29 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public ProgramAlreadyRunningAction GetIfRunningAction() => (ProgramAlreadyRunningAction)(IfRunningComboBox?.SelectedIndex ?? 0);
 
+        /// <summary>
+        /// Gets the resolved template executable (for RunTemplate action type).
+        /// Returns null if no template is selected or the template cannot be resolved.
+        /// </summary>
+        public string? GetResolvedTemplateExecutable() => TemplatePicker?.ResolveCurrent()?.Executable;
+
+        /// <summary>
+        /// Gets the resolved template arguments (for RunTemplate action type).
+        /// Returns null if no template is selected or the template cannot be resolved.
+        /// </summary>
+        public string? GetResolvedTemplateArgs() => TemplatePicker?.ResolveCurrent()?.Args;
+
+        /// <summary>
+        /// Gets the template id of the currently selected template (for RunTemplate action type).
+        /// Returns null if no template is selected.
+        /// </summary>
+        public string? GetCurrentTemplateId() => TemplatePicker?.CurrentTemplateId;
+
+        /// <summary>
+        /// Gets the current template parameter values (for RunTemplate action type).
+        /// </summary>
+        public Dictionary<string, string> GetCurrentTemplateParameterValues() => TemplatePicker?.CurrentParameterValues ?? new Dictionary<string, string>();
+
         #endregion
 
         #region Public API - Validation
@@ -820,6 +862,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
                 ActionType.Disable => true,
+                ActionType.RunTemplate => TemplatePicker?.ResolveCurrent() is not null,
                 _ => false,
             };
         }
@@ -877,6 +920,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.OpenApp => "OpenApp",
                 ActionType.Disable => "Disable",
                 ActionType.MouseClick => "MouseClick",
+                ActionType.RunTemplate => "RunTemplate",
                 _ => "KeyOrShortcut",
             };
 
@@ -976,6 +1020,16 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 IfRunningComboBox.SelectedIndex = (int)ifRunningAction;
             }
+        }
+
+        /// <summary>
+        /// Loads an existing template mapping into the picker (for RunTemplate action type).
+        /// Switches the action type to RunTemplate and calls LoadExisting on the picker.
+        /// </summary>
+        public void SetRunTemplate(string templateId, IReadOnlyDictionary<string, string>? parameterValues)
+        {
+            SetActionType(ActionType.RunTemplate);
+            TemplatePicker?.LoadExisting(templateId, parameterValues);
         }
 
         /// <summary>
@@ -1185,6 +1239,9 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 VisibilityComboBox.SelectedIndex = 0;
             }
+
+            // Reset template picker
+            TemplatePicker?.Reset();
 
             HideValidationMessage();
         }

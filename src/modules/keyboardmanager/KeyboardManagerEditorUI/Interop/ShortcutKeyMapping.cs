@@ -36,6 +36,18 @@ namespace KeyboardManagerEditorUI.Interop
 
         public string UriToOpen { get; set; } = string.Empty;
 
+        /// <summary>
+        /// When non-null, indicates the mapping was created from a command template.
+        /// Used to re-open the template picker on edit.
+        /// </summary>
+        public string? TemplateId { get; set; }
+
+        /// <summary>
+        /// Parameter values captured at save time for a template-based mapping.
+        /// Null when <see cref="TemplateId"/> is null.
+        /// </summary>
+        public Dictionary<string, string>? TemplateParameters { get; set; }
+
         public enum ElevationLevel
         {
             NonElevated = 0,
