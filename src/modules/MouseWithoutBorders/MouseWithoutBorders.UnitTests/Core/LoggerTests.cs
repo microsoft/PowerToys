@@ -67,7 +67,7 @@ public static class LoggerTests
             //
             // so we're going to ignore everything after our task code.
             //
-            // however, this is still inherently unstable due to compiler-generated uniqueness keys - e.g.
+            // however, this is *still* inherently unstable due to compiler-generated uniqueness keys - e.g.
             //
             //   Void <GetStackTraceShouldReturnCorrectValue>g__MyMethod1|2()
             //                                                            ^
@@ -76,7 +76,7 @@ public static class LoggerTests
             //
             //   Void <GetStackTraceShouldReturnCorrectValue>g__MyMethod1|1()
             //                                                            ^
-            // but we'll try to supress the differences with a normalization regex
+            // but we'll try to suppress the differences with a normalization regex
             // (which is giving diminishing returns on the value of this test, but
             // we'll persevere...)
              */
