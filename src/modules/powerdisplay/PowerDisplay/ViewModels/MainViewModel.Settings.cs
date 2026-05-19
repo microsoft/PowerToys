@@ -362,13 +362,18 @@ public partial class MainViewModel
             }
 
             // One-shot upgrade migration: PowerDisplay versions before PR #47712 wrote
-            // monitor Ids as "{Source}_{EdidId}_{MonitorNumber}". Copy preferences from
-            // any such legacy entry onto the matching DevicePath-based monitor (first
-            // EdidId match wins) and drop every legacy entry, so the retention pass
-            // never carries one forward under a stale Id.
-            foreach (var legacy in settings.Properties.Monitors
-                .Where(m => MonitorIdentity.IsLegacyId(m.Id))
-                .ToList())
+            // monitor Ids as "{Source}_{EdidId}_{MonitorNumber}". Partition the on-disk
+            // entries into legacy + keep, copy preferences from any legacy entry onto the
+            // matching DevicePath-based monitor (first EdidId match wins), and feed only
+            // the keep set into the retention pass so a stale Id never lingers.
+            var legacyEntries = new List<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>();
+            var retentionInput = new List<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>();
+            foreach (var m in settings.Properties.Monitors)
+            {
+                (MonitorIdentity.IsLegacyId(m.Id) ? legacyEntries : retentionInput).Add(m);
+            }
+
+            foreach (var legacy in legacyEntries)
             {
                 var newId = MonitorIdMigrator.MatchNewId(legacy.Id, monitors.Select(m => m.Id));
                 var target = newId is null ? null : monitors.FirstOrDefault(m => m.Id == newId);
@@ -377,10 +382,6 @@ public partial class MainViewModel
                     CopyLegacyUserPreferences(target, legacy);
                 }
             }
-
-            var retentionInput = settings.Properties.Monitors
-                .Where(m => !MonitorIdentity.IsLegacyId(m.Id))
-                .ToList();
 
             // Replace the manually-built `monitors` list with the rebuilt list that
             // applies the 30-day retention rule for non-hidden disconnected monitors.
@@ -506,27 +507,29 @@ public partial class MainViewModel
     /// </summary>
     private void MigrateLegacyMonitorIdsInSideFiles()
     {
+        var discoveredIds = Monitors
+            .Select(m => m.Id)
+            .Where(id => !string.IsNullOrEmpty(id))
+            .ToList();
+
+        if (discoveredIds.Count == 0)
+        {
+            return;
+        }
+
+        // profiles.json and monitor_state.json are independent — a failure in one must
+        // not skip the other. MigrateLegacyKeys already has its own try/catch, so we
+        // only need to guard the profiles path here.
         try
         {
-            var discoveredIds = Monitors
-                .Select(m => m.Id)
-                .Where(id => !string.IsNullOrEmpty(id))
-                .ToList();
-
-            if (discoveredIds.Count == 0)
-            {
-                return;
-            }
-
             MigrateLegacyMonitorIdsInProfiles(discoveredIds);
-
-            // monitor_state.json — manager owns the dictionary and the debounced save path.
-            _stateManager.MigrateLegacyKeys(discoveredIds);
         }
         catch (Exception ex)
         {
-            Logger.LogError($"[LegacyMigration] Failed to migrate side files: {ex.Message}");
+            Logger.LogError($"[LegacyMigration] Failed to migrate profiles.json: {ex.Message}");
         }
+
+        _stateManager.MigrateLegacyKeys(discoveredIds);
     }
 
     private static void MigrateLegacyMonitorIdsInProfiles(List<string> discoveredIds)

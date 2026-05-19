@@ -190,6 +190,8 @@ namespace PowerDisplay.Common.Services
 
                 _isDirty = true;
                 _saveDebouncer.Debounce(SaveStateToDiskAsync);
+
+                Logger.LogInfo($"[MonitorStateManager] Migrated {legacyKeys.Count} legacy key(s) to DevicePath-based Ids.");
             }
             catch (Exception ex)
             {
