@@ -6,14 +6,12 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 
-using Wpf.Ui.Controls;
-
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
 
 namespace PowerAccent.UI;
 
-public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChanged
+public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 {
     private readonly Core.PowerAccent _powerAccent = new();
 
@@ -40,8 +38,6 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
     public Selector()
     {
         InitializeComponent();
-
-        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
         Application.Current.MainWindow.ShowActivated = false;
     }
@@ -92,7 +88,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
     private void SetWindowPosition()
     {
-        Size windowSize = new(((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
+        Size windowSize = new(((FrameworkElement)Application.Current.MainWindow.Content).ActualWidth, ((FrameworkElement)Application.Current.MainWindow.Content).ActualHeight);
         Point position = _powerAccent.GetDisplayCoordinates(windowSize);
         this.Left = position.X;
         this.Top = position.Y;
