@@ -98,6 +98,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         WeakReferenceMessenger.Default.Register<ExitDockEditModeMessage>(this);
         WeakReferenceMessenger.Default.Register<CrossMonitorBandDropMessage>(this);
 
+        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
+        ContextControl.ViewModel.CommandInvoked += ContextMenu_CommandInvoked;
+
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
         ViewModel.CenterItems.CollectionChanged += CenterItems_CollectionChanged;
 
@@ -107,6 +110,8 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private void DockControl_Unloaded(object sender, RoutedEventArgs e)
     {
         WeakReferenceMessenger.Default.UnregisterAll(this);
+
+        ContextControl.ViewModel.CommandInvoked -= ContextMenu_CommandInvoked;
 
         ViewModel.CenterItems.CollectionChanged -= CenterItems_CollectionChanged;
 
@@ -291,10 +296,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         if (sender is DockItemControl dockItem && dockItem.DataContext is DockBandViewModel band && dockItem.Tag is DockItemViewModel item)
         {
             // Use the center of the border as the point to open at
-            var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
-            var borderCenter = new Point(
-                borderPos.X + (dockItem.ActualWidth / 2),
-                borderPos.Y + (dockItem.ActualHeight / 2));
+            var borderCenter = GetDockItemCenter(dockItem);
 
             InvokeItem(item, borderCenter);
             e.Handled = true;
@@ -310,6 +312,11 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     // Stores the band that was right-clicked for edit mode context menu
     private DockBandViewModel? _editModeContextBand;
+
+    // Position (in window coords) of the dock item whose context menu is currently
+    // open, used to anchor the cmdpal palette when a Page command is invoked from
+    // the context menu. Null when the open context menu is not anchored to a band.
+    private Point? _bandContextMenuPalettePos;
 
     private void BandItem_RightTapped(object sender, Microsoft.UI.Xaml.Input.RightTappedRoutedEventArgs e)
     {
@@ -348,6 +355,10 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             // Normal mode - show the command context menu
             if (item.CanOpenContextMenu)
             {
+                // Remember where to anchor the palette if the user picks a Page
+                // command from the context menu.
+                _bandContextMenuPalettePos = GetDockItemCenter(dockItem);
+
                 ContextControl.ViewModel.SelectedItem = item;
                 ContextControl.ShowFilterBox = true;
                 ContextControl.PrepareForOpen(GetDockContextMenuFilterLocation());
@@ -399,8 +410,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             m.TransientPage = true;
             WeakReferenceMessenger.Default.Send(m);
 
-            var isPage = command.Model.Unsafe is not IInvokableCommand invokable;
-            if (isPage)
+            if (IsPageCommand(command.Model.Unsafe))
             {
                 WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos, OwnerHwnd));
             }
@@ -408,6 +418,41 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         catch (COMException e)
         {
             Logger.LogError("Error invoking dock command", e);
+        }
+    }
+
+    private static bool IsPageCommand(ICommand? command)
+    {
+        // A Page command is one that's not directly invokable - selecting it
+        // navigates into a page rather than performing an action in place.
+        return command is not null and not IInvokableCommand;
+    }
+
+    private static Point GetDockItemCenter(FrameworkElement dockItem)
+    {
+        var borderPos = dockItem.TransformToVisual(null).TransformPoint(new Point(0, 0));
+        return new Point(
+            borderPos.X + (dockItem.ActualWidth / 2),
+            borderPos.Y + (dockItem.ActualHeight / 2));
+    }
+
+    private void ContextMenu_CommandInvoked(object? sender, CommandItemViewModel command)
+    {
+        // The context menu just invoked a command. If it came from a dock band
+        // (i.e. _bandContextMenuPalettePos is set) and the command is a Page,
+        // open the cmdpal palette anchored at the dock item — mirroring what
+        // a direct click on the band does.
+        var pos = _bandContextMenuPalettePos;
+        _bandContextMenuPalettePos = null;
+
+        if (pos is null)
+        {
+            return;
+        }
+
+        if (IsPageCommand(command.Command.Model.Unsafe))
+        {
+            WeakReferenceMessenger.Default.Send<RequestShowPaletteAtMessage>(new(pos.Value, OwnerHwnd));
         }
     }
 
@@ -433,6 +478,10 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             return;
         }
+
+        // This context menu is for the dock itself (not a band), so the palette
+        // should not be opened on invocation.
+        _bandContextMenuPalettePos = null;
 
         var pos = e.GetPosition(null);
         var item = this.ViewModel.GetContextMenuForDock();

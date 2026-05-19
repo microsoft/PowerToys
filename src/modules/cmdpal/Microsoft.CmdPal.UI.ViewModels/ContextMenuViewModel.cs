@@ -228,6 +228,12 @@ public partial class ContextMenuViewModel : ObservableObject,
         }
     }
 
+    /// <summary>
+    /// Raised after a command is actually invoked (i.e. sent as a <see cref="PerformCommandMessage"/>)
+    /// from this context menu. Not raised when the user navigates into a submenu.
+    /// </summary>
+    public event EventHandler<CommandItemViewModel>? CommandInvoked;
+
     public ContextKeybindingResult InvokeCommand(CommandItemViewModel? command)
     {
         if (command is null)
@@ -247,6 +253,7 @@ public partial class ContextMenuViewModel : ObservableObject,
         {
             WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Command.Model, command.Model));
             UpdateContextItems();
+            CommandInvoked?.Invoke(this, command);
             return ContextKeybindingResult.Hide;
         }
     }
