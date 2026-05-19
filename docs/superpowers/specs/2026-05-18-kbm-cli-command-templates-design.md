@@ -675,3 +675,45 @@ This value will be embedded in Task 9's `powertoyscli.json` as:
 #### Empirical verification note
 
 Final confirmation requires the human to install PowerToys from this branch, create a template mapping, trigger the shortcut, and verify Settings opens. Static analysis of the launch path and installer strongly predicts this path is correct for the default per-user install, but the `GetFileAttributesW` pre-check and the actual `CreateProcessW` call must be observed to close the task formally.
+
+### Task 20 — Architectural revision: persistence path goes through C++
+
+During implementation of Task 20 (wiring save/load into `UnifiedMappingControl.xaml.cs`), an architectural mismatch with the spec was discovered: **the new WinUI3 editor does not write `default.json` directly through `KeysDataModel`**. The actual persistence chain is:
+
+```
+UnifiedMappingControl (XAML/C# UI)
+  → ShortcutKeyMapping (C# in-memory model, NOT KeysDataModel)
+  → KeyboardManagerInterop.AddShortcutRemap(...)            [P/Invoke]
+  → KeyboardManagerEditorLibraryWrapper (C++/WinRT)
+  → KeyboardManagerEditorLibrary helpers (C++)
+  → MappingConfiguration::SaveSettingsToFile (C++)          [writes default.json]
+```
+
+`KeysDataModel` (the class touched by Tasks 4-6) lives in `Settings.UI.Library` and is used by the **legacy** C++ editor's settings page entry point, not by the new editor's save path. Adding `TemplateId` / `TemplateParameters` to `KeysDataModel` alone was insufficient — the new editor would never have persisted those fields to `default.json` because the FFI signature didn't carry them.
+
+#### Decision: full C++ wiring (subsumes Task 1b)
+
+To make round-trip editing actually work, the implementation extended the C++ stack so that `templateId` and `templateParameters` become **first-class known fields** in `MappingConfiguration`. Specifically:
+
+| Layer | Change |
+|---|---|
+| `src/modules/keyboardmanager/common/Shortcut.h` | Added `std::wstring templateId` and `std::map<std::wstring, std::wstring> templateParameters` to the Shortcut struct. |
+| `src/modules/keyboardmanager/common/KeyboardManagerConstants.h` | Added `TemplateIdSettingName` / `TemplateParametersSettingName` constants. |
+| `src/modules/keyboardmanager/common/MappingConfiguration.cpp` | `LoadShortcutRemaps` and `LoadAppSpecificShortcutRemaps` read the two fields. `SaveSettingsToFile` writes them under the RunProgram branch, emitting only when non-empty. |
+| `src/modules/keyboardmanager/KeyboardManagerEditorLibraryWrapper/KeyboardManagerEditorLibraryWrapper.h/.cpp` | `AddShortcutRemap` gained two trailing parameters `templateId` (LPCWSTR) and `templateParametersJson` (LPCWSTR). Both default to `nullptr` in the `.h` so legacy editor callers don't break. The `.cpp` parses the JSON string into the `std::map`. |
+| `src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardManagerInterop.cs` | P/Invoke declaration extended to match — two new optional `string?` parameters. |
+| `src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/ShortcutKeyMapping.cs` | Added `string? TemplateId` and `Dictionary<string, string>? TemplateParameters` properties. |
+| `src/modules/keyboardmanager/KeyboardManagerEditorUI/Interop/KeyboardMappingService.cs` | `AddShortcutMapping`'s RunProgram branch serializes `TemplateParameters` via `CommandTemplateJsonContext.Default.DictionaryStringString` (AOT-safe source-gen) and passes both fields through the FFI. |
+| `src/modules/keyboardmanager/KeyboardManagerEditorUI/Templates/CommandTemplateJsonContext.cs` | `[JsonSerializable(typeof(Dictionary<string, string>))]` registered. |
+
+#### Side-effect: Task 1b is now resolved automatically
+
+Because the two fields became **typed known fields** in `MappingConfiguration` rather than "unknown extras," the legacy C++ editor reads and writes them correctly through the same code path as every other field. The Task 1 finding (that `SaveSettingsToFile` rewrites JSON from scratch and drops unknown fields) is now moot for these specific fields. **No separate Task 1b is needed.**
+
+#### Side-effect: `KeysDataModel.TemplateId` / `TemplateParameters` are now also genuinely used
+
+Although the *new* editor goes through the C++ path, the *legacy* editor and the Settings UI page still serialize via `KeysDataModel`. With the new C++ wiring, both write paths now agree on the on-disk JSON shape, so the fields added in Task 4 are not wasted — they ensure the legacy path round-trips correctly too.
+
+#### Engine impact: still zero
+
+Task 2's finding still holds — the C++ engine (`KeyboardManagerEngineLibrary`) is read-only on `default.json`. It will now *see* the two new fields, but its existing `LoadShortcutRemaps` already extracted only the field names it cares about. Adding `templateId` to its in-memory `Shortcut` struct does not change engine behavior because no engine code reads the field.
