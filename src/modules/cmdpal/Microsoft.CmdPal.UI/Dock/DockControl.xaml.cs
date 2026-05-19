@@ -760,11 +760,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
         var hasStorageItems = e.DataView.Contains(StandardDataFormats.StorageItems);
         var hasUri = e.DataView.Contains(StandardDataFormats.Uri);
-        Logger.LogDebug($"[DockDrop] RootGrid_Drop entered. hasStorageItems={hasStorageItems}, hasUri={hasUri}");
 
         if (!hasStorageItems && !hasUri)
         {
-            Logger.LogDebug("[DockDrop] RootGrid_Drop: no storage items or URI in payload; bailing");
             return;
         }
 
@@ -775,7 +773,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
             if (bookmarksManager == null)
             {
-                Logger.LogWarning("[DockDrop] RootGrid_Drop: IBookmarksManager service is not registered; cannot pin");
+                Logger.LogWarning("[DockDrop] IBookmarksManager service is not registered; cannot pin dropped item");
                 return;
             }
 
@@ -783,13 +781,11 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
             if (hasStorageItems)
             {
                 var items = await e.DataView.GetStorageItemsAsync();
-                Logger.LogDebug($"[DockDrop] RootGrid_Drop: GetStorageItemsAsync returned {items.Count} item(s)");
                 foreach (var item in items)
                 {
                     var path = item.Path;
                     if (string.IsNullOrEmpty(path))
                     {
-                        Logger.LogDebug("[DockDrop] RootGrid_Drop: skipping storage item with empty path");
                         continue;
                     }
 
@@ -801,7 +797,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
             if (foundItem)
             {
-                Logger.LogDebug("[DockDrop] RootGrid_Drop: handled as storage item(s); skipping URI path");
                 return;
             }
 
@@ -810,7 +805,6 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
                 var uri = await e.DataView.GetUriAsync();
                 var url = uri.AbsoluteUri;
                 var name = uri.Host;
-                Logger.LogDebug($"[DockDrop] RootGrid_Drop: handling URI drop '{url}' (host '{name}')");
                 AddBookmarkAndPinToDock(bookmarksManager, name, url);
             }
         }
@@ -822,16 +816,13 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue)
     {
-        Logger.LogDebug($"[DockDrop] AddBookmarkAndPinToDock: attempting to pin '{name}': '{bookmarkValue}' to the dock");
         var bookmark = bookmarksManager.Add(name, bookmarkValue);
-        Logger.LogDebug($"[DockDrop] AddBookmarkAndPinToDock: bookmarksManager.Add returned id={bookmark.Id}");
 
         // Make the command ID exactly the same as the ID it would have in the
         // top-level list, so that pinning to the dock from the top-level is seamless.
         var commandId = Ext.Bookmarks.Helpers.CommandIds.GetLaunchBookmarkItemId(bookmark.Id);
-        Logger.LogDebug($"[DockDrop] AddBookmarkAndPinToDock: sending PinToDockMessage Provider='Bookmarks' CommandId='{commandId}' WithReload=false");
+        Logger.LogDebug($"[DockDrop] Pinning dropped item '{name}' as bookmark id={bookmark.Id} (commandId='{commandId}')");
         WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false));
-        Logger.LogDebug($"[DockDrop] AddBookmarkAndPinToDock: PinToDockMessage send returned for CommandId='{commandId}'");
     }
 
     public void Receive(CrossMonitorBandDropMessage message)

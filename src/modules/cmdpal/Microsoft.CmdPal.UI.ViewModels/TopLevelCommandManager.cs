@@ -201,7 +201,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     // be sure we don't block the caller, hop off this thread
     private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
-        Logger.LogDebug($"[DockDrop] TopLevelCommandManager.CommandProvider_CommandsChanged: scheduling UpdateCommandsForProvider for '{sender.ProviderId}'");
         _ = Task.Run(async () => await UpdateCommandsForProvider(sender, args));
     }
 
@@ -215,7 +214,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     /// <returns>an awaitable task</returns>
     private async Task UpdateCommandsForProvider(CommandProviderWrapper sender, IItemsChangedEventArgs args)
     {
-        Logger.LogDebug($"[DockDrop] TopLevelCommandManager.UpdateCommandsForProvider: '{sender.ProviderId}' - calling LoadTopLevelCommands");
         await sender.LoadTopLevelCommands(_serviceProvider);
 
         List<TopLevelViewModel> newItems = [.. sender.TopLevelItems];
@@ -228,7 +226,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
 
         List<TopLevelViewModel> newBands = [.. sender.DockBandItems];
-        Logger.LogDebug($"[DockDrop] TopLevelCommandManager.UpdateCommandsForProvider: '{sender.ProviderId}' loaded {newItems.Count} top-level items and {newBands.Count} dock bands");
 
         // modify the TopLevelCommands under shared lock; event if we clone it, we don't want
         // TopLevelCommands to get modified while we're working on it. Otherwise, we might
@@ -258,7 +255,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
             dockClone.InsertRange(dockStartIndex, newBands);
             DockBands.ReplaceWith(dockClone);
-            Logger.LogDebug($"[DockDrop] TopLevelCommandManager.UpdateCommandsForProvider: '{sender.ProviderId}' DockBands updated; now {DockBands.Count} total bands");
         }
 
         return;
@@ -700,12 +696,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             {
                 if (command.Id == id)
                 {
-                    Logger.LogDebug($"[DockDrop] TopLevelCommandManager.LookupDockBand: found '{id}' in DockBands (count={DockBands.Count})");
                     return command;
                 }
             }
-
-            Logger.LogDebug($"[DockDrop] TopLevelCommandManager.LookupDockBand: '{id}' NOT found in DockBands (count={DockBands.Count})");
         }
 
         return null;
@@ -738,7 +731,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     public void Receive(PinToDockMessage message)
     {
-        Logger.LogDebug($"[DockDrop] TopLevelCommandManager.Receive(PinToDockMessage): provider='{message.ProviderId}', commandId='{message.CommandId}', pin={message.Pin}, withReload={message.WithReload}, side={message.Side}, monitor='{message.MonitorDeviceId ?? "<global>"}'");
         if (LookupProvider(message.ProviderId) is CommandProviderWrapper wrapper)
         {
             if (message.Pin)
@@ -752,7 +744,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
         else
         {
-            Logger.LogWarning($"[DockDrop] TopLevelCommandManager.Receive(PinToDockMessage): no provider found for '{message.ProviderId}'");
+            Logger.LogWarning($"[DockDrop] PinToDockMessage: no provider found for '{message.ProviderId}'");
         }
     }
 
