@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -481,8 +481,9 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
     }
 
-    public void PinDockBand(string commandId, IServiceProvider serviceProvider, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null, string? monitorDeviceId = null)
+    public void PinDockBand(string commandId, IServiceProvider serviceProvider, bool withReload, Dock.DockPinSide side = Dock.DockPinSide.Start, bool? showTitles = null, bool? showSubtitles = null, string? monitorDeviceId = null)
     {
+        Logger.LogDebug($"CommandProviderWrapper.PinDockBand(commandId): provider='{ProviderId}', commandId='{commandId}', withReload={withReload}, side={side}, monitor='{monitorDeviceId ?? "<global>"}'");
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         var settings = settingsService.Settings;
         var dockSettings = settings.DockSettings;
@@ -535,7 +536,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         }
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
-        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        if (withReload)
+        {
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        }
     }
 
     private static void PinDockBandGlobal(ISettingsService settingsService, DockBandSettings bandSettings, Dock.DockPinSide side)
@@ -610,7 +614,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             hotReload: false);
     }
 
-    public void UnpinDockBand(string commandId, IServiceProvider serviceProvider)
+    public void UnpinDockBand(string commandId, IServiceProvider serviceProvider, bool withReload)
     {
         var settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         settingsService.UpdateSettings(
@@ -630,7 +634,10 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
             hotReload: false);
 
         // Raise CommandsChanged so the TopLevelCommandManager reloads our commands
-        this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        if (withReload)
+        {
+            this.CommandsChanged?.Invoke(this, new ItemsChangedEventArgs(-1));
+        }
     }
 
     public ICommandProviderContext GetProviderContext() => this;
@@ -639,8 +646,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
 
     public override int GetHashCode() => _commandProvider.GetHashCode();
 
-    private void CommandProvider_ItemsChanged(object sender, IItemsChangedEventArgs args) =>
-
+    private void CommandProvider_ItemsChanged(object sender, IItemsChangedEventArgs args)
+    {
         // We don't want to handle this ourselves - we want the
         // TopLevelCommandManager to know about this, so they can remove
         // our old commands from their own list.
@@ -648,6 +655,7 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         // In handling this, a call will be made to `LoadTopLevelCommands` to
         // retrieve the new items.
         this.CommandsChanged?.Invoke(this, args);
+    }
 
     internal void PinDockBand(TopLevelViewModel bandVm)
     {
