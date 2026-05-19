@@ -9,21 +9,21 @@
  */
 
 const fs = require('node:fs');
+const REVIEWER_LOGIN = 'chatasweetie';
 
 const COMMENT_MARKER = '<!-- telemetry-event-check -->';
 const COMMENT_BODY_WITH_PRIVACY_UPDATE = `${COMMENT_MARKER}
-THIS IS A TEST | @chatasweetie is testing this functionality
-Thanks for contributing to PowerToys. This change might include a new or modified telemetry event, and we want to help make sure you can get your data end to end.
+Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event, and we want to help make sure that post the merger of this PR you do the next steps:
 
-1. Reach out to Jessica (@chatasweetie) to follow up on the next steps to add these telemetry events to our pipelines.`;
+- [ ] Reach out to Jessica (@chatasweetie) to follow up on the next steps, https://aka.ms/next-steps
+`;
 
 const COMMENT_BODY_WITHOUT_PRIVACY_UPDATE = `${COMMENT_MARKER}
-THIS IS A TEST | @chatasweetie is testing this functionality
-Thanks for contributing to PowerToys. This change might include a new or modified telemetry event, and we want to help make sure you can get your data end to end.
+Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event, and we want to help make sure that this PR contains the necessary elements:
 
-1. Make sure to add your telemetry events to DATA_AND_PRIVACY.md.
+- [ ] Add your telemetry events to DATA_AND_PRIVACY.md within this PR.
 
-2. Reach out to Jessica (@chatasweetie) to follow up on the next steps to add these telemetry events to our pipelines.`;
+- [ ] Reach out to Jessica (@chatasweetie) to follow up on the next step, https://aka.ms/next-steps`;
 
 const TELEMETRY_PATH_PATTERNS = [
   /(^|\/)trace\.(h|hpp|cpp|cs)$/i,
@@ -191,6 +191,48 @@ async function getAllPullFiles(apiBaseUrl, repository, pullNumber) {
   return files;
 }
 
+async function getPullRequest(apiBaseUrl, repository, pullNumber) {
+  const url = `${apiBaseUrl}/repos/${repository}/pulls/${pullNumber}`;
+  const pullRequest = await apiRequest(url);
+  if (!pullRequest || typeof pullRequest !== 'object') {
+    throw new Error('Unexpected response while fetching pull request details.');
+  }
+  return pullRequest;
+}
+
+async function ensureReviewerRequested(apiBaseUrl, repository, pullNumber, pullRequest) {
+  const authorLogin = String(pullRequest?.user?.login || '').toLowerCase();
+  const targetReviewer = REVIEWER_LOGIN.toLowerCase();
+
+  if (authorLogin === targetReviewer) {
+    console.log(`Skipping reviewer request: ${REVIEWER_LOGIN} is the PR author.`);
+    return;
+  }
+
+  const requestedReviewers = Array.isArray(pullRequest?.requested_reviewers)
+    ? pullRequest.requested_reviewers
+    : [];
+  const alreadyRequested = requestedReviewers.some(
+    (reviewer) => String(reviewer?.login || '').toLowerCase() === targetReviewer
+  );
+
+  if (alreadyRequested) {
+    console.log(`Reviewer ${REVIEWER_LOGIN} is already requested.`);
+    return;
+  }
+
+  const url = `${apiBaseUrl}/repos/${repository}/pulls/${pullNumber}/requested_reviewers`;
+  try {
+    await apiRequest(url, 'POST', { reviewers: [REVIEWER_LOGIN] });
+    console.log(`Requested reviewer ${REVIEWER_LOGIN}.`);
+  } catch (error) {
+    // Reviewer request should not fail the telemetry guidance workflow.
+    console.warn(
+      `Unable to request reviewer ${REVIEWER_LOGIN}: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
+
 async function findExistingTelemetryComment(apiBaseUrl, repository, pullNumber) {
   let page = 1;
 
@@ -309,6 +351,9 @@ async function main() {
       `- ${match.filename} (telemetryPath=${match.telemetryPath}, telemetryLineSignal=${match.telemetryLineSignal}, patchUnavailable=${match.patchUnavailable})`
     );
   }
+
+  const pullRequest = await getPullRequest(parsedApiBaseUrl.origin, repository, pullNumber);
+  await ensureReviewerRequested(parsedApiBaseUrl.origin, repository, pullNumber, pullRequest);
 
   const commentBody = dataAndPrivacyChanged
     ? COMMENT_BODY_WITH_PRIVACY_UPDATE
