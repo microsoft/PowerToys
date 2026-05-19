@@ -361,11 +361,27 @@ public partial class MainViewModel
                 monitors.Add(monitorInfo);
             }
 
+            // One-shot upgrade migration: PowerDisplay versions before PR #47712 wrote
+            // monitor Ids as "{Source}_{EdidId}_{MonitorNumber}". On disk those entries
+            // never resolve against the current DevicePath-based Ids, so without
+            // migration the user silently loses their per-monitor Enable* toggles on
+            // upgrade. Match legacy entries by EdidId and union their preferences onto
+            // the currently-discovered monitors; the consumed entries are dropped from
+            // the retention input so they don't linger for 30 days under stale Ids.
+            var consumedLegacy = MonitorIdMigrator.MergeLegacyPreferences(
+                currentlyDiscovered: monitors,
+                existing: settings.Properties.Monitors,
+                mergeUserPreferencesInto: UnionLegacyUserPreferences);
+
+            var retentionInput = consumedLegacy.Count == 0
+                ? (IReadOnlyList<Microsoft.PowerToys.Settings.UI.Library.MonitorInfo>)settings.Properties.Monitors
+                : settings.Properties.Monitors.Except(consumedLegacy).ToList();
+
             // Replace the manually-built `monitors` list with the rebuilt list that
             // applies the 30-day retention rule for non-hidden disconnected monitors.
             monitors = MonitorSettingsRebuilder.Rebuild(
                 currentlyDiscovered: monitors,
-                existing: settings.Properties.Monitors,
+                existing: retentionInput,
                 clock: _clock,
                 retentionDays: PowerDisplaySettings.MonitorEntryRetentionDays);
 
@@ -454,6 +470,24 @@ public partial class MainViewModel
             monitorInfo.EnableColorTemperature = existingMonitor.EnableColorTemperature;
             monitorInfo.EnablePowerState = existingMonitor.EnablePowerState;
         }
+    }
+
+    /// <summary>
+    /// Merge legacy-Id user preferences into a currently-discovered monitor with union
+    /// (OR) semantics, so a user's opt-in to a feature is never silently lost on the
+    /// upgrade from <c>"{Source}_{EdidId}_{MonitorNumber}"</c> Ids to DevicePath-based Ids.
+    /// </summary>
+    private static void UnionLegacyUserPreferences(
+        Microsoft.PowerToys.Settings.UI.Library.MonitorInfo target,
+        Microsoft.PowerToys.Settings.UI.Library.MonitorInfo legacy)
+    {
+        target.IsHidden |= legacy.IsHidden;
+        target.EnableContrast |= legacy.EnableContrast;
+        target.EnableVolume |= legacy.EnableVolume;
+        target.EnableInputSource |= legacy.EnableInputSource;
+        target.EnableRotation |= legacy.EnableRotation;
+        target.EnableColorTemperature |= legacy.EnableColorTemperature;
+        target.EnablePowerState |= legacy.EnablePowerState;
     }
 
     /// <summary>
