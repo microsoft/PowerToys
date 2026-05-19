@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.ListItemsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -405,7 +405,8 @@
                 <!--
                     An 8px right margin is added to visually match the spacing between the icon
                     and the left margin of the list.
-                    ItemRepeater is a lightweight control (compared to ItemsControl).
+                    Tags are capped at 3 with a [+N] overflow badge to prevent
+                    unbounded growth that pushes the title out of view.
                 -->
                 <ItemsRepeater
                     Grid.Column="2"
@@ -414,7 +415,7 @@
                     IsHitTestVisible="False"
                     IsTabStop="False"
                     ItemTemplate="{StaticResource TagTemplate}"
-                    ItemsSource="{x:Bind Tags, Mode=OneWay}"
+                    ItemsSource="{x:Bind VisibleTags, Mode=OneWay}"
                     Visibility="{x:Bind HasTags, Mode=OneWay}">
                     <ItemsRepeater.Layout>
                         <StackLayout Orientation="Horizontal" Spacing="4" />

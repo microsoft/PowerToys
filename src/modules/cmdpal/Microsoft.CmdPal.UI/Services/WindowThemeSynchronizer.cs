@@ -30,7 +30,7 @@ internal sealed partial class WindowThemeSynchronizer : IDisposable
     }
 
     /// <summary>
-    /// Unregisters from theme change events.
+    /// Unsubscribe from theme change events.
     /// </summary>
     public void Dispose()
     {
