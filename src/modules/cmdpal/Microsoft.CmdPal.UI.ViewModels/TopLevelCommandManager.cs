@@ -68,7 +68,12 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
-    public ObservableCollection<TopLevelViewModel> DockBands { get; set; } = [];
+    // DockBands uses a custom collection so that bulk rewrites (see
+    // UpdateCommandsForProvider) raise a single Reset notification instead of
+    // one event per inserted/removed/moved item. The dock subscribes to this
+    // collection and does a full rebuild per event, so collapsing the burst
+    // here avoids dozens of redundant rebuilds for one provider reload.
+    public DockBandsCollection DockBands { get; } = new();
 
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
@@ -245,12 +250,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
         lock (_dockBandsLock)
         {
-            // same idea for DockBands
+            // Same idea as TopLevelCommands above, but we deliberately use
+            // ReplaceWith so the dock only sees one CollectionChanged event
+            // for the whole rewrite instead of one per item.
             List<TopLevelViewModel> dockClone = [.. DockBands];
             var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
             dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
             dockClone.InsertRange(dockStartIndex, newBands);
-            ListHelpers.InPlaceUpdateList(DockBands, dockClone);
+            DockBands.ReplaceWith(dockClone);
             Logger.LogDebug($"[DockDrop] TopLevelCommandManager.UpdateCommandsForProvider: '{sender.ProviderId}' DockBands updated; now {DockBands.Count} total bands");
         }
 

@@ -26,14 +26,6 @@ public sealed partial class DockViewModel : IDisposable
     private bool _isEditing;
     private bool _disposed;
 
-    // Coalesces bursts of DockBands.CollectionChanged notifications into a
-    // single SetupBands() call. Each Insert/Remove/Move on the shared
-    // DockBands ObservableCollection raises its own event; when a provider
-    // reloads its bands (e.g. after a new bookmark is added), dozens of those
-    // events fire back-to-back. Without coalescing, each one drives a full
-    // band rebuild for every section, which can take many seconds to settle.
-    private int _rebuildPending;
-
     /// <summary>
     /// Gets the monitor device identifier this dock is associated with, or <c>null</c>
     /// for the default (single-monitor) dock.
@@ -78,40 +70,14 @@ public sealed partial class DockViewModel : IDisposable
             return;
         }
 
-        // Coalesce: a single provider reload can fire dozens of CollectionChanged
-        // events (one per Insert/Remove/Move inside InPlaceUpdateList). We only
-        // need one rebuild per burst; schedule it once on the UI scheduler and
-        // drop subsequent notifications until it runs.
-        if (Interlocked.CompareExchange(ref _rebuildPending, 1, 0) != 0)
-        {
-            Logger.LogDebug($"[DockDrop] DockViewModel.DockBands_CollectionChanged: coalesced (action={e.Action}); rebuild already pending");
-            return;
-        }
+        Logger.LogDebug($"[DockDrop] DockViewModel.DockBands_CollectionChanged: action={e.Action}, refreshing settings and rebuilding bands");
 
-        Logger.LogDebug($"[DockDrop] DockViewModel.DockBands_CollectionChanged: action={e.Action}, scheduling coalesced rebuild");
-
-        DoOnUiThread(() =>
-        {
-            // Clear the gate before the rebuild so any changes that land while
-            // we're rebuilding will schedule a follow-up pass instead of being
-            // silently dropped.
-            Interlocked.Exchange(ref _rebuildPending, 0);
-
-            if (_isEditing || _disposed)
-            {
-                Logger.LogDebug("[DockDrop] DockViewModel.DockBands_CollectionChanged: skipping pending rebuild (editing or disposed)");
-                return;
-            }
-
-            Logger.LogDebug("[DockDrop] DockViewModel.DockBands_CollectionChanged: running coalesced rebuild");
-
-            // Refresh settings so newly pinned/unpinned bands are visible.
-            // Pin/unpin operations save with hotReload:false (to avoid
-            // double-updates), so _settings can be stale here.
-            _settings = _settingsService.Settings.DockSettings;
-            SetupBands();
-            Logger.LogDebug("[DockDrop] DockViewModel.DockBands_CollectionChanged: coalesced rebuild completed");
-        });
+        // Refresh settings so newly pinned/unpinned bands are visible.
+        // Pin/unpin operations save with hotReload:false (to avoid
+        // double-updates), so _settings can be stale here.
+        _settings = _settingsService.Settings.DockSettings;
+        SetupBands();
+        Logger.LogDebug("[DockDrop] DockViewModel.DockBands_CollectionChanged: completed");
     }
 
     public void UpdateSettings(DockSettings settings)
