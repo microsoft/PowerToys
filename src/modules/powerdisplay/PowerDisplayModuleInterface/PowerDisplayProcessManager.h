@@ -19,7 +19,6 @@ class PowerDisplayProcessManager
 {
 public:
     PowerDisplayProcessManager() = default;
-    ~PowerDisplayProcessManager();
     PowerDisplayProcessManager(const PowerDisplayProcessManager&) = delete;
     PowerDisplayProcessManager& operator=(const PowerDisplayProcessManager&) = delete;
 
@@ -54,16 +53,8 @@ private:
     void refresh();
     void send_named_pipe_message(const std::wstring& message_type, const std::wstring& message_arg = L"");
 
-    // Crash auto-relaunch: detect unexpected PowerDisplay.exe exits so the next instance
-    // can run Phase 0 (crash recovery / auto-disable). See on_process_exited for rules.
-    void start_exit_watch();
-    void clear_exit_watch();
-    static VOID CALLBACK on_process_exited(PVOID context, BOOLEAN timedOut);
-
     OnThreadExecutor m_thread_executor; // all internal operations are done on background thread with task queue
     std::atomic<bool> m_enabled = false; // written on main thread, read on background thread
     HANDLE m_hProcess = 0;
     std::unique_ptr<CAtlFile> m_write_pipe;
-    HANDLE m_exitWaitRegistration = nullptr; // thread-pool wait registration
-    HANDLE m_exitProcessHandle = nullptr;    // duplicate of m_hProcess owned by the wait
 };
