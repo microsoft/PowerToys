@@ -727,15 +727,11 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue)
     {
         Logger.LogDebug($"Attempting to pin '{name}': '{bookmarkValue}' to the dock");
-
-        // var bookmark = bookmarksManager.Add(name, bookmarkValue);
-        var addBookmarkResult = bookmarksManager.AddAsync(name, bookmarkValue);
+        var bookmark = bookmarksManager.Add(name, bookmarkValue);
 
         // Make the command ID exactly the same as the ID it would have in the
         // top-level list, so that pinning to the dock from the top-level is seamless.
-        var commandId = Ext.Bookmarks.Helpers.CommandIds.GetLaunchBookmarkItemId(addBookmarkResult.Bookmark.Id);
+        var commandId = Ext.Bookmarks.Helpers.CommandIds.GetLaunchBookmarkItemId(bookmark.Id);
         WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false));
-        _ = Task.Run(() => addBookmarkResult.SaveTask.Start());
-        addBookmarkResult.ReloadCallback();
     }
 }
