@@ -86,9 +86,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ReloadMonitorsFromSettings();
                 });
 
-            // Crash quarantine state — show error InfoBar + lock the page if PowerDisplay.exe
-            // detected a previous-session crash and wrote the flag.
-            if (File.Exists(CrashDetectedFlagPath))
+            // Crash quarantine state. Two trigger paths, both ultimately route through
+            // RefreshCrashLockState:
+            //   1. AutoDisable event signaled by Phase 0 — catches crashes that happen
+            //      while Settings UI is already open. Subscribe before the file check so
+            //      we don't lose an event signaled in the gap.
+            //   2. File-exists check on construction — catches crashes that happened
+            //      before Settings UI launched (event has already fired and is gone).
+            NativeEventWaiter.WaitForEventLoop(
+                Constants.AutoDisablePowerDisplayEvent(),
+                () =>
+                {
+                    Logger.LogInfo("PowerDisplayViewModel: AutoDisable event received");
+                    RefreshCrashLockState();
+                });
+
+            RefreshCrashLockState();
+        }
+
+        private void RefreshCrashLockState()
+        {
+            if (File.Exists(CrashDetectedFlagPath) && !IsCrashLockActive)
             {
                 Logger.LogInfo("PowerDisplayViewModel: crash flag present, locking page");
                 IsCrashLockActive = true;
