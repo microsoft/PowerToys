@@ -491,6 +491,49 @@ public partial class MainViewModel
     }
 
     /// <summary>
+    /// Companion one-shot migration for the two side files that
+    /// <see cref="SaveMonitorsToSettings"/> does not touch:
+    /// <c>profiles.json</c> (user-saved presets) and <c>monitor_state.json</c>
+    /// (last-known hardware state used by <c>RestoreSettingsOnStartup</c>).
+    /// </summary>
+    /// <remarks>
+    /// Idempotent. Should be invoked once per process startup, after the first successful
+    /// discovery has populated <see cref="Monitors"/> with new-format Ids. Running on every
+    /// refresh would be harmless but wasteful — file I/O only happens when there is something
+    /// to migrate.
+    /// </remarks>
+    private void MigrateLegacyMonitorIdsInSideFiles()
+    {
+        try
+        {
+            var discoveredIds = Monitors
+                .Select(m => m.Id)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .ToList();
+
+            if (discoveredIds.Count == 0)
+            {
+                return;
+            }
+
+            // profiles.json
+            var profiles = ProfileService.LoadProfiles();
+            if (MonitorIdMigrator.MigrateProfileMonitorIds(profiles, discoveredIds))
+            {
+                ProfileService.SaveProfiles(profiles);
+                Logger.LogInfo("[LegacyMigration] profiles.json updated with DevicePath-based monitor Ids.");
+            }
+
+            // monitor_state.json — manager owns the dictionary and the debounced save path.
+            _stateManager.MigrateLegacyKeys(discoveredIds);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[LegacyMigration] Failed to migrate side files: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Signal Settings UI that the monitor list has been refreshed
     /// </summary>
     private void SignalMonitorsRefreshEvent()

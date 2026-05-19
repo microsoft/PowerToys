@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -141,6 +142,46 @@ namespace PowerDisplay.Common.Services
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// One-shot upgrade migration: rewrite legacy <c>"{Source}_{EdidId}_{N}"</c> keys
+        /// (pre-PR #47712) onto the matching DevicePath-based monitor Ids by joining on EdidId.
+        /// Triggers a save when anything was rewritten.
+        /// </summary>
+        /// <param name="currentlyDiscoveredIds">Ids of monitors currently discovered.</param>
+        public void MigrateLegacyKeys(IEnumerable<string> currentlyDiscoveredIds)
+        {
+            if (currentlyDiscoveredIds is null)
+            {
+                return;
+            }
+
+            try
+            {
+                // ConcurrentDictionary implements IDictionary<,> so the migrator can mutate it directly.
+                bool changed = MonitorIdMigrator.MigrateStateKeys(
+                    _states,
+                    currentlyDiscoveredIds,
+                    static state => new MonitorState
+                    {
+                        Brightness = state.Brightness,
+                        ColorTemperatureVcp = state.ColorTemperatureVcp,
+                        Contrast = state.Contrast,
+                        Volume = state.Volume,
+                        CapabilitiesRaw = state.CapabilitiesRaw,
+                    });
+
+                if (changed)
+                {
+                    _isDirty = true;
+                    _saveDebouncer.Debounce(SaveStateToDiskAsync);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[MonitorStateManager] Legacy key migration failed: {ex.Message}");
+            }
         }
 
         /// <summary>
