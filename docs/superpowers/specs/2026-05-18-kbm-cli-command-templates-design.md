@@ -487,3 +487,75 @@ Documented to prevent regression in future designs:
 - Are PowerToys CLI args `--open-settings=<module>` and `--open-settings` both supported by current `runner/main.cpp` argv parsing? (Confirmed in earlier exploration: yes, lines 501–510.)
 - Does the runner accept just `PowerToys.exe` by filename (PATH lookup) or does it require an absolute path? Resolves verification task #4.
 - Should the missing-template InfoBar's "Keep as plain command" action also clear `TemplateId`/`TemplateParameters` (cleaner) or preserve them (informational only)? Recommend **clear** — the user has explicitly opted out of the template association.
+
+## Phase 0 Findings (filled in during implementation)
+
+### Task 1: Legacy editor JSON round-trip
+
+#### JSON library used
+
+The legacy editor uses **`Windows.Data.Json`** (WinRT), not `nlohmann/json`. The single wrapper header is at:
+
+- `src/common/utils/json.h` — thin inline wrappers around `winrt::Windows::Data::Json::JsonObject` / `JsonValue` / `JsonArray`.
+
+The read/write entry points are:
+
+- `json::from_file()` (`src/common/utils/json.h:14`) — parses the file bytes into a `JsonObject` via `JsonValue::Parse(...).GetObjectW()`.
+- `json::to_file()` (`src/common/utils/json.h:33`) — serializes a `JsonObject` via `JsonObject::Stringify()` and writes the resulting string to disk.
+
+#### Deserialization (read path)
+
+`MappingConfiguration::LoadSettings()` (`src/modules/keyboardmanager/common/MappingConfiguration.cpp:410–447`) loads the config file and then calls four private helpers:
+
+- `LoadSingleKeyRemaps()` (line 123) — reads `GetNamedObject("remapKeys")` → `GetNamedArray("inProcessRemapKeys")` → per-item `GetNamedString("originalKeys")` / `GetNamedString("newRemapKeys")`.
+- `LoadSingleKeyToTextRemaps()` (line 171) — same pattern for `remapKeysToText`.
+- `LoadShortcutRemaps()` (line 307, called twice) — reads `GetNamedObject("remapShortcuts")` and `GetNamedObject("remapShortcutsToText")`, then `GetNamedArray("global")` / `GetNamedArray("appSpecific")`.
+- `LoadAppSpecificShortcutRemaps()` (line 217) — same pattern for the app-specific array.
+
+Every helper extracts only the **named fields it knows about** (e.g. `originalKeys`, `newRemapKeys`, `targetApp`, `operationType`, `exactMatch`, etc.) into typed C++ values (`DWORD`, `std::wstring`, `bool`, etc.). No unknown field is carried forward. The parsed `JsonObject` is consumed field-by-field and then discarded; the data lives in typed maps (`singleKeyReMap`, `osLevelShortcutReMap`, `appSpecificShortcutReMap`).
+
+#### Serialization (write path)
+
+`MappingConfiguration::SaveSettingsToFile()` (line 450–665) builds a **fresh** `json::JsonObject configJson` from scratch, populating only:
+
+```
+configJson
+├─ "remapKeys"           → inProcessRemapKeysArray       (OriginalKeys + NewRemapKeys only)
+├─ "remapKeysToText"     → inProcessRemapKeysToTextArray  (OriginalKeys + NewText only)
+├─ "remapShortcuts"
+│   ├─ "global"          → globalRemapShortcutsArray
+│   └─ "appSpecific"     → appSpecificRemapShortcutsArray
+└─ "remapShortcutsToText"
+    ├─ "global"          → globalRemapShortcutsToTextArray
+    └─ "appSpecific"     → appSpecificRemapShortcutsToTextArray
+```
+
+It then calls `json::to_file(path, configJson)` which serializes **only** the fields on `configJson` — nothing else. The original `JsonObject` from disk is never merged back in.
+
+#### Static analysis conclusion: fields ARE dropped
+
+Both conditions are YES:
+
+1. **Read path** — unknown fields (e.g. `templateId`, `templateParameters`) in per-mapping JSON objects are silently ignored by `GetNamedString` / `GetNamedBoolean` / `GetNamedNumber` calls that only read explicitly known names. They do not end up in any in-memory struct.
+2. **Write path** — `SaveSettingsToFile` constructs a fresh object containing only the known fields. There is no merge of the original file content.
+
+A round-trip through the legacy editor **will drop `templateId` and `templateParameters`** from every mapping it touches — and because `SaveSettingsToFile` rewrites the entire file, it will drop them from **all mappings**, not just the one the user edited.
+
+#### Responsible functions
+
+| Function | File:Line | Role |
+|---|---|---|
+| `LoadShortcutRemaps` | `MappingConfiguration.cpp:307` | Discards unknown per-mapping fields on read |
+| `LoadAppSpecificShortcutRemaps` | `MappingConfiguration.cpp:217` | Same for app-specific mappings |
+| `LoadSingleKeyRemaps` | `MappingConfiguration.cpp:123` | Same for single-key mappings |
+| `SaveSettingsToFile` | `MappingConfiguration.cpp:450` | Regenerates JSON from typed structs only; original file content never merged back |
+
+#### Fix sketch
+
+Add a `json::JsonObject extraFields` member to `RemapShortcut` (or carry a per-mapping `JsonObject rawEntry` vector alongside the typed maps). On read, after extracting all known fields, call `rawEntry = it.GetObjectW()` (the full `JsonObject` is still in scope at that point). On write, instead of building a fresh `keys` object from scratch, start with `keys = rawEntry` and overwrite only the known fields via `SetNamedValue`. This way any field the legacy editor does not understand (including `templateId` / `templateParameters`) passes through untouched.
+
+A simpler alternative: add a `std::optional<json::JsonObject> rawJson` to `RemapShortcut`, preserve the entire per-mapping `JsonObject` on read, and use `rawJson->SetNamedValue(...)` to update known fields before appending it to the output array.
+
+#### Empirical step 4 still pending
+
+Empirical step 4 still pending — requires running the legacy editor with a fabricated `templateId` field present in `default.json`, then inspecting the file after the user opens and saves a remapping to confirm the field is removed. Static analysis strongly predicts it will be dropped, but the test is needed to close the task formally.
