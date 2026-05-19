@@ -13,7 +13,7 @@ namespace PowerDisplay.Models
     {
         /// <summary>
         /// Gets or sets the monitor's unique identifier.
-        /// Format: "{Source}_{EdidId}_{MonitorNumber}" (e.g., "DDC_GSM5C6D_1").
+        /// Format: the DevicePath form documented on <see cref="PowerDisplay.Common.Models.Monitor.Id"/>.
         /// </summary>
         [JsonPropertyName("monitorId")]
         public string MonitorId { get; set; }

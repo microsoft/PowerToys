@@ -107,6 +107,7 @@ public:
     ~CaptureFrameWait();
 
     std::optional<CaptureFrame> TryGetNextFrame();
+    std::optional<CaptureFrame> TryGetNextFrame( DWORD timeoutMs );
     void StopCapture();
     void EnableCursorCapture( bool enable = true )
     {

@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Microsoft.CmdPal.UI.Settings.ExtensionGalleryItemPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="using:Microsoft.CmdPal.UI.ViewModels.Gallery"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Default">
+                    <ImageSource x:Key="StoreLogoSource">ms-appx:///Assets/StoreLogo.dark.svg</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Light">
+                    <ImageSource x:Key="StoreLogoSource">ms-appx:///Assets/StoreLogo.light.svg</ImageSource>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="HighContrast">
+                    <ImageSource x:Key="StoreLogoSource">ms-appx:///Assets/StoreLogo.dark.svg</ImageSource>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid>
+        <ContentDialog x:Name="WinGetDialog" x:Uid="Settings_GalleryItemPage_WinGetDialog">
+            <StackPanel MinWidth="360" Spacing="8">
+                <Grid ColumnSpacing="8" Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowWinGetActionControls), Mode=OneWay, FallbackValue=Collapsed}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Stretch"
+                        Command="{x:Bind ViewModel.InstallViaWinGetCommand, Mode=OneWay}"
+                        Content="{x:Bind ViewModel.InstallViaWinGetText, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.CanInstallViaWinGet, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstallViaWinGetButton), Mode=OneWay, FallbackValue=Collapsed}" />
+                    <Button
+                        x:Uid="Settings_GalleryItemPage_CancelWinGetActionButton"
+                        Grid.Column="2"
+                        Width="32"
+                        Height="32"
+                        Padding="0"
+                        Command="{x:Bind ViewModel.CancelWinGetActionCommand, Mode=OneWay}"
+                        Style="{StaticResource SubtleButtonStyle}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowCancelWinGetActionButton), Mode=OneWay, FallbackValue=Collapsed}">
+                        <FontIcon FontSize="12" Glyph="&#xE711;" />
+                    </Button>
+                </Grid>
+
+                <TextBlock
+                    x:Uid="Settings_GalleryItemPage_WinGetDialog_RunCommandText"
+                    Margin="0,8,0,8"
+                    HorizontalAlignment="Center"
+                    TextAlignment="Center" />
+                <Grid
+                    Padding="8,4,0,4"
+                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                    ColumnSpacing="8"
+                    CornerRadius="{StaticResource ControlCornerRadius}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        IsTextSelectionEnabled="True"
+                        Style="{StaticResource CaptionTextBlockStyle}"
+                        Text="{x:Bind ViewModel.WinGetInstallCommand, Mode=OneWay}"
+                        TextWrapping="WrapWholeWords" />
+                    <Button
+                        x:Uid="Settings_GalleryItemPage_CopyInstallCommandButton"
+                        Grid.Column="1"
+                        Width="28"
+                        Height="28"
+                        Padding="0"
+                        VerticalAlignment="Center"
+                        Command="{x:Bind ViewModel.CopyWinGetInstallCommand, Mode=OneWay}"
+                        IsEnabled="{x:Bind ViewModel.CanCopyWinGetInstallCommand, Mode=OneWay}"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <FontIcon FontSize="12" Glyph="&#xE8C8;" />
+                    </Button>
+                </Grid>
+
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind ViewModel.WinGetUnavailableMessage, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowWinGetUnavailableMessage), Mode=OneWay, FallbackValue=Collapsed}" />
+                <TextBlock
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Style="{StaticResource CaptionTextBlockStyle}"
+                    Text="{x:Bind ViewModel.WinGetActionMessage, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasWinGetActionMessage), Mode=OneWay, FallbackValue=Collapsed}" />
+                <ProgressBar
+                    Height="4"
+                    IsIndeterminate="{x:Bind ViewModel.IsWinGetActionIndeterminate, Mode=OneWay}"
+                    Maximum="100"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.IsWinGetActionInProgress), Mode=OneWay, FallbackValue=Collapsed}"
+                    Value="{x:Bind ViewModel.WinGetActionProgressValue, Mode=OneWay}" />
+
+                <StackPanel Orientation="Vertical">
+                    <Rectangle
+                        Height="1"
+                        Margin="-16,24,-16,0"
+                        HorizontalAlignment="Stretch"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                    <ItemsControl Margin="0,16,0,0" ItemsSource="{x:Bind ViewModel.SourcesWithDetails, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:GallerySourceViewModel">
+                                <StackPanel Spacing="8">
+                                    <TextBlock
+                                        FontSize="10"
+                                        FontWeight="SemiBold"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind DisplayName}" />
+                                    <ItemsControl ItemsSource="{x:Bind Details}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:GallerySourceDetailItemViewModel">
+                                                <Grid Margin="0,2" ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock
+                                                        FontSize="10"
+                                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                                        Text="{x:Bind Label}"
+                                                        TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        FontSize="10"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Text="{x:Bind Value}"
+                                                        TextTrimming="CharacterEllipsis"
+                                                        TextWrapping="NoWrap"
+                                                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasNoLink), FallbackValue=Collapsed}" />
+                                                    <HyperlinkButton
+                                                        Grid.Column="1"
+                                                        MinWidth="0"
+                                                        MinHeight="0"
+                                                        Margin="0,-4,0,0"
+                                                        Padding="0"
+                                                        NavigateUri="{x:Bind LinkUri}"
+                                                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(HasLink), FallbackValue=Collapsed}">
+                                                        <TextBlock
+                                                            FontSize="10"
+                                                            Text="{x:Bind Value}"
+                                                            TextTrimming="CharacterEllipsis" />
+                                                    </HyperlinkButton>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ContentDialog>
+
+        <Grid Padding="16,4,16,16">
+            <Grid.Transitions>
+                <TransitionCollection>
+                    <EntranceThemeTransition FromVerticalOffset="50" />
+                </TransitionCollection>
+            </Grid.Transitions>
+            <Grid MaxWidth="1000" HorizontalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!--  Header  -->
+                <Grid Margin="0,0,0,24" ColumnSpacing="24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Width="72"
+                        Height="72"
+                        VerticalAlignment="Top">
+                        <Image
+                            Width="72"
+                            Height="72"
+                            Source="{x:Bind ViewModel.IconSource, Mode=OneWay}"
+                            Stretch="Uniform" />
+                    </Border>
+                    <StackPanel
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Orientation="Vertical"
+                        Spacing="8">
+                        <TextBlock
+                            Margin="0,-8,0,0"
+                            Style="{StaticResource TitleTextBlockStyle}"
+                            Text="{x:Bind ViewModel.DisplayTitle, Mode=OneWay}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <!--  Repo URL  -->
+                            <HyperlinkButton
+                                x:Uid="Settings_GalleryItemPage_AuthorLink"
+                                Padding="0"
+                                Command="{x:Bind ViewModel.OpenAuthorPageCommand, Mode=OneWay}"
+                                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasAuthorUrl), Mode=OneWay, FallbackValue=Collapsed}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon FontSize="10" Glyph="&#xE77B;" />
+                                    <TextBlock Text="{x:Bind ViewModel.DisplayAuthorName, Mode=OneWay}" />
+                                </StackPanel>
+                            </HyperlinkButton>
+                            <TextBlock Text="•" />
+                            <HyperlinkButton
+                                Grid.Row="3"
+                                Padding="0"
+                                NavigateUri="{x:Bind ViewModel.Homepage, Mode=OneWay}"
+                                ToolTipService.ToolTip="{x:Bind ViewModel.Homepage, Mode=OneWay}"
+                                Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasHomepage), Mode=OneWay, FallbackValue=Collapsed}">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon FontSize="10" Glyph="&#xE774;" />
+                                    <TextBlock x:Uid="Settings_GalleryItemPage_ViewRepository_Text" />
+                                </StackPanel>
+                            </HyperlinkButton>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Grid>
+
+                <!--  Short description  -->
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="0,0,0,24"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind ViewModel.DisplayShortDescription, Mode=OneWay}"
+                    TextWrapping="WrapWholeWords" />
+
+                <!--  Install area  -->
+                <StackPanel
+                    Grid.Row="2"
+                    Margin="0,0,0,24"
+                    Orientation="Horizontal"
+                    Spacing="12">
+
+                    <DropDownButton
+                        x:Name="InstallBtn"
+                        x:Uid="Settings_GalleryItemPage_InstallButton"
+                        MinWidth="172"
+                        Padding="12"
+                        HorizontalContentAlignment="Left"
+                        FontWeight="SemiBold"
+                        IsEnabled="{x:Bind ViewModel.ShowInstallButton, Mode=OneWay}"
+                        Style="{StaticResource AccentDropDownButtonStyle}">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuFlyoutItem
+                                    x:Uid="Settings_GalleryItemPage_Store_MenuFlyoutItem"
+                                    Click="StoreMenuItem_Click"
+                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasStoreSource), Mode=OneWay, FallbackValue=Collapsed}">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="{ThemeResource StoreLogoSource}" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    x:Uid="Settings_GalleryItemPage_WinGet_MenuFlyoutItem"
+                                    Click="WinGetMenuItem_Click"
+                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasWinGetSource), Mode=OneWay, FallbackValue=Collapsed}">
+                                    <MenuFlyoutItem.Icon>
+                                        <ImageIcon Source="ms-appx:///Assets/WinGetLogo.svg" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                                <MenuFlyoutItem
+                                    x:Uid="Settings_GalleryItemPage_Website_MenuFlyoutItem"
+                                    Click="WebMenuItem_Click"
+                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasUrlSource), Mode=OneWay, FallbackValue=Collapsed}">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xE774;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+
+                    <Border
+                        Padding="8,4"
+                        VerticalAlignment="Center"
+                        Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstalledBadge), Mode=OneWay, FallbackValue=Collapsed}">
+                        <TextBlock
+                            x:Uid="Settings_GalleryItemPage_Installed_Badge"
+                            Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}" />
+                    </Border>
+
+                    <HyperlinkButton
+                        x:Uid="Settings_GalleryItemPage_Uninstall_Link"
+                        Padding="0"
+                        VerticalAlignment="Center"
+                        Command="{x:Bind ViewModel.OpenInstalledAppsCommand}"
+                        FontSize="12"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstalledBadge), Mode=OneWay, FallbackValue=Collapsed}" />
+
+                </StackPanel>
+                <ScrollViewer Grid.Row="4">
+                    <StackPanel Spacing="16">
+                        <Grid
+                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource OverlayCornerRadius}"
+                            Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasScreenshots), Mode=OneWay, FallbackValue=Collapsed}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBlock
+                                x:Uid="Settings_GalleryItemPage_Screenshots_Header"
+                                Margin="16,12,16,12"
+                                FontWeight="SemiBold" />
+                            <Rectangle
+                                Grid.Row="1"
+                                Height="1"
+                                HorizontalAlignment="Stretch"
+                                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                            <ItemsView
+                                x:Name="ScreenshotsItemsView"
+                                Grid.Row="2"
+                                Padding="16"
+                                IsItemInvokedEnabled="True"
+                                ItemInvoked="ScreenshotsItemsView_ItemInvoked"
+                                ItemsSource="{x:Bind ViewModel.Screenshots, Mode=OneWay}"
+                                SelectionMode="None">
+                                <ItemsView.Layout>
+                                    <StackLayout Orientation="Horizontal" Spacing="12" />
+                                </ItemsView.Layout>
+                                <ItemsView.ItemTemplate>
+                                    <DataTemplate x:DataType="viewModels:ExtensionGalleryScreenshotViewModel">
+                                        <ItemContainer AutomationProperties.Name="{x:Bind DisplayName}" ToolTipService.ToolTip="{x:Bind DisplayName}">
+                                            <ItemContainer.Resources>
+                                                <SolidColorBrush x:Key="ItemContainerBackground" Color="Transparent" />
+                                                <SolidColorBrush x:Key="ItemContainerBackgroundPointerOver" Color="Transparent" />
+                                                <SolidColorBrush x:Key="ItemContainerBackgroundPressed" Color="Transparent" />
+                                            </ItemContainer.Resources>
+                                            <Border
+                                                Height="200"
+                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="{StaticResource OverlayCornerRadius}">
+                                                <Image
+                                                    AutomationProperties.Name="{x:Bind DisplayName}"
+                                                    Source="{x:Bind ImageSource}"
+                                                    Stretch="Uniform" />
+                                            </Border>
+                                        </ItemContainer>
+                                    </DataTemplate>
+                                </ItemsView.ItemTemplate>
+                            </ItemsView>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <!--  TO DO: Related extensions column  -->
+                            </Grid.ColumnDefinitions>
+
+                            <Grid
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource OverlayCornerRadius}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock
+                                    x:Uid="Settings_GalleryItemPage_Description_Header"
+                                    Margin="16,12,16,12"
+                                    FontWeight="SemiBold" />
+                                <Rectangle
+                                    Grid.Row="1"
+                                    Height="1"
+                                    HorizontalAlignment="Stretch"
+                                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                                <TextBlock
+                                    Grid.Row="2"
+                                    Margin="16"
+                                    IsTextSelectionEnabled="True"
+                                    Text="{x:Bind ViewModel.Description}"
+                                    TextWrapping="WrapWholeWords" />
+
+                                <!--  TO DO: Visualize these as tags?  -->
+                                <TextBlock
+                                    Grid.Row="3"
+                                    Margin="16"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Text="{x:Bind ViewModel.TagsText, Mode=OneWay}"
+                                    TextWrapping="WrapWholeWords"
+                                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasTags), Mode=OneWay, FallbackValue=Collapsed}" />
+                            </Grid>
+                        </Grid>
+
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon
+                                VerticalAlignment="Top"
+                                FontSize="10"
+                                Glyph="&#xE946;" />
+                            <TextBlock
+                                x:Uid="Settings_GalleryItemPage_ThirdParty_Disclaimer"
+                                Grid.Column="1"
+                                Margin="0,-4,0,0"
+                                VerticalAlignment="Top"
+                                FontSize="10"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}"
+                                TextWrapping="WrapWholeWords" />
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+    </Grid>
+</Page>

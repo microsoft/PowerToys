@@ -54,6 +54,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ObservableCollection<Tuple<string, string>> MicrophoneList { get; set; } = new ObservableCollection<Tuple<string, string>>();
 
+        public ObservableCollection<Tuple<string, string>> WebcamList { get; set; } = new ObservableCollection<Tuple<string, string>>();
+
         private async void LoadMicrophoneList()
         {
             ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
@@ -64,6 +66,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 MicrophoneList.Add(new Tuple<string, string>(microphone.Id, microphone.Name));
             }
+
+            // Normalize the stored device ID to match the casing from the system
+            // enumeration so the case-sensitive ComboBox SelectedValue binding works.
+            var storedMic = _zoomItSettings.Properties.MicrophoneDeviceId.Value;
+            if (!string.IsNullOrEmpty(storedMic))
+            {
+                foreach (var entry in MicrophoneList)
+                {
+                    if (string.Equals(entry.Item1, storedMic, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (entry.Item1 != storedMic)
+                        {
+                            _zoomItSettings.Properties.MicrophoneDeviceId.Value = entry.Item1;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // Re-notify so the ComboBox re-resolves SelectedValue against the now-populated list.
+            OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
+        }
+
+        private async void LoadWebcamList()
+        {
+            ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+            string defaultName = resourceLoader.GetString("ZoomIt_Record_WebcamDevices_Default_Name");
+            WebcamList.Add(new Tuple<string, string>(string.Empty, defaultName));
+            var webcams = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
+            foreach (var webcam in webcams)
+            {
+                WebcamList.Add(new Tuple<string, string>(webcam.Id, webcam.Name));
+            }
+
+            // Normalize the stored device ID to match the casing from the system
+            // enumeration so the case-sensitive ComboBox SelectedValue binding works.
+            var storedCam = _zoomItSettings.Properties.WebcamDeviceSymLink.Value;
+            if (!string.IsNullOrEmpty(storedCam))
+            {
+                foreach (var entry in WebcamList)
+                {
+                    if (string.Equals(entry.Item1, storedCam, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (entry.Item1 != storedCam)
+                        {
+                            _zoomItSettings.Properties.WebcamDeviceSymLink.Value = entry.Item1;
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // Re-notify so the ComboBox re-resolves SelectedValue against the now-populated list.
+            OnPropertyChanged(nameof(WebcamDeviceSymLink));
         }
 
         private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
@@ -105,6 +163,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectTypeFontCommand = new ButtonClickCommand(SelectTypeFontAction);
 
             LoadMicrophoneList();
+            LoadWebcamList();
         }
 
         private void InitializeEnabledValue()
@@ -303,7 +362,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return null;
                 }
 
-                // XOR with Shift: if Shift is present, remove it; if absent, add it
+                // XOR with Shift: if Shift is present, remove it; if absent, add it.
+                // If the result would have no modifier keys, return null to avoid displaying a bare-key shortcut label.
+                if (baseKey.Shift && !baseKey.Win && !baseKey.Ctrl && !baseKey.Alt)
+                {
+                    return null;
+                }
+
                 return new HotkeySettings(
                     baseKey.Win,
                     baseKey.Ctrl,
@@ -323,7 +388,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return null;
                 }
 
-                // XOR with Alt: if Alt is present, remove it; if absent, add it
+                // XOR with Alt: if Alt is present, remove it; if absent, add it.
+                // If the result would have no modifier keys, return null to avoid displaying a bare-key shortcut label.
+                if (baseKey.Alt && !baseKey.Win && !baseKey.Ctrl && !baseKey.Shift)
+                {
+                    return null;
+                }
+
                 return new HotkeySettings(
                     baseKey.Win,
                     baseKey.Ctrl,
@@ -956,13 +1027,113 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string RecordMicrophoneDeviceId
         {
-            get => _zoomItSettings.Properties.MicrophoneDeviceId.Value;
+            get => _zoomItSettings.Properties.MicrophoneDeviceId.Value ?? string.Empty;
             set
             {
+                // Ignore null: the ComboBox sends null when SelectedValue can't be
+                // matched (e.g. the async device list hasn't loaded yet).  Accepting
+                // null would overwrite the persisted device with empty string.
+                if (value == null)
+                {
+                    return;
+                }
+
                 if (_zoomItSettings.Properties.MicrophoneDeviceId.Value != value)
                 {
-                    _zoomItSettings.Properties.MicrophoneDeviceId.Value = value ?? string.Empty; // If we're trying to save a null, just default to empty string, which means default microphone.
+                    _zoomItSettings.Properties.MicrophoneDeviceId.Value = value;
                     OnPropertyChanged(nameof(RecordMicrophoneDeviceId));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool WebcamOverlay
+        {
+            get => _zoomItSettings.Properties.WebcamOverlay.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamOverlay.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamOverlay.Value = value;
+                    OnPropertyChanged(nameof(WebcamOverlay));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public string WebcamDeviceSymLink
+        {
+            get => _zoomItSettings.Properties.WebcamDeviceSymLink.Value ?? string.Empty;
+            set
+            {
+                // Ignore null: the ComboBox sends null when SelectedValue can't be
+                // matched (e.g. the async device list hasn't loaded yet).  Accepting
+                // null would overwrite the persisted device with empty string.
+                if (value == null)
+                {
+                    return;
+                }
+
+                if (_zoomItSettings.Properties.WebcamDeviceSymLink.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamDeviceSymLink.Value = value;
+                    OnPropertyChanged(nameof(WebcamDeviceSymLink));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int WebcamPosition
+        {
+            get => _zoomItSettings.Properties.WebcamPosition.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamPosition.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamPosition.Value = value;
+                    OnPropertyChanged(nameof(WebcamPosition));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int WebcamSize
+        {
+            get => _zoomItSettings.Properties.WebcamSize.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamSize.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamSize.Value = value;
+                    OnPropertyChanged(nameof(WebcamSize));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int WebcamShape
+        {
+            get => _zoomItSettings.Properties.WebcamShape.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamShape.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamShape.Value = value;
+                    OnPropertyChanged(nameof(WebcamShape));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool RecordAspectRatio
+        {
+            get => _zoomItSettings.Properties.RecordAspectRatio.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.RecordAspectRatio.Value != value)
+                {
+                    _zoomItSettings.Properties.RecordAspectRatio.Value = value;
+                    OnPropertyChanged(nameof(RecordAspectRatio));
                     NotifySettingsChanged();
                 }
             }

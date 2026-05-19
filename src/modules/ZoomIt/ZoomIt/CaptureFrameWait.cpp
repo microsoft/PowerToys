@@ -109,6 +109,57 @@ std::optional<CaptureFrame> CaptureFrameWait::TryGetNextFrame()
 
 //----------------------------------------------------------------------------
 //
+// CaptureFrameWait::TryGetNextFrame (with timeout)
+//
+// Like TryGetNextFrame() but returns nullopt on timeout instead of
+// blocking forever.  The caller can reuse a cached texture when
+// nullopt is returned.
+//
+//----------------------------------------------------------------------------
+std::optional<CaptureFrame> CaptureFrameWait::TryGetNextFrame( DWORD timeoutMs )
+{
+    if( m_currentFrame != nullptr )
+    {
+        m_currentFrame.Close();
+    }
+    m_nextFrameEvent.ResetEvent();
+
+    std::vector<HANDLE> events = { m_endEvent.get(), m_nextFrameEvent.get() };
+    auto waitResult = WaitForMultipleObjectsEx(
+        static_cast<DWORD>( events.size() ), events.data(), false, timeoutMs, false );
+
+    if( waitResult == WAIT_TIMEOUT )
+    {
+        return std::nullopt;  // No new frame within timeout
+    }
+
+    auto eventIndex = -1;
+    switch( waitResult )
+    {
+    case WAIT_OBJECT_0:
+    case WAIT_OBJECT_0 + 1:
+        eventIndex = waitResult - WAIT_OBJECT_0;
+        break;
+    }
+    WINRT_VERIFY( eventIndex >= 0 );
+
+    auto signaledEvent = events[eventIndex];
+    if( signaledEvent == m_endEvent.get() )
+    {
+        return std::nullopt;
+    }
+
+    return std::optional<CaptureFrame>(
+        {
+            m_currentFrame.Surface(),
+            m_currentFrame.ContentSize(),
+            m_currentFrame.SystemRelativeTime(),
+        });
+}
+
+
+//----------------------------------------------------------------------------
+//
 // CaptureFrameWait::StopCapture
 //
 // Stops frame capture and notified any frame waiters

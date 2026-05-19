@@ -107,6 +107,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public StringProperty MicrophoneDeviceId { get; set; }
 
+        public BoolProperty WebcamOverlay { get; set; }
+
+        public StringProperty WebcamDeviceSymLink { get; set; }
+
+        public IntProperty WebcamPosition { get; set; }
+
+        public IntProperty WebcamSize { get; set; }
+
+        public IntProperty WebcamShape { get; set; }
+
+        public BoolProperty RecordAspectRatio { get; set; }
+
         public BoolProperty BreakLockWorkstation { get; set; }
     }
 }
