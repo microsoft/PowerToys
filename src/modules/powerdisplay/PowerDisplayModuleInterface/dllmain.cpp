@@ -229,11 +229,7 @@ public:
             return;
         }
 
-        // Note: m_hStopEvent is shared with the toggle listener. Both listeners must
-        // be started and stopped together (always via enable()/disable()). Resetting
-        // it here is safe because StartToggleEventListener already reset it just
-        // before this call in enable(); we reset again as a self-contained guard,
-        // matching the toggle listener's pattern.
+        // m_hStopEvent is shared with the toggle listener; both start/stop together.
         ResetEvent(m_hStopEvent);
 
         m_autoDisableEventThread = std::thread([this]() {
@@ -267,21 +263,14 @@ public:
 
     void StopAutoDisableEventListener()
     {
-        // Special handling needed: disable() can be called from inside the listener
-        // thread itself (when this thread invokes this->disable() after receiving the
-        // event). Joining ourselves would deadlock — detach in that case.
         if (!m_autoDisableEventThread.joinable())
         {
             return;
         }
 
+        // Listener invokes this->disable() → here on its own thread; join() would deadlock.
         if (m_autoDisableEventThread.get_id() == std::this_thread::get_id())
         {
-            // Self-detach: we're running inside this thread because the listener
-            // invoked this->disable() which routed back here. join() would deadlock.
-            // The detached thread continues executing the rest of disable() after
-            // we return; the runner must not destroy this module instance until
-            // m_enabled has been observed false and the disable handshake completes.
             m_autoDisableEventThread.detach();
         }
         else

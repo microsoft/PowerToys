@@ -38,9 +38,8 @@ namespace PowerDisplay.Common.Services
         {
             var path = lockPath ?? PathConstants.DiscoveryLockPath;
 
-            // Ensure parent directory exists.
             var dir = Path.GetDirectoryName(path);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            if (!string.IsNullOrEmpty(dir))
             {
                 Directory.CreateDirectory(dir);
             }
@@ -85,17 +84,12 @@ namespace PowerDisplay.Common.Services
 
             try
             {
-                if (File.Exists(_lockPath))
-                {
-                    File.Delete(_lockPath);
-                    Logger.LogInfo($"CrashDetectionScope: lock deleted at {_lockPath}");
-                }
+                File.Delete(_lockPath);
+                Logger.LogInfo($"CrashDetectionScope: lock deleted at {_lockPath}");
             }
             catch (Exception ex)
             {
-                // Worst case: a single false-positive quarantine on next start, recoverable
-                // by the user clicking Ignore. Don't propagate — DiscoverMonitorsAsync should
-                // not crash because of cleanup failure.
+                // Worst case: false-positive quarantine on next start, recoverable via Ignore.
                 Logger.LogWarning($"CrashDetectionScope: failed to delete lock at {_lockPath}: {ex.Message}");
             }
         }

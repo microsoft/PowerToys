@@ -69,19 +69,16 @@ namespace PowerDisplay.Common.Services
             string lockContent = SafeReadAllText(_lockPath) ?? "<unreadable>";
             Logger.LogWarning($"Phase 0: found orphan lock at {_lockPath} with content {lockContent}; entering auto-disable sequence");
 
-            // Step 1: write crash_detected.flag (UI signal)
             WriteCrashFlag();
             Logger.LogInfo("Phase 0: step 1 (write crash_detected.flag) ok");
 
-            // Step 2: persist disabled state
             WriteSettingsDisabled();
             Logger.LogInfo("Phase 0: step 2 (write settings.json) ok");
 
-            // Step 3: signal event so the running runner's module DLL listener calls disable()
             SignalAutoDisable();
             Logger.LogInfo("Phase 0: step 3 (signal AutoDisable event) ok");
 
-            // Step 4: commit by deleting the lock. Last on purpose — retry self-heal.
+            // Commit point — last on purpose so any earlier failure leaves the lock for retry.
             File.Delete(_lockPath);
             Logger.LogInfo("Phase 0: step 4 (delete discovery.lock) ok — sequence committed");
 
@@ -91,7 +88,7 @@ namespace PowerDisplay.Common.Services
         private void WriteCrashFlag()
         {
             var dir = Path.GetDirectoryName(_flagPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+            if (!string.IsNullOrEmpty(dir))
             {
                 Directory.CreateDirectory(dir);
             }
@@ -105,26 +102,15 @@ namespace PowerDisplay.Common.Services
 
         private void WriteSettingsDisabled()
         {
-            // Read-modify-write the global PowerToys settings.json.
-            // We mutate enabled.PowerDisplay = false. Other fields untouched.
             // JsonNode is AOT-safe (no reflection-based deserialization).
-            JsonNode root;
-            if (File.Exists(_settingsPath))
-            {
-                var text = File.ReadAllText(_settingsPath);
-                root = JsonNode.Parse(text) ?? new JsonObject();
-            }
-            else
-            {
-                root = new JsonObject();
-            }
+            var text = File.Exists(_settingsPath) ? File.ReadAllText(_settingsPath) : "{}";
+            var root = JsonNode.Parse(text) ?? new JsonObject();
 
             var enabled = root["enabled"] as JsonObject ?? new JsonObject();
             enabled["PowerDisplay"] = false;
             root["enabled"] = enabled;
 
-            // Match Runner's compact format (json::to_file uses JsonObject::Stringify which
-            // produces no whitespace). Indented output would create churn on every Phase 0 run.
+            // Compact format matches Runner's json::to_file output; indented would churn settings.json on every Phase 0.
             File.WriteAllText(_settingsPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = false }));
         }
 

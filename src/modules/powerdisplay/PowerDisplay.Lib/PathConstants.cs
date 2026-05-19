@@ -74,16 +74,6 @@ namespace PowerDisplay.Common
         public static string MonitorStateFilePath => Path.Combine(PowerDisplayFolderPath, MonitorStateFileName);
 
         /// <summary>
-        /// File name of the discovery lock used by the crash quarantine mechanism.
-        /// </summary>
-        public const string DiscoveryLockFileName = "discovery.lock";
-
-        /// <summary>
-        /// File name of the crash-detected flag used by the crash quarantine mechanism.
-        /// </summary>
-        public const string CrashDetectedFlagFileName = "crash_detected.flag";
-
-        /// <summary>
         /// Full path of discovery.lock. Delegates to PowerDisplay.Models.PowerDisplayPaths
         /// so the same constant is reachable from Settings UI without taking a
         /// PowerDisplay.Lib reference.
