@@ -20,10 +20,8 @@ EXPORTS
 	InstallEmbeddedMSIXCA
 	InstallDSCModuleCA
 	InstallCmdPalPackageCA
-	InstallAdvancedPastePackageCA
 	UnApplyModulesRegistryChangeSetsCA
 	UnRegisterCmdPalPackageCA
-	UnRegisterAdvancedPastePackageCA
 	UnRegisterContextMenuPackagesCA
 	UninstallEmbeddedMSIXCA
 	UninstallDSCModuleCA

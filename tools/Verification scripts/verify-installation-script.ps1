@@ -726,15 +726,15 @@ function Test-AdvancedPastePackage {
     param(
         [string]$InstallPath
     )
-    
+
     $advancedPastePath = Join-Path $InstallPath "WinUI3Apps\AdvancedPaste"
     if (Test-Path $advancedPastePath) {
-        $msixFiles = Get-ChildItem $advancedPastePath -Filter "*.msix" -ErrorAction SilentlyContinue
-        if ($msixFiles) {
-            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste MSIX Package" -Status 'Pass' -Message "Found $($msixFiles.Count) Advanced Paste MSIX package(s)"
+        $exePath = Join-Path $advancedPastePath "PowerToys.AdvancedPaste.exe"
+        if (Test-Path $exePath) {
+            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste Executable" -Status 'Pass' -Message "Found AdvancedPaste executable: $exePath"
         }
         else {
-            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste MSIX Package" -Status 'Warning' -Message "No Advanced Paste MSIX packages found"
+            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste Executable" -Status 'Warning' -Message "AdvancedPaste executable not found: $exePath"
         }
     }
     else {

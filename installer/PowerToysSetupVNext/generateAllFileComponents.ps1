@@ -157,7 +157,11 @@ Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFil
 Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
 #AdvancedPaste
-# AdvancedPaste ships as MSIX package (like CmdPal), not loose files.
+Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\AdvancedPaste"
+Generate-FileComponents -fileListName "AdvancedPasteFiles" -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs
+
+Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteAssetsFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\AdvancedPaste\Assets\AdvancedPaste"
+Generate-FileComponents -fileListName "AdvancedPasteAssetsFiles" -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs
 
 #AwakeFiles
 Generate-FileList -fileDepsJson "" -fileListName AwakeImagesFiles -wxsFilePath $PSScriptRoot\Awake.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Awake"
