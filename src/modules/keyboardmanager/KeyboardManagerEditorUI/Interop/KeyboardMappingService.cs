@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using KeyboardManagerEditorUI.Templates;
 using ManagedCommon;
 
 namespace KeyboardManagerEditorUI.Interop
@@ -221,6 +223,14 @@ namespace KeyboardManagerEditorUI.Interop
 
             if (shortcutKeyMapping.OperationType == ShortcutOperationType.RunProgram)
             {
+                string? templateParametersJson = null;
+                if (shortcutKeyMapping.TemplateParameters is not null && shortcutKeyMapping.TemplateParameters.Count > 0)
+                {
+                    templateParametersJson = JsonSerializer.Serialize(
+                        shortcutKeyMapping.TemplateParameters,
+                        CommandTemplateJsonContext.Default.DictionaryStringString);
+                }
+
                 return KeyboardManagerInterop.AddShortcutRemap(
                     _configHandle,
                     shortcutKeyMapping.OriginalKeys,
@@ -232,7 +242,9 @@ namespace KeyboardManagerEditorUI.Interop
                     string.IsNullOrEmpty(shortcutKeyMapping.StartInDirectory) ? null : shortcutKeyMapping.StartInDirectory,
                     (int)shortcutKeyMapping.Elevation,
                     (int)shortcutKeyMapping.IfRunningAction,
-                    (int)shortcutKeyMapping.Visibility);
+                    (int)shortcutKeyMapping.Visibility,
+                    shortcutKeyMapping.TemplateId,
+                    templateParametersJson);
             }
             else if (shortcutKeyMapping.OperationType == ShortcutOperationType.OpenUri)
             {

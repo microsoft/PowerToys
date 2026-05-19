@@ -67,6 +67,12 @@ namespace KeyboardManagerConstants
     // Name of the property use to store openUri.
     inline const std::wstring ShortcutOpenURI = L"openUri";
 
+    // Name of the property used to store the CLI command template ID (optional, round-tripped through the editor).
+    inline const std::wstring TemplateIdSettingName = L"templateId";
+
+    // Name of the property used to store CLI command template parameter values (optional, round-tripped through the editor).
+    inline const std::wstring TemplateParametersSettingName = L"templateParameters";
+
     // Name of the property use to store shortcutOperationType.
     inline const std::wstring ShortcutOperationType = L"operationType";
 

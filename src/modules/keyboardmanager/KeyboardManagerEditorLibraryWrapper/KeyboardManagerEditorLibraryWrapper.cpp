@@ -6,6 +6,8 @@
 #include <string>
 #include <memory>
 
+#include <common/utils/json.h>
+
 #include <common/utils/logger_helper.h>
 #include <keyboardmanager/KeyboardManagerEditor/KeyboardManagerEditor.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/EditorHelpers.h>
@@ -527,13 +529,15 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
                           const wchar_t* originalKeys,
                           const wchar_t* targetKeys,
                           const wchar_t* targetApp,
-                          int operationType, 
+                          int operationType,
                           const wchar_t* appPathOrUri,
                           const wchar_t* args,
                           const wchar_t* startDirectory,
                           int elevation,
                           int ifRunningAction,
-                          int visibility)
+                          int visibility,
+                          const wchar_t* templateId,
+                          const wchar_t* templateParametersJson)
     {
         auto mappingConfig = static_cast<MappingConfiguration*>(config);
 
@@ -558,6 +562,28 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             std::get<Shortcut>(targetShortcut).alreadyRunningAction = static_cast<Shortcut::ProgramAlreadyRunningAction>(ifRunningAction);
             std::get<Shortcut>(targetShortcut).startWindowType = static_cast<Shortcut::StartWindowType>(visibility);
             std::get<Shortcut>(targetShortcut).operationType = static_cast<Shortcut::OperationType>(operationType);
+
+            // Optional template metadata — only set when provided.
+            if (templateId && templateId[0] != L'\0')
+            {
+                std::get<Shortcut>(targetShortcut).templateId = std::wstring(templateId);
+            }
+            if (templateParametersJson && templateParametersJson[0] != L'\0')
+            {
+                json::JsonObject paramsObj;
+                if (json::JsonObject::TryParse(templateParametersJson, paramsObj))
+                {
+                    for (auto const& kv : paramsObj)
+                    {
+                        if (kv.Value().ValueType() == json::JsonValueType::String)
+                        {
+                            std::get<Shortcut>(targetShortcut).templateParameters.emplace(
+                                std::wstring(kv.Key()),
+                                std::wstring(kv.Value().GetString()));
+                        }
+                    }
+                }
+            }
             break;
         case 2:
             targetShortcut = Shortcut(targetKeys);

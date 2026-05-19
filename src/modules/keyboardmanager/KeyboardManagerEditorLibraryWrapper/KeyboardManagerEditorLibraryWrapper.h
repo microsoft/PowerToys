@@ -69,7 +69,9 @@ extern "C"
                                                 const wchar_t* startDirectory = nullptr,
                                                 int elevation = 0,
                                                 int ifRunningAction = 0,
-                                                int visibility = 0);
+                                                int visibility = 0,
+                                                const wchar_t* templateId = nullptr,
+                                                const wchar_t* templateParametersJson = nullptr);
 
     __declspec(dllexport) void GetKeyDisplayName(int keyCode, wchar_t* keyName, int maxCount);
     __declspec(dllexport) int GetKeyCodeFromName(const wchar_t* keyName);
