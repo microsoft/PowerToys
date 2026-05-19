@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "modules": [
+    {
+      "id": "settings",
+      "displayResourceKey": "TemplateModule_Settings",
+      "iconGlyph": "",
+      "commands": [
+        {
+          "id": "settings.openMain",
+          "displayResourceKey": "TemplateCmd_Settings_OpenMain",
+          "executable": "%LOCALAPPDATA%\\PowerToys\\PowerToys.exe",
+          "argsTemplate": "--open-settings",
+          "parameters": []
+        },
+        {
+          "id": "settings.openModule",
+          "displayResourceKey": "TemplateCmd_Settings_OpenModule",
+          "executable": "%LOCALAPPDATA%\\PowerToys\\PowerToys.exe",
+          "argsTemplate": "--open-settings={module}",
+          "parameters": [
+            {
+              "name": "module",
+              "labelResourceKey": "TemplateParam_Module",
+              "type": "Combo",
+              "required": true,
+              "choices": [
+                { "value": "ColorPicker",     "displayResourceKey": "Module_ColorPicker" },
+                { "value": "FancyZones",      "displayResourceKey": "Module_FancyZones" },
+                { "value": "KeyboardManager", "displayResourceKey": "Module_KeyboardManager" },
+                { "value": "PowerLauncher",   "displayResourceKey": "Module_PowerLauncher" },
+                { "value": "Hosts",           "displayResourceKey": "Module_Hosts" },
+                { "value": "RegistryPreview", "displayResourceKey": "Module_RegistryPreview" },
+                { "value": "ZoomIt",          "displayResourceKey": "Module_ZoomIt" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
