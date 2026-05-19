@@ -86,7 +86,6 @@ public:
     // Return the configured status for the gpo policy for the module
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
-        powertoys_gpo::getConfiguredAwakeIndefinitelyEnabledValue();
         return powertoys_gpo::getConfiguredAwakeEnabledValue();
     }
 
