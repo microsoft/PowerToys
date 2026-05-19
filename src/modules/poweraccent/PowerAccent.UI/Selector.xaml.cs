@@ -8,15 +8,12 @@ using System.Windows;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
-
-using Wpf.Ui.Controls;
-
 using Point = PowerAccent.Core.Point;
 using Size = PowerAccent.Core.Size;
 
 namespace PowerAccent.UI;
 
-public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChanged
+public partial class Selector : Window, IDisposable, INotifyPropertyChanged
 {
     // When setting the position for the selector window, we do not alter the z-order,
     // activation status, or size.
@@ -48,8 +45,6 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
     public Selector()
     {
         InitializeComponent();
-
-        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
 
         Application.Current.MainWindow.ShowActivated = false;
     }
@@ -141,7 +136,7 @@ public partial class Selector : FluentWindow, IDisposable, INotifyPropertyChange
 
     private void SetWindowPosition()
     {
-        Size windowSize = new(((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualWidth, ((System.Windows.Controls.Panel)Application.Current.MainWindow.Content).ActualHeight);
+        Size windowSize = new(((FrameworkElement)Application.Current.MainWindow.Content).ActualWidth, ((FrameworkElement)Application.Current.MainWindow.Content).ActualHeight);
         Point physicalPosition = _powerAccent.GetDisplayCoordinates(windowSize);
 
         var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;

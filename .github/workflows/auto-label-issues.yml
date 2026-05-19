@@ -1,9 +1,9 @@
-name: Auto-label Issues by Area
+name: Automatic Triaging on Issue Creation
 
 on:
   issues:
     types: [opened, reopened]
-  # Manual trigger: go to Actions → "Auto-label Issues by Area" → Run workflow.
+  # Manual trigger: go to Actions → "Automatic Triaging on Issue Creation" → Run workflow.
   # Enter one or more comma-separated issue numbers (e.g. "1234" or "1234,1235,1236")
   # to apply AI-generated area labels to existing untriaged issues.
   workflow_dispatch:
@@ -29,6 +29,11 @@ jobs:
     steps:
       - name: Apply area labels with AI
         uses: actions/github-script@v7
+        env:
+          # actions/github-script does not propagate `github-token` to
+          # process.env. Expose it explicitly so the inline script can
+          # authenticate against the GitHub Models inference endpoint.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.Dock.PinToDockDialogContent"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -105,6 +105,18 @@
                     <tkcontrols:SegmentedItem x:Name="CenterSegmentedItem" x:Uid="PinToDock_Center" />
                     <tkcontrols:SegmentedItem x:Name="EndSegmentedItem" x:Uid="PinToDock_End" />
                 </tkcontrols:Segmented>
+            </StackPanel>
+
+            <!--  Monitor Selector (hidden when only one monitor)  -->
+            <StackPanel
+                x:Name="MonitorSelectorPanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Uid="PinToDock_MonitorHeader"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <ComboBox x:Name="MonitorComboBox" HorizontalAlignment="Stretch" />
             </StackPanel>
 
             <!--  Label Options  -->
