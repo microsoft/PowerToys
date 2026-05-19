@@ -26,6 +26,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class PowerDisplayViewModel : PageViewModelBase
     {
+        // Mirror of PowerDisplay.Lib's PathConstants.CrashDetectedFlagPath. Settings UI cannot
+        // reference PowerDisplay.Lib, so the path is recomputed here. Keep in sync with that file.
+        private static readonly string CrashDetectedFlagPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "PowerToys",
+            "PowerDisplay",
+            "crash_detected.flag");
+
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -79,7 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Crash quarantine state — show error InfoBar + lock the page if PowerDisplay.exe
             // detected a previous-session crash and wrote the flag.
-            if (File.Exists(PowerDisplayPaths.CrashDetectedFlagPath))
+            if (File.Exists(CrashDetectedFlagPath))
             {
                 Logger.LogInfo("PowerDisplayViewModel: crash flag present, locking page");
                 IsCrashLockActive = true;
@@ -151,7 +160,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var path = PowerDisplayPaths.CrashDetectedFlagPath;
+                var path = CrashDetectedFlagPath;
                 if (File.Exists(path))
                 {
                     File.Delete(path);

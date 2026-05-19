@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.IO;
 
 namespace PowerDisplay.Common
@@ -9,8 +10,6 @@ namespace PowerDisplay.Common
     /// <summary>
     /// Centralized path constants for PowerDisplay module.
     /// Provides unified access to all file and folder paths used by PowerDisplay and related integrations.
-    /// Folder paths delegate to <see cref="global::PowerDisplay.Models.PowerDisplayPaths"/> so that
-    /// PowerDisplay.Lib and Settings UI share a single source of truth.
     /// </summary>
     public static class PathConstants
     {
@@ -19,14 +18,17 @@ namespace PowerDisplay.Common
         /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys
         /// </summary>
         public static string PowerToysBasePath
-            => global::PowerDisplay.Models.PowerDisplayPaths.PowerToysBaseFolder;
+            => Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft",
+                "PowerToys");
 
         /// <summary>
         /// Gets the PowerDisplay module folder path.
         /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay
         /// </summary>
         public static string PowerDisplayFolderPath
-            => global::PowerDisplay.Models.PowerDisplayPaths.PowerDisplayFolder;
+            => Path.Combine(PowerToysBasePath, "PowerDisplay");
 
         /// <summary>
         /// Gets the PowerDisplay profiles file path.
@@ -74,21 +76,23 @@ namespace PowerDisplay.Common
         public static string MonitorStateFilePath => Path.Combine(PowerDisplayFolderPath, MonitorStateFileName);
 
         /// <summary>
-        /// Full path of discovery.lock. Delegates to PowerDisplay.Models.PowerDisplayPaths
-        /// so the same constant is reachable from Settings UI without taking a
-        /// PowerDisplay.Lib reference.
+        /// Full path of discovery.lock. Existence at PowerDisplay.exe startup
+        /// indicates the previous run crashed inside DDC/CI capability fetch.
         /// </summary>
-        public static string DiscoveryLockPath => global::PowerDisplay.Models.PowerDisplayPaths.DiscoveryLockPath;
+        public static string DiscoveryLockPath => Path.Combine(PowerDisplayFolderPath, "discovery.lock");
 
         /// <summary>
-        /// Full path of crash_detected.flag. Delegates to PowerDisplay.Models.PowerDisplayPaths.
+        /// Full path of crash_detected.flag. UI signal — Settings UI shows the
+        /// auto-disable InfoBar when this exists. Settings UI computes the same
+        /// path independently (cannot reference PowerDisplay.Lib).
         /// </summary>
-        public static string CrashDetectedFlagPath => global::PowerDisplay.Models.PowerDisplayPaths.CrashDetectedFlagPath;
+        public static string CrashDetectedFlagPath => Path.Combine(PowerDisplayFolderPath, "crash_detected.flag");
 
         /// <summary>
-        /// Full path of the global PowerToys settings.json. Delegates to PowerDisplay.Models.PowerDisplayPaths.
+        /// Full path of the global PowerToys settings.json (NOT the per-module file).
+        /// PowerDisplay.exe Phase 0 mutates enabled.PowerDisplay here.
         /// </summary>
-        public static string GlobalPowerToysSettingsPath => global::PowerDisplay.Models.PowerDisplayPaths.GlobalPowerToysSettingsPath;
+        public static string GlobalPowerToysSettingsPath => Path.Combine(PowerToysBasePath, "settings.json");
 
         /// <summary>
         /// Event name for LightSwitch light theme change notifications.
