@@ -17,6 +17,11 @@ namespace PowerToys.GPOWrapperProjection
     // This is a workaround to give access to GPOWrapper for WPF applications.
     public static class GPOWrapper
     {
+        public static GpoRuleConfigured GetConfiguredAwakeIndefinitelyEnabledValue()
+        {
+            return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeIndefinitelyEnabledValue();
+        }
+
         public static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue()
         {
             return (GpoRuleConfigured)PowerToys.GPOWrapper.GPOWrapper.GetConfiguredPowerLauncherEnabledValue();
