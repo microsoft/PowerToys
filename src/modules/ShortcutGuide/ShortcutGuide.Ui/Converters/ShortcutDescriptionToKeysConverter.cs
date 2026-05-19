@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using ManagedCommon;
-using ManagedCommon;
 using Microsoft.UI.Xaml.Data;
 using ShortcutGuide.Models;
 using Windows.System;
