@@ -7,12 +7,14 @@ using System.Collections.Specialized;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -20,6 +22,8 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+
+using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -30,7 +34,7 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     internal DockViewModel ViewModel => _viewModel;
 
     /// <summary>
-    /// The HWND of the parent DockWindow that owns this control.
+    /// Gets or sets the HWND of the parent DockWindow that owns this control.
     /// Used to target palette-show messages to the correct DockWindow in multi-monitor setups.
     /// </summary>
     internal IntPtr OwnerHwnd { get; set; }
@@ -723,6 +727,102 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         {
             listView.Background = new SolidColorBrush(Colors.Transparent);
         }
+    }
+
+    private void RootGrid_DragOver(object sender, DragEventArgs e)
+    {
+        // Don't intercept internal band drag-drop during edit mode
+        if (_draggedBand != null)
+        {
+            return;
+        }
+
+        if (e.DataView.Contains(StandardDataFormats.StorageItems) ||
+            e.DataView.Contains(StandardDataFormats.Uri))
+        {
+            e.AcceptedOperation = DataPackageOperation.Link;
+            e.DragUIOverride.Caption = RS_.GetString("Dock_DropFile_Caption");
+            e.DragUIOverride.IsGlyphVisible = true;
+            e.DragUIOverride.IsCaptionVisible = true;
+
+            // DON'T mark the event as handled - if you do, we won't get the Drop event.
+        }
+    }
+
+    private async void RootGrid_Drop(object sender, DragEventArgs e)
+    {
+        // Don't intercept internal band drag-drop during edit mode
+        if (_draggedBand != null)
+        {
+            Logger.LogDebug("[DockDrop] RootGrid_Drop: ignoring (internal band drag in progress)");
+            return;
+        }
+
+        var hasStorageItems = e.DataView.Contains(StandardDataFormats.StorageItems);
+        var hasUri = e.DataView.Contains(StandardDataFormats.Uri);
+
+        if (!hasStorageItems && !hasUri)
+        {
+            return;
+        }
+
+        e.Handled = true;
+
+        try
+        {
+            var bookmarksManager = App.Current.Services.GetService<IBookmarksManager>();
+            if (bookmarksManager == null)
+            {
+                Logger.LogWarning("[DockDrop] IBookmarksManager service is not registered; cannot pin dropped item");
+                return;
+            }
+
+            var foundItem = false;
+            if (hasStorageItems)
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+                foreach (var item in items)
+                {
+                    var path = item.Path;
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        continue;
+                    }
+
+                    var name = Path.GetFileNameWithoutExtension(path);
+                    AddBookmarkAndPinToDock(bookmarksManager, name, path);
+                    foundItem = true;
+                }
+            }
+
+            if (foundItem)
+            {
+                return;
+            }
+
+            if (hasUri)
+            {
+                var uri = await e.DataView.GetUriAsync();
+                var url = uri.AbsoluteUri;
+                var name = uri.Host;
+                AddBookmarkAndPinToDock(bookmarksManager, name, url);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("[DockDrop] Error handling file drop on dock", ex);
+        }
+    }
+
+    private static void AddBookmarkAndPinToDock(IBookmarksManager bookmarksManager, string name, string bookmarkValue)
+    {
+        var bookmark = bookmarksManager.Add(name, bookmarkValue);
+
+        // Make the command ID exactly the same as the ID it would have in the
+        // top-level list, so that pinning to the dock from the top-level is seamless.
+        var commandId = Ext.Bookmarks.Helpers.CommandIds.GetLaunchBookmarkItemId(bookmark.Id);
+        Logger.LogDebug($"[DockDrop] Pinning dropped item '{name}' as bookmark id={bookmark.Id} (commandId='{commandId}')");
+        WeakReferenceMessenger.Default.Send(new PinToDockMessage("Bookmarks", commandId, true, WithReload: false));
     }
 
     public void Receive(CrossMonitorBandDropMessage message)
