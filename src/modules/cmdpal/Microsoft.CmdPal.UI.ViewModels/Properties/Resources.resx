@@ -133,9 +133,25 @@
     <value>{0}, {1} commands</value>
     <comment>{0}=extension name, {1}=number of commands</comment>
   </data>
+  <data name="builtin_extension_subtext_singular" xml:space="preserve">
+    <value>{0}, {1} command</value>
+    <comment>{0}=extension name, {1}=number of commands (1)</comment>
+  </data>
   <data name="builtin_extension_subtext_with_fallback" xml:space="preserve">
     <value>{0}, {1} commands, {2} fallback commands</value>
     <comment>{0}=extension name, {1}=number of commands, {2} number of fallback commands</comment>
+  </data>
+  <data name="builtin_extension_subtext_with_fallback_singular_command" xml:space="preserve">
+    <value>{0}, {1} command, {2} fallback commands</value>
+    <comment>{0}=extension name, {1}=number of commands (1), {2} number of fallback commands</comment>
+  </data>
+  <data name="builtin_extension_subtext_with_fallback_singular_fallback" xml:space="preserve">
+    <value>{0}, {1} commands, {2} fallback command</value>
+    <comment>{0}=extension name, {1}=number of commands, {2} number of fallback commands (1)</comment>
+  </data>
+  <data name="builtin_extension_subtext_with_fallback_singular_both" xml:space="preserve">
+    <value>{0}, {1} command, {2} fallback command</value>
+    <comment>{0}=extension name, {1}=number of commands (1), {2} number of fallback commands (1)</comment>
   </data>
   <data name="builtin_extension_subtext_disabled" xml:space="preserve">
     <value>{0}, {1}</value>

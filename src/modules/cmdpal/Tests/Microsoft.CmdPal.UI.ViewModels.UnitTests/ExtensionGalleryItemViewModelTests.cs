@@ -97,6 +97,41 @@ public class ExtensionGalleryItemViewModelTests
     }
 
     [TestMethod]
+    public void Constructor_IgnoresNonWebGalleryLinks()
+    {
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "unsafe-links-extension",
+            Title = "Unsafe links extension",
+            Description = "Unsafe links extension description",
+            Homepage = "ms-settings:appsfeatures",
+            Author = new GalleryAuthor
+            {
+                Name = "Author",
+                Url = "file:///C:/Windows/System32/calc.exe",
+            },
+            InstallSources =
+            [
+                new GalleryInstallSource { Type = "url", Uri = "file:///C:/Windows/System32/notepad.exe" },
+            ],
+        };
+
+        var viewModel = CreateViewModel(entry);
+
+        Assert.IsFalse(viewModel.HasHomepage);
+        Assert.IsFalse(viewModel.HasAuthorUrl);
+        Assert.IsFalse(viewModel.HasUrlSource);
+        Assert.IsFalse(viewModel.HasActionableSourceDetails);
+        Assert.IsNull(viewModel.InstallUrl);
+        Assert.IsFalse(viewModel.Sources.Any(source =>
+            string.Equals(source.Kind, "github", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(source.Kind, "website", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(viewModel.OpenHomepageCommand.CanExecute(null));
+        Assert.IsFalse(viewModel.OpenAuthorPageCommand.CanExecute(null));
+        Assert.IsFalse(viewModel.OpenInstallUrlCommand.CanExecute(null));
+    }
+
+    [TestMethod]
     public void Constructor_EnablesCopyCommand_WhenWinGetIdIsAvailable()
     {
         var entry = new GalleryExtensionEntry
@@ -345,6 +380,68 @@ public class ExtensionGalleryItemViewModelTests
         CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "Summary");
         CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "1.2.3");
         CollectionAssert.Contains(sourceDetails.Select(item => item.Value).ToList(), "utility, productivity");
+    }
+
+    [TestMethod]
+    public void ApplyWinGetPackageInfo_IgnoresNonWebMetadataLinks()
+    {
+        var entry = new GalleryExtensionEntry
+        {
+            Id = "winget-details-unsafe-links-extension",
+            Title = "WinGet details unsafe links extension",
+            Description = "WinGet details unsafe links extension description",
+            Author = new GalleryAuthor { Name = "Author" },
+            InstallSources =
+            [
+                new GalleryInstallSource { Type = "winget", Id = "Contoso.Extension" },
+            ],
+        };
+
+        var details = new WinGetPackageDetails(
+            Name: "Contoso Extension",
+            Version: "1.2.3",
+            Summary: "Summary",
+            Description: "Description",
+            Publisher: "Contoso",
+            PublisherUrl: "file:///C:/Windows/System32/calc.exe",
+            PublisherSupportUrl: "ms-settings:appsfeatures",
+            Author: "Contoso Team",
+            License: "MIT",
+            LicenseUrl: "https://contoso.example/license",
+            PackageUrl: "https://contoso.example/package",
+            ReleaseNotes: "Release notes",
+            ReleaseNotesUrl: "mailto:support@contoso.example",
+            IconUrl: "https://contoso.example/iconUrl.png",
+            DocumentationLinks:
+            [
+                new WinGetNamedLink("Unsafe docs", "search-ms:query=contoso"),
+                new WinGetNamedLink("Safe docs", "https://contoso.example/docs"),
+            ],
+            Tags:
+            [
+                "utility",
+                "productivity",
+            ]);
+
+        var viewModel = CreateViewModel(entry);
+        viewModel.ApplyWinGetPackageInfo(
+            new WinGetPackageInfo(
+                new WinGetPackageStatus(
+                    IsInstalled: true,
+                    IsInstalledStateKnown: true,
+                    IsUpdateAvailable: false,
+                    IsUpdateStateKnown: true),
+                details));
+
+        var wingetSource = viewModel.Sources.First(source => string.Equals(source.Kind, "winget", StringComparison.OrdinalIgnoreCase));
+        var sourceDetails = wingetSource.Details;
+
+        Assert.IsTrue(sourceDetails.Any(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/license", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsTrue(sourceDetails.Any(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/package", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsTrue(sourceDetails.Any(item => string.Equals(item.LinkUri?.AbsoluteUri, "https://contoso.example/docs", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(sourceDetails.Any(item => item.LinkUri is not null && !string.Equals(item.LinkUri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) && !string.Equals(item.LinkUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(sourceDetails.Any(item => string.Equals(item.Value, "ms-settings:appsfeatures", StringComparison.OrdinalIgnoreCase)));
+        Assert.IsFalse(sourceDetails.Any(item => string.Equals(item.Value, "search-ms:query=contoso", StringComparison.OrdinalIgnoreCase)));
     }
 
     [TestMethod]

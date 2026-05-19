@@ -193,12 +193,12 @@
                         <TextBlock
                             HorizontalAlignment="Center"
                             FontWeight="SemiBold"
-                            Text="{x:Bind CurrentScreenshotDisplayName, Mode=OneWay}" />
+                            Text="{x:Bind CurrentScreenshotDisplayName, Mode=OneTime}" />
                         <TextBlock
                             HorizontalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind CurrentScreenshotPositionText, Mode=OneWay}" />
+                            Text="{x:Bind CurrentScreenshotPositionText, Mode=OneTime}" />
                     </StackPanel>
                 </Border>
             </Grid>
