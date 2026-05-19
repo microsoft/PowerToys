@@ -86,7 +86,14 @@ public:
     // Return the configured status for the gpo policy for the module
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
+        powertoys_gpo::getConfiguredAwakeIndefinitelyEnabledValue();
         return powertoys_gpo::getConfiguredAwakeEnabledValue();
+    }
+
+    // Return the configured status for the gpo policy for the enabling awake indifinitely mode
+    virtual powertoys_gpo::gpo_rule_configured_t gpo_awake_indefinitely_policy_enabled_configuration()
+    {
+        return powertoys_gpo::getConfiguredAwakeIndefinitelyEnabledValue();
     }
 
     virtual void destroy() override
