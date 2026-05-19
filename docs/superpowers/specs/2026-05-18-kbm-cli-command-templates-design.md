@@ -594,3 +594,84 @@ Zero calls from any file under `KeyboardManagerEngineLibrary/`.
 #### Conclusion
 
 **Engine poses no risk to unknown fields.** The engine is strictly read-only with respect to `default.json` (and any other config `.json` files): it calls `LoadSettings()` at startup and on file-change events, but it never calls `SaveSettingsToFile()` or any equivalent write path. Only the editors write the file (`EditKeyboardWindow.cpp` and `EditShortcutsWindow.cpp`). Task 1 covers the legacy editor, and the new CLI editor will preserve unknown fields by writing them itself. The engine is not a concern for `templateId` / `templateParameters` field survival.
+
+### Task 3: PowerToys.exe path resolution
+
+#### Win32 API used per elevation mode
+
+`CreateOrShowProcessForShortcut` (`KeyboardEventHandlers.cpp:1293`) dispatches to one of three helpers from `src/common/utils/elevation.h` based on `shortcut.elevationLevel`:
+
+| Elevation mode | Helper | Win32 API |
+|---|---|---|
+| `Elevated` | `run_elevated` (`elevation.h:237`) | `ShellExecuteExW` with verb `"runas"` |
+| `NonElevated` | `run_non_elevated` (`elevation.h:266`) | `CreateProcessW` (with parent-process spoofing via `PROC_THREAD_ATTRIBUTE_PARENT_PROCESS`) |
+| `DifferentUser` | `run_as_different_user` (`elevation.h:211`) | `ShellExecuteExW` with verb `"runAsUser"` |
+
+`run_non_elevated` calls `CreateProcessW(file.c_str(), ...)` at `elevation.h:342`. The `file` parameter is the fully-expanded path (`fullExpandedFilePath`) — **not** the raw user-supplied string.
+
+`run_elevated` and `run_as_different_user` call `ShellExecuteExW` with `exec_info.lpFile = file.c_str()` at `elevation.h:260` and `elevation.h:233` respectively.
+
+#### ExpandEnvironmentStrings is applied before launch
+
+`CreateOrShowProcessForShortcut` expands the path at line 1296 before any dispatch:
+
+```cpp
+DWORD result = ExpandEnvironmentStrings(shortcut.runProgramFilePath.c_str(), fullExpandedFilePath, MAX_PATH);
+```
+
+All three elevation helpers receive `fullExpandedFilePath` (the post-expansion value), **not** the raw `runProgramFilePath`. This confirms that `%LOCALAPPDATA%\PowerToys\PowerToys.exe` in the JSON will be expanded to the actual filesystem path before `CreateProcessW` or `ShellExecuteExW` is called.
+
+#### Working directory passed to launch APIs
+
+`run_non_elevated` passes `workingDir` as `lpCurrentDirectory` to `CreateProcessW` (`elevation.h:349`). `run_elevated` and `run_as_different_user` pass it as `exec_info.lpDirectory` to `ShellExecuteExW`. The `workingDir` comes from `shortcut.runProgramStartInDir`; templates leave it at `""` (the v1 save path does not set `RunProgramStartInDir`), which the engine converts to `nullptr` at line 1368–1369 — allowing the process to inherit the engine's working directory.
+
+#### GetFileAttributesW pre-launch check uses the expanded path
+
+At `KeyboardEventHandlers.cpp:1347–1354`, the engine calls `GetFileAttributesW(fullExpandedFilePath)` and shows an error toast if the file is not found — **before** attempting to launch. This means a bare `"PowerToys.exe"` filename that resolves to a non-existent file will be caught here, never reaching `CreateProcessW` / `ShellExecuteExW`.
+
+#### Can bare "PowerToys.exe" work?
+
+**For `CreateProcessW` (NonElevated mode):** `CreateProcessW` searches for a bare filename in the calling app's directory, the current working directory, the system directories, and `%PATH%`. PowerToys is installed under `%LOCALAPPDATA%\PowerToys\` (per-user) or `%ProgramFiles%\PowerToys\` (machine-wide). Neither location is the engine's directory, nor the system directories, nor in `%PATH%` (see installer analysis below). **Bare name would fail.**
+
+**For `ShellExecuteExW` (Elevated / DifferentUser modes):** `ShellExecuteExW` additionally consults the App Paths registry key (`HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\PowerToys.exe`). However — as confirmed below — the installer does not register this key. **Bare name would also fail under ShellExecuteExW.**
+
+In both cases, `GetFileAttributesW` on the bare filename would return `INVALID_FILE_ATTRIBUTES`, and the engine would show an error toast without ever attempting to launch.
+
+#### Installer analysis — App Paths and PATH entries
+
+Searched all installer `.wxs` files (`installer/PowerToysSetupVNext/*.wxs`) for:
+
+- `"App Paths"` / `"AppPaths"` — **no matches anywhere in the installer tree**. PowerToys does not register `HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\PowerToys.exe`.
+- `Environment … PATH` — found in `Core.wxs:19,28`. The installer adds a `PATH` entry but only for `[DSCModulesReferenceFolder]` (a `DSCModules` subfolder used by DSC v3), **not** for the main `[INSTALLFOLDER]`. `PowerToys.exe` itself is never on `%PATH%`.
+
+Install location variables (`PowerToys.wxs:24,26`):
+
+```xml
+<!-- per-user -->
+<Variable Name="InstallFolder" Type="formatted" Value="[LocalAppDataFolder]PowerToys" bal:Overridable="yes" />
+<!-- machine-wide -->
+<Variable Name="InstallFolder" Type="formatted" Value="$(var.PlatformProgramFiles)PowerToys" bal:Overridable="yes" />
+```
+
+`[LocalAppDataFolder]` maps to `%LOCALAPPDATA%`; `$(var.PlatformProgramFiles)` is `%ProgramFiles%` for x64. Per-user install is the common/default install on recent Windows versions.
+
+#### Chosen executable value
+
+**Option (B): `"%LOCALAPPDATA%\\PowerToys\\PowerToys.exe"`**
+
+Rationale:
+1. `ExpandEnvironmentStrings` is applied to `runProgramFilePath` before launch (confirmed, line 1296), so `%LOCALAPPDATA%` expands correctly at trigger time.
+2. The per-user install path (`%LOCALAPPDATA%\PowerToys`) is the default/common install mode.
+3. No App Paths registration and no main-folder PATH entry means bare `"PowerToys.exe"` is not resolvable by any of the three launch APIs.
+4. Machine-wide installs (`%ProgramFiles%\PowerToys`) are a minority; KBM trigger-time typically runs under the same user session as the install, so `%LOCALAPPDATA%` is correct in the common case.
+5. Option (D) (auto-detect both locations) is explicitly out of v1 scope.
+
+This value will be embedded in Task 9's `powertoyscli.json` as:
+
+```json
+"executable": "%LOCALAPPDATA%\\PowerToys\\PowerToys.exe"
+```
+
+#### Empirical verification note
+
+Final confirmation requires the human to install PowerToys from this branch, create a template mapping, trigger the shortcut, and verify Settings opens. Static analysis of the launch path and installer strongly predicts this path is correct for the default per-user install, but the `GetFileAttributesW` pre-check and the actual `CreateProcessW` call must be observed to close the task formally.
