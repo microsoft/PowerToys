@@ -49,8 +49,12 @@
                     </InfoBar.ActionButton>
                 </InfoBar>
 
-                <!--  Inner wrapper: everything below is locked when crash flag is present. ContentControl carries IsEnabled because Panel/StackPanel does not derive from Control.  -->
-                <ContentControl HorizontalContentAlignment="Stretch" IsEnabled="{x:Bind ViewModel.IsCrashLockActive, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                <!--  Inner wrapper: everything below is locked when crash flag is present. ContentControl carries IsEnabled because Panel/StackPanel does not derive from Control. IsTabStop/AccessibilityView keep it invisible to tab navigation and Narrator (purely structural).  -->
+                <ContentControl
+                    HorizontalContentAlignment="Stretch"
+                    AutomationProperties.AccessibilityView="Raw"
+                    IsEnabled="{x:Bind ViewModel.IsCrashLockActive, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                    IsTabStop="False">
                     <StackPanel>
                 <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
                     <tkcontrols:SettingsCard

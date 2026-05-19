@@ -8,22 +8,27 @@ using System.IO;
 namespace PowerDisplay.Models
 {
     /// <summary>
-    /// Path constants for PowerDisplay artifacts that are consumed by Settings UI.
-    /// Lives in PowerDisplay.Models because Settings UI references this project but
-    /// not PowerDisplay.Lib. PowerDisplay.Lib's PathConstants delegates to this for
-    /// the same constants to keep a single source of truth.
+    /// Single source of truth for PowerDisplay-related filesystem paths. Lives in
+    /// PowerDisplay.Models because Settings UI references this project but not
+    /// PowerDisplay.Lib; PowerDisplay.Lib's <c>PathConstants</c> delegates to this type
+    /// for the same paths.
     /// </summary>
     public static class PowerDisplayPaths
     {
         /// <summary>
-        /// %LOCALAPPDATA%\Microsoft\PowerToys\PowerDisplay
+        /// %LOCALAPPDATA%\Microsoft\PowerToys
         /// </summary>
-        public static string PowerDisplayFolder
+        public static string PowerToysBaseFolder
             => Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Microsoft",
-                "PowerToys",
-                "PowerDisplay");
+                "PowerToys");
+
+        /// <summary>
+        /// %LOCALAPPDATA%\Microsoft\PowerToys\PowerDisplay
+        /// </summary>
+        public static string PowerDisplayFolder
+            => Path.Combine(PowerToysBaseFolder, "PowerDisplay");
 
         /// <summary>
         /// %LOCALAPPDATA%\Microsoft\PowerToys\PowerDisplay\discovery.lock
@@ -45,10 +50,6 @@ namespace PowerDisplay.Models
         /// (NOT the per-module file). PowerDisplay.exe Phase 0 mutates enabled.PowerDisplay here.
         /// </summary>
         public static string GlobalPowerToysSettingsPath
-            => Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Microsoft",
-                "PowerToys",
-                "settings.json");
+            => Path.Combine(PowerToysBaseFolder, "settings.json");
     }
 }

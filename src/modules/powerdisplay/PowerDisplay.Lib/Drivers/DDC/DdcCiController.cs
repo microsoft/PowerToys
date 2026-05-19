@@ -171,17 +171,44 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return Enumerable.Empty<Monitor>();
             }
 
-            // Wrap the parallel capabilities fetch in a CrashDetectionScope. The scope writes
-            // discovery.lock on Begin and deletes it on Dispose. If the process is killed during
-            // capabilities I/O (BSOD, FailFast, TerminateProcess), Dispose never runs and the lock
-            // survives — the next PowerDisplay.exe startup notices it via CrashRecovery.
+            // Wrap the parallel discovery in a CrashDetectionScope. The scope writes
+            // discovery.lock on Begin and deletes it on Dispose. If the process is killed
+            // during capabilities I/O (BSOD, FailFast, TerminateProcess), Dispose never runs
+            // and the lock survives — next PowerDisplay.exe startup notices it via CrashRecovery.
+            //
+            // Scope scope note: the original three-phase design wrapped only Phase 2 (cap-string
+            // fetch). Main's per-handle pipeline interleaves Phase 1 (GDI/MultiMon enumeration)
+            // and Phase 3 (VCP init) with the fetch, so we wrap the whole Task.WhenAll. Phase 1
+            // GDI calls return null on failure (don't throw) and Phase 3 has its own catch-all
+            // in BuildMonitorFromPhysical, so false-positive quarantine from those paths is not
+            // observed in practice. Single Begin/Dispose per discovery is also required because
+            // CrashDetectionScope uses FileMode.CreateNew + FileShare.None and cannot be nested
+            // across the concurrent per-handle pipelines.
             IReadOnlyList<Monitor>[] results;
-            using (CrashDetectionScope.Begin())
+            CrashDetectionScope? scope;
+            try
+            {
+                scope = CrashDetectionScope.Begin();
+            }
+            catch (Exception scopeEx)
+            {
+                // Lock could not be written (e.g. read-only %LOCALAPPDATA%). Proceed without
+                // crash protection rather than failing discovery — log so this is diagnosable.
+                Logger.LogWarning(
+                    $"DDC: CrashDetectionScope.Begin failed ({scopeEx.GetType().Name}: {scopeEx.Message}); proceeding without crash protection");
+                scope = null;
+            }
+
+            try
             {
                 var pipelines = handles
                     .Select(h => DiscoverFromHandleAsync(h, targetsByGdi, cancellationToken))
                     .ToList();
                 results = await Task.WhenAll(pipelines);
+            }
+            finally
+            {
+                scope?.Dispose();
             }
 
             var monitors = results.SelectMany(r => r).ToList();

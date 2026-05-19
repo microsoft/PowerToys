@@ -123,7 +123,9 @@ namespace PowerDisplay.Common.Services
             enabled["PowerDisplay"] = false;
             root["enabled"] = enabled;
 
-            File.WriteAllText(_settingsPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            // Match Runner's compact format (json::to_file uses JsonObject::Stringify which
+            // produces no whitespace). Indented output would create churn on every Phase 0 run.
+            File.WriteAllText(_settingsPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = false }));
         }
 
         private void SignalAutoDisable()

@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
 
 namespace PowerDisplay.Common
@@ -10,26 +9,24 @@ namespace PowerDisplay.Common
     /// <summary>
     /// Centralized path constants for PowerDisplay module.
     /// Provides unified access to all file and folder paths used by PowerDisplay and related integrations.
+    /// Folder paths delegate to <see cref="global::PowerDisplay.Models.PowerDisplayPaths"/> so that
+    /// PowerDisplay.Lib and Settings UI share a single source of truth.
     /// </summary>
     public static class PathConstants
     {
-        private static readonly Lazy<string> _localAppDataPath = new Lazy<string>(
-            () => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-
-        private static readonly Lazy<string> _powerToysBasePath = new Lazy<string>(
-            () => Path.Combine(_localAppDataPath.Value, "Microsoft", "PowerToys"));
-
         /// <summary>
         /// Gets the base PowerToys settings folder path.
         /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys
         /// </summary>
-        public static string PowerToysBasePath => _powerToysBasePath.Value;
+        public static string PowerToysBasePath
+            => global::PowerDisplay.Models.PowerDisplayPaths.PowerToysBaseFolder;
 
         /// <summary>
         /// Gets the PowerDisplay module folder path.
         /// Example: C:\Users\{User}\AppData\Local\Microsoft\PowerToys\PowerDisplay
         /// </summary>
-        public static string PowerDisplayFolderPath => Path.Combine(PowerToysBasePath, "PowerDisplay");
+        public static string PowerDisplayFolderPath
+            => global::PowerDisplay.Models.PowerDisplayPaths.PowerDisplayFolder;
 
         /// <summary>
         /// Gets the PowerDisplay profiles file path.

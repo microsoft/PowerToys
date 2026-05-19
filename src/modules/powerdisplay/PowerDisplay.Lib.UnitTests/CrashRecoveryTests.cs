@@ -78,7 +78,8 @@ public class CrashRecoveryTests
 
         var settingsJson = File.ReadAllText(_settingsPath);
 
-        // WriteIndented produces "PowerDisplay": false (with space); strip whitespace for portability.
+        // Strip whitespace so the assertion is stable whether the writer uses indented or
+        // compact JSON.
         var settingsCompact = settingsJson.Replace(" ", string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
         StringAssert.Contains(settingsCompact, "\"PowerDisplay\":false");
     }
