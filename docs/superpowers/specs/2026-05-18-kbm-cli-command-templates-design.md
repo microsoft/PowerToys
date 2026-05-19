@@ -559,3 +559,38 @@ A simpler alternative: add a `std::optional<json::JsonObject> rawJson` to `Remap
 #### Empirical step 4 still pending
 
 Empirical step 4 still pending — requires running the legacy editor with a fabricated `templateId` field present in `default.json`, then inspecting the file after the user opens and saves a remapping to confirm the field is removed. Static analysis strongly predicts it will be dropped, but the test is needed to close the task formally.
+
+### Task 2: Engine write paths
+
+#### Search methodology
+
+Grepped `src/modules/keyboardmanager/KeyboardManagerEngineLibrary/` (all `.cpp` and `.h` source files, excluding build artifacts) for:
+
+- `SaveSettingsToFile`, `WriteFile`, `fwrite`, `ofstream`, `to_file`, `Stringify` — no matches
+- `default.json` — no matches
+- `SaveSettingsToFile` across the entire `src/modules/keyboardmanager/` tree — matches in editor code only (see below)
+
+#### File:line evidence
+
+`SaveSettingsToFile` call sites (full KBM module):
+
+| File | Line | Notes |
+|---|---|---|
+| `common/MappingConfiguration.cpp` | 450 | Definition only |
+| `common/MappingConfiguration.h` | 23 | Declaration only |
+| `KeyboardManagerEditorLibrary/EditKeyboardWindow.cpp` | 314 | Called when user saves single-key remaps |
+| `KeyboardManagerEditorLibrary/EditShortcutsWindow.cpp` | 273 | Called when user saves shortcut remaps |
+| `KeyboardManagerEditorLibraryWrapper/KeyboardManagerEditorLibraryWrapper.cpp` | 33 | Thin C-style wrapper around the editor library |
+
+Zero calls from any file under `KeyboardManagerEngineLibrary/`.
+
+#### Engine architecture summary
+
+- `State` (`KeyboardManagerEngineLibrary/State.h:4`) extends `MappingConfiguration` by inheritance, adding only runtime-state helpers (no new write methods).
+- `KeyboardManager::LoadSettings()` (`KeyboardManager.cpp:76`) calls `state.LoadSettings()` — the read-only path in `MappingConfiguration::LoadSettings()` (`common/MappingConfiguration.cpp:410`).
+- The engine also re-invokes `LoadSettings()` on every file-change notification via a `settingsEventWaiter` callback (`KeyboardManager.cpp:38-70`). This callback does nothing but reload.
+- No engine code path leads to `SaveSettingsToFile()` or any other write operation on the config file.
+
+#### Conclusion
+
+**Engine poses no risk to unknown fields.** The engine is strictly read-only with respect to `default.json` (and any other config `.json` files): it calls `LoadSettings()` at startup and on file-change events, but it never calls `SaveSettingsToFile()` or any equivalent write path. Only the editors write the file (`EditKeyboardWindow.cpp` and `EditShortcutsWindow.cpp`). Task 1 covers the legacy editor, and the new CLI editor will preserve unknown fields by writing them itself. The engine is not a concern for `templateId` / `templateParameters` field survival.
