@@ -2,7 +2,10 @@
   <!-- Look at Directory.Build.props in root for common stuff as well -->
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <!-- Currently hard-coded, as this project does not target WinRT.
+	     To be removed after non-WinRT information is moved from
+		 Common.Dotnet.CsWinRT.props. -->
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
   </PropertyGroup>
