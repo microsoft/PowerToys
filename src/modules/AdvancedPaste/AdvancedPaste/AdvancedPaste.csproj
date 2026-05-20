@@ -21,7 +21,10 @@
     <RootNamespace>AdvancedPaste</RootNamespace>
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ProjectPriFileName>PowerToys.AdvancedPaste.pri</ProjectPriFileName>
+    <!-- WinUI XAML's Application.LoadComponent hard-codes 'resources.pri' lookup under sparse
+         identity (WinAppSDK 2.0.1 PR #6376 only fixed MRT GetDefaultPriFile, not the XAML
+         type-info path). Other apps use custom PRI names; AP cannot until this is fixed upstream. -->
+    <ProjectPriFileName>resources.pri</ProjectPriFileName>
     <DefineConstants>DISABLE_XAML_GENERATED_MAIN,TRACE</DefineConstants>
     <Version>$(AdvancedPasteVersion)</Version>
   </PropertyGroup>
