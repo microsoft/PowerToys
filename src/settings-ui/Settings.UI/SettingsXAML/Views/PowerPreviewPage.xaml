@@ -279,6 +279,14 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
+                <controls:SettingsGroup x:Uid="FileExplorerPreview_ShellIntegration">
+                    <tkcontrols:SettingsCard
+                        Name="FileExplorerPreviewCopyAsUNCEnable"
+                        x:Uid="FileExplorerPreview_CopyAsUNC_Enable"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsCopyAsUNCEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 
