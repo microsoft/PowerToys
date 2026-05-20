@@ -29,6 +29,7 @@
                     VerticalAlignment="Center"
                     DockPanel.Dock="Left"
                     FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{Binding MonitorName}" />
             </Border>
         </DataTemplate>
