@@ -386,7 +386,7 @@ public partial class ShellViewModel : ObservableObject,
             var result = invokable.Invoke(message.Context);
 
             // But if it did succeed, we need to handle the result.
-            UnsafeHandleCommandResult(result);
+            UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
 
             success = true;
             _handleInvokeTask = null;
@@ -412,7 +412,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void UnsafeHandleCommandResult(ICommandResult? result)
+    private void UnsafeHandleCommandResult(ICommandResult? result, Action? onBeforeShowConfirmation = null)
     {
         if (result is null)
         {
@@ -464,6 +464,17 @@ public partial class ShellViewModel : ObservableObject,
                 {
                     if (result.Args is IConfirmationArgs a)
                     {
+                        // Give the original sender (e.g. the dock) a chance to
+                        // prepare UI before the confirmation dialog surfaces.
+                        try
+                        {
+                            onBeforeShowConfirmation?.Invoke();
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreLogger.LogError(ex.ToString());
+                        }
+
                         WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
                     }
 
@@ -475,7 +486,7 @@ public partial class ShellViewModel : ObservableObject,
                     if (result.Args is IToastArgs a)
                     {
                         WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
-                        UnsafeHandleCommandResult(a.Result);
+                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation);
                     }
 
                     break;
