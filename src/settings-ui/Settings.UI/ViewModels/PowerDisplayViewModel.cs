@@ -87,21 +87,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     ReloadMonitorsFromSettings();
                 });
 
-            // Crash quarantine state. Two trigger paths, both ultimately route through
-            // RefreshCrashLockState:
-            //   1. AutoDisable event signaled by Phase 0 — catches crashes that happen
-            //      while Settings UI is already open. Subscribe before the file check so
-            //      we don't lose an event signaled in the gap.
-            //   2. File-exists check on construction — catches crashes that happened
-            //      before Settings UI launched (event has already fired and is gone).
-            NativeEventWaiter.WaitForEventLoop(
-                Constants.AutoDisablePowerDisplayEvent(),
-                () =>
-                {
-                    Logger.LogInfo("PowerDisplayViewModel: AutoDisable event received");
-                    RefreshCrashLockState();
-                });
+            // Crash quarantine state. The flag file is the single source of truth; the page
+            // re-checks it on construction (catches crashes that happened before Settings UI
+            // launched) and on every navigation via OnPageLoaded (catches crashes while
+            // Settings UI is already open). The AutoDisable event is left as a single-consumer
+            // signal for the runner DLL — Settings UI does not race for it.
+            RefreshCrashLockState();
+        }
 
+        public override void OnPageLoaded()
+        {
+            base.OnPageLoaded();
             RefreshCrashLockState();
         }
 
