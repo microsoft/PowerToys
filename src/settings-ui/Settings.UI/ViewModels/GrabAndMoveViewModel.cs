@@ -83,6 +83,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
+        // 0 = Alt, 1 = Win
+        public int ModifierKey
+        {
+            get => _moduleSettings.Properties.ModifierKey.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.ModifierKey.Value != value)
+                {
+                    _moduleSettings.Properties.ModifierKey.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(ModifierKey));
+                    OnPropertyChanged(nameof(IsAltModifier));
+                }
+            }
+        }
+
+        public bool IsAltModifier => ModifierKey == 0;
+
         public bool ShouldAbsorbAlt
         {
             get => _moduleSettings.Properties.ShouldAbsorbAlt.Value;

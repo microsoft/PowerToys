@@ -24,7 +24,7 @@ internal static class SearchCatalogStatusReader
         try
         {
             var catalogManager = CreateCatalogManager();
-            var pendingItemsCount = catalogManager.NumberOfItemsToIndex();
+            catalogManager.NumberOfItemsToIndex(out var pendingItemsCount, out _, out _);
             ResetFailureLoggingState();
             return new SearchCatalogStatus(pendingItemsCount, null);
         }

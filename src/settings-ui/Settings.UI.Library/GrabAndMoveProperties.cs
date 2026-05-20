@@ -15,7 +15,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowGeometry = new BoolProperty(false);
             UseAltResize = new BoolProperty(true);
             ExcludedApps = new StringProperty();
+            ModifierKey = new IntProperty(0); // 0 = Alt, 1 = Win
         }
+
+        [JsonPropertyName("modifierKey")]
+        public IntProperty ModifierKey { get; set; }
 
         [JsonPropertyName("shouldAbsorbAlt")]
         public BoolProperty ShouldAbsorbAlt { get; set; }

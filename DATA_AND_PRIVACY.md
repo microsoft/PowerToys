@@ -242,6 +242,13 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.FindMyMouse_EnableFindMyMouse | Triggered when Find My Mouse is enabled. |
 | Microsoft.PowerToys.FindMyMouse_MousePointerFocused | Occurs when the mouse pointer is focused using Find My Mouse, including the activation method (double-tap left/right Ctrl, shake mouse, or shortcut). |
 
+### Grab And Move
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.GrabAndMove_EnableGrabAndMove | Triggered when Grab And Move is enabled or disabled. |
+| Microsoft.PowerToys.GrabAndMove_ShortcutUse | Logs an attempt to move or resize a window via the Alt+Drag shortcut, including whether it succeeded, the action type (move or resize), and the reason (e.g., started, blocked by game mode). |
+
 ### Hosts File Editor
 
 | Event Name | Description |
@@ -361,6 +368,15 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.Peek_OpenWith | Occurs when an item is opened with Peek. |
 | Microsoft.PowerToys.Peek_Settings | Triggered when the settings for Peek are modified. |
 | Microsoft.PowerToys.Peek_SpaceModeEnabled | Triggered when the Space key activation mode is enabled or disabled in Peek. |
+
+### Power Display
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.PowerDisplay_EnablePowerDisplay | Triggered when Power Display is enabled or disabled. |
+| Microsoft.PowerToys.PowerDisplay_Activate | Triggered when Power Display is activated via hotkey or tray toggle. |
+| Microsoft.PowerToys.PowerDisplay_Start | Triggered when the Power Display application process starts. |
+| Microsoft.PowerToys.PowerDisplay_Settings | Periodic snapshot of Power Display settings, including whether the hotkey and tray icon are enabled, the number of detected monitors, and the number of saved profiles. |
 
 ### PowerRename
 

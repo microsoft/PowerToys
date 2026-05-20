@@ -264,8 +264,8 @@
             "Workspaces.ModuleServices.dll",
             "Microsoft.CommandPalette.Extensions.dll",
             "Microsoft.CommandPalette.Extensions.Toolkit.dll",
-            "Microsoft.CmdPal.Ext.PowerToys.dll",
-            "Microsoft.CmdPal.Ext.PowerToys.exe",
+            "WinUI3Apps\\Microsoft.CmdPal.Ext.PowerToys.dll",
+            "WinUI3Apps\\Microsoft.CmdPal.Ext.PowerToys.exe",
             "*Microsoft.CmdPal.UI_*.msix",
 
             "PowerToys.DSC.dll",
@@ -383,6 +383,10 @@
                 "ColorCode.Core.dll", 
                 "Microsoft.SemanticKernel.Connectors.Ollama.dll",
                 "OllamaSharp.dll",
+                "WinUI3Apps\\Google.Apis.dll",
+                "WinUI3Apps\\Google.Apis.Auth.dll",
+                "WinUI3Apps\\Google.Apis.Core.dll",
+                "WinUI3Apps\\Google.GenAI.dll",
 
                 "boost_regex-vc143-mt-gd-x32-1_87.dll",
                 "boost_regex-vc143-mt-gd-x64-1_87.dll",

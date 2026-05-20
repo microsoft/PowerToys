@@ -92,7 +92,6 @@
                             <HyperlinkButton
                                 x:Uid="Settings_ExtensionsPage_Banner_Hyperlink"
                                 Padding="0"
-                                Content="Learn how to create your own extensions"
                                 NavigateUri="https://aka.ms/building-cmdpal-extensions" />
                         </StackPanel>
                         <StackPanel
@@ -105,17 +104,9 @@
                                     <Viewbox Width="16">
                                         <Image AutomationProperties.AccessibilityView="Raw" Source="{ThemeResource StoreLogo}" />
                                     </Viewbox>
-                                    <TextBlock Text="Microsoft Store" />
+                                    <TextBlock x:Uid="Settings_ExtensionsPage_FindExtensions_MicrosoftStore_Text" />
                                 </StackPanel>
                             </Button>
-                            <!--<Button x:Uid="Settings_ExtensionsPage_FindExtensions_WinGet" Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Viewbox Width="16">
-                                        <Image AutomationProperties.AccessibilityView="Raw" Source="ms-appx:///Assets/WinGet.svg" />
-                                    </Viewbox>
-                                    <TextBlock Text="WinGet" />
-                                </StackPanel>
-                            </Button>-->
                         </StackPanel>
                     </Grid>
 

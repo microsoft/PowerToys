@@ -24,15 +24,15 @@
                     CornerRadius="10">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="0.5,1">
-                            <GradientStop Offset="0.0" Color="#239DE0" />
-                            <GradientStop Offset="1.0" Color="#037CD6" />
+                            <GradientStop Offset="0.0" Color="#FFC328" />
+                            <GradientStop Offset="1.0" Color="#FC9A03" />
                         </LinearGradientBrush>
                     </Border.Background>
                     <FontIcon
                         AutomationProperties.AccessibilityView="Raw"
                         FontSize="11"
-                        Foreground="White"
-                        Glyph="&#xE895;" />
+                        Foreground="Black"
+                        Glyph="&#xEDB1;" />
                 </Border>
                 <StackPanel Grid.Column="1" Orientation="Vertical">
                     <TextBlock x:Uid="UpdateAvailableTextBlock" FontWeight="SemiBold" />
