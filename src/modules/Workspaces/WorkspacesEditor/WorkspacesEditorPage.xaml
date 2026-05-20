@@ -328,6 +328,7 @@
                 <TextBlock
                     Margin="0,0,0,8"
                     FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                     Text="{x:Static props:Resources.WorkspaceName}" />
                 <TextBox
                     x:Name="EditNameTextBox"
