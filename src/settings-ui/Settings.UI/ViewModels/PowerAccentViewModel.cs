@@ -39,6 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             new PowerAccentLanguageModel("GD", "QuickAccent_SelectedLanguage_Gaidhlig", LanguageGroup),
             new PowerAccentLanguageModel("NL", "QuickAccent_SelectedLanguage_Dutch", LanguageGroup),
             new PowerAccentLanguageModel("EL", "QuickAccent_SelectedLanguage_Greek", LanguageGroup),
+            new PowerAccentLanguageModel("GRC", "QuickAccent_SelectedLanguage_Greek_Polytonic", LanguageGroup),
             new PowerAccentLanguageModel("EST", "QuickAccent_SelectedLanguage_Estonian", LanguageGroup),
             new PowerAccentLanguageModel("EPO", "QuickAccent_SelectedLanguage_Esperanto", LanguageGroup),
             new PowerAccentLanguageModel("FI", "QuickAccent_SelectedLanguage_Finnish", LanguageGroup),
