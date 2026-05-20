@@ -156,6 +156,7 @@ breadcrumb
 Browsable
 BROWSEINFO
 bsd
+BSOD
 bthprops
 bti
 BTNFACE
