@@ -27,12 +27,10 @@ if ($directoryAssetsItems.Count -le 0) {
 }
 
 # Make sure there's no resources.pri file. Each application should use a different name for their own resources file path.
-# Exception: AdvancedPaste must use resources.pri because WinUI XAML's Application.LoadComponent
-# hard-codes this name under sparse package identity (WinAppSDK 2.0.1). Other apps use custom PRI
-# names and are unaffected. See AdvancedPaste.csproj for details.
 $resourcesPriFiles = Get-ChildItem $targetDir -Filter resources.pri
 if ($resourcesPriFiles.Count -gt 0) {
-    Write-Host -ForegroundColor Yellow "WARNING: Detected a resources.pri file in " $targetDir ". This is expected for AdvancedPaste (sparse identity workaround).`r`n"
+    Write-Host -ForegroundColor Red "ERROR: Detected a resources.pri file in " $targetDir ". Each application should use a unique name for its resources file.`r`n"
+    $totalFailures++;
 } else {
     Write-Host -ForegroundColor Green "No resources.pri file detected in " $targetDir "`r`n"
 }

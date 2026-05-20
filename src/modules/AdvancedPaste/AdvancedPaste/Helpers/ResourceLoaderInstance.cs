@@ -11,7 +11,7 @@ namespace AdvancedPaste.Helpers
 
         static ResourceLoaderInstance()
         {
-            ResourceLoader = new ResourceLoader("resources.pri");
+            ResourceLoader = new ResourceLoader("PowerToys.AdvancedPaste.pri");
         }
     }
 }
