@@ -16,35 +16,34 @@ namespace ShortcutGuide.Helpers
         /// <returns>A <see cref="Rect"/> element containing the display area</returns>
         public static Rect GetWorkAreaForDisplayWithWindow(nint hwnd)
         {
-            _foundMonitorIndex = -1;
-            _monitorIndex = 0;
             var monitor = NativeMethods.MonitorFromWindow(hwnd, (int)NativeMethods.MonitorFromWindowDwFlags.MONITOR_DEFAULTTONEAREST);
-            NativeMethods.EnumDisplayMonitors(nint.Zero, nint.Zero, MonitorEnumProc, new NativeMethods.LPARAM(monitor));
-            return MonitorInfo.GetDisplayMonitors()[_foundMonitorIndex].RectWork;
-        }
 
-        /// <summary>
-        /// The index of the monitor that contains the specified window. -1 indicates that no monitor was found (yet).
-        /// </summary>
-        private static int _foundMonitorIndex = -1;
+            int foundIndex = -1;
+            int currentIndex = 0;
 
-        /// <summary>
-        /// The index of the monitor in the enumeration. This is used to find the correct monitor in the list of monitors.
-        /// </summary>
-        private static int _monitorIndex;
+            NativeMethods.EnumDisplayMonitors(
+                nint.Zero,
+                nint.Zero,
+                (nint hMonitor, nint hdcMonitor, ref NativeMethods.RECT lprcMonitor, nint dwData) =>
+                {
+                    if (hMonitor == dwData)
+                    {
+                        foundIndex = currentIndex;
+                        return false;
+                    }
 
-        private static bool MonitorEnumProc(nint hMonitor, nint hdcMonitor, ref NativeMethods.RECT lprcMonitor, nint dwData)
-        {
-            nint targetMonitor = dwData;
+                    currentIndex++;
+                    return true;
+                },
+                monitor);
 
-            if (hMonitor == targetMonitor)
+            var monitors = MonitorInfo.GetDisplayMonitors();
+            if (foundIndex < 0 || foundIndex >= monitors.Count)
             {
-                _foundMonitorIndex = _monitorIndex;
-                return false;
+                foundIndex = 0;
             }
 
-            _monitorIndex++;
-            return true;
+            return monitors[foundIndex].RectWork;
         }
     }
 }

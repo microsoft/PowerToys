@@ -13,20 +13,20 @@ namespace ShortcutGuide.Helpers
         private const int MDT_EFFECTIVE_DPI = 0;
 #pragma warning restore SA1310 // Field names should not contain underscore
 
-        public static float GetDPIScaleForWindow(int hwnd)
+        public static float GetDPIScaleForWindow(nint hwnd)
         {
             int dpi = DEFAULT_DPI;
             GetScreenDPIForWindow(hwnd, ref dpi);
             return (float)dpi / DEFAULT_DPI;
         }
 
-        private static long GetScreenDPIForWindow(int hwnd, ref int dpi)
+        private static long GetScreenDPIForWindow(nint hwnd, ref int dpi)
         {
             var targetMonitor = NativeMethods.MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
-            return GetScreenDPIForMonitor(targetMonitor.ToInt32(), ref dpi);
+            return GetScreenDPIForMonitor(targetMonitor, ref dpi);
         }
 
-        private static long GetScreenDPIForMonitor(int targetMonitor, ref int dpi)
+        private static long GetScreenDPIForMonitor(nint targetMonitor, ref int dpi)
         {
             if (targetMonitor != 0)
             {

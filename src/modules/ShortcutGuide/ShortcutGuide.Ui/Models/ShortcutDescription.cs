@@ -44,7 +44,13 @@ namespace ShortcutGuide.Models
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            var hash = HashCode.Combine(Ctrl, Shift, Alt, Win);
+            foreach (var key in Keys)
+            {
+                hash = HashCode.Combine(hash, key);
+            }
+
+            return hash;
         }
 
         public static bool operator ==(ShortcutDescription? left, ShortcutDescription? right)

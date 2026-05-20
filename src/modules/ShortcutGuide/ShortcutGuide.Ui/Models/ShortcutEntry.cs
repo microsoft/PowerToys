@@ -30,7 +30,13 @@ namespace ShortcutGuide.Models
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            var hash = HashCode.Combine(Name, Description);
+            foreach (var s in Shortcut)
+            {
+                hash = HashCode.Combine(hash, s.GetHashCode());
+            }
+
+            return hash;
         }
 
         public static bool operator ==(ShortcutEntry? left, ShortcutEntry? right)

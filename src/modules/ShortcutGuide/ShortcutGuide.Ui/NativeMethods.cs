@@ -24,7 +24,7 @@ internal static partial class NativeMethods
     internal static partial int SetWindowLongW(IntPtr hWnd, int nIndex, int dwNewLong);
 
     [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
-    internal static partial IntPtr FindWindowA(in string lpClassName, in string? lpWindowName);
+    internal static partial IntPtr FindWindowW(in string lpClassName, in string? lpWindowName);
 
     [LibraryImport("User32.dll")]
     internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);

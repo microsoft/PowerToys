@@ -171,7 +171,10 @@ namespace ShortcutGuide
                     }
                 }
 
-                this.WindowSelector.SelectedItem = this.WindowSelector.MenuItems[0];
+                if (this.WindowSelector.MenuItems.Count > 0)
+                {
+                    this.WindowSelector.SelectedItem = this.WindowSelector.MenuItems[0];
+                }
             }
         }
 
@@ -198,7 +201,7 @@ namespace ShortcutGuide
             }
 
             var hwnd = WindowNative.GetWindowHandle(this);
-            float dpi = DpiHelper.GetDPIScaleForWindow(hwnd.ToInt32());
+            float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
 
             var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;

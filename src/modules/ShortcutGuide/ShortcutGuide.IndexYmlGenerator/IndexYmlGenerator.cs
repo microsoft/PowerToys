@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using YamlDotNet.Serialization;
@@ -49,21 +50,12 @@ namespace ShortcutGuide.IndexYmlGenerator
                 processes[(shortcutFile.WindowFilter, shortcutFile.BackgroundProcess)] = [shortcutFile.PackageName];
             }
 
-            indexFile.Index = [];
-
-            foreach (var item in processes)
+            indexFile.Index = processes.Select(item => new IndexFile.IndexItem
             {
-                indexFile.Index =
-                [
-                    .. indexFile.Index,
-                    new IndexFile.IndexItem
-                    {
-                        WindowFilter = item.Key.WindowFilter,
-                        BackgroundProcess = item.Key.BackgroundProcess,
-                        Apps = [.. item.Value],
-                    },
-                ];
-            }
+                WindowFilter = item.Key.WindowFilter,
+                BackgroundProcess = item.Key.BackgroundProcess,
+                Apps = [.. item.Value],
+            }).ToArray();
 
             // Todo: Take the default shell name from the settings or environment variable, default to "+WindowsNT.Shell"
             indexFile.DefaultShellName = "+WindowsNT.Shell";

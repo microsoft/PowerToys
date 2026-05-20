@@ -18,8 +18,18 @@ namespace ShortcutGuide
     public sealed class Program
     {
         [STAThread]
-        public static void Main()
+        public static void Main(string[] args)
         {
+            Logger.InitializeLogger("\\ShortcutGuide\\Logs");
+
+            // The module interface passes: <powertoys_pid> [telemetry]
+            if (args.Length >= 2 && args[1] == "telemetry")
+            {
+                // Telemetry-only invocation: send settings telemetry and exit silently.
+                Logger.LogInfo("Telemetry mode requested. Exiting.");
+                return;
+            }
+
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredShortcutGuideEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
@@ -66,7 +76,6 @@ namespace ShortcutGuide
 
             PowerToysShortcutsPopulator.Populate();
 
-            Logger.InitializeLogger("\\ShortcutGuide\\Logs");
             WinRT.ComWrappersSupport.InitializeComWrappers();
 
             var instanceKey = AppInstance.FindOrRegisterForKey("PowerToys_ShortcutGuide_Instance");
@@ -85,8 +94,8 @@ namespace ShortcutGuide
                 Logger.LogWarning("Another instance of ShortcutGuide is running. Exiting ShortcutGuide");
             }
 
-            // Something prevents the process from exiting, so we need to kill it manually.
-            Process.GetCurrentProcess().Kill();
+            // The WinRT/WinUI dispatcher thread doesn't terminate cleanly; force exit.
+            Environment.Exit(0);
         }
     }
 }

@@ -3,6 +3,10 @@
 
 // Tried my hardest adapting this to C#, but FindWindowW didn't work properly in C#. ~Noraa Junker
 
+static winrt::com_ptr<IUIAutomation> automation;
+static winrt::com_ptr<IUIAutomationElement> element;
+static winrt::com_ptr<IUIAutomationCondition> true_condition;
+
 extern "C"
 {
     HWND GetTaskbarHwndForCursorMonitor(HMONITOR monitor)

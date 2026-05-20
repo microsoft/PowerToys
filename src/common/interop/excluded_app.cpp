@@ -14,6 +14,8 @@ extern "C"
         std::wstring_view view(excludedUppercase);
         view = left_trim<wchar_t>(trim<wchar_t>(view));
 
+        m_excludedApps.clear();
+
         while (!view.empty())
         {
             auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());

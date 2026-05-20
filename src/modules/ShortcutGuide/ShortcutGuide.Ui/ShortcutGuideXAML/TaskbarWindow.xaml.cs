@@ -20,7 +20,7 @@ namespace ShortcutGuide.ShortcutGuideXAML
 {
     public sealed partial class TaskbarWindow : WindowEx
     {
-        private float DPI => DpiHelper.GetDPIScaleForWindow(WindowNative.GetWindowHandle(this).ToInt32());
+        private float DPI => DpiHelper.GetDPIScaleForWindow(WindowNative.GetWindowHandle(this));
 
         private Rect WorkArea => DisplayHelper.GetWorkAreaForDisplayWithWindow(WindowNative.GetWindowHandle(this));
 
