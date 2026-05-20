@@ -353,8 +353,15 @@ async function main() {
     );
   }
 
-  const pullRequest = await getPullRequest(parsedApiBaseUrl.origin, repository, pullNumber);
-  await ensureReviewerRequested(parsedApiBaseUrl.origin, repository, pullNumber, pullRequest);
+  try {
+    const pullRequest = await getPullRequest(parsedApiBaseUrl.origin, repository, pullNumber);
+    await ensureReviewerRequested(parsedApiBaseUrl.origin, repository, pullNumber, pullRequest);
+  } catch (error) {
+    console.warn(
+      'Failed to fetch PR details or request reviewer; continuing to post telemetry guidance comment.'
+    );
+    console.warn(error instanceof Error ? error.stack || error.message : error);
+  }
 
   const commentBody = dataAndPrivacyChanged
     ? COMMENT_BODY_WITH_PRIVACY_UPDATE
