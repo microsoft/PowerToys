@@ -278,6 +278,37 @@ public static class CharacterMappings
             [LetterKey.VK_COMMA] = ["«", "»", "‹", "›", "“", "”", "‘", "’"],
         }),
 
+        new(Language.GRC, "Greek_Polytonic", LanguageGroup.Special, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_A] = ["α", "ἀ", "ἁ", "ὰ", "ά", "ᾶ", "ᾱ", "ᾰ", "ἂ", "ἃ", "ἄ", "ἅ", "ἆ", "ἇ", "ᾳ", "ᾀ", "ᾁ", "ᾴ", "ᾲ", "ᾷ", "ᾄ", "ᾅ", "ᾂ", "ᾃ", "ᾆ", "ᾇ"],
+            [LetterKey.VK_B] = ["β"],
+            [LetterKey.VK_C] = ["χ", "ϲ"],
+            [LetterKey.VK_D] = ["δ"],
+            [LetterKey.VK_E] = ["ε", "ἐ", "ἑ", "ὲ", "έ", "ἒ", "ἓ", "ἔ", "ἕ"],
+            [LetterKey.VK_F] = ["φ", "ϝ"],
+            [LetterKey.VK_G] = ["γ"],
+            [LetterKey.VK_H] = ["η", "ἠ", "ἡ", "ὴ", "ή", "ῆ", "ἢ", "ἣ", "ἤ", "ἥ", "ἦ", "ἧ", "ῃ", "ᾐ", "ᾑ", "ῄ", "ῂ", "ῇ", "ᾔ", "ᾕ", "ᾒ", "ᾓ", "ᾖ", "ᾗ"],
+            [LetterKey.VK_I] = ["ι", "ἰ", "ἱ", "ὶ", "ί", "ῖ", "ῑ", "ῐ", "ἲ", "ἳ", "ἴ", "ἵ", "ἶ", "ἷ", "ϊ", "ΐ", "ῒ", "ῗ"],
+            [LetterKey.VK_K] = ["κ"],
+            [LetterKey.VK_L] = ["λ"],
+            [LetterKey.VK_M] = ["μ"],
+            [LetterKey.VK_N] = ["ν"],
+            [LetterKey.VK_O] = ["ο", "ὀ", "ὁ", "ὸ", "ό", "ὂ", "ὃ", "ὄ", "ὅ"],
+            [LetterKey.VK_P] = ["π", "φ", "ψ", "ρ"],
+            [LetterKey.VK_Q] = ["ϙ", "ϟ"],
+            [LetterKey.VK_R] = ["ρ", "ῤ", "ῥ"],
+            [LetterKey.VK_S] = ["σ", "ς", "ϛ", "ϲ", "ϡ"],
+            [LetterKey.VK_T] = ["τ", "θ", "ϑ"],
+            [LetterKey.VK_U] = ["υ", "ὐ", "ὑ", "ὺ", "ύ", "ῦ", "ῡ", "ῠ", "ὒ", "ὓ", "ὔ", "ὕ", "ὖ", "ὗ", "ϋ", "ΰ", "ῢ", "ῧ"],
+            [LetterKey.VK_V] = ["β", "ϝ"],
+            [LetterKey.VK_W] = ["ω", "ὠ", "ὡ", "ὼ", "ώ", "ῶ", "ὢ", "ὣ", "ὤ", "ὥ", "ὦ", "ὧ", "ῳ", "ᾠ", "ᾡ", "ῴ", "ῲ", "ῷ", "ᾤ", "ᾥ", "ᾢ", "ᾣ", "ᾦ", "ᾧ"],
+            [LetterKey.VK_X] = ["ξ", "χ"],
+            [LetterKey.VK_Y] = ["υ", "ὐ", "ὑ", "ὺ", "ύ", "ῦ", "ῡ", "ῠ", "ὒ", "ὓ", "ὔ", "ὕ", "ὖ", "ὗ", "ϋ", "ΰ", "ῢ", "ῧ"],
+            [LetterKey.VK_Z] = ["ζ"],
+            [LetterKey.VK_COMMA] = ["“", "”", "‘", "’", ";", "`", "´"],
+            [LetterKey.VK_PERIOD] = ["·"],
+        }),
+
         new(Language.HR, "Croatian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_C] = ["ć", "č"],
@@ -705,8 +736,9 @@ public static class CharacterMappings
         Language.TK,
         Language.VI,
 
-        // Symbols and non-language-specific characters.
+        // Symbols, non-spoken languages, and non-language-specific characters.
         Language.CUR,
+        Language.GRC,
         Language.IPA,
         Language.PIE,
         Language.ROM,

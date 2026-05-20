@@ -22,6 +22,7 @@ public enum Language
     EPO,
     FI,
     FR,
+    GRC,
     HR,
     HE,
     HU,
