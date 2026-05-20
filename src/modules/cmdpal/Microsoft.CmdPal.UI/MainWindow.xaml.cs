@@ -8,8 +8,8 @@ using CmdPalKeyboardService;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Common.Services;
-using Microsoft.CmdPal.Ext.ClipboardHistory.Messages;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
@@ -57,6 +57,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<DragStartedMessage>,
     IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
+    IRecipient<GetHwndMessage>,
     IDisposable,
     IHostWindow
 {
@@ -162,6 +163,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<DragStartedMessage>(this);
         WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
+        WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -1407,5 +1409,10 @@ public sealed partial class MainWindow : WindowEx,
         {
             PInvoke.SetForegroundWindow(_hwnd);
         }
+    }
+
+    public void Receive(GetHwndMessage message)
+    {
+        message.Hwnd = this.GetWindowHandle();
     }
 }

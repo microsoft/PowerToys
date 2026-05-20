@@ -11,7 +11,7 @@ using Mages.Core;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
-    public class CalculateEngine
+    public partial class CalculateEngine
     {
         private readonly Engine _magesEngine = new Engine(new Configuration
         {
@@ -45,7 +45,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             // check for division by zero
             // We check if the string contains a slash followed by space (optional) and zero. Whereas the zero must not be followed by a dot, comma, 'b', 'o' or 'x' as these indicate a number with decimal digits or a binary/octal/hexadecimal value respectively. The zero must also not be followed by other digits.
-            if (new Regex("\\/\\s*0(?!(?:[,\\.0-9]|[box]0*[1-9a-f]))", RegexOptions.IgnoreCase).Match(input).Success)
+            if (DivisionByZeroRegex().IsMatch(input))
             {
                 error = Properties.Resources.wox_plugin_calculator_division_by_zero;
                 return default;
@@ -53,9 +53,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             // mages has quirky log representation
             // mage has log == ln vs log10
-            input = input.
-                        Replace("log(", "log10(", true, CultureInfo.CurrentCulture).
-                        Replace("ln(", "log(", true, CultureInfo.CurrentCulture);
+            // Use regex replacements so optional whitespace between the function name and
+            // '(' is handled correctly - "log (100)" must map to log10 just like "log(100)"
+            // does. The negative lookahead prevents "log10" / "log2" from being touched.
+            input = LogRegex().Replace(input, "log10(");
+            input = LnRegex().Replace(input, "log(");
 
             input = CalculateHelper.FixHumanMultiplicationExpressions(input);
 
@@ -124,5 +126,17 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             return result;
         }
+
+        [GeneratedRegex("\\/\\s*0(?!(?:[,\\.0-9]|[box]0*[1-9a-f]))", RegexOptions.IgnoreCase)]
+        private static partial Regex DivisionByZeroRegex();
+
+        // Case-insensitive match for "log" not followed by a digit, then optional whitespace,
+        // then '('. The negative lookahead protects "log2" and "log10". A new log variant
+        // like "logb" must be handled explicitly.
+        [GeneratedRegex("log(?![0-9])\\s*\\(", RegexOptions.IgnoreCase)]
+        private static partial Regex LogRegex();
+
+        [GeneratedRegex("ln\\s*\\(", RegexOptions.IgnoreCase)]
+        private static partial Regex LnRegex();
     }
 }

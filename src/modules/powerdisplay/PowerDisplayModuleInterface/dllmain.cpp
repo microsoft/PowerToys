@@ -39,7 +39,7 @@ const static wchar_t* MODULE_DESC = L"A utility to manage display brightness and
 class PowerDisplayModule : public PowertoyModuleIface
 {
 private:
-    bool m_enabled = false;
+    std::atomic<bool> m_enabled = false;
 
     // Process manager handles Named Pipe communication and process lifecycle
     PowerDisplayProcessManager m_processManager;
@@ -54,6 +54,8 @@ private:
     HANDLE m_hToggleEvent = nullptr;
     HANDLE m_hStopEvent = nullptr;  // Manual-reset event to signal thread termination
     std::thread m_toggleEventThread;
+    HANDLE m_hAutoDisableEvent = nullptr;
+    std::thread m_autoDisableEventThread;
 
 public:
     PowerDisplayModule()
@@ -75,16 +77,21 @@ public:
         m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
         Logger::trace(L"Created TOGGLE_EVENT: handle={}", reinterpret_cast<void*>(m_hToggleEvent));
 
+        m_hAutoDisableEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_AUTO_DISABLE_EVENT);
+        Logger::trace(L"Created AUTO_DISABLE_EVENT: handle={}", reinterpret_cast<void*>(m_hAutoDisableEvent));
+
         // Create manual-reset stop event for clean thread termination
         m_hStopEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
         Logger::trace(L"Created STOP_EVENT: handle={}", reinterpret_cast<void*>(m_hStopEvent));
 
-        if (!m_hRefreshEvent || !m_hSendSettingsTelemetryEvent || !m_hToggleEvent || !m_hStopEvent)
+        if (!m_hRefreshEvent || !m_hSendSettingsTelemetryEvent || !m_hToggleEvent || !m_hStopEvent || !m_hAutoDisableEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}, Toggle={}",
+            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}, Toggle={}, Stop={}, AutoDisable={}",
                          reinterpret_cast<void*>(m_hRefreshEvent),
                          reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent),
-                         reinterpret_cast<void*>(m_hToggleEvent));
+                         reinterpret_cast<void*>(m_hToggleEvent),
+                         reinterpret_cast<void*>(m_hStopEvent),
+                         reinterpret_cast<void*>(m_hAutoDisableEvent));
         }
         else
         {
@@ -99,9 +106,6 @@ public:
         {
             disable();
         }
-
-        // Stop toggle event listener thread
-        StopToggleEventListener();
 
         // Clean up event handles
         if (m_hRefreshEvent)
@@ -118,6 +122,11 @@ public:
         {
             CloseHandle(m_hToggleEvent);
             m_hToggleEvent = nullptr;
+        }
+        if (m_hAutoDisableEvent)
+        {
+            CloseHandle(m_hAutoDisableEvent);
+            m_hAutoDisableEvent = nullptr;
         }
         if (m_hStopEvent)
         {
@@ -213,6 +222,63 @@ public:
         }
     }
 
+    void StartAutoDisableEventListener()
+    {
+        if (!m_hAutoDisableEvent || !m_hStopEvent || m_autoDisableEventThread.joinable())
+        {
+            return;
+        }
+
+        // m_hStopEvent is shared with the toggle listener; both start/stop together.
+        ResetEvent(m_hStopEvent);
+
+        m_autoDisableEventThread = std::thread([this]() {
+            Logger::info(L"AutoDisable listener thread started");
+
+            HANDLE handles[] = { m_hAutoDisableEvent, m_hStopEvent };
+            constexpr DWORD AUTO_DISABLE_INDEX = 0;
+            constexpr DWORD STOP_INDEX = 1;
+
+            DWORD result = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+            if (result == WAIT_OBJECT_0 + AUTO_DISABLE_INDEX)
+            {
+                Logger::warn(L"PowerDisplay AutoDisable event received - disabling module");
+                // Calling disable() updates m_enabled (which runner queries via is_enabled())
+                // and stops the process manager. PowerDisplay.exe Phase 0 already wrote
+                // settings.json; we don't touch it here.
+                this->disable();
+            }
+            else if (result == WAIT_OBJECT_0 + STOP_INDEX)
+            {
+                Logger::trace(L"AutoDisable listener: stop event signaled");
+            }
+            else
+            {
+                Logger::warn(L"AutoDisable listener: WaitForMultipleObjects returned unexpected result: {}", result);
+            }
+
+            Logger::info(L"AutoDisable listener thread stopped");
+        });
+    }
+
+    void StopAutoDisableEventListener()
+    {
+        if (!m_autoDisableEventThread.joinable())
+        {
+            return;
+        }
+
+        // Listener invokes this->disable() → here on its own thread; join() would deadlock.
+        if (m_autoDisableEventThread.get_id() == std::this_thread::get_id())
+        {
+            m_autoDisableEventThread.detach();
+        }
+        else
+        {
+            m_autoDisableEventThread.join();
+        }
+    }
+
     /// <summary>
     /// Toggle PowerDisplay window visibility.
     /// If process is running, launches again to trigger redirect activation (OnActivated handles toggle).
@@ -262,6 +328,12 @@ public:
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
         return powertoys_gpo::getConfiguredPowerDisplayEnabledValue();
+    }
+
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
     }
 
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
@@ -331,6 +403,7 @@ public:
         Trace::EnablePowerDisplay(true);
 
         StartToggleEventListener();
+        StartAutoDisableEventListener();
 
         // Start the process manager (launches PowerDisplay.exe with Named Pipe)
         m_processManager.start();
@@ -345,6 +418,7 @@ public:
         m_enabled = false;
 
         StopToggleEventListener();
+        StopAutoDisableEventListener();
 
         // Stop the process manager (sends terminate message and waits for exit)
         m_processManager.stop();

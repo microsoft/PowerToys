@@ -16,7 +16,12 @@ namespace PowerDisplay.Common.Models
     /// </summary>
     /// <remarks>
     /// <para><see cref="Id"/> is the unique identifier used for all purposes: UI lookups, IPC, persistent storage, and handle management.</para>
-    /// <para>Format: "{Source}_{EdidId}_{MonitorNumber}" (e.g., "DDC_GSM5C6D_1", "WMI_BOE0900_2").</para>
+    /// <para>
+    /// Format: the Windows DevicePath with the trailing device-class GUID stripped, e.g.
+    /// <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID12345</c>. The middle segment is the
+    /// PnP instance ID, unique per (physical device × physical port) and stable across
+    /// reboots, sleep/wake, and OS-level monitor reordering. See <see cref="MonitorIdentity.FromDevicePath"/>.
+    /// </para>
     /// </remarks>
     public partial class Monitor : INotifyPropertyChanged, IMonitorData
     {
@@ -24,16 +29,15 @@ namespace PowerDisplay.Common.Models
         private int _currentColorTemperature = 0x05; // Default to 6500K preset (VCP 0x14 value)
         private int _currentInputSource; // VCP 0x60 value
         private int _currentPowerState = 0x01; // Default to On (VCP 0xD6 value)
-        private bool _isAvailable = true;
         private int _orientation;
 
         /// <summary>
         /// Gets or sets unique identifier for all purposes: UI lookups, IPC, persistent storage, and handle management.
         /// </summary>
         /// <remarks>
-        /// Format: "{Source}_{EdidId}_{MonitorNumber}" where Source is "DDC" or "WMI".
-        /// Examples: "DDC_GSM5C6D_1", "WMI_BOE0900_2".
-        /// Stable across reboots and unique even for multiple identical monitors.
+        /// Format: the Windows DevicePath with the trailing device-class GUID stripped,
+        /// e.g. <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID12345</c>. Stable across
+        /// reboots, sleep/wake, and identical-monitor reordering by Windows.
         /// </remarks>
         public string Id { get; set; } = string.Empty;
 
@@ -43,14 +47,14 @@ namespace PowerDisplay.Common.Models
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets current brightness (0-100)
+        /// Gets or sets current brightness as a percentage (0-100).
         /// </summary>
         public int CurrentBrightness
         {
             get => _currentBrightness;
             set
             {
-                var clamped = Math.Clamp(value, MinBrightness, MaxBrightness);
+                var clamped = Math.Clamp(value, 0, 100);
                 if (_currentBrightness != clamped)
                 {
                     _currentBrightness = clamped;
@@ -60,14 +64,15 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Gets or sets minimum brightness value
+        /// Gets or sets the device-reported raw VCP maximum for brightness (VCP 0x10).
         /// </summary>
-        public int MinBrightness { get; set; }
-
-        /// <summary>
-        /// Gets or sets maximum brightness value
-        /// </summary>
-        public int MaxBrightness { get; set; } = 100;
+        /// <remarks>
+        /// <para>This is the value returned in the "max" out-parameter of <c>GetVCPFeatureAndVCPFeatureReply</c>.
+        /// Most monitors report 100, but some (e.g. several Samsung models) report 50 — for those, writing
+        /// the slider percentage as the raw VCP value lops off the upper half of the range. Writers must scale
+        /// percent → raw using this field; readers use it via <see cref="VcpFeatureValue.ToPercentage"/>.</para>
+        /// </remarks>
+        public int BrightnessVcpMax { get; set; } = 100;
 
         /// <summary>
         /// Gets or sets current color temperature VCP preset value (from VCP code 0x14).
@@ -166,6 +171,11 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
+        /// Gets a value indicating whether the monitor supports brightness adjustment
+        /// </summary>
+        public bool SupportsBrightness => Capabilities.HasFlag(MonitorCapabilities.Brightness);
+
+        /// <summary>
         /// Gets a value indicating whether the monitor supports contrast adjustment
         /// </summary>
         public bool SupportsContrast => Capabilities.HasFlag(MonitorCapabilities.Contrast);
@@ -179,14 +189,14 @@ namespace PowerDisplay.Common.Models
         private int _currentVolume = 50;
 
         /// <summary>
-        /// Gets or sets current contrast (0-100)
+        /// Gets or sets current contrast as a percentage (0-100).
         /// </summary>
         public int CurrentContrast
         {
             get => _currentContrast;
             set
             {
-                var clamped = Math.Clamp(value, MinContrast, MaxContrast);
+                var clamped = Math.Clamp(value, 0, 100);
                 if (_currentContrast != clamped)
                 {
                     _currentContrast = clamped;
@@ -196,24 +206,20 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Gets or sets minimum contrast value
+        /// Gets or sets the device-reported raw VCP maximum for contrast (VCP 0x12).
+        /// See <see cref="BrightnessVcpMax"/> for semantics — same story applies to contrast.
         /// </summary>
-        public int MinContrast { get; set; }
+        public int ContrastVcpMax { get; set; } = 100;
 
         /// <summary>
-        /// Gets or sets maximum contrast value
-        /// </summary>
-        public int MaxContrast { get; set; } = 100;
-
-        /// <summary>
-        /// Gets or sets current volume (0-100)
+        /// Gets or sets current volume as a percentage (0-100).
         /// </summary>
         public int CurrentVolume
         {
             get => _currentVolume;
             set
             {
-                var clamped = Math.Clamp(value, MinVolume, MaxVolume);
+                var clamped = Math.Clamp(value, 0, 100);
                 if (_currentVolume != clamped)
                 {
                     _currentVolume = clamped;
@@ -223,30 +229,10 @@ namespace PowerDisplay.Common.Models
         }
 
         /// <summary>
-        /// Gets or sets minimum volume value
+        /// Gets or sets the device-reported raw VCP maximum for volume (VCP 0x62).
+        /// See <see cref="BrightnessVcpMax"/> for semantics — same story applies to volume.
         /// </summary>
-        public int MinVolume { get; set; }
-
-        /// <summary>
-        /// Gets or sets maximum volume value
-        /// </summary>
-        public int MaxVolume { get; set; } = 100;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the monitor is available/online
-        /// </summary>
-        public bool IsAvailable
-        {
-            get => _isAvailable;
-            set
-            {
-                if (_isAvailable != value)
-                {
-                    _isAvailable = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public int VolumeVcpMax { get; set; } = 100;
 
         /// <summary>
         /// Gets or sets physical monitor handle (for DDC/CI)
@@ -278,11 +264,6 @@ namespace PowerDisplay.Common.Models
         /// </summary>
         public VcpCapabilities? VcpCapabilitiesInfo { get; set; }
 
-        /// <summary>
-        /// Gets or sets last update time
-        /// </summary>
-        public DateTime LastUpdate { get; set; } = DateTime.Now;
-
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -293,19 +274,6 @@ namespace PowerDisplay.Common.Models
         public override string ToString()
         {
             return $"{Name} ({CommunicationMethod}) - {CurrentBrightness}%";
-        }
-
-        /// <summary>
-        /// Update monitor status
-        /// </summary>
-        public void UpdateStatus(int brightness, bool isAvailable = true)
-        {
-            IsAvailable = isAvailable;
-            if (isAvailable)
-            {
-                CurrentBrightness = brightness;
-                LastUpdate = DateTime.Now;
-            }
         }
 
         /// <inheritdoc />

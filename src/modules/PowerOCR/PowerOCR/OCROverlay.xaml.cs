@@ -64,8 +64,6 @@ public partial class OCROverlay : Window
 
         InitializeComponent();
 
-        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
-
         PopulateLanguageMenu();
     }
 
