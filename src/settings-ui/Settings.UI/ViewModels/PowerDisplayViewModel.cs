@@ -139,16 +139,46 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                if (_isEnabled != value)
+                if (_isEnabled == value)
                 {
-                    _isEnabled = value;
-                    OnPropertyChanged(nameof(IsEnabled));
+                    return;
+                }
 
-                    GeneralSettingsConfig.Enabled.PowerDisplay = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-                    SendConfigMSG(outgoing.ToString());
+                if (value)
+                {
+                    // Enabling PowerDisplay can crash some monitors via DDC/CI capability
+                    // fetch (see #47556 / PR #47734). Don't commit yet — confirm with the user
+                    // first, then either commit or revert the toggle via OnPropertyChanged.
+                    _ = ConfirmAndEnableModuleAsync();
+                }
+                else
+                {
+                    CommitIsEnabled(false);
                 }
             }
+        }
+
+        private async Task ConfirmAndEnableModuleAsync()
+        {
+            if (await ConfirmDangerousFeatureAsync("PowerDisplay_EnableModule"))
+            {
+                CommitIsEnabled(true);
+            }
+
+            // Either branch raises PropertyChanged so the TwoWay binding pushes the
+            // ViewModel value back to the ToggleSwitch — commit echoes silently,
+            // cancel pulls the UI back to the original state.
+            OnPropertyChanged(nameof(IsEnabled));
+        }
+
+        private void CommitIsEnabled(bool value)
+        {
+            _isEnabled = value;
+            OnPropertyChanged(nameof(IsEnabled));
+
+            GeneralSettingsConfig.Enabled.PowerDisplay = value;
+            OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+            SendConfigMSG(outgoing.ToString());
         }
 
         public bool IsEnabledGpoConfigured

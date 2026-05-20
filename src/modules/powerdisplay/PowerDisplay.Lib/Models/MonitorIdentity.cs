@@ -33,6 +33,27 @@ public static class MonitorIdentity
     }
 
     /// <summary>
+    /// Extract just the EDID-derived hardware ID segment (e.g., "DELD1A8" or "BOE0900")
+    /// from a DevicePath. Composed of the 3-letter PNP manufacturer code and the
+    /// 4-hex product code, this value is identical for every physical monitor of the
+    /// same model — use it to log "which model" for crash correlation without leaking
+    /// per-unit identifiers.
+    /// </summary>
+    /// <param name="devicePath">DevicePath of the form "\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID12345#{guid}".</param>
+    /// <returns>EDID hardware ID (e.g. "DELD1A8"), or empty string if extraction fails.</returns>
+    public static string EdidIdFromDevicePath(string? devicePath)
+    {
+        if (string.IsNullOrEmpty(devicePath))
+        {
+            return string.Empty;
+        }
+
+        // Split: ["\\?\DISPLAY", "DELD1A8", "5&abc&0&UID12345", "{guid}"]
+        var parts = devicePath.Split('#');
+        return parts.Length >= 2 ? parts[1] : string.Empty;
+    }
+
+    /// <summary>
     /// Extract the PnP hardware key from a DevicePath. The key identifies a physical
     /// monitor across both QueryDisplayConfig (DevicePath) and WMI (InstanceName)
     /// representations, so it is the right join key for pairing WMI brightness instances

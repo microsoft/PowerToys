@@ -39,6 +39,33 @@ public class MonitorIdentityTests
     }
 
     [TestMethod]
+    public void EdidIdFromDevicePath_ReturnsManufacturerProductSegment()
+    {
+        var input = @"\\?\DISPLAY#DELD1A8#5&abc123&0&UID12345#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
+        Assert.AreEqual("DELD1A8", MonitorIdentity.EdidIdFromDevicePath(input));
+    }
+
+    [TestMethod]
+    public void EdidIdFromDevicePath_SameModelMonitorsProduceSameId()
+    {
+        // Two Dell U2723QE on different ports share an EdidId but have different UIDs.
+        var portA = @"\\?\DISPLAY#DELD1A8#5&abc&0&UID111#{guid}";
+        var portB = @"\\?\DISPLAY#DELD1A8#5&xyz&0&UID222#{guid}";
+
+        Assert.AreEqual(
+            MonitorIdentity.EdidIdFromDevicePath(portA),
+            MonitorIdentity.EdidIdFromDevicePath(portB));
+    }
+
+    [TestMethod]
+    public void EdidIdFromDevicePath_NullEmptyOrMalformed_ReturnsEmpty()
+    {
+        Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromDevicePath(null));
+        Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromDevicePath(string.Empty));
+        Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromDevicePath(@"\\?\DISPLAY"));
+    }
+
+    [TestMethod]
     public void PnpHardwareKeyFromDevicePath_ReturnsHardwareSegments()
     {
         var input = @"\\?\DISPLAY#BOE0900#4&40f4dee&0&UID8388688#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";

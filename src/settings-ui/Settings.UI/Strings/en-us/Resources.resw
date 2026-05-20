@@ -5654,6 +5654,28 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MaxCompatibility_WarningConfirm" xml:space="preserve">
     <value>Only enable this if a monitor is missing from Power Display and you fully understand the side effects listed above. Continue?</value>
   </data>
+  <data name="PowerDisplay_EnableModule_WarningTitle" xml:space="preserve">
+    <value>Enable Power Display?</value>
+    <comment>Title of the dialog shown when the user turns on the Power Display module toggle.</comment>
+  </data>
+  <data name="PowerDisplay_EnableModule_WarningHeader" xml:space="preserve">
+    <value>⚠️ Warning: This may cause a system crash on a small number of monitors.</value>
+    <comment>Bold red header on the Enable Power Display warning dialog.</comment>
+  </data>
+  <data name="PowerDisplay_EnableModule_WarningDescription" xml:space="preserve">
+    <value>Power Display reads each connected monitor's DDC/CI capabilities at startup. On a small number of monitors with malformed capability strings, this read has been observed to trigger a kernel-side bug that causes Windows to bug-check (BSOD). The underlying issue is in Windows, not in Power Display, but the read is what surfaces it. Possible effects:</value>
+    <comment>Body text of the Enable Power Display warning dialog.</comment>
+  </data>
+  <data name="PowerDisplay_EnableModule_WarningList" xml:space="preserve">
+    <value>• On affected monitors, the system may crash and restart.
+• If a crash is detected, Power Display will auto-disable itself on next launch to prevent a reboot loop.
+• You will need to re-enable the module and dismiss the warning on the settings page after each detected crash.</value>
+    <comment>Bulleted list of potential side effects on the Enable Power Display warning dialog.</comment>
+  </data>
+  <data name="PowerDisplay_EnableModule_WarningConfirm" xml:space="preserve">
+    <value>Only enable Power Display if you accept the risk above. Continue?</value>
+    <comment>Final confirmation line on the Enable Power Display warning dialog.</comment>
+  </data>
   <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>
