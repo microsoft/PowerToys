@@ -10,12 +10,13 @@
 
 const fs = require('node:fs');
 const REVIEWER_LOGIN = 'chatasweetie';
+const REVIEWER_MENTION = `@${REVIEWER_LOGIN}`;
 
 const COMMENT_MARKER = '<!-- telemetry-event-check -->';
 const COMMENT_BODY_WITH_PRIVACY_UPDATE = `${COMMENT_MARKER}
 Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event. After this PR is merged, please follow these next steps:
 
-- [ ] Reach out to Jessica (@chatasweetie) to follow up on the next steps: https://aka.ms/next-steps
+- [ ] Reach out to Jessica (${REVIEWER_MENTION}) to follow up on the next steps: https://aka.ms/next-steps
 `;
 
 const COMMENT_BODY_WITHOUT_PRIVACY_UPDATE = `${COMMENT_MARKER}
@@ -23,7 +24,7 @@ Thank you for contributing to PowerToys. We've detected that this PR might inclu
 
 - [ ] Add your telemetry events to DATA_AND_PRIVACY.md within this PR.
 
-- [ ] Reach out to Jessica (@chatasweetie) to follow up on the next steps: https://aka.ms/next-steps`;
+- [ ] Reach out to Jessica (${REVIEWER_MENTION}) to follow up on the next steps: https://aka.ms/next-steps`;
 
 const TELEMETRY_PATH_PATTERNS = [
   /(^|\/)trace\.(h|hpp|cpp|cs)$/i,
