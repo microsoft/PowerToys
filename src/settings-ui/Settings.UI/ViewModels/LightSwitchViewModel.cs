@@ -20,8 +20,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
 using Newtonsoft.Json.Linq;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
+using PowerDisplay.Models;
 using PowerToys.GPOWrapper;
 using Settings.UI.Library;
 using Settings.UI.Library.Helpers;
@@ -725,7 +724,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                var profilesData = ProfileService.LoadProfiles();
+                var profilesData = ProfileHelper.LoadProfiles();
 
                 AvailableProfiles.Clear();
 

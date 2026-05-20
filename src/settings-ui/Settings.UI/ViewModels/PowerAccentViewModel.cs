@@ -39,6 +39,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             new PowerAccentLanguageModel("GD", "QuickAccent_SelectedLanguage_Gaidhlig", LanguageGroup),
             new PowerAccentLanguageModel("NL", "QuickAccent_SelectedLanguage_Dutch", LanguageGroup),
             new PowerAccentLanguageModel("EL", "QuickAccent_SelectedLanguage_Greek", LanguageGroup),
+            new PowerAccentLanguageModel("GRC", "QuickAccent_SelectedLanguage_Greek_Polytonic", LanguageGroup),
             new PowerAccentLanguageModel("EST", "QuickAccent_SelectedLanguage_Estonian", LanguageGroup),
             new PowerAccentLanguageModel("EPO", "QuickAccent_SelectedLanguage_Esperanto", LanguageGroup),
             new PowerAccentLanguageModel("FI", "QuickAccent_SelectedLanguage_Finnish", LanguageGroup),
@@ -113,20 +114,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _excludedApps = _powerAccentSettings.Properties.ExcludedApps.Value;
 
-            if (!string.IsNullOrWhiteSpace(_powerAccentSettings.Properties.SelectedLang.Value) && !_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))
-            {
-                SelectedLanguageOptions = _powerAccentSettings.Properties.SelectedLang.Value.Split(',')
-                   .Select(l => Languages.Find(lang => lang.LanguageCode == l))
-                   .Where(l => l != null) // Wrongly typed languages will appear as null after find. We want to remove those to avoid crashes.
-                   .ToArray();
-            }
-            else if (_powerAccentSettings.Properties.SelectedLang.Value.Contains("ALL"))
+            var selectedLangEntries = _powerAccentSettings.Properties.SelectedLang.Value
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(l => l.Trim())
+                .ToArray();
+
+            if (selectedLangEntries.Any(l => l.Equals("ALL", StringComparison.OrdinalIgnoreCase)))
             {
                 SelectedLanguageOptions = Languages.ToArray();
             }
+            else if (selectedLangEntries.Length > 0)
+            {
+                SelectedLanguageOptions = selectedLangEntries
+                    .Select(l => Languages.Find(lang => lang.LanguageCode.Equals(l, StringComparison.OrdinalIgnoreCase)))
+                    .Where(l => l != null) // Unrecognized language codes (e.g. manual edits, removed languages) are skipped.
+                    .ToArray();
+            }
             else
             {
-                SelectedLanguageOptions = Array.Empty<PowerAccentLanguageModel>();
+                SelectedLanguageOptions = [];
             }
 
             _toolbarPositionIndex = Array.IndexOf(_toolbarOptions, _powerAccentSettings.Properties.ToolbarPosition.Value);

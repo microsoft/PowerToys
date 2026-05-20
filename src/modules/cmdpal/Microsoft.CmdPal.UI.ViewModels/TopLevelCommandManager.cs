@@ -48,6 +48,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
 
+    private HashSet<(string ProviderId, string CommandId)> _pinnedCommandSet = [];
+
     public TopLevelCommandManager(IServiceProvider serviceProvider, ICommandProviderCache commandProviderCache)
     {
         _serviceProvider = serviceProvider;
@@ -59,11 +61,19 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
         _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
+        RebuildPinnedCache();
     }
+
+    public ObservableCollection<PinnedCommandSettings> PinnedCommands { get; } = [];
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
-    public ObservableCollection<TopLevelViewModel> DockBands { get; set; } = [];
+    // DockBands uses a custom collection so that bulk rewrites (see
+    // UpdateCommandsForProvider) raise a single Reset notification instead of
+    // one event per inserted/removed/moved item. The dock subscribes to this
+    // collection and does a full rebuild per event, so collapsing the burst
+    // here avoids dozens of redundant rebuilds for one provider reload.
+    public DockBandsCollection DockBands { get; } = new();
 
     [ObservableProperty]
     public partial bool IsLoading { get; private set; } = true;
@@ -77,6 +87,18 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 return _builtInCommands.Concat(_extensionCommandProviders).ToList();
             }
         }
+    }
+
+    internal bool IsPinned(string providerId, string commandId)
+    {
+        return _pinnedCommandSet.Contains((providerId, commandId));
+    }
+
+    internal void RebuildPinnedCache()
+    {
+        var settings = _serviceProvider.GetRequiredService<ISettingsService>().Settings;
+        _pinnedCommandSet = new(settings.PinnedCommands.Select(p => (p.ProviderId, p.CommandId)));
+        ListHelpers.InPlaceUpdateList(PinnedCommands, settings.PinnedCommands);
     }
 
     public async Task<bool> LoadBuiltinsAsync()
@@ -177,8 +199,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     // By all accounts, we're already on a background thread (the COM call
     // to handle the event shouldn't be on the main thread.). But just to
     // be sure we don't block the caller, hop off this thread
-    private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, IItemsChangedEventArgs args) =>
+    private void CommandProvider_CommandsChanged(CommandProviderWrapper sender, IItemsChangedEventArgs args)
+    {
         _ = Task.Run(async () => await UpdateCommandsForProvider(sender, args));
+    }
 
     /// <summary>
     /// Called when a command provider raises its ItemsChanged event. We'll
@@ -223,12 +247,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
         lock (_dockBandsLock)
         {
-            // same idea for DockBands
+            // Same idea as TopLevelCommands above, but we deliberately use
+            // ReplaceWith so the dock only sees one CollectionChanged event
+            // for the whole rewrite instead of one per item.
             List<TopLevelViewModel> dockClone = [.. DockBands];
             var dockStartIndex = FindIndexForFirstProviderItem(dockClone, sender.ProviderId);
             dockClone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
             dockClone.InsertRange(dockStartIndex, newBands);
-            ListHelpers.InPlaceUpdateList(DockBands, dockClone);
+            DockBands.ReplaceWith(dockClone);
         }
 
         return;
@@ -693,12 +719,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     {
         var wrapper = LookupProvider(message.ProviderId);
         wrapper?.PinCommand(message.CommandId, _serviceProvider);
+        RebuildPinnedCache();
     }
 
     public void Receive(UnpinCommandItemMessage message)
     {
         var wrapper = LookupProvider(message.ProviderId);
         wrapper?.UnpinCommand(message.CommandId, _serviceProvider);
+        RebuildPinnedCache();
     }
 
     public void Receive(PinToDockMessage message)
@@ -707,12 +735,16 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             if (message.Pin)
             {
-                wrapper?.PinDockBand(message.CommandId, _serviceProvider, message.Side, message.ShowTitles, message.ShowSubtitles);
+                wrapper?.PinDockBand(message.CommandId, _serviceProvider, message.WithReload, message.Side, message.ShowTitles, message.ShowSubtitles, message.MonitorDeviceId);
             }
             else
             {
-                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider);
+                wrapper?.UnpinDockBand(message.CommandId, _serviceProvider, message.WithReload);
             }
+        }
+        else
+        {
+            Logger.LogWarning($"[DockDrop] PinToDockMessage: no provider found for '{message.ProviderId}'");
         }
     }
 

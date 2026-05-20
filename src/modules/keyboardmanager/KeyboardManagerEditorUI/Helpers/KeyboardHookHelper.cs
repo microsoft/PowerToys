@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KeyboardManagerEditorUI.Interop;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Windows.System;
 
@@ -19,7 +20,7 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public static KeyboardHookHelper Instance => _instance ??= new KeyboardHookHelper();
 
-        private KeyboardMappingService _mappingService;
+        private KeyboardMappingService? _mappingService;
 
         private HotkeySettingsControlHook? _keyboardHook;
 
@@ -34,7 +35,14 @@ namespace KeyboardManagerEditorUI.Helpers
         // Singleton to make sure only one instance of the hook is active
         private KeyboardHookHelper()
         {
-            _mappingService = new KeyboardMappingService();
+            try
+            {
+                _mappingService = new KeyboardMappingService();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Native KBM library unavailable for keyboard hook: {ex.Message}");
+            }
         }
 
         public void ActivateHook(IKeyboardHookTarget target)
@@ -46,11 +54,18 @@ namespace KeyboardManagerEditorUI.Helpers
             _currentlyPressedKeys.Clear();
             _keyPressOrder.Clear();
 
-            _keyboardHook = new HotkeySettingsControlHook(
-                KeyDown,
-                KeyUp,
-                () => true,
-                (key, extraInfo) => true);
+            try
+            {
+                _keyboardHook = new HotkeySettingsControlHook(
+                    KeyDown,
+                    KeyUp,
+                    () => true,
+                    (key, extraInfo) => true);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Keyboard hook unavailable: {ex.Message}");
+            }
         }
 
         public void CleanupHook()
@@ -110,6 +125,17 @@ namespace KeyboardManagerEditorUI.Helpers
             {
                 _keyPressOrder.Add(virtualKey);
 
+                // When building chords, cap at 2 action keys: if a third action key arrives,
+                // remove the oldest (shift behavior matching old editor).
+                if (_activeTarget.AllowChords && !RemappingHelper.IsModifierKey(virtualKey))
+                {
+                    var actionKeysInOrder = _keyPressOrder.Where(k => !RemappingHelper.IsModifierKey(k)).ToList();
+                    if (actionKeysInOrder.Count > 2)
+                    {
+                        _keyPressOrder.Remove(actionKeysInOrder[0]);
+                    }
+                }
+
                 // Notify the target page
                 _activeTarget.OnKeyDown(virtualKey, GetFormattedKeyList());
             }
@@ -126,7 +152,13 @@ namespace KeyboardManagerEditorUI.Helpers
 
             if (_currentlyPressedKeys.Remove(virtualKey))
             {
-                _keyPressOrder.Remove(virtualKey);
+                // When building chords, preserve released action keys in _keyPressOrder
+                // so the next action key press is recognized as the chord's second key.
+                // Only modifier releases clear from _keyPressOrder (matching old editor behavior).
+                if (!_activeTarget.AllowChords || RemappingHelper.IsModifierKey(virtualKey))
+                {
+                    _keyPressOrder.Remove(virtualKey);
+                }
 
                 _activeTarget.OnKeyUp(virtualKey, GetFormattedKeyList());
             }
@@ -140,6 +172,11 @@ namespace KeyboardManagerEditorUI.Helpers
                 return new List<string>();
             }
 
+            if (_mappingService is null)
+            {
+                return new List<string>();
+            }
+
             List<string> keyList = new List<string>();
             List<VirtualKey> modifierKeys = new List<VirtualKey>();
             VirtualKey? actionKey = null;
@@ -147,9 +184,15 @@ namespace KeyboardManagerEditorUI.Helpers
 
             foreach (var key in _keyPressOrder)
             {
+                // For modifiers, only include if currently pressed.
+                // For action keys when building chords, also include released keys
+                // so the chord's first key stays visible while waiting for the second.
                 if (!_currentlyPressedKeys.Contains(key))
                 {
-                    continue;
+                    if (RemappingHelper.IsModifierKey(key) || !_activeTarget.AllowChords)
+                    {
+                        continue;
+                    }
                 }
 
                 if (RemappingHelper.IsModifierKey(key))
@@ -189,6 +232,11 @@ namespace KeyboardManagerEditorUI.Helpers
 
         private void RemoveExistingModifierVariant(VirtualKey key)
         {
+            if (_mappingService is null)
+            {
+                return;
+            }
+
             KeyType keyType = (KeyType)KeyboardManagerInterop.GetKeyType((int)key);
 
             // No need to remove if the key is an action key

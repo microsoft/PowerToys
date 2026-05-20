@@ -46,11 +46,14 @@ public static class NamedPipeProcessor
             {
                 var message = await streamReader.ReadLineAsync(cancellationToken);
 
-                if (message != null)
+                if (message == null)
                 {
-                    Logger.LogInfo($"[NamedPipe] Received message: {message}");
-                    messageHandler(message);
+                    Logger.LogInfo("[NamedPipe] Pipe closed by server");
+                    break;
                 }
+
+                Logger.LogTrace($"[NamedPipe] Received message: {message}");
+                messageHandler(message);
 
                 // Small delay to prevent tight loop
                 var intraMessageDelay = TimeSpan.FromMilliseconds(10);
