@@ -11,6 +11,7 @@ using System.Text.Json.Serialization;
 using ManagedCommon;
 using PowerDisplay.Common;
 using PowerDisplay.Common.Utils;
+using PowerToys.Interop;
 
 namespace PowerDisplay.Common.Services
 {
@@ -116,7 +117,9 @@ namespace PowerDisplay.Common.Services
 
         private void SignalAutoDisable()
         {
-            var eventName = PathConstants.AutoDisablePowerDisplayEventName;
+            // Read the event name from the WinRT projection of shared_constants.h so the
+            // C++ side stays the single source of truth (no parallel C# copy to keep in sync).
+            var eventName = Constants.AutoDisablePowerDisplayEvent();
             if (!_signalEvent(eventName))
             {
                 throw new InvalidOperationException($"Failed to signal {eventName}");
