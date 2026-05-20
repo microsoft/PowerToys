@@ -13,17 +13,17 @@ const REVIEWER_LOGIN = 'chatasweetie';
 
 const COMMENT_MARKER = '<!-- telemetry-event-check -->';
 const COMMENT_BODY_WITH_PRIVACY_UPDATE = `${COMMENT_MARKER}
-Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event, and we want to help make sure that post the merger of this PR you do the next steps:
+Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event. After this PR is merged, please follow these next steps:
 
-- [ ] Reach out to Jessica (@chatasweetie) to follow up on the next steps, https://aka.ms/next-steps
+- [ ] Reach out to Jessica (@chatasweetie) to follow up on the next steps: https://aka.ms/next-steps
 `;
 
 const COMMENT_BODY_WITHOUT_PRIVACY_UPDATE = `${COMMENT_MARKER}
-Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event, and we want to help make sure that this PR contains the necessary elements:
+Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event. Please ensure the following before merging:
 
 - [ ] Add your telemetry events to DATA_AND_PRIVACY.md within this PR.
 
-- [ ] Reach out to Jessica (@chatasweetie) to follow up on the next step, https://aka.ms/next-steps`;
+- [ ] Reach out to Jessica (@chatasweetie) to follow up on the next steps: https://aka.ms/next-steps`;
 
 const TELEMETRY_PATH_PATTERNS = [
   /(^|\/)trace\.(h|hpp|cpp|cs)$/i,
