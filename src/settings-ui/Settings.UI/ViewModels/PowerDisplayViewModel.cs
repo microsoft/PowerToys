@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -199,10 +200,54 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => SetSettingsProperty(_settings.Properties.RestoreSettingsOnStartup, value, v => _settings.Properties.RestoreSettingsOnStartup = v);
         }
 
+        /// <summary>
+        /// View-supplied confirmation dialog. Default no-op denies all dangerous enables;
+        /// PowerDisplayPage replaces this in its constructor with a real dialog show.
+        /// </summary>
+        public Func<string, Task<bool>> ConfirmDangerousFeatureAsync { get; set; } = _ => Task.FromResult(false);
+
+        // Dangerous toggle. TwoWay-bound to the UI; the setter handles the "ask first"
+        // gesture entirely inside the ViewModel. Initial-binding push and post-cancel
+        // revert both hit the equality guard at the top and no-op.
         public bool MaxCompatibilityMode
         {
             get => _settings.Properties.MaxCompatibilityMode;
-            set => SetSettingsProperty(_settings.Properties.MaxCompatibilityMode, value, v => _settings.Properties.MaxCompatibilityMode = v);
+            set
+            {
+                if (_settings.Properties.MaxCompatibilityMode == value)
+                {
+                    return;
+                }
+
+                if (value)
+                {
+                    // Don't commit yet. Run the async confirm, then either commit (UI is
+                    // already showing the requested state) or revert via OnPropertyChanged.
+                    _ = ConfirmAndEnableMaxCompatAsync();
+                }
+                else
+                {
+                    _settings.Properties.MaxCompatibilityMode = false;
+                    OnPropertyChanged();
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
+            }
+        }
+
+        private async Task ConfirmAndEnableMaxCompatAsync()
+        {
+            if (await ConfirmDangerousFeatureAsync("PowerDisplay_MaxCompatibility"))
+            {
+                _settings.Properties.MaxCompatibilityMode = true;
+                NotifySettingsChanged();
+                SignalRescanRequest();
+            }
+
+            // Either branch raises PropertyChanged so the TwoWay binding pushes the
+            // ViewModel value back to the ToggleSwitch — commit echoes silently,
+            // cancel pulls the UI back to the original state.
+            OnPropertyChanged(nameof(MaxCompatibilityMode));
         }
 
         public bool ShowSystemTrayIcon

@@ -29,9 +29,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 SettingsRepository<PowerDisplaySettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
+            ViewModel.ConfirmDangerousFeatureAsync = ShowDangerousFeatureDialogAsync;
             DataContext = ViewModel;
             InitializeComponent();
             Loaded += (s, e) => ViewModel.OnPageLoaded();
+        }
+
+        private async Task<bool> ShowDangerousFeatureDialogAsync(string resourceKeyPrefix)
+        {
+            var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix) { XamlRoot = XamlRoot };
+            return await dialog.ShowAsync() == ContentDialogResult.Primary;
         }
 
         public void RefreshEnabledState()
@@ -254,80 +261,35 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 "PowerDisplay_InputSource");
         }
 
-        private async void MaxCompatibilityMode_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (sender is not ToggleSwitch ts)
-            {
-                return;
-            }
-
-            bool committed = await TryCommitDangerousChangeAsync(
-                ts,
-                ts.IsOn,
-                ViewModel.MaxCompatibilityMode,
-                v => ViewModel.MaxCompatibilityMode = v,
-                "PowerDisplay_MaxCompatibility");
-
-            if (committed)
-            {
-                ViewModel.SignalRescanRequest();
-            }
-        }
-
-        // Gesture-confirmation flow for "dangerous" controls.
-        //
-        // The bound CheckBoxes/ToggleSwitch use Mode=OneWay, so the model is not auto-updated
-        // from the UI. This method is the sole commit path. It tolerates handler invocations
-        // that originate from programmatic UI changes — initial binding push and post-cancel
-        // revert both fire Click/Toggled in WinUI — by treating "UI already matches model" as
-        // a no-op. No re-entry flag is needed because the recursive revert event short-circuits
-        // at that same check.
-        //
-        // Note: this whole gesture-vs-binding distinction is the price of Mode=OneWay + event
-        // handler. A more idiomatic WinUI design would commit via a Command or a dedicated
-        // user-intent gesture; out of scope for this change.
-        //
-        // Returns true if the model was committed (confirmed enable or any disable).
+        // Per-monitor CheckBoxes use OneWay binding + Click (Click only fires for real user
+        // input, so the binding-driven event problem the ToggleSwitch had does not apply).
+        // The "no gesture" check still appears here because Click fires for keyboard space-
+        // bar even when the IsChecked didn't move, and to keep the cancel-revert path safe.
         private async Task<bool> TryCommitDangerousChangeAsync(
-            FrameworkElement control,
+            CheckBox control,
             bool desiredValue,
             bool currentValue,
             Action<bool> commit,
             string resourceKeyPrefix)
         {
-            // UI catching up to the model (initial OneWay binding, post-cancel revert) —
-            // no user gesture, nothing to confirm.
             if (desiredValue == currentValue)
             {
                 return false;
             }
 
-            // Disabling a dangerous feature is always safe.
             if (!desiredValue)
             {
                 commit(false);
                 return true;
             }
 
-            var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix)
-            {
-                XamlRoot = XamlRoot,
-            };
-
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            if (await ShowDangerousFeatureDialogAsync(resourceKeyPrefix))
             {
                 commit(true);
                 return true;
             }
 
-            // Cancelled — pull the UI back to the model. The resulting programmatic event
-            // re-enters this method but exits at the desiredValue == currentValue check above.
-            switch (control)
-            {
-                case CheckBox cb: cb.IsChecked = currentValue; break;
-                case ToggleSwitch ts: ts.IsOn = currentValue; break;
-            }
-
+            control.IsChecked = currentValue;
             return false;
         }
     }
