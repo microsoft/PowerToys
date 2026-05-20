@@ -227,8 +227,9 @@ if ($winui3Wxs -match "\<\?define WinUI3ApplicationsFiles=([^?]*)\?\>") {
 Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
 #AdvancedPaste
-Generate-FileList -fileDepsJson "" -fileListName AdvancedPasteAssetsFiles -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\AdvancedPaste"
-Generate-FileComponents -fileListName "AdvancedPasteAssetsFiles" -wxsFilePath $PSScriptRoot\AdvancedPaste.wxs
+# AdvancedPaste's full file tree (xbf/winmd/locale satellites/native DLLs/etc.) is harvested
+# at build time by generateAdvancedPasteWxs.ps1 (heat-based, like Monaco). Assets are included
+# in the heat harvest. Do NOT add Generate-FileList calls here for AdvancedPaste.
 
 #AwakeFiles
 Generate-FileList -fileDepsJson "" -fileListName AwakeImagesFiles -wxsFilePath $PSScriptRoot\Awake.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Awake"
