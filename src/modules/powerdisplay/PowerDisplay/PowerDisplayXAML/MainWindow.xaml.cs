@@ -18,6 +18,7 @@ using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
+using Windows.System;
 using WinUIEx;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
@@ -302,6 +303,15 @@ namespace PowerDisplay
             // mainExecutableIsOnTheParentFolder = true because PowerDisplay is a WinUI 3 app
             // deployed in a subfolder (PowerDisplay\) while PowerToys.exe is in the parent folder
             SettingsDeepLink.OpenSettings(true);
+        }
+
+        private void RootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Escape)
+            {
+                HideWindow();
+                e.Handled = true;
+            }
         }
 
         /// <summary>
