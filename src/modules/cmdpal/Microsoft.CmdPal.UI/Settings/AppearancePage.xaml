@@ -46,6 +46,7 @@
                                 x:Uid="Settings_AppearancePage_OpenCommandPaletteButton"
                                 MinWidth="200"
                                 HorizontalContentAlignment="Left"
+                                AutomationProperties.AutomationId="CmdPal_AppearancePage_OpenCommandPalette"
                                 Click="OpenCommandPalette_Click"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -57,6 +58,7 @@
                                 x:Uid="Settings_AppearancePage_ResetAppearanceButton"
                                 MinWidth="200"
                                 HorizontalContentAlignment="Left"
+                                AutomationProperties.AutomationId="CmdPal_AppearancePage_ResetAppearance"
                                 Command="{x:Bind ViewModel.Appearance.ResetAppearanceSettingsCommand}"
                                 Style="{StaticResource SubtleButtonStyle}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -68,7 +70,7 @@
                     </StackPanel>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.ThemeIndex, Mode=TwoWay}">
+                        <ComboBox AutomationProperties.AutomationId="CmdPal_AppearancePage_Theme" MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.ThemeIndex, Mode=TwoWay}">
 
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -98,7 +100,7 @@
                         x:Uid="Settings_GeneralPage_BackdropStyle_SettingsCard"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF5EF;}"
                         IsExpanded="{x:Bind ViewModel.Appearance.IsBackdropOpacityVisible, Mode=OneWay}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.BackdropStyleIndex, Mode=TwoWay}">
+                        <ComboBox AutomationProperties.AutomationId="CmdPal_AppearancePage_BackdropStyle" MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.Appearance.BackdropStyleIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Acrylic" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Transparent" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_BackdropStyle_Mica" />
@@ -128,6 +130,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="0"
+                                    AutomationProperties.AutomationId="CmdPal_AppearancePage_BackdropOpacity"
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.Appearance.BackdropOpacity, Mode=TwoWay}" />
                             </controls:SettingsCard>
@@ -143,6 +146,7 @@
                             <ComboBox
                                 x:Uid="Settings_GeneralPage_ColorizationMode"
                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                AutomationProperties.AutomationId="CmdPal_AppearancePage_ColorizationMode"
                                 SelectedIndex="{x:Bind ViewModel.Appearance.ColorizationModeIndex, Mode=TwoWay}"
                                 Visibility="{x:Bind ViewModel.Appearance.IsBackgroundSettingsEnabled, Mode=OneWay}">
                                 <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_None" />
@@ -202,13 +206,14 @@
                                 x:Uid="Settings_GeneralPage_BackgroundImage_SettingsCard"
                                 Description="{x:Bind ViewModel.Appearance.BackgroundImagePath, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
+                                <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" AutomationProperties.AutomationId="CmdPal_AppearancePage_ChooseBackgroundImage" Click="PickBackgroundImage_Click" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageBrightness_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="-100"
+                                    AutomationProperties.AutomationId="CmdPal_AppearancePage_BgImageBrightness"
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.Appearance.BackgroundImageBrightness, Mode=TwoWay}" />
                             </controls:SettingsCard>
@@ -217,11 +222,12 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="50"
                                     Minimum="0"
+                                    AutomationProperties.AutomationId="CmdPal_AppearancePage_BgImageBlur"
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.Appearance.BackgroundImageBlurAmount, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImageFit_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <ComboBox SelectedIndex="{x:Bind ViewModel.Appearance.BackgroundImageFitIndex, Mode=TwoWay}">
+                                <ComboBox AutomationProperties.AutomationId="CmdPal_AppearancePage_BgImageFit" SelectedIndex="{x:Bind ViewModel.Appearance.BackgroundImageFitIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Fill" />
                                     <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Stretch" />
                                 </ComboBox>
@@ -232,6 +238,7 @@
                                 <ptControls:ColorPickerButton
                                     HasSelectedColor="True"
                                     IsAlphaEnabled="False"
+                                    AutomationProperties.AutomationId="CmdPal_AppearancePage_BgTintColor"
                                     PaletteColors="{x:Bind ViewModel.Appearance.Swatches}"
                                     SelectedColor="{x:Bind ViewModel.Appearance.ThemeColor, Mode=TwoWay}" />
                             </controls:SettingsCard>
@@ -240,6 +247,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="1"
+                                    AutomationProperties.AutomationId="CmdPal_AppearancePage_BgTintIntensity"
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.Appearance.ColorIntensity, Mode=TwoWay}" />
                             </controls:SettingsCard>
@@ -248,6 +256,7 @@
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     Maximum="100"
                                     Minimum="0"
+                                    AutomationProperties.AutomationId="CmdPal_AppearancePage_BgImageTintIntensity"
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.Appearance.BackgroundImageTintIntensity, Mode=TwoWay}" />
                             </controls:SettingsCard>
@@ -255,7 +264,7 @@
                             <!--  Reset appearance properties  -->
                             <controls:SettingsCard x:Uid="Settings_GeneralPage_BackgroundImage_ResetProperties_SettingsCard" Visibility="{x:Bind ViewModel.Appearance.IsResetButtonVisible, Mode=OneWay}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button x:Uid="Settings_GeneralPage_Background_ResetImagePropertiesButton" Command="{x:Bind ViewModel.Appearance.ResetBackgroundImagePropertiesCommand}" />
+                                    <Button x:Uid="Settings_GeneralPage_Background_ResetImagePropertiesButton" AutomationProperties.AutomationId="CmdPal_AppearancePage_ResetBgImage" Command="{x:Bind ViewModel.Appearance.ResetBackgroundImagePropertiesCommand}" />
                                 </StackPanel>
                             </controls:SettingsCard>
 
@@ -267,15 +276,15 @@
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_ShowAppDetails_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A0;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowAppDetails, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_ShowAppDetails" IsOn="{x:Bind ViewModel.ShowAppDetails, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_BackspaceGoesBack_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE750;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.BackspaceGoesBack, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_BackspaceGoesBack" IsOn="{x:Bind ViewModel.BackspaceGoesBack, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_EscapeKeyBehavior_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE845;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EscapeKeyBehaviorIndex, Mode=TwoWay}">
+                        <ComboBox AutomationProperties.AutomationId="CmdPal_AppearancePage_EscapeKeyBehavior" MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.EscapeKeyBehaviorIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_DismissEmptySearchOrGoBack" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysGoBack" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_EscapeKeyBehavior_Option_AlwaysDismiss" />
@@ -284,11 +293,11 @@
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_SingleClickActivation_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE962;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_SingleClickActivates" IsOn="{x:Bind ViewModel.SingleClickActivates, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_DisableAnimations_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE945;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_AppearancePage_DisableAnimations" IsOn="{x:Bind ViewModel.DisableAnimations, Mode=TwoWay}" />
                     </controls:SettingsCard>
                 </StackPanel>
             </Grid>
