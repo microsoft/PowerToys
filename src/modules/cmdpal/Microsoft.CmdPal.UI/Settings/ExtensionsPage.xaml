@@ -248,7 +248,13 @@
                                             </cpcontrols:ContentIcon.Content>
                                         </cpcontrols:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
-                                    <ToggleSwitch AutomationProperties.AutomationId="CmdPal_ExtensionsPage_Provider_Enable" IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                    <!--
+                                        AutomationId on the inner ToggleSwitch is intentionally omitted
+                                        because the parent SettingsCard already exposes a unique
+                                        provider-derived AutomationId (Provider.Id), so tests can locate
+                                        the toggle relative to that without ambiguity across rows.
+                                    -->
+                                    <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
                                 </controls:SettingsCard>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>

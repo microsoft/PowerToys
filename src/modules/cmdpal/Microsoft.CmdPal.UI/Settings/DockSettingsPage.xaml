@@ -259,17 +259,22 @@
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="dockVm:DockMonitorConfigViewModel">
                                 <controls:SettingsExpander
-                                    AutomationProperties.AutomationId="{x:Bind DisplayName, Mode=OneWay}"
+                                    AutomationProperties.AutomationId="{x:Bind DeviceId, Mode=OneWay}"
                                     Description="{x:Bind Resolution, Mode=OneWay}"
                                     Header="{x:Bind DisplayName, Mode=OneWay}"
                                     HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
                                     IsExpanded="False">
-                                    <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_Monitor_Enable" IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                                    <!--
+                                        AutomationId on the inner ToggleSwitch / ComboBox is intentionally
+                                        omitted because the parent SettingsExpander already exposes a
+                                        per-monitor unique AutomationId (DeviceId), so tests can locate
+                                        each control relative to its monitor without ambiguity.
+                                    -->
+                                    <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
                                     <controls:SettingsExpander.Items>
                                         <controls:SettingsCard x:Uid="DockMonitor_Position_SettingsCard">
                                             <ComboBox
                                                 MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                                AutomationProperties.AutomationId="CmdPal_DockSettingsPage_Monitor_Position"
                                                 IsEnabled="{x:Bind IsEnabled, Mode=OneWay}"
                                                 SelectedIndex="{x:Bind SideOverrideIndex, Mode=TwoWay}">
                                                 <ComboBoxItem x:Uid="DockMonitor_Position_UseDefault" />
