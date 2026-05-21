@@ -486,6 +486,10 @@ opera.exe</value>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
     <value>Control all computes are once</value>
   </data>
+  <data name="Shell_Welcome.Content" xml:space="preserve">
+    <value>Getting started</value>
+    <comment>Navigation view item name for Getting started</comment>
+  </data>	
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
@@ -1145,7 +1149,10 @@ opera.exe</value>
   <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
-  <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
+  <data name="StartupAndPermissions.Header" xml:space="preserve">
+    <value>Startup &amp; permissions</value>
+  </data>
+	<data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
     <value>Back up &amp; restore</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
@@ -1439,7 +1446,7 @@ opera.exe</value>
     <value>Remap shortcuts to other shortcuts, keys or text snippets for all or specific applications</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
-    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
+    <value>PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.
 Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
@@ -2056,19 +2063,19 @@ The shortcuts always correspond to the most current application/Windows version.
     <value>A collection of utilities to enhance your mouse.</value>
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
-  <data name="Oobe_Overview.Description" xml:space="preserve">
-    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
+  <data name="Oobe_Overview_Description.Text" xml:space="preserve">
+    <value>Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.
 
-Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
+Take a look around and explore how some of the PowerToys utilities work and can improve your Windows experience..</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
     <value>Documentation on Microsoft Learn</value>
   </data>
-  <data name="Oobe_Overview_Telemetry_Title.Text" xml:space="preserve">
-    <value>Help us make PowerToys better</value>
+  <data name="Oobe_Overview_ConfigurePowerToysButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Configure PowerToys</value>
   </data>
-  <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
-    <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
+  <data name="Oobe_Overview_ConfigurePowerToysButton_Text.Text" xml:space="preserve">
+    <value>Configure PowerToys</value>
   </data>
   <data name="Oobe_Overview_Hotkey_Conflict_Title.Text" xml:space="preserve">
     <value>Shortcut conflict detection</value>
@@ -2215,8 +2222,8 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Shortcut Guide V2</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_Overview.Title" xml:space="preserve">
-    <value>Welcome</value>
+  <data name="Oobe_Overview_Title.Text" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
   </data>
   <data name="Oobe_WhatsNew_LoadingError.Title" xml:space="preserve">
     <value>Couldn't load the release notes.</value>
@@ -3851,21 +3858,11 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Alternate_OOBE_Run_Title.Text" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
-  <data name="General_Experimentation.Header" xml:space="preserve">
-    <value>Experimentation</value>
-  </data>
-  <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
-    <value>Only Windows Insider builds may be selected for experimentation</value>
-    <comment>{Locked="Windows Insider"}</comment>
-  </data>
-  <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
-    <value>Allow experimentation with new features</value>
-  </data>
   <data name="General_DiagnosticsAndFeedback.Header" xml:space="preserve">
     <value>Diagnostics &amp; feedback</value>
   </data>
   <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
-    <value>Learn more about the logged information and how it's used</value>
+    <value>Learn more</value>
   </data>
   <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
     <value>Diagnostic data</value>
@@ -5181,7 +5178,7 @@ The break timer font matches the text font.</value>
   <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
     <value>Play a sound when pinning a window</value>
   </data>
-  <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
+  <data name="GeneralPage_EnableViewDiagnosticData.Description" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
   <data name="Shell_LightSwitch.Content" xml:space="preserve">
