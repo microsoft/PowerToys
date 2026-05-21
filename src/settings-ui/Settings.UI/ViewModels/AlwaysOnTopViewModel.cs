@@ -51,6 +51,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _hotkey = Settings.Properties.Hotkey.Value;
             _increaseOpacityHotkey = Settings.Properties.IncreaseOpacityHotkey.Value;
             _decreaseOpacityHotkey = Settings.Properties.DecreaseOpacityHotkey.Value;
+            _cursorDodgeEnabled = Settings.Properties.CursorDodgeEnabled.Value;
+            _cursorDodgeAnimationIntervalMs = Settings.Properties.CursorDodgeAnimationIntervalMs.Value;
+            _cursorDodgeCornerPaddingHorizontal = Settings.Properties.CursorDodgeCornerPaddingHorizontal.Value;
+            _cursorDodgeCornerPaddingVertical = Settings.Properties.CursorDodgeCornerPaddingVertical.Value;
             _showInSystemMenu = Settings.Properties.ShowInSystemMenu.Value;
             _frameEnabled = Settings.Properties.FrameEnabled.Value;
             _frameThickness = Settings.Properties.FrameThickness.Value;
@@ -203,6 +207,69 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _frameEnabled = value;
                     Settings.Properties.FrameEnabled.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool CursorDodgeEnabled
+        {
+            get => _cursorDodgeEnabled;
+
+            set
+            {
+                if (value != _cursorDodgeEnabled)
+                {
+                    _cursorDodgeEnabled = value;
+                    Settings.Properties.CursorDodgeEnabled.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int CursorDodgeAnimationIntervalMs
+        {
+            get => _cursorDodgeAnimationIntervalMs;
+
+            set
+            {
+                var clampedValue = Math.Clamp(value, 8, 100);
+                if (clampedValue != _cursorDodgeAnimationIntervalMs)
+                {
+                    _cursorDodgeAnimationIntervalMs = clampedValue;
+                    Settings.Properties.CursorDodgeAnimationIntervalMs.Value = clampedValue;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int CursorDodgeCornerPaddingHorizontal
+        {
+            get => _cursorDodgeCornerPaddingHorizontal;
+
+            set
+            {
+                var clampedValue = Math.Clamp(value, 0, 200);
+                if (clampedValue != _cursorDodgeCornerPaddingHorizontal)
+                {
+                    _cursorDodgeCornerPaddingHorizontal = clampedValue;
+                    Settings.Properties.CursorDodgeCornerPaddingHorizontal.Value = clampedValue;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int CursorDodgeCornerPaddingVertical
+        {
+            get => _cursorDodgeCornerPaddingVertical;
+
+            set
+            {
+                var clampedValue = Math.Clamp(value, 0, 200);
+                if (clampedValue != _cursorDodgeCornerPaddingVertical)
+                {
+                    _cursorDodgeCornerPaddingVertical = clampedValue;
+                    Settings.Properties.CursorDodgeCornerPaddingVertical.Value = clampedValue;
                     NotifyPropertyChanged();
                 }
             }
@@ -371,6 +438,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private HotkeySettings _hotkey;
         private HotkeySettings _increaseOpacityHotkey;
         private HotkeySettings _decreaseOpacityHotkey;
+        private bool _cursorDodgeEnabled;
+        private int _cursorDodgeAnimationIntervalMs;
+        private int _cursorDodgeCornerPaddingHorizontal;
+        private int _cursorDodgeCornerPaddingVertical;
         private bool _showInSystemMenu;
         private bool _frameEnabled;
         private int _frameThickness;

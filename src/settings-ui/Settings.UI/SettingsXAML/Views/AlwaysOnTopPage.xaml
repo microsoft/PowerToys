@@ -108,6 +108,50 @@
                     <tkcontrols:SettingsCard x:Uid="AlwaysOnTop_Sound" HeaderIcon="{ui:FontIcon Glyph=&#xE7F3;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.SoundEnabled, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander
+                        x:Uid="AlwaysOnTop_CursorDodge"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C1;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.CursorDodgeEnabled, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                x:Uid="AlwaysOnTop_CursorDodgeAnimationInterval"
+                                IsEnabled="{x:Bind ViewModel.CursorDodgeEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="8"
+                                    Maximum="100"
+                                    Minimum="8"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.CursorDodgeAnimationIntervalMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                x:Uid="AlwaysOnTop_CursorDodgeCornerPaddingHorizontal"
+                                IsEnabled="{x:Bind ViewModel.CursorDodgeEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="200"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.CursorDodgeCornerPaddingHorizontal, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                x:Uid="AlwaysOnTop_CursorDodgeCornerPaddingVertical"
+                                IsEnabled="{x:Bind ViewModel.CursorDodgeEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="200"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.CursorDodgeCornerPaddingVertical, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
