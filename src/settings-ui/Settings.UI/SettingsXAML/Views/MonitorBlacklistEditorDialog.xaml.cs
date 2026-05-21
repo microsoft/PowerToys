@@ -26,7 +26,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private readonly HashSet<string> _builtInIds;
         private readonly HashSet<string> _existingCustomIds;
-        private readonly string? _originalEdidId;
 
         /// <summary>
         /// Gets the entry produced by the dialog after Save. Null if the dialog was cancelled.
@@ -47,8 +46,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             _existingCustomIds = new HashSet<string>(
                 existingCustom.Select(e => e.EdidId.ToUpperInvariant()),
                 System.StringComparer.OrdinalIgnoreCase);
-
-            _originalEdidId = existing?.EdidId;
 
             // Editing an existing entry: pre-fill, and remove its own EdidId from the
             // duplicate-of-custom set so saving without changing the EdidId is allowed.
