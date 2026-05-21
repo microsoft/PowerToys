@@ -78,6 +78,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Load custom VCP mappings
             LoadCustomVcpMappings();
 
+            // Load monitor blacklist
+            LoadMonitorBlacklist();
+
             // Listen for monitor refresh events from PowerDisplay.exe
             NativeEventWaiter.WaitForEventLoop(
                 Constants.RefreshPowerDisplayMonitorsEvent(),
@@ -650,6 +653,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         // Custom VCP mapping fields
         private ObservableCollection<CustomVcpValueMapping> _customVcpMappings;
 
+        // Monitor blacklist fields
+        private ObservableCollection<MonitorBlacklistEntry> _builtInBlacklist = new();
+        private ObservableCollection<MonitorBlacklistEntry> _customBlacklist = new();
+        private ObservableCollection<MonitorBlacklistEntry> _displayedCustomBlacklist = new();
+
         /// <summary>
         /// Gets collection of custom VCP value name mappings
         /// </summary>
@@ -659,6 +667,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// Gets a value indicating whether there are any custom VCP mappings (for UI binding).
         /// </summary>
         public bool HasCustomVcpMappings => _customVcpMappings?.Count > 0;
+
+        public ObservableCollection<MonitorBlacklistEntry> BuiltInBlacklist => _builtInBlacklist;
+
+        public bool HasBuiltInBlacklist => _builtInBlacklist?.Count > 0;
+
+        public ObservableCollection<MonitorBlacklistEntry> CustomBlacklist => _customBlacklist;
+
+        /// <summary>
+        /// Gets the custom blacklist with entries already present in the built-in list filtered
+        /// out. The underlying <see cref="CustomBlacklist"/> (and persisted settings) still hold
+        /// the user's full list — duplicates are honored but hidden from the UI to keep
+        /// "Your entries" visually distinct from "Built-in".
+        /// </summary>
+        public ObservableCollection<MonitorBlacklistEntry> DisplayedCustomBlacklist => _displayedCustomBlacklist;
+
+        public bool HasMonitorBlacklist
+            => HasBuiltInBlacklist || _displayedCustomBlacklist?.Count > 0;
 
         /// <summary>
         /// Gets collection of available profiles (for button display)
@@ -868,6 +893,48 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(HasCustomVcpMappings));
         }
 
+        private void LoadMonitorBlacklist()
+        {
+            _builtInBlacklist = new ObservableCollection<MonitorBlacklistEntry>(BuiltInMonitorBlacklist.Entries);
+
+            var custom = _settings.Properties.MonitorBlacklist ?? new List<MonitorBlacklistEntry>();
+            _customBlacklist = new ObservableCollection<MonitorBlacklistEntry>(custom);
+
+            RebuildDisplayedCustomBlacklist();
+
+            _customBlacklist.CollectionChanged += (s, e) =>
+            {
+                RebuildDisplayedCustomBlacklist();
+                OnPropertyChanged(nameof(HasMonitorBlacklist));
+            };
+
+            OnPropertyChanged(nameof(BuiltInBlacklist));
+            OnPropertyChanged(nameof(HasBuiltInBlacklist));
+            OnPropertyChanged(nameof(CustomBlacklist));
+            OnPropertyChanged(nameof(DisplayedCustomBlacklist));
+            OnPropertyChanged(nameof(HasMonitorBlacklist));
+        }
+
+        private void RebuildDisplayedCustomBlacklist()
+        {
+            var builtInIds = new HashSet<string>(
+                _builtInBlacklist.Select(e => e.EdidId.ToUpperInvariant()),
+                StringComparer.OrdinalIgnoreCase);
+
+            // Reuse the existing ObservableCollection instance so XAML bindings don't tear down.
+            _displayedCustomBlacklist.Clear();
+            foreach (var entry in _customBlacklist)
+            {
+                if (!builtInIds.Contains(entry.EdidId.ToUpperInvariant()))
+                {
+                    _displayedCustomBlacklist.Add(entry);
+                }
+            }
+
+            OnPropertyChanged(nameof(DisplayedCustomBlacklist));
+            OnPropertyChanged(nameof(HasMonitorBlacklist));
+        }
+
         /// <summary>
         /// Add a new custom VCP mapping.
         /// No duplicate checking - mappings are resolved by order (first match wins in VcpNames).
@@ -926,6 +993,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private void SaveCustomVcpMappings()
         {
             _settings.Properties.CustomVcpMappings = CustomVcpMappings.ToList();
+            NotifySettingsChanged();
+
+            // Signal PowerDisplay to reload settings
+            SignalSettingsUpdated();
+        }
+
+        public void AddCustomBlacklistEntry(MonitorBlacklistEntry entry)
+        {
+            if (entry == null || string.IsNullOrWhiteSpace(entry.EdidId))
+            {
+                return;
+            }
+
+            entry.EdidId = entry.EdidId.Trim().ToUpperInvariant();
+            entry.Comments = (entry.Comments ?? string.Empty).Trim();
+
+            _customBlacklist.Add(entry);
+            SaveMonitorBlacklist();
+        }
+
+        public void UpdateCustomBlacklistEntry(MonitorBlacklistEntry oldEntry, MonitorBlacklistEntry newEntry)
+        {
+            if (oldEntry == null || newEntry == null)
+            {
+                return;
+            }
+
+            var index = _customBlacklist.IndexOf(oldEntry);
+            if (index < 0)
+            {
+                return;
+            }
+
+            newEntry.EdidId = newEntry.EdidId.Trim().ToUpperInvariant();
+            newEntry.Comments = (newEntry.Comments ?? string.Empty).Trim();
+
+            _customBlacklist[index] = newEntry;
+            SaveMonitorBlacklist();
+        }
+
+        public void DeleteCustomBlacklistEntry(MonitorBlacklistEntry entry)
+        {
+            if (entry == null)
+            {
+                return;
+            }
+
+            if (_customBlacklist.Remove(entry))
+            {
+                SaveMonitorBlacklist();
+            }
+        }
+
+        private void SaveMonitorBlacklist()
+        {
+            _settings.Properties.MonitorBlacklist = _customBlacklist.ToList();
             NotifySettingsChanged();
 
             // Signal PowerDisplay to reload settings
