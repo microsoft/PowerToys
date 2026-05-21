@@ -8,9 +8,12 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using ShortcutGuide.Helpers;
+using ShortcutGuide.Telemetry;
 using Application = Microsoft.UI.Xaml.Application;
 
 namespace ShortcutGuide
@@ -96,6 +99,27 @@ namespace ShortcutGuide
 
             // The WinRT/WinUI dispatcher thread doesn't terminate cleanly; force exit.
             Environment.Exit(0);
+        }
+
+        private static void SendSettingsTelemetry()
+        {
+            try
+            {
+                var settingsUtils = SettingsUtils.Default;
+                var settings = settingsUtils.GetSettingsOrDefault<ShortcutGuideSettings>(ShortcutGuideSettings.ModuleName);
+                if (settings?.Properties != null)
+                {
+                    var props = settings.Properties;
+                    PowerToysTelemetry.Log.WriteEvent(new ShortcutGuideSettingsEvent(
+                        props.OpenShortcutGuide?.ToString() ?? string.Empty,
+                        props.Theme?.Value ?? "system",
+                        props.DisabledApps?.Value ?? string.Empty));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to send settings telemetry.", ex);
+            }
         }
     }
 }

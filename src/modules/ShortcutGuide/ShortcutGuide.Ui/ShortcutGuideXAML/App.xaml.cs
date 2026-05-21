@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using ShortcutGuide.Models;
 using ShortcutGuide.ShortcutGuideXAML;
+using ShortcutGuide.Telemetry;
 
 namespace ShortcutGuide
 {
@@ -40,6 +42,9 @@ namespace ShortcutGuide
             MainWindow.Activate();
             MainWindow.Closed += (_, _) =>
             {
+                PowerToysTelemetry.Log.WriteEvent(new ShortcutGuideSessionEvent(
+                    MainWindow.SessionDurationMs,
+                    MainWindow.CloseType));
                 Current.Exit();
                 Application.Current.Exit();
             };

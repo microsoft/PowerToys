@@ -4,12 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,6 +20,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.Pages;
+using ShortcutGuide.Telemetry;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
@@ -33,6 +36,11 @@ namespace ShortcutGuide
         private Dictionary<string, string?> _currentApplicationIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = null!;
+        private string _closeType = "Unknown";
+
+        internal long SessionDurationMs => _sessionStopwatch.ElapsedMilliseconds;
+
+        internal string CloseType => _closeType;
 
         private bool _setPosition;
 
@@ -69,10 +77,13 @@ namespace ShortcutGuide
                 }
             };
 
+            Activated += Window_Activated;
+
             Content.KeyUp += (_, e) =>
             {
                 if (e.Key == VirtualKey.Escape)
                 {
+                    _closeType = "Escape";
                     Close();
                 }
             };
@@ -114,6 +125,7 @@ namespace ShortcutGuide
             if (e.WindowActivationState == WindowActivationState.Deactivated && !this._taskBarWindowActivated)
             {
 #if !DEBUG
+                _closeType = "Deactivated";
                 Close();
 #endif
             }

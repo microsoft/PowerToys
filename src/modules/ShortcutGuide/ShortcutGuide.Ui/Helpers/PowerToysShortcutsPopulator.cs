@@ -64,7 +64,7 @@ namespace ShortcutGuide.Helpers
                 foreach (var action in advancedPasteProperties.CustomActions.Value.Where(a => a.IsShown))
                 {
                     content.Append(HotkeySettingsToYaml(action.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), action.Name));
-                }
+            }
             }
 
             if (enabledModules.AlwaysOnTop)
