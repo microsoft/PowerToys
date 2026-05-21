@@ -6,11 +6,13 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Windows;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using ShortcutGuide.Helpers;
+using ShortcutGuide.Telemetry;
 using Application = Microsoft.UI.Xaml.Application;
 
 namespace ShortcutGuide
@@ -25,8 +27,8 @@ namespace ShortcutGuide
             // The module interface passes: <powertoys_pid> [telemetry]
             if (args.Length >= 2 && args[1] == "telemetry")
             {
-                // Telemetry-only invocation: send settings telemetry and exit silently.
-                Logger.LogInfo("Telemetry mode requested. Exiting.");
+                Logger.LogInfo("Telemetry mode requested. Sending settings telemetry.");
+                SendSettingsTelemetry();
                 return;
             }
 
@@ -69,8 +71,7 @@ namespace ShortcutGuide
             indexGeneration.WaitForExit();
             if (indexGeneration.ExitCode != 0)
             {
-                Logger.LogError("Index generation failed with exit code: " + indexGeneration.ExitCode);
-                MessageBox.Show($"Shortcut Guide encountered an error while generating the index file. There is likely a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\". Try deleting this directory.", "Error displaying shortcuts", MessageBoxButton.OK, MessageBoxImage.Error);
+                Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
                 return;
             }
 
@@ -96,6 +97,27 @@ namespace ShortcutGuide
 
             // The WinRT/WinUI dispatcher thread doesn't terminate cleanly; force exit.
             Environment.Exit(0);
+        }
+
+        private static void SendSettingsTelemetry()
+        {
+            try
+            {
+                var settingsUtils = SettingsUtils.Default;
+                var settings = settingsUtils.GetSettingsOrDefault<ShortcutGuideSettings>(ShortcutGuideSettings.ModuleName);
+                if (settings?.Properties != null)
+                {
+                    var props = settings.Properties;
+                    PowerToysTelemetry.Log.WriteEvent(new ShortcutGuideSettingsEvent(
+                        props.OpenShortcutGuide?.ToString() ?? string.Empty,
+                        props.Theme?.Value ?? "system",
+                        props.DisabledApps?.Value ?? string.Empty));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to send settings telemetry.", ex);
+            }
         }
     }
 }
