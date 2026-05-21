@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 
 namespace PowerDisplay.Common.Models;
 
@@ -175,5 +176,28 @@ public static class MonitorIdentity
         var lastUnderscore = monitorId!.LastIndexOf('_');
         var edid = monitorId[4..lastUnderscore];
         return edid == "Unknown" ? string.Empty : edid;
+    }
+
+    /// <summary>
+    /// Extract the trailing Windows DISPLAY number from a legacy
+    /// <c>"{Source}_{EdidId}_{MonitorNumber}"</c> Id. Used as a disambiguator
+    /// during migration: two physically identical monitors share an EdidId but
+    /// have distinct DISPLAY numbers (1, 2, ...), so the legacy → new mapping is
+    /// uniquely determined by the pair (EdidId, MonitorNumber).
+    /// </summary>
+    /// <returns>The monitor number, or 0 if the input is not a legacy Id or the number cannot be parsed.</returns>
+    public static int LegacyMonitorNumber(string? monitorId)
+    {
+        if (!IsLegacyId(monitorId))
+        {
+            return 0;
+        }
+
+        var lastUnderscore = monitorId!.LastIndexOf('_');
+        return int.TryParse(
+            monitorId.AsSpan(lastUnderscore + 1),
+            NumberStyles.None,
+            CultureInfo.InvariantCulture,
+            out var number) ? number : 0;
     }
 }

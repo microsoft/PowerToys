@@ -174,4 +174,31 @@ public class MonitorIdentityTests
         Assert.AreEqual(string.Empty, MonitorIdentity.LegacyEdidId(null));
         Assert.AreEqual(string.Empty, MonitorIdentity.LegacyEdidId(string.Empty));
     }
+
+    [TestMethod]
+    public void LegacyMonitorNumber_ReturnsTrailingDigits()
+    {
+        Assert.AreEqual(1, MonitorIdentity.LegacyMonitorNumber("DDC_DELD1A8_1"));
+        Assert.AreEqual(2, MonitorIdentity.LegacyMonitorNumber("WMI_BOE0900_2"));
+        Assert.AreEqual(10, MonitorIdentity.LegacyMonitorNumber("DDC_DELD1A8_10"));
+    }
+
+    [TestMethod]
+    public void LegacyMonitorNumber_ParsesEvenForUnknownEdid()
+    {
+        // LegacyEdidId returns empty for the "Unknown" placeholder, but the trailing
+        // digits are still well-formed. Callers gate on the (EdidId, MonitorNumber)
+        // pair, so reading the number cleanly is fine here.
+        Assert.AreEqual(3, MonitorIdentity.LegacyMonitorNumber("DDC_Unknown_3"));
+    }
+
+    [TestMethod]
+    public void LegacyMonitorNumber_NewFormatOrMalformedReturnsZero()
+    {
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber(null));
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber(string.Empty));
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID12345"));
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber("DDC_DELD1A8_abc"));
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber("DDC_DELD1A8_"));
+    }
 }

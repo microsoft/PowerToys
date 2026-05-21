@@ -10,25 +10,28 @@ namespace PowerDisplay.Common.Services;
 
 /// <summary>
 /// One-shot upgrade helper: given a legacy <c>"{Source}_{EdidId}_{N}"</c> Id
-/// (pre-PR #47712), find a currently-discovered DevicePath-based Monitor.Id with
-/// the same EdidId so callers can rewrite the key or copy preferences onto it.
+/// (pre-PR #47712), find a currently-discovered DevicePath-based Monitor.Id
+/// that shares both the EdidId and the Windows DISPLAY number, so callers can
+/// rewrite the key or copy preferences onto it.
 /// </summary>
 /// <remarks>
-/// Behavior is intentionally minimal — first EdidId match wins, no broadcasting and
-/// no preference merging. A user with two identical monitors may need to re-toggle
-/// one Enable* checkbox after upgrade; that one-time cost buys a much smaller
-/// migration surface (and no follow-up edge cases to maintain).
+/// Strict matching on the pair (EdidId, MonitorNumber): if no exact match is
+/// found we return null and the caller drops the legacy entry. Mis-attributing
+/// preferences (e.g. turning on a power-state toggle on the wrong monitor) is
+/// worse than asking the user to re-toggle one checkbox, so there is no fallback.
 /// </remarks>
 public static class MonitorIdMigrator
 {
     /// <summary>
-    /// Returns the first currently-discovered Id whose EdidId matches the legacy entry,
-    /// or null if there is no match, the input is not a legacy Id, or its EdidId is the
-    /// <c>"Unknown"</c> placeholder.
+    /// Returns the currently-discovered Id whose EdidId AND MonitorNumber match
+    /// the legacy entry, or null if no such match exists, the input is not a
+    /// legacy Id, or its EdidId is the <c>"Unknown"</c> placeholder.
     /// </summary>
-    public static string? MatchNewId(string? legacyId, IEnumerable<string> currentlyDiscoveredIds)
+    public static string? MatchNewId(
+        string? legacyId,
+        IEnumerable<(string Id, int MonitorNumber)> currentlyDiscovered)
     {
-        ArgumentNullException.ThrowIfNull(currentlyDiscoveredIds);
+        ArgumentNullException.ThrowIfNull(currentlyDiscovered);
 
         var edid = MonitorIdentity.LegacyEdidId(legacyId);
         if (string.IsNullOrEmpty(edid))
@@ -36,9 +39,16 @@ public static class MonitorIdMigrator
             return null;
         }
 
-        foreach (var id in currentlyDiscoveredIds)
+        var legacyNumber = MonitorIdentity.LegacyMonitorNumber(legacyId);
+        if (legacyNumber <= 0)
         {
-            if (string.Equals(MonitorIdentity.EdidIdFromMonitorId(id), edid, StringComparison.OrdinalIgnoreCase))
+            return null;
+        }
+
+        foreach (var (id, number) in currentlyDiscovered)
+        {
+            if (number == legacyNumber
+                && string.Equals(MonitorIdentity.EdidIdFromMonitorId(id), edid, StringComparison.OrdinalIgnoreCase))
             {
                 return id;
             }

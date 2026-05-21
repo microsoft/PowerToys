@@ -147,20 +147,22 @@ namespace PowerDisplay.Common.Services
 
         /// <summary>
         /// One-shot upgrade migration: rewrite legacy <c>"{Source}_{EdidId}_{N}"</c> keys
-        /// (pre-PR #47712) onto the matching DevicePath-based monitor Ids by joining on EdidId.
-        /// Legacy keys are always removed; an existing new-format entry is left untouched.
+        /// (pre-PR #47712) onto the matching DevicePath-based monitor Ids by joining on
+        /// (EdidId, MonitorNumber). Legacy keys are always removed; if no exact match is
+        /// found the legacy state is dropped (a warning is logged) rather than risk
+        /// attaching to the wrong monitor.
         /// </summary>
-        /// <param name="currentlyDiscoveredIds">Ids of monitors currently discovered.</param>
-        public void MigrateLegacyKeys(IEnumerable<string> currentlyDiscoveredIds)
+        /// <param name="currentlyDiscovered">Ids and Windows DISPLAY numbers of monitors currently discovered.</param>
+        public void MigrateLegacyKeys(IEnumerable<(string Id, int MonitorNumber)> currentlyDiscovered)
         {
-            if (currentlyDiscoveredIds is null)
+            if (currentlyDiscovered is null)
             {
                 return;
             }
 
             try
             {
-                var discoveredList = currentlyDiscoveredIds as IList<string> ?? currentlyDiscoveredIds.ToList();
+                var discoveredList = currentlyDiscovered as IList<(string Id, int MonitorNumber)> ?? currentlyDiscovered.ToList();
                 var legacyKeys = new List<string>();
                 foreach (var key in _states.Keys)
                 {
@@ -175,6 +177,8 @@ namespace PowerDisplay.Common.Services
                     return;
                 }
 
+                int migrated = 0;
+                int dropped = 0;
                 foreach (var legacyKey in legacyKeys)
                 {
                     var newKey = MonitorIdMigrator.MatchNewId(legacyKey, discoveredList);
@@ -182,7 +186,16 @@ namespace PowerDisplay.Common.Services
                     {
                         // TryAdd is the atomic "add only if absent" we want: a freshly-written
                         // new-format entry (from concurrent UpdateMonitorParameter) is authoritative.
-                        _states.TryAdd(newKey, CloneState(value));
+                        if (_states.TryAdd(newKey, CloneState(value)))
+                        {
+                            migrated++;
+                        }
+                    }
+                    else if (newKey == null)
+                    {
+                        Logger.LogWarning(
+                            $"[MonitorStateManager] Dropping legacy state for '{legacyKey}': no current monitor with matching EdidId+MonitorNumber.");
+                        dropped++;
                     }
 
                     _states.TryRemove(legacyKey, out _);
@@ -191,7 +204,8 @@ namespace PowerDisplay.Common.Services
                 _isDirty = true;
                 _saveDebouncer.Debounce(SaveStateToDiskAsync);
 
-                Logger.LogInfo($"[MonitorStateManager] Migrated {legacyKeys.Count} legacy key(s) to DevicePath-based Ids.");
+                Logger.LogInfo(
+                    $"[MonitorStateManager] Legacy migration finished: {migrated} migrated, {dropped} dropped (no match).");
             }
             catch (Exception ex)
             {
