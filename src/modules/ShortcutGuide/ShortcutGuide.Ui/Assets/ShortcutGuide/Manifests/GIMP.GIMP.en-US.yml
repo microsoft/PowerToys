@@ -1,6 +1,6 @@
 PackageName: GIMP.GIMP
 Name: GIMP
-WindowFilter: "gimp*.exe"
+WindowFilter: "gimp-3.exe"
 BackgroundProcess: false
 Shortcuts:
   - SectionName: Help
