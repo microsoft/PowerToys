@@ -1,6 +1,6 @@
-[submodule "deps/spdlog"]
-	path = deps/spdlog
-	url = https://github.com/gabime/spdlog.git
 [submodule "deps/expected-lite"]
-	path = deps/expected-lite
-	url = https://github.com/martinmoene/expected-lite.git
+path = deps/expected-lite
+url = https://github.com/martinmoene/expected-lite.git
+[submodule "deps/vcpkg"]
+path = deps/vcpkg
+url = https://github.com/microsoft/vcpkg.git

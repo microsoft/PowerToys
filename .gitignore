@@ -370,3 +370,6 @@ installer/*/*.wxs.bk
 .squad-workstream
 .github/agents/**squad**.md
 .github/workflows/**squad**.yml
+
+# vcpkg manifest mode installed packages
+vcpkg_installed/

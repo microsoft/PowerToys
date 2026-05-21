@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!--
+    PowerToys global C++ post-targets. Imported by Microsoft.Cpp.targets via
+    the <ForceImportAfterCppTargets> property in Cpp.Build.props.
+
+    vcpkg's MSBuild integration is opt-in per project: $(VcpkgEnabled) defaults
+    to false in Cpp.Build.props, and individual projects (e.g. spdlog consumers
+    via deps/spdlog.props) flip it to true. This conditional import lets those
+    projects pick up vcpkg's auto-install + auto-link behavior without
+    affecting any unrelated C++ project in the repo.
+  -->
+  <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets"
+          Condition="'$(VcpkgEnabled)' == 'true' and '$(VcpkgRoot)' != '' and Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.targets')" />
+</Project>

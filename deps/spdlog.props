@@ -1,9 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project>
-	<ItemDefinitionGroup>
-		<ClCompile>
-			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)spdlog\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-			<PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-			<ForcedIncludeFiles>$(MSBuildThisFileDirectory)spdlog-msvc-fix\include\spdlog-msvc-fix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-		</ClCompile>
-	</ItemDefinitionGroup>
+  <!--
+    spdlog is consumed via vcpkg manifest mode. This property sheet is the
+    per-project opt-in: every project that needs spdlog imports it (the
+    historical path matches the pre-vcpkg in-tree submodule layout, so
+    consumers don't need to change).
+
+    Importing this sheet:
+      - enables vcpkg for this project (overrides the repo-wide default of
+        VcpkgEnabled=false in Cpp.Build.props),
+      - picks the static-CRT triplet matching the rest of PowerToys
+        (/MT and /MTd in Cpp.Build.props),
+      - imports vcpkg's MSBuild property layer so headers/lib search paths
+        are wired up; the matching targets layer is imported globally via
+        Cpp.Build.targets when VcpkgEnabled=true,
+      - re-adds the historical SPDLOG_* preprocessor defines so consuming
+        source code compiles the same way it did against the in-tree
+        submodule build.
+
+    The actual spdlog port (pinned to the exact submodule commit, with a
+    one-hunk MSVC 14.51 fix) lives at deps/vcpkg-overlays/spdlog/.
+  -->
+  <PropertyGroup>
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifestEnabled>true</VcpkgManifestEnabled>
+    <VcpkgRoot>$(RepoRoot)deps\vcpkg</VcpkgRoot>
+    <VcpkgManifestRoot>$(RepoRoot)</VcpkgManifestRoot>
+    <VcpkgConfiguration Condition="'$(Configuration)' == 'Debug'">Debug</VcpkgConfiguration>
+    <VcpkgConfiguration Condition="'$(Configuration)' != 'Debug'">Release</VcpkgConfiguration>
+    <VcpkgTriplet Condition="'$(Platform)' == 'x64'">x64-windows-static</VcpkgTriplet>
+    <VcpkgTriplet Condition="'$(Platform)' == 'ARM64'">arm64-windows-static</VcpkgTriplet>
+    <VcpkgTriplet Condition="'$(Platform)' == 'Win32'">x86-windows-static</VcpkgTriplet>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props"
+          Condition="Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props')" />
 </Project>
