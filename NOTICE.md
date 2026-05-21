@@ -1601,3 +1601,4 @@ SOFTWARE.
 - WinUIEx
 - WmiLight
 - WyHash
+- YamlDotNet
