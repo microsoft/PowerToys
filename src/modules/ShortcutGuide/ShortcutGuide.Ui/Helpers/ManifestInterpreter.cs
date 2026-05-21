@@ -202,7 +202,7 @@ namespace ShortcutGuide.Helpers
 
                 if (filter.ToLowerInvariant().EndsWith(".exe", StringComparison.InvariantCulture))
                 {
-                    return input == filter[..^4];
+                    return string.Equals(input, filter[..^4], StringComparison.OrdinalIgnoreCase);
                 }
 
                 return false;
