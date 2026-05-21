@@ -128,8 +128,6 @@ namespace ShortcutGuide.Helpers
 
             Dictionary<string, string?> applicationIds = new(StringComparer.Ordinal);
 
-            Process[] processes = Process.GetProcesses();
-
             if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
             {
                 string? name = null;
@@ -169,46 +167,13 @@ namespace ShortcutGuide.Helpers
 
             foreach (var item in GetCachedIndexYamlFile().Index.Where((s) => s.BackgroundProcess))
             {
-                try
+                var foundProcesses = Process.GetProcessesByName(item.WindowFilter);
+                if (foundProcesses.Length > 0)
                 {
-                    string? matchedExecutablePath = null;
-                    bool matched = false;
-                    foreach (var p in processes)
+                    foreach (var app in item.Apps)
                     {
-                        try
-                        {
-                            if (IsMatch(p.MainModule!.ModuleName, item.WindowFilter))
-                            {
-                                matched = true;
-                                if (item.WindowFilter != "*")
-                                {
-                                    matchedExecutablePath = p.MainModule!.FileName;
-                                }
-
-                                break;
-                            }
-                        }
-                        catch (Win32Exception)
-                        {
-                            // Access denied for elevated processes; skip.
-                        }
+                        applicationIds[app] = foundProcesses[0].MainModule?.FileName;
                     }
-
-                    if (matched)
-                    {
-                        foreach (var app in item.Apps)
-                        {
-                            // Preserve an existing (foreground) path if one was already set;
-                            // only fill in a path when the slot is currently null.
-                            if (!applicationIds.TryGetValue(app, out string? existing) || existing is null)
-                            {
-                                applicationIds[app] = matchedExecutablePath;
-                            }
-                        }
-                    }
-                }
-                catch (InvalidOperationException)
-                {
                 }
             }
 
@@ -216,10 +181,17 @@ namespace ShortcutGuide.Helpers
 
             static bool IsMatch(string input, string filter)
             {
-                input = input.ToLower(CultureInfo.InvariantCulture);
-                filter = filter.ToLower(CultureInfo.InvariantCulture);
-                string regexPattern = "^" + Regex.Escape(filter).Replace("\\*", ".*") + "$";
-                return Regex.IsMatch(input, regexPattern);
+                if (filter == "*")
+                {
+                    return true;
+                }
+
+                if (filter.ToLowerInvariant().EndsWith(".exe", StringComparison.InvariantCulture))
+                {
+                    return input == filter[..^4];
+                }
+
+                return false;
             }
         }
     }
