@@ -105,6 +105,103 @@
                             <tkcontrols:SettingsCard x:Uid="PowerDisplay_MaxCompatibilityMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7B5;}">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+
+                            <!--  Monitor blacklist  -->
+                            <tkcontrols:SettingsExpander
+                                x:Uid="PowerDisplay_MonitorBlacklist"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}"
+                                IsExpanded="{x:Bind ViewModel.HasMonitorBlacklist, Mode=OneWay}">
+                                <tkcontrols:SettingsExpander.Items>
+                                    <!--  Built-in subheader  -->
+                                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                                        <TextBlock
+                                            x:Uid="PowerDisplay_MonitorBlacklist_BuiltInSubheader"
+                                            FontWeight="SemiBold" />
+                                    </tkcontrols:SettingsCard>
+
+                                    <!--  Built-in list empty hint  -->
+                                    <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
+                                        <TextBlock
+                                            x:Uid="PowerDisplay_MonitorBlacklist_BuiltInEmpty"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    </tkcontrols:SettingsCard>
+
+                                    <!--  Built-in list (read-only)  -->
+                                    <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                        <ItemsControl ItemsSource="{x:Bind ViewModel.BuiltInBlacklist, Mode=OneWay}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
+                                                    <Grid Margin="0,4,0,4" ColumnSpacing="12">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock FontFamily="Consolas" Text="{x:Bind EdidId}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Text="{x:Bind Comments}"
+                                                            TextWrapping="Wrap" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </tkcontrols:SettingsCard>
+
+                                    <!--  Custom subheader  -->
+                                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                                        <TextBlock
+                                            x:Uid="PowerDisplay_MonitorBlacklist_CustomSubheader"
+                                            FontWeight="SemiBold" />
+                                    </tkcontrols:SettingsCard>
+
+                                    <!--  Custom list (editable)  -->
+                                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                                        <ItemsControl ItemsSource="{x:Bind ViewModel.DisplayedCustomBlacklist, Mode=OneWay}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
+                                                    <Grid Margin="0,4,0,4" ColumnSpacing="12">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock VerticalAlignment="Center" FontFamily="Consolas" Text="{x:Bind EdidId}" />
+                                                        <TextBlock
+                                                            Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                            Text="{x:Bind Comments}"
+                                                            TextWrapping="Wrap" />
+                                                        <StackPanel
+                                                            Grid.Column="2"
+                                                            Orientation="Horizontal"
+                                                            Spacing="{StaticResource PowerDisplayActionButtonSpacing}">
+                                                            <Button
+                                                                x:Uid="PowerDisplay_MonitorBlacklist_EditButton"
+                                                                Click="EditBlacklistEntry_Click"
+                                                                Content="{ui:FontIcon Glyph=&#xE70F;}"
+                                                                Style="{StaticResource SubtleButtonStyle}"
+                                                                Tag="{x:Bind}" />
+                                                            <Button
+                                                                x:Uid="PowerDisplay_MonitorBlacklist_DeleteButton"
+                                                                Click="DeleteBlacklistEntry_Click"
+                                                                Content="{ui:FontIcon Glyph=&#xE74D;}"
+                                                                Style="{StaticResource SubtleButtonStyle}"
+                                                                Tag="{x:Bind}" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </tkcontrols:SettingsCard>
+
+                                    <!--  Add button  -->
+                                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                                        <Button x:Uid="PowerDisplay_MonitorBlacklist_AddButton" Click="AddBlacklistEntry_Click" />
+                                    </tkcontrols:SettingsCard>
+                                </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsExpander>
                         </controls:SettingsGroup>
 
                         <!--  Custom VCP Name Mappings  -->
