@@ -128,7 +128,7 @@ namespace ShortcutGuide.Helpers
 
             if (enabledModules.ShortcutGuide)
             {
-                content.Append(HotkeySettingsToYaml(SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.DefaultOpenShortcutGuide, SettingsResourceLoader.GetString("ShortcutGuide/ModuleTitle"), SettingsResourceLoader.GetString("ShortcutGuide_ShortDescription")));
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.OpenShortcutGuide, SettingsResourceLoader.GetString("ShortcutGuide/ModuleTitle"), SettingsResourceLoader.GetString("ShortcutGuide_ShortDescription")));
             }
 
             if (enabledModules.PowerOcr)
