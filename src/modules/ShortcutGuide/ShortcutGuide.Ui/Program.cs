@@ -71,12 +71,31 @@ namespace ShortcutGuide
                      Logger.LogError($"Failed to copy bundled shortcut manifests from '{sourceManifestFolder}'.", ex);
                  }
 
-                 Process indexGeneration = Process.Start(Path.GetDirectoryName(Environment.ProcessPath) + "\\PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
-                 indexGeneration.WaitForExit();
+                 string indexGeneratorPath = Path.Combine(
+                     Path.GetDirectoryName(Environment.ProcessPath)!,
+                     "PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
 
-                 if (indexGeneration.ExitCode != 0)
+                 try
                  {
-                     Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
+                     using Process? indexGeneration = Process.Start(indexGeneratorPath);
+
+                     if (indexGeneration is null)
+                     {
+                         Logger.LogError($"Failed to start index generation process '{indexGeneratorPath}'.");
+                         return;
+                     }
+
+                     indexGeneration.WaitForExit();
+
+                     if (indexGeneration.ExitCode != 0)
+                     {
+                         Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
+                         return;
+                     }
+                 }
+                 catch (Exception ex)
+                 {
+                     Logger.LogError($"Failed to start or wait for index generation process '{indexGeneratorPath}'.", ex);
                      return;
                  }
 
