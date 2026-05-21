@@ -100,7 +100,10 @@
                             Grid.Column="1"
                             Orientation="Horizontal"
                             Spacing="8">
-                            <Button x:Uid="Settings_ExtensionsPage_FindExtensions_MicrosoftStore" AutomationProperties.AutomationId="CmdPal_ExtensionsPage_OpenMicrosoftStore" Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
+                            <Button
+                                x:Uid="Settings_ExtensionsPage_FindExtensions_MicrosoftStore"
+                                AutomationProperties.AutomationId="CmdPal_ExtensionsPage_OpenMicrosoftStore"
+                                Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Viewbox Width="16">
                                         <Image AutomationProperties.AccessibilityView="Raw" Source="{ThemeResource StoreLogo}" />
@@ -213,8 +216,8 @@
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:ProviderSettingsViewModel">
                                 <controls:SettingsCard
-                                    Click="SettingsCard_Click"
                                     AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
+                                    Click="SettingsCard_Click"
                                     DataContext="{x:Bind}"
                                     Description="{x:Bind ExtensionSubtext, Mode=OneWay}"
                                     Header="{x:Bind DisplayName, Mode=OneWay}"

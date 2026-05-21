@@ -114,7 +114,10 @@
                                                             Text="{x:Bind AliasText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                     </controls:SettingsCard>
                                                     <controls:SettingsCard x:Uid="Settings_ExtensionPage_AliasActivation_SettingsCard" IsEnabled="{x:Bind AliasText, Converter={StaticResource StringEmptyToBoolConverter}, Mode=OneWay}">
-                                                        <ComboBox AutomationProperties.AutomationId="CmdPal_ExtensionPage_AliasActivationType" MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind IsDirectAlias, Converter={StaticResource BoolToOptionConverter}, Mode=TwoWay}">
+                                                        <ComboBox
+                                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                                            AutomationProperties.AutomationId="CmdPal_ExtensionPage_AliasActivationType"
+                                                            SelectedIndex="{x:Bind IsDirectAlias, Converter={StaticResource BoolToOptionConverter}, Mode=TwoWay}">
                                                             <ComboBoxItem x:Uid="Settings_ExtensionPage_Alias_DirectComboBox" />
                                                             <ComboBoxItem x:Uid="Settings_ExtensionPage_Alias_IndirectComboBox" />
                                                         </ComboBox>
