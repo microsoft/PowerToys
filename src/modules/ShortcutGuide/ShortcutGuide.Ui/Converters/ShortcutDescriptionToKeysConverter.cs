@@ -71,7 +71,7 @@ namespace ShortcutGuide.Converters
                             shortcutList.Add(keyCode);
                             break;
                         default:
-                            shortcutList.Add(Helper.GetKeyName((uint)keyCode));
+                            shortcutList.Add(Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetKeyName((uint)keyCode));
                             break;
                     }
                 }
