@@ -6,10 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using ShortcutGuide.Models;
 using YamlDotNet.Serialization;
 
@@ -115,8 +113,6 @@ namespace ShortcutGuide.Helpers
             nint handle = NativeMethods.GetForegroundWindow();
 
             Dictionary<string, string?> applicationIds = new(StringComparer.Ordinal);
-
-            Process[] processes = Process.GetProcesses();
 
             if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
             {
