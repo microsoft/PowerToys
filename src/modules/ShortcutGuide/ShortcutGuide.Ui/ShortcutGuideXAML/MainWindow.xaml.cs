@@ -51,13 +51,12 @@ namespace ShortcutGuide
         {
             this.InitializeComponent();
 
-            _getAppIdsTask = new Task<Dictionary<string, string?>>(() =>
+            _getAppIdsTask = Task.Run(() =>
             {
                 Program.CopyAndIndexGenerationThread.Join();
                 _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
                 return _currentApplicationIds;
             });
-            _getAppIdsTask.Start();
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
             ExtendsContentIntoTitleBar = true;
