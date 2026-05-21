@@ -162,8 +162,6 @@ namespace ShortcutGuide.Helpers
             /*
             if (enabledModules.ZoomIt)
             {
-                settingsUtils.GetSettings<ZoomItSettings>("ZoomIt")
-
                 content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_ZoomGroup/Header")));
                 content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.LiveZoomToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_LiveZoomGroup/Header")));
                 content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.DrawToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_DrawGroup/Header")));
