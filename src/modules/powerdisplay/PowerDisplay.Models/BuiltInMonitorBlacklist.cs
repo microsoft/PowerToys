@@ -51,6 +51,13 @@ namespace PowerDisplay.Models
                     return Array.Empty<MonitorBlacklistEntry>();
                 }
 
+                // Only the v1 schema is understood by this build. Future versions
+                // ship a refreshed binary that updates this check.
+                if (file.Version != 1)
+                {
+                    return Array.Empty<MonitorBlacklistEntry>();
+                }
+
                 return file.Entries
                     .Where(e => !string.IsNullOrWhiteSpace(e.EdidId))
                     .Select(e => new MonitorBlacklistEntry
