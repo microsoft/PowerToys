@@ -1071,6 +1071,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             // Signal PowerDisplay to reload settings
             SignalSettingsUpdated();
+
+            // The blacklist affects which monitors are discovered, so a full hardware
+            // rescan is required — mirrors the MaxCompatibilityMode setter pattern.
+            SignalRescanRequest();
         }
 
         private void NotifySettingsChanged()
