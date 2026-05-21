@@ -54,7 +54,7 @@
                         VerticalAlignment="Top"
                         CornerRadius="{StaticResource OverlayCornerRadius}"
                         Visibility="{x:Bind ModuleImageSource, Converter={StaticResource EmptyObjectToObjectConverter}}">
-                        <Image AutomationProperties.AccessibilityView="Raw" Source="{x:Bind ModuleImageSource, Converter={StaticResource UriToImageSourceConverter}, Mode=OneWay}" />
+                        <Image AutomationProperties.AccessibilityView="Raw" Source="{x:Bind ModuleImageSource, Mode=OneWay}" />
                     </Border>
 
                     <StackPanel x:Name="DescriptionPanel" Grid.Column="1">

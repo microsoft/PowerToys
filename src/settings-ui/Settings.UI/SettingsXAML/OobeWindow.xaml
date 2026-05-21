@@ -51,7 +51,7 @@
             </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    x:Uid="Shell_General"
+                    x:Uid="Shell_Welcome"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToys.png}"
                     Tag="Overview" />
                 <NavigationViewItem
