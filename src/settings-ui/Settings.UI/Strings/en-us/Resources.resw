@@ -1444,7 +1444,7 @@ opera.exe</value>
     <value>Remap shortcuts to other shortcuts, keys or text snippets for all or specific applications</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
-    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
+    <value>PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.
 Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
