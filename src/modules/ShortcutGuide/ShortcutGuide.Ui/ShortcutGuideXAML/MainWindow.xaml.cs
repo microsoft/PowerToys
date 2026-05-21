@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -29,7 +30,7 @@ namespace ShortcutGuide
 {
     public sealed partial class MainWindow : WindowEx
     {
-        private readonly Dictionary<string, string?> _currentApplicationIds;
+        private Dictionary<string, string?> _currentApplicationIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = null!;
 
@@ -37,9 +38,17 @@ namespace ShortcutGuide
 
         public MainWindow()
         {
-            this._currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
-
             this.InitializeComponent();
+            Activated += Window_Activated;
+
+            Task.Run(async () =>
+            {
+                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    this.SetNavItems();
+                });
+            });
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
             ExtendsContentIntoTitleBar = true;
@@ -59,8 +68,6 @@ namespace ShortcutGuide
                     e.Handled = true;
                 }
             };
-
-            Activated += Window_Activated;
 
             Content.KeyUp += (_, e) =>
             {
