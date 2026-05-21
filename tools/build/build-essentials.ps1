@@ -51,6 +51,21 @@ Set-Variable -Name RepoRoot -Value $repoRoot -Scope Script -Force
 # Initialize Visual Studio dev environment
 if (-not (Ensure-VsDevEnvironment)) { exit 1 }
 
+# Bootstrap vcpkg (manifest-mode deps such as spdlog are auto-installed by
+# MSBuild via vcpkg.targets, which needs deps/vcpkg/vcpkg.exe to exist).
+# bootstrap-vcpkg is idempotent and fast on subsequent calls.
+$vcpkgBootstrap = Join-Path $repoRoot 'deps\vcpkg\bootstrap-vcpkg.bat'
+if (Test-Path $vcpkgBootstrap) {
+    Write-Host "[BUILD-ESSENTIALS] Bootstrapping vcpkg"
+    & $vcpkgBootstrap -disableMetrics
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "bootstrap-vcpkg failed (exit $LASTEXITCODE)"
+        exit 1
+    }
+} else {
+    Write-Warning "[BUILD-ESSENTIALS] deps/vcpkg submodule missing. Run: git submodule update --init --recursive"
+}
+
 # If platform not provided, auto-detect from host
 if (-not $Platform -or $Platform -eq '') {
     try {

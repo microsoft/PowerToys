@@ -270,6 +270,34 @@ jobs:
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
 
+  # --- vcpkg bootstrap + binary cache --------------------------------------
+  # PowerToys consumes spdlog (and, over time, other native deps) via vcpkg
+  # in manifest mode. The deps/vcpkg submodule is fetched by the `checkout`
+  # step above (submodules: true). The bootstrap-vcpkg script builds vcpkg.exe
+  # the first time it runs, so this step is fast on cache hits.
+  #
+  # Vcpkg's MSBuild integration (auto-imported by Cpp.Build.targets when
+  # $(VcpkgEnabled) == 'true', i.e. for projects that import deps/spdlog.props)
+  # invokes vcpkg.exe to install manifest dependencies before compile. Without
+  # the binary cache below, that takes 3-5 minutes per triplet per build.
+  - ${{ if eq(parameters.enablePackageCaching, true) }}:
+    - task: Cache@2
+      displayName: 'Cache vcpkg binary archives'
+      inputs:
+        # Key changes whenever the vcpkg toolchain, manifest, configuration, or
+        # any overlay-port file changes — all the inputs vcpkg actually uses to
+        # compute its package ABI.
+        key: '"vcpkg" | "$(Agent.OS)" | deps/vcpkg/HEAD | vcpkg.json | vcpkg-configuration.json | deps/vcpkg-overlays/**'
+        restoreKeys: |
+           "vcpkg" | "$(Agent.OS)"
+           "vcpkg"
+        path: $(LOCALAPPDATA)\vcpkg\archives
+
+  - pwsh: |-
+      & "$(build.sourcesdirectory)\deps\vcpkg\bootstrap-vcpkg.bat" -disableMetrics
+      if ($LASTEXITCODE -ne 0) { throw "bootstrap-vcpkg failed (exit $LASTEXITCODE)" }
+    displayName: Bootstrap vcpkg
+
 
 
   - ${{ parameters.beforeBuildSteps }}
