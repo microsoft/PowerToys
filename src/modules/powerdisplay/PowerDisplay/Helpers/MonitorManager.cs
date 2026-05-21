@@ -36,7 +36,7 @@ namespace PowerDisplay.Helpers
         // has had a chance to push the actual blacklist. Built-in entries are included
         // automatically by the service constructor.
         private MonitorBlacklistService _blacklistService
-            = new(System.Array.Empty<MonitorBlacklistEntry>());
+            = new(Array.Empty<MonitorBlacklistEntry>());
 
         // Controllers stored by type for O(1) lookup based on CommunicationMethod
         private DdcCiController? _ddcController;
@@ -98,10 +98,10 @@ namespace PowerDisplay.Helpers
         /// <see cref="DiscoverMonitorsAsync"/> so user edits to the blacklist take effect on
         /// the next refresh.
         /// </summary>
-        public void SetMonitorBlacklist(System.Collections.Generic.IEnumerable<MonitorBlacklistEntry> customEntries)
+        public void SetMonitorBlacklist(IEnumerable<MonitorBlacklistEntry> customEntries)
         {
             _blacklistService = new MonitorBlacklistService(customEntries
-                ?? System.Array.Empty<MonitorBlacklistEntry>());
+                ?? Array.Empty<MonitorBlacklistEntry>());
         }
 
         /// <summary>
@@ -153,8 +153,8 @@ namespace PowerDisplay.Helpers
             // entry's DevicePath, so blocked monitors are not opened, probed, or queried
             // — the whole point of the blacklist over the per-monitor IsHidden flag.
             var beforeCount = inventory.Count;
-            var filteredInventory = new System.Collections.Generic.Dictionary<string, MonitorDisplayInfo>(
-                inventory.Count, System.StringComparer.OrdinalIgnoreCase);
+            var filteredInventory = new Dictionary<string, MonitorDisplayInfo>(
+                inventory.Count, StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in inventory)
             {
                 if (_blacklistService.IsBlocked(kvp.Value.DevicePath))
