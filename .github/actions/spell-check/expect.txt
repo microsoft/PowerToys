@@ -165,6 +165,7 @@ bugreport
 bugreportfile
 BUILDARCH
 BUILDNUMBER
+buildsystems
 buildtransitive
 builttoroam
 BUNDLEINFO
@@ -441,6 +442,7 @@ drawingcolor
 dreamsofameaningfullife
 drivedetectionwarning
 DROPFILES
+DSPDLOG
 DSTINVERT
 DString
 dto
@@ -1384,6 +1386,7 @@ Pokedex
 Pomodoro
 popups
 POPUPWINDOW
+portfile
 POSITIONITEM
 POWERBROADCAST
 powerdisplay
@@ -1601,6 +1604,7 @@ sancov
 SAVEFAILED
 schedtasks
 SCID
+SCL
 Scode
 SCREENFONTS
 screenruler
@@ -1776,6 +1780,7 @@ STDAPI
 stdc
 stdcpp
 stdcpplatest
+stdext
 STDMETHODCALLTYPE
 STDMETHODIMP
 steamapps
@@ -1898,6 +1903,7 @@ TNP
 Toggleable
 tontrager
 Toolhelp
+toolsets
 toolwindow
 TOPDOWNDIB
 TOUCHEVENTF

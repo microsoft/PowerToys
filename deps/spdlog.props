@@ -9,8 +9,11 @@
     Importing this sheet:
       - enables vcpkg for this project (overrides the repo-wide default of
         VcpkgEnabled=false in Cpp.Build.props),
-      - picks the static-CRT triplet matching the rest of PowerToys
-        (/MT and /MTd in Cpp.Build.props),
+      - locates vcpkg via a three-tier fallback (env var, VS-shipped, local
+        clone) matching the pattern used by microsoft/terminal so we don't
+        need a vcpkg submodule,
+      - asks vcpkg to use the static-CRT triplet matching the rest of
+        PowerToys (/MT and /MTd in Cpp.Build.props),
       - imports vcpkg's MSBuild property layer so headers/lib search paths
         are wired up; the matching targets layer is imported globally via
         Cpp.Build.targets when VcpkgEnabled=true,
@@ -18,20 +21,35 @@
         source code compiles the same way it did against the in-tree
         submodule build.
 
-    The actual spdlog port (pinned to the exact submodule commit, with a
-    one-hunk MSVC 14.51 fix) lives at deps/vcpkg-overlays/spdlog/.
+    The actual spdlog port (pinned to the exact commit the deleted
+    deps/spdlog submodule used to point at, with a one-hunk MSVC 14.51 fix)
+    lives at deps/vcpkg-overlays/spdlog/.
   -->
-  <PropertyGroup>
+  <PropertyGroup Label="vcpkg">
     <VcpkgEnabled>true</VcpkgEnabled>
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgManifestEnabled>true</VcpkgManifestEnabled>
-    <VcpkgRoot>$(RepoRoot)deps\vcpkg</VcpkgRoot>
     <VcpkgManifestRoot>$(RepoRoot)</VcpkgManifestRoot>
-    <VcpkgConfiguration Condition="'$(Configuration)' == 'Debug'">Debug</VcpkgConfiguration>
-    <VcpkgConfiguration Condition="'$(Configuration)' != 'Debug'">Release</VcpkgConfiguration>
-    <VcpkgTriplet Condition="'$(Platform)' == 'x64'">x64-windows-static</VcpkgTriplet>
-    <VcpkgTriplet Condition="'$(Platform)' == 'ARM64'">arm64-windows-static</VcpkgTriplet>
-    <VcpkgTriplet Condition="'$(Platform)' == 'Win32'">x86-windows-static</VcpkgTriplet>
+    <VcpkgOSTarget>windows</VcpkgOSTarget>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <!-- vcpkg validates triplets case-sensitively; PowerToys uses ARM64 capital-case. -->
+    <VcpkgPlatformTarget Condition="'$(Platform)' == 'ARM64'">arm64</VcpkgPlatformTarget>
+    <VcpkgApplocalDeps>false</VcpkgApplocalDeps>
+    <VcpkgInstalledDir>$(RepoRoot)$(Platform)\$(Configuration)\vcpkg_installed\</VcpkgInstalledDir>
+
+    <!-- Three-tier VcpkgRoot fallback (terminal pattern):
+         1. $(VCPKG_ROOT) env var (CI sets this via steps-install-vcpkg.yml;
+            local dev sets it via tools\build\build-essentials.ps1).
+         2. The vcpkg shipped with Visual Studio (Microsoft.VisualStudio.Component.Vcpkg).
+         3. A local clone at deps\vcpkg (gitignored, runtime-cloned by
+            build-essentials.ps1 when neither of the above is available). -->
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == ''">$(VCPKG_ROOT)</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' and '$(VsInstallRoot)' != ''">$(VsInstallRoot)\VC\vcpkg</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' or !Exists('$(VcpkgRoot)\vcpkg.exe')">$(RepoRoot)deps\vcpkg</VcpkgRoot>
+
+    <CAExcludePath>$(CAExcludePath);$(VcpkgInstalledDir)</CAExcludePath>
+    <!-- Disable global-per-user vcpkg install so we don't accidentally pick up an unrelated triplet. -->
+    <VCPkgLocalAppDataDisabled>true</VCPkgLocalAppDataDisabled>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

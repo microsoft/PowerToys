@@ -270,33 +270,29 @@ jobs:
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
 
-  # --- vcpkg bootstrap + binary cache --------------------------------------
-  # PowerToys consumes spdlog (and, over time, other native deps) via vcpkg
-  # in manifest mode. The deps/vcpkg submodule is fetched by the `checkout`
-  # step above (submodules: true). The bootstrap-vcpkg script builds vcpkg.exe
-  # the first time it runs, so this step is fast on cache hits.
+  # --- vcpkg detection + binary cache --------------------------------------
+  # PowerToys consumes spdlog (and, over time, other native deps) via vcpkg in
+  # manifest mode. steps-install-vcpkg.yml prefers the vcpkg shipped with
+  # Visual Studio (Microsoft.VisualStudio.Component.Vcpkg) and falls back to a
+  # fresh clone of microsoft/vcpkg into deps/vcpkg if VS doesn't have it.
+  # Either way it sets the VCPKG_ROOT pipeline variable; MSBuild integration
+  # picks it up from deps/spdlog.props (three-tier VcpkgRoot fallback).
   #
-  # Vcpkg's MSBuild integration (auto-imported by Cpp.Build.targets when
-  # $(VcpkgEnabled) == 'true', i.e. for projects that import deps/spdlog.props)
-  # invokes vcpkg.exe to install manifest dependencies before compile. Without
-  # the binary cache below, that takes 3-5 minutes per triplet per build.
+  # Vcpkg's MSBuild integration runs `vcpkg install` once per build, so the
+  # binary cache below saves ~3-5 minutes per triplet on cache hits.
+  - template: .\steps-install-vcpkg.yml
+
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
       displayName: 'Cache vcpkg binary archives'
       inputs:
-        # Key changes whenever the vcpkg toolchain, manifest, configuration, or
-        # any overlay-port file changes — all the inputs vcpkg actually uses to
-        # compute its package ABI.
-        key: '"vcpkg" | "$(Agent.OS)" | deps/vcpkg/HEAD | vcpkg.json | vcpkg-configuration.json | deps/vcpkg-overlays/**'
+        # Key on the inputs vcpkg uses to compute its package ABI: the manifest,
+        # configuration, every overlay-port file, and the agent OS.
+        key: '"vcpkg" | "$(Agent.OS)" | vcpkg.json | vcpkg-configuration.json | deps/vcpkg-overlays/**'
         restoreKeys: |
            "vcpkg" | "$(Agent.OS)"
            "vcpkg"
         path: $(LOCALAPPDATA)\vcpkg\archives
-
-  - pwsh: |-
-      & "$(build.sourcesdirectory)\deps\vcpkg\bootstrap-vcpkg.bat" -disableMetrics
-      if ($LASTEXITCODE -ne 0) { throw "bootstrap-vcpkg failed (exit $LASTEXITCODE)" }
-    displayName: Bootstrap vcpkg
 
 
 

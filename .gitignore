@@ -373,3 +373,5 @@ installer/*/*.wxs.bk
 
 # vcpkg manifest mode installed packages
 vcpkg_installed/
+
+deps/vcpkg/

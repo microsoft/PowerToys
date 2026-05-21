@@ -51,19 +51,35 @@ Set-Variable -Name RepoRoot -Value $repoRoot -Scope Script -Force
 # Initialize Visual Studio dev environment
 if (-not (Ensure-VsDevEnvironment)) { exit 1 }
 
-# Bootstrap vcpkg (manifest-mode deps such as spdlog are auto-installed by
-# MSBuild via vcpkg.targets, which needs deps/vcpkg/vcpkg.exe to exist).
-# bootstrap-vcpkg is idempotent and fast on subsequent calls.
-$vcpkgBootstrap = Join-Path $repoRoot 'deps\vcpkg\bootstrap-vcpkg.bat'
-if (Test-Path $vcpkgBootstrap) {
-    Write-Host "[BUILD-ESSENTIALS] Bootstrapping vcpkg"
-    & $vcpkgBootstrap -disableMetrics
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "bootstrap-vcpkg failed (exit $LASTEXITCODE)"
-        exit 1
+# Detect vcpkg using the Windows Terminal pattern: prefer VS-shipped vcpkg
+# (Microsoft.VisualStudio.Component.Vcpkg), fall back to a runtime clone at
+# deps/vcpkg if VS doesn't have it. Either way, set VCPKG_ROOT so MSBuild
+# picks it up via deps/spdlog.props' three-tier fallback. Idempotent.
+if (-not $env:VCPKG_ROOT) {
+    $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
+    $vsInstallRoot = $null
+    if (Test-Path $vswhere) {
+        $vsInstallRoot = & $vswhere -latest -prerelease -requires Microsoft.VisualStudio.Component.Vcpkg -property installationPath 2>$null
     }
-} else {
-    Write-Warning "[BUILD-ESSENTIALS] deps/vcpkg submodule missing. Run: git submodule update --init --recursive"
+    if ($vsInstallRoot) {
+        $env:VCPKG_ROOT = Join-Path $vsInstallRoot 'VC\vcpkg'
+        Write-Host "[BUILD-ESSENTIALS] Using vcpkg from Visual Studio installation ($env:VCPKG_ROOT)"
+    } else {
+        $localVcpkg = Join-Path $repoRoot 'deps\vcpkg'
+        if (-not (Test-Path (Join-Path $localVcpkg 'vcpkg.exe'))) {
+            Write-Host "[BUILD-ESSENTIALS] VS-shipped vcpkg not found; cloning microsoft/vcpkg to $localVcpkg"
+            if (Test-Path $localVcpkg) { Remove-Item -Recurse -Force $localVcpkg }
+            & git clone https://github.com/microsoft/vcpkg $localVcpkg
+            if ($LASTEXITCODE -ne 0) { Write-Error "git clone vcpkg failed (exit $LASTEXITCODE)"; exit 1 }
+            Push-Location $localVcpkg
+            try {
+                & .\bootstrap-vcpkg.bat -disableMetrics
+                if ($LASTEXITCODE -ne 0) { Write-Error "bootstrap-vcpkg failed (exit $LASTEXITCODE)"; exit 1 }
+            } finally { Pop-Location }
+        }
+        $env:VCPKG_ROOT = $localVcpkg
+        Write-Host "[BUILD-ESSENTIALS] Using vcpkg from local checkout ($env:VCPKG_ROOT)"
+    }
 }
 
 # If platform not provided, auto-detect from host
