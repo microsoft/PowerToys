@@ -90,7 +90,7 @@ namespace ShortcutGuide
                      if (indexGeneration.ExitCode != 0)
                      {
                          Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
-                         return;
+                         Environment.Exit(indexGeneration.ExitCode);
                      }
                  }
                  catch (Exception ex)
