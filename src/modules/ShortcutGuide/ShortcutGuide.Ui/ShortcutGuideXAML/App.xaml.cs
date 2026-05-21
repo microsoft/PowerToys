@@ -45,6 +45,7 @@ namespace ShortcutGuide
                     MainWindow.SessionDurationMs,
                     MainWindow.CloseType));
                 Current.Exit();
+                Application.Current.Exit();
             };
         }
 

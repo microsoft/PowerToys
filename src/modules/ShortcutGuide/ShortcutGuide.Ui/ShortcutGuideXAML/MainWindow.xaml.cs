@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -30,10 +32,11 @@ using WinUIEx.Messaging;
 
 namespace ShortcutGuide
 {
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        private readonly Dictionary<string, string?> _currentApplicationIds;
         private readonly Stopwatch _sessionStopwatch = Stopwatch.StartNew();
+        private readonly Task<Dictionary<string, string?>> _getAppIdsTask;
+        private Dictionary<string, string?> _currentApplicationIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = null!;
         private string _closeType = "Unknown";
@@ -46,9 +49,15 @@ namespace ShortcutGuide
 
         public MainWindow()
         {
-            this._currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
-
             this.InitializeComponent();
+
+            _getAppIdsTask = new Task<Dictionary<string, string?>>(() =>
+            {
+                Program.CopyAndIndexGenerationThread.Join();
+                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
+                return _currentApplicationIds;
+            });
+            _getAppIdsTask.Start();
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
             ExtendsContentIntoTitleBar = true;
@@ -151,6 +160,7 @@ namespace ShortcutGuide
                 };
             }
 
+            _currentApplicationIds = _getAppIdsTask.Result;
             this.SetNavItems();
         }
 
@@ -160,7 +170,7 @@ namespace ShortcutGuide
             // TO DO: Check if Settings button is considered an item too.
             if (this.WindowSelector.MenuItems.Count == 0)
             {
-                string defaultShellName = ManifestInterpreter.GetIndexYamlFile().DefaultShellName;
+                string defaultShellName = ManifestInterpreter.GetCachedIndexYamlFile().DefaultShellName;
 
                 foreach (var (item, executablePath) in this._currentApplicationIds)
                 {
@@ -274,6 +284,11 @@ namespace ShortcutGuide
         private void Settings_Tapped(object sender, TappedRoutedEventArgs e)
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.ShortcutGuide);
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
     }
 }

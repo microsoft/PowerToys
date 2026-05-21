@@ -87,7 +87,7 @@ Per Application/Package one or more Keyboard manifests can be declared. Every ma
 <details>
  <summary><b>WindowFilter</b> - The filter of window processes to which the shortcuts apply to</summary>
 
- This field declares for which process name the shortcuts should be showed (To rephrase: For which processes the shortcut will have an effect if pressed). You can use an asterisk to leave out a certain part. For example `*.PowerToys.*.exe` targets all PowerToys processes and `*` apply to any process.
+ This field declares for which process name the shortcuts should be showed (To rephrase: For which processes the shortcut will have an effect if pressed). You can use an asterisk (`*`)  to apply to any process.
 
 </details>
 

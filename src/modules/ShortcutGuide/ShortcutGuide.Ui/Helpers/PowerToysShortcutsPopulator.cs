@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -32,7 +33,9 @@ namespace ShortcutGuide.Helpers
             content = new(PopulateRegex().Replace(content.ToString(), populateStartString + Environment.NewLine));
 
             SettingsUtils settingsUtils = SettingsUtils.Default;
-            EnabledModules enabledModules = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils).SettingsConfig.Enabled;
+            SettingsRepository<GeneralSettings> settingsRepository = SettingsRepository<GeneralSettings>.GetInstance(settingsUtils);
+            settingsRepository.ReloadSettings();
+            EnabledModules enabledModules = settingsRepository.SettingsConfig.Enabled;
             if (enabledModules.AdvancedPaste)
             {
                 AdvancedPasteProperties advancedPasteProperties = SettingsRepository<AdvancedPasteSettings>.GetInstance(settingsUtils).SettingsConfig.Properties;
@@ -57,11 +60,19 @@ namespace ShortcutGuide.Helpers
                     content.Append(HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.Transcode.TranscodeToMp3.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), SettingsResourceLoader.GetString("TranscodeToMp3/Header")));
                     content.Append(HotkeySettingsToYaml(advancedPasteProperties.AdditionalActions.Transcode.TranscodeToMp4.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), SettingsResourceLoader.GetString("TranscodeToMp4/Header")));
                 }
+
+                foreach (var action in advancedPasteProperties.CustomActions.Value.Where(a => a.IsShown))
+                {
+                    content.Append(HotkeySettingsToYaml(action.Shortcut, SettingsResourceLoader.GetString("AdvancedPaste/ModuleTitle"), action.Name));
+                }
             }
 
             if (enabledModules.AlwaysOnTop)
             {
-                content.Append(HotkeySettingsToYaml(SettingsRepository<AlwaysOnTopSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.Hotkey, SettingsResourceLoader.GetString("AlwaysOnTop/ModuleTitle"), SettingsResourceLoader.GetString("AlwaysOnTop_ShortDescription")));
+                AlwaysOnTopProperties alwaysOnTopProperties = SettingsRepository<AlwaysOnTopSettings>.GetInstance(settingsUtils).SettingsConfig.Properties;
+                content.Append(HotkeySettingsToYaml(alwaysOnTopProperties.Hotkey, SettingsResourceLoader.GetString("AlwaysOnTop/ModuleTitle"), SettingsResourceLoader.GetString("AlwaysOnTop_ShortDescription")));
+                content.Append(HotkeySettingsToYaml(alwaysOnTopProperties.IncreaseOpacityHotkey, SettingsResourceLoader.GetString("AlwaysOnTop/ModuleTitle"), SettingsResourceLoader.GetString("AlwaysOnTop_IncreaseOpacityShortcut/Header")));
+                content.Append(HotkeySettingsToYaml(alwaysOnTopProperties.DecreaseOpacityHotkey, SettingsResourceLoader.GetString("AlwaysOnTop/ModuleTitle"), SettingsResourceLoader.GetString("AlwaysOnTop_DecreaseOpacityShortcut/Header")));
             }
 
             if (enabledModules.ColorPicker)
@@ -79,6 +90,7 @@ namespace ShortcutGuide.Helpers
                 CropAndLockProperties cropAndLockProperties = SettingsRepository<CropAndLockSettings>.GetInstance(settingsUtils).SettingsConfig.Properties;
                 content.Append(HotkeySettingsToYaml(cropAndLockProperties.ThumbnailHotkey, SettingsResourceLoader.GetString("CropAndLock/ModuleTitle"), SettingsResourceLoader.GetString("CropAndLock_Thumbnail")));
                 content.Append(HotkeySettingsToYaml(cropAndLockProperties.ReparentHotkey, SettingsResourceLoader.GetString("CropAndLock/ModuleTitle"), SettingsResourceLoader.GetString("CropAndLock_Reparent")));
+                content.Append(HotkeySettingsToYaml(cropAndLockProperties.ScreenshotHotkey, SettingsResourceLoader.GetString("CropAndLock/ModuleTitle"), SettingsResourceLoader.GetString("CropAndLock_Screenshot")));
             }
 
             if (enabledModules.CursorWrap)
@@ -116,6 +128,11 @@ namespace ShortcutGuide.Helpers
                 content.Append(HotkeySettingsToYaml(SettingsRepository<PeekSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("Peek/ModuleTitle")));
             }
 
+            if (enabledModules.PowerDisplay)
+            {
+                content.Append(HotkeySettingsToYaml(SettingsRepository<PowerDisplaySettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ActivationShortcut, SettingsResourceLoader.GetString("PowerDisplay/ModuleTitle"), SettingsResourceLoader.GetString("Launch_PowerDisplay/Content")));
+            }
+
             if (enabledModules.PowerLauncher)
             {
                 content.Append(HotkeySettingsToYaml(SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.OpenPowerLauncher, SettingsResourceLoader.GetString("PowerLauncher/ModuleTitle")));
@@ -128,7 +145,7 @@ namespace ShortcutGuide.Helpers
 
             if (enabledModules.ShortcutGuide)
             {
-                content.Append(HotkeySettingsToYaml(SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.DefaultOpenShortcutGuide, SettingsResourceLoader.GetString("ShortcutGuide/ModuleTitle"), SettingsResourceLoader.GetString("ShortcutGuide_ShortDescription")));
+                content.Append(HotkeySettingsToYaml(SettingsRepository<ShortcutGuideSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.OpenShortcutGuide, SettingsResourceLoader.GetString("ShortcutGuide/ModuleTitle"), SettingsResourceLoader.GetString("ShortcutGuide_ShortDescription")));
             }
 
             if (enabledModules.PowerOcr)
@@ -145,6 +162,8 @@ namespace ShortcutGuide.Helpers
             /*
             if (enabledModules.ZoomIt)
             {
+                settingsUtils.GetSettings<ZoomItSettings>("ZoomIt")
+
                 content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.ToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_ZoomGroup/Header")));
                 content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.LiveZoomToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_LiveZoomGroup/Header")));
                 content.Append(HotkeySettingsToYaml(SettingsRepository<ZoomItSettings>.GetInstance(settingsUtils).SettingsConfig.Properties.DrawToggleKey, SettingsResourceLoader.GetString("ZoomIt/ModuleTitle"), SettingsResourceLoader.GetString("ZoomIt_DrawGroup/Header")));
@@ -188,6 +207,11 @@ namespace ShortcutGuide.Helpers
         /// <inheritdoc cref="HotkeySettingsToYaml(HotkeySettings, string, string?)"/>
         private static string HotkeySettingsToYaml(KeyboardKeysProperty hotkeySettings, string moduleName, string? description = null)
         {
+            if (hotkeySettings is null)
+            {
+                return HotkeySettingsToYaml(new HotkeySettings(), moduleName, description);
+            }
+
             return HotkeySettingsToYaml(hotkeySettings.Value, moduleName, description);
         }
 

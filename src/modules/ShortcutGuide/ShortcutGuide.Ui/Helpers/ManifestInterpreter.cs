@@ -39,15 +39,20 @@ namespace ShortcutGuide.Helpers
         public static ShortcutFile GetShortcutsOfApplication(string applicationName)
         {
             string path = PathOfManifestFiles;
-            IEnumerable<string> files = Directory.EnumerateFiles(path, applicationName + ".*.yml") ??
-                throw new FileNotFoundException($"The file for the application '{applicationName}' was not found in '{path}'.");
+            string localizedPath = Path.Combine(path, applicationName + $".{Language}.yml");
+            string fallbackPath = Path.Combine(path, applicationName + ".en-US.yml");
 
-            IEnumerable<string> filesEnumerable = files as string[] ?? [.. files];
-            return filesEnumerable.Any(f => f.EndsWith($".{Language}.yml", StringComparison.InvariantCulture))
-                ? YamlToShortcutList(File.ReadAllText(Path.Combine(path, applicationName + $".{Language}.yml")))
-                : filesEnumerable.Any(f => f.EndsWith(".en-US.yml", StringComparison.InvariantCulture))
-                ? YamlToShortcutList(File.ReadAllText(filesEnumerable.First(f => f.EndsWith(".en-US.yml", StringComparison.InvariantCulture))))
-                : throw new FileNotFoundException($"The file for the application '{applicationName}' was not found in '{path}' with the language '{Language}' or 'en-US'.");
+            if (File.Exists(localizedPath))
+            {
+                return YamlToShortcutList(File.ReadAllText(localizedPath));
+            }
+
+            if (File.Exists(fallbackPath))
+            {
+                return YamlToShortcutList(File.ReadAllText(fallbackPath));
+            }
+
+            throw new FileNotFoundException($"The file for the application '{applicationName}' was not found in '{path}' with the language '{Language}' or 'en-US'.");
         }
 
         /// <summary>
@@ -61,22 +66,40 @@ namespace ShortcutGuide.Helpers
             return deserializer.Deserialize<ShortcutFile>(content);
         }
 
+        private static readonly object IndexLock = new();
+        private static IndexFile? cachedIndexFile;
+        private static DateTime cachedIndexLastWriteTimeUtc;
+
+        /// <summary>
+        /// Retrieves the index YAML file that contains the list of all applications and their shortcuts from the cache.
+        /// </summary>
+        /// <returns>A deserialized <see cref="IndexFile"/> object.</returns>
+        public static IndexFile GetCachedIndexYamlFile()
+        {
+            string indexPath = Path.Combine(PathOfManifestFiles, "index.yml");
+            DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(indexPath);
+
+            lock (IndexLock)
+            {
+                if (cachedIndexFile is not null && cachedIndexLastWriteTimeUtc == lastWriteTimeUtc)
+                {
+                    return cachedIndexFile.Value;
+                }
+
+                string content = File.ReadAllText(indexPath);
+                Deserializer deserializer = new();
+
+                cachedIndexFile = deserializer.Deserialize<IndexFile>(content);
+                cachedIndexLastWriteTimeUtc = lastWriteTimeUtc;
+
+                return cachedIndexFile.Value;
+            }
+        }
+
         /// <summary>
         /// Gets the path to the directory where the manifest files are stored.
         /// </summary>
         public static string PathOfManifestFiles => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WinGet", "KeyboardShortcuts");
-
-        /// <summary>
-        /// Retrieves the index YAML file that contains the list of all applications and their shortcuts.
-        /// </summary>
-        /// <returns>A deserialized <see cref="IndexFile"/> object.</returns>
-        public static IndexFile GetIndexYamlFile()
-        {
-            string path = PathOfManifestFiles;
-            string content = File.ReadAllText(Path.Combine(path, "index.yml"));
-            Deserializer deserializer = new();
-            return deserializer.Deserialize<IndexFile>(content);
-        }
 
         /// <summary>
         /// Retrieves all application IDs that should be displayed, based on the foreground window and background processes.
@@ -119,7 +142,7 @@ namespace ShortcutGuide.Helpers
                 {
                     try
                     {
-                        IndexFile.IndexItem match = GetIndexYamlFile().Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter));
+                        IndexFile.IndexItem match = ManifestInterpreter.GetCachedIndexYamlFile().Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter));
                         string? pathForApp = match.WindowFilter == "*" ? null : executablePath;
                         foreach (var item in match.Apps)
                         {
@@ -132,48 +155,32 @@ namespace ShortcutGuide.Helpers
                 }
             }
 
-            foreach (var item in GetIndexYamlFile().Index.Where((s) => s.BackgroundProcess))
+            foreach (var item in GetCachedIndexYamlFile().Index.Where((s) => s.BackgroundProcess))
             {
-                try
+                string filter = item.WindowFilter;
+
+                if (filter.EndsWith(".exe", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    string? matchedExecutablePath = null;
-                    bool matched = false;
-                    foreach (var p in processes)
-                    {
-                        try
-                        {
-                            if (IsMatch(p.MainModule!.ModuleName, item.WindowFilter))
-                            {
-                                matched = true;
-                                if (item.WindowFilter != "*")
-                                {
-                                    matchedExecutablePath = p.MainModule!.FileName;
-                                }
-
-                                break;
-                            }
-                        }
-                        catch (Win32Exception)
-                        {
-                            // Access denied for elevated processes; skip.
-                        }
-                    }
-
-                    if (matched)
-                    {
-                        foreach (var app in item.Apps)
-                        {
-                            // Preserve an existing (foreground) path if one was already set;
-                            // only fill in a path when the slot is currently null.
-                            if (!applicationIds.TryGetValue(app, out string? existing) || existing is null)
-                            {
-                                applicationIds[app] = matchedExecutablePath;
-                            }
-                        }
-                    }
+                    filter = filter[..^4];
                 }
-                catch (InvalidOperationException)
+
+                if (filter == "*")
                 {
+                    foreach (var app in item.Apps)
+                    {
+                        applicationIds[app] = null;
+                    }
+
+                    continue;
+                }
+
+                var foundProcesses = Process.GetProcessesByName(filter);
+                if (foundProcesses.Length > 0)
+                {
+                    foreach (var app in item.Apps)
+                    {
+                        applicationIds[app] = foundProcesses[0].MainModule?.FileName;
+                    }
                 }
             }
 
@@ -181,10 +188,17 @@ namespace ShortcutGuide.Helpers
 
             static bool IsMatch(string input, string filter)
             {
-                input = input.ToLower(CultureInfo.InvariantCulture);
-                filter = filter.ToLower(CultureInfo.InvariantCulture);
-                string regexPattern = "^" + Regex.Escape(filter).Replace("\\*", ".*") + "$";
-                return Regex.IsMatch(input, regexPattern);
+                if (filter == "*")
+                {
+                    return true;
+                }
+
+                if (filter.ToLowerInvariant().EndsWith(".exe", StringComparison.InvariantCulture))
+                {
+                    return input == filter[..^4];
+                }
+
+                return false;
             }
         }
     }
