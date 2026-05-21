@@ -668,10 +668,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public bool HasCustomVcpMappings => _customVcpMappings?.Count > 0;
 
+        /// <summary>Gets the built-in monitor blacklist shipped with PowerToys (read-only).</summary>
         public ObservableCollection<MonitorBlacklistEntry> BuiltInBlacklist => _builtInBlacklist;
 
+        /// <summary>Gets a value indicating whether the built-in monitor blacklist contains any entries.</summary>
         public bool HasBuiltInBlacklist => _builtInBlacklist?.Count > 0;
 
+        /// <summary>Gets the full user-defined monitor blacklist (may contain entries that are also in the built-in list; those are de-duplicated only for display).</summary>
         public ObservableCollection<MonitorBlacklistEntry> CustomBlacklist => _customBlacklist;
 
         /// <summary>
@@ -682,6 +685,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public ObservableCollection<MonitorBlacklistEntry> DisplayedCustomBlacklist => _displayedCustomBlacklist;
 
+        /// <summary>Gets a value indicating whether either the built-in or the displayed custom blacklist contains any entries.</summary>
         public bool HasMonitorBlacklist
             => HasBuiltInBlacklist || _displayedCustomBlacklist?.Count > 0;
 
@@ -897,7 +901,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             _builtInBlacklist = new ObservableCollection<MonitorBlacklistEntry>(BuiltInMonitorBlacklist.Entries);
 
-            var custom = _settings.Properties.MonitorBlacklist ?? new List<MonitorBlacklistEntry>();
+            List<MonitorBlacklistEntry> custom;
+            try
+            {
+                custom = _settings.Properties.MonitorBlacklist ?? new List<MonitorBlacklistEntry>();
+                Logger.LogInfo($"Loaded {custom.Count} custom monitor blacklist entries");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to load monitor blacklist: {ex.Message}");
+                custom = new List<MonitorBlacklistEntry>();
+            }
+
             _customBlacklist = new ObservableCollection<MonitorBlacklistEntry>(custom);
 
             RebuildDisplayedCustomBlacklist();
@@ -999,6 +1014,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SignalSettingsUpdated();
         }
 
+        /// <summary>Adds a user-defined monitor blacklist entry, normalizing the EdidId and Comments before persisting.</summary>
         public void AddCustomBlacklistEntry(MonitorBlacklistEntry entry)
         {
             if (entry == null || string.IsNullOrWhiteSpace(entry.EdidId))
@@ -1013,6 +1029,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SaveMonitorBlacklist();
         }
 
+        /// <summary>Replaces one user-defined monitor blacklist entry with another, normalizing the new entry's fields before persisting.</summary>
         public void UpdateCustomBlacklistEntry(MonitorBlacklistEntry oldEntry, MonitorBlacklistEntry newEntry)
         {
             if (oldEntry == null || newEntry == null)
@@ -1033,6 +1050,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SaveMonitorBlacklist();
         }
 
+        /// <summary>Removes a user-defined monitor blacklist entry and persists.</summary>
         public void DeleteCustomBlacklistEntry(MonitorBlacklistEntry entry)
         {
             if (entry == null)
