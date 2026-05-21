@@ -58,10 +58,24 @@ namespace ShortcutGuide.Converters
 
             foreach (var key in description.Keys)
             {
-                // Try to parse a string key number to a VirtualKey
+                // Try to parse a string key number to a key code
                 if (int.TryParse(key, out int keyCode))
                 {
-                    shortcutList.Add(keyCode);
+                    switch (keyCode)
+                    {
+                        // https://learn.microsoft.com/uwp/api/windows.system.virtualkey?view=winrt-20348
+                        case 38: // The Up Arrow key or button.
+                        case 40: // The Down Arrow key or button.
+                        case 37: // The Left Arrow key or button.
+                        case 39: // The Right Arrow key or button.
+                                 // case 8: // The Back key or button.
+                                 // case 13: // The Enter key or button.
+                            shortcutList.Add(keyCode);
+                            break;
+                        default:
+                            shortcutList.Add(Helper.GetKeyName((uint)keyCode));
+                            break;
+                    }
                 }
                 else
                 {
