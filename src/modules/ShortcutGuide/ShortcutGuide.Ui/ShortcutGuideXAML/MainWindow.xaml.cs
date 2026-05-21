@@ -298,7 +298,7 @@ namespace ShortcutGuide
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _getAppIdsTask.Dispose();
         }
     }
 }

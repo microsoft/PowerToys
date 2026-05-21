@@ -170,13 +170,19 @@ namespace ShortcutGuide.Helpers
                     continue;
                 }
 
-                var foundProcesses = Process.GetProcessesByName(filter);
-                if (foundProcesses.Length > 0)
+                try
                 {
-                    foreach (var app in item.Apps)
+                    var foundProcesses = Process.GetProcessesByName(filter);
+                    if (foundProcesses.Length > 0)
                     {
-                        applicationIds[app] = foundProcesses[0].MainModule?.FileName;
+                        foreach (var app in item.Apps)
+                        {
+                            applicationIds[app] = foundProcesses[0].MainModule?.FileName;
+                        }
                     }
+                }
+                catch (Exception)
+                {
                 }
             }
 
@@ -187,6 +193,11 @@ namespace ShortcutGuide.Helpers
                 if (filter == "*")
                 {
                     return true;
+                }
+
+                if (input.ToLowerInvariant().EndsWith(".exe", StringComparison.InvariantCulture))
+                {
+                    input = input[..^4];
                 }
 
                 if (filter.ToLowerInvariant().EndsWith(".exe", StringComparison.InvariantCulture))
