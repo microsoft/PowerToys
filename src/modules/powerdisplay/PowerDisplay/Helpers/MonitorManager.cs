@@ -16,6 +16,7 @@ using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Helpers
@@ -30,6 +31,12 @@ namespace PowerDisplay.Helpers
         private readonly Dictionary<string, Monitor> _monitorLookup = new();
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
+
+        // Default to an empty custom list so discovery still works before MainViewModel
+        // has had a chance to push the actual blacklist. Built-in entries are included
+        // automatically by the service constructor.
+        private MonitorBlacklistService _blacklistService
+            = new(System.Array.Empty<MonitorBlacklistEntry>());
 
         // Controllers stored by type for O(1) lookup based on CommunicationMethod
         private DdcCiController? _ddcController;
@@ -85,6 +92,19 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
+        /// Replaces the active <see cref="MonitorBlacklistService"/> with one built from the
+        /// supplied custom entries (the built-in list is added automatically by the service
+        /// constructor). Called by <see cref="ViewModels.MainViewModel"/> before each
+        /// <see cref="DiscoverMonitorsAsync"/> so user edits to the blacklist take effect on
+        /// the next refresh.
+        /// </summary>
+        public void SetMonitorBlacklist(System.Collections.Generic.IEnumerable<MonitorBlacklistEntry> customEntries)
+        {
+            _blacklistService = new MonitorBlacklistService(customEntries
+                ?? System.Array.Empty<MonitorBlacklistEntry>());
+        }
+
+        /// <summary>
         /// Discover all monitors from all controllers.
         /// Each controller is responsible for fully initializing its monitors
         /// (including brightness, capabilities, input source, color temperature, etc.)
@@ -127,6 +147,33 @@ namespace PowerDisplay.Helpers
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
         {
             var inventory = DisplayConfigInventory.GetAllMonitorDisplayInfo();
+
+            // Filter blacklisted monitors out of the inventory before any controller
+            // is dispatched. Matching uses MonitorIdentity.EdidIdFromMonitorId on each
+            // entry's DevicePath, so blocked monitors are not opened, probed, or queried
+            // — the whole point of the blacklist over the per-monitor IsHidden flag.
+            var beforeCount = inventory.Count;
+            var filteredInventory = new System.Collections.Generic.Dictionary<string, MonitorDisplayInfo>(
+                inventory.Count, System.StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in inventory)
+            {
+                if (_blacklistService.IsBlocked(kvp.Value.DevicePath))
+                {
+                    Logger.LogInfo(
+                        $"[MonitorBlacklist] Skipping '{kvp.Value.FriendlyName}' (path '{kvp.Value.DevicePath}') — EdidId is on the blacklist");
+                    continue;
+                }
+
+                filteredInventory.Add(kvp.Key, kvp.Value);
+            }
+
+            if (filteredInventory.Count < beforeCount)
+            {
+                Logger.LogInfo(
+                    $"[MonitorBlacklist] Filtered out {beforeCount - filteredInventory.Count} monitor(s); {filteredInventory.Count} remain");
+            }
+
+            inventory = filteredInventory;
 
             if (inventory.Count == 0)
             {
