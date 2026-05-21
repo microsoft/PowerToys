@@ -38,5 +38,12 @@ namespace PowerDisplay.Telemetry.Events
         /// Number of profiles saved
         /// </summary>
         public int ProfileCount { get; set; }
+
+        /// <summary>
+        /// Number of user-customized monitor blacklist entries. Built-in entries
+        /// are not reported (count is implicit per release). Specific EdidIds are
+        /// intentionally not reported (privacy).
+        /// </summary>
+        public int MonitorBlacklistCount { get; set; }
     }
 }
