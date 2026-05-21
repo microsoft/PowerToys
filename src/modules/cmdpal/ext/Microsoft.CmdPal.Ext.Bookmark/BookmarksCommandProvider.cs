@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,6 +6,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Pages;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
@@ -23,6 +24,8 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     private readonly IBookmarksManager _bookmarksManager;
     private readonly IBookmarkResolver _commandResolver;
     private readonly IBookmarkIconLocator _iconLocator = new IconLocator();
+
+    public IBookmarksManager BookmarksManager => _bookmarksManager;
 
     private readonly ListItem _addNewItem;
     private readonly Lock _bookmarksLock = new();
@@ -127,4 +130,42 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     [Pure]
     private ICommandItem[] BuildTopLevelCommandsUnsafe() => [_addNewItem, .. _bookmarks];
+
+    public override ICommandItem[]? GetDockBands()
+    {
+        BookmarkListItem[] bookmarks;
+
+        lock (_bookmarksLock)
+        {
+            // Here we're creating an entirely different set of items to return
+            // as bands.
+            //
+            // These items will have the same ID, but bookmarks to directories
+            // will have their default command be the "DirectoryPage", so that
+            // clicking it will automatically open the palette with the files in
+            // that dir.
+            bookmarks = [.. _bookmarksManager.Bookmarks
+                .Select(bookmark => new BookmarkListItem(
+                    bookmark,
+                    _bookmarksManager,
+                    _commandResolver,
+                    _iconLocator,
+                    _placeholderParser,
+                    asBand: true))];
+        }
+
+        var bands = new List<ICommandItem>();
+
+        // Now take all those commands, and stick them into individual bands. We
+        // don't want one band with all bookmarks, we want one band per
+        // bookmark.
+        foreach (var b in bookmarks)
+        {
+            var id = CommandIds.GetLaunchBookmarkItemId(b.BookmarkId);
+            var wrapped = new WrappedDockItem(items: [b], id: id, displayTitle: b.Title);
+            bands.Add(wrapped);
+        }
+
+        return bands.Count > 0 ? bands.ToArray() : null;
+    }
 }

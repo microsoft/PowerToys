@@ -1600,5 +1600,4 @@ SOFTWARE.
 - UTF.Unknown
 - WinUIEx
 - WmiLight
-- WPF-UI
 - WyHash
