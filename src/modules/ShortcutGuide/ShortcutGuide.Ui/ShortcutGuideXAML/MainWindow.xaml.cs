@@ -156,8 +156,22 @@ namespace ShortcutGuide
                 };
             }
 
-            _currentApplicationIds = _getAppIdsTask.Result;
-            this.SetNavItems();
+            _ = this.InitializeNavItemsAsync();
+        }
+
+        private async Task InitializeNavItemsAsync()
+        {
+            try
+            {
+                _currentApplicationIds = await _getAppIdsTask.ConfigureAwait(true);
+                this.SetNavItems();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to initialize navigation items.", ex);
+                _closeType = "InitializationFailed";
+                this.DispatcherQueue.TryEnqueue(() => this.Close());
+            }
         }
 
         private void SetNavItems()
