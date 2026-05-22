@@ -5,16 +5,14 @@
 #nullable enable
 
 using Microsoft.PowerToys.Settings.UI.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
     /// <summary>
-    /// DIAGNOSTIC stub. Stripped from the full two-mode (list / form) implementation to bisect
-    /// the persistent XamlParseException (HResult 0x80073B0A = ERROR_MRM_INVALID_QUALIFIER).
-    /// If this minimal dialog opens cleanly the bug lives in the previous content
-    /// (likely an x:Uid / resw key); if it still crashes, the bug is in the wrapper or page
-    /// integration. The full implementation will be restored once the offending element is found.
+    /// Bisection stage 2 — full list-mode content restored, form-mode still removed.
+    /// Click handlers are stubs (no-op); we only need to verify the dialog opens.
     /// </summary>
     public sealed partial class MonitorBlacklistDialog : ContentDialog
     {
@@ -26,6 +24,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.InitializeComponent();
             Title = "Monitor blacklist (diagnostic)";
             CloseButtonText = "Close";
+
+            UpdateCustomEmptyHintVisibility();
+            ViewModel.DisplayedCustomBlacklist.CollectionChanged += (s, e) => UpdateCustomEmptyHintVisibility();
+        }
+
+        private void UpdateCustomEmptyHintVisibility()
+        {
+            CustomEmptyHint.Visibility = ViewModel.DisplayedCustomBlacklist.Count == 0
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+
+        private void AddEntry_Click(object sender, RoutedEventArgs e)
+        {
+            // Diagnostic stub — no-op until dialog open is verified.
+        }
+
+        private void EditEntry_Click(object sender, RoutedEventArgs e)
+        {
+            // Diagnostic stub.
+        }
+
+        private void DeleteEntry_Click(object sender, RoutedEventArgs e)
+        {
+            // Diagnostic stub.
         }
     }
 }
