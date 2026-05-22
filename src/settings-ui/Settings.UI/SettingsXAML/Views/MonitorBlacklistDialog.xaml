@@ -5,16 +5,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pdmodels="using:PowerDisplay.Models"
-    xmlns:ui="using:CommunityToolkit.WinUI"
     Style="{StaticResource DefaultContentDialogStyle}"
     mc:Ignorable="d">
-    <!--  Content-driven sizing: MinWidth keeps form-mode TextBoxes usable, MaxWidth caps
-         dialog growth on high-resolution displays without fighting ContentDialog's theme
-         MaxWidth resource. Width is intentionally NOT set, so the dialog flows naturally.  -->
-    <Grid
-        MinWidth="360"
-        MaxWidth="520"
-        MinHeight="320">
+    <Grid MinHeight="320">
         <!--  List mode  -->
         <ScrollViewer x:Name="ListModeRoot" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="14">
@@ -30,35 +23,34 @@
                         x:Uid="PowerDisplay_MonitorBlacklist_BuiltInEmpty"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
-                    <ItemsControl
+                    <ListView
+                        IsItemClickEnabled="False"
                         ItemsSource="{x:Bind ViewModel.BuiltInBlacklist, Mode=OneWay}"
+                        SelectionMode="None"
                         Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ItemsControl.ItemTemplate>
+                        <ListView.ItemTemplate>
                             <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
-                                <Grid Padding="0,4" ColumnSpacing="12">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock
+                                        Margin="0,4,12,4"
                                         VerticalAlignment="Center"
                                         FontFamily="Consolas"
                                         Text="{x:Bind EdidId}" />
                                     <TextBlock
                                         Grid.Column="1"
+                                        Margin="0,4"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{x:Bind Comments}"
                                         TextWrapping="Wrap" />
                                 </Grid>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </StackPanel>
 
                 <!--  Custom section  -->
@@ -81,51 +73,53 @@
                         x:Name="CustomEmptyHint"
                         x:Uid="PowerDisplay_MonitorBlacklist_CustomEmpty"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <ItemsControl x:Name="CustomItemsControl" ItemsSource="{x:Bind ViewModel.DisplayedCustomBlacklist, Mode=OneWay}">
-                        <ItemsControl.ItemTemplate>
+                    <ListView
+                        x:Name="CustomItemsControl"
+                        IsItemClickEnabled="False"
+                        ItemsSource="{x:Bind ViewModel.DisplayedCustomBlacklist, Mode=OneWay}"
+                        SelectionMode="None">
+                        <ListView.ItemTemplate>
                             <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
-                                <Grid Padding="0,4" ColumnSpacing="12">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock
+                                        Margin="0,4,12,4"
                                         VerticalAlignment="Center"
                                         FontFamily="Consolas"
                                         Text="{x:Bind EdidId}" />
                                     <TextBlock
                                         Grid.Column="1"
+                                        Margin="0,4"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{x:Bind Comments}"
                                         TextWrapping="Wrap" />
                                     <StackPanel
                                         Grid.Column="2"
+                                        Margin="4,0,0,0"
                                         Orientation="Horizontal"
                                         Spacing="4">
                                         <Button
                                             x:Uid="PowerDisplay_MonitorBlacklist_EditButton"
                                             Click="EditEntry_Click"
-                                            Content="{ui:FontIcon Glyph=&#xE70F;}"
-                                            Style="{StaticResource SubtleButtonStyle}"
-                                            Tag="{x:Bind}" />
+                                            Tag="{x:Bind}">
+                                            <FontIcon Glyph="&#xE70F;" />
+                                        </Button>
                                         <Button
                                             x:Uid="PowerDisplay_MonitorBlacklist_DeleteButton"
                                             Click="DeleteEntry_Click"
-                                            Content="{ui:FontIcon Glyph=&#xE74D;}"
-                                            Style="{StaticResource SubtleButtonStyle}"
-                                            Tag="{x:Bind}" />
+                                            Tag="{x:Bind}">
+                                            <FontIcon Glyph="&#xE74D;" />
+                                        </Button>
                                     </StackPanel>
                                 </Grid>
                             </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel Spacing="4" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
