@@ -17,4 +17,7 @@
   <PropertyGroup>
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BuiltInMonitorBlacklist.json" />
+  </ItemGroup>
 </Project>

@@ -31,6 +31,9 @@ namespace PowerDisplay.Helpers
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
 
+        // Built-in entries are loaded automatically by the service constructor.
+        private readonly MonitorBlacklistService _blacklistService = new();
+
         // Controllers stored by type for O(1) lookup based on CommunicationMethod
         private DdcCiController? _ddcController;
         private WmiController? _wmiController;
@@ -127,6 +130,34 @@ namespace PowerDisplay.Helpers
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
         {
             var inventory = DisplayConfigInventory.GetAllMonitorDisplayInfo();
+
+            // Filter blacklisted monitors out of the inventory before any controller
+            // is dispatched. Matching uses MonitorIdentity.EdidIdFromMonitorId on each
+            // entry's DevicePath, so blocked monitors are not opened, probed, or queried
+            // — the whole point of the blacklist over the per-monitor IsHidden flag.
+            var beforeCount = inventory.Count;
+            var filteredInventory = new Dictionary<string, MonitorDisplayInfo>(
+                inventory.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in inventory)
+            {
+                if (_blacklistService.IsBlocked(kvp.Value.DevicePath))
+                {
+                    var edidId = MonitorIdentity.EdidIdFromMonitorId(kvp.Value.DevicePath);
+                    Logger.LogInfo(
+                        $"[MonitorBlacklist] Skipping '{kvp.Value.FriendlyName}' (EdidId '{edidId}', path '{kvp.Value.DevicePath}') — EdidId is on the blacklist");
+                    continue;
+                }
+
+                filteredInventory.Add(kvp.Key, kvp.Value);
+            }
+
+            if (filteredInventory.Count < beforeCount)
+            {
+                Logger.LogInfo(
+                    $"[MonitorBlacklist] Filtered out {beforeCount - filteredInventory.Count} monitor(s); {filteredInventory.Count} remain");
+            }
+
+            inventory = filteredInventory;
 
             if (inventory.Count == 0)
             {
