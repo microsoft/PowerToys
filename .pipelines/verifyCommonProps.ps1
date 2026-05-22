@@ -1,61 +1,65 @@
+<#
+.SYNOPSIS
+    Validates that all C# projects in the repository import a required shared props file.
+
+.DESCRIPTION
+    Recursively searches for .csproj files under the given root directory and checks that
+    each one imports either Common.Dotnet.CsWinRT.props or Common.Dotnet.props. These
+    shared MSBuild props files enforce consistent build settings across all C# projects.
+
+.PARAMETER sourceDir
+    Root directory to recursively search for .csproj files.
+
+.OUTPUTS
+    Writes the path of any non-conforming or malformed .csproj file to the output stream.
+    Exits with code 1 if any such files are found, otherwise exits with code 0.
+#>
+
 [CmdletBinding()]
 Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [string]$sourceDir
 )
 
-# scan all csharp project in the source directory
-function Get-CSharpProjects {
-    param (
-        [string]$path
-    )
-
-    # Get all .csproj files under the specified path
-    return Get-ChildItem -Path $path -Recurse -Filter *.csproj | Select-Object -ExpandProperty FullName
-}
-
-# Check if the project file imports 'Common.Dotnet.CsWinRT.props'
-function Test-ImportSharedCsWinRTProps {
-    param (
-        [string]$filePath
-    )
-
-    # Load the XML content of the .csproj file
-    [xml]$csprojContent = Get-Content -Path $filePath
-
-    
-    # Check if the Import element with Project attribute containing 'Common.Dotnet.CsWinRT.props' exists
-    return $csprojContent.Project.Import | Where-Object { $null -ne $_.Project -and $_.Project.EndsWith('Common.Dotnet.CsWinRT.props') }
-}
-
-# Call the function with the provided source directory
-$csprojFilesArray = Get-CSharpProjects -path $sourceDir
-
 $hasInvalidCsProj = $false
 
-# Enumerate the array of file paths and call Validate-ImportSharedCsWinRTProps for each file
-foreach ($csprojFile in $csprojFilesArray) {
-    # Skip if the file ends with 'TemplateCmdPalExtension.csproj'
-    if ($csprojFile -like '*TemplateCmdPalExtension.csproj') {
-        continue
-    }
-    
-    # The CmdPal.Core projects use a common shared props file, so skip them
-    if ($csprojFile -like '*Microsoft.CmdPal.Core.*.csproj') {
-        continue
-    }
-    if ($csprojFile -like '*Microsoft.CmdPal.Ext.Shell.csproj') {
+$csprojFiles = [System.IO.Directory]::EnumerateFiles($sourceDir, '*.csproj', [System.IO.SearchOption]::AllDirectories)
+
+foreach ($csprojFile in $csprojFiles) {
+    $filename = [System.IO.Path]::GetFileName($csprojFile)
+
+    # Skip the CmdPal extension template project, which doesn't require the shared props.
+    if ($filename -eq 'TemplateCmdPalExtension.csproj') {
         continue
     }
 
-    # The PowerAccent.Common project does not target WinRT, so skip it
-    if ($csprojFile -like '*PowerAccent.Common.csproj') {
+    $importExists = $false
+
+    try {
+        $xml = New-Object System.Xml.XmlDocument
+
+        $xml.Load($csprojFile)
+
+        # The '*' wildcard matches Import elements regardless of XML namespace.
+        foreach ($importNode in $xml.GetElementsByTagName('Import', '*')) {
+            if ($null -ne $importNode.Project) {
+                $importFilename = [System.IO.Path]::GetFileName($importNode.Project)
+
+                if ($importFilename -eq 'Common.Dotnet.CsWinRT.props' -or $importFilename -eq 'Common.Dotnet.props') {
+                    $importExists = $true
+                    break
+                }
+            }
+        }
+    }
+    catch {
+        Write-Output "Error parsing ${csprojFile}: $_"
+        $hasInvalidCsProj = $true
         continue
     }
 
-    $importExists = Test-ImportSharedCsWinRTProps -filePath $csprojFile
-    if (!$importExists) {
-        Write-Output "$csprojFile need to import 'Common.Dotnet.CsWinRT.props'."
+    if (-not $importExists) {
+        Write-Output "$csprojFile needs to import 'Common.Dotnet.CsWinRT.props' or 'Common.Dotnet.props'."
         $hasInvalidCsProj = $true
     }
 }
