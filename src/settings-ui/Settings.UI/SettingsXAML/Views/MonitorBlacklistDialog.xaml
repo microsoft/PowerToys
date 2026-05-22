@@ -25,12 +25,13 @@
                         x:Uid="PowerDisplay_MonitorBlacklist_BuiltInEmpty"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
-                    <ListView
-                        IsItemClickEnabled="False"
+                    <ItemsRepeater
                         ItemsSource="{x:Bind ViewModel.BuiltInBlacklist, Mode=OneWay}"
-                        SelectionMode="None"
                         Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ListView.ItemTemplate>
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="4" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -51,8 +52,8 @@
                                         TextWrapping="Wrap" />
                                 </Grid>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
                 </StackPanel>
 
                 <!--  Custom section  -->
@@ -75,12 +76,13 @@
                         x:Name="CustomEmptyHint"
                         x:Uid="PowerDisplay_MonitorBlacklist_CustomEmpty"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <ListView
+                    <ItemsRepeater
                         x:Name="CustomItemsControl"
-                        IsItemClickEnabled="False"
-                        ItemsSource="{x:Bind ViewModel.DisplayedCustomBlacklist, Mode=OneWay}"
-                        SelectionMode="None">
-                        <ListView.ItemTemplate>
+                        ItemsSource="{x:Bind ViewModel.DisplayedCustomBlacklist, Mode=OneWay}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Spacing="4" />
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -120,8 +122,8 @@
                                     </StackPanel>
                                 </Grid>
                             </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
                 </StackPanel>
         </StackPanel>
 
