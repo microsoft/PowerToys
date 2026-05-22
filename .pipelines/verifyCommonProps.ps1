@@ -12,7 +12,7 @@
 
 .OUTPUTS
     Writes the path of any non-conforming or malformed .csproj file to the output stream.
-    Exits with code 1 if any such files are found, otherwise exits with code 0.
+    Exits with code 1 if any such files are found, and with code 0 otherwise.
 #>
 
 [CmdletBinding()]
