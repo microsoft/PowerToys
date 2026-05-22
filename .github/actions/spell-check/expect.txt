@@ -954,6 +954,7 @@ keynum
 keyremaps
 keyring
 keyvault
+kfull
 KILLFOCUS
 killrunner
 kmph
@@ -1061,6 +1062,7 @@ lstrcmpi
 lstrcpyn
 lstrlen
 LTEXT
+LTM
 LTRREADING
 luid
 LUMA

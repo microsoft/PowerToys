@@ -562,7 +562,7 @@ opera.exe</value>
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-	<data name="KeyboardManager_Editor.Header" xml:space="preserve">
+  <data name="KeyboardManager_Editor.Header" xml:space="preserve">
     <value>Editor</value>
     <comment>Keyboard Manager new editor header</comment>
   </data>
@@ -1772,7 +1772,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_floatWithout" xml:space="preserve">
     <value>float without leading zero</value>
   </data>
-   <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
+  <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
     <value>The lightness (CIE), chromaticity A (CIE Lab) and chromaticity B (CIE Lab) values can be formatted to the following formats:</value>
   </data>
   <data name="Help_integer" xml:space="preserve">
@@ -1927,19 +1927,19 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Activation_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to activate this module</value>
   </data>
-	<data name="KeyboardManager_Editor_Shortcut.Header" xml:space="preserve">
+  <data name="KeyboardManager_Editor_Shortcut.Header" xml:space="preserve">
     <value>Editor shortcut</value>
   </data>
-	<data name="KeyboardManager_Editor_Open_Shortcut.Header" xml:space="preserve">
+  <data name="KeyboardManager_Editor_Open_Shortcut.Header" xml:space="preserve">
     <value>Open editor shortcut</value>
   </data>
-	<data name="KeyboardManager_Editor_Open_Shortcut.Description" xml:space="preserve">
+  <data name="KeyboardManager_Editor_Open_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to open the Keyboard Manager editor</value>
   </data>
-	<data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
+  <data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
     <value>Open editor</value>
-  </data>	
-	<data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
+  </data>
+  <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
@@ -2580,7 +2580,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationMode_HoldingShift.Content" xml:space="preserve">
     <value>Holding Shift</value>
     <comment>CursorWrap: Activation mode - wrap only when Shift held</comment>
-  </data>		
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -5045,7 +5045,7 @@ The break timer font matches the text font.</value>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
     <value>Learn more about Command Palette</value>
   </data>
-	<data name="LearnMore_CmdPalContent.Content" xml:space="preserve">
+  <data name="LearnMore_CmdPalContent.Content" xml:space="preserve">
     <value>Learn more</value>
   </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
@@ -5482,7 +5482,7 @@ The break timer font matches the text font.</value>
     <value>Open Power Display</value>
     <comment>{Locked="Power Display"}</comment>
   </data>
-	<data name="PowerDisplay_LaunchButton.Content" xml:space="preserve">
+  <data name="PowerDisplay_LaunchButton.Content" xml:space="preserve">
     <value>Open Power Display</value>
     <comment>{Locked="Power Display"}</comment>
   </data>
@@ -5772,7 +5772,7 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_CustomVcpMappings.Header" xml:space="preserve">
     <value>Custom name mappings</value>
   </data>
-	<data name="PowerDisplayGroupHeader.Header" xml:space="preserve">
+  <data name="PowerDisplayGroupHeader.Header" xml:space="preserve">
     <value>Power Display</value>
     <comment>{Locked="Power Display"}</comment>
   </data>
