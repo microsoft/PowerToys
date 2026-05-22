@@ -14,7 +14,7 @@ namespace PowerDisplay.Models
     /// <remarks>
     /// <para><see cref="EdidId"/> is the 7–8 character PnP hardware identifier extracted
     /// from a <c>Monitor.Id</c> by <c>MonitorIdentity.EdidIdFromMonitorId</c> (e.g.
-    /// <c>"DELD1A8"</c>, <c>"BOE0900"</c>). It is normalized to upper case and trimmed
+    /// <c>"DELD1A8"</c>, <c>"BOE0900"</c>). It is normalized to uppercase and trimmed
     /// on write; matching is case-insensitive as a defense-in-depth measure.</para>
     /// <para><see cref="Comments"/> is free text rendered as-is. The built-in JSON ships
     /// English-only comments; user input is not localized.</para>

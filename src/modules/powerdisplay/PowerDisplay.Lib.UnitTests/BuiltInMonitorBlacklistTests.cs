@@ -27,7 +27,7 @@ public class BuiltInMonitorBlacklistTests
             Assert.AreEqual(
                 entry.EdidId,
                 entry.EdidId.ToUpperInvariant(),
-                $"Entry '{entry.EdidId}' is not normalized to upper case.");
+                $"Entry '{entry.EdidId}' is not normalized to uppercase.");
             Assert.AreEqual(
                 entry.EdidId.Trim(),
                 entry.EdidId,
