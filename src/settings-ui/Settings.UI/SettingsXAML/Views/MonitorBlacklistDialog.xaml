@@ -8,9 +8,11 @@
     Style="{StaticResource DefaultContentDialogStyle}"
     mc:Ignorable="d">
     <Grid MinHeight="320">
-        <!--  List mode  -->
-        <ScrollViewer x:Name="ListModeRoot" VerticalScrollBarVisibility="Auto">
-            <StackPanel Spacing="14">
+        <!--  List mode. No outer ScrollViewer here: ContentDialog's template already wraps
+             its ContentPresenter in a ScrollViewer, so adding our own would nest two
+             scrollers and feed ListView an infinite-height measure (which crashes the
+             default virtualizing panel during MeasureOverride).  -->
+        <StackPanel x:Name="ListModeRoot" Spacing="14">
                 <TextBlock
                     x:Uid="PowerDisplay_MonitorBlacklist_DialogDescription"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -121,8 +123,7 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </StackPanel>
-            </StackPanel>
-        </ScrollViewer>
+        </StackPanel>
 
         <!--  Form mode  -->
         <StackPanel x:Name="FormModeRoot" Spacing="12" Visibility="Collapsed">
