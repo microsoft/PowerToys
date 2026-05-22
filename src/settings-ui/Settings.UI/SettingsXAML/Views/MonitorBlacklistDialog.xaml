@@ -35,11 +35,7 @@
                         Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
-                                <Grid
-                                    Padding="12,8"
-                                    Background="{ThemeResource SubtleFillColorTransparentBrush}"
-                                    ColumnSpacing="12"
-                                    CornerRadius="4">
+                                <Grid Padding="0,4" ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
@@ -88,11 +84,7 @@
                     <ItemsControl x:Name="CustomItemsControl" ItemsSource="{x:Bind ViewModel.DisplayedCustomBlacklist, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
-                                <Grid
-                                    Padding="12,8"
-                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                    ColumnSpacing="12"
-                                    CornerRadius="4">
+                                <Grid Padding="0,4" ColumnSpacing="12">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
