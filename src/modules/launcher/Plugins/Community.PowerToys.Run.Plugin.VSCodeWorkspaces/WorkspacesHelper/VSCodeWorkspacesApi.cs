@@ -125,13 +125,15 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
         private string GetSharedStorageDbPath(VSCodeInstance vscodeInstance)
         {
-            var portableAppDataRoot = Path.GetDirectoryName(Path.GetDirectoryName(vscodeInstance.AppData));
-            if (!string.IsNullOrEmpty(portableAppDataRoot))
+            var appDataDirectoryInfo = new DirectoryInfo(vscodeInstance.AppData);
+            var portableDataDirectoryInfo = appDataDirectoryInfo.Parent;
+            if (portableDataDirectoryInfo != null &&
+                portableDataDirectoryInfo.Name.Equals("data", StringComparison.OrdinalIgnoreCase))
             {
-                var portableSharedStorageDb = Path.Combine(portableAppDataRoot + "-shared", "sharedStorage", "state.vscdb");
-                if (portableSharedStorageDb.Contains("data-shared", StringComparison.OrdinalIgnoreCase))
+                var installRoot = portableDataDirectoryInfo.Parent?.FullName;
+                if (!string.IsNullOrEmpty(installRoot))
                 {
-                    return portableSharedStorageDb;
+                    return Path.Combine(installRoot, "data-shared", "sharedStorage", "state.vscdb");
                 }
             }
 
