@@ -181,8 +181,13 @@ namespace ShortcutGuide.Helpers
                         }
                     }
                 }
-                catch (Exception)
+                catch (Win32Exception ex)
                 {
+                    Trace.WriteLine($"Failed to inspect background process '{filter}': {ex.Message}");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Trace.WriteLine($"Failed to inspect background process '{filter}': {ex.Message}");
                 }
             }
 
