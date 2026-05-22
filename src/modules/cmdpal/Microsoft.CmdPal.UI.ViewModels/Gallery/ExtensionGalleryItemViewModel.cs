@@ -105,12 +105,6 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string? Homepage => _entry.Homepage;
 
-    // Typed Uri accessor for x:Bind targets that require a Uri (e.g. HyperlinkButton.NavigateUri).
-    // Binding the raw string Homepage to a Uri property relies on a string->Uri type converter
-    // that can get trimmed in AOT/Release builds, causing E_INVALIDARG ("Value does not fall
-    // within the expected range") to surface from MeasureOverride on first navigation to the page.
-    public Uri? HomepageUri => _homepageHttpUri;
-
     public Uri IconUri { get; }
 
     public ImageSource IconSource
