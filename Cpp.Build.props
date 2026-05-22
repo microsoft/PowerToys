@@ -39,13 +39,7 @@
   <PropertyGroup>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <PreferredToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64'">arm64</PreferredToolArchitecture>
-    <!--
-      vcpkg is opt-in per project: individual property sheets (e.g.
-      deps/spdlog.props) flip $(VcpkgEnabled) to true for their consumers.
-      The corresponding vcpkg.targets import lives in Cpp.Build.targets,
-      wired through <ForceImportAfterCppTargets> below.
-    -->
-    <VcpkgEnabled>false</VcpkgEnabled>
+    <!-- vcpkg.targets is imported via Cpp.Build.targets after Microsoft.Cpp.targets. -->
     <ForceImportAfterCppTargets>$(MSBuildThisFileDirectory)Cpp.Build.targets</ForceImportAfterCppTargets>
     <ReplaceWildcardsInProjectItems>true</ReplaceWildcardsInProjectItems>
     <ExternalIncludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(ExternalIncludePath)</ExternalIncludePath>
@@ -127,6 +121,46 @@
     <DesktopCompatible>true</DesktopCompatible>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
+
+  <!--
+    vcpkg integration. Set globally (not per-project) so that import order is
+    guaranteed to be BEFORE Microsoft.Cpp.targets — this matters because
+    vcpkg's MSBuild integration registers a target (VcpkgInstallManifestDependencies)
+    that ClCompile must depend on, and that hook only takes effect when
+    vcpkg.props is loaded before the C++ targets. PowerToys has projects
+    that import deps/spdlog.props after Microsoft.Cpp.targets, so putting
+    vcpkg setup in spdlog.props loaded that way failed to wire include paths.
+
+    Three-tier VcpkgRoot fallback matching microsoft/terminal's pattern:
+      1. $(VCPKG_ROOT) env var (CI sets via .pipelines/v2/templates/steps-install-vcpkg.yml;
+         local dev sets via tools/build/build-essentials.ps1).
+      2. $(VsInstallRoot)\VC\vcpkg (vcpkg shipped with Visual Studio).
+      3. $(RepoRoot)deps\vcpkg (gitignored runtime-cloned fallback).
+
+    The vcpkg manifest at the repo root declares only spdlog, so non-spdlog
+    C++ projects pay only the vcpkg install latency (~0.5 s on cache hits)
+    and an unused include path. With binary cache enabled this is negligible.
+  -->
+  <PropertyGroup Label="vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifestEnabled>true</VcpkgManifestEnabled>
+    <VcpkgManifestRoot>$(MSBuildThisFileDirectory)</VcpkgManifestRoot>
+    <VcpkgOSTarget>windows</VcpkgOSTarget>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <!-- vcpkg validates triplets case-sensitively; PowerToys uses ARM64 capital-case. -->
+    <VcpkgPlatformTarget Condition="'$(Platform)' == 'ARM64'">arm64</VcpkgPlatformTarget>
+    <VcpkgApplocalDeps>false</VcpkgApplocalDeps>
+    <VcpkgInstalledDir>$(MSBuildThisFileDirectory)$(Platform)\$(Configuration)\vcpkg_installed\</VcpkgInstalledDir>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == ''">$(VCPKG_ROOT)</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' and '$(VsInstallRoot)' != ''">$(VsInstallRoot)\VC\vcpkg</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' or !Exists('$(VcpkgRoot)\vcpkg.exe')">$(MSBuildThisFileDirectory)deps\vcpkg</VcpkgRoot>
+    <CAExcludePath>$(CAExcludePath);$(VcpkgInstalledDir)</CAExcludePath>
+    <VCPkgLocalAppDataDisabled>true</VCPkgLocalAppDataDisabled>
+  </PropertyGroup>
+  <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props"
+          Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props')" />
+
 
   <!-- Debug/Release props -->
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">

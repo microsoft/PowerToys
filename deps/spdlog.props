@@ -1,61 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <!--
-    spdlog is consumed via vcpkg manifest mode. This property sheet is the
-    per-project opt-in: every project that needs spdlog imports it (the
-    historical path matches the pre-vcpkg in-tree submodule layout, so
-    consumers don't need to change).
+    spdlog consumers import this sheet to pick up the historical SPDLOG_*
+    preprocessor defines so source compiles identically against the
+    vcpkg-installed spdlog as it did against the in-tree submodule build.
 
-    Importing this sheet:
-      - enables vcpkg for this project (overrides the repo-wide default of
-        VcpkgEnabled=false in Cpp.Build.props),
-      - locates vcpkg via a three-tier fallback (env var, VS-shipped, local
-        clone) matching the pattern used by microsoft/terminal so we don't
-        need a vcpkg submodule,
-      - asks vcpkg to use the static-CRT triplet matching the rest of
-        PowerToys (/MT and /MTd in Cpp.Build.props),
-      - imports vcpkg's MSBuild property layer so headers/lib search paths
-        are wired up; the matching targets layer is imported globally via
-        Cpp.Build.targets when VcpkgEnabled=true,
-      - re-adds the historical SPDLOG_* preprocessor defines so consuming
-        source code compiles the same way it did against the in-tree
-        submodule build.
-
-    The actual spdlog port (pinned to the exact commit the deleted
-    deps/spdlog submodule used to point at, with a one-hunk MSVC 14.51 fix)
-    lives at deps/vcpkg-overlays/spdlog/.
+    The vcpkg integration itself (VcpkgEnabled, VcpkgRoot, triplet, install)
+    is wired globally in Cpp.Build.props so that import order relative to
+    Microsoft.Cpp.targets is guaranteed (vcpkg.props must load *before* the
+    C++ targets to hook into ClCompile). Many PowerToys .vcxproj files
+    import deps/spdlog.props *after* Microsoft.Cpp.targets, which works fine
+    for adding the SPDLOG_* defines via ItemDefinitionGroup merging, but
+    would fail for vcpkg.props' include-path wiring.
   -->
-  <PropertyGroup Label="vcpkg">
-    <VcpkgEnabled>true</VcpkgEnabled>
-    <VcpkgEnableManifest>true</VcpkgEnableManifest>
-    <VcpkgManifestEnabled>true</VcpkgManifestEnabled>
-    <VcpkgManifestRoot>$(RepoRoot)</VcpkgManifestRoot>
-    <VcpkgOSTarget>windows</VcpkgOSTarget>
-    <VcpkgUseStatic>true</VcpkgUseStatic>
-    <!-- vcpkg validates triplets case-sensitively; PowerToys uses ARM64 capital-case. -->
-    <VcpkgPlatformTarget Condition="'$(Platform)' == 'ARM64'">arm64</VcpkgPlatformTarget>
-    <VcpkgApplocalDeps>false</VcpkgApplocalDeps>
-    <VcpkgInstalledDir>$(RepoRoot)$(Platform)\$(Configuration)\vcpkg_installed\</VcpkgInstalledDir>
-
-    <!-- Three-tier VcpkgRoot fallback (terminal pattern):
-         1. $(VCPKG_ROOT) env var (CI sets this via steps-install-vcpkg.yml;
-            local dev sets it via tools\build\build-essentials.ps1).
-         2. The vcpkg shipped with Visual Studio (Microsoft.VisualStudio.Component.Vcpkg).
-         3. A local clone at deps\vcpkg (gitignored, runtime-cloned by
-            build-essentials.ps1 when neither of the above is available). -->
-    <VcpkgRoot Condition="'$(VcpkgRoot)' == ''">$(VCPKG_ROOT)</VcpkgRoot>
-    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' and '$(VsInstallRoot)' != ''">$(VsInstallRoot)\VC\vcpkg</VcpkgRoot>
-    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' or !Exists('$(VcpkgRoot)\vcpkg.exe')">$(RepoRoot)deps\vcpkg</VcpkgRoot>
-
-    <CAExcludePath>$(CAExcludePath);$(VcpkgInstalledDir)</CAExcludePath>
-    <!-- Disable global-per-user vcpkg install so we don't accidentally pick up an unrelated triplet. -->
-    <VCPkgLocalAppDataDisabled>true</VCPkgLocalAppDataDisabled>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>SPDLOG_WCHAR_TO_UTF8_SUPPORT;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-  <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props"
-          Condition="Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props')" />
 </Project>

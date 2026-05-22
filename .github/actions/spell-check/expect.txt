@@ -63,6 +63,7 @@ APPEXECLINK
 appext
 apphost
 APPLICATIONFRAMEHOST
+Applocal
 appmanifest
 APPMODEL
 APPNAME
@@ -1328,6 +1329,7 @@ pchast
 PCIDLIST
 PCTSTR
 PCWSTR
+pdbs
 PDBs
 PDEVMODE
 PDFs
@@ -2001,6 +2003,7 @@ vcgtq
 VCINSTALLDIR
 vcp
 Vcpkg
+vcpkg
 vcpname
 VCRT
 vcruntime
