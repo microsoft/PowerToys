@@ -276,9 +276,11 @@ jobs:
   # Visual Studio (Microsoft.VisualStudio.Component.Vcpkg) and falls back to a
   # fresh clone of microsoft/vcpkg into deps/vcpkg if VS doesn't have it.
   # Either way it sets the VCPKG_ROOT pipeline variable; MSBuild integration
-  # picks it up from deps/spdlog.props (three-tier VcpkgRoot fallback).
+  # is wired globally from Cpp.Build.props (with vcpkg.targets in
+  # Cpp.Build.targets) using the three-tier VcpkgRoot fallback
+  # (env var > VS-shipped > deps/vcpkg runtime clone).
   #
-  # Vcpkg's MSBuild integration runs `vcpkg install` once per build, so the
+  # Vcpkg's MSBuild integration runs `vcpkg install` once per project, so the
   # binary cache below saves ~3-5 minutes per triplet on cache hits.
   - template: .\steps-install-vcpkg.yml
 

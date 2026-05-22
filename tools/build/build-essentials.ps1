@@ -54,7 +54,14 @@ if (-not (Ensure-VsDevEnvironment)) { exit 1 }
 # Detect vcpkg using the Windows Terminal pattern: prefer VS-shipped vcpkg
 # (Microsoft.VisualStudio.Component.Vcpkg), fall back to a runtime clone at
 # deps/vcpkg if VS doesn't have it. Either way, set VCPKG_ROOT so MSBuild
-# picks it up via deps/spdlog.props' three-tier fallback. Idempotent.
+# picks it up via the three-tier VcpkgRoot fallback in Cpp.Build.props
+# (env var > VS-shipped > local clone). Idempotent.
+#
+# The fallback clone is pinned to vcpkg.json's `builtin-baseline` so local
+# builds match what CI uses and don't drift as vcpkg HEAD changes. If an
+# existing deps/vcpkg clone is at a different commit, it's checked out to
+# the baseline before bootstrap (the manifest baseline is the source of
+# truth; the clone is just a delivery mechanism).
 if (-not $env:VCPKG_ROOT) {
     $vswhere = 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe'
     $vsInstallRoot = $null
@@ -65,12 +72,31 @@ if (-not $env:VCPKG_ROOT) {
         $env:VCPKG_ROOT = Join-Path $vsInstallRoot 'VC\vcpkg'
         Write-Host "[BUILD-ESSENTIALS] Using vcpkg from Visual Studio installation ($env:VCPKG_ROOT)"
     } else {
+        $manifest = Get-Content (Join-Path $repoRoot 'vcpkg.json') -Raw | ConvertFrom-Json
+        $baseline = $manifest.'builtin-baseline'
+        if (-not $baseline) { Write-Error "vcpkg.json is missing 'builtin-baseline'."; exit 1 }
         $localVcpkg = Join-Path $repoRoot 'deps\vcpkg'
-        if (-not (Test-Path (Join-Path $localVcpkg 'vcpkg.exe'))) {
-            Write-Host "[BUILD-ESSENTIALS] VS-shipped vcpkg not found; cloning microsoft/vcpkg to $localVcpkg"
+        $needClone = -not (Test-Path (Join-Path $localVcpkg '.git'))
+        if (-not $needClone) {
+            $currentHead = (& git -C $localVcpkg rev-parse HEAD 2>$null).Trim()
+            if ($currentHead -ne $baseline) {
+                Write-Host "[BUILD-ESSENTIALS] Existing deps/vcpkg at $currentHead; checking out baseline $baseline"
+                & git -C $localVcpkg fetch --quiet origin $baseline
+                if ($LASTEXITCODE -ne 0) { Write-Warning "[BUILD-ESSENTIALS] fetch failed, re-cloning"; $needClone = $true } else {
+                    & git -C $localVcpkg checkout --quiet $baseline
+                    if ($LASTEXITCODE -ne 0) { Write-Error "git checkout $baseline in vcpkg failed (exit $LASTEXITCODE)"; exit 1 }
+                }
+            }
+        }
+        if ($needClone) {
+            Write-Host "[BUILD-ESSENTIALS] Cloning microsoft/vcpkg to $localVcpkg pinned to baseline $baseline"
             if (Test-Path $localVcpkg) { Remove-Item -Recurse -Force $localVcpkg }
             & git clone https://github.com/microsoft/vcpkg $localVcpkg
             if ($LASTEXITCODE -ne 0) { Write-Error "git clone vcpkg failed (exit $LASTEXITCODE)"; exit 1 }
+            & git -C $localVcpkg checkout --quiet $baseline
+            if ($LASTEXITCODE -ne 0) { Write-Error "git checkout $baseline in vcpkg failed (exit $LASTEXITCODE)"; exit 1 }
+        }
+        if (-not (Test-Path (Join-Path $localVcpkg 'vcpkg.exe'))) {
             Push-Location $localVcpkg
             try {
                 & .\bootstrap-vcpkg.bat -disableMetrics
@@ -78,7 +104,7 @@ if (-not $env:VCPKG_ROOT) {
             } finally { Pop-Location }
         }
         $env:VCPKG_ROOT = $localVcpkg
-        Write-Host "[BUILD-ESSENTIALS] Using vcpkg from local checkout ($env:VCPKG_ROOT)"
+        Write-Host "[BUILD-ESSENTIALS] Using vcpkg from local checkout ($env:VCPKG_ROOT) at $baseline"
     }
 }
 
