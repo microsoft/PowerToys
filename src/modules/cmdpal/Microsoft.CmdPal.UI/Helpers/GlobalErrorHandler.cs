@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.ExceptionServices;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Services.Reports;
@@ -22,6 +23,13 @@ internal sealed partial class GlobalErrorHandler : IDisposable
     private Options? _options;
     private App? _app;
 
+    // Diagnostic: log every first-chance exception. This is noisy but invaluable for catching
+    // exceptions that get swallowed and re-thrown across WinRT ABI boundaries as a generic
+    // COMException (e.g. anything failing inside MeasureOverride). We dedupe consecutive
+    // identical exceptions to keep the log readable.
+    private string? _lastFirstChanceSignature;
+    private int _lastFirstChanceRepeats;
+
     // GlobalErrorHandler is designed to be self-contained; it can be registered and invoked before a service provider is available.
     internal void Register(App app, Options options, IApplicationInfoService? appInfoService = null)
     {
@@ -35,6 +43,35 @@ internal sealed partial class GlobalErrorHandler : IDisposable
         _app.UnhandledException += App_UnhandledException;
         TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+        AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+    }
+
+    private void CurrentDomain_FirstChanceException(object? sender, FirstChanceExceptionEventArgs e)
+    {
+        // Reentrancy guard: logging itself can allocate / hit code that throws. Don't recurse.
+        if (e.Exception is null)
+        {
+            return;
+        }
+
+        var ex = e.Exception;
+        var signature = string.Concat(ex.GetType().FullName, "|", ex.Message);
+
+        if (signature == _lastFirstChanceSignature)
+        {
+            _lastFirstChanceRepeats++;
+            return;
+        }
+
+        if (_lastFirstChanceRepeats > 0)
+        {
+            Logger.LogDebug($"[FirstChance] (previous exception repeated {_lastFirstChanceRepeats} more time(s))");
+        }
+
+        _lastFirstChanceSignature = signature;
+        _lastFirstChanceRepeats = 0;
+
+        Logger.LogDebug($"[FirstChance] {ex.GetType().FullName}: {ex.Message}{Environment.NewLine}{ex.StackTrace}");
     }
 
     private void App_UnhandledException(object sender, XamlUnhandledExceptionEventArgs e)
@@ -147,6 +184,7 @@ internal sealed partial class GlobalErrorHandler : IDisposable
         _app?.UnhandledException -= App_UnhandledException;
         TaskScheduler.UnobservedTaskException -= TaskScheduler_UnobservedTaskException;
         AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+        AppDomain.CurrentDomain.FirstChanceException -= CurrentDomain_FirstChanceException;
     }
 
     private enum Context
