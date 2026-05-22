@@ -120,12 +120,19 @@ public static partial class CalculateHelper
         return input;
     }
 
+    private static string NormalizeMultiplicationSymbols(string input)
+    {
+        return input.Replace("x", "*").Replace("X", "*");
+    }
+
     public static bool InputValid(string input)
     {
         if (string.IsNullOrWhiteSpace(input))
         {
             return false;
         }
+
+        input = NormalizeMultiplicationSymbols(input);
 
         if (!RegValidExpressChar.IsMatch(input))
         {
@@ -161,6 +168,7 @@ public static partial class CalculateHelper
 
     public static string FixHumanMultiplicationExpressions(string input)
     {
+        input = input.Replace("x", "*").Replace("X", "*");
         var output = CheckScientificNotation(input);
         output = CheckNumberOrConstantThenParenthesisExpr(output);
         output = CheckNumberOrConstantThenFunc(output);
