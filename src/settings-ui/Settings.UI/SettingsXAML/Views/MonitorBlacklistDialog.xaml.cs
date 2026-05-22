@@ -4,9 +4,11 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.UI.Xaml;
@@ -144,28 +146,37 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void FormSave_Click(object sender, RoutedEventArgs e)
         {
-            var edid = (EdidIdTextBox.Text ?? string.Empty).Trim().ToUpperInvariant();
-            if (!EdidIdRegex.IsMatch(edid))
+            try
             {
-                return;
-            }
+                var edid = (EdidIdTextBox.Text ?? string.Empty).Trim().ToUpperInvariant();
+                if (!EdidIdRegex.IsMatch(edid))
+                {
+                    return;
+                }
 
-            var newEntry = new MonitorBlacklistEntry
-            {
-                EdidId = edid,
-                Comments = (CommentsTextBox.Text ?? string.Empty).Trim(),
-            };
+                var newEntry = new MonitorBlacklistEntry
+                {
+                    EdidId = edid,
+                    Comments = (CommentsTextBox.Text ?? string.Empty).Trim(),
+                };
 
-            if (_editingEntry != null)
-            {
-                ViewModel.UpdateCustomBlacklistEntry(_editingEntry, newEntry);
-            }
-            else
-            {
-                ViewModel.AddCustomBlacklistEntry(newEntry);
-            }
+                if (_editingEntry != null)
+                {
+                    ViewModel.UpdateCustomBlacklistEntry(_editingEntry, newEntry);
+                }
+                else
+                {
+                    ViewModel.AddCustomBlacklistEntry(newEntry);
+                }
 
-            EnterListMode();
+                EnterListMode();
+            }
+            catch (Exception ex)
+            {
+                // Capture details before WinUI wraps the failure into a generic COMException.
+                Logger.LogError("MonitorBlacklistDialog.FormSave_Click failed", ex);
+                throw;
+            }
         }
     }
 }

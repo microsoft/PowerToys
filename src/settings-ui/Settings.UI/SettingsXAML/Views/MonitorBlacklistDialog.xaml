@@ -6,9 +6,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pdmodels="using:PowerDisplay.Models"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    Width="486"
+    MinWidth="486"
     Style="{StaticResource DefaultContentDialogStyle}"
     mc:Ignorable="d">
-    <Grid Width="520" MinHeight="360">
+    <Grid MinWidth="486" MinHeight="360">
         <!--  List mode  -->
         <ScrollViewer x:Name="ListModeRoot" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="14">
