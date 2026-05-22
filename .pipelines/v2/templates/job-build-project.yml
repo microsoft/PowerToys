@@ -283,6 +283,8 @@ jobs:
   # Vcpkg's MSBuild integration runs `vcpkg install` once per project, so the
   # binary cache below saves ~3-5 minutes per triplet on cache hits.
   - template: .\steps-install-vcpkg.yml
+    parameters:
+      useVSPreview: ${{ parameters.useVSPreview }}
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2

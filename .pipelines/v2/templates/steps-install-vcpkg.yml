@@ -13,9 +13,21 @@
 # Sets the pipeline-scoped VCPKG_ROOT variable; the rest of the build
 # resolves vcpkg through it (see the three-tier VcpkgRoot fallback in
 # Cpp.Build.props). No repo-level vcpkg submodule required.
+parameters:
+- name: useVSPreview
+  type: boolean
+  default: false
+
 steps:
   - pwsh: |-
-      $VsInstallRoot = & 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' -latest -prerelease -requires Microsoft.VisualStudio.Component.Vcpkg -property installationPath
+      # vswhere -prerelease is opt-in via the useVSPreview parameter so CI on
+      # stable VS doesn't accidentally pick up a Preview install when both
+      # are present. Matches the existing useVSPreview plumbing for
+      # verifyAndSetLatestVCToolsVersion.ps1.
+      $vswhereArgs = @('-latest', '-requires', 'Microsoft.VisualStudio.Component.Vcpkg', '-property', 'installationPath')
+      $useVSPreview = '${{ parameters.useVSPreview }}' -eq 'True'
+      if ($useVSPreview) { $vswhereArgs = @('-prerelease') + $vswhereArgs }
+      $VsInstallRoot = & 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' @vswhereArgs
       If ([String]::IsNullOrEmpty($VsInstallRoot)) {
         $manifest = Get-Content "$(build.sourcesdirectory)\vcpkg.json" -Raw | ConvertFrom-Json
         $baseline = $manifest.'builtin-baseline'
