@@ -6172,7 +6172,4 @@ Text uses the current drawing color.</value>
     <value>Example: outlook</value>
     <comment>{Locked="outlook"}</comment>
   </data>
-  <data name="QuickAccent_SelectedLanguage_Greek_Polytonic" xml:space="preserve">
-    <value>Greek Polytonic</value>
-  </data>
 </root>
