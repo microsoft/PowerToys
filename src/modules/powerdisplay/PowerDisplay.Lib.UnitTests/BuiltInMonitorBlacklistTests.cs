@@ -24,9 +24,13 @@ public class BuiltInMonitorBlacklistTests
     {
         foreach (var entry in BuiltInMonitorBlacklist.Entries)
         {
-            Assert.AreEqual(entry.EdidId, entry.EdidId.ToUpperInvariant(),
+            Assert.AreEqual(
+                entry.EdidId,
+                entry.EdidId.ToUpperInvariant(),
                 $"Entry '{entry.EdidId}' is not normalized to upper case.");
-            Assert.AreEqual(entry.EdidId.Trim(), entry.EdidId,
+            Assert.AreEqual(
+                entry.EdidId.Trim(),
+                entry.EdidId,
                 $"Entry '{entry.EdidId}' has untrimmed whitespace.");
         }
     }

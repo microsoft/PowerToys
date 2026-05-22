@@ -13,8 +13,8 @@ namespace PowerDisplay.UnitTests;
 [TestClass]
 public class MonitorBlacklistServiceTests
 {
-    private const string SamplePathDel  = @"\\?\DISPLAY#DELD1A8#5&abc123&0&UID12345#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
-    private const string SamplePathBoe  = @"\\?\DISPLAY#BOE0900#4&xyz&0&UID0";
+    private const string SamplePathDel = @"\\?\DISPLAY#DELD1A8#5&abc123&0&UID12345#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
+    private const string SamplePathBoe = @"\\?\DISPLAY#BOE0900#4&xyz&0&UID0";
     private const string SampleIdStripped = @"\\?\DISPLAY#DELD1A8#5&abc123&0&UID12345";
 
     [TestMethod]
