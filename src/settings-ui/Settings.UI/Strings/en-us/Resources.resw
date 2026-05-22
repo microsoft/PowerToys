@@ -6228,4 +6228,37 @@ Text uses the current drawing color.</value>
   <data name="PowerDisplay_MonitorBlacklistDelete_Content" xml:space="preserve">
     <value>This will allow PowerDisplay to discover monitors with this EDID again.</value>
   </data>
+  <data name="PowerDisplay_MonitorBlacklist_DialogTitle" xml:space="preserve">
+    <value>Monitor blacklist</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_DialogDescription.Text" xml:space="preserve">
+    <value>Models listed here are skipped entirely — PowerDisplay won't enumerate or probe them. Use this to work around monitors whose firmware misbehaves during DDC/CI probing.</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_PageEntry.Header" xml:space="preserve">
+    <value>Monitor blacklist</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_PageEntry.Description" xml:space="preserve">
+    <value>Skip enumeration and probing for specific monitor models.</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_ManageButton.Content" xml:space="preserve">
+    <value>Manage</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_CloseButton" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_CustomEmpty.Text" xml:space="preserve">
+    <value>No custom entries yet. Use Add to block a monitor by its EDID ID.</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_Form_AddTitle" xml:space="preserve">
+    <value>Add blacklist entry</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_Form_EditTitle" xml:space="preserve">
+    <value>Edit blacklist entry</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_FormCancelButton.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerDisplay_MonitorBlacklist_FormSaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
 </root>

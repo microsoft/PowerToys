@@ -1,0 +1,166 @@
+<ContentDialog
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.MonitorBlacklistDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pdmodels="using:PowerDisplay.Models"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    Style="{StaticResource DefaultContentDialogStyle}"
+    mc:Ignorable="d">
+    <Grid Width="520" MinHeight="360">
+        <!--  List mode  -->
+        <ScrollViewer x:Name="ListModeRoot" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="14">
+                <TextBlock
+                    x:Uid="PowerDisplay_MonitorBlacklist_DialogDescription"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    TextWrapping="Wrap" />
+
+                <!--  Built-in section  -->
+                <StackPanel Spacing="6">
+                    <TextBlock x:Uid="PowerDisplay_MonitorBlacklist_BuiltInSubheader" FontWeight="SemiBold" />
+                    <TextBlock
+                        x:Uid="PowerDisplay_MonitorBlacklist_BuiltInEmpty"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
+                    <ItemsControl
+                        ItemsSource="{x:Bind ViewModel.BuiltInBlacklist, Mode=OneWay}"
+                        Visibility="{x:Bind ViewModel.HasBuiltInBlacklist, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
+                                <Grid
+                                    Padding="12,8"
+                                    Background="{ThemeResource SubtleFillColorTransparentBrush}"
+                                    ColumnSpacing="12"
+                                    CornerRadius="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontFamily="Consolas"
+                                        Text="{x:Bind EdidId}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind Comments}"
+                                        TextWrapping="Wrap" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+
+                <!--  Custom section  -->
+                <StackPanel Spacing="6">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            x:Uid="PowerDisplay_MonitorBlacklist_CustomSubheader"
+                            VerticalAlignment="Center"
+                            FontWeight="SemiBold" />
+                        <Button
+                            Grid.Column="1"
+                            x:Uid="PowerDisplay_MonitorBlacklist_AddButton"
+                            Click="AddEntry_Click" />
+                    </Grid>
+                    <TextBlock
+                        x:Name="CustomEmptyHint"
+                        x:Uid="PowerDisplay_MonitorBlacklist_CustomEmpty"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <ItemsControl x:Name="CustomItemsControl" ItemsSource="{x:Bind ViewModel.DisplayedCustomBlacklist, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="pdmodels:MonitorBlacklistEntry">
+                                <Grid
+                                    Padding="12,8"
+                                    Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                    ColumnSpacing="12"
+                                    CornerRadius="4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        FontFamily="Consolas"
+                                        Text="{x:Bind EdidId}" />
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind Comments}"
+                                        TextWrapping="Wrap" />
+                                    <StackPanel
+                                        Grid.Column="2"
+                                        Orientation="Horizontal"
+                                        Spacing="4">
+                                        <Button
+                                            x:Uid="PowerDisplay_MonitorBlacklist_EditButton"
+                                            Click="EditEntry_Click"
+                                            Content="{ui:FontIcon Glyph=&#xE70F;}"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Tag="{x:Bind}" />
+                                        <Button
+                                            x:Uid="PowerDisplay_MonitorBlacklist_DeleteButton"
+                                            Click="DeleteEntry_Click"
+                                            Content="{ui:FontIcon Glyph=&#xE74D;}"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Tag="{x:Bind}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--  Form mode  -->
+        <StackPanel x:Name="FormModeRoot" Spacing="12" Visibility="Collapsed">
+            <TextBlock x:Name="FormTitleText" FontSize="16" FontWeight="SemiBold" />
+            <TextBlock x:Uid="PowerDisplay_MonitorBlacklistEditor_EdidLabel" />
+            <TextBox
+                x:Name="EdidIdTextBox"
+                x:Uid="PowerDisplay_MonitorBlacklistEditor_EdidPlaceholder"
+                CharacterCasing="Upper"
+                MaxLength="16"
+                TextChanged="EdidIdTextBox_TextChanged" />
+            <TextBlock x:Uid="PowerDisplay_MonitorBlacklistEditor_CommentsLabel" />
+            <TextBox
+                x:Name="CommentsTextBox"
+                AcceptsReturn="True"
+                MaxLength="200"
+                TextWrapping="Wrap" />
+            <InfoBar
+                x:Name="ValidationInfoBar"
+                IsClosable="False"
+                IsOpen="False"
+                Severity="Warning" />
+            <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8">
+                <Button x:Name="FormCancelButton" x:Uid="PowerDisplay_MonitorBlacklist_FormCancelButton" Click="FormCancel_Click" />
+                <Button
+                    x:Name="FormSaveButton"
+                    x:Uid="PowerDisplay_MonitorBlacklist_FormSaveButton"
+                    Click="FormSave_Click"
+                    Style="{StaticResource AccentButtonStyle}" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</ContentDialog>

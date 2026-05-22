@@ -3,10 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -216,68 +214,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Monitor blacklist event handlers
-        private async void AddBlacklistEntry_Click(object sender, RoutedEventArgs e)
+        // Monitor blacklist event handler
+        private async void ManageBlacklist_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new MonitorBlacklistEditorDialog(
-                ViewModel.BuiltInBlacklist,
-                ViewModel.CustomBlacklist)
-            {
-                XamlRoot = this.XamlRoot,
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary && dialog.ResultEntry != null)
-            {
-                ViewModel.AddCustomBlacklistEntry(dialog.ResultEntry);
-            }
-        }
-
-        private async void EditBlacklistEntry_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button button || button.Tag is not MonitorBlacklistEntry entry)
-            {
-                return;
-            }
-
-            var dialog = new MonitorBlacklistEditorDialog(
-                ViewModel.BuiltInBlacklist,
-                ViewModel.CustomBlacklist,
-                entry)
-            {
-                XamlRoot = this.XamlRoot,
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary && dialog.ResultEntry != null)
-            {
-                ViewModel.UpdateCustomBlacklistEntry(entry, dialog.ResultEntry);
-            }
-        }
-
-        private async void DeleteBlacklistEntry_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is not Button button || button.Tag is not MonitorBlacklistEntry entry)
-            {
-                return;
-            }
-
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
-            {
-                XamlRoot = this.XamlRoot,
-                Title = resourceLoader.GetString("PowerDisplay_MonitorBlacklistDelete_Title"),
-                Content = resourceLoader.GetString("PowerDisplay_MonitorBlacklistDelete_Content"),
-                PrimaryButtonText = resourceLoader.GetString("Yes"),
-                CloseButtonText = resourceLoader.GetString("No"),
-                DefaultButton = ContentDialogButton.Close,
-            };
-
-            var result = await dialog.ShowAsync();
-            if (result == ContentDialogResult.Primary)
-            {
-                ViewModel.DeleteCustomBlacklistEntry(entry);
-            }
+            var dialog = new MonitorBlacklistDialog(ViewModel) { XamlRoot = this.XamlRoot };
+            await dialog.ShowAsync();
         }
 
         private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
