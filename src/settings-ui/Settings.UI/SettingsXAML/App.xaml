@@ -68,6 +68,7 @@
             <x:Double x:Key="SettingActionControlMinWidth">240</x:Double>
 
             <x:Double x:Key="PageMaxWidth">1000</x:Double>
+            <x:Double x:Key="PageHeaderMaxWidth">1020</x:Double>
 
             <Style TargetType="ListViewItem">
                 <Setter Property="Margin" Value="0,0,0,2" />
@@ -77,6 +78,14 @@
             </Style>
 
             <Style BasedOn="{StaticResource DefaultCheckBoxStyle}" TargetType="ptcontrols:CheckBoxWithDescriptionControl" />
+
+            <Style x:Key="PageStyle" TargetType="Grid">
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}" />
+                <Setter Property="CornerRadius" Value="8,8,0,0" />
+                <Setter Property="MaxWidth" Value="{StaticResource PageMaxWidth}" />
+            </Style>
 
             <tkcontrols:MarkdownThemes
                 x:Key="DescriptionTextMarkdownThemeConfig"
