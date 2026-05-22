@@ -6,11 +6,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:pdmodels="using:PowerDisplay.Models"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    Width="486"
-    MinWidth="486"
     Style="{StaticResource DefaultContentDialogStyle}"
     mc:Ignorable="d">
-    <Grid MinWidth="486" MinHeight="360">
+    <!--  Content-driven sizing: MinWidth keeps form-mode TextBoxes usable, MaxWidth caps
+         dialog growth on high-resolution displays without fighting ContentDialog's theme
+         MaxWidth resource. Width is intentionally NOT set, so the dialog flows naturally.  -->
+    <Grid
+        MinWidth="360"
+        MaxWidth="520"
+        MinHeight="320">
         <!--  List mode  -->
         <ScrollViewer x:Name="ListModeRoot" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="14">
