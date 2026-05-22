@@ -142,8 +142,9 @@ namespace PowerDisplay.Helpers
             {
                 if (_blacklistService.IsBlocked(kvp.Value.DevicePath))
                 {
+                    var edidId = MonitorIdentity.EdidIdFromMonitorId(kvp.Value.DevicePath);
                     Logger.LogInfo(
-                        $"[MonitorBlacklist] Skipping '{kvp.Value.FriendlyName}' (path '{kvp.Value.DevicePath}') — EdidId is on the blacklist");
+                        $"[MonitorBlacklist] Skipping '{kvp.Value.FriendlyName}' (EdidId '{edidId}', path '{kvp.Value.DevicePath}') — EdidId is on the blacklist");
                     continue;
                 }
 
