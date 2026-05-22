@@ -668,7 +668,6 @@ public partial class MainViewModel
                 TrayIconEnabled = settings.Properties.ShowSystemTrayIcon,
                 MonitorCount = Monitors.Count,
                 ProfileCount = profilesData?.Profiles?.Count ?? 0,
-                MonitorBlacklistCount = settings.Properties.MonitorBlacklist?.Count ?? 0,
             };
 
             PowerToysTelemetry.Log.WriteEvent(telemetryEvent);

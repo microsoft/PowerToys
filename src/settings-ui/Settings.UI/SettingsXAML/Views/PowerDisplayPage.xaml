@@ -105,13 +105,6 @@
                             <tkcontrols:SettingsCard x:Uid="PowerDisplay_MaxCompatibilityMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7B5;}">
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-
-                            <!--  Monitor blacklist (opens dedicated dialog)  -->
-                            <tkcontrols:SettingsCard
-                                x:Uid="PowerDisplay_MonitorBlacklist_PageEntry"
-                                HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}">
-                                <Button x:Uid="PowerDisplay_MonitorBlacklist_ManageButton" Click="ManageBlacklist_Click" />
-                            </tkcontrols:SettingsCard>
                         </controls:SettingsGroup>
 
                         <!--  Custom VCP Name Mappings  -->

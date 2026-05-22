@@ -11,7 +11,6 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Helpers;
-using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -31,8 +30,6 @@ public partial class MainViewModel
             // DDC/CI controller picks up toggle changes without a process restart.
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
-            _monitorManager.SetMonitorBlacklist(settings.Properties.MonitorBlacklist
-                ?? new List<MonitorBlacklistEntry>());
 
             // Discover monitors
             var monitors = await _monitorManager.DiscoverMonitorsAsync(cancellationToken);
@@ -115,8 +112,6 @@ public partial class MainViewModel
 
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
             _monitorManager.SetMaxCompatibilityMode(settings.Properties.MaxCompatibilityMode);
-            _monitorManager.SetMonitorBlacklist(settings.Properties.MonitorBlacklist
-                ?? new List<MonitorBlacklistEntry>());
 
             var monitors = await _monitorManager.DiscoverMonitorsAsync(_cancellationTokenSource.Token);
 

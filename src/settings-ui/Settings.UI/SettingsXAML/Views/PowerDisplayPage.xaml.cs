@@ -214,13 +214,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Monitor blacklist event handler
-        private async void ManageBlacklist_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new MonitorBlacklistDialog(ViewModel) { XamlRoot = this.XamlRoot };
-            await dialog.ShowAsync();
-        }
-
         private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)

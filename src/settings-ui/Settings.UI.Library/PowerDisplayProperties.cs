@@ -25,7 +25,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowIdentifyMonitorsButton = true;
             MaxCompatibilityMode = false;
             CustomVcpMappings = new List<CustomVcpValueMapping>();
-            MonitorBlacklist = new List<MonitorBlacklistEntry>();
 
             // Note: saved_monitor_settings has been moved to monitor_state.json
             // which is managed separately by PowerDisplay app
@@ -86,15 +85,5 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("custom_vcp_mappings")]
         public List<CustomVcpValueMapping> CustomVcpMappings { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user-editable list of monitor EDID IDs to skip entirely
-        /// during PowerDisplay discovery. The effective blacklist is the union of this
-        /// list and <c>BuiltInMonitorBlacklist.Entries</c>; matches are filtered out
-        /// before any DDC/CI or WMI probing. See the design doc for the relationship
-        /// to <see cref="MonitorInfo.IsHidden"/>.
-        /// </summary>
-        [JsonPropertyName("monitor_blacklist")]
-        public List<MonitorBlacklistEntry> MonitorBlacklist { get; set; }
     }
 }

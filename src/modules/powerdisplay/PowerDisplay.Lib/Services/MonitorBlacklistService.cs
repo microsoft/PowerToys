@@ -16,15 +16,16 @@ namespace PowerDisplay.Common.Services
     /// machine with the same monitor model.
     /// </summary>
     /// <remarks>
-    /// The service is immutable; construct a new one each time the custom list changes.
-    /// EdidIds are normalized (trimmed, upper-cased) on construction; comparisons use
+    /// Only the built-in list shipped with PowerToys is consulted; user-customized
+    /// blacklists were considered but cut due to UI cost. EdidIds are normalized
+    /// (trimmed, upper-cased) on construction; comparisons use
     /// <see cref="StringComparer.OrdinalIgnoreCase"/> as defense in depth.
     /// </remarks>
     public sealed class MonitorBlacklistService
     {
         private readonly HashSet<string> _blockedEdidIds;
 
-        public MonitorBlacklistService(IEnumerable<MonitorBlacklistEntry> customEntries)
+        public MonitorBlacklistService()
         {
             _blockedEdidIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -32,21 +33,13 @@ namespace PowerDisplay.Common.Services
             {
                 AddNormalized(entry.EdidId);
             }
-
-            if (customEntries != null)
-            {
-                foreach (var entry in customEntries)
-                {
-                    AddNormalized(entry?.EdidId);
-                }
-            }
         }
 
         /// <summary>
         /// Returns true if <paramref name="monitorId"/> (a <c>Monitor.Id</c> or raw Windows
-        /// DevicePath) has an EdidId in the union of built-in and custom blacklists.
-        /// Monitors whose EdidId cannot be extracted (empty path, malformed) are never
-        /// blocked — we only filter what we can positively identify.
+        /// DevicePath) has an EdidId in the built-in blacklist. Monitors whose EdidId cannot
+        /// be extracted (empty path, malformed) are never blocked — we only filter what we
+        /// can positively identify.
         /// </summary>
         public bool IsBlocked(string monitorId)
         {

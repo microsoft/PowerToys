@@ -16,7 +16,6 @@ using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
-using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Helpers
@@ -32,11 +31,8 @@ namespace PowerDisplay.Helpers
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
 
-        // Default to an empty custom list so discovery still works before MainViewModel
-        // has had a chance to push the actual blacklist. Built-in entries are included
-        // automatically by the service constructor.
-        private MonitorBlacklistService _blacklistService
-            = new(Array.Empty<MonitorBlacklistEntry>());
+        // Built-in entries are loaded automatically by the service constructor.
+        private readonly MonitorBlacklistService _blacklistService = new();
 
         // Controllers stored by type for O(1) lookup based on CommunicationMethod
         private DdcCiController? _ddcController;
@@ -89,19 +85,6 @@ namespace PowerDisplay.Helpers
             {
                 _ddcController.MaxCompatibilityMode = enabled;
             }
-        }
-
-        /// <summary>
-        /// Replaces the active <see cref="MonitorBlacklistService"/> with one built from the
-        /// supplied custom entries (the built-in list is added automatically by the service
-        /// constructor). Called by <see cref="ViewModels.MainViewModel"/> before each
-        /// <see cref="DiscoverMonitorsAsync"/> so user edits to the blacklist take effect on
-        /// the next refresh.
-        /// </summary>
-        public void SetMonitorBlacklist(IEnumerable<MonitorBlacklistEntry> customEntries)
-        {
-            _blacklistService = new MonitorBlacklistService(customEntries
-                ?? Array.Empty<MonitorBlacklistEntry>());
         }
 
         /// <summary>
