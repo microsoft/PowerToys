@@ -75,10 +75,10 @@ namespace ShortcutGuide.Helpers
         public static IndexFile GetCachedIndexYamlFile()
         {
             string indexPath = Path.Combine(PathOfManifestFiles, "index.yml");
-            DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(indexPath);
 
             lock (IndexLock)
             {
+                DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(indexPath);
                 if (cachedIndexFile is not null && cachedIndexLastWriteTimeUtc == lastWriteTimeUtc)
                 {
                     return cachedIndexFile.Value;
@@ -170,9 +170,11 @@ namespace ShortcutGuide.Helpers
                     continue;
                 }
 
+                Process[] foundProcesses = [];
+
                 try
                 {
-                    var foundProcesses = Process.GetProcessesByName(filter);
+                    foundProcesses = Process.GetProcessesByName(filter);
                     if (foundProcesses.Length > 0)
                     {
                         foreach (var app in item.Apps)
@@ -183,6 +185,13 @@ namespace ShortcutGuide.Helpers
                 }
                 catch (Exception)
                 {
+                }
+                finally
+                {
+                    foreach (var process in foundProcesses)
+                    {
+                        process.Dispose();
+                    }
                 }
             }
 
@@ -195,17 +204,17 @@ namespace ShortcutGuide.Helpers
                     return true;
                 }
 
-                if (input.ToLowerInvariant().EndsWith(".exe", StringComparison.InvariantCulture))
+                if (input.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 {
                     input = input[..^4];
                 }
 
-                if (filter.ToLowerInvariant().EndsWith(".exe", StringComparison.InvariantCulture))
+                if (filter.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 {
-                    return string.Equals(input, filter[..^4], StringComparison.OrdinalIgnoreCase);
+                    filter = filter[..^4];
                 }
 
-                return false;
+                return string.Equals(input, filter, StringComparison.OrdinalIgnoreCase);
             }
         }
     }

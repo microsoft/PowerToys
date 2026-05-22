@@ -57,50 +57,51 @@ namespace ShortcutGuide
                 "Manifests");
 
             CopyAndIndexGenerationThread = new Thread(() =>
-             {
-                 try
-                 {
-                     foreach (string sourceFile in Directory.EnumerateFiles(sourceManifestFolder, "*.yml"))
-                     {
-                         string destinationFile = Path.Combine(ManifestInterpreter.PathOfManifestFiles, Path.GetFileName(sourceFile));
-                         File.Copy(sourceFile, destinationFile, true);
-                     }
-                 }
-                 catch (Exception ex)
-                 {
-                     Logger.LogError($"Failed to copy bundled shortcut manifests from '{sourceManifestFolder}'.", ex);
-                 }
+            {
+                try
+                {
+                    foreach (string sourceFile in Directory.EnumerateFiles(sourceManifestFolder, "*.yml"))
+                    {
+                        string destinationFile = Path.Combine(ManifestInterpreter.PathOfManifestFiles, Path.GetFileName(sourceFile));
+                        File.Copy(sourceFile, destinationFile, true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to copy bundled shortcut manifests from '{sourceManifestFolder}'.", ex);
+                }
 
-                 string indexGeneratorPath = Path.Combine(
-                     Path.GetDirectoryName(Environment.ProcessPath)!,
-                     "PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
+                string indexGeneratorPath = Path.Combine(
+                    Path.GetDirectoryName(Environment.ProcessPath)!,
+                    "PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
 
-                 try
-                 {
-                     using Process? indexGeneration = Process.Start(indexGeneratorPath);
+                try
+                {
+                    using Process? indexGeneration = Process.Start(indexGeneratorPath);
 
-                     if (indexGeneration is null)
-                     {
-                         Logger.LogError($"Failed to start index generation process '{indexGeneratorPath}'.");
-                         return;
-                     }
+                    if (indexGeneration is null)
+                    {
+                        Logger.LogError($"Failed to start index generation process '{indexGeneratorPath}'.");
+                        return;
+                    }
 
-                     indexGeneration.WaitForExit();
+                    indexGeneration.WaitForExit();
 
-                     if (indexGeneration.ExitCode != 0)
-                     {
-                         Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
-                         Environment.Exit(indexGeneration.ExitCode);
-                     }
-                 }
-                 catch (Exception ex)
-                 {
-                     Logger.LogError($"Failed to start or wait for index generation process '{indexGeneratorPath}'.", ex);
-                     return;
-                 }
+                    if (indexGeneration.ExitCode != 0)
+                    {
+                        Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"Failed to start or wait for index generation process '{indexGeneratorPath}'.", ex);
+                    return;
+                }
 
-                 PowerToysShortcutsPopulator.Populate();
-             });
+                PowerToysShortcutsPopulator.Populate();
+            });
+            CopyAndIndexGenerationThread.IsBackground = true;
             CopyAndIndexGenerationThread.Start();
 
             WinRT.ComWrappersSupport.InitializeComWrappers();
