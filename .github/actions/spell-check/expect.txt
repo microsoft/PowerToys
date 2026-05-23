@@ -1412,6 +1412,7 @@ pch
 pchast
 PCIDLIST
 PCTSTR
+PCUITEMID
 PCWSTR
 PDBs
 PDEVMODE
@@ -1453,6 +1454,7 @@ pinboard
 pinfo
 pinvoke
 pipename
+PITEMID
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI
