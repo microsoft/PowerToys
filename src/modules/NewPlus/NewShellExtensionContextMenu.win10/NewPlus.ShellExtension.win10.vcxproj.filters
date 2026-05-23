@@ -63,6 +63,12 @@
     <ClInclude Include="..\NewShellExtensionContextMenu\helpers_variables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\NewShellExtensionContextMenu\Helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\NewShellExtensionContextMenu\new_icon_utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -98,7 +104,10 @@
     <ClCompile Include="..\NewShellExtensionContextMenu\new_utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp">
+    <ClCompile Include="..\NewShellExtensionContextMenu\Helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\NewShellExtensionContextMenu\new_icon_utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -121,5 +130,6 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natstepfilter" />
   </ItemGroup>
 </Project>

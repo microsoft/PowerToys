@@ -8,14 +8,13 @@ using namespace Microsoft::WRL;
 
 // Sub context menu containing the actual list of templates
 shell_context_sub_menu_item::shell_context_sub_menu_item()
+    : template_entry(nullptr), site_of_folder(nullptr), mouse_position_at_time_of_invoke{ 0, 0 }
 {
-    this->template_entry = nullptr;
 }
 
-shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
+shell_context_sub_menu_item::shell_context_sub_menu_item(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke)
+    : template_entry(template_entry), site_of_folder(site_of_folder), mouse_position_at_time_of_invoke(mouse_position_at_invoke)
 {
-    this->template_entry = template_entry;
-    this->site_of_folder = site_of_folder;
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetTitle(_In_opt_ IShellItemArray* items, _Outptr_result_nullonfailure_ PWSTR* title)
@@ -64,7 +63,7 @@ IFACEMETHODIMP shell_context_sub_menu_item::GetState(_In_opt_ IShellItemArray* s
 
 IFACEMETHODIMP shell_context_sub_menu_item::Invoke(_In_opt_ IShellItemArray*, _In_opt_ IBindCtx*) noexcept
 {
-    return newplus::utilities::copy_template(template_entry, site_of_folder);
+    return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke);
 }
 
 IFACEMETHODIMP shell_context_sub_menu_item::GetFlags(_Out_ EXPCMDFLAGS* returned_flags)

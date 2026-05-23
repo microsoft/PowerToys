@@ -45,6 +45,9 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
 
     try
     {
+        // Capture mouse position now (at menu-open time) for accurate desktop icon placement later
+        GetCursorPos(&mouse_position_at_time_of_invoke);
+
         // Create the initial context popup menu containing the list of templates and open templates action
         int menu_id = menu_first_cmd_id;
         MENUITEMINFO newplus_main_context_menu_item = { 0 };
@@ -245,8 +248,7 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
     {
         // It's a template menu item
         const auto template_entry = templates->get_template_item(selected_menu_item_index);
-
-        return newplus::utilities::copy_template(template_entry, site_of_folder);
+        return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke);
     }
     else
     {
