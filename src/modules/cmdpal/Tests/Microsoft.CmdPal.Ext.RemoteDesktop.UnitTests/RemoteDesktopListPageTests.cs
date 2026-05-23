@@ -29,7 +29,7 @@ public class RemoteDesktopListPageTests
         page.UpdateSearchText(string.Empty, string.Empty);
         var items = page.GetItems();
 
-        // Assert — only the 2 pre-existing connections, no arbitrary host item
+        // Assert — only the 2 preexisting connections, no arbitrary host item
         Assert.AreEqual(2, items.Length);
     }
 
@@ -54,31 +54,31 @@ public class RemoteDesktopListPageTests
         var page = CreatePage("server1");
 
         // Act
-        page.UpdateSearchText(string.Empty, "newhost.corp");
+        page.UpdateSearchText(string.Empty, "test.corp");
         var items = page.GetItems();
 
         // Assert — arbitrary item prepended, then the existing connection
         Assert.AreEqual(2, items.Length);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem, "First item should be a ConnectionListItem for the arbitrary host");
-        Assert.AreEqual("newhost.corp", firstItem.ConnectionName);
+        Assert.AreEqual("test.corp", firstItem.ConnectionName);
     }
 
     [TestMethod]
     public void QueryExactlyMatchingExistingConnection_NoArbitraryItem()
     {
         // Arrange
-        var page = CreatePage("myserver");
+        var page = CreatePage("rdp-server");
 
         // Act
-        page.UpdateSearchText(string.Empty, "myserver");
+        page.UpdateSearchText(string.Empty, "rdp-server");
         var items = page.GetItems();
 
         // Assert — no extra item; count stays at 1
         Assert.AreEqual(1, items.Length);
         var item = items[0] as ConnectionListItem;
         Assert.IsNotNull(item);
-        Assert.AreEqual("myserver", item.ConnectionName);
+        Assert.AreEqual("rdp-server", item.ConnectionName);
     }
 
     [TestMethod]
@@ -102,14 +102,14 @@ public class RemoteDesktopListPageTests
         var page = CreatePage("server1");
 
         // Act
-        page.UpdateSearchText(string.Empty, "remotepc:3389");
+        page.UpdateSearchText(string.Empty, "localhost:3389");
         var items = page.GetItems();
 
         // Assert — full host:port string preserved as the ConnectionName
         Assert.AreEqual(2, items.Length);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
-        Assert.AreEqual("remotepc:3389", firstItem.ConnectionName);
+        Assert.AreEqual("localhost:3389", firstItem.ConnectionName);
     }
 
     [TestMethod]
@@ -119,17 +119,17 @@ public class RemoteDesktopListPageTests
         var page = CreatePage("server1");
 
         // Act — first call adds arbitrary item
-        page.UpdateSearchText(string.Empty, "newhost.corp");
+        page.UpdateSearchText(string.Empty, "test.corp");
         var itemsAfterValid = page.GetItems();
 
         // Assert — arbitrary item present
         Assert.AreEqual(2, itemsAfterValid.Length);
         var firstItem = itemsAfterValid[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
-        Assert.AreEqual("newhost.corp", firstItem.ConnectionName);
+        Assert.AreEqual("test.corp", firstItem.ConnectionName);
 
         // Act — second call clears it
-        page.UpdateSearchText("newhost.corp", string.Empty);
+        page.UpdateSearchText("test.corp", string.Empty);
         var itemsAfterEmpty = page.GetItems();
 
         // Assert — back to only existing connections
@@ -139,18 +139,18 @@ public class RemoteDesktopListPageTests
     [TestMethod]
     public void ValidHostname_NoExistingConnections_ReturnsSingleArbitraryItem()
     {
-        // Arrange — no pre-existing connections
+        // Arrange — no preexisting connections
         var page = CreatePage();
 
         // Act
-        page.UpdateSearchText(string.Empty, "standalone.corp");
+        page.UpdateSearchText(string.Empty, "alpha.corp");
         var items = page.GetItems();
 
         // Assert
         Assert.AreEqual(1, items.Length);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
-        Assert.AreEqual("standalone.corp", firstItem.ConnectionName);
+        Assert.AreEqual("alpha.corp", firstItem.ConnectionName);
     }
 
     [TestMethod]
