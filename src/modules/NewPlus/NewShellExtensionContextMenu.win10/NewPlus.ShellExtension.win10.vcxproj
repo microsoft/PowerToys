@@ -84,7 +84,7 @@
     <ClInclude Include="..\NewShellExtensionContextMenu\constants.h" />
     <ClInclude Include="..\NewShellExtensionContextMenu\helpers_filesystem.h" />
     <ClInclude Include="..\NewShellExtensionContextMenu\helpers_variables.h" />
-    <ClInclude Include="..\NewShellExtensionContextMenu\new_icon_utilities.h" />
+    <ClInclude Include="..\NewShellExtensionContextMenu\newplus_icon_utilities.h" />
     <ClInclude Include="..\NewShellExtensionContextMenu\new_utilities.h" />
     <ClInclude Include="..\NewShellExtensionContextMenu\settings.h" />
     <ClInclude Include="..\NewShellExtensionContextMenu\shell_context_sub_menu.h" />
@@ -101,7 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\NewShellExtensionContextMenu\Helpers.cpp" />
-    <ClCompile Include="..\NewShellExtensionContextMenu\new_icon_utilities.cpp" />
+    <ClCompile Include="..\NewShellExtensionContextMenu\newplus_icon_utilities.cpp" />
     <ClCompile Include="..\NewShellExtensionContextMenu\new_utilities.cpp" />
     <ClCompile Include="..\NewShellExtensionContextMenu\powertoys_module.cpp" />
     <ClCompile Include="..\NewShellExtensionContextMenu\settings.cpp" />

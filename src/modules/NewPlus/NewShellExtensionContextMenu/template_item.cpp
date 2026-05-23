@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "template_item.h"
-#include "new_icon_utilities.h"
+#include "newplus_icon_utilities.h"
 #include "new_utilities.h"
 #include <chrono>
 #include <thread>
@@ -147,12 +147,12 @@ std::wstring template_item::remove_starting_digits_from_filename(std::wstring fi
 
 std::wstring template_item::get_explorer_icon() const
 {
-    return utilities::get_explorer_icon(path, helpers::filesystem::is_directory(path));
+    return icon_utilities::get_explorer_icon(path, helpers::filesystem::is_directory(path));
 }
 
 HICON template_item::get_explorer_icon_handle() const
 {
-    return utilities::get_explorer_icon_handle(path);
+    return icon_utilities::get_explorer_icon_handle(path);
 }
 
 std::filesystem::path template_item::copy_object_to(const HWND window_handle, const std::filesystem::path destination) const

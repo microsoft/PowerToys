@@ -1,11 +1,11 @@
 #include "pch.h"
 // pch.h first
-#include "new_icon_utilities.h"
+#include "newplus_icon_utilities.h"
 #include <unordered_map>
 
 #pragma comment(lib, "Shlwapi.lib")
 
-namespace newplus::utilities
+namespace newplus::icon_utilities
 {
 
 std::wstring get_explorer_icon(std::filesystem::path path, bool is_directory)
@@ -78,4 +78,4 @@ HICON get_explorer_icon_handle(std::filesystem::path path)
     return static_cast<HICON>(LoadImage(NULL, icon_resource.c_str(), IMAGE_ICON, icon_x, icon_y, LR_LOADFROMFILE));
 }
 
-} // namespace newplus::utilities
+}

@@ -34,7 +34,7 @@
     <ClCompile Include="new_utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="new_icon_utilities.cpp">
+    <ClCompile Include="newplus_icon_utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Helpers.cpp">
@@ -90,7 +90,7 @@
     <ClInclude Include="RuntimeRegistration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="new_icon_utilities.h">
+    <ClInclude Include="newplus_icon_utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Helpers.h">
