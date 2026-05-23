@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +16,7 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 {
     private readonly HttpClient _http = CreateClient();
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
     private bool _disposed;
 
     private static HttpClient CreateClient()
@@ -35,36 +38,67 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 
     public async Task<IRandomAccessStream?> TryGetFaviconAsync(Uri siteUri, CancellationToken ct = default)
     {
-        if (siteUri.Scheme != Uri.UriSchemeHttp && siteUri.Scheme != Uri.UriSchemeHttps)
+        await _semaphore.WaitAsync(ct);
+        try
         {
-            return null;
+            if (siteUri.Scheme != Uri.UriSchemeHttp && siteUri.Scheme != Uri.UriSchemeHttps)
+            {
+                return null;
+            }
+
+            var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
+            directory = Path.Combine(directory, "icons");
+            Directory.CreateDirectory(directory);
+            var iconFileName = $"{siteUri.Host}.ico";
+            var iconPath = Path.Combine(directory, iconFileName);
+
+            if (File.Exists(iconPath))
+            {
+                var bytes = File.ReadAllBytes(iconPath);
+                var strea = new InMemoryRandomAccessStream();
+                await strea.WriteAsync(bytes.AsBuffer());
+                strea.Seek(0);
+                return strea;
+            }
+
+            // 1) First attempt: favicon on the original authority (preserves port).
+            var first = BuildFaviconUri(siteUri);
+
+            // Try download; if this fails (non-image or path lost), retry on final host.
+            var inputStream = await TryDownloadImageAsync(first, ct).ConfigureAwait(false);
+            if (inputStream is null)
+            {
+                // 2) If the server redirected and "lost" the path, try /favicon.ico on the *final* host.
+                // We discover the final host by doing a HEAD/GET to the original URL and inspecting the final RequestUri.
+                var finalAuthority = await ResolveFinalAuthorityAsync(first, ct).ConfigureAwait(false);
+                if (finalAuthority is null || UriEqualsAuthority(first, finalAuthority))
+                {
+                    return null;
+                }
+
+                var second = BuildFaviconUri(finalAuthority);
+                if (second == first)
+                {
+                    return null; // nothing new to try
+                }
+
+                inputStream = await TryDownloadImageAsync(second, ct).ConfigureAwait(false);
+            }
+
+            var iS = inputStream.AsStreamForRead();
+            using var outputStream = File.Create(iconPath);
+            await iS.CopyToAsync(outputStream, ct);
+            if (inputStream is not null)
+            {
+                inputStream.Seek(0);
+            }
+
+            return inputStream;
         }
-
-        // 1) First attempt: favicon on the original authority (preserves port).
-        var first = BuildFaviconUri(siteUri);
-
-        // Try download; if this fails (non-image or path lost), retry on final host.
-        var stream = await TryDownloadImageAsync(first, ct).ConfigureAwait(false);
-        if (stream is not null)
+        finally
         {
-            return stream;
+            _semaphore.Release();
         }
-
-        // 2) If the server redirected and "lost" the path, try /favicon.ico on the *final* host.
-        // We discover the final host by doing a HEAD/GET to the original URL and inspecting the final RequestUri.
-        var finalAuthority = await ResolveFinalAuthorityAsync(first, ct).ConfigureAwait(false);
-        if (finalAuthority is null || UriEqualsAuthority(first, finalAuthority))
-        {
-            return null;
-        }
-
-        var second = BuildFaviconUri(finalAuthority);
-        if (second == first)
-        {
-            return null; // nothing new to try
-        }
-
-        return await TryDownloadImageAsync(second, ct).ConfigureAwait(false);
     }
 
     private static Uri BuildFaviconUri(Uri anyUriOnSite)
