@@ -3,9 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Timers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+
+#nullable enable
 
 namespace SamplePagesExtension;
 
@@ -82,7 +85,7 @@ internal sealed partial class SampleLiveDetailsPage : ListPage, IDisposable
         // Updating Details properties fires INotifyPropChanged automatically
         // (Details extends BaseObservable). DetailsViewModel picks up the change
         // live without requiring the user to reselect the item.
-        _clockDetails.Body = DateTime.Now.ToString("HH:mm:ss");
+        _clockDetails.Body = DateTime.Now.ToString("HH:mm:ss", CultureInfo.CurrentCulture);
 
         _counterDetails.Title = $"Count: {_counter}";
         _counterDetails.Body = $"Elapsed: {_counter} second{(_counter == 1 ? string.Empty : "s")}";
