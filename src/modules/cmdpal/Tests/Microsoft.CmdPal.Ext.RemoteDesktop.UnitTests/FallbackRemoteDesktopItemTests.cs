@@ -52,9 +52,8 @@ public class FallbackRemoteDesktopItemTests
         fallback.UpdateQuery(hostname);
 
         // Assert
-        var expectedTitle = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostname);
-        Assert.AreEqual(expectedTitle, fallback.Title);
-        Assert.AreEqual(Resources.remotedesktop_title, fallback.Subtitle);
+        Assert.AreEqual(Resources.remotedesktop_title, fallback.Title);
+        Assert.AreEqual(hostname, fallback.Subtitle);
 
         var command = fallback.Command as OpenRemoteDesktopCommand;
         Assert.IsNotNull(command);
@@ -110,9 +109,8 @@ public class FallbackRemoteDesktopItemTests
         fallback.UpdateQuery(hostPort);
 
         // Assert
-        var expectedTitle = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostPort);
-        Assert.AreEqual(expectedTitle, fallback.Title);
-        Assert.AreEqual(Resources.remotedesktop_title, fallback.Subtitle);
+        Assert.AreEqual(Resources.remotedesktop_title, fallback.Title);
+        Assert.AreEqual(hostPort, fallback.Subtitle);
 
         var command = fallback.Command as OpenRemoteDesktopCommand;
         Assert.IsNotNull(command);
@@ -131,9 +129,8 @@ public class FallbackRemoteDesktopItemTests
         fallback.UpdateQuery(hostPort);
 
         // Assert
-        var expectedTitle = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostPort);
-        Assert.AreEqual(expectedTitle, fallback.Title);
-        Assert.AreEqual(Resources.remotedesktop_title, fallback.Subtitle);
+        Assert.AreEqual(Resources.remotedesktop_title, fallback.Title);
+        Assert.AreEqual(hostPort, fallback.Subtitle);
 
         var command = fallback.Command as OpenRemoteDesktopCommand;
         Assert.IsNotNull(command);
