@@ -16,7 +16,6 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
     private const string _id = "com.microsoft.cmdpal.builtin.websearch.execute.fallback";
     private readonly SearchWebCommand _executeItem;
     private static readonly CompositeFormat PluginOpen = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open);
-    private static readonly CompositeFormat SubtitleText = System.Text.CompositeFormat.Parse(Properties.Resources.web_search_fallback_subtitle);
 
     private readonly IBrowserInfoService _browserInfoService;
 
@@ -45,6 +44,6 @@ internal sealed partial class FallbackExecuteSearchItem : FallbackCommandItem
         var isEmpty = string.IsNullOrEmpty(query);
         _executeItem.Name = isEmpty ? string.Empty : Resources.open_in_default_browser;
         Title = isEmpty ? string.Empty : UpdateBrowserName(_browserInfoService);
-        Subtitle = string.Format(CultureInfo.CurrentCulture, SubtitleText, query);
+        Subtitle = isEmpty ? string.Empty : query;
     }
 }
