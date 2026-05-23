@@ -54,11 +54,11 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
 
             if (File.Exists(iconPath))
             {
-                var bytes = File.ReadAllBytes(iconPath);
-                var strea = new InMemoryRandomAccessStream();
-                await strea.WriteAsync(bytes.AsBuffer());
-                strea.Seek(0);
-                return strea;
+                var iconBytes = File.ReadAllBytes(iconPath);
+                var iconStream = new InMemoryRandomAccessStream();
+                await iconStream.WriteAsync(iconBytes.AsBuffer());
+                iconStream.Seek(0);
+                return iconStream;
             }
 
             // 1) First attempt: favicon on the original authority (preserves port).
@@ -85,9 +85,9 @@ public sealed partial class FaviconLoader : IFaviconLoader, IDisposable
                 inputStream = await TryDownloadImageAsync(second, ct).ConfigureAwait(false);
             }
 
-            var iS = inputStream.AsStreamForRead();
+            var writeStream = inputStream.AsStreamForRead();
             using var outputStream = File.Create(iconPath);
-            await iS.CopyToAsync(outputStream, ct);
+            await writeStream.CopyToAsync(outputStream, ct);
             if (inputStream is not null)
             {
                 inputStream.Seek(0);
