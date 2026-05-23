@@ -34,7 +34,10 @@
     <ClCompile Include="new_utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\powerrename\lib\Helpers.cpp">
+    <ClCompile Include="new_icon_utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -85,6 +88,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RuntimeRegistration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="new_icon_utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -202,8 +211,14 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="TemplateExamples\Any files or folders placed in the template folder are available via New+.txt" />
-    <CopyFileToFolders Include="TemplateExamples\Example folder\Example txt file.txt" />
-    <CopyFileToFolders Include="TemplateExamples\Example folder\Another example txt file.txt" />
+    <CopyFileToFolders Include="TemplateExamples\Any files or folders placed in the template folder are available via New+.txt">
+      <Filter>Template Examples</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="TemplateExamples\Example folder\Example txt file.txt">
+      <Filter>Template Examples\Example folder</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="TemplateExamples\Example folder\Another example txt file.txt">
+      <Filter>Template Examples\Example folder</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>
