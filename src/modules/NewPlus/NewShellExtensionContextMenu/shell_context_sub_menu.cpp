@@ -10,8 +10,11 @@ shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_fo
 {
     this->site_of_folder = site_of_folder;
 
-    // Capture mouse position now (at menu-open time) for accurate desktop icon placement later
+    // Capture mouse position now (at menu-open time) for more accurate desktop icon placement later
+    mouse_position_at_time_of_invoke = { 0, 0 };
+    const DPI_AWARENESS_CONTEXT prev_dpi_ctx = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     GetCursorPos(&mouse_position_at_time_of_invoke);
+    SetThreadDpiAwarenessContext(prev_dpi_ctx);
 
     // Determine the New+ Template folder location
     const std::filesystem::path root = utilities::get_new_template_folder_location();
