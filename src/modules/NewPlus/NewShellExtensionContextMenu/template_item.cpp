@@ -1,8 +1,7 @@
 #include "pch.h"
 #include "template_item.h"
-#include <shellapi.h>
+#include "new_icon_utilities.h"
 #include "new_utilities.h"
-#include <cassert>
 #include <chrono>
 #include <thread>
 #include <shlobj_core.h>
@@ -197,15 +196,16 @@ void template_item::enter_rename_mode(const std::filesystem::path target_fullpat
 
 void template_item::rename_on_other_thread_workaround(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke)
 {
-    // Poll until the item appears in the folder view so rename mode is entered as soon
-    // as it is rendered, rather than waiting a fixed arbitrary delay.
+    // Have been unable to have Windows Explorer Shell enter rename mode from the main thread.
+    // Poll until the item appears in the folder view so icon is positioned and rename mode is entered
+    // without a jump in the positioning
     constexpr std::chrono::milliseconds poll_interval{ 30 };
     constexpr std::chrono::milliseconds poll_timeout{ 2000 };
     const auto deadline = std::chrono::steady_clock::now() + poll_timeout;
 
     while (std::chrono::steady_clock::now() < deadline)
     {
-        if (newplus::utilities::explorer_enter_rename_mode(target_fullpath, mouse_position_at_invoke))
+        if (newplus::utilities::explorer_enter_rename_mode_and_reposition(target_fullpath, mouse_position_at_invoke))
         {
             return;
         }

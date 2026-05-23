@@ -6,15 +6,12 @@
 using namespace Microsoft::WRL;
 
 // // Sub context menu command enumerator
-shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_folder)
+shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_time_of_context_menu)
 {
     this->site_of_folder = site_of_folder;
 
     // Capture mouse position now (at menu-open time) for more accurate desktop icon placement later
-    mouse_position_at_time_of_invoke = { 0, 0 };
-    const DPI_AWARENESS_CONTEXT prev_dpi_ctx = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    GetCursorPos(&mouse_position_at_time_of_invoke);
-    SetThreadDpiAwarenessContext(prev_dpi_ctx);
+    mouse_position_at_time_of_invoke = mouse_position_at_time_of_context_menu;
 
     // Determine the New+ Template folder location
     const std::filesystem::path root = utilities::get_new_template_folder_location();

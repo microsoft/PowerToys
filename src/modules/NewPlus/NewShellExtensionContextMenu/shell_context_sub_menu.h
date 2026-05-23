@@ -13,7 +13,7 @@ using namespace newplus;
 class shell_context_sub_menu final : public RuntimeClass<RuntimeClassFlags<ClassicCom>, IEnumExplorerCommand>
 {
 public:
-    shell_context_sub_menu(const ComPtr<IUnknown> site_of_folder);
+    shell_context_sub_menu(const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_time_of_context_menu);
 
     // IEnumExplorerCommand
     IFACEMETHODIMP Next(ULONG celt, __out_ecount_part(celt, *pceltFetched) IExplorerCommand** apUICommand, __out_opt ULONG* pceltFetched);
