@@ -21,7 +21,7 @@ public static partial class CalculateHelper
         @"pi|" +
         @"==|~=|&&|\|\||" +
         @"((\d+(?:\.\d*)?|\.\d+)[eE](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
-        @"e|[0-9]|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
+        @"e|[0-9]|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[\+\-\*\/\^\.,xX ""]|[\(\)\|\!\[\]]" +
         @")+$",
         RegexOptions.Compiled);
 
@@ -122,7 +122,12 @@ public static partial class CalculateHelper
 
     private static string NormalizeMultiplicationSymbols(string input)
     {
-        return input.Replace("x", "*").Replace("X", "*");
+        input = System.Text.RegularExpressions.Regex.Replace(
+            input,
+            @"(?<!\b0)[xX](?![a-zA-Z(])",
+            "*");
+
+        return input;
     }
 
     public static bool InputValid(string input)
@@ -131,8 +136,6 @@ public static partial class CalculateHelper
         {
             return false;
         }
-
-        input = NormalizeMultiplicationSymbols(input);
 
         if (!RegValidExpressChar.IsMatch(input))
         {
@@ -168,7 +171,7 @@ public static partial class CalculateHelper
 
     public static string FixHumanMultiplicationExpressions(string input)
     {
-        input = input.Replace("x", "*").Replace("X", "*");
+        input = NormalizeMultiplicationSymbols(input);
         var output = CheckScientificNotation(input);
         output = CheckNumberOrConstantThenParenthesisExpr(output);
         output = CheckNumberOrConstantThenFunc(output);
