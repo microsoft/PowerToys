@@ -10,6 +10,9 @@ shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_fo
 {
     this->site_of_folder = site_of_folder;
 
+    // Capture mouse position now (at menu-open time) for accurate desktop icon placement later
+    GetCursorPos(&mouse_position_at_time_of_invoke);
+
     // Determine the New+ Template folder location
     const std::filesystem::path root = utilities::get_new_template_folder_location();
 
@@ -25,7 +28,7 @@ shell_context_sub_menu::shell_context_sub_menu(const ComPtr<IUnknown> site_of_fo
     int index = 0;
     for (int i = 0; i < number_of_templates; i++)
     {
-        explorer_menu_item_commands.push_back(Make<shell_context_sub_menu_item>(templates->get_template_item(i), site_of_folder));
+        explorer_menu_item_commands.push_back(Make<shell_context_sub_menu_item>(templates->get_template_item(i), site_of_folder, mouse_position_at_time_of_invoke));
     }
 
     // Add separator to context menu

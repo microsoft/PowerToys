@@ -124,6 +124,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ClInclude Include="settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="new_utilities.h" />
+    <ClInclude Include="new_icon_utilities.h" />
     <ClInclude Include="RuntimeRegistration.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="template_folder.h" />
@@ -134,6 +135,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="new_utilities.cpp" />
+    <ClCompile Include="new_icon_utilities.cpp" />
     <ClCompile Include="shell_context_menu.cpp" />
     <ClCompile Include="shell_context_sub_menu.cpp" />
     <ClCompile Include="shell_context_sub_menu_item.cpp" />

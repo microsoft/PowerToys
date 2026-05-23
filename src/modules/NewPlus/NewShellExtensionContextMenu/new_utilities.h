@@ -10,6 +10,7 @@
 #include "template_item.h"
 #include "trace.h"
 #include "helpers_variables.h"
+#include "new_icon_utilities.h"
 
 #pragma comment(lib, "Shlwapi.lib")
 
@@ -19,59 +20,6 @@ namespace newplus::utilities
 {
     size_t get_saved_number_of_templates();
     void set_saved_number_of_templates(size_t templates);
-
-    inline std::wstring get_explorer_icon(std::filesystem::path path)
-    {
-        SHFILEINFO shell_file_info = { 0 };
-        const std::wstring filepath = path.wstring();
-        DWORD_PTR result = SHGetFileInfo(filepath.c_str(), 0, &shell_file_info, sizeof(shell_file_info), SHGFI_ICONLOCATION);
-        std::wstring icon_path = shell_file_info.szDisplayName;
-        if (icon_path != L"")
-        {
-            const int icon_index = shell_file_info.iIcon;
-            std::wstring icon_resource = icon_path + std::wstring(L",") + std::to_wstring(icon_index);
-            return icon_resource;
-        }
-
-        WCHAR icon_resource_specifier[MAX_PATH] = { 0 };
-        DWORD buffer_length = MAX_PATH;
-        const std::wstring extension = path.extension().wstring();
-        const HRESULT hr = AssocQueryString(ASSOCF_INIT_IGNOREUNKNOWN,
-                                            ASSOCSTR_DEFAULTICON,
-                                            extension.c_str(),
-                                            NULL,
-                                            icon_resource_specifier,
-                                            &buffer_length);
-        const std::wstring icon_resource = icon_resource_specifier;
-        return icon_resource;
-    }
-
-    inline HICON get_explorer_icon_handle(std::filesystem::path path)
-    {
-        SHFILEINFO shell_file_info = { 0 };
-        const std::wstring filepath = path.wstring();
-        DWORD_PTR result = SHGetFileInfo(filepath.c_str(), 0, &shell_file_info, sizeof(shell_file_info), SHGFI_ICON);
-        if (shell_file_info.hIcon)
-        {
-            return shell_file_info.hIcon;
-        }
-
-        WCHAR icon_resource_specifier[MAX_PATH] = { 0 };
-        DWORD buffer_length = MAX_PATH;
-        const std::wstring extension = path.extension().wstring();
-        const HRESULT hr = AssocQueryString(ASSOCF_INIT_IGNOREUNKNOWN,
-                                            ASSOCSTR_DEFAULTICON,
-                                            extension.c_str(),
-                                            NULL,
-                                            icon_resource_specifier,
-                                            &buffer_length);
-        const std::wstring icon_resource = icon_resource_specifier;
-        
-        const auto icon_x = GetSystemMetrics(SM_CXSMICON);
-        const auto icon_y = GetSystemMetrics(SM_CYSMICON);
-        HICON hIcon = static_cast<HICON>(LoadImage(NULL, icon_resource.c_str(), IMAGE_ICON, icon_x, icon_y, LR_LOADFROMFILE));
-        return hIcon;
-    }
 
     inline bool wstring_same_when_comparing_ignore_case(std::wstring stringA, std::wstring stringB)
     {
@@ -198,7 +146,7 @@ namespace newplus::utilities
         return false;
     }
 
-    inline void explorer_enter_rename_mode(const std::filesystem::path target_fullpath_of_new_instance)
+    inline bool explorer_enter_rename_mode(const std::filesystem::path target_fullpath_of_new_instance, const POINT mouse_position_at_invoke)
     {
         const std::filesystem::path path_without_new_file_or_dir = target_fullpath_of_new_instance.parent_path();
         const std::filesystem::path new_file_or_dir_without_path = target_fullpath_of_new_instance.filename();
@@ -208,7 +156,7 @@ namespace newplus::utilities
         HRESULT hr;
         if (FAILED(CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_ALL, IID_PPV_ARGS(&shell_windows))))
         {
-            return;
+            return false;
         }
 
         long window_handle;
@@ -222,7 +170,7 @@ namespace newplus::utilities
 
             if (FAILED(shell_windows->FindWindowSW(&empty_yet_needed_incl_init, &empty_yet_needed_incl_init, SWC_DESKTOP, &window_handle, SWFO_NEEDDISPATCH, &shell_window)))
             {
-                return;
+                return false;
             }
         }
         else
@@ -264,7 +212,7 @@ namespace newplus::utilities
 
         if (!shell_window)
         {
-            return;
+            return false;
         }
 
         ComPtr<IServiceProvider> service_provider;
@@ -299,13 +247,12 @@ namespace newplus::utilities
                 {
                     // Newly created object is on the desktop -- reposition under mouse and enter rename mode
                     LPCITEMIDLIST shell_item_to_select_and_position[] = { shell_item_ids };
-                    POINT mouse_position;
-                    GetCursorPos(&mouse_position);
-                    mouse_position.x -= GetSystemMetrics(SM_CXMENUSIZE);
-                    mouse_position.x = (std::max)(mouse_position.x, 20L);
-                    mouse_position.y -= GetSystemMetrics(SM_CXMENUSIZE)/2;
-                    mouse_position.y = (std::max)(mouse_position.y, 20L);
-                        POINT position[] = { mouse_position };
+                    POINT adjusted_position = mouse_position_at_invoke;
+                    adjusted_position.x -= GetSystemMetrics(SM_CXMENUSIZE);
+                    adjusted_position.x = (std::max)(adjusted_position.x, 20L);
+                    adjusted_position.y -= GetSystemMetrics(SM_CXMENUSIZE) / 2;
+                    adjusted_position.y = (std::max)(adjusted_position.y, 20L);
+                    POINT position[] = { adjusted_position };
                     folder_view->SelectAndPositionItems(1, shell_item_to_select_and_position, position, common_select_flags | SVSI_POSITIONITEM);
                 }
                 else
@@ -317,6 +264,7 @@ namespace newplus::utilities
             }
             CoTaskMemFree(shell_item_ids);
         }
+        return done;
     }
 
     inline void update_last_write_time(const std::filesystem::path path)
@@ -334,7 +282,7 @@ namespace newplus::utilities
         }
     }
 
-    inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder)
+    inline HRESULT copy_template(const template_item* template_entry, const ComPtr<IUnknown> site_of_folder, const POINT mouse_position_at_invoke)
     {
         HRESULT hr = S_OK;
 
@@ -396,7 +344,7 @@ namespace newplus::utilities
             template_entry->refresh_target(target_final_fullpath);
 
             // Enter rename mode
-            template_entry->enter_rename_mode(target_final_fullpath);
+            template_entry->enter_rename_mode(target_final_fullpath, mouse_position_at_invoke);
         }
         catch (const std::exception& ex)
         {

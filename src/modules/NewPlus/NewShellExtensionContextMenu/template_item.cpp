@@ -3,6 +3,7 @@
 #include <shellapi.h>
 #include "new_utilities.h"
 #include <cassert>
+#include <chrono>
 #include <thread>
 #include <shlobj_core.h>
 
@@ -147,7 +148,7 @@ std::wstring template_item::remove_starting_digits_from_filename(std::wstring fi
 
 std::wstring template_item::get_explorer_icon() const
 {
-    return utilities::get_explorer_icon(path);
+    return utilities::get_explorer_icon(path, helpers::filesystem::is_directory(path));
 }
 
 HICON template_item::get_explorer_icon_handle() const
@@ -188,18 +189,26 @@ void template_item::refresh_target(const std::filesystem::path target_final_full
     SHChangeNotify(SHCNE_CREATE, SHCNF_PATH | SHCNF_FLUSH, target_final_fullpath.wstring().c_str(), NULL);
 }
 
-void template_item::enter_rename_mode(const std::filesystem::path target_fullpath) const
+void template_item::enter_rename_mode(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke) const
 {
-    std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, target_fullpath);
+    std::thread thread_for_renaming_workaround(rename_on_other_thread_workaround, target_fullpath, mouse_position_at_invoke);
     thread_for_renaming_workaround.detach();
 }
 
-void template_item::rename_on_other_thread_workaround(const std::filesystem::path target_fullpath)
+void template_item::rename_on_other_thread_workaround(const std::filesystem::path target_fullpath, const POINT mouse_position_at_invoke)
 {
-    // Have been unable to have Windows Explorer Shell enter rename mode from the main thread
-    // Sleep for a bit to only enter rename mode when icon has been drawn.
-    const std::chrono::milliseconds approx_wait_for_icon_redraw_not_needed{ 50 };
-    std::this_thread::sleep_for(std::chrono::milliseconds(approx_wait_for_icon_redraw_not_needed));
+    // Poll until the item appears in the folder view so rename mode is entered as soon
+    // as it is rendered, rather than waiting a fixed arbitrary delay.
+    constexpr std::chrono::milliseconds poll_interval{ 30 };
+    constexpr std::chrono::milliseconds poll_timeout{ 2000 };
+    const auto deadline = std::chrono::steady_clock::now() + poll_timeout;
 
-    newplus::utilities::explorer_enter_rename_mode(target_fullpath);
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        if (newplus::utilities::explorer_enter_rename_mode(target_fullpath, mouse_position_at_invoke))
+        {
+            return;
+        }
+        std::this_thread::sleep_for(poll_interval);
+    }
 }
