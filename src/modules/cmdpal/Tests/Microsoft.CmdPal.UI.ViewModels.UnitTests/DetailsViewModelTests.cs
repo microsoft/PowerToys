@@ -125,9 +125,9 @@ public class DetailsViewModelTests
     /// <summary>
     /// A minimal IDetails that does NOT implement INotifyPropChanged.
     /// </summary>
-    private sealed class NonObservableDetails : IDetails
+    private sealed partial class NonObservableDetails : IDetails
     {
-        public IIconInfo HeroImage => new IconInfo();
+        public IIconInfo HeroImage => new IconInfo(string.Empty);
 
         public string Title => "Static Title";
 
