@@ -5,7 +5,9 @@
 #nullable enable
 
 using System;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Indexer.Data;
@@ -28,6 +30,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
     private const uint HardQueryCookie = 10;
     private static readonly NoOpCommand BaseCommandWithId = new() { Id = CommandId };
 
+    private readonly CompositeFormat _fallbackItemSearchSubtitleFormat = CompositeFormat.Parse(Resources.Indexer_fallback_searchPage_title);
     private readonly Lock _querySwitchLock = new();
     private readonly Lock _resultLock = new();
 
@@ -149,7 +152,7 @@ internal sealed partial class FallbackOpenFileItem : FallbackCommandItem, IDispo
 
                 var set = UpdateResultForCurrentQuery(
                     Resources.IndexerCommandsProvider_DisplayName,
-                    query,
+                    string.Format(CultureInfo.CurrentCulture, _fallbackItemSearchSubtitleFormat, query),
                     Icons.FileExplorerIcon,
                     indexerPage,
                     MoreCommands,

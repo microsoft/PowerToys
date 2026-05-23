@@ -18,6 +18,7 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
     private const string _id = "com.microsoft.cmdpal.builtin.websearch.openurl.fallback";
     private readonly IBrowserInfoService _browserInfoService;
     private readonly OpenURLCommand _executeItem;
+    private static readonly CompositeFormat PluginOpenURL = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url);
     private static readonly CompositeFormat PluginOpenUrlInBrowser = System.Text.CompositeFormat.Parse(Properties.Resources.plugin_open_url_in_browser);
 
     public FallbackOpenURLItem(ISettingsInterface settings, IBrowserInfoService browserInfoService)
@@ -57,7 +58,7 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
 
         var browserName = _browserInfoService.GetDefaultBrowser()?.Name;
         Title = string.IsNullOrWhiteSpace(browserName) ? Resources.open_in_default_browser : string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, browserName);
-        Subtitle = query;
+        Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, query);
     }
 
     private static bool IsValidUrl(string url)
