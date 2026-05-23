@@ -160,7 +160,7 @@ namespace newplus::utilities
             return false;
         }
 
-        long desktop_window_handle;
+        long desktop_window_handle = 0;
         CComPtr<IDispatch> shell_window;
         const bool object_created_on_desktop = is_desktop_folder(path_without_new_file_or_dir.c_str());
         if (object_created_on_desktop)
@@ -232,13 +232,18 @@ namespace newplus::utilities
         folder_view->ItemCount(SVGIO_ALLVIEW, &number_of_objects_in_view);
         for (int i = 0; i < number_of_objects_in_view && !done; ++i)
         {
-            std::wstring path_of_item(MAX_PATH * 2, 0);
-            PITEMID_CHILD shell_item_id;
+            PITEMID_CHILD shell_item_id = nullptr;
 
             folder_view->Item(i, &shell_item_id);
-            SHGetPathFromIDListW(reinterpret_cast<PCIDLIST_ABSOLUTE>(shell_item_id), &path_of_item[0]);
 
-            const std::wstring current_filename = std::filesystem::path(path_of_item.c_str()).filename();
+            wchar_t path_buffer[MAX_PATH * 2] = { 0 };
+            if (!SHGetPathFromIDListW(reinterpret_cast<PCIDLIST_ABSOLUTE>(shell_item_id), path_buffer))
+            {
+                CoTaskMemFree(shell_item_id);
+                continue;
+            }
+
+            const std::wstring current_filename = std::filesystem::path(path_buffer).filename();
 
             if (newplus::utilities::wstring_same_when_comparing_ignore_case(new_file_or_dir_without_path, current_filename))
             {
