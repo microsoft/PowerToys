@@ -779,48 +779,30 @@ public sealed partial class DockWindow : WindowEx,
 
     private void RequestShowPaletteOnUiThread(Point posDips)
     {
-        // pos is relative to our root. We need to convert to absolute
-        // virtual-screen coords.
-        //
-        // TransformToVisual(null) yields a point in the XamlRoot's coordinate
-        // space (i.e. the window's client area in DIPs), NOT in screen space.
-        // To get true screen coordinates we must offset by the window's
-        // screen-space origin (GetWindowRect, which is in pixels). Without
-        // this offset, X (for Top/Bottom docks) or Y (for Left/Right docks)
-        // stays in window-local pixels and the palette ends up on the primary
-        // monitor when the dock lives on a secondary monitor.
+        // pos is relative to our root. We need to convert to screen coords.
         var rootPosDips = Root.TransformToVisual(null).TransformPoint(new Point(0, 0));
         var screenPosDips = new Point(rootPosDips.X + posDips.X, rootPosDips.Y + posDips.Y);
 
         var dpi = PInvoke.GetDpiForWindow(_hwnd);
         var scaleFactor = dpi / 96.0;
-        PInvoke.GetWindowRect(_hwnd, out var ourRect);
-
-        var screenPosPixels = new Point(
-            ourRect.left + (screenPosDips.X * scaleFactor),
-            ourRect.top + (screenPosDips.Y * scaleFactor));
+        var screenPosPixels = new Point(screenPosDips.X * scaleFactor, screenPosDips.Y * scaleFactor);
 
         // Use monitor-specific bounds when available
-        // Note: we compute the quadrant in monitor-local coordinates, but
-        // keep screenPosPixels in absolute virtual-screen coordinates. Mixing
-        // the two below (when only one axis is overridden from ourRect, which
-        // is in virtual-screen coords) produced an off-screen final position
-        // on secondary monitors.
         int screenWidth, screenHeight;
-        double localX, localY;
         if (_targetMonitor is not null)
         {
             screenWidth = _targetMonitor.Bounds.Width;
             screenHeight = _targetMonitor.Bounds.Height;
-            localX = screenPosPixels.X - _targetMonitor.Bounds.Left;
-            localY = screenPosPixels.Y - _targetMonitor.Bounds.Top;
+
+            // Adjust to monitor-local coordinates for quadrant calculation
+            screenPosPixels = new Point(
+                screenPosPixels.X - _targetMonitor.Bounds.Left,
+                screenPosPixels.Y - _targetMonitor.Bounds.Top);
         }
         else
         {
             screenWidth = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
             screenHeight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
-            localX = screenPosPixels.X;
-            localY = screenPosPixels.Y;
         }
 
         // Now we're going to find the best position for the palette.
@@ -838,8 +820,8 @@ public sealed partial class DockWindow : WindowEx,
         // On the bottom:
         //   - anchor to the bottom, left if we're on the left half of the screen
         //   - anchor to the bottom, right if we're on the right half of the screen
-        var onTopHalf = localY < screenHeight / 2;
-        var onLeftHalf = localX < screenWidth / 2;
+        var onTopHalf = screenPosPixels.Y < screenHeight / 2;
+        var onLeftHalf = screenPosPixels.X < screenWidth / 2;
         var onRightHalf = !onLeftHalf;
         var onBottomHalf = !onTopHalf;
 
@@ -855,6 +837,7 @@ public sealed partial class DockWindow : WindowEx,
         // we also need to slide the anchor point a bit away from the dock
         var paddingDips = 8;
         var paddingPixels = paddingDips * scaleFactor;
+        PInvoke.GetWindowRect(_hwnd, out var ourRect);
 
         // Depending on the side we're on, we need to offset differently
         switch (EffectiveSide)
