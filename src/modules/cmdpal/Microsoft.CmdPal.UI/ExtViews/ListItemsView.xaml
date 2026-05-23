@@ -350,7 +350,10 @@
             Small="{StaticResource IconGridViewItemStyle}" />
 
         <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
-            <Grid AutomationProperties.Name="{x:Bind Title, Mode=OneWay}" ColumnSpacing="12">
+            <Grid
+                AutomationProperties.AutomationId="{x:Bind Command.Id, Mode=OneWay}"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="28" />
                     <ColumnDefinition Width="*" />
@@ -462,6 +465,7 @@
             <StackPanel
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
+                AutomationProperties.AutomationId="{x:Bind Command.Id, Mode=OneWay}"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                 BorderThickness="0"
                 CornerRadius="{StaticResource SmallGridViewItemCornerRadius}"
@@ -486,6 +490,7 @@
                 Width="{StaticResource MediumGridContainerSize}"
                 Height="{StaticResource MediumGridContainerSize}"
                 Padding="8"
+                AutomationProperties.AutomationId="{x:Bind Command.Id, Mode=OneWay}"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                 CornerRadius="{StaticResource MediumGridViewItemCornerRadius}"
                 ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
@@ -528,6 +533,7 @@
                 Padding="0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
+                AutomationProperties.AutomationId="{x:Bind Command.Id, Mode=OneWay}"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
                 BorderThickness="0"
                 CornerRadius="{StaticResource GalleryGridViewItemRadius}"
