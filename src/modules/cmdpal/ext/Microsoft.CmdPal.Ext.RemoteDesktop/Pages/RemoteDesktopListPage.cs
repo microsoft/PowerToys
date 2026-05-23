@@ -81,7 +81,7 @@ internal sealed partial class RemoteDesktopListPage : DynamicListPage
 
     private static bool IsValidHostname(string query)
     {
-        // Strip port suffix (e.g. "myhost:3389") before validation,
+        // Strip port suffix (e.g. "host:3389") before validation,
         // since Uri.CheckHostName does not accept host:port strings.
         var hostForValidation = query;
         var lastColon = hostForValidation.LastIndexOf(':');

@@ -102,14 +102,14 @@ public class RemoteDesktopListPageTests
         var page = CreatePage("server1");
 
         // Act
-        page.UpdateSearchText(string.Empty, "myhost:3389");
+        page.UpdateSearchText(string.Empty, "remotepc:3389");
         var items = page.GetItems();
 
         // Assert — full host:port string preserved as the ConnectionName
         Assert.AreEqual(2, items.Length);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
-        Assert.AreEqual("myhost:3389", firstItem.ConnectionName);
+        Assert.AreEqual("remotepc:3389", firstItem.ConnectionName);
     }
 
     [TestMethod]
