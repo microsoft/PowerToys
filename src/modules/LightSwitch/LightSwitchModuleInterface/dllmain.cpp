@@ -698,7 +698,7 @@ void LightSwitchInterface::init_settings()
     }
     catch (const winrt::hresult_error& e)
     {
-        Logger::error(L"[Light Switch] init_settings: hresult_error 0x{:08X} - {}", e.code(), e.message().c_str());
+        Logger::error(L"[Light Switch] init_settings: hresult_error 0x{:08X} - {}", static_cast<int32_t>(e.code()), e.message().c_str());
     }
     catch (const std::exception& e)
     {

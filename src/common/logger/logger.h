@@ -1,6 +1,26 @@
 #pragma once
 #include <spdlog/spdlog.h>
+#include <type_traits>
 #include "logger_settings.h"
+
+// fmt 9+ no longer auto-formats enums. Provide a generic formatter that
+// converts any scoped or unscoped enum to its underlying integer type so
+// existing Logger::xxx(L"... {} ...", someEnum) call sites keep working
+// after the spdlog 1.17 / fmt 12 upgrade.
+namespace fmt
+{
+    template <typename E, typename Char>
+    struct formatter<E, Char, std::enable_if_t<std::is_enum_v<E>>>
+        : formatter<std::underlying_type_t<E>, Char>
+    {
+        template <typename FormatContext>
+        auto format(E value, FormatContext& ctx) const
+        {
+            return formatter<std::underlying_type_t<E>, Char>::format(
+                static_cast<std::underlying_type_t<E>>(value), ctx);
+        }
+    };
+}
 
 class Logger
 {

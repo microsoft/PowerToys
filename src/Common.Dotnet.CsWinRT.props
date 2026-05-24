@@ -41,7 +41,37 @@
   <!-- this may need to be removed on future CsWinRT upgrades-->
   <Target Name="RemoveCsWinRTPackageAnalyzer" BeforeTargets="CoreCompile">
     <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="%(Analyzer.NuGetPackageId) == 'Microsoft.Windows.CsWinRT'" />	  
+      <Analyzer Remove="@(Analyzer)" Condition="%(Analyzer.NuGetPackageId) == 'Microsoft.Windows.CsWinRT'" />	  
     </ItemGroup>
+  </Target>
+
+  <!--
+    Ensure any referenced C++/WinRT (.vcxproj) projects are fully built BEFORE the CsWinRT
+    source generator runs in this csproj. On a clean machine the SDK-style ProjectReference
+    graph does not guarantee that the producing vcxproj has emitted its .winmd before the
+    consuming C# Compile / source-generator stage starts in a parallel solution build,
+    which manifests as CS0246 on the projected namespace (e.g. 'PowerToys.Interop').
+    Forcing a serialized Build of the .vcxproj references here closes that race.
+
+    We hook BEFORE ResolveProjectReferences so the produced .winmd is visible to
+    CsWinRTRemoveWinMDReferences (which moves it into @(CsWinRTInputs)) and we also
+    delete a possibly stale cswinrt.rsp so CsWinRTGenerateProjection re-invokes
+    cswinrt.exe instead of incrementally skipping.
+  -->
+  <Target Name="EnsureNativeWinMDProjectionInputsBuilt"
+          BeforeTargets="ResolveProjectReferences;ResolveAssemblyReferences;CsWinRTPrepareProjection;CsWinRTGenerateProjection"
+          Condition="'@(ProjectReference)' != '' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' != 'false'">
+    <ItemGroup>
+      <_NativeWinMDProjectionRef Include="@(ProjectReference)" Condition="'%(Extension)' == '.vcxproj'" />
+    </ItemGroup>
+    <MSBuild Projects="@(_NativeWinMDProjectionRef)"
+             Properties="Configuration=$(Configuration);Platform=$(Platform)"
+             Targets="Build"
+             BuildInParallel="false"
+             Condition="'@(_NativeWinMDProjectionRef)' != ''" />
+    <!-- Force CsWinRTGenerateProjection to re-run so stale-rsp incremental skip cannot
+         leave us without generated .cs files when the .winmd has just been (re)produced. -->
+    <Delete Files="$(CsWinRTGeneratedFilesDir)cswinrt.rsp;$(CsWinRTGeneratedFilesDir)cswinrt_internal.rsp"
+            Condition="'@(_NativeWinMDProjectionRef)' != '' and '$(CsWinRTGeneratedFilesDir)' != ''" />
   </Target>
 </Project>
