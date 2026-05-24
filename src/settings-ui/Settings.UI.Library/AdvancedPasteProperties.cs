@@ -16,6 +16,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public static readonly HotkeySettings DefaultPasteAsPlainTextShortcut = new HotkeySettings(true, true, true, false, 0x56); // Ctrl+Win+Alt+V
 
+        public const int DefaultKeystrokeDelayMs = 30;
+
+        public const int DefaultKeystrokeBatchSize = 1;
+
         public AdvancedPasteProperties()
         {
             AdvancedPasteUIShortcut = DefaultAdvancedPasteUIShortcut;
@@ -30,6 +34,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             CloseAfterLosingFocus = false;
             EnableClipboardPreview = true;
             AutoCopySelectionForCustomActionHotkey = false;
+            KeystrokeDelayMs = DefaultKeystrokeDelayMs;
+            KeystrokeBatchSize = DefaultKeystrokeBatchSize;
             PasteAIConfiguration = new();
         }
 
@@ -98,6 +104,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("paste-as-keystroke-hotkey")]
         public HotkeySettings PasteAsKeystrokeShortcut { get; set; }
+
+        [JsonPropertyName("keystroke-delay-ms")]
+        public int KeystrokeDelayMs { get; set; }
+
+        [JsonPropertyName("keystroke-batch-size")]
+        public int KeystrokeBatchSize { get; set; }
 
         [JsonPropertyName("custom-actions")]
         [CmdConfigureIgnoreAttribute]

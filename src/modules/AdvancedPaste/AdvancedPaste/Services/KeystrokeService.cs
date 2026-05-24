@@ -5,7 +5,9 @@
 using System;
 using System.Collections.Generic;
 
+using AdvancedPaste.Settings;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace AdvancedPaste.Services;
 
@@ -14,7 +16,15 @@ namespace AdvancedPaste.Services;
 /// </summary>
 public sealed class KeystrokeService : IKeystrokeService
 {
-    private const int WaitAfterSendInputEventsMS = 30;
+    private readonly int _delayMs;
+    private readonly int _batchSize;
+
+    public KeystrokeService(IUserSettings userSettings)
+    {
+        ArgumentNullException.ThrowIfNull(userSettings);
+        _delayMs = userSettings.KeystrokeDelayMs > 0 ? userSettings.KeystrokeDelayMs : AdvancedPasteProperties.DefaultKeystrokeDelayMs;
+        _batchSize = userSettings.KeystrokeBatchSize > 0 ? userSettings.KeystrokeBatchSize : AdvancedPasteProperties.DefaultKeystrokeBatchSize;
+    }
 
     /// <summary>
     /// Sends text as individual Unicode keystroke events.
@@ -37,9 +47,7 @@ public sealed class KeystrokeService : IKeystrokeService
 
         var targetWindow = Helpers.NativeMethods.GetForegroundWindow();
 
-        const int chunkSize = 1;
-
-        for (int i = 0; i < text.Length; i += chunkSize)
+        for (int i = 0; i < text.Length; i += _batchSize)
         {
             var currentForeground = Helpers.NativeMethods.GetForegroundWindow();
             if (targetWindow != IntPtr.Zero && currentForeground != targetWindow)
@@ -48,15 +56,14 @@ public sealed class KeystrokeService : IKeystrokeService
                 break;
             }
 
-            int currentChunkLength = Math.Min(chunkSize, text.Length - i);
-            string chunk = text.Substring(i, currentChunkLength);
+            int currentChunkLength = Math.Min(_batchSize, text.Length - i);
 
             Logger.LogDebug(
                 $"Sending keystroke chunk starting at index {i} with length {currentChunkLength}");
 
-            if (chunk.Length > 0)
+            if (currentChunkLength > 0)
             {
-                var inputs = CreateInputSequence(chunk);
+                var inputs = CreateInputSequence(text.AsSpan(i, currentChunkLength));
                 SendInputEvents(inputs);
             }
         }
@@ -82,7 +89,7 @@ public sealed class KeystrokeService : IKeystrokeService
         };
     }
 
-    private List<Helpers.NativeMethods.INPUT> CreateInputSequence(string text)
+    private List<Helpers.NativeMethods.INPUT> CreateInputSequence(ReadOnlySpan<char> text)
     {
         var inputs = new List<Helpers.NativeMethods.INPUT>(text.Length * 2);
 
@@ -107,8 +114,8 @@ public sealed class KeystrokeService : IKeystrokeService
             throw new InvalidOperationException(errorMessage);
         }
 
-        // SendInput cannot handle rapid sequences of inputs. 20ms causes scrambled and missing characters.
-        System.Threading.Thread.Sleep(WaitAfterSendInputEventsMS);
+        // SendInput cannot handle rapid sequences of inputs. Delay is configurable.
+        System.Threading.Thread.Sleep(_delayMs);
 
         Logger.LogDebug($"Successfully sent {inputs.Count} keystrokes");
     }
