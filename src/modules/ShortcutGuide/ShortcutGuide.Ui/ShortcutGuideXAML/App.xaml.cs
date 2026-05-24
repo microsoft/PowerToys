@@ -44,7 +44,7 @@ namespace ShortcutGuide
                 PowerToysTelemetry.Log.WriteEvent(new ShortcutGuideSessionEvent(
                     MainWindow.SessionDurationMs,
                     MainWindow.CloseType));
-                Current.Exit();
+                TaskBarWindow.Close();
             };
         }
 
