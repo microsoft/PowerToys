@@ -17,12 +17,8 @@
             <Grid>
                 <Grid
                     MaxWidth="{StaticResource PageMaxWidth}"
-                    Padding="16,0,16,0"
+                    Padding="0"
                     VerticalAlignment="Top"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="16"
                     RowSpacing="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -32,7 +28,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <tkcontrols:OpacityMaskView
-                        Margin="-16,0,-16,0"
+                        Margin="0"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Stretch">
                         <tkcontrols:OpacityMaskView.OpacityMask>
