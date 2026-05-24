@@ -295,9 +295,6 @@
                     ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                     SelectionMode="None"
                     Style="{StaticResource DockBandListViewStyle}">
-                    <ListView.ItemContainerTransitions>
-                        <TransitionCollection />
-                    </ListView.ItemContainerTransitions>
                 </ListView>
             </local:DockContentControl.EndSource>
             <local:DockContentControl.EndActionButton>
