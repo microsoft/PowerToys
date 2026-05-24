@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension;
 
@@ -14,16 +15,16 @@ public sealed partial class PowerToysCommandsProvider : CommandProvider
 {
     public PowerToysCommandsProvider()
     {
-        DisplayName = "PowerToys";
-        Icon = PowerToysResourcesHelper.IconFromSettingsIcon("PowerToys.png");
+        DisplayName = Resources.PowerToys_DisplayName;
+        Icon = PowerToysResourcesHelper.ProviderIcon();
     }
 
     public override ICommandItem[] TopLevelCommands() =>
     [
         new CommandItem(new Pages.PowerToysListPage())
         {
-            Title = "PowerToys",
-            Subtitle = "PowerToys commands and settings",
+            Title = Resources.PowerToys_DisplayName,
+            Subtitle = Resources.PowerToys_Subtitle,
         }
     ];
 

@@ -36,7 +36,7 @@ steps:
     displayName: Build Shared Support DLLs
     inputs:
       solution: "**/installer/PowerToysSetup.slnx"
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         /t:PowerToysSetupCustomActionsVNext;SilentFilesInUseBAFunction
         /p:RunBuildEvents=true;RestorePackagesConfig=true;CIBuild=true
@@ -75,7 +75,7 @@ steps:
     displayName: 💻 Build VNext MSI
     inputs:
       solution: "**/installer/PowerToysSetup.slnx"
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore
         /t:PowerToysInstallerVNext
@@ -92,7 +92,7 @@ steps:
     displayName: 👤 Build VNext MSI
     inputs:
       solution: "**/installer/PowerToysSetup.slnx"
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
@@ -143,7 +143,7 @@ steps:
     displayName: 💻 Build VNext Bootstrapper
     inputs:
       solution: "**/installer/PowerToysSetup.slnx"
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         -restore
         /t:PowerToysBootstrapperVNext
@@ -160,7 +160,7 @@ steps:
     displayName: 👤 Build VNext Bootstrapper
     inputs:
       solution: "**/installer/PowerToysSetup.slnx"
-      vsVersion: 17.0
+      vsVersion: 18.0
       msbuildArgs: >-
         /t:PowerToysBootstrapperVNext
         /p:PerUser=true;BuildProjectReferences=false;CIBuild=true

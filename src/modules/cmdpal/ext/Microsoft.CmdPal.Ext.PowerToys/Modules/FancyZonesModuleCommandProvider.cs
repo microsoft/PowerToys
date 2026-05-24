@@ -7,6 +7,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
 using PowerToysExtension.Pages;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -21,32 +22,32 @@ internal sealed class FancyZonesModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new CommandItem(new FancyZonesLayoutsPage()))
+            yield return new ListItem(new CommandItem(new FancyZonesLayoutsPage() { Id = "com.microsoft.powertoys.fancyZones.layouts" }))
             {
-                Title = "FancyZones: Layouts",
-                Subtitle = "Apply a layout to all monitors or a specific monitor",
+                Title = Resources.FancyZones_Layouts_Title,
+                Subtitle = Resources.FancyZones_Layouts_Subtitle,
                 Icon = icon,
             };
 
-            yield return new ListItem(new CommandItem(new FancyZonesMonitorsPage()))
+            yield return new ListItem(new CommandItem(new FancyZonesMonitorsPage() { Id = "com.microsoft.powertoys.fancyZones.monitors" }))
             {
-                Title = "FancyZones: Monitors",
-                Subtitle = "Identify monitors and apply layouts",
+                Title = Resources.FancyZones_Monitors_Title,
+                Subtitle = Resources.FancyZones_Monitors_Subtitle,
                 Icon = icon,
             };
 
-            yield return new ListItem(new OpenFancyZonesEditorCommand())
+            yield return new ListItem(new OpenFancyZonesEditorCommand() { Id = "com.microsoft.powertoys.fancyZones.openEditor" })
             {
-                Title = "Open FancyZones Editor",
-                Subtitle = "Launch layout editor",
+                Title = Resources.FancyZones_OpenEditor_Title,
+                Subtitle = Resources.FancyZones_OpenEditor_Subtitle,
                 Icon = icon,
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.fancyZones.openSettings" })
         {
             Title = title,
-            Subtitle = "Open FancyZones settings",
+            Subtitle = Resources.FancyZones_Settings_Subtitle,
             Icon = icon,
         };
     }

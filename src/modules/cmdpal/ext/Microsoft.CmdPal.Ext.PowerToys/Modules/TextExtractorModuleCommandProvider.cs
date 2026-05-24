@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,18 +21,18 @@ internal sealed class TextExtractorModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new ToggleTextExtractorCommand())
+            yield return new ListItem(new ToggleTextExtractorCommand() { Id = "com.microsoft.powertoys.textExtractor.toggle" })
             {
-                Title = "Toggle Text Extractor",
-                Subtitle = "Start or close Text Extractor",
+                Title = Resources.TextExtractor_Toggle_Title,
+                Subtitle = Resources.TextExtractor_Toggle_Subtitle,
                 Icon = icon,
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.textExtractor.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Text Extractor settings",
+            Subtitle = Resources.TextExtractor_Settings_Subtitle,
             Icon = icon,
         };
     }

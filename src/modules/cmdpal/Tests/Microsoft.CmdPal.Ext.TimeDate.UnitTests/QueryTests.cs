@@ -68,7 +68,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         var settings = new Settings();
         var page = new TimeDateExtensionPage(settings);
-        page.UpdateSearchText(string.Empty, input);
+        page.SearchText = input;
         var resultLists = page.GetItems();
 
         var result = Query(input, resultLists);
@@ -117,7 +117,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         var settings = new Settings();
         var page = new TimeDateExtensionPage(settings);
-        page.UpdateSearchText(string.Empty, input);
+        page.SearchText = input;
         var resultLists = page.GetItems();
 
         var firstItem = resultLists.FirstOrDefault();
@@ -158,7 +158,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         var settings = new Settings();
         var page = new TimeDateExtensionPage(settings);
-        page.UpdateSearchText(string.Empty, query);
+        page.SearchText = query;
         var results = page.GetItems();
 
         // Assert
@@ -176,7 +176,8 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         var settings = new Settings();
         var page = new TimeDateExtensionPage(settings);
-        page.UpdateSearchText("abc", input);
+        page.SearchText = "abc";
+        page.SearchText = input;
         var results = page.GetItems();
 
         // Assert
@@ -193,7 +194,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         var settings = new Settings();
         var page = new TimeDateExtensionPage(settings);
-        page.UpdateSearchText(string.Empty, query);
+        page.SearchText = query;
         var resultsList = page.GetItems();
         var results = Query(query, resultsList);
 
@@ -211,12 +212,36 @@ public class QueryTests : CommandPaletteUnitTestBase
     {
         var settings = new Settings();
         var page = new TimeDateExtensionPage(settings);
-        page.UpdateSearchText(string.Empty, query);
+        page.SearchText = query;
         var resultsList = page.GetItems();
 
         // Assert
         Assert.IsNotNull(resultsList);
         var firstResult = resultsList.FirstOrDefault();
         Assert.IsTrue(firstResult.Title.Contains(expectedResult, StringComparison.CurrentCulture), $"Delimiter query '{query}' result not match {expectedResult} current result {firstResult.Title}");
+    }
+
+    [TestMethod]
+    public void UpdateSearchTextMatchesSearchTextSetter()
+    {
+        var settings = new Settings();
+        var pageUsingSetter = new TimeDateExtensionPage(settings);
+        var pageUsingMethod = new TimeDateExtensionPage(settings);
+        const string query = "time::12:30:45";
+
+        pageUsingSetter.SearchText = query;
+        pageUsingMethod.UpdateSearchText(string.Empty, query);
+
+        var setterResults = pageUsingSetter.GetItems();
+        var methodResults = pageUsingMethod.GetItems();
+
+        Assert.AreEqual(setterResults.Length, methodResults.Length, "UpdateSearchText should produce the same number of results as setting SearchText.");
+
+        var setterFirstItem = setterResults.FirstOrDefault();
+        var methodFirstItem = methodResults.FirstOrDefault();
+        Assert.IsNotNull(setterFirstItem);
+        Assert.IsNotNull(methodFirstItem);
+        Assert.AreEqual(setterFirstItem.Title, methodFirstItem.Title, "UpdateSearchText should keep the stored query in sync with SearchText.");
+        Assert.AreEqual(setterFirstItem.Subtitle, methodFirstItem.Subtitle, "UpdateSearchText should keep the stored query in sync with SearchText.");
     }
 }

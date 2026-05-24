@@ -178,7 +178,9 @@ Taras
 TBM
 Teutsch
 tilovell
+traies
 Triet
+udit
 urnotdfs
 vednig
 waaverecords
@@ -192,6 +194,7 @@ ycv
 yeelam
 Yuniardi
 yuyoyuppe
+zadjii
 Zeol
 Zhao
 Zhaopeng
@@ -206,6 +209,8 @@ Bilibili
 BVID
 capturevideosample
 cmdow
+contoso
+Contoso
 Controlz
 cortana
 devhints
@@ -221,6 +226,7 @@ Moq
 mozilla
 mspaint
 Newtonsoft
+NVIDIA
 onenote
 openai
 Quickime
@@ -228,6 +234,7 @@ regedit
 roslyn
 Skia
 Spotify
+taskmgr
 tldr
 Vanara
 wangyi
@@ -243,4 +250,3 @@ xamlstyler
 Xavalon
 Xbox
 Youdao
-zadjii

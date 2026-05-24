@@ -4,26 +4,31 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Pages;
 
 internal sealed partial class FancyZonesMonitorsPage : DynamicListPage
 {
+    private static readonly CompositeFormat CurrentLayoutFormat = CompositeFormat.Parse(Resources.FancyZones_CurrentLayout_Format);
+
     private readonly CommandItem _emptyMessage;
 
     public FancyZonesMonitorsPage()
     {
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
-        Name = Title = "FancyZones Monitors";
+        Name = Title = Resources.FancyZones_Monitors_Title;
         Id = "com.microsoft.cmdpal.powertoys.fancyzones.monitors";
 
         _emptyMessage = new CommandItem()
         {
-            Title = "No monitors found",
-            Subtitle = "Open FancyZones Editor once to initialize monitor data.",
+            Title = Resources.FancyZones_NoMonitorsFound_Title,
+            Subtitle = Resources.FancyZones_NoMonitorsFound_Subtitle,
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png"),
         };
         EmptyContent = _emptyMessage;
@@ -55,8 +60,8 @@ internal sealed partial class FancyZonesMonitorsPage : DynamicListPage
             }
 
             var layoutDescription = FancyZonesDataService.TryGetAppliedLayoutForMonitor(monitor.Data, out var applied) && applied is not null
-                ? $"Current layout: {applied.Value.Type}"
-                : "Current layout: unknown";
+                ? string.Format(CultureInfo.CurrentCulture, CurrentLayoutFormat, applied.Value.Type)
+                : Resources.FancyZones_CurrentLayout_Unknown;
 
             var item = new FancyZonesMonitorListItem(monitor, layoutDescription, monitorIcon);
             items.Add(item);

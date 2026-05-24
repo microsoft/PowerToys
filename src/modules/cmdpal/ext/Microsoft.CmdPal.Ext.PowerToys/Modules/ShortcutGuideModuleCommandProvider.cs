@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,18 +21,18 @@ internal sealed class ShortcutGuideModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new ToggleShortcutGuideCommand())
+            yield return new ListItem(new ToggleShortcutGuideCommand() { Id = "com.microsoft.powertoys.shortcutGuide.toggle" })
             {
-                Title = "Toggle Shortcut Guide",
-                Subtitle = "Show or hide Shortcut Guide",
+                Title = Resources.ShortcutGuide_Toggle_Title,
+                Subtitle = Resources.ShortcutGuide_Toggle_Subtitle,
                 Icon = icon,
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.shortcutGuide.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Shortcut Guide settings",
+            Subtitle = Resources.ShortcutGuide_Settings_Subtitle,
             Icon = icon,
         };
     }

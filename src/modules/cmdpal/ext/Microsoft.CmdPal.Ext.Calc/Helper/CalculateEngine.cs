@@ -1,9 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using CalculatorEngineCommon;
@@ -11,11 +10,12 @@ using Windows.Foundation.Collections;
 
 namespace Microsoft.CmdPal.Ext.Calc.Helper;
 
-public static class CalculateEngine
+public static partial class CalculateEngine
 {
     private static readonly PropertySet _constants = new()
     {
         { "pi", Math.PI },
+        { "π", Math.PI },
         { "e", Math.E },
     };
 
@@ -45,19 +45,23 @@ public static class CalculateEngine
 
         // check for division by zero
         // We check if the string contains a slash followed by space (optional) and zero. Whereas the zero must not be followed by a dot, comma, 'b', 'o' or 'x' as these indicate a number with decimal digits or a binary/octal/hexadecimal value respectively. The zero must also not be followed by other digits.
-        if (new Regex("\\/\\s*0(?!(?:[,\\.0-9]|[box]0*[1-9a-f]))", RegexOptions.IgnoreCase).Match(input).Success)
+        if (DivisionByZeroRegex().IsMatch(input))
         {
             error = Properties.Resources.calculator_division_by_zero;
             return default;
         }
 
-        // mages has quirky log representation
-        // mage has log == ln vs log10
-        input = input.
-                    Replace("log(", "log10(", true, CultureInfo.CurrentCulture).
-                    Replace("ln(", "log(", true, CultureInfo.CurrentCulture);
+        // ExprTK uses log == ln and log10 for base-10, so we remap here
+        // to match the user-facing names (log → log10, ln → log).
+        // Use regex replacements so optional whitespace between the function name and
+        // '(' is handled correctly - "log (100)" must map to log10 just like "log(100)"
+        // does. The negative lookahead prevents "log10" / "log2" from being touched.
+        input = LogRegex().Replace(input, "log10(");
+        input = LnRegex().Replace(input, "log(");
 
         input = CalculateHelper.FixHumanMultiplicationExpressions(input);
+
+        input = CalculateHelper.UpdateFactorialFunctions(input);
 
         // Get the user selected trigonometry unit
         TrigMode trigMode = settings.TrigUnit;
@@ -71,14 +75,28 @@ public static class CalculateEngine
         var result = _calculator.EvaluateExpression(input);
 
         // This could happen for some incorrect queries, like pi(2)
-        if (result == "NaN")
+        if (result == "ParseError")
         {
             error = Properties.Resources.calculator_expression_not_complete;
             return default;
         }
 
+        if (result == "NaN")
+        {
+            error = Properties.Resources.calculator_not_a_number;
+            return default;
+        }
+
+        // If we're out of bounds
+        if (result is "inf" or "-inf")
+        {
+            error = Properties.Resources.calculator_not_covert_to_decimal;
+            return default;
+        }
+
         if (string.IsNullOrEmpty(result))
         {
+            error = Properties.Resources.calculator_not_a_number;
             return default;
         }
 
@@ -110,15 +128,31 @@ public static class CalculateEngine
     /// </summary>
     public static decimal FormatMax15Digits(decimal value, CultureInfo cultureInfo)
     {
+        const int maxDisplayDigits = 15;
+
+        if (value == 0m)
+        {
+            return 0m;
+        }
+
         var absValue = Math.Abs(value);
         var integerDigits = absValue >= 1 ? (int)Math.Floor(Math.Log10((double)absValue)) + 1 : 1;
 
-        var maxDecimalDigits = Math.Max(0, 15 - integerDigits);
+        var maxDecimalDigits = Math.Max(0, maxDisplayDigits - integerDigits);
 
         var rounded = Math.Round(value, maxDecimalDigits, MidpointRounding.AwayFromZero);
-
-        var formatted = rounded.ToString("G29", cultureInfo);
-
-        return Convert.ToDecimal(formatted, cultureInfo);
+        return rounded / 1.000000000000000000000000000000000m;
     }
+
+    [GeneratedRegex("\\/\\s*0(?!(?:[,\\.0-9]|[box]0*[1-9a-f]))", RegexOptions.IgnoreCase)]
+    private static partial Regex DivisionByZeroRegex();
+
+    // Case-insensitive match for "log" not followed by a digit, then optional whitespace,
+    // then '('. The negative lookahead protects "log2" and "log10". A new log variant
+    // like "logb" must be handled explicitly.
+    [GeneratedRegex("log(?![0-9])\\s*\\(", RegexOptions.IgnoreCase)]
+    private static partial Regex LogRegex();
+
+    [GeneratedRegex("ln\\s*\\(", RegexOptions.IgnoreCase)]
+    private static partial Regex LnRegex();
 }

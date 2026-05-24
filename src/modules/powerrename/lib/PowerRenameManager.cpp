@@ -754,8 +754,26 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
                         // We add the items to the operation in depth-first order.  This allows child items to be
                         // renamed before parent items.
 
+                        // First pass: find the maximum depth to properly size the matrix
+                        UINT maxDepth = 0;
+                        for (UINT u = 0; u < itemCount; u++)
+                        {
+                            CComPtr<IPowerRenameItem> spItem;
+                            if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
+                            {
+                                UINT depth = 0;
+                                spItem->GetDepth(&depth);
+                                if (depth > maxDepth)
+                                {
+                                    maxDepth = depth;
+                                }
+                            }
+                        }
+
                         // Creating a vector of vectors of items of the same depth
-                        std::vector<std::vector<UINT>> matrix(itemCount);
+                        // Size by maxDepth+1 (not itemCount) to avoid excessive memory allocation
+                        // Cast to size_t before arithmetic to avoid overflow on 32-bit UINT
+                        std::vector<std::vector<UINT>> matrix(static_cast<size_t>(maxDepth) + 1);
 
                         for (UINT u = 0; u < itemCount; u++)
                         {
@@ -769,7 +787,7 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
                         }
 
                         // From the greatest depth first, add all items of that depth to the operation
-                        for (LONG v = itemCount - 1; v >= 0; v--)
+                        for (LONG v = static_cast<LONG>(maxDepth); v >= 0; v--)
                         {
                             for (auto it : matrix[v])
                             {

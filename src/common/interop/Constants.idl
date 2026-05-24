@@ -56,6 +56,7 @@ namespace PowerToys
             static String TerminateHostsSharedEvent();
             static String CropAndLockThumbnailEvent();
             static String CropAndLockReparentEvent();
+            static String CropAndLockScreenshotEvent();
             static String ShowEnvironmentVariablesSharedEvent();
             static String ShowEnvironmentVariablesAdminSharedEvent();
             static String WorkspacesLaunchEditorEvent();
@@ -63,6 +64,22 @@ namespace PowerToys
             static String PowerToysRunnerTerminateSettingsEvent();
             static String ShowCmdPalEvent();
             static String AdvancedPasteKeystrokeMessage();
+            static String TogglePowerDisplayEvent();
+            static String TerminatePowerDisplayEvent();
+            static String AutoDisablePowerDisplayEvent();
+            static String RefreshPowerDisplayMonitorsEvent();
+            static String SettingsUpdatedPowerDisplayEvent();
+            static String PowerDisplaySendSettingsTelemetryEvent();
+            static String HotkeyUpdatedPowerDisplayEvent();
+            static String RescanPowerDisplayMonitorsEvent();
+            static String PowerDisplayToggleMessage();
+            static String PowerDisplayApplyProfileMessage();
+            static String PowerDisplayTerminateAppMessage();
+            static String MWBToggleEasyMouseEvent();
+            static String MWBReconnectEvent();
+            static String OpenNewKeyboardManagerEvent();
+            static String KeyboardManagerEngineInstanceMutex();
         }
     }
 }
+

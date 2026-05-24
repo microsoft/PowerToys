@@ -98,6 +98,48 @@ public class FallbackRemoteDesktopItemTests
         Assert.IsNull(command);
     }
 
+    [TestMethod]
+    public void UpdateQuery_WhenQueryIsHostnameWithPort_UsesFullHostPort()
+    {
+        // Arrange
+        var setup = CreateFallback();
+        var fallback = setup.Fallback;
+        const string hostPort = "localhost:3389";
+
+        // Act
+        fallback.UpdateQuery(hostPort);
+
+        // Assert
+        var expectedTitle = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostPort);
+        Assert.AreEqual(expectedTitle, fallback.Title);
+        Assert.AreEqual(Resources.remotedesktop_title, fallback.Subtitle);
+
+        var command = fallback.Command as OpenRemoteDesktopCommand;
+        Assert.IsNotNull(command);
+        Assert.AreEqual(hostPort, GetCommandHost(command));
+    }
+
+    [TestMethod]
+    public void UpdateQuery_WhenQueryIsIPWithPort_UsesFullHostPort()
+    {
+        // Arrange
+        var setup = CreateFallback();
+        var fallback = setup.Fallback;
+        const string hostPort = "192.168.1.100:3390";
+
+        // Act
+        fallback.UpdateQuery(hostPort);
+
+        // Assert
+        var expectedTitle = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostPort);
+        Assert.AreEqual(expectedTitle, fallback.Title);
+        Assert.AreEqual(Resources.remotedesktop_title, fallback.Subtitle);
+
+        var command = fallback.Command as OpenRemoteDesktopCommand;
+        Assert.IsNotNull(command);
+        Assert.AreEqual(hostPort, GetCommandHost(command));
+    }
+
     private static string GetCommandHost(OpenRemoteDesktopCommand command)
     {
         var field = typeof(OpenRemoteDesktopCommand).GetField("_rdpHost", BindingFlags.NonPublic | BindingFlags.Instance);

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -17,10 +18,10 @@ internal sealed class PeekModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.Peek.ModuleDisplayName();
         var icon = SettingsWindow.Peek.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.Peek, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.Peek, title) { Id = "com.microsoft.powertoys.peek.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Peek settings",
+            Subtitle = Resources.Peek_Settings_Subtitle,
             Icon = icon,
         };
     }

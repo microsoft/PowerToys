@@ -45,10 +45,24 @@ namespace Awake.Core
         internal static readonly Icon IndefiniteIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/indefinite.ico"));
         internal static readonly Icon DisabledIcon = new(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets/Awake/disabled.ico"));
 
+        private const int TrayIconId = 1000;
+
         static TrayHelper()
         {
             TrayMenu = IntPtr.Zero;
             WindowHandle = IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Disposes of all icon resources to prevent GDI handle leaks.
+        /// </summary>
+        internal static void DisposeIcons()
+        {
+            DefaultAwakeIcon?.Dispose();
+            TimedIcon?.Dispose();
+            ExpirableIcon?.Dispose();
+            IndefiniteIcon?.Dispose();
+            DisabledIcon?.Dispose();
         }
 
         private static void ShowContextMenu(IntPtr hWnd)
@@ -172,7 +186,11 @@ namespace Awake.Core
 
         internal static void SetShellIcon(IntPtr hWnd, string text, Icon? icon, TrayIconAction action = TrayIconAction.Add, [CallerMemberName] string callerName = "")
         {
-            if (hWnd != IntPtr.Zero && icon != null)
+            // For Delete operations, we don't need an icon - only hWnd is required
+            // For Add/Update operations, we need both hWnd and icon
+            bool canProceed = hWnd != IntPtr.Zero && (action == TrayIconAction.Delete || icon != null);
+
+            if (canProceed)
             {
                 int message = Native.Constants.NIM_ADD;
 
@@ -195,7 +213,7 @@ namespace Awake.Core
                     {
                         CbSize = Marshal.SizeOf<NotifyIconData>(),
                         HWnd = hWnd,
-                        UId = 1000,
+                        UId = TrayIconId,
                         UFlags = Native.Constants.NIF_ICON | Native.Constants.NIF_TIP | Native.Constants.NIF_MESSAGE,
                         UCallbackMessage = (int)Native.Constants.WM_USER,
                         HIcon = icon?.Handle ?? IntPtr.Zero,
@@ -208,29 +226,54 @@ namespace Awake.Core
                     {
                         CbSize = Marshal.SizeOf<NotifyIconData>(),
                         HWnd = hWnd,
-                        UId = 1000,
+                        UId = TrayIconId,
                         UFlags = 0,
                     };
                 }
 
-                for (int attempt = 1; attempt <= 3; attempt++)
+                // Retry configuration based on action type
+                // Add operations need longer delays as Explorer may still be initializing after Windows updates
+                int maxRetryAttempts;
+                int baseDelayMs;
+
+                if (action == TrayIconAction.Add)
+                {
+                    maxRetryAttempts = 10;
+                    baseDelayMs = 500;  // 500, 1000, 2000, 2000, 2000... (capped)
+                }
+                else
+                {
+                    maxRetryAttempts = 3;
+                    baseDelayMs = 100;  // 100, 200, 400 (existing behavior)
+                }
+
+                const int maxDelayMs = 2000;  // Cap delay at 2 seconds
+
+                for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
                 {
                     if (Bridge.Shell_NotifyIcon(message, ref _notifyIconData))
                     {
+                        if (attempt > 1)
+                        {
+                            Logger.LogInfo($"Successfully set shell icon on attempt {attempt}. Action: {action}");
+                        }
+
                         break;
                     }
                     else
                     {
                         int errorCode = Marshal.GetLastWin32Error();
-                        Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}. Invoked by {callerName}.");
+                        Logger.LogInfo($"Could not set the shell icon. Action: {action}, error code: {errorCode}, attempt: {attempt}/{maxRetryAttempts}. HIcon handle is {icon?.Handle} and HWnd is {hWnd}. Invoked by {callerName}.");
 
-                        if (attempt == 3)
+                        if (attempt == maxRetryAttempts)
                         {
-                            Logger.LogError($"Failed to change tray icon after 3 attempts. Action: {action} and error code: {errorCode}. Invoked by {callerName}.");
+                            Logger.LogError($"Failed to change tray icon after {maxRetryAttempts} attempts. Action: {action} and error code: {errorCode}. Invoked by {callerName}.");
                             break;
                         }
 
-                        Thread.Sleep(100);
+                        // Exponential backoff with cap
+                        int delayMs = Math.Min(baseDelayMs * (1 << (attempt - 1)), maxDelayMs);
+                        Thread.Sleep(delayMs);
                     }
                 }
 
@@ -241,7 +284,7 @@ namespace Awake.Core
             }
             else
             {
-                Logger.LogInfo($"Cannot set the shell icon - parent window handle is zero or icon is not available. Text: {text} Action: {action}");
+                Logger.LogInfo($"Cannot set the shell icon - parent window handle is zero{(action != TrayIconAction.Delete && icon == null ? " or icon is not available" : string.Empty)}. Text: {text} Action: {action}");
             }
         }
 
@@ -280,11 +323,9 @@ namespace Awake.Core
                     Bridge.PostQuitMessage(0);
                     break;
                 case Native.Constants.WM_COMMAND:
-                    int trayCommandsSize = Enum.GetNames<TrayCommands>().Length;
+                    long targetCommandValue = wParam.ToInt64() & 0xFFFF;
 
-                    long targetCommandIndex = wParam.ToInt64() & 0xFFFF;
-
-                    switch (targetCommandIndex)
+                    switch (targetCommandValue)
                     {
                         case (uint)TrayCommands.TC_EXIT:
                             {
@@ -300,7 +341,7 @@ namespace Awake.Core
 
                         case (uint)TrayCommands.TC_MODE_INDEFINITE:
                             {
-                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                                 Manager.SetIndefiniteKeepAwake(keepDisplayOn: settings.Properties.KeepDisplayOn);
                                 break;
                             }
@@ -313,21 +354,41 @@ namespace Awake.Core
 
                         default:
                             {
-                                if (targetCommandIndex >= trayCommandsSize)
+                                // Custom tray time commands start at TC_TIME and increment by 1 for each entry.
+                                // Check if this command falls within the custom time range.
+                                if (targetCommandValue >= (uint)TrayCommands.TC_TIME)
                                 {
-                                    AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName);
+                                    AwakeSettings settings = Manager.ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
                                     if (settings.Properties.CustomTrayTimes.Count == 0)
                                     {
                                         settings.Properties.CustomTrayTimes.AddRange(Manager.GetDefaultTrayOptions());
                                     }
 
-                                    int index = (int)targetCommandIndex - (int)TrayCommands.TC_TIME;
-                                    uint targetTime = settings.Properties.CustomTrayTimes.ElementAt(index).Value;
-                                    Manager.SetTimedKeepAwake(targetTime, keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                    int index = (int)targetCommandValue - (int)TrayCommands.TC_TIME;
+
+                                    if (index >= 0 && index < settings.Properties.CustomTrayTimes.Count)
+                                    {
+                                        uint targetTime = settings.Properties.CustomTrayTimes.Values.Skip(index).First();
+                                        Manager.SetTimedKeepAwake(targetTime, keepDisplayOn: settings.Properties.KeepDisplayOn);
+                                    }
+                                    else
+                                    {
+                                        Logger.LogError($"Custom tray time index {index} is out of range. Available entries: {settings.Properties.CustomTrayTimes.Count}");
+                                    }
                                 }
 
                                 break;
                             }
+                    }
+
+                    break;
+                case Native.Constants.WM_POWERBROADCAST:
+                    int eventType = wParam.ToInt32();
+                    if (eventType == Native.Constants.PBT_APMRESUMEAUTOMATIC ||
+                        eventType == Native.Constants.PBT_APMRESUMESUSPEND ||
+                        eventType == Native.Constants.PBT_APMPOWERSTATUSCHANGE)
+                    {
+                        Manager.ReapplyAwakeState();
                     }
 
                     break;
@@ -357,7 +418,7 @@ namespace Awake.Core
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("Error: " + e.Message);
+                        Logger.LogError($"Error in tray thread execution: {e.Message}");
                     }
                 },
                 null);
@@ -439,9 +500,11 @@ namespace Awake.Core
         private static void CreateAwakeTimeSubMenu(Dictionary<string, uint> trayTimeShortcuts, bool isChecked = false)
         {
             nint awakeTimeMenu = Bridge.CreatePopupMenu();
-            for (int i = 0; i < trayTimeShortcuts.Count; i++)
+            int i = 0;
+            foreach (var shortcut in trayTimeShortcuts)
             {
-                Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, trayTimeShortcuts.ElementAt(i).Key);
+                Bridge.InsertMenu(awakeTimeMenu, (uint)i, Native.Constants.MF_BYPOSITION | Native.Constants.MF_STRING, (uint)TrayCommands.TC_TIME + (uint)i, shortcut.Key);
+                i++;
             }
 
             Bridge.InsertMenu(TrayMenu, 0, Native.Constants.MF_BYPOSITION | Native.Constants.MF_POPUP | (isChecked ? Native.Constants.MF_CHECKED : Native.Constants.MF_UNCHECKED), (uint)awakeTimeMenu, Resources.AWAKE_KEEP_ON_INTERVAL);

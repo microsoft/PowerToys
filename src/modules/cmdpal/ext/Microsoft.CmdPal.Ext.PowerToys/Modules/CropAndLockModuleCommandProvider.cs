@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,25 +21,32 @@ internal sealed class CropAndLockModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new CropAndLockReparentCommand())
+            yield return new ListItem(new CropAndLockReparentCommand() { Id = "com.microsoft.powertoys.cropAndLock.reparent" })
             {
-                Title = "Crop and Lock (Reparent)",
-                Subtitle = "Create a cropped reparented window",
+                Title = Resources.CropAndLock_Reparent_Title,
+                Subtitle = Resources.CropAndLock_Reparent_Subtitle,
                 Icon = icon,
             };
 
-            yield return new ListItem(new CropAndLockThumbnailCommand())
+            yield return new ListItem(new CropAndLockThumbnailCommand() { Id = "com.microsoft.powertoys.cropAndLock.thumbnail" })
             {
-                Title = "Crop and Lock (Thumbnail)",
-                Subtitle = "Create a cropped thumbnail window",
+                Title = Resources.CropAndLock_Thumbnail_Title,
+                Subtitle = Resources.CropAndLock_Thumbnail_Subtitle,
+                Icon = icon,
+            };
+
+            yield return new ListItem(new CropAndLockScreenshotCommand() { Id = "com.microsoft.powertoys.cropAndLock.screenshot" })
+            {
+                Title = Resources.CropAndLock_Screenshot_Title,
+                Subtitle = Resources.CropAndLock_Screenshot_Subtitle,
                 Icon = icon,
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.cropAndLock.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Crop and Lock settings",
+            Subtitle = Resources.CropAndLock_Settings_Subtitle,
             Icon = icon,
         };
     }

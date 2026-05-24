@@ -29,6 +29,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowCustomPreview = true;
             CloseAfterLosingFocus = false;
             EnableClipboardPreview = true;
+            AutoCopySelectionForCustomActionHotkey = false;
             PasteAIConfiguration = new();
         }
 
@@ -80,6 +81,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool EnableClipboardPreview { get; set; }
 
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool AutoCopySelectionForCustomActionHotkey { get; set; }
+
         [JsonPropertyName("advanced-paste-ui-hotkey")]
         public HotkeySettings AdvancedPasteUIShortcut { get; set; }
 
@@ -97,11 +101,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("custom-actions")]
         [CmdConfigureIgnoreAttribute]
-        public AdvancedPasteCustomActions CustomActions { get; init; }
+        public AdvancedPasteCustomActions CustomActions { get; set; }
 
         [JsonPropertyName("additional-actions")]
         [CmdConfigureIgnoreAttribute]
-        public AdvancedPasteAdditionalActions AdditionalActions { get; init; }
+        public AdvancedPasteAdditionalActions AdditionalActions { get; set; }
 
         [JsonPropertyName("paste-ai-configuration")]
         [CmdConfigureIgnoreAttribute]

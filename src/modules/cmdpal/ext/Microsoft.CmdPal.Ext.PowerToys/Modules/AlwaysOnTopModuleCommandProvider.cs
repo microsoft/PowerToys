@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -17,10 +18,10 @@ internal sealed class AlwaysOnTopModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.AlwaysOnTop.ModuleDisplayName();
         var icon = SettingsWindow.AlwaysOnTop.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.AlwaysOnTop, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.AlwaysOnTop, title) { Id = "com.microsoft.powertoys.alwaysOnTop.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Always On Top settings",
+            Subtitle = Resources.AlwaysOnTop_Settings_Subtitle,
             Icon = icon,
         };
     }

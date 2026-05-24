@@ -10,6 +10,7 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
 using PowerToysExtension.Pages;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Modules;
 
@@ -23,10 +24,10 @@ internal sealed class AwakeModuleCommandProvider : ModuleCommandProvider
         var icon = PowerToysResourcesHelper.IconFromSettingsIcon("Awake.png");
         var moduleIcon = module.ModuleIcon();
 
-        items.Add(new ListItem(new OpenInSettingsCommand(module, title))
+        items.Add(new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.awake.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Awake settings",
+            Subtitle = Resources.Awake_Settings_Subtitle,
             Icon = moduleIcon,
         });
 
@@ -45,44 +46,44 @@ internal sealed class AwakeModuleCommandProvider : ModuleCommandProvider
             }
         };
 
-        var refreshCommand = new RefreshAwakeStatusCommand(refreshStatus);
+        var refreshCommand = new RefreshAwakeStatusCommand(refreshStatus) { Id = "com.microsoft.powertoys.awake.status" };
 
         statusItem = new ListItem(new CommandItem(refreshCommand))
         {
-            Title = "Awake: Current status",
+            Title = Resources.Awake_Status_Title,
             Subtitle = AwakeStatusService.GetStatusSubtitle(),
             Icon = icon,
         };
         items.Add(statusItem);
 
-        items.Add(new ListItem(new StartAwakeCommand("Awake: Keep awake indefinitely", () => AwakeService.Instance.SetIndefiniteAsync(), "Awake set to indefinite", refreshStatus))
+        items.Add(new ListItem(new StartAwakeCommand(Resources.Awake_KeepIndefinite_Title, () => AwakeService.Instance.SetIndefiniteAsync(), Resources.Awake_SetIndefinite_Toast, refreshStatus) { Id = "com.microsoft.powertoys.awake.keepIndefinite" })
         {
-            Title = "Awake: Keep awake indefinitely",
-            Subtitle = "Run Awake in indefinite mode",
+            Title = Resources.Awake_KeepIndefinite_Title,
+            Subtitle = Resources.Awake_KeepIndefinite_Subtitle,
             Icon = icon,
         });
-        items.Add(new ListItem(new StartAwakeCommand("Awake: Keep awake for 30 minutes", () => AwakeService.Instance.SetTimedAsync(30), "Awake set for 30 minutes", refreshStatus))
+        items.Add(new ListItem(new StartAwakeCommand(Resources.Awake_Keep30Min_Title, () => AwakeService.Instance.SetTimedAsync(30), Resources.Awake_Set30Min_Toast, refreshStatus) { Id = "com.microsoft.powertoys.awake.keep30Min" })
         {
-            Title = "Awake: Keep awake for 30 minutes",
-            Subtitle = "Run Awake timed for 30 minutes",
+            Title = Resources.Awake_Keep30Min_Title,
+            Subtitle = Resources.Awake_Keep30Min_Subtitle,
             Icon = icon,
         });
-        items.Add(new ListItem(new StartAwakeCommand("Awake: Keep awake for 1 hour", () => AwakeService.Instance.SetTimedAsync(60), "Awake set for 1 hour", refreshStatus))
+        items.Add(new ListItem(new StartAwakeCommand(Resources.Awake_Keep1Hour_Title, () => AwakeService.Instance.SetTimedAsync(60), Resources.Awake_Set1Hour_Toast, refreshStatus) { Id = "com.microsoft.powertoys.awake.keep1Hour" })
         {
-            Title = "Awake: Keep awake for 1 hour",
-            Subtitle = "Run Awake timed for 1 hour",
+            Title = Resources.Awake_Keep1Hour_Title,
+            Subtitle = Resources.Awake_Keep1Hour_Subtitle,
             Icon = icon,
         });
-        items.Add(new ListItem(new StartAwakeCommand("Awake: Keep awake for 2 hours", () => AwakeService.Instance.SetTimedAsync(120), "Awake set for 2 hours", refreshStatus))
+        items.Add(new ListItem(new StartAwakeCommand(Resources.Awake_Keep2Hours_Title, () => AwakeService.Instance.SetTimedAsync(120), Resources.Awake_Set2Hours_Toast, refreshStatus) { Id = "com.microsoft.powertoys.awake.keep2Hours" })
         {
-            Title = "Awake: Keep awake for 2 hours",
-            Subtitle = "Run Awake timed for 2 hours",
+            Title = Resources.Awake_Keep2Hours_Title,
+            Subtitle = Resources.Awake_Keep2Hours_Subtitle,
             Icon = icon,
         });
-        items.Add(new ListItem(new StopAwakeCommand(refreshStatus))
+        items.Add(new ListItem(new StopAwakeCommand(refreshStatus) { Id = "com.microsoft.powertoys.awake.turnOff" })
         {
-            Title = "Awake: Turn off",
-            Subtitle = "Switch Awake back to Off",
+            Title = Resources.Awake_TurnOff_Title,
+            Subtitle = Resources.Awake_TurnOff_Subtitle,
             Icon = icon,
         });
 

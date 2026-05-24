@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -17,10 +18,10 @@ internal sealed class NewPlusModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.NewPlus.ModuleDisplayName();
         var icon = SettingsWindow.NewPlus.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.NewPlus, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.NewPlus, title) { Id = "com.microsoft.powertoys.newPlus.openSettings" })
         {
             Title = title,
-            Subtitle = "Open New+ settings",
+            Subtitle = Resources.NewPlus_Settings_Subtitle,
             Icon = icon,
         };
     }

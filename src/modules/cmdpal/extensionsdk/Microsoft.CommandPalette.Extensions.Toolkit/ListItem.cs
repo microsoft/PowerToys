@@ -1,56 +1,18 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class ListItem : CommandItem, IListItem
+public partial class ListItem : CommandItem, IListItem, IExtendedAttributesProvider
 {
-    private ITag[] _tags = [];
-    private IDetails? _details;
+    public virtual ITag[] Tags { get; set => SetProperty(ref field, value); } = [];
 
-    private string _section = string.Empty;
-    private string _textToSuggest = string.Empty;
+    public virtual IDetails? Details { get; set => SetProperty(ref field, value); }
 
-    public virtual ITag[] Tags
-    {
-        get => _tags;
-        set
-        {
-            _tags = value;
-            OnPropertyChanged(nameof(Tags));
-        }
-    }
+    public virtual string Section { get; set => SetProperty(ref field, value); } = string.Empty;
 
-    public virtual IDetails? Details
-    {
-        get => _details;
-        set
-        {
-            _details = value;
-            OnPropertyChanged(nameof(Details));
-        }
-    }
-
-    public virtual string Section
-    {
-        get => _section;
-        set
-        {
-            _section = value;
-            OnPropertyChanged(nameof(Section));
-        }
-    }
-
-    public virtual string TextToSuggest
-    {
-        get => _textToSuggest;
-        set
-        {
-            _textToSuggest = value;
-            OnPropertyChanged(nameof(TextToSuggest));
-        }
-    }
+    public virtual string TextToSuggest { get; set => SetProperty(ref field, value); } = string.Empty;
 
     public ListItem(ICommand command)
         : base(command)

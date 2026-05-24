@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -17,10 +18,10 @@ internal sealed class PowerToysRunModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.PowerLauncher.ModuleDisplayName();
         var icon = SettingsWindow.PowerLauncher.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerLauncher, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerLauncher, title) { Id = "com.microsoft.powertoys.powerToysRun.openSettings" })
         {
             Title = title,
-            Subtitle = "Open PowerToys Run settings",
+            Subtitle = Resources.PowerToysRun_Settings_Subtitle,
             Icon = icon,
         };
     }

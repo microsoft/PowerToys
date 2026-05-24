@@ -20,7 +20,7 @@ namespace
 
     // WIC metadata property paths
     const std::wstring EXIF_DATE_TAKEN = L"/app1/ifd/exif/{ushort=36867}";      // DateTimeOriginal
-    const std::wstring EXIF_DATE_DIGITIZED = L"/app1/ifd/exif/{ushort=36868}";  // DateTimeDigitized  
+    const std::wstring EXIF_DATE_DIGITIZED = L"/app1/ifd/exif/{ushort=36868}";  // DateTimeDigitized
     const std::wstring EXIF_DATE_MODIFIED = L"/app1/ifd/{ushort=306}";           // DateTime
     const std::wstring EXIF_CAMERA_MAKE = L"/app1/ifd/{ushort=271}";            // Make
     const std::wstring EXIF_CAMERA_MODEL = L"/app1/ifd/{ushort=272}";           // Model
@@ -37,14 +37,43 @@ namespace
     const std::wstring EXIF_HEIGHT = L"/app1/ifd/exif/{ushort=40963}";          // PixelYDimension - actual image height
     const std::wstring EXIF_ARTIST = L"/app1/ifd/{ushort=315}";                 // Artist
     const std::wstring EXIF_COPYRIGHT = L"/app1/ifd/{ushort=33432}";            // Copyright
-    
-    // GPS paths
+
+    // GPS paths for JPEG format
     const std::wstring GPS_LATITUDE = L"/app1/ifd/gps/{ushort=2}";              // GPSLatitude
     const std::wstring GPS_LATITUDE_REF = L"/app1/ifd/gps/{ushort=1}";          // GPSLatitudeRef
     const std::wstring GPS_LONGITUDE = L"/app1/ifd/gps/{ushort=4}";             // GPSLongitude
     const std::wstring GPS_LONGITUDE_REF = L"/app1/ifd/gps/{ushort=3}";         // GPSLongitudeRef
     const std::wstring GPS_ALTITUDE = L"/app1/ifd/gps/{ushort=6}";              // GPSAltitude
     const std::wstring GPS_ALTITUDE_REF = L"/app1/ifd/gps/{ushort=5}";          // GPSAltitudeRef
+
+    // WIC metadata property paths for TIFF/HEIF format (uses /ifd prefix directly)
+    // HEIF/HEIC images use TIFF-style metadata paths
+    const std::wstring HEIF_DATE_TAKEN = L"/ifd/exif/{ushort=36867}";           // DateTimeOriginal
+    const std::wstring HEIF_DATE_DIGITIZED = L"/ifd/exif/{ushort=36868}";       // DateTimeDigitized
+    const std::wstring HEIF_DATE_MODIFIED = L"/ifd/{ushort=306}";               // DateTime
+    const std::wstring HEIF_CAMERA_MAKE = L"/ifd/{ushort=271}";                 // Make
+    const std::wstring HEIF_CAMERA_MODEL = L"/ifd/{ushort=272}";                // Model
+    const std::wstring HEIF_LENS_MODEL = L"/ifd/exif/{ushort=42036}";           // LensModel
+    const std::wstring HEIF_ISO = L"/ifd/exif/{ushort=34855}";                  // ISOSpeedRatings
+    const std::wstring HEIF_APERTURE = L"/ifd/exif/{ushort=33437}";             // FNumber
+    const std::wstring HEIF_SHUTTER_SPEED = L"/ifd/exif/{ushort=33434}";        // ExposureTime
+    const std::wstring HEIF_FOCAL_LENGTH = L"/ifd/exif/{ushort=37386}";         // FocalLength
+    const std::wstring HEIF_EXPOSURE_BIAS = L"/ifd/exif/{ushort=37380}";        // ExposureBiasValue
+    const std::wstring HEIF_FLASH = L"/ifd/exif/{ushort=37385}";                // Flash
+    const std::wstring HEIF_ORIENTATION = L"/ifd/{ushort=274}";                 // Orientation
+    const std::wstring HEIF_COLOR_SPACE = L"/ifd/exif/{ushort=40961}";          // ColorSpace
+    const std::wstring HEIF_WIDTH = L"/ifd/exif/{ushort=40962}";                // PixelXDimension
+    const std::wstring HEIF_HEIGHT = L"/ifd/exif/{ushort=40963}";               // PixelYDimension
+    const std::wstring HEIF_ARTIST = L"/ifd/{ushort=315}";                      // Artist
+    const std::wstring HEIF_COPYRIGHT = L"/ifd/{ushort=33432}";                 // Copyright
+
+    // GPS paths for TIFF/HEIF format
+    const std::wstring HEIF_GPS_LATITUDE = L"/ifd/gps/{ushort=2}";              // GPSLatitude
+    const std::wstring HEIF_GPS_LATITUDE_REF = L"/ifd/gps/{ushort=1}";          // GPSLatitudeRef
+    const std::wstring HEIF_GPS_LONGITUDE = L"/ifd/gps/{ushort=4}";             // GPSLongitude
+    const std::wstring HEIF_GPS_LONGITUDE_REF = L"/ifd/gps/{ushort=3}";         // GPSLongitudeRef
+    const std::wstring HEIF_GPS_ALTITUDE = L"/ifd/gps/{ushort=6}";              // GPSAltitude
+    const std::wstring HEIF_GPS_ALTITUDE_REF = L"/ifd/gps/{ushort=5}";          // GPSAltitudeRef
     
     
     // Documentation: https://developer.adobe.com/xmp/docs/XMPNamespaces/xmp/
@@ -465,8 +494,11 @@ bool WICMetadataExtractor::LoadEXIFMetadata(
         return false;
     }
 
-    ExtractAllEXIFFields(reader, outMetadata);
-    ExtractGPSData(reader, outMetadata);
+    // Detect container format to determine correct metadata paths
+    MetadataPathFormat pathFormat = GetMetadataPathFormatFromDecoder(decoder);
+
+    ExtractAllEXIFFields(reader, outMetadata, pathFormat);
+    ExtractGPSData(reader, outMetadata, pathFormat);
 
     return true;
 }
@@ -507,64 +539,126 @@ CComPtr<IWICMetadataQueryReader> WICMetadataExtractor::GetMetadataReader(IWICBit
     {
         return nullptr;
     }
-    
+
     CComPtr<IWICBitmapFrameDecode> frame;
     if (FAILED(decoder->GetFrame(0, &frame)))
     {
         return nullptr;
     }
-    
+
     CComPtr<IWICMetadataQueryReader> reader;
     frame->GetMetadataQueryReader(&reader);
-    
+
     return reader;
 }
 
-void WICMetadataExtractor::ExtractAllEXIFFields(IWICMetadataQueryReader* reader, EXIFMetadata& metadata)
+MetadataPathFormat WICMetadataExtractor::GetMetadataPathFormatFromDecoder(IWICBitmapDecoder* decoder)
+{
+    if (!decoder)
+    {
+        return MetadataPathFormat::JPEG;
+    }
+
+    GUID containerFormat;
+    if (SUCCEEDED(decoder->GetContainerFormat(&containerFormat)))
+    {
+        // HEIF and TIFF use /ifd/... paths directly
+        if (containerFormat == GUID_ContainerFormatHeif ||
+            containerFormat == GUID_ContainerFormatTiff)
+        {
+            return MetadataPathFormat::IFD;
+        }
+    }
+
+    // JPEG and other formats use /app1/ifd/... paths
+    return MetadataPathFormat::JPEG;
+}
+
+void WICMetadataExtractor::ExtractAllEXIFFields(IWICMetadataQueryReader* reader, EXIFMetadata& metadata, MetadataPathFormat pathFormat)
 {
     if (!reader)
         return;
-    
+
+    // Select the correct paths based on container format
+    const bool useIfdPaths = (pathFormat == MetadataPathFormat::IFD);
+
+    // Date/time paths
+    const auto& dateTakenPath = useIfdPaths ? HEIF_DATE_TAKEN : EXIF_DATE_TAKEN;
+    const auto& dateDigitizedPath = useIfdPaths ? HEIF_DATE_DIGITIZED : EXIF_DATE_DIGITIZED;
+    const auto& dateModifiedPath = useIfdPaths ? HEIF_DATE_MODIFIED : EXIF_DATE_MODIFIED;
+
+    // Camera info paths
+    const auto& cameraMakePath = useIfdPaths ? HEIF_CAMERA_MAKE : EXIF_CAMERA_MAKE;
+    const auto& cameraModelPath = useIfdPaths ? HEIF_CAMERA_MODEL : EXIF_CAMERA_MODEL;
+    const auto& lensModelPath = useIfdPaths ? HEIF_LENS_MODEL : EXIF_LENS_MODEL;
+
+    // Shooting parameter paths
+    const auto& isoPath = useIfdPaths ? HEIF_ISO : EXIF_ISO;
+    const auto& aperturePath = useIfdPaths ? HEIF_APERTURE : EXIF_APERTURE;
+    const auto& shutterSpeedPath = useIfdPaths ? HEIF_SHUTTER_SPEED : EXIF_SHUTTER_SPEED;
+    const auto& focalLengthPath = useIfdPaths ? HEIF_FOCAL_LENGTH : EXIF_FOCAL_LENGTH;
+    const auto& exposureBiasPath = useIfdPaths ? HEIF_EXPOSURE_BIAS : EXIF_EXPOSURE_BIAS;
+    const auto& flashPath = useIfdPaths ? HEIF_FLASH : EXIF_FLASH;
+
+    // Image property paths
+    const auto& widthPath = useIfdPaths ? HEIF_WIDTH : EXIF_WIDTH;
+    const auto& heightPath = useIfdPaths ? HEIF_HEIGHT : EXIF_HEIGHT;
+    const auto& orientationPath = useIfdPaths ? HEIF_ORIENTATION : EXIF_ORIENTATION;
+    const auto& colorSpacePath = useIfdPaths ? HEIF_COLOR_SPACE : EXIF_COLOR_SPACE;
+
+    // Author info paths
+    const auto& artistPath = useIfdPaths ? HEIF_ARTIST : EXIF_ARTIST;
+    const auto& copyrightPath = useIfdPaths ? HEIF_COPYRIGHT : EXIF_COPYRIGHT;
+
     // Extract date/time fields
-    metadata.dateTaken = ReadDateTime(reader, EXIF_DATE_TAKEN);
-    metadata.dateDigitized = ReadDateTime(reader, EXIF_DATE_DIGITIZED);
-    metadata.dateModified = ReadDateTime(reader, EXIF_DATE_MODIFIED);
-    
+    metadata.dateTaken = ReadDateTime(reader, dateTakenPath);
+    metadata.dateDigitized = ReadDateTime(reader, dateDigitizedPath);
+    metadata.dateModified = ReadDateTime(reader, dateModifiedPath);
+
     // Extract camera information
-    metadata.cameraMake = ReadString(reader, EXIF_CAMERA_MAKE);
-    metadata.cameraModel = ReadString(reader, EXIF_CAMERA_MODEL);
-    metadata.lensModel = ReadString(reader, EXIF_LENS_MODEL);
-    
+    metadata.cameraMake = ReadString(reader, cameraMakePath);
+    metadata.cameraModel = ReadString(reader, cameraModelPath);
+    metadata.lensModel = ReadString(reader, lensModelPath);
+
     // Extract shooting parameters
-    metadata.iso = ReadInteger(reader, EXIF_ISO);
-    metadata.aperture = ReadDouble(reader, EXIF_APERTURE);
-    metadata.shutterSpeed = ReadDouble(reader, EXIF_SHUTTER_SPEED);
-    metadata.focalLength = ReadDouble(reader, EXIF_FOCAL_LENGTH);
-    metadata.exposureBias = ReadDouble(reader, EXIF_EXPOSURE_BIAS);
-    metadata.flash = ReadInteger(reader, EXIF_FLASH);
-    
+    metadata.iso = ReadInteger(reader, isoPath);
+    metadata.aperture = ReadDouble(reader, aperturePath);
+    metadata.shutterSpeed = ReadDouble(reader, shutterSpeedPath);
+    metadata.focalLength = ReadDouble(reader, focalLengthPath);
+    metadata.exposureBias = ReadDouble(reader, exposureBiasPath);
+    metadata.flash = ReadInteger(reader, flashPath);
+
     // Extract image properties
-    metadata.width = ReadInteger(reader, EXIF_WIDTH);
-    metadata.height = ReadInteger(reader, EXIF_HEIGHT);
-    metadata.orientation = ReadInteger(reader, EXIF_ORIENTATION);
-    metadata.colorSpace = ReadInteger(reader, EXIF_COLOR_SPACE);
-    
+    metadata.width = ReadInteger(reader, widthPath);
+    metadata.height = ReadInteger(reader, heightPath);
+    metadata.orientation = ReadInteger(reader, orientationPath);
+    metadata.colorSpace = ReadInteger(reader, colorSpacePath);
+
     // Extract author information
-    metadata.author = ReadString(reader, EXIF_ARTIST);
-    metadata.copyright = ReadString(reader, EXIF_COPYRIGHT);
+    metadata.author = ReadString(reader, artistPath);
+    metadata.copyright = ReadString(reader, copyrightPath);
 }
 
-void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFMetadata& metadata)
+void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFMetadata& metadata, MetadataPathFormat pathFormat)
 {
     if (!reader)
     {
         return;
     }
 
-    auto lat = ReadMetadata(reader, GPS_LATITUDE);
-    auto lon = ReadMetadata(reader, GPS_LONGITUDE);
-    auto latRef = ReadMetadata(reader, GPS_LATITUDE_REF);
-    auto lonRef = ReadMetadata(reader, GPS_LONGITUDE_REF);
+    // Select the correct paths based on container format
+    const bool useIfdPaths = (pathFormat == MetadataPathFormat::IFD);
+
+    const auto& latitudePath = useIfdPaths ? HEIF_GPS_LATITUDE : GPS_LATITUDE;
+    const auto& longitudePath = useIfdPaths ? HEIF_GPS_LONGITUDE : GPS_LONGITUDE;
+    const auto& latitudeRefPath = useIfdPaths ? HEIF_GPS_LATITUDE_REF : GPS_LATITUDE_REF;
+    const auto& longitudeRefPath = useIfdPaths ? HEIF_GPS_LONGITUDE_REF : GPS_LONGITUDE_REF;
+    const auto& altitudePath = useIfdPaths ? HEIF_GPS_ALTITUDE : GPS_ALTITUDE;
+
+    auto lat = ReadMetadata(reader, latitudePath);
+    auto lon = ReadMetadata(reader, longitudePath);
+    auto latRef = ReadMetadata(reader, latitudeRefPath);
+    auto lonRef = ReadMetadata(reader, longitudeRefPath);
 
     if (lat && lon)
     {
@@ -584,7 +678,7 @@ void WICMetadataExtractor::ExtractGPSData(IWICMetadataQueryReader* reader, EXIFM
         metadata.longitude = coords.second;
     }
 
-    auto alt = ReadMetadata(reader, GPS_ALTITUDE);
+    auto alt = ReadMetadata(reader, altitudePath);
     if (alt)
     {
         metadata.altitude = MetadataFormatHelper::ParseGPSRational(alt->Get());

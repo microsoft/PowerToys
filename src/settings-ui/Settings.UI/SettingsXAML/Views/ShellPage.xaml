@@ -76,7 +76,6 @@
                     x:Uid="Shell_Search_ShowAll"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Text="Show all results"
                     TextAlignment="Center" />
             </Grid>
         </DataTemplate>
@@ -169,6 +168,13 @@
                             </AnimatedIcon.FallbackIconSource>
                         </AnimatedIcon>
                     </NavigationViewItem.Icon>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge
+                            x:Name="UpdateInfoBadge"
+                            Margin="0,0,2,0"
+                            Style="{StaticResource UpdateInfoBadgeStyle}"
+                            Visibility="Collapsed" />
+                    </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
                 <NavigationViewItemSeparator />
 
@@ -227,7 +233,11 @@
                             x:Uid="Shell_ShortcutGuide"
                             helpers:NavHelper.NavigateTo="views:ShortcutGuidePage"
                             AutomationProperties.AutomationId="ShortcutGuideNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ShortcutGuide.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="TextExtractorNavigationItem"
                             x:Uid="Shell_TextExtractor"
@@ -241,15 +251,21 @@
                             AutomationProperties.AutomationId="ZoomItNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}" />
                     </NavigationViewItem.MenuItems>
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                 </NavigationViewItem>
 
                 <!--  Windowing & Layouts  -->
                 <NavigationViewItem
                     x:Name="WindowingAndLayoutsNavigationItem"
-                    x:Uid="Shell_TopLevelWindowsAndLayouts "
+                    x:Uid="Shell_TopLevelWindowsAndLayouts"
                     AutomationProperties.AutomationId="WindowingAndLayoutsNavItem"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}"
                     SelectsOnInvoked="False">
+                    <NavigationViewItem.InfoBadge>
+                        <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                    </NavigationViewItem.InfoBadge>
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
                             x:Name="AlwaysOnTopNavigationItem"
@@ -269,6 +285,16 @@
                             helpers:NavHelper.NavigateTo="views:FancyZonesPage"
                             AutomationProperties.AutomationId="FancyZonesNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FancyZones.png}" />
+                        <NavigationViewItem
+                            x:Name="GrabAndMoveNavigationItem"
+                            x:Uid="Shell_GrabAndMove"
+                            helpers:NavHelper.NavigateTo="views:GrabAndMovePage"
+                            AutomationProperties.AutomationId="GrabAndMoveNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="WorkspacesNavigationItem"
                             x:Uid="Shell_Workspaces"
@@ -295,24 +321,28 @@
                             helpers:NavHelper.NavigateTo="views:KeyboardManagerPage"
                             AutomationProperties.AutomationId="KeyboardManagerNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/KeyboardManager.png}" />
-                        <!--  Find my mouse  -->
-                        <!--  Mouse Highlighter  -->
                         <NavigationViewItem
                             x:Name="MouseUtilitiesNavigationItem"
                             x:Uid="Shell_MouseUtilities"
                             helpers:NavHelper.NavigateTo="views:MouseUtilsPage"
                             AutomationProperties.AutomationId="MouseUtilitiesNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}">
-                            <NavigationViewItem.InfoBadge>
-                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
-                            </NavigationViewItem.InfoBadge>
-                        </NavigationViewItem>
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}" />
                         <NavigationViewItem
                             x:Name="MouseWithoutBordersNavigationItem"
                             x:Uid="Shell_MouseWithoutBorders"
                             helpers:NavHelper.NavigateTo="views:MouseWithoutBordersPage"
                             AutomationProperties.AutomationId="MouseWithoutBordersNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseWithoutBorders.png}" />
+                        <NavigationViewItem
+                            x:Name="PowerDisplayNavigationItem"
+                            x:Uid="Shell_PowerDisplay"
+                            helpers:NavHelper.NavigateTo="views:PowerDisplayPage"
+                            AutomationProperties.AutomationId="PowerDisplayNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}">
+                            <NavigationViewItem.InfoBadge>
+                                <InfoBadge Style="{StaticResource NewInfoBadge}" />
+                            </NavigationViewItem.InfoBadge>
+                        </NavigationViewItem>
                         <NavigationViewItem
                             x:Name="QuickAccentNavigationItem"
                             x:Uid="Shell_QuickAccent"

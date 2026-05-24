@@ -35,6 +35,10 @@ internal sealed partial class SectionsIndexPage : ListPage
                {
                    Title = "A Gallery grid page with sections",
                },
+               new ListItem(new SampleListPageWithSections(new GalleryGridLayout() { ShowTitle = false, ShowSubtitle = false }))
+               {
+                   Title = "A Gallery grid page without labels with sections",
+               },
             ];
     }
 }

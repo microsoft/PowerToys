@@ -68,6 +68,11 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                             if (settingsInstance != null)
                             {
                                 var moduleName = settingsInstance.GetModuleName();
+                                if (string.IsNullOrEmpty(moduleName) && type == typeof(GeneralSettings))
+                                {
+                                    moduleName = "GeneralSettings";
+                                }
+
                                 if (!string.IsNullOrEmpty(moduleName))
                                 {
                                     settingsTypes[moduleName] = type;
@@ -104,7 +109,13 @@ namespace Microsoft.PowerToys.Settings.UI.Services
                 var genericMethod = getSettingsMethod?.MakeGenericMethod(settingsType);
 
                 // Call GetSettingsOrDefault<T>(moduleKey) to get fresh settings from file
-                var freshSettings = genericMethod?.Invoke(_settingsUtils, new object[] { moduleKey, "settings.json" });
+                string actualModuleKey = moduleKey;
+                if (moduleKey == "GeneralSettings")
+                {
+                    actualModuleKey = string.Empty;
+                }
+
+                var freshSettings = genericMethod?.Invoke(_settingsUtils, new object[] { actualModuleKey, "settings.json" });
 
                 return freshSettings as IHotkeyConfig;
             }

@@ -2,9 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -13,6 +13,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 internal sealed partial class NewExtensionForm : NewExtensionFormBase
 {
     private static readonly string _creatingText = "Creating new extension...";
+    private readonly IExtensionTemplateService _extensionTemplateService;
     private readonly StatusMessage _creatingMessage = new()
     {
         Message = _creatingText,
@@ -20,7 +21,15 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
     };
 
     public NewExtensionForm()
+        : this(new ExtensionTemplateService())
     {
+    }
+
+    private NewExtensionForm(IExtensionTemplateService extensionTemplateService)
+    {
+        ArgumentNullException.ThrowIfNull(extensionTemplateService);
+
+        _extensionTemplateService = extensionTemplateService;
         TemplateJson = $$"""
 {
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -30,7 +39,8 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         {
             "type": "TextBlock",
             "text": {{FormatJsonString(Properties.Resources.builtin_create_extension_page_title)}},
-            "size": "large"
+            "size": "medium",
+            "weight": "bolder"
         },
         {
             "type": "Input.Text",
@@ -114,7 +124,7 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
 
         try
         {
-            CreateExtension(extensionName, displayName, outputPath);
+            _extensionTemplateService.CreateExtension(extensionName, displayName, outputPath);
 
             BuiltinsExtensionHost.Instance.HideStatus(_creatingMessage);
 
@@ -122,64 +132,12 @@ internal sealed partial class NewExtensionForm : NewExtensionFormBase
         }
         catch (Exception e)
         {
-            BuiltinsExtensionHost.Instance.HideStatus(_creatingMessage);
-
             _creatingMessage.State = MessageState.Error;
+            _creatingMessage.Progress = null;
             _creatingMessage.Message = $"Error: {e.Message}";
         }
 
         return CommandResult.KeepOpen();
-    }
-
-    private void CreateExtension(string extensionName, string newDisplayName, string outputPath)
-    {
-        var newGuid = Guid.NewGuid().ToString();
-
-        // Unzip `template.zip` to a temp dir:
-        var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-        // Does the output path exist?
-        if (!Directory.Exists(outputPath))
-        {
-            Directory.CreateDirectory(outputPath);
-        }
-
-        var assetsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory.ToString(), "Microsoft.CmdPal.UI.ViewModels\\Assets\\template.zip");
-        ZipFile.ExtractToDirectory(assetsPath, tempDir);
-
-        var files = Directory.GetFiles(tempDir, "*", SearchOption.AllDirectories);
-        foreach (var file in files)
-        {
-            var text = File.ReadAllText(file);
-
-            // Replace all the instances of `FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF` with a new random guid:
-            text = text.Replace("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", newGuid);
-
-            // Then replace all the `TemplateCmdPalExtension` with `extensionName`
-            text = text.Replace("TemplateCmdPalExtension", extensionName);
-
-            // Then replace all the `TemplateDisplayName` with `newDisplayName`
-            text = text.Replace("TemplateDisplayName", newDisplayName);
-
-            // We're going to write the file to the same relative location in the output path
-            var relativePath = Path.GetRelativePath(tempDir, file);
-
-            var newFileName = Path.Combine(outputPath, relativePath);
-
-            // if the file name had `TemplateCmdPalExtension` in it, replace it with `extensionName`
-            newFileName = newFileName.Replace("TemplateCmdPalExtension", extensionName);
-
-            // Make sure the directory exists
-            Directory.CreateDirectory(Path.GetDirectoryName(newFileName)!);
-
-            File.WriteAllText(newFileName, text);
-
-            // Delete the old file
-            File.Delete(file);
-        }
-
-        // Delete the temp dir
-        Directory.Delete(tempDir, true);
     }
 
     private string FormatJsonString(string str) =>

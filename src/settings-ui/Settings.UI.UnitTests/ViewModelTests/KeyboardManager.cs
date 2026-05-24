@@ -97,7 +97,7 @@ namespace ViewModelTests
             var expectedEntry = new AppSpecificKeysDataModel();
             expectedEntry.OriginalKeys = entry.OriginalKeys;
             expectedEntry.NewRemapKeys = entry.NewRemapKeys;
-            expectedEntry.TargetApp = "All Apps";
+            expectedEntry.TargetApp = "All apps";
             expectedResult.Add(expectedEntry);
 
             Assert.AreEqual(expectedResult.Count, result.Count);
@@ -123,7 +123,7 @@ namespace ViewModelTests
             var expectedEntry = new AppSpecificKeysDataModel();
             expectedEntry.OriginalKeys = entry.OriginalKeys;
             expectedEntry.NewRemapKeys = entry.NewRemapKeys;
-            expectedEntry.TargetApp = "All Apps";
+            expectedEntry.TargetApp = "All apps";
             expectedResult.Add(expectedEntry);
             var x = expectedResult[0].Equals(result[0]);
             Assert.AreEqual(expectedResult.Count, result.Count);
@@ -181,7 +181,7 @@ namespace ViewModelTests
             var expectedFirstEntry = new AppSpecificKeysDataModel();
             expectedFirstEntry.OriginalKeys = firstListEntry.OriginalKeys;
             expectedFirstEntry.NewRemapKeys = firstListEntry.NewRemapKeys;
-            expectedFirstEntry.TargetApp = "All Apps";
+            expectedFirstEntry.TargetApp = "All apps";
             expectedResult.Add(expectedFirstEntry);
             var expectedSecondEntry = new AppSpecificKeysDataModel();
             expectedSecondEntry.OriginalKeys = secondListEntry.OriginalKeys;

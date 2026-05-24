@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,58 +21,58 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsKeyEnabled("FindMyMouse"))
         {
-            yield return new ListItem(new ToggleFindMyMouseCommand())
+            yield return new ListItem(new ToggleFindMyMouseCommand() { Id = "com.microsoft.powertoys.mouseUtils.findMyMouse" })
             {
-                Title = "Trigger Find My Mouse",
-                Subtitle = "Focus the mouse pointer",
+                Title = Resources.MouseUtils_FindMyMouse_Title,
+                Subtitle = Resources.MouseUtils_FindMyMouse_Subtitle,
                 Icon = icon,
             };
         }
 
         if (ModuleEnablementService.IsKeyEnabled("MouseHighlighter"))
         {
-            yield return new ListItem(new ToggleMouseHighlighterCommand())
+            yield return new ListItem(new ToggleMouseHighlighterCommand() { Id = "com.microsoft.powertoys.mouseUtils.highlighter" })
             {
-                Title = "Toggle Mouse Highlighter",
-                Subtitle = "Highlight mouse clicks",
+                Title = Resources.MouseUtils_Highlighter_Title,
+                Subtitle = Resources.MouseUtils_Highlighter_Subtitle,
                 Icon = icon,
             };
         }
 
         if (ModuleEnablementService.IsKeyEnabled("MousePointerCrosshairs"))
         {
-            yield return new ListItem(new ToggleMouseCrosshairsCommand())
+            yield return new ListItem(new ToggleMouseCrosshairsCommand() { Id = "com.microsoft.powertoys.mouseUtils.crosshairs" })
             {
-                Title = "Toggle Mouse Crosshairs",
-                Subtitle = "Enable or disable pointer crosshairs",
+                Title = Resources.MouseUtils_Crosshairs_Title,
+                Subtitle = Resources.MouseUtils_Crosshairs_Subtitle,
                 Icon = icon,
             };
         }
 
         if (ModuleEnablementService.IsKeyEnabled("CursorWrap"))
         {
-            yield return new ListItem(new ToggleCursorWrapCommand())
+            yield return new ListItem(new ToggleCursorWrapCommand() { Id = "com.microsoft.powertoys.mouseUtils.cursorWrap" })
             {
-                Title = "Toggle Cursor Wrap",
-                Subtitle = "Wrap the cursor across monitor edges",
+                Title = Resources.MouseUtils_CursorWrap_Title,
+                Subtitle = Resources.MouseUtils_CursorWrap_Subtitle,
                 Icon = icon,
             };
         }
 
         if (ModuleEnablementService.IsKeyEnabled("MouseJump"))
         {
-            yield return new ListItem(new ShowMouseJumpPreviewCommand())
+            yield return new ListItem(new ShowMouseJumpPreviewCommand() { Id = "com.microsoft.powertoys.mouseUtils.mouseJump" })
             {
-                Title = "Show Mouse Jump Preview",
-                Subtitle = "Jump the pointer to a target",
+                Title = Resources.MouseUtils_MouseJump_Title,
+                Subtitle = Resources.MouseUtils_MouseJump_Subtitle,
                 Icon = icon,
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.mouseUtils.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Mouse Utilities settings",
+            Subtitle = Resources.MouseUtils_Settings_Subtitle,
             Icon = icon,
         };
     }

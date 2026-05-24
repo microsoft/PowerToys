@@ -44,6 +44,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.ThumbnailHotkey.Value,
                     value => Properties.ThumbnailHotkey.Value = value ?? CropAndLockProperties.DefaultThumbnailHotkeyValue,
                     "CropAndLock_ThumbnailActivation_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.ScreenshotHotkey.Value,
+                    value => Properties.ScreenshotHotkey.Value = value ?? CropAndLockProperties.DefaultScreenshotHotkeyValue,
+                    "CropAndLock_ScreenshotActivation_Shortcut"),
             };
 
             return hotkeyAccessors.ToArray();

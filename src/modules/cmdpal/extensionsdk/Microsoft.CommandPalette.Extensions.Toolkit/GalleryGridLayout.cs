@@ -6,27 +6,7 @@ namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class GalleryGridLayout : BaseObservable, IGalleryGridLayout
 {
-    public virtual bool ShowTitle
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(ShowTitle));
-        }
-    }
+    public virtual bool ShowTitle { get; set => SetProperty(ref field, value); } = true;
 
-    = true;
-
-    public virtual bool ShowSubtitle
-    {
-        get => field;
-        set
-        {
-            field = value;
-            OnPropertyChanged(nameof(ShowSubtitle));
-        }
-    }
-
-    = true;
+    public virtual bool ShowSubtitle { get; set => SetProperty(ref field, value); } = true;
 }

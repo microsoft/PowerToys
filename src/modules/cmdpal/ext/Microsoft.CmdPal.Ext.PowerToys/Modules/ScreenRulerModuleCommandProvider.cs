@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,18 +21,18 @@ internal sealed class ScreenRulerModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new ToggleScreenRulerCommand())
+            yield return new ListItem(new ToggleScreenRulerCommand() { Id = "com.microsoft.powertoys.screenRuler.toggle" })
             {
-                Title = "Toggle Screen Ruler",
-                Subtitle = "Start or close Screen Ruler",
+                Title = Resources.ScreenRuler_Toggle_Title,
+                Subtitle = Resources.ScreenRuler_Toggle_Subtitle,
                 Icon = icon,
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.screenRuler.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Screen Ruler settings",
+            Subtitle = Resources.ScreenRuler_Settings_Subtitle,
             Icon = icon,
         };
     }

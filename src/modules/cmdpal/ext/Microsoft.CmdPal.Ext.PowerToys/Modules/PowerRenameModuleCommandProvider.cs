@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -17,10 +18,10 @@ internal sealed class PowerRenameModuleCommandProvider : ModuleCommandProvider
         var title = SettingsWindow.PowerRename.ModuleDisplayName();
         var icon = SettingsWindow.PowerRename.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerRename, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.PowerRename, title) { Id = "com.microsoft.powertoys.powerRename.openSettings" })
         {
             Title = title,
-            Subtitle = "Open PowerRename settings",
+            Subtitle = Resources.PowerRename_Settings_Subtitle,
             Icon = icon,
         };
     }

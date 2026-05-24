@@ -4,43 +4,106 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Messages;
+using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
-using Microsoft.UI.Input;
+using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
-using Windows.UI.Core;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContextMenu : UserControl,
-    IRecipient<OpenContextMenuMessage>,
     IRecipient<UpdateCommandBarMessage>,
     IRecipient<TryCommandKeybindingMessage>
 {
-    public ContextMenuViewModel ViewModel { get; } = new();
+    public static readonly DependencyProperty ShowFilterBoxProperty =
+        DependencyProperty.Register(nameof(ShowFilterBox), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true));
+
+    public static readonly DependencyProperty SubscribeToCommandBarProperty =
+        DependencyProperty.Register(nameof(SubscribeToCommandBar), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true, OnSubscribeToCommandBarChanged));
+
+    public bool ShowFilterBox
+    {
+        get => (bool)GetValue(ShowFilterBoxProperty);
+        set => SetValue(ShowFilterBoxProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this control listens to the command bar's
+    /// selection and keybinding messages. Set to false for standalone usage (e.g. dock)
+    /// where the caller manages selection and opening directly.
+    /// </summary>
+    public bool SubscribeToCommandBar
+    {
+        get => (bool)GetValue(SubscribeToCommandBarProperty);
+        set => SetValue(SubscribeToCommandBarProperty, value);
+    }
+
+    public ContextMenuViewModel ViewModel { get; }
 
     public ContextMenu()
     {
         this.InitializeComponent();
 
-        // RegisterAll isn't AOT compatible
-        WeakReferenceMessenger.Default.Register<OpenContextMenuMessage>(this);
-        WeakReferenceMessenger.Default.Register<UpdateCommandBarMessage>(this);
-        WeakReferenceMessenger.Default.Register<TryCommandKeybindingMessage>(this);
+        ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
 
-        if (ViewModel is not null)
+        if (SubscribeToCommandBar)
         {
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            HookCommandBar();
         }
     }
 
-    public void Receive(OpenContextMenuMessage message)
+    private static void OnSubscribeToCommandBarChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        ViewModel.FilterOnTop = message.ContextMenuFilterLocation == ContextMenuFilterLocation.Top;
+        if (d is ContextMenu control)
+        {
+            if (e.NewValue is true)
+            {
+                control.HookCommandBar();
+            }
+            else
+            {
+                control.UnhookCommandBar();
+            }
+        }
+    }
+
+    private void HookCommandBar()
+    {
+        var messenger = WeakReferenceMessenger.Default;
+
+        if (!messenger.IsRegistered<UpdateCommandBarMessage>(this))
+        {
+            messenger.Register<UpdateCommandBarMessage>(this);
+        }
+
+        if (!messenger.IsRegistered<TryCommandKeybindingMessage>(this))
+        {
+            messenger.Register<TryCommandKeybindingMessage>(this);
+        }
+
+        ViewModel.HookCommandBar();
+    }
+
+    private void UnhookCommandBar()
+    {
+        var messenger = WeakReferenceMessenger.Default;
+
+        messenger.Unregister<UpdateCommandBarMessage>(this);
+        messenger.Unregister<TryCommandKeybindingMessage>(this);
+
+        ViewModel.UnhookCommandBar();
+    }
+
+    internal void PrepareForOpen(ContextMenuFilterLocation filterLocation)
+    {
+        ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
         ViewModel.ResetContextMenu();
 
         UpdateUiForStackChange();
@@ -92,13 +155,9 @@ public sealed partial class ContextMenu : UserControl,
             return;
         }
 
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+        var mods = KeyModifiers.GetCurrent();
 
-        var result = ViewModel?.CheckKeybinding(ctrlPressed, altPressed, shiftPressed, winPressed, e.Key);
+        var result = ViewModel?.CheckKeybinding(mods.Ctrl, mods.Alt, mods.Shift, mods.Win, e.Key);
 
         if (result == ContextKeybindingResult.Hide)
         {
@@ -156,11 +215,7 @@ public sealed partial class ContextMenu : UserControl,
 
     private void ContextFilterBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        var ctrlPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control).HasFlag(CoreVirtualKeyStates.Down);
-        var altPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Menu).HasFlag(CoreVirtualKeyStates.Down);
-        var shiftPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift).HasFlag(CoreVirtualKeyStates.Down);
-        var winPressed = InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.LeftWindows).HasFlag(CoreVirtualKeyStates.Down) ||
-            InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.RightWindows).HasFlag(CoreVirtualKeyStates.Down);
+        var modifiers = KeyModifiers.GetCurrent();
 
         if (e.Key == VirtualKey.Enter)
         {
@@ -177,7 +232,7 @@ public sealed partial class ContextMenu : UserControl,
             }
         }
         else if (e.Key == VirtualKey.Escape ||
-            (e.Key == VirtualKey.Left && altPressed))
+            (e.Key == VirtualKey.Left && modifiers.Alt))
         {
             if (ViewModel.CanPopContextStack())
             {

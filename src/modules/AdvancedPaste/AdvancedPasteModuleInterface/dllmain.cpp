@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cwctype>
+#include <chrono>
 #include <thread>
 #include <vector>
 
@@ -61,6 +62,7 @@ namespace
     const wchar_t JSON_KEY_IS_AI_ENABLED[] = L"IsAIEnabled";
     const wchar_t JSON_KEY_IS_OPEN_AI_ENABLED[] = L"IsOpenAIEnabled";
     const wchar_t JSON_KEY_SHOW_CUSTOM_PREVIEW[] = L"ShowCustomPreview";
+    const wchar_t JSON_KEY_AUTO_COPY_SELECTION_CUSTOM_ACTION[] = L"AutoCopySelectionForCustomActionHotkey";
     const wchar_t JSON_KEY_PASTE_AI_CONFIGURATION[] = L"paste-ai-configuration";
     const wchar_t JSON_KEY_PROVIDERS[] = L"providers";
     const wchar_t JSON_KEY_SERVICE_TYPE[] = L"service-type";
@@ -104,6 +106,7 @@ private:
     bool m_is_ai_enabled = false;
     bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
+    bool m_auto_copy_selection_custom_action = false;
 
     // Event listening for external triggers (e.g., from CmdPal extension)
     EventWaiter m_triggerEventWaiter;
@@ -350,6 +353,11 @@ private:
             {
                 m_preview_custom_format_output = propertiesObject.GetNamedObject(JSON_KEY_SHOW_CUSTOM_PREVIEW).GetNamedBoolean(JSON_KEY_VALUE);
             }
+
+            if (propertiesObject.HasKey(JSON_KEY_AUTO_COPY_SELECTION_CUSTOM_ACTION))
+            {
+                m_auto_copy_selection_custom_action = propertiesObject.GetNamedObject(JSON_KEY_AUTO_COPY_SELECTION_CUSTOM_ACTION).GetNamedBoolean(JSON_KEY_VALUE, false);
+            }
         }
 
         if (old_data_migrated)
@@ -482,6 +490,184 @@ private:
             input_event.ki.wVk = modifier;
             inputs.push_back(input_event);
         }
+    }
+
+    bool try_send_copy_message()
+    {
+        GUITHREADINFO gui_info = {};
+        gui_info.cbSize = sizeof(GUITHREADINFO);
+
+        if (!GetGUIThreadInfo(0, &gui_info))
+        {
+            Logger::warn(L"Auto-copy: GetGUIThreadInfo failed (error={})", GetLastError());
+            return false;
+        }
+
+        HWND target = gui_info.hwndFocus ? gui_info.hwndFocus : gui_info.hwndActive;
+        if (!target)
+        {
+            Logger::warn(L"Auto-copy: no focused or active window found");
+            return false;
+        }
+
+        DWORD_PTR result = 0;
+        auto sendResult = SendMessageTimeout(target, WM_COPY, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 50, &result);
+        return sendResult != 0;
+    }
+
+    // Helper: poll clipboard sequence number for a change from initial_sequence.
+    // Returns true if the sequence number changed within the given number of polls.
+    bool poll_clipboard_sequence(DWORD initial_sequence, int poll_attempts, std::chrono::milliseconds poll_delay)
+    {
+        for (int poll = 0; poll < poll_attempts; ++poll)
+        {
+            if (GetClipboardSequenceNumber() != initial_sequence)
+            {
+                return true;
+            }
+            std::this_thread::sleep_for(poll_delay);
+        }
+        return false;
+    }
+
+    // Helper: send Ctrl+C via SendInput, releasing any held modifier keys first
+    // (the hotkey combination may still have modifiers physically pressed).
+    bool send_ctrl_c_input()
+    {
+        std::vector<INPUT> inputs;
+
+        // Release all modifier keys that are currently held down from the hotkey.
+        // Without this, the target app sees e.g. Win+Shift+Ctrl+C instead of just Ctrl+C.
+        try_inject_modifier_key_up(inputs, VK_LCONTROL);
+        try_inject_modifier_key_up(inputs, VK_RCONTROL);
+        try_inject_modifier_key_up(inputs, VK_LWIN);
+        try_inject_modifier_key_up(inputs, VK_RWIN);
+        try_inject_modifier_key_up(inputs, VK_LSHIFT);
+        try_inject_modifier_key_up(inputs, VK_RSHIFT);
+        try_inject_modifier_key_up(inputs, VK_LMENU);
+        try_inject_modifier_key_up(inputs, VK_RMENU);
+
+        // Ctrl down
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = VK_CONTROL;
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        // C down
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = 0x43; // C
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        // C up
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = 0x43; // C
+            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        // Ctrl up
+        {
+            INPUT input_event = {};
+            input_event.type = INPUT_KEYBOARD;
+            input_event.ki.wVk = VK_CONTROL;
+            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
+            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+            inputs.push_back(input_event);
+        }
+
+        // Restore modifiers that were held down
+        try_inject_modifier_key_restore(inputs, VK_LCONTROL);
+        try_inject_modifier_key_restore(inputs, VK_RCONTROL);
+        try_inject_modifier_key_restore(inputs, VK_LWIN);
+        try_inject_modifier_key_restore(inputs, VK_RWIN);
+        try_inject_modifier_key_restore(inputs, VK_LSHIFT);
+        try_inject_modifier_key_restore(inputs, VK_RSHIFT);
+        try_inject_modifier_key_restore(inputs, VK_LMENU);
+        try_inject_modifier_key_restore(inputs, VK_RMENU);
+
+        // Prevent Start Menu from activating after Win key release/restore
+        INPUT dummyEvent = {};
+        dummyEvent.type = INPUT_KEYBOARD;
+        dummyEvent.ki.wVk = 0xFF;
+        dummyEvent.ki.dwFlags = KEYEVENTF_KEYUP;
+        inputs.push_back(dummyEvent);
+
+        auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
+        if (uSent != inputs.size())
+        {
+            DWORD errorCode = GetLastError();
+            auto errorMessage = get_last_error_message(errorCode);
+            Logger::error(L"SendInput failed for Ctrl+C. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
+            Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
+            return false;
+        }
+        return true;
+    }
+
+    bool send_copy_selection()
+    {
+        constexpr int copy_attempts = 2;
+        constexpr auto copy_retry_delay = std::chrono::milliseconds(100);
+        constexpr int clipboard_poll_attempts = 5;
+        constexpr auto clipboard_poll_delay = std::chrono::milliseconds(30);
+
+        bool copy_succeeded = false;
+        for (int attempt = 0; attempt < copy_attempts; ++attempt)
+        {
+            const auto initial_sequence = GetClipboardSequenceNumber();
+
+            // Strategy 1: Try WM_COPY message (works for standard Win32 controls)
+            bool wm_copy_sent = try_send_copy_message();
+
+            if (wm_copy_sent)
+            {
+                if (poll_clipboard_sequence(initial_sequence, clipboard_poll_attempts, clipboard_poll_delay))
+                {
+                    copy_succeeded = true;
+                }
+            }
+
+            // Strategy 2: If WM_COPY didn't work, try SendInput Ctrl+C (works for Electron, browsers, etc.)
+            if (!copy_succeeded)
+            {
+                const auto sequence_before_ctrl_c = GetClipboardSequenceNumber();
+
+                if (send_ctrl_c_input())
+                {
+                    if (poll_clipboard_sequence(sequence_before_ctrl_c, clipboard_poll_attempts, clipboard_poll_delay))
+                    {
+                        copy_succeeded = true;
+                    }
+                }
+            }
+
+            if (copy_succeeded)
+            {
+                break;
+            }
+
+            if (attempt + 1 < copy_attempts)
+            {
+                std::this_thread::sleep_for(copy_retry_delay);
+            }
+        }
+
+        if (!copy_succeeded)
+        {
+            Logger::warn(L"Auto-copy: all {} copy attempts failed — the target application did not update the clipboard after WM_COPY and Ctrl+C", copy_attempts);
+        }
+
+        return copy_succeeded;
     }
 
     void try_to_paste_as_plain_text()
@@ -727,6 +913,12 @@ public:
         return powertoys_gpo::getConfiguredAdvancedPasteEnabledValue();
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
@@ -829,6 +1021,29 @@ public:
         Logger::trace(L"AdvancedPaste hotkey pressed");
         if (m_enabled)
         {
+            size_t additional_action_index = 0;
+            size_t custom_action_index = 0;
+            bool is_custom_action_hotkey = false;
+
+            if (hotkeyId >= NUM_DEFAULT_HOTKEYS)
+            {
+                additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
+                if (additional_action_index >= m_additional_actions.size())
+                {
+                    custom_action_index = additional_action_index - m_additional_actions.size();
+                    is_custom_action_hotkey = custom_action_index < m_custom_actions.size();
+                }
+            }
+
+            if (is_custom_action_hotkey && m_auto_copy_selection_custom_action)
+            {
+                if (!send_copy_selection())
+                {
+                    Logger::warn(L"Auto-copy: failed to copy selection for custom action index {} — aborting action", custom_action_index);
+                    return false;
+                }
+            }
+
             m_process_manager.start();
 
             // hotkeyId in same order as set by get_hotkeys
@@ -878,7 +1093,6 @@ public:
             }
 
 
-            const auto additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
             if (additional_action_index < m_additional_actions.size())
             {
                 const auto& id = m_additional_actions.at(additional_action_index).id;
@@ -891,7 +1105,6 @@ public:
                 return true;
             }
 
-            const auto custom_action_index = additional_action_index - m_additional_actions.size();
             if (custom_action_index < m_custom_actions.size())
             {
                 const auto id = m_custom_actions.at(custom_action_index).id;

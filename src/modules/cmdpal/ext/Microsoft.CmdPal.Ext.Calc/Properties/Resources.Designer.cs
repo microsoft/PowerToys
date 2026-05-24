@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -97,6 +97,60 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy octal.
+        /// </summary>
+        public static string calculator_copy_octal {
+            get {
+                return ResourceManager.GetString("calculator_copy_octal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copied to clipboard.
+        /// </summary>
+        public static string calculator_copy_toast_text {
+            get {
+                return ResourceManager.GetString("calculator_copy_toast_text", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete all history items?.
+        /// </summary>
+        public static string calculator_delete_all_confirmation_message {
+            get {
+                return ResourceManager.GetString("calculator_delete_all_confirmation_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete all history.
+        /// </summary>
+        public static string calculator_delete_all_confirmation_title {
+            get {
+                return ResourceManager.GetString("calculator_delete_all_confirmation_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to delete this history item?.
+        /// </summary>
+        public static string calculator_delete_confirmation_message {
+            get {
+                return ResourceManager.GetString("calculator_delete_confirmation_message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete history item.
+        /// </summary>
+        public static string calculator_delete_confirmation_title {
+            get {
+                return ResourceManager.GetString("calculator_delete_confirmation_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Calculator.
         /// </summary>
         public static string calculator_display_name {
@@ -151,6 +205,33 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete.
+        /// </summary>
+        public static string calculator_history_delete {
+            get {
+                return ResourceManager.GetString("calculator_history_delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete all.
+        /// </summary>
+        public static string calculator_history_delete_all {
+            get {
+                return ResourceManager.GetString("calculator_history_delete_all", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to History.
+        /// </summary>
+        public static string calculator_history_header {
+            get {
+                return ResourceManager.GetString("calculator_history_header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Calculation result is not a valid number (NaN).
         /// </summary>
         public static string calculator_not_a_number {
@@ -165,6 +246,33 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         public static string calculator_not_covert_to_decimal {
             get {
                 return ResourceManager.GetString("calculator_not_covert_to_decimal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open in calculator.
+        /// </summary>
+        public static string calculator_open_in_calculator {
+            get {
+                return ResourceManager.GetString("calculator_open_in_calculator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paste.
+        /// </summary>
+        public static string calculator_paste_command_name {
+            get {
+                return ResourceManager.GetString("calculator_paste_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pasted from calculator.
+        /// </summary>
+        public static string calculator_paste_toast_text {
+            get {
+                return ResourceManager.GetString("calculator_paste_toast_text", resourceCulture);
             }
         }
         
@@ -187,6 +295,24 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fix incomplete calculations automatically.
+        /// </summary>
+        public static string calculator_settings_auto_fix_query {
+            get {
+                return ResourceManager.GetString("calculator_settings_auto_fix_query", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt to evaluate incomplete calculations by ignoring extra operators or symbols.
+        /// </summary>
+        public static string calculator_settings_auto_fix_query_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_auto_fix_query_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Close on Enter.
         /// </summary>
         public static string calculator_settings_close_on_enter {
@@ -201,6 +327,60 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         public static string calculator_settings_close_on_enter_description {
             get {
                 return ResourceManager.GetString("calculator_settings_close_on_enter_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prompt before deleting history entries.
+        /// </summary>
+        public static string calculator_settings_confirm_delete_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_confirm_delete_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ask for confirmation before deleting items.
+        /// </summary>
+        public static string calculator_settings_confirm_delete_title {
+            get {
+                return ResourceManager.GetString("calculator_settings_confirm_delete_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace query with result on equals.
+        /// </summary>
+        public static string calculator_settings_copy_result_to_search_bar {
+            get {
+                return ResourceManager.GetString("calculator_settings_copy_result_to_search_bar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updates the query to the result when (=) is entered.
+        /// </summary>
+        public static string calculator_settings_copy_result_to_search_bar_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_copy_result_to_search_bar_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save fallback calculations.
+        /// </summary>
+        public static string calculator_settings_fallback_history {
+            get {
+                return ResourceManager.GetString("calculator_settings_fallback_history", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save copied results from fallback calculations to history.
+        /// </summary>
+        public static string calculator_settings_fallback_history_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_fallback_history_description", resourceCulture);
             }
         }
         
@@ -223,6 +403,24 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Handle extra operators and symbols.
+        /// </summary>
+        public static string calculator_settings_input_normalization {
+            get {
+                return ResourceManager.GetString("calculator_settings_input_normalization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable advanced input normalization and extra symbols (e.g. ÷, ×, π).
+        /// </summary>
+        public static string calculator_settings_input_normalization_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_input_normalization_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use English (United States) number format for output.
         /// </summary>
         public static string calculator_settings_out_en_format {
@@ -241,6 +439,51 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy.
+        /// </summary>
+        public static string calculator_settings_primary_action_copy {
+            get {
+                return ResourceManager.GetString("calculator_settings_primary_action_copy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default.
+        /// </summary>
+        public static string calculator_settings_primary_action_default {
+            get {
+                return ResourceManager.GetString("calculator_settings_primary_action_default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose the default action for results.
+        /// </summary>
+        public static string calculator_settings_primary_action_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_primary_action_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Paste.
+        /// </summary>
+        public static string calculator_settings_primary_action_paste {
+            get {
+                return ResourceManager.GetString("calculator_settings_primary_action_paste", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Primary action (Enter key).
+        /// </summary>
+        public static string calculator_settings_primary_action_title {
+            get {
+                return ResourceManager.GetString("calculator_settings_primary_action_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Replace input if query ends with &apos;=&apos;.
         /// </summary>
         public static string calculator_settings_replace_input {
@@ -255,6 +498,24 @@ namespace Microsoft.CmdPal.Ext.Calc.Properties {
         public static string calculator_settings_replace_input_description {
             get {
                 return ResourceManager.GetString("calculator_settings_replace_input_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace query on Enter.
+        /// </summary>
+        public static string calculator_settings_replace_query_on_enter {
+            get {
+                return ResourceManager.GetString("calculator_settings_replace_query_on_enter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Replace input when executing Copy or Paste.
+        /// </summary>
+        public static string calculator_settings_replace_query_on_enter_description {
+            get {
+                return ResourceManager.GetString("calculator_settings_replace_query_on_enter_description", resourceCulture);
             }
         }
         

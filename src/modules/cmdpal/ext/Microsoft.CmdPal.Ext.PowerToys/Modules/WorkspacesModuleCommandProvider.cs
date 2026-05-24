@@ -7,6 +7,7 @@ using Common.UI;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using Workspaces.ModuleServices;
 using WorkspacesCsharpLibrary.Data;
 
@@ -22,10 +23,10 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
         var icon = PowerToysResourcesHelper.IconFromSettingsIcon("Workspaces.png");
         var moduleIcon = module.ModuleIcon();
 
-        items.Add(new ListItem(new OpenInSettingsCommand(module, title))
+        items.Add(new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.workspaces.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Workspaces settings",
+            Subtitle = Resources.Workspaces_Settings_Subtitle,
             Icon = moduleIcon,
         });
 
@@ -35,10 +36,10 @@ internal sealed class WorkspacesModuleCommandProvider : ModuleCommandProvider
         }
 
         // Settings entry plus common actions.
-        items.Add(new ListItem(new OpenWorkspaceEditorCommand())
+        items.Add(new ListItem(new OpenWorkspaceEditorCommand() { Id = "com.microsoft.powertoys.workspaces.openEditor" })
         {
-            Title = "Workspaces: Open editor",
-            Subtitle = "Create or edit workspaces",
+            Title = Resources.Workspaces_OpenEditor_Title,
+            Subtitle = Resources.Workspaces_OpenEditor_Subtitle,
             Icon = icon,
         });
 

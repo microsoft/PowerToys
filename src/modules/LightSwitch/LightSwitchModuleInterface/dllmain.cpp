@@ -405,6 +405,7 @@ public:
     {
         m_enabled = true;
         Logger::info(L"Enabling Light Switch module...");
+        Trace::Enable(true);
 
         unsigned long powertoys_pid = GetCurrentProcessId();
         std::wstring args = L"--pid " + std::to_wstring(powertoys_pid);
@@ -482,7 +483,8 @@ public:
             CloseHandle(m_process);
             m_process = nullptr;
         }
-
+        
+        Trace::Enable(false);
         StopToggleListener();
     }
 
@@ -539,6 +541,8 @@ public:
         if (m_enabled)
         {
             Logger::trace(L"Light Switch hotkey pressed");
+            Trace::ShortcutInvoked();
+
             if (!is_process_running())
             {
                 enable();

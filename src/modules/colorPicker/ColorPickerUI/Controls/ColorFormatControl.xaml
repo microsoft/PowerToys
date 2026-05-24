@@ -140,7 +140,7 @@
             <TextBlock
                 x:Name="FormatNameTextBlock"
                 VerticalAlignment="Center"
-                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                 Style="{StaticResource CaptionTextBlockStyle}"
                 TextTrimming="CharacterEllipsis" />
 

@@ -878,7 +878,7 @@
   </data>
   <data name="Id" xml:space="preserve">
     <value>ID</value>
-    <comment>MEans The "Windows Identifier"</comment>
+    <comment>Means The "Windows Identifier"</comment>
   </data>
   <data name="Image" xml:space="preserve">
     <value>Image</value>

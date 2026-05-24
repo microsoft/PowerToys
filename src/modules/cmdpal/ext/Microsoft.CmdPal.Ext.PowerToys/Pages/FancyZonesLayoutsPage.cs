@@ -4,13 +4,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Pages;
 
@@ -21,13 +21,13 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
     public FancyZonesLayoutsPage()
     {
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png");
-        Name = Title = "FancyZones Layouts";
+        Name = Title = Resources.FancyZones_Layouts_Title;
         Id = "com.microsoft.cmdpal.powertoys.fancyzones.layouts";
 
         _emptyMessage = new CommandItem()
         {
-            Title = "No layouts found",
-            Subtitle = "Open FancyZones Editor once to initialize layouts.",
+            Title = Resources.FancyZones_NoLayoutsFound_Title,
+            Subtitle = Resources.FancyZones_NoLayoutsFound_Subtitle,
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("FancyZones.png"),
         };
         EmptyContent = _emptyMessage;
@@ -69,7 +69,7 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
 
                 var item = new FancyZonesLayoutListItem(defaultCommand, layout, fallbackIcon)
                 {
-                    MoreCommands = BuildLayoutContext(layout, monitors),
+                    MoreCommands = FancyZonesContextHelper.BuildLayoutContext(layout, monitors),
                 };
 
                 items.Add(item);
@@ -82,22 +82,5 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
             _emptyMessage.Subtitle = ex.Message;
             return Array.Empty<IListItem>();
         }
-    }
-
-    private static IContextItem[] BuildLayoutContext(FancyZonesLayoutDescriptor layout, IReadOnlyList<FancyZonesMonitorDescriptor> monitors)
-    {
-        var commands = new List<IContextItem>(monitors.Count);
-
-        for (var i = 0; i < monitors.Count; i++)
-        {
-            var monitor = monitors[i];
-            commands.Add(new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, monitor))
-            {
-                Title = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
-                Subtitle = monitor.Subtitle,
-            });
-        }
-
-        return commands.ToArray();
     }
 }

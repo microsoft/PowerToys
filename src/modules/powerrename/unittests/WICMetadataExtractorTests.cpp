@@ -227,18 +227,350 @@ namespace WICMetadataExtractorTests
             XMPMetadata metadata;
 
             std::wstring testFile = GetTestDataPath() + L"\\xmp_test.jpg";
-            
+
             bool result1 = extractor.ExtractXMPMetadata(testFile, metadata);
             Assert::IsTrue(result1);
-            
+
             extractor.ClearCache();
-            
+
             XMPMetadata metadata2;
             bool result2 = extractor.ExtractXMPMetadata(testFile, metadata2);
             Assert::IsTrue(result2);
-            
+
             // Both calls should succeed
             Assert::AreEqual(metadata.title.value().c_str(), metadata2.title.value().c_str());
+        }
+    };
+
+    TEST_CLASS(ExtractHEIFMetadataTests)
+    {
+    public:
+        TEST_METHOD(ExtractHEIF_EXIF_CameraInfo)
+        {
+            // Test HEIF EXIF extraction - camera information
+            // This test requires HEIF Image Extensions to be installed from Microsoft Store
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heif_test.heic";
+
+            // Check if file exists first
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"HEIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            // If HEIF extension is not installed, extraction may fail
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIF extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"HEIF EXIF extraction should succeed");
+
+            // Verify camera information from iPhone
+            Assert::IsTrue(metadata.cameraMake.has_value(), L"Camera make should be present");
+            Assert::AreEqual(L"Apple", metadata.cameraMake.value().c_str(), L"Camera make should be Apple");
+
+            Assert::IsTrue(metadata.cameraModel.has_value(), L"Camera model should be present");
+            // Model should contain "iPhone"
+            Assert::IsTrue(metadata.cameraModel.value().find(L"iPhone") != std::wstring::npos,
+                L"Camera model should contain iPhone");
+        }
+
+        TEST_METHOD(ExtractHEIF_EXIF_DateTaken)
+        {
+            // Test HEIF EXIF extraction - date taken
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heif_test.heic";
+
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"HEIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIF extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"HEIF EXIF extraction should succeed");
+
+            // Verify date taken is present
+            Assert::IsTrue(metadata.dateTaken.has_value(), L"Date taken should be present");
+
+            // Verify the date is a reasonable year (2020-2030 range)
+            SYSTEMTIME dt = metadata.dateTaken.value();
+            Assert::IsTrue(dt.wYear >= 2020 && dt.wYear <= 2030, L"Date taken year should be reasonable");
+        }
+
+        TEST_METHOD(ExtractHEIF_EXIF_ShootingParameters)
+        {
+            // Test HEIF EXIF extraction - shooting parameters
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heif_test.heic";
+
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"HEIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIF extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"HEIF EXIF extraction should succeed");
+
+            // Verify shooting parameters are present
+            Assert::IsTrue(metadata.iso.has_value(), L"ISO should be present");
+            Assert::IsTrue(metadata.iso.value() > 0, L"ISO should be positive");
+
+            Assert::IsTrue(metadata.aperture.has_value(), L"Aperture should be present");
+            Assert::IsTrue(metadata.aperture.value() > 0, L"Aperture should be positive");
+
+            Assert::IsTrue(metadata.shutterSpeed.has_value(), L"Shutter speed should be present");
+            Assert::IsTrue(metadata.shutterSpeed.value() > 0, L"Shutter speed should be positive");
+
+            Assert::IsTrue(metadata.focalLength.has_value(), L"Focal length should be present");
+            Assert::IsTrue(metadata.focalLength.value() > 0, L"Focal length should be positive");
+        }
+
+        TEST_METHOD(ExtractHEIF_EXIF_GPS)
+        {
+            // Test HEIF EXIF extraction - GPS coordinates
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heif_test.heic";
+
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"HEIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIF extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"HEIF EXIF extraction should succeed");
+
+            // Verify GPS coordinates are present (if the test file has GPS data)
+            if (metadata.latitude.has_value() && metadata.longitude.has_value())
+            {
+                // Latitude should be between -90 and 90
+                Assert::IsTrue(metadata.latitude.value() >= -90.0 && metadata.latitude.value() <= 90.0,
+                    L"Latitude should be valid");
+
+                // Longitude should be between -180 and 180
+                Assert::IsTrue(metadata.longitude.value() >= -180.0 && metadata.longitude.value() <= 180.0,
+                    L"Longitude should be valid");
+            }
+            else
+            {
+                Logger::WriteMessage(L"GPS data not present in test file");
+            }
+        }
+
+        TEST_METHOD(ExtractHEIF_EXIF_ImageDimensions)
+        {
+            // Test HEIF EXIF extraction - image dimensions
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heif_test.heic";
+
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"HEIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIF extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"HEIF EXIF extraction should succeed");
+
+            // Verify image dimensions are present
+            Assert::IsTrue(metadata.width.has_value(), L"Width should be present");
+            Assert::IsTrue(metadata.width.value() > 0, L"Width should be positive");
+
+            Assert::IsTrue(metadata.height.has_value(), L"Height should be present");
+            Assert::IsTrue(metadata.height.value() > 0, L"Height should be positive");
+        }
+
+        TEST_METHOD(ExtractHEIF_EXIF_LensModel)
+        {
+            // Test HEIF EXIF extraction - lens model
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\heif_test.heic";
+
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"HEIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"HEIF extraction failed - HEIF Image Extensions may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"HEIF EXIF extraction should succeed");
+
+            // Verify lens model is present (iPhone photos typically have this)
+            if (metadata.lensModel.has_value())
+            {
+                Assert::IsFalse(metadata.lensModel.value().empty(), L"Lens model should not be empty");
+            }
+            else
+            {
+                Logger::WriteMessage(L"Lens model not present in test file");
+            }
+        }
+    };
+
+    TEST_CLASS(ExtractAVIFMetadataTests)
+    {
+    public:
+        TEST_METHOD(ExtractAVIF_EXIF_CameraInfo)
+        {
+            // Test AVIF EXIF extraction - camera information
+            // This test requires AV1 Video Extension to be installed from Microsoft Store
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\avif_test.avif";
+
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"AVIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"AVIF extraction failed - AV1 Video Extension may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"AVIF EXIF extraction should succeed");
+
+            // Verify camera information
+            if (metadata.cameraMake.has_value())
+            {
+                Assert::IsFalse(metadata.cameraMake.value().empty(), L"Camera make should not be empty");
+            }
+
+            if (metadata.cameraModel.has_value())
+            {
+                Assert::IsFalse(metadata.cameraModel.value().empty(), L"Camera model should not be empty");
+            }
+        }
+
+        TEST_METHOD(ExtractAVIF_EXIF_DateTaken)
+        {
+            // Test AVIF EXIF extraction - date taken
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\avif_test.avif";
+
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"AVIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"AVIF extraction failed - AV1 Video Extension may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"AVIF EXIF extraction should succeed");
+
+            // Verify date taken is present
+            if (metadata.dateTaken.has_value())
+            {
+                SYSTEMTIME dt = metadata.dateTaken.value();
+                Assert::IsTrue(dt.wYear >= 2000 && dt.wYear <= 2100, L"Date taken year should be reasonable");
+            }
+            else
+            {
+                Logger::WriteMessage(L"Date taken not present in AVIF test file");
+            }
+        }
+
+        TEST_METHOD(ExtractAVIF_EXIF_ImageDimensions)
+        {
+            // Test AVIF EXIF extraction - image dimensions
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            std::wstring testFile = GetTestDataPath() + L"\\avif_test.avif";
+
+            if (!std::filesystem::exists(testFile))
+            {
+                Logger::WriteMessage(L"AVIF test file not found, skipping test");
+                return;
+            }
+
+            bool result = extractor.ExtractEXIFMetadata(testFile, metadata);
+
+            if (!result)
+            {
+                Logger::WriteMessage(L"AVIF extraction failed - AV1 Video Extension may not be installed");
+                return;
+            }
+
+            Assert::IsTrue(result, L"AVIF EXIF extraction should succeed");
+
+            // Verify image dimensions are present
+            if (metadata.width.has_value())
+            {
+                Assert::IsTrue(metadata.width.value() > 0, L"Width should be positive");
+            }
+
+            if (metadata.height.has_value())
+            {
+                Assert::IsTrue(metadata.height.value() > 0, L"Height should be positive");
+            }
         }
     };
 }

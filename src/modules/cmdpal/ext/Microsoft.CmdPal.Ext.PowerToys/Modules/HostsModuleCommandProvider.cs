@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,25 +21,25 @@ internal sealed class HostsModuleCommandProvider : ModuleCommandProvider
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new OpenHostsEditorCommand())
+            yield return new ListItem(new OpenHostsEditorCommand() { Id = "com.microsoft.powertoys.hosts.open" })
             {
-                Title = "Open Hosts File Editor",
-                Subtitle = "Launch Hosts File Editor",
+                Title = Resources.Hosts_Open_Title,
+                Subtitle = Resources.Hosts_Open_Subtitle,
                 Icon = icon,
             };
 
-            yield return new ListItem(new OpenHostsEditorAdminCommand())
+            yield return new ListItem(new OpenHostsEditorAdminCommand() { Id = "com.microsoft.powertoys.hosts.openAdmin" })
             {
-                Title = "Open Hosts File Editor (Admin)",
-                Subtitle = "Launch Hosts File Editor as admin",
+                Title = Resources.Hosts_OpenAdmin_Title,
+                Subtitle = Resources.Hosts_OpenAdmin_Subtitle,
                 Icon = icon,
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.hosts.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Hosts File Editor settings",
+            Subtitle = Resources.Hosts_Settings_Subtitle,
             Icon = icon,
         };
     }

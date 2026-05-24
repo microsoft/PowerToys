@@ -15,4 +15,14 @@ RCZOOMIT64             BINRES  MOVEABLE PURE   RCZOOMIT_x64_path
 
 #endif
 
+// Embed the break timer screensaver for the current platform.
+// The .scr is built by the ZoomItBreak project into the shared output directory.
+#ifdef _M_IX86
+RCZOOMITSCR            BINRES  MOVEABLE PURE   "ZoomItBreak.scr"
+#elif defined(_M_X64)
+RCZOOMITSCR            BINRES  MOVEABLE PURE   "ZoomItBreak64.scr"
+#elif defined(_M_ARM64)
+RCZOOMITSCR            BINRES  MOVEABLE PURE   "ZoomItBreak64a.scr"
+#endif
+
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "ZoomIt.exe.manifest"

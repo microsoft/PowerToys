@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 using static Common.UI.SettingsDeepLink;
 
 namespace PowerToysExtension.Modules;
@@ -20,25 +21,25 @@ internal sealed class EnvironmentVariablesModuleCommandProvider : ModuleCommandP
 
         if (ModuleEnablementService.IsModuleEnabled(module))
         {
-            yield return new ListItem(new OpenEnvironmentVariablesCommand())
+            yield return new ListItem(new OpenEnvironmentVariablesCommand() { Id = "com.microsoft.powertoys.environmentVariables.open" })
             {
-                Title = "Open Environment Variables",
-                Subtitle = "Launch Environment Variables editor",
+                Title = Resources.EnvironmentVariables_Open_Title,
+                Subtitle = Resources.EnvironmentVariables_Open_Subtitle,
                 Icon = icon,
             };
 
-            yield return new ListItem(new OpenEnvironmentVariablesAdminCommand())
+            yield return new ListItem(new OpenEnvironmentVariablesAdminCommand() { Id = "com.microsoft.powertoys.environmentVariables.openAdmin" })
             {
-                Title = "Open Environment Variables (Admin)",
-                Subtitle = "Launch Environment Variables editor as admin",
+                Title = Resources.EnvironmentVariables_OpenAdmin_Title,
+                Subtitle = Resources.EnvironmentVariables_OpenAdmin_Subtitle,
                 Icon = icon,
             };
         }
 
-        yield return new ListItem(new OpenInSettingsCommand(module, title))
+        yield return new ListItem(new OpenInSettingsCommand(module, title) { Id = "com.microsoft.powertoys.environmentVariables.openSettings" })
         {
             Title = title,
-            Subtitle = "Open Environment Variables settings",
+            Subtitle = Resources.EnvironmentVariables_Settings_Subtitle,
             Icon = icon,
         };
     }

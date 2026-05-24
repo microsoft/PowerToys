@@ -21,11 +21,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnoreAttribute]
         public GenericProperty<List<string>> KeyboardConfigurations { get; set; }
 
+        public HotkeySettings DefaultEditorShortcut => new HotkeySettings(true, false, false, true, 0x51);
+
         public KeyboardManagerProperties()
         {
+            EditorShortcut = DefaultEditorShortcut;
             KeyboardConfigurations = new GenericProperty<List<string>>(new List<string> { "default", });
             ActiveConfiguration = new GenericProperty<string>("default");
         }
+
+        public HotkeySettings EditorShortcut { get; set; }
+
+        [JsonPropertyName("useNewEditor")]
+        public bool UseNewEditor { get; set; }
 
         public string ToJsonString()
         {

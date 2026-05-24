@@ -4,7 +4,7 @@
 
 using System.Runtime.InteropServices;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
@@ -192,7 +192,7 @@ public class ExtensionWrapper : IExtensionWrapper
         }
         else if (supportedProviders is T singleProviderSupported)
         {
-            return [singleProviderSupported];
+            return (T[])[singleProviderSupported];
         }
 
         return Enumerable.Empty<T>();

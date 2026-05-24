@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Apps.UnitTests;
@@ -75,23 +76,60 @@ public class AllAppsPageTests : AppsTestBase
     }
 
     [TestMethod]
-    public async Task AllAppsPage_GetPinnedApps_ReturnsEmptyWhenNoAppsArePinned()
+    public async Task AllAppsPage_GetItems_HidesSubtitlesWhenSettingEnabled()
     {
         // Arrange
         var mockCache = new MockAppCache();
-        var app = TestDataHelper.CreateTestWin32Program("TestApp", "C:\\TestApp.exe");
-        mockCache.AddWin32Program(app);
+        var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
+        mockCache.AddWin32Program(win32App);
 
-        var page = new AllAppsPage(mockCache);
+        try
+        {
+            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"true\"}");
 
-        // Wait a bit for initialization to complete
-        await Task.Delay(100);
+            var page = new AllAppsPage(mockCache);
+            await Task.Delay(100);
 
-        // Act
-        var pinnedApps = page.GetPinnedApps();
+            // Act
+            var items = page.GetItems();
 
-        // Assert
-        Assert.IsNotNull(pinnedApps);
-        Assert.AreEqual(0, pinnedApps.Length);
+            // Assert
+            Assert.AreEqual(1, items.Length);
+            var appItem = items.OfType<AppListItem>().Single();
+            Assert.AreEqual(string.Empty, appItem.Subtitle);
+        }
+        finally
+        {
+            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+        }
+    }
+
+    [TestMethod]
+    public async Task AllAppsPage_GetItems_ShowsSubtitlesWhenSettingDisabled()
+    {
+        // Arrange
+        var mockCache = new MockAppCache();
+        var win32App = TestDataHelper.CreateTestWin32Program("Notepad", "C:\\Windows\\System32\\notepad.exe");
+        mockCache.AddWin32Program(win32App);
+
+        try
+        {
+            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+
+            var page = new AllAppsPage(mockCache);
+            await Task.Delay(100);
+
+            // Act
+            var items = page.GetItems();
+
+            // Assert
+            Assert.AreEqual(1, items.Length);
+            var appItem = items.OfType<AppListItem>().Single();
+            Assert.IsFalse(string.IsNullOrEmpty(appItem.Subtitle));
+        }
+        finally
+        {
+            AllAppsSettings.Instance.Settings.Update("{\"apps.HideAppDescriptions\": \"false\"}");
+        }
     }
 }

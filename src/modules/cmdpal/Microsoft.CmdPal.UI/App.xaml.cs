@@ -3,15 +3,19 @@
 // See the LICENSE file in the project root for more information.
 
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common;
-using Microsoft.CmdPal.Core.Common.Helpers;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Logging;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Common.WinGet.Services;
+using Microsoft.CmdPal.Ext.Actions;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
 using Microsoft.CmdPal.Ext.ClipboardHistory;
 using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Microsoft.CmdPal.Ext.Registry;
 using Microsoft.CmdPal.Ext.RemoteDesktop;
 using Microsoft.CmdPal.Ext.Shell;
@@ -27,11 +31,13 @@ using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
+using Microsoft.CmdPal.UI.ViewModels.Dock;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -41,7 +47,7 @@ namespace Microsoft.CmdPal.UI;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public partial class App : Application, IDisposable
 {
     private readonly GlobalErrorHandler _globalErrorHandler = new();
 
@@ -66,11 +72,15 @@ public partial class App : Application
     /// </summary>
     public App()
     {
+        var appInfoService = new ApplicationInfoService();
+
 #if !CMDPAL_DISABLE_GLOBAL_ERROR_HANDLER
-        _globalErrorHandler.Register(this);
+        _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices();
+        Services = ConfigureServices(appInfoService);
+
+        IconProvider.Initialize(Services);
 
         this.InitializeComponent();
 
@@ -89,6 +99,9 @@ public partial class App : Application
         // This way, log statements from the core project will be captured by the PT logs
         var logWrapper = new LogWrapper();
         CoreLogger.InitializeLogger(logWrapper);
+
+        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
     }
 
     /// <summary>
@@ -106,25 +119,40 @@ public partial class App : Application
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices()
+    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
+        var uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
         // Root services
-        services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
+        services.AddSingleton(uiScheduler);
+        var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
-        AddBuiltInCommands(services);
+        services.AddCmdPalLogging();
 
-        AddCoreServices(services);
+        var winGet = services.AddWinGetServices();
 
-        AddUIServices(services);
+        services.AddGalleryServices();
+
+        AddBuiltInCommands(services, appInfoService.ConfigDirectory, winGet?.PackageManager, winGet?.OperationTracker, uiScheduler);
+
+        AddCoreServices(services, appInfoService);
+
+        AddUIServices(services, dispatcherQueue);
 
         return services.BuildServiceProvider();
     }
 
-    private static void AddBuiltInCommands(ServiceCollection services)
+    private static void AddBuiltInCommands(
+        ServiceCollection services,
+        string configDirectory,
+        IWinGetPackageManagerService? winGetPackageManagerService,
+        IWinGetOperationTrackerService? winGetOperationTrackerService,
+        TaskScheduler uiScheduler)
     {
+        var providerLoadGuard = new ProviderLoadGuard(configDirectory);
+
         // Built-in Commands. Order matters - this is the order they'll be presented by default.
         var allApps = new AllAppsCommandProvider();
         var files = new IndexerCommandsProvider();
@@ -134,7 +162,10 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>(_ => BookmarksCommandProvider.CreateWithDefaultStore());
+
+        var bookmarks = BookmarksCommandProvider.CreateWithDefaultStore();
+        services.AddSingleton<ICommandProvider>(bookmarks);
+        services.AddSingleton<IBookmarksManager>(bookmarks.BookmarksManager);
 
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
@@ -142,21 +173,20 @@ public partial class App : Application
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
-        // We shouldn't explode in the App ctor if we fail to instantiate an
-        // instance of PackageManager, which will happen in the static ctor
-        // for WinGetStatics
-        try
+        if (winGetPackageManagerService is not null && winGetOperationTrackerService is not null)
         {
-            var winget = new WinGetExtensionCommandsProvider();
-            winget.SetAllLookup(
-                query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
-                query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
-            services.AddSingleton<ICommandProvider>(winget);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Couldn't load winget");
-            Logger.LogError(ex.ToString());
+            try
+            {
+                var winget = new WinGetExtensionCommandsProvider(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler);
+                winget.SetAllLookup(
+                    query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
+                    query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
+                services.AddSingleton<ICommandProvider>(winget);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Couldn't load winget", ex);
+            }
         }
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
@@ -167,17 +197,53 @@ public partial class App : Application
         services.AddSingleton<ICommandProvider, TimeDateCommandsProvider>();
         services.AddSingleton<ICommandProvider, SystemCommandExtensionProvider>();
         services.AddSingleton<ICommandProvider, RemoteDesktopCommandProvider>();
+
+        var performanceMonitorSoftDisabled = providerLoadGuard.IsProviderDisabled(PerformanceMonitorCommandsProvider.ProviderIdValue);
+        if (performanceMonitorSoftDisabled)
+        {
+            Logger.LogWarning("Performance monitor is temporarily disabled after repeated crashes. Loading placeholder pages instead of activating performance counters.");
+        }
+
+        if (!performanceMonitorSoftDisabled)
+        {
+            providerLoadGuard.Enter(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId, PerformanceMonitorCommandsProvider.ProviderIdValue);
+        }
+
+        try
+        {
+            var performanceMonitor = new PerformanceMonitorCommandsProvider(performanceMonitorSoftDisabled);
+            services.AddSingleton<ICommandProvider>(performanceMonitor);
+
+            if (!performanceMonitorSoftDisabled)
+            {
+                providerLoadGuard.Exit(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!performanceMonitorSoftDisabled)
+            {
+                providerLoadGuard.Exit(PerformanceMonitorCommandsProvider.ProviderLoadGuardBlockId);
+            }
+
+            Logger.LogError("Couldn't load performance monitor", ex);
+        }
+
+        if (ActionsCommandsProvider.IsActionsFeatureEnabled)
+        {
+            services.AddSingleton<ICommandProvider, ActionsCommandsProvider>();
+        }
     }
 
-    private static void AddUIServices(ServiceCollection services)
+    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
     {
-        // Models
-        var sm = SettingsModel.LoadSettings();
-        services.AddSingleton(sm);
-        var state = AppStateModel.LoadState();
-        services.AddSingleton(state);
+        // Models & persistence services
+        services.AddSingleton<IPersistenceService, PersistenceService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<IAppStateService, AppStateService>();
 
         // Services
+        services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
@@ -187,11 +253,17 @@ public partial class App : Application
 
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<ResourceSwapper>();
+
+        services.AddIconServices(dispatcherQueue);
     }
 
-    private static void AddCoreServices(ServiceCollection services)
+    private static void AddCoreServices(
+        ServiceCollection services,
+        IApplicationInfoService appInfoService)
     {
         // Core services
+        services.AddSingleton(appInfoService);
+
         services.AddSingleton<IExtensionService, ExtensionService>();
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
@@ -199,8 +271,29 @@ public partial class App : Application
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 
+        services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
+            _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));
+
         // ViewModels
         services.AddSingleton<ShellViewModel>();
+        services.AddSingleton<DockViewModel>();
+        services.AddSingleton<IContextMenuFactory, CommandPaletteContextMenuFactory>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+
+        // Multi-monitor dock support
+        services.AddSingleton<IMonitorService, MonitorService>();
+        services.AddSingleton<Dock.DockWindowManager>(sp =>
+            new Dock.DockWindowManager(
+                sp.GetRequiredService<IMonitorService>(),
+                sp.GetRequiredService<ISettingsService>(),
+                Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()));
+    }
+
+    public void Dispose()
+    {
+        (Services as IDisposable)?.Dispose();
+        _globalErrorHandler.Dispose();
+        EtwTrace.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

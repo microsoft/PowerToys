@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using ColorPicker.ModuleServices;
@@ -10,24 +11,27 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
 using PowerToysExtension.Helpers;
+using PowerToysExtension.Properties;
 
 namespace PowerToysExtension.Pages;
 
 internal sealed partial class ColorPickerSavedColorsPage : DynamicListPage
 {
+    private static readonly CompositeFormat NoMatchingSavedColorsFormat = CompositeFormat.Parse(Resources.ColorPicker_NoMatchingSavedColors_Subtitle);
+
     private readonly CommandItem _emptyContent;
 
     public ColorPickerSavedColorsPage()
     {
         Icon = PowerToysResourcesHelper.IconFromSettingsIcon("ColorPicker.png");
-        Title = "Saved colors";
+        Title = Resources.ColorPicker_SavedColors_Title;
         Name = "ColorPickerSavedColors";
         Id = "com.microsoft.powertoys.colorpicker.savedColors";
 
         _emptyContent = new CommandItem()
         {
-            Title = "No saved colors",
-            Subtitle = "Pick a color first, then try again.",
+            Title = Resources.ColorPicker_NoSavedColors_Title,
+            Subtitle = Resources.ColorPicker_NoSavedColors_Subtitle,
             Icon = PowerToysResourcesHelper.IconFromSettingsIcon("ColorPicker.png"),
         };
 
@@ -70,8 +74,8 @@ internal sealed partial class ColorPickerSavedColorsPage : DynamicListPage
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         _emptyContent.Subtitle = string.IsNullOrWhiteSpace(newSearch)
-            ? "Pick a color first, then try again."
-            : $"No saved colors matching '{newSearch}'";
+            ? Resources.ColorPicker_NoSavedColors_Subtitle
+            : string.Format(CultureInfo.CurrentCulture, NoMatchingSavedColorsFormat, newSearch);
 
         RaiseItemsChanged(0);
     }

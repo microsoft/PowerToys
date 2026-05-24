@@ -18,12 +18,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Microsoft.VisualStudio.Threading;
+using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
 using StreamJsonRpc;
 
 #if !MM_HELPER
 using MouseWithoutBorders.Class;
-using MouseWithoutBorders.Core;
 #endif
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
@@ -246,11 +246,11 @@ WellKnownSidType.AuthenticatedUserSid, null);
                 CancellationToken cancellationToken = _serverTaskCancellationSource.Token;
 
                 IpcChannel<ClipboardHelper>.StartIpcServer(ChannelName + "/" + RemoteObjectName, cancellationToken);
-                Common.IpcChannelCreated = true;
+                IpcChannelHelper.IpcChannelCreated = true;
             }
             catch (Exception e)
             {
-                Common.IpcChannelCreated = false;
+                IpcChannelHelper.IpcChannelCreated = false;
                 Common.ShowToolTip("Error setting up clipboard sharing, clipboard sharing will not work!", 5000, ToolTipIcon.Error);
                 Logger.Log(e);
             }
@@ -405,7 +405,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 
             try
             {
-                rv = Common.Retry(nameof(SystemClipboard.ContainsFileDropList), () => { return SystemClipboard.ContainsFileDropList(); }, (log) => Log(log));
+                rv = IpcChannelHelper.Retry(nameof(SystemClipboard.ContainsFileDropList), () => { return SystemClipboard.ContainsFileDropList(); }, (log) => Log(log));
             }
             catch (ExternalException e)
             {
@@ -427,7 +427,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 
             try
             {
-                rv = Common.Retry(nameof(SystemClipboard.ContainsImage), () => { return SystemClipboard.ContainsImage(); }, (log) => Log(log));
+                rv = IpcChannelHelper.Retry(nameof(SystemClipboard.ContainsImage), () => { return SystemClipboard.ContainsImage(); }, (log) => Log(log));
             }
             catch (ExternalException e)
             {
@@ -449,7 +449,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 
             try
             {
-                rv = Common.Retry(nameof(SystemClipboard.ContainsText), () => { return SystemClipboard.ContainsText(); }, (log) => Log(log));
+                rv = IpcChannelHelper.Retry(nameof(SystemClipboard.ContainsText), () => { return SystemClipboard.ContainsText(); }, (log) => Log(log));
             }
             catch (ExternalException e)
             {
@@ -471,7 +471,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 
             try
             {
-                rv = Common.Retry(nameof(SystemClipboard.GetFileDropList), () => { return SystemClipboard.GetFileDropList(); }, (log) => Log(log));
+                rv = IpcChannelHelper.Retry(nameof(SystemClipboard.GetFileDropList), () => { return SystemClipboard.GetFileDropList(); }, (log) => Log(log));
             }
             catch (ExternalException e)
             {
@@ -493,7 +493,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 
             try
             {
-                rv = Common.Retry(nameof(SystemClipboard.GetImage), () => { return SystemClipboard.GetImage(); }, (log) => Log(log));
+                rv = IpcChannelHelper.Retry(nameof(SystemClipboard.GetImage), () => { return SystemClipboard.GetImage(); }, (log) => Log(log));
             }
             catch (ExternalException e)
             {
@@ -515,7 +515,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
 
             try
             {
-                rv = Common.Retry(nameof(SystemClipboard.GetText), () => { return SystemClipboard.GetText(format); }, (log) => Log(log));
+                rv = IpcChannelHelper.Retry(nameof(SystemClipboard.GetText), () => { return SystemClipboard.GetText(format); }, (log) => Log(log));
             }
             catch (ExternalException e)
             {
@@ -539,7 +539,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
         {
             try
             {
-                _ = Common.Retry(
+                _ = IpcChannelHelper.Retry(
                     nameof(SystemClipboard.SetImage),
                     () =>
                 {
@@ -568,7 +568,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
         {
             try
             {
-                _ = Common.Retry(
+                _ = IpcChannelHelper.Retry(
                     nameof(SystemClipboard.SetText),
                     () =>
                 {
@@ -599,45 +599,5 @@ WellKnownSidType.AuthenticatedUserSid, null);
     internal sealed class SharedConst
     {
         internal const int QUIT_CMD = 0x409;
-    }
-
-    internal sealed partial class Common
-    {
-        internal static bool IpcChannelCreated { get; set; }
-
-        internal static T Retry<T>(string name, Func<T> func, Action<string> log, Action preRetry = null)
-        {
-            int count = 0;
-
-            do
-            {
-                try
-                {
-                    T rv = func();
-
-                    if (count > 0)
-                    {
-                        log($"Trace: {name} has been successful after {count} retry.");
-                    }
-
-                    return rv;
-                }
-                catch (Exception)
-                {
-                    count++;
-
-                    preRetry?.Invoke();
-
-                    if (count > 10)
-                    {
-                        throw;
-                    }
-
-                    Application.DoEvents();
-                    Thread.Sleep(200);
-                }
-            }
-            while (true);
-        }
     }
 }
