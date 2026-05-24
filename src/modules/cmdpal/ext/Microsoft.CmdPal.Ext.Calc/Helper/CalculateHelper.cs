@@ -21,7 +21,7 @@ public static partial class CalculateHelper
         @"pi|" +
         @"==|~=|&&|\|\||" +
         @"((\d+(?:\.\d*)?|\.\d+)[eE](-?\d+))|" + /* expression from CheckScientificNotation between parenthesis */
-        @"e|[0-9]|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[\+\-\*\/\^\.,xX ""]|[\(\)\|\!\[\]]" +
+        @"e|[0-9]|0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|[\+\-\*\/\^\., ""]|[\(\)\|\!\[\]]" +
         @")+$",
         RegexOptions.Compiled);
 
@@ -68,6 +68,11 @@ public static partial class CalculateHelper
         // unary operators; can appear at the end of a query
         ')', ']', '!',
     ];
+
+    private static readonly string[] FunctionNamesWithX = new[]
+    {
+        "exp", "max",
+    };
 
     private static readonly Regex ReplaceScientificNotationRegex = CreateReplaceScientificNotationRegex();
 
@@ -120,12 +125,26 @@ public static partial class CalculateHelper
         return input;
     }
 
-    private static string NormalizeMultiplicationSymbols(string input)
+    public static string NormalizeMultiplicationSymbols(string input)
     {
-        input = System.Text.RegularExpressions.Regex.Replace(
-            input,
-            @"(?<!\b0)[xX](?![a-zA-Z(])",
-            "*");
+        if (string.IsNullOrEmpty(input))
+        {
+            return input;
+        }
+
+        var functionsWithX = string.Join("|", FunctionNamesWithX);
+
+        input = Regex.Replace(input, @"\b0[X](?=[0-9a-fA-F])", "0x");
+        input = Regex.Replace(input, @"\b0x([0-9a-fA-F]+)", "0__HEX__$1");
+        input = Regex.Replace(input, $@"\b({functionsWithX})\b", "$1__FUNC__", RegexOptions.IgnoreCase);
+        input = Regex.Replace(input, $@"\b({functionsWithX})(?=\s*\()", "$1__FUNC__", RegexOptions.IgnoreCase);
+
+        var leftSide = @"(?<=\d|\)|pi|e|π|[a-fA-F])";
+        var rightSide = $@"(?=\d|\(|pi|e|π|(?:{functionsWithX})__FUNC__)";
+        input = Regex.Replace(input, leftSide + @"\s*[xX]\s*" + rightSide, "*");
+
+        input = input.Replace("__FUNC__", string.Empty);
+        input = Regex.Replace(input, @"0__HEX__([0-9a-fA-F]+)", "0x$1");
 
         return input;
     }
@@ -171,7 +190,6 @@ public static partial class CalculateHelper
 
     public static string FixHumanMultiplicationExpressions(string input)
     {
-        input = NormalizeMultiplicationSymbols(input);
         var output = CheckScientificNotation(input);
         output = CheckNumberOrConstantThenParenthesisExpr(output);
         output = CheckNumberOrConstantThenFunc(output);

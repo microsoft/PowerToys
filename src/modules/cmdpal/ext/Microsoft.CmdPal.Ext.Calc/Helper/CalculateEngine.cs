@@ -38,6 +38,9 @@ public static partial class CalculateEngine
     {
         error = default;
 
+        // Normalize x/X before validation
+        input = CalculateHelper.NormalizeMultiplicationSymbols(input);
+
         if (!CalculateHelper.InputValid(input))
         {
             return default;
