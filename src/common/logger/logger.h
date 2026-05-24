@@ -17,44 +17,44 @@ public:
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    static void trace(const FormatString& fmt, const Args&... args)
+    static void trace(const FormatString& formatString, const Args&... args)
     {
-        logger->trace(fmt, args...);
+        logger->trace(fmt::runtime(formatString), args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    static void debug(const FormatString& fmt, const Args&... args)
+    static void debug(const FormatString& formatString, const Args&... args)
     {
-        logger->debug(fmt, args...);
+        logger->debug(fmt::runtime(formatString), args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    static void info(const FormatString& fmt, const Args&... args)
+    static void info(const FormatString& formatString, const Args&... args)
     {
-        logger->info(fmt, args...);
+        logger->info(fmt::runtime(formatString), args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    static void warn(const FormatString& fmt, const Args&... args)
+    static void warn(const FormatString& formatString, const Args&... args)
     {
-        logger->warn(fmt, args...);
+        logger->warn(fmt::runtime(formatString), args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    static void error(const FormatString& fmt, const Args&... args)
+    static void error(const FormatString& formatString, const Args&... args)
     {
-        logger->error(fmt, args...);
+        logger->error(fmt::runtime(formatString), args...);
     }
 
     // log message should not be localized
     template<typename FormatString, typename... Args>
-    static void critical(const FormatString& fmt, const Args&... args)
+    static void critical(const FormatString& formatString, const Args&... args)
     {
-        logger->critical(fmt, args...);
+        logger->critical(fmt::runtime(formatString), args...);
     }
 
     static void flush()
