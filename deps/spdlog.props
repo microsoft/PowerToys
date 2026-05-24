@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <!--
-    spdlog consumers import this sheet to pick up the historical SPDLOG_*
-    preprocessor defines so source compiles identically against the
-    vcpkg-installed spdlog as it did against the in-tree submodule build.
-
-    The vcpkg integration itself (VcpkgEnabled, VcpkgRoot, triplet, install)
-    is wired globally in Cpp.Build.props so that import order relative to
-    Microsoft.Cpp.targets is guaranteed (vcpkg.props must load *before* the
-    C++ targets to hook into ClCompile). Many PowerToys .vcxproj files
-    import deps/spdlog.props *after* Microsoft.Cpp.targets, which works fine
-    for adding the SPDLOG_* defines via ItemDefinitionGroup merging, but
-    would fail for vcpkg.props' include-path wiring.
+    SPDLOG_* preprocessor defines for spdlog consumers. The actual vcpkg
+    integration (VcpkgEnabled, VcpkgRoot, triplet, manifest install) lives
+    in Cpp.Build.props; this file just carries the defines that match how
+    the pre-vcpkg in-tree build was configured.
   -->
   <ItemDefinitionGroup>
     <ClCompile>

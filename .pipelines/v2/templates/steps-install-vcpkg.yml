@@ -1,14 +1,9 @@
 # Adapted from microsoft/terminal build/pipelines/templates-v2/steps-install-vcpkg.yml.
 #
 # Detects vcpkg from (in order):
-#   1. The Visual Studio installation (Microsoft.VisualStudio.Component.Vcpkg).
+#   1. The Visual Studio installation (Microsoft.VisualStudio.Component.Vcpkg,
+#      declared in the repo-root .vsconfig).
 #   2. A local clone at deps/vcpkg, cloned and bootstrapped on demand.
-#
-# When falling back to a local clone, the clone is pinned to the same commit
-# as vcpkg.json's `builtin-baseline` so CI builds are reproducible (vcpkg
-# HEAD changes can otherwise break restores even though the baseline is
-# pinned). The baseline commit is read from vcpkg.json at runtime so the
-# two never drift.
 #
 # Sets the pipeline-scoped VCPKG_ROOT variable; the rest of the build
 # resolves vcpkg through it (see the three-tier VcpkgRoot fallback in
@@ -29,21 +24,15 @@ steps:
       if ($useVSPreview) { $vswhereArgs = @('-prerelease') + $vswhereArgs }
       $VsInstallRoot = & 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' @vswhereArgs
       If ([String]::IsNullOrEmpty($VsInstallRoot)) {
-        $manifest = Get-Content "$(build.sourcesdirectory)\vcpkg.json" -Raw | ConvertFrom-Json
-        $baseline = $manifest.'builtin-baseline'
-        if (-not $baseline) { throw "vcpkg.json is missing 'builtin-baseline'." }
-        Write-Host "Cloning microsoft/vcpkg pinned to builtin-baseline $baseline"
         Remove-Item -Recurse -Force deps/vcpkg -ErrorAction:Ignore
         git clone https://github.com/microsoft/vcpkg deps/vcpkg
         if ($LASTEXITCODE -ne 0) { throw "git clone vcpkg failed (exit $LASTEXITCODE)" }
         Push-Location deps/vcpkg
-        git checkout --quiet $baseline
-        if ($LASTEXITCODE -ne 0) { Pop-Location; throw "git checkout $baseline in vcpkg failed (exit $LASTEXITCODE)" }
         & ./bootstrap-vcpkg.bat -disableMetrics
         if ($LASTEXITCODE -ne 0) { Pop-Location; throw "bootstrap-vcpkg failed (exit $LASTEXITCODE)" }
         $VcpkgRoot = $PWD
         Pop-Location
-        Write-Host "Using vcpkg from local checkout ($VcpkgRoot) at $baseline"
+        Write-Host "Using vcpkg from local checkout ($VcpkgRoot)"
       } Else {
         $VcpkgRoot = Join-Path $VsInstallRoot 'VC\vcpkg'
         Write-Host "Using vcpkg from Visual Studio installation ($VcpkgRoot)"
