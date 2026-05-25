@@ -138,4 +138,94 @@ public class MonitorIdentityTests
         Assert.AreEqual(string.Empty, MonitorIdentity.PnpHardwareKeyFromInstanceName(@"DISPLAY"));
         Assert.AreEqual(string.Empty, MonitorIdentity.PnpHardwareKeyFromInstanceName(@"DISPLAY\BOE0900"));
     }
+
+    [TestMethod]
+    public void EdidIdFromMonitorId_NewFormat_ReturnsMiddleSegment()
+    {
+        var input = @"\\?\DISPLAY#DELD1A8#5&abc123&0&UID12345";
+
+        Assert.AreEqual("DELD1A8", MonitorIdentity.EdidIdFromMonitorId(input));
+    }
+
+    [TestMethod]
+    public void EdidIdFromMonitorId_NullEmptyOrMalformed_ReturnsEmpty()
+    {
+        Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromMonitorId(null));
+        Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromMonitorId(string.Empty));
+        Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromMonitorId(@"\\?\DISPLAY"));
+        Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromMonitorId(@"\\?\DISPLAY#"));
+        Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromMonitorId("DDC_DELD1A8_1"));
+    }
+
+    [TestMethod]
+    public void IsLegacyId_MatchesDdcAndWmiPrefixWithDigitSuffix()
+    {
+        Assert.IsTrue(MonitorIdentity.IsLegacyId("DDC_DELD1A8_1"));
+        Assert.IsTrue(MonitorIdentity.IsLegacyId("WMI_BOE0900_2"));
+        Assert.IsTrue(MonitorIdentity.IsLegacyId("DDC_Unknown_3"));
+        Assert.IsTrue(MonitorIdentity.IsLegacyId("WMI_Unknown_10"));
+    }
+
+    [TestMethod]
+    public void IsLegacyId_RejectsNewFormatAndMalformed()
+    {
+        Assert.IsFalse(MonitorIdentity.IsLegacyId(null));
+        Assert.IsFalse(MonitorIdentity.IsLegacyId(string.Empty));
+        Assert.IsFalse(MonitorIdentity.IsLegacyId(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID12345"));
+        Assert.IsFalse(MonitorIdentity.IsLegacyId("HDR_DELD1A8_1"));   // unknown source prefix
+        Assert.IsFalse(MonitorIdentity.IsLegacyId("DDC_DELD1A8_"));    // empty number suffix
+        Assert.IsFalse(MonitorIdentity.IsLegacyId("DDC__1"));           // empty EdidId segment
+        Assert.IsFalse(MonitorIdentity.IsLegacyId("DDC_DELD1A8_abc"));  // non-digit suffix
+    }
+
+    [TestMethod]
+    public void LegacyEdidId_ReturnsMiddleSegment()
+    {
+        Assert.AreEqual("DELD1A8", MonitorIdentity.LegacyEdidId("DDC_DELD1A8_1"));
+        Assert.AreEqual("BOE0900", MonitorIdentity.LegacyEdidId("WMI_BOE0900_2"));
+    }
+
+    [TestMethod]
+    public void LegacyEdidId_UnknownPlaceholderReturnsEmpty()
+    {
+        // "Unknown" is the placeholder PowerDisplay wrote when EDID was unavailable —
+        // it can never identify a specific monitor, so migration must skip these.
+        Assert.AreEqual(string.Empty, MonitorIdentity.LegacyEdidId("DDC_Unknown_1"));
+        Assert.AreEqual(string.Empty, MonitorIdentity.LegacyEdidId("WMI_Unknown_2"));
+    }
+
+    [TestMethod]
+    public void LegacyEdidId_NewFormatReturnsEmpty()
+    {
+        Assert.AreEqual(string.Empty, MonitorIdentity.LegacyEdidId(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID12345"));
+        Assert.AreEqual(string.Empty, MonitorIdentity.LegacyEdidId(null));
+        Assert.AreEqual(string.Empty, MonitorIdentity.LegacyEdidId(string.Empty));
+    }
+
+    [TestMethod]
+    public void LegacyMonitorNumber_ReturnsTrailingDigits()
+    {
+        Assert.AreEqual(1, MonitorIdentity.LegacyMonitorNumber("DDC_DELD1A8_1"));
+        Assert.AreEqual(2, MonitorIdentity.LegacyMonitorNumber("WMI_BOE0900_2"));
+        Assert.AreEqual(10, MonitorIdentity.LegacyMonitorNumber("DDC_DELD1A8_10"));
+    }
+
+    [TestMethod]
+    public void LegacyMonitorNumber_ParsesEvenForUnknownEdid()
+    {
+        // LegacyEdidId returns empty for the "Unknown" placeholder, but the trailing
+        // digits are still well-formed. Callers gate on the (EdidId, MonitorNumber)
+        // pair, so reading the number cleanly is fine here.
+        Assert.AreEqual(3, MonitorIdentity.LegacyMonitorNumber("DDC_Unknown_3"));
+    }
+
+    [TestMethod]
+    public void LegacyMonitorNumber_NewFormatOrMalformedReturnsZero()
+    {
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber(null));
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber(string.Empty));
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber(@"\\?\DISPLAY#DELD1A8#5&abc&0&UID12345"));
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber("DDC_DELD1A8_abc"));
+        Assert.AreEqual(0, MonitorIdentity.LegacyMonitorNumber("DDC_DELD1A8_"));
+    }
 }

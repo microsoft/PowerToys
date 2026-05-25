@@ -164,6 +164,14 @@ public partial class MainViewModel
         // Save monitor information to settings
         SaveMonitorsToSettings();
 
+        // First successful discovery after process start is the natural place to clean up
+        // any legacy "{Source}_{EdidId}_{N}" Ids still lingering in the side files that
+        // SaveMonitorsToSettings doesn't touch (profiles.json + monitor_state.json).
+        if (isInitialLoad)
+        {
+            MigrateLegacyMonitorIdsInSideFiles();
+        }
+
         // Note: RestoreMonitorSettingsAsync is now called from InitializeAsync/CompleteInitializationAsync
         // to ensure scanning state is maintained until restore completes
     }

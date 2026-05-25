@@ -22,6 +22,7 @@
     <Grid
         x:Name="RootGrid"
         IsTabStop="True"
+        KeyDown="RootGrid_KeyDown"
         TabFocusNavigation="Local">
         <Grid.Resources>
             <GridLength x:Key="FlyoutStatusBarHeight">48</GridLength>
