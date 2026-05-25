@@ -1576,6 +1576,7 @@ ROUNDSMALL
 rpcrt
 RRF
 rsop
+Rsp
 rstringalnum
 rstringalpha
 rstringdigit
