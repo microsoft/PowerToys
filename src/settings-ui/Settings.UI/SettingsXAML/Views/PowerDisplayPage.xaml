@@ -62,7 +62,6 @@
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </tkcontrols:SettingsCard>
                         </controls:GPOInfoControl>
-
                         <controls:SettingsGroup x:Uid="PowerDisplayGroupHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsExpander
                                 x:Uid="PowerDisplayFlyoutHeader"
