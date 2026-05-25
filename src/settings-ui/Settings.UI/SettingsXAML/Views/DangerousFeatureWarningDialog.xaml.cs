@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -14,8 +15,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// resource key prefix; the dialog loads
     /// "{prefix}_WarningTitle/Header/Description/WarningList_Item{N}/Confirm".
     /// Bullets are prepended in code so translators only see the body text; the
-    /// item loop reads <c>_WarningList_Item1</c>, <c>_Item2</c>, ... until a missing
-    /// key returns empty, so adding a 4th bullet only requires a new resw entry.
+    /// item loop probes <c>_WarningList_Item1</c>, <c>_Item2</c>, ... until a missing
+    /// key is hit, so adding a 4th bullet only requires a new resw entry.
     /// </summary>
     public sealed partial class DangerousFeatureWarningDialog : ContentDialog
     {
@@ -23,9 +24,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private const string WarningHeaderPrefix = "⚠️ ";
         private const string BulletPrefix = "• ";
 
-        // Hard cap on bullets in case a future ResourceLoader change ever returns a
-        // non-empty value for a missing key; a real dialog never approaches this.
+        // Hard cap on bullet probes; a real dialog never approaches this.
         private const int MaxBulletItems = 10;
+
+        // Direct ResourceMap handle so the bullet loop can probe for missing keys with
+        // TryGetValue (returns null) instead of ResourceLoader.GetString (throws
+        // "NamedResource Not Found").
+        private static readonly ResourceMap ResourceMap =
+            new ResourceManager("PowerToys.Settings.pri").MainResourceMap.GetSubtree("Resources");
 
         public DangerousFeatureWarningDialog(string resourceKeyPrefix)
         {
@@ -39,19 +45,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             PrimaryButtonText = loader.GetString("PowerDisplay_Dialog_Enable");
             CloseButtonText = loader.GetString("PowerDisplay_Dialog_Cancel");
 
-            // ResourceLoader.GetString returns string.Empty for missing keys (see
-            // FriendlyDateHelper.cs for the same pattern), so the loop stops cleanly
-            // at the first absent _Item{N}. The upper bound is a defensive cap.
             var items = new List<string>();
             for (int i = 1; i <= MaxBulletItems; i++)
             {
-                var item = loader.GetString($"{resourceKeyPrefix}_WarningList_Item{i}");
-                if (string.IsNullOrEmpty(item))
+                var candidate = ResourceMap.TryGetValue($"{resourceKeyPrefix}_WarningList_Item{i}");
+                if (candidate == null || string.IsNullOrEmpty(candidate.ValueAsString))
                 {
                     break;
                 }
 
-                items.Add(BulletPrefix + item);
+                items.Add(BulletPrefix + candidate.ValueAsString);
             }
 
             WarningList.ItemsSource = items;
