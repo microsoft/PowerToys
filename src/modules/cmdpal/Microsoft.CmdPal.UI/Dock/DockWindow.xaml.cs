@@ -753,6 +753,14 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
+            if (message.BringToFront)
+            {
+                // Win+D (Show Desktop) on Windows 11 can cloak windows at the DWM
+                // level without triggering WM_SHOWWINDOW. SetWindowPos alone won't
+                // restore a cloaked window — we must explicitly show it first.
+                PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+            }
+
             UpdateTopmostState(message.BringToFront);
         });
     }
