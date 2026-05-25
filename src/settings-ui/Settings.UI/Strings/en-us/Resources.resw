@@ -5579,7 +5579,8 @@ The break timer font matches the text font.</value>
     <value>Confirm Color Temperature Change</value>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+    <value>Warning: This is a potentially dangerous operation!</value>
+    <comment>Bold red header on the color-temperature warning dialog. The dialog prepends a "⚠️" glyph.</comment>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningDescription" xml:space="preserve">
     <value>Changing the color temperature setting may cause unpredictable results including:</value>
@@ -5611,7 +5612,8 @@ The break timer font matches the text font.</value>
     <value>Confirm power state control</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This action may be unsafe.</value>
+    <value>Warning: This action may be unsafe.</value>
+    <comment>Bold red header on the power-state warning dialog. The dialog prepends a "⚠️" glyph.</comment>
   </data>
   <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
     <value>Enabling power state control may lead to unexpected behavior, including:</value>
@@ -5631,7 +5633,8 @@ The break timer font matches the text font.</value>
     <value>Confirm input source control</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This action may be unsafe.</value>
+    <value>Warning: This action may be unsafe.</value>
+    <comment>Bold red header on the input-source warning dialog. The dialog prepends a "⚠️" glyph.</comment>
   </data>
   <data name="PowerDisplay_InputSource_WarningDescription" xml:space="preserve">
     <value>Switching input sources may cause unintended results, including:</value>
@@ -5655,7 +5658,8 @@ The break timer font matches the text font.</value>
     <value>Confirm maximum compatibility mode</value>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This may cause unstable monitor behavior.</value>
+    <value>Warning: This may cause unstable monitor behavior.</value>
+    <comment>Bold red header on the max-compatibility-mode warning dialog. The dialog prepends a "⚠️" glyph.</comment>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningDescription" xml:space="preserve">
     <value>Maximum compatibility mode bypasses your monitor's capabilities string and sends a probe for every supported VCP feature. Some monitors do not handle this well, which may cause:</value>
@@ -5680,8 +5684,8 @@ The break timer font matches the text font.</value>
     <comment>Title of the dialog shown when the user turns on the Power Display module toggle.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This may cause a system crash on a small number of monitors.</value>
-    <comment>Bold red header on the Enable Power Display warning dialog.</comment>
+    <value>Warning: This may cause a system crash on a small number of monitors.</value>
+    <comment>Bold red header on the Enable Power Display warning dialog. The dialog prepends a "⚠️" glyph.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningDescription" xml:space="preserve">
     <value>Power Display reads each connected monitor's DDC/CI capabilities at startup. On a small number of monitors with malformed capability strings, this read has been observed to trigger a kernel-side bug that causes Windows to bug-check (BSOD). The underlying issue is in Windows, not in Power Display, but the read is what surfaces it. Possible effects:</value>

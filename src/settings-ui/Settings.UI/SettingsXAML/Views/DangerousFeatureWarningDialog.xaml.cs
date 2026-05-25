@@ -19,6 +19,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// </summary>
     public sealed partial class DangerousFeatureWarningDialog : ContentDialog
     {
+        // Visual decorations are applied in code so translators only see body text.
+        private const string WarningHeaderPrefix = "⚠️ ";
         private const string BulletPrefix = "• ";
 
         // Hard cap on bullets in case a future ResourceLoader change ever returns a
@@ -31,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             var loader = ResourceLoaderInstance.ResourceLoader;
             Title = loader.GetString($"{resourceKeyPrefix}_WarningTitle");
-            WarningHeader.Text = loader.GetString($"{resourceKeyPrefix}_WarningHeader");
+            WarningHeader.Text = WarningHeaderPrefix + loader.GetString($"{resourceKeyPrefix}_WarningHeader");
             WarningDescription.Text = loader.GetString($"{resourceKeyPrefix}_WarningDescription");
             WarningConfirm.Text = loader.GetString($"{resourceKeyPrefix}_WarningConfirm");
             PrimaryButtonText = loader.GetString("PowerDisplay_Dialog_Enable");
