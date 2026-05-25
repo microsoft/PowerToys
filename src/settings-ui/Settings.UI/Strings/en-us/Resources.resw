@@ -5584,10 +5584,17 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ColorTemperature_WarningDescription" xml:space="preserve">
     <value>Changing the color temperature setting may cause unpredictable results including:</value>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningList" xml:space="preserve">
-    <value>• Incorrect display colors
-• Display malfunction
-• Settings that cannot be reverted</value>
+  <data name="PowerDisplay_ColorTemperature_WarningList_Item1" xml:space="preserve">
+    <value>Incorrect display colors</value>
+    <comment>First bullet on the color-temperature warning dialog. Rendered with a leading "•" by the dialog.</comment>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningList_Item2" xml:space="preserve">
+    <value>Display malfunction</value>
+    <comment>Second bullet on the color-temperature warning dialog.</comment>
+  </data>
+  <data name="PowerDisplay_ColorTemperature_WarningList_Item3" xml:space="preserve">
+    <value>Settings that cannot be reverted</value>
+    <comment>Third bullet on the color-temperature warning dialog.</comment>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable color temperature control for this monitor?</value>
@@ -5613,10 +5620,17 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
     <value>Enabling power state control may lead to unexpected behavior, including:</value>
   </data>
-  <data name="PowerDisplay_PowerState_WarningList" xml:space="preserve">
-    <value>• Monitor may enter standby and not wake via software.
-• You may need to press the monitor’s power button or reconnect the cable to recover.
-• Some monitors may not restore the previous state correctly.</value>
+  <data name="PowerDisplay_PowerState_WarningList_Item1" xml:space="preserve">
+    <value>Monitor may enter standby and not wake via software.</value>
+    <comment>First bullet on the power-state warning dialog. Rendered with a leading "•" by the dialog.</comment>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningList_Item2" xml:space="preserve">
+    <value>You may need to press the monitor’s power button or reconnect the cable to recover.</value>
+    <comment>Second bullet on the power-state warning dialog.</comment>
+  </data>
+  <data name="PowerDisplay_PowerState_WarningList_Item3" xml:space="preserve">
+    <value>Some monitors may not restore the previous state correctly.</value>
+    <comment>Third bullet on the power-state warning dialog.</comment>
   </data>
   <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
     <value>Enable power state control for this monitor?</value>
@@ -5630,10 +5644,17 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_InputSource_WarningDescription" xml:space="preserve">
     <value>Switching input sources may cause unintended results, including:</value>
   </data>
-  <data name="PowerDisplay_InputSource_WarningList" xml:space="preserve">
-    <value>• Screen may go black if the selected input has no signal.
-• Software control may be lost until you switch back using the monitor’s physical buttons.
-• Some monitors may not reliably expose all input sources.</value>
+  <data name="PowerDisplay_InputSource_WarningList_Item1" xml:space="preserve">
+    <value>Screen may go black if the selected input has no signal.</value>
+    <comment>First bullet on the input-source warning dialog. Rendered with a leading "•" by the dialog.</comment>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningList_Item2" xml:space="preserve">
+    <value>Software control may be lost until you switch back using the monitor’s physical buttons.</value>
+    <comment>Second bullet on the input-source warning dialog.</comment>
+  </data>
+  <data name="PowerDisplay_InputSource_WarningList_Item3" xml:space="preserve">
+    <value>Some monitors may not reliably expose all input sources.</value>
+    <comment>Third bullet on the input-source warning dialog.</comment>
   </data>
   <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
     <value>Enable input source control for this monitor?</value>
