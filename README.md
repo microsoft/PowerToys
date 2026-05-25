@@ -1,8 +1,5 @@
 <p align="center">
-    <picture>
-      <source media="(prefers-color-scheme: light)" srcset="./doc/images/readme/pt-hero.light.png" />
-      <img src="./doc/images/readme/pt-hero.dark.png" />
-  </picture>
+    <img src="./doc/images/readme/pt-hero.animated.svg" alt="PowerToys hero animation" />
 </p>
 <h1 align="center">
   <span>Microsoft PowerToys</span>
