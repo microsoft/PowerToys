@@ -41,11 +41,12 @@
                         x:Uid="CmdPalDock_LearnMore"
                         Margin="0,0,0,36"
                         Padding="0"
+                        AutomationProperties.AutomationId="CmdPal_DockSettingsPage_LearnMore"
                         FontWeight="SemiBold"
                         NavigateUri="https://aka.ms/cmdpal-dock" />
                     <!--  Enable Dock  -->
                     <controls:SettingsCard x:Uid="Settings_GeneralPage_EnableDock_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xF596;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_EnableDock" IsOn="{x:Bind ViewModel.EnableDock, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  Appearance Section  -->
@@ -82,7 +83,10 @@
                     </controls:SettingsCard>
 
                     <controls:SettingsCard x:Uid="DockAppearance_AppTheme_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE793;}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ThemeIndex, Mode=TwoWay}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_DockSettingsPage_Theme"
+                            SelectedIndex="{x:Bind ViewModel.DockAppearance.ThemeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_AppTheme_Mode_System_Automation" Tag="Default">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <FontIcon FontSize="16" Glyph="&#xE770;" />
@@ -123,7 +127,10 @@
                         x:Uid="DockAppearance_Background_SettingsExpander"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE790;}"
                         IsExpanded="{x:Bind ViewModel.DockAppearance.IsColorizationDetailsExpanded, Mode=TwoWay}">
-                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.DockAppearance.ColorizationModeIndex, Mode=TwoWay}">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_DockSettingsPage_ColorizationMode"
+                            SelectedIndex="{x:Bind ViewModel.DockAppearance.ColorizationModeIndex, Mode=TwoWay}">
                             <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_None" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_WindowsAccent" />
                             <ComboBoxItem x:Uid="Settings_GeneralPage_ColorizationMode_CustomColor" />
@@ -176,11 +183,15 @@
                                 x:Uid="DockAppearance_BackgroundImage_SettingsCard"
                                 Description="{x:Bind ViewModel.DockAppearance.BackgroundImagePath, Mode=OneWay}"
                                 Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <Button x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton" Click="PickBackgroundImage_Click" />
+                                <Button
+                                    x:Uid="Settings_GeneralPage_BackgroundImage_ChooseImageButton"
+                                    AutomationProperties.AutomationId="CmdPal_DockSettingsPage_ChooseBackgroundImage"
+                                    Click="PickBackgroundImage_Click" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="DockAppearance_BackgroundImageBrightness_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="CmdPal_DockSettingsPage_BgImageBrightness"
                                     Maximum="100"
                                     Minimum="-100"
                                     StepFrequency="1"
@@ -189,13 +200,14 @@
                             <controls:SettingsCard x:Uid="DockAppearance_BackgroundImageBlur_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="CmdPal_DockSettingsPage_BgImageBlur"
                                     Maximum="50"
                                     Minimum="0"
                                     StepFrequency="1"
                                     Value="{x:Bind ViewModel.DockAppearance.BackgroundImageBlurAmount, Mode=TwoWay}" />
                             </controls:SettingsCard>
                             <controls:SettingsCard x:Uid="DockAppearance_BackgroundImageFit_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <ComboBox SelectedIndex="{x:Bind ViewModel.DockAppearance.BackgroundImageFitIndex, Mode=TwoWay}">
+                                <ComboBox AutomationProperties.AutomationId="CmdPal_DockSettingsPage_BgImageFit" SelectedIndex="{x:Bind ViewModel.DockAppearance.BackgroundImageFitIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Fill" />
                                     <ComboBoxItem x:Uid="BackgroundImageFit_ComboBoxItem_Stretch" />
                                 </ComboBox>
@@ -212,6 +224,7 @@
                             <controls:SettingsCard x:Uid="DockAppearance_BackgroundTintIntensity_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsCustomTintIntensityVisible, Mode=OneWay}">
                                 <Slider
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="CmdPal_DockSettingsPage_BgTintIntensity"
                                     Maximum="100"
                                     Minimum="1"
                                     StepFrequency="1"
@@ -220,7 +233,10 @@
 
                             <!--  Reset background image properties  -->
                             <controls:SettingsCard x:Uid="DockAppearance_BackgroundImage_ResetProperties_SettingsCard" Visibility="{x:Bind ViewModel.DockAppearance.IsBackgroundControlsVisible, Mode=OneWay}">
-                                <Button x:Uid="Settings_GeneralPage_Background_ResetImagePropertiesButton" Command="{x:Bind ViewModel.DockAppearance.ResetBackgroundImagePropertiesCommand}" />
+                                <Button
+                                    x:Uid="Settings_GeneralPage_Background_ResetImagePropertiesButton"
+                                    AutomationProperties.AutomationId="CmdPal_DockSettingsPage_ResetBgImage"
+                                    Command="{x:Bind ViewModel.DockAppearance.ResetBackgroundImagePropertiesCommand}" />
                             </controls:SettingsCard>
 
                         </controls:SettingsExpander.Items>
@@ -230,7 +246,7 @@
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
                     <controls:SettingsCard x:Uid="DockBehavior_AlwaysOnTop_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE840;}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_AlwaysOnTop" IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
                     <!--  Monitors Section  -->
@@ -243,10 +259,17 @@
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="dockVm:DockMonitorConfigViewModel">
                                 <controls:SettingsExpander
+                                    AutomationProperties.AutomationId="{x:Bind DeviceId, Mode=OneWay}"
                                     Description="{x:Bind Resolution, Mode=OneWay}"
                                     Header="{x:Bind DisplayName, Mode=OneWay}"
                                     HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
                                     IsExpanded="False">
+                                    <!--
+                                        AutomationId on the inner ToggleSwitch / ComboBox is intentionally
+                                        omitted because the parent SettingsExpander already exposes a
+                                        per-monitor unique AutomationId (DeviceId), so tests can locate
+                                        each control relative to its monitor without ambiguity.
+                                    -->
                                     <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
                                     <controls:SettingsExpander.Items>
                                         <controls:SettingsCard x:Uid="DockMonitor_Position_SettingsCard">

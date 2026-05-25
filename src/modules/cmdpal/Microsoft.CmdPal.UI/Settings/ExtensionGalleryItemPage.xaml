@@ -38,6 +38,7 @@
                     <Button
                         Margin="0,12,0,0"
                         HorizontalAlignment="Stretch"
+                        AutomationProperties.AutomationId="CmdPal_GalleryItemPage_InstallViaWinGet"
                         Command="{x:Bind ViewModel.InstallViaWinGetCommand, Mode=OneWay}"
                         Content="{x:Bind ViewModel.InstallViaWinGetText, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.CanInstallViaWinGet, Mode=OneWay}"
@@ -48,6 +49,7 @@
                         Width="32"
                         Height="32"
                         Padding="0"
+                        AutomationProperties.AutomationId="CmdPal_GalleryItemPage_CancelWinGetAction"
                         Command="{x:Bind ViewModel.CancelWinGetActionCommand, Mode=OneWay}"
                         Style="{StaticResource SubtleButtonStyle}"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowCancelWinGetActionButton), Mode=OneWay, FallbackValue=Collapsed}">
@@ -83,6 +85,7 @@
                         Height="28"
                         Padding="0"
                         VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="CmdPal_GalleryItemPage_CopyInstallCommand"
                         Command="{x:Bind ViewModel.CopyWinGetInstallCommand, Mode=OneWay}"
                         IsEnabled="{x:Bind ViewModel.CanCopyWinGetInstallCommand, Mode=OneWay}"
                         Style="{StaticResource SubtleButtonStyle}">
@@ -216,6 +219,7 @@
                             <HyperlinkButton
                                 x:Uid="Settings_GalleryItemPage_AuthorLink"
                                 Padding="0"
+                                AutomationProperties.AutomationId="CmdPal_GalleryItemPage_AuthorLink"
                                 Command="{x:Bind ViewModel.OpenAuthorPageCommand, Mode=OneWay}"
                                 Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasAuthorUrl), Mode=OneWay, FallbackValue=Collapsed}">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
@@ -227,6 +231,7 @@
                             <HyperlinkButton
                                 Grid.Row="3"
                                 Padding="0"
+                                AutomationProperties.AutomationId="CmdPal_GalleryItemPage_ViewRepository"
                                 NavigateUri="{x:Bind ViewModel.Homepage, Mode=OneWay}"
                                 ToolTipService.ToolTip="{x:Bind ViewModel.Homepage, Mode=OneWay}"
                                 Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasHomepage), Mode=OneWay, FallbackValue=Collapsed}">
@@ -310,6 +315,7 @@
                         x:Uid="Settings_GalleryItemPage_Uninstall_Link"
                         Padding="0"
                         VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="CmdPal_GalleryItemPage_OpenInstalledApps"
                         Command="{x:Bind ViewModel.OpenInstalledAppsCommand}"
                         FontSize="12"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.ShowInstalledBadge), Mode=OneWay, FallbackValue=Collapsed}" />
