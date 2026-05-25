@@ -308,7 +308,9 @@ pwa
 
 AOT
 Aot
+cswinrt
 ify
+rsp
 TFM
 
 # YML
