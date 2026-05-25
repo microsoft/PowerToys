@@ -4,7 +4,7 @@
 
 using System;
 using System.IO;
-using ManagedCommon;
+using Windows.ApplicationModel;
 using Windows.Foundation.Metadata;
 using Package = Windows.ApplicationModel.Package;
 
@@ -62,7 +62,7 @@ public class PackageWrapper : IPackage
                 package.IsFramework,
                 package.IsDevelopmentMode,
                 string.Empty,
-                package.SignatureKind == Windows.ApplicationModel.PackageSignatureKind.System);
+                package.SignatureKind == PackageSignatureKind.System);
         }
 
         return new PackageWrapper(
@@ -72,7 +72,7 @@ public class PackageWrapper : IPackage
                 package.IsFramework,
                 package.IsDevelopmentMode,
                 path,
-                package.SignatureKind == Windows.ApplicationModel.PackageSignatureKind.System);
+                package.SignatureKind == PackageSignatureKind.System);
     }
 
     // This is a separate method so the reference to .InstalledPath won't be loaded in API versions which do not support this API (e.g. older then Build 19041)
