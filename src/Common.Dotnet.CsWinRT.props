@@ -12,6 +12,17 @@
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <!--
+    Opt out of CsWinRT 2.2 IIDOptimizer. On .NET 10 / CsWinRT 2.2 the tool exits with code -1
+    after producing "0 IID calculations/fetches patched", which generates a noisy MSB3073
+    warning for every CsWinRT-consuming project. The IIDOptimizer is a runtime-perf optimization
+    that interns GUID lookups; disabling it just means a small first-call cost. This switch
+    causes Microsoft.Windows.CsWinRT.IIDOptimizer.targets to not be imported at all.
+  -->
+  <PropertyGroup>
+    <CsWinRTIIDOptimizerOptOut>true</CsWinRTIIDOptimizerOptOut>
+  </PropertyGroup>
+
   <!-- Common from the debug / release items -->
   <PropertyGroup>
     <WarningLevel>4</WarningLevel>
@@ -73,5 +84,22 @@
          leave us without generated .cs files when the .winmd has just been (re)produced. -->
     <Delete Files="$(CsWinRTGeneratedFilesDir)cswinrt.rsp;$(CsWinRTGeneratedFilesDir)cswinrt_internal.rsp"
             Condition="'@(_NativeWinMDProjectionRef)' != '' and '$(CsWinRTGeneratedFilesDir)' != ''" />
+    <!-- Mark that we need to delete the rsp again once CsWinRTGeneratedFilesDir is fully resolved
+         (some projects set it to $(OutDir) which is not evaluated this early). -->
+    <PropertyGroup>
+      <_DeleteStaleCsWinRTRspPending>true</_DeleteStaleCsWinRTRspPending>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Second pass: after CsWinRTPrepareProjection has resolved $(CsWinRTGeneratedFilesDir) to its
+    final value (which may depend on $(OutDir)), delete any stale cswinrt.rsp so the
+    CsWinRTGenerateProjection target's incremental-skip cannot leave us without generated .cs files.
+  -->
+  <Target Name="DeleteStaleCsWinRTRspAfterPrepare"
+          AfterTargets="CsWinRTPrepareProjection"
+          BeforeTargets="CsWinRTGenerateProjection"
+          Condition="'$(_DeleteStaleCsWinRTRspPending)' == 'true' and '$(CsWinRTGeneratedFilesDir)' != ''">
+    <Delete Files="$(CsWinRTGeneratedFilesDir)cswinrt.rsp;$(CsWinRTGeneratedFilesDir)cswinrt_internal.rsp" />
   </Target>
 </Project>
