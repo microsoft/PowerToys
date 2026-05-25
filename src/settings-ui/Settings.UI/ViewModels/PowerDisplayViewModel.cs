@@ -160,15 +160,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task ConfirmAndEnableModuleAsync()
         {
-            if (await ConfirmDangerousFeatureAsync("PowerDisplay_EnableModule"))
+            try
             {
-                CommitIsEnabled(true);
+                if (await ConfirmDangerousFeatureAsync("PowerDisplay_EnableModule"))
+                {
+                    CommitIsEnabled(true);
+                }
             }
-
-            // Either branch raises PropertyChanged so the TwoWay binding pushes the
-            // ViewModel value back to the ToggleSwitch — commit echoes silently,
-            // cancel pulls the UI back to the original state.
-            OnPropertyChanged(nameof(IsEnabled));
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: enable-module confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(IsEnabled));
+            }
         }
 
         private void CommitIsEnabled(bool value)
@@ -263,17 +276,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task ConfirmAndEnableMaxCompatAsync()
         {
-            if (await ConfirmDangerousFeatureAsync("PowerDisplay_MaxCompatibility"))
+            try
             {
-                _settings.Properties.MaxCompatibilityMode = true;
-                NotifySettingsChanged();
-                SignalRescanRequest();
+                if (await ConfirmDangerousFeatureAsync("PowerDisplay_MaxCompatibility"))
+                {
+                    _settings.Properties.MaxCompatibilityMode = true;
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
             }
-
-            // Either branch raises PropertyChanged so the TwoWay binding pushes the
-            // ViewModel value back to the ToggleSwitch — commit echoes silently,
-            // cancel pulls the UI back to the original state.
-            OnPropertyChanged(nameof(MaxCompatibilityMode));
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: max-compat confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(MaxCompatibilityMode));
+            }
         }
 
         public bool ShowSystemTrayIcon

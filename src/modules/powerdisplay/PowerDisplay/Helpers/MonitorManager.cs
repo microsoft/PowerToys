@@ -209,10 +209,11 @@ namespace PowerDisplay.Helpers
                 // cannot BSOD, so this line is guaranteed on disk before the crash-prone
                 // Phase 2 fetch starts — recovered logs identify every attached model
                 // (and same-model duplicates) for crash correlation.
-                var edidId = MonitorIdentity.EdidIdFromDevicePath(info.DevicePath);
+                var edidId = MonitorIdentity.EdidIdFromMonitorId(info.DevicePath);
+                var edidIdField = string.IsNullOrEmpty(edidId) ? "?" : edidId;
 
                 Logger.LogInfo(
-                    $"  [Path {info.MonitorNumber}] EdidId={edidId} {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
+                    $"  [Path {info.MonitorNumber}] EdidId={edidIdField} {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
                     $"OutputTechnology={techValue} → {classification}");
             }
 

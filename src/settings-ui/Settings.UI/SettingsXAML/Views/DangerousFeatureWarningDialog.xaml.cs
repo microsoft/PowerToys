@@ -10,10 +10,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// <summary>
     /// Confirmation dialog shown when the user enables a feature that can damage the
     /// hardware or otherwise leave it in a non-recoverable state. The caller supplies a
-    /// resource key prefix; the dialog loads "{prefix}_WarningTitle/Header/Description/List/Confirm".
+    /// resource key prefix; the dialog loads
+    /// "{prefix}_WarningTitle/Header/Description/WarningList_Item1/2/3/Confirm".
+    /// Bullets are prepended in code so translators only see the body text.
     /// </summary>
     public sealed partial class DangerousFeatureWarningDialog : ContentDialog
     {
+        private const string BulletPrefix = "• ";
+
         public DangerousFeatureWarningDialog(string resourceKeyPrefix)
         {
             InitializeComponent();
@@ -22,7 +26,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Title = loader.GetString($"{resourceKeyPrefix}_WarningTitle");
             WarningHeader.Text = loader.GetString($"{resourceKeyPrefix}_WarningHeader");
             WarningDescription.Text = loader.GetString($"{resourceKeyPrefix}_WarningDescription");
-            WarningList.Text = loader.GetString($"{resourceKeyPrefix}_WarningList");
+            WarningListItem1.Text = BulletPrefix + loader.GetString($"{resourceKeyPrefix}_WarningList_Item1");
+            WarningListItem2.Text = BulletPrefix + loader.GetString($"{resourceKeyPrefix}_WarningList_Item2");
+            WarningListItem3.Text = BulletPrefix + loader.GetString($"{resourceKeyPrefix}_WarningList_Item3");
             WarningConfirm.Text = loader.GetString($"{resourceKeyPrefix}_WarningConfirm");
             PrimaryButtonText = loader.GetString("PowerDisplay_Dialog_Enable");
             CloseButtonText = loader.GetString("PowerDisplay_Dialog_Cancel");

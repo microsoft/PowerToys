@@ -5647,10 +5647,17 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MaxCompatibility_WarningDescription" xml:space="preserve">
     <value>Maximum compatibility mode bypasses your monitor's capabilities string and sends a probe for every supported VCP feature. Some monitors do not handle this well, which may cause:</value>
   </data>
-  <data name="PowerDisplay_MaxCompatibility_WarningList" xml:space="preserve">
-    <value>• The screen may go black or briefly lose signal during discovery.
-• The monitor may respond unpredictably, including unwanted changes to brightness, contrast, or input source.
-• The monitor may stop responding to DDC/CI until it is power-cycled.</value>
+  <data name="PowerDisplay_MaxCompatibility_WarningList_Item1" xml:space="preserve">
+    <value>The screen may go black or briefly lose signal during discovery.</value>
+    <comment>First bullet on the max-compatibility-mode warning dialog. Rendered with a leading "•" by the dialog.</comment>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningList_Item2" xml:space="preserve">
+    <value>The monitor may respond unpredictably, including unwanted changes to brightness, contrast, or input source.</value>
+    <comment>Second bullet on the max-compatibility-mode warning dialog.</comment>
+  </data>
+  <data name="PowerDisplay_MaxCompatibility_WarningList_Item3" xml:space="preserve">
+    <value>The monitor may stop responding to DDC/CI until it is power-cycled.</value>
+    <comment>Third bullet on the max-compatibility-mode warning dialog.</comment>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningConfirm" xml:space="preserve">
     <value>Only enable this if a monitor is missing from Power Display and you fully understand the side effects listed above. Continue?</value>
@@ -5667,11 +5674,17 @@ The break timer font matches the text font.</value>
     <value>Power Display reads each connected monitor's DDC/CI capabilities at startup. On a small number of monitors with malformed capability strings, this read has been observed to trigger a kernel-side bug that causes Windows to bug-check (BSOD). The underlying issue is in Windows, not in Power Display, but the read is what surfaces it. Possible effects:</value>
     <comment>Body text of the Enable Power Display warning dialog.</comment>
   </data>
-  <data name="PowerDisplay_EnableModule_WarningList" xml:space="preserve">
-    <value>• On affected monitors, the system may crash and restart.
-• If a crash is detected, Power Display will auto-disable itself on next launch to prevent a reboot loop.
-• You will need to re-enable the module and dismiss the warning on the settings page after each detected crash.</value>
-    <comment>Bulleted list of potential side effects on the Enable Power Display warning dialog.</comment>
+  <data name="PowerDisplay_EnableModule_WarningList_Item1" xml:space="preserve">
+    <value>On affected monitors, the system may crash and restart.</value>
+    <comment>First bullet on the Enable Power Display warning dialog. Rendered with a leading "•" by the dialog.</comment>
+  </data>
+  <data name="PowerDisplay_EnableModule_WarningList_Item2" xml:space="preserve">
+    <value>If a crash is detected, Power Display will auto-disable itself on next launch to prevent a reboot loop.</value>
+    <comment>Second bullet on the Enable Power Display warning dialog.</comment>
+  </data>
+  <data name="PowerDisplay_EnableModule_WarningList_Item3" xml:space="preserve">
+    <value>You will need to re-enable the module and dismiss the warning on the settings page after each detected crash.</value>
+    <comment>Third bullet on the Enable Power Display warning dialog.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningConfirm" xml:space="preserve">
     <value>Only enable Power Display if you accept the risk above. Continue?</value>

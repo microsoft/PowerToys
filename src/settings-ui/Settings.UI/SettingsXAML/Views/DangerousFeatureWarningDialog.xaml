@@ -15,10 +15,11 @@
             Foreground="{ThemeResource SystemFillColorCriticalBrush}"
             TextWrapping="Wrap" />
         <TextBlock x:Name="WarningDescription" TextWrapping="Wrap" />
-        <TextBlock
-            x:Name="WarningList"
-            Margin="20,0,0,0"
-            TextWrapping="Wrap" />
+        <StackPanel Margin="20,0,0,0" Spacing="4">
+            <TextBlock x:Name="WarningListItem1" TextWrapping="Wrap" />
+            <TextBlock x:Name="WarningListItem2" TextWrapping="Wrap" />
+            <TextBlock x:Name="WarningListItem3" TextWrapping="Wrap" />
+        </StackPanel>
         <TextBlock
             x:Name="WarningConfirm"
             FontWeight="SemiBold"
