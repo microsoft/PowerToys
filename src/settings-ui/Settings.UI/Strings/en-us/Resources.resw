@@ -5585,16 +5585,12 @@ The break timer font matches the text font.</value>
     <value>Changing the color temperature setting may cause unpredictable results including:</value>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningList_Item1" xml:space="preserve">
-    <value>Incorrect display colors</value>
+    <value>Incorrect display colors or other display malfunction</value>
     <comment>First bullet on the color-temperature warning dialog. Rendered with a leading "•" by the dialog.</comment>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningList_Item2" xml:space="preserve">
-    <value>Display malfunction</value>
-    <comment>Second bullet on the color-temperature warning dialog.</comment>
-  </data>
-  <data name="PowerDisplay_ColorTemperature_WarningList_Item3" xml:space="preserve">
     <value>Settings that cannot be reverted</value>
-    <comment>Third bullet on the color-temperature warning dialog.</comment>
+    <comment>Second bullet on the color-temperature warning dialog.</comment>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable color temperature control for this monitor?</value>
@@ -5621,16 +5617,12 @@ The break timer font matches the text font.</value>
     <value>Enabling power state control may lead to unexpected behavior, including:</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningList_Item1" xml:space="preserve">
-    <value>Monitor may enter standby and not wake via software.</value>
+    <value>Monitor may enter standby and not wake via software — recovery may require the physical power button or reseating the cable.</value>
     <comment>First bullet on the power-state warning dialog. Rendered with a leading "•" by the dialog.</comment>
   </data>
   <data name="PowerDisplay_PowerState_WarningList_Item2" xml:space="preserve">
-    <value>You may need to press the monitor’s power button or reconnect the cable to recover.</value>
-    <comment>Second bullet on the power-state warning dialog.</comment>
-  </data>
-  <data name="PowerDisplay_PowerState_WarningList_Item3" xml:space="preserve">
     <value>Some monitors may not restore the previous state correctly.</value>
-    <comment>Third bullet on the power-state warning dialog.</comment>
+    <comment>Second bullet on the power-state warning dialog.</comment>
   </data>
   <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
     <value>Enable power state control for this monitor?</value>
@@ -5700,12 +5692,8 @@ The break timer font matches the text font.</value>
     <comment>First bullet on the Enable Power Display warning dialog. Rendered with a leading "•" by the dialog.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningList_Item2" xml:space="preserve">
-    <value>If a crash is detected, Power Display will auto-disable itself on next launch to prevent a reboot loop.</value>
+    <value>If a crash is detected, Power Display will auto-disable itself on next launch; you'll need to re-enable the module and dismiss the warning on the settings page each time.</value>
     <comment>Second bullet on the Enable Power Display warning dialog.</comment>
-  </data>
-  <data name="PowerDisplay_EnableModule_WarningList_Item3" xml:space="preserve">
-    <value>You will need to re-enable the module and dismiss the warning on the settings page after each detected crash.</value>
-    <comment>Third bullet on the Enable Power Display warning dialog.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningConfirm" xml:space="preserve">
     <value>Only enable Power Display if you accept the risk above. Continue?</value>
