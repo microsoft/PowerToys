@@ -2060,8 +2060,6 @@ UNICODETEXT
 unins
 uninsdeletekey
 Uninstaller
-uninstaller
-uninstallers
 uninstalls
 Uniquifies
 unitconverter
