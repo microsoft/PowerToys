@@ -15,10 +15,18 @@
             Foreground="{ThemeResource SystemFillColorCriticalBrush}"
             TextWrapping="Wrap" />
         <TextBlock x:Name="WarningDescription" TextWrapping="Wrap" />
-        <TextBlock
-            x:Name="WarningList"
-            Margin="20,0,0,0"
-            TextWrapping="Wrap" />
+        <ItemsControl x:Name="WarningList" Margin="20,0,0,0">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Spacing="4" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <TextBlock Text="{x:Bind}" TextWrapping="Wrap" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
         <TextBlock
             x:Name="WarningConfirm"
             FontWeight="SemiBold"
