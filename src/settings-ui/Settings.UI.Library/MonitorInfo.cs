@@ -678,11 +678,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string GetDiagnosticsAsText()
         {
             var lines = new List<string>();
-        
+
             lines.Add("Power Display monitor diagnostics");
             lines.Add($"Generated: {DateTimeOffset.Now:u}");
             lines.Add(string.Empty);
-        
+
             lines.Add("Monitor");
             lines.Add(new string('-', 50));
             lines.Add($"Name: {Name}");
@@ -691,7 +691,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             lines.Add($"Monitor ID: {Id}");
             lines.Add($"Communication method: {CommunicationMethod}");
             lines.Add(string.Empty);
-        
+
             lines.Add("Current values");
             lines.Add(new string('-', 50));
             lines.Add($"Brightness: {CurrentBrightness}");
@@ -699,7 +699,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             lines.Add($"Volume: {Volume}");
             lines.Add($"Color temperature VCP: 0x{ColorTemperatureVcp:X2}");
             lines.Add(string.Empty);
-        
+
             lines.Add("Detected support");
             lines.Add(new string('-', 50));
             lines.Add($"Supports brightness: {SupportsBrightness}");
@@ -709,14 +709,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             lines.Add($"Supports color temperature: {SupportsColorTemperature}");
             lines.Add($"Supports power state: {SupportsPowerState}");
             lines.Add(string.Empty);
-        
+
             lines.Add("Raw capabilities");
             lines.Add(new string('-', 50));
             lines.Add(string.IsNullOrWhiteSpace(CapabilitiesRaw) ? "No raw capabilities detected" : CapabilitiesRaw);
             lines.Add(string.Empty);
-        
+
             lines.Add(GetVcpCodesAsText());
-        
+
             return string.Join(Environment.NewLine, lines);
         }
 
