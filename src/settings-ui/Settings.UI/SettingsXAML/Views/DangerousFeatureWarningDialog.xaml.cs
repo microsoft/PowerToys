@@ -21,6 +21,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private const string BulletPrefix = "• ";
 
+        // Hard cap on bullets in case a future ResourceLoader change ever returns a
+        // non-empty value for a missing key; a real dialog never approaches this.
+        private const int MaxBulletItems = 10;
+
         public DangerousFeatureWarningDialog(string resourceKeyPrefix)
         {
             InitializeComponent();
@@ -35,9 +39,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             // ResourceLoader.GetString returns string.Empty for missing keys (see
             // FriendlyDateHelper.cs for the same pattern), so the loop stops cleanly
-            // at the first absent _Item{N}.
+            // at the first absent _Item{N}. The upper bound is a defensive cap.
             var items = new List<string>();
-            for (int i = 1; ; i++)
+            for (int i = 1; i <= MaxBulletItems; i++)
             {
                 var item = loader.GetString($"{resourceKeyPrefix}_WarningList_Item{i}");
                 if (string.IsNullOrEmpty(item))
