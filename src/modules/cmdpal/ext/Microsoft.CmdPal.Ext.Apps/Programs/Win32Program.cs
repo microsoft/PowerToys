@@ -1076,12 +1076,42 @@ public class Win32Program : IProgram
     }
 
     /// <summary>
+    /// Extracts the actual executable path for a Win32 program.
+    /// <para>
+    /// For .lnk (shortcut) files, <see cref="FullPath"/> may still point to the
+    /// shortcut file itself rather than the resolved target executable, depending
+    /// on when and how the program was discovered. <see cref="GetAppIdentifier"/>
+    /// reliably contains the resolved path in the format "DisplayName|ExecutablePath".
+    /// </para>
+    /// </summary>
+    private static string? GetResolvedExecutablePath(Win32Program program)
+    {
+        // GetAppIdentifier() format: "DisplayName|ExecutablePath"
+        // For .lnk shortcuts, FullPath can point to the shortcut file rather than
+        // the target. The identifier always encodes the resolved executable after
+        // the pipe delimiter.
+        var id = program.GetAppIdentifier();
+        if (!string.IsNullOrEmpty(id))
+        {
+            var pipe = id.IndexOf('|');
+            if (pipe >= 0 && pipe < id.Length - 1)
+            {
+                return id[(pipe + 1)..];
+            }
+        }
+
+        // Fall back to FullPath for non-shortcut apps where identifier is unavailable
+        return program.FullPath;
+    }
+
+    /// <summary>
     /// Determines whether a Win32 program is a protected Windows system component
     /// that should not offer an uninstall option.
     /// <para>
-    /// Uses path-based detection rather than registry-based alternatives (e.g.,
-    /// checking the SystemComponent DWORD in the Uninstall registry key) because:
-    /// 1. Path checks require no I/O — the FullPath is already resolved during discovery.
+    /// Uses path-based detection on the resolved executable path rather than
+    /// registry-based alternatives (e.g., the SystemComponent DWORD in the Uninstall
+    /// registry key) because:
+    /// 1. Path checks require no additional I/O.
     /// 2. System executables reliably live under well-known OS directories.
     /// 3. Registry lookups would require matching each program to its uninstall key,
     ///    which is non-trivial for .lnk shortcuts that don't carry product codes.
@@ -1093,7 +1123,7 @@ public class Win32Program : IProgram
     /// </returns>
     private static bool IsProtectedSystemApp(Win32Program program)
     {
-        var path = program.FullPath;
+        var path = GetResolvedExecutablePath(program);
         if (string.IsNullOrEmpty(path))
         {
             return false;
