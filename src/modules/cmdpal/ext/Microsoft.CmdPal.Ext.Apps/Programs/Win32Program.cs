@@ -1075,7 +1075,6 @@ public class Win32Program : IProgram
         }
     }
 
-
     /// <summary>
     /// Determines whether a Win32 program is a protected Windows system component
     /// that should not offer an uninstall option.
@@ -1115,7 +1114,6 @@ public class Win32Program : IProgram
         // Win11 optional features (Notepad, Paint, Media Player) are MSIX-packaged
         // and resolve to that directory, but they DO have valid uninstallers via
         // Settings > Optional Features — blocking them would be incorrect.
-
         return path.StartsWith(system32, StringComparison.OrdinalIgnoreCase)
             || path.StartsWith(sysWow64, StringComparison.OrdinalIgnoreCase)
             || path.StartsWith(systemApps, StringComparison.OrdinalIgnoreCase);
