@@ -123,30 +123,10 @@
   </PropertyGroup>
 
   <!--
-    vcpkg integration. Set globally (not per-project) so that import order is
-    guaranteed to be BEFORE Microsoft.Cpp.targets — vcpkg.props registers a
-    target (VcpkgInstallManifestDependencies) that ClCompile must depend on,
-    and that hook only takes effect when vcpkg.props is loaded before the
-    C++ targets. PowerToys has projects that import deps/spdlog.props after
-    Microsoft.Cpp.targets, so a per-project opt-in via spdlog.props (the
-    earlier attempt) silently broke include-path wiring for those projects.
-
-    Trade-off: every C++ project now invokes `vcpkg install` once at build
-    time, even if it doesn't consume spdlog. With binary cache enabled this
-    is ~0.5 s/project on cache hits. The manifest declares only spdlog, so
-    the cost is fixed and bounded; non-spdlog projects just carry an unused
-    include path.
-
-    Three-tier VcpkgRoot fallback matching microsoft/terminal's pattern:
-      1. $(VCPKG_ROOT) env var (CI sets via .pipelines/v2/templates/steps-install-vcpkg.yml;
-         local dev sets via tools/build/build-essentials.ps1).
-      2. $(VsInstallRoot)\VC\vcpkg (vcpkg shipped with Visual Studio).
-      3. $(RepoRoot)deps\vcpkg (gitignored runtime-cloned fallback).
-
-    VcpkgInstalledDir is platform-scoped (not configuration-scoped); vcpkg
-    already separates debug/release artifacts inside the same triplet
-    directory ($triplet/lib vs $triplet/debug/lib). Splitting per-platform
-    keeps parallel x64/arm64 builds from racing on the same install lock.
+    vcpkg integration. Set globally and loaded before Microsoft.Cpp.props (via
+    ForceImportBeforeCppProps) so that vcpkg.props' ClCompile hook is in place
+    before the C++ targets run. VcpkgRoot is resolved via the same three-tier
+    fallback used by microsoft/terminal (env var → VS-shipped → deps/vcpkg).
   -->
   <PropertyGroup Label="vcpkg">
     <VcpkgEnabled>true</VcpkgEnabled>
@@ -165,22 +145,11 @@
     <CAExcludePath>$(CAExcludePath);$(VcpkgInstalledDir)</CAExcludePath>
     <VCPkgLocalAppDataDisabled>true</VCPkgLocalAppDataDisabled>
   </PropertyGroup>
-  <!--
-    Fail fast with a clear message if vcpkg is enabled but vcpkg.props
-    cannot be found at the resolved VcpkgRoot. Without this the build
-    silently skips vcpkg integration and surfaces later as missing
-    <spdlog/*> includes or unresolved spdlog::* link errors, which are
-    much harder to root-cause.
-  -->
+  <!-- Fail fast with an actionable message instead of opaque C1083 spdlog/spdlog.h errors. -->
   <Target Name="PowerToysEnsureVcpkgAvailable"
           BeforeTargets="PrepareForBuild"
           Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(VcpkgEnabled)' == 'true' and !Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props')">
-    <Error Text="vcpkg is required to build this project but vcpkg.props was not found at '$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props'.
-
-Resolve via one of:
-  1) Install the Visual Studio component 'Microsoft.VisualStudio.Component.Vcpkg' (in the VS Installer, under Desktop development with C++), or
-  2) Set the VCPKG_ROOT environment variable to an existing bootstrapped vcpkg checkout, or
-  3) Run tools\build\build-essentials.cmd at least once to clone+bootstrap a local vcpkg into deps\vcpkg." />
+    <Error Text="PowerToys requires the 'vcpkg' Visual Studio component, but it was not found.%0A%0AOpen the Visual Studio Installer, click Modify on your VS install, search for 'vcpkg', enable 'C++ vcpkg package manager', and click Modify. (Visual Studio will also prompt you to install missing .vsconfig components when you open PowerToys.slnx.)%0A%0AIf you have vcpkg installed elsewhere, set the VCPKG_ROOT environment variable to its root before building.%0A%0ASearched: '$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props'" />
   </Target>
   <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props"
           Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props')" />
