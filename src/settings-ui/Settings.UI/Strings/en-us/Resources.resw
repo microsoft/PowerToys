@@ -5580,18 +5580,15 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningHeader" xml:space="preserve">
     <value>Warning: This is a potentially dangerous operation!</value>
-    <comment>Bold red header on the color-temperature warning dialog.</comment>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningDescription" xml:space="preserve">
     <value>Changing the color temperature setting may cause unpredictable results including:</value>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningList_Item1" xml:space="preserve">
     <value>Incorrect display colors or other display malfunction</value>
-    <comment>First bullet on the color-temperature warning dialog.</comment>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningList_Item2" xml:space="preserve">
     <value>Settings that cannot be reverted</value>
-    <comment>Second bullet on the color-temperature warning dialog.</comment>
   </data>
   <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
     <value>Do you want to enable color temperature control for this monitor?</value>
@@ -5613,18 +5610,15 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningHeader" xml:space="preserve">
     <value>Warning: This action may be unsafe.</value>
-    <comment>Bold red header on the power-state warning dialog.</comment>
   </data>
   <data name="PowerDisplay_PowerState_WarningDescription" xml:space="preserve">
     <value>Enabling power state control may lead to unexpected behavior, including:</value>
   </data>
   <data name="PowerDisplay_PowerState_WarningList_Item1" xml:space="preserve">
     <value>Monitor may enter standby and not wake via software — recovery may require the physical power button or reseating the cable.</value>
-    <comment>First bullet on the power-state warning dialog.</comment>
   </data>
   <data name="PowerDisplay_PowerState_WarningList_Item2" xml:space="preserve">
     <value>Some monitors may not restore the previous state correctly.</value>
-    <comment>Second bullet on the power-state warning dialog.</comment>
   </data>
   <data name="PowerDisplay_PowerState_WarningConfirm" xml:space="preserve">
     <value>Enable power state control for this monitor?</value>
@@ -5634,22 +5628,18 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningHeader" xml:space="preserve">
     <value>Warning: This action may be unsafe.</value>
-    <comment>Bold red header on the input-source warning dialog.</comment>
   </data>
   <data name="PowerDisplay_InputSource_WarningDescription" xml:space="preserve">
     <value>Switching input sources may cause unintended results, including:</value>
   </data>
   <data name="PowerDisplay_InputSource_WarningList_Item1" xml:space="preserve">
     <value>Screen may go black if the selected input has no signal.</value>
-    <comment>First bullet on the input-source warning dialog.</comment>
   </data>
   <data name="PowerDisplay_InputSource_WarningList_Item2" xml:space="preserve">
     <value>Software control may be lost until you switch back using the monitor’s physical buttons.</value>
-    <comment>Second bullet on the input-source warning dialog.</comment>
   </data>
   <data name="PowerDisplay_InputSource_WarningList_Item3" xml:space="preserve">
     <value>Some monitors may not reliably expose all input sources.</value>
-    <comment>Third bullet on the input-source warning dialog.</comment>
   </data>
   <data name="PowerDisplay_InputSource_WarningConfirm" xml:space="preserve">
     <value>Enable input source control for this monitor?</value>
@@ -5659,49 +5649,39 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningHeader" xml:space="preserve">
     <value>Warning: This may cause unstable monitor behavior.</value>
-    <comment>Bold red header on the max-compatibility-mode warning dialog.</comment>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningDescription" xml:space="preserve">
     <value>Maximum compatibility mode bypasses your monitor's capabilities string and sends a probe for every supported VCP feature. Some monitors do not handle this well, which may cause:</value>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningList_Item1" xml:space="preserve">
     <value>The screen may go black or briefly lose signal during discovery.</value>
-    <comment>First bullet on the max-compatibility-mode warning dialog.</comment>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningList_Item2" xml:space="preserve">
     <value>The monitor may respond unpredictably, including unwanted changes to brightness, contrast, or input source.</value>
-    <comment>Second bullet on the max-compatibility-mode warning dialog.</comment>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningList_Item3" xml:space="preserve">
     <value>The monitor may stop responding to DDC/CI until it is power-cycled.</value>
-    <comment>Third bullet on the max-compatibility-mode warning dialog.</comment>
   </data>
   <data name="PowerDisplay_MaxCompatibility_WarningConfirm" xml:space="preserve">
     <value>Only enable this if a monitor is missing from Power Display and you fully understand the side effects listed above. Continue?</value>
   </data>
   <data name="PowerDisplay_EnableModule_WarningTitle" xml:space="preserve">
     <value>Enable Power Display?</value>
-    <comment>Title of the dialog shown when the user turns on the Power Display module toggle.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningHeader" xml:space="preserve">
     <value>Warning: This may cause a system crash on a small number of monitors.</value>
-    <comment>Bold red header on the Enable Power Display warning dialog.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningDescription" xml:space="preserve">
     <value>Power Display reads each connected monitor's DDC/CI capabilities at startup. On a small number of monitors with malformed capability strings, this read has been observed to trigger a kernel-side bug that causes Windows to bug-check (BSOD). The underlying issue is in Windows, not in Power Display, but the read is what surfaces it. Possible effects:</value>
-    <comment>Body text of the Enable Power Display warning dialog.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningList_Item1" xml:space="preserve">
     <value>On affected monitors, the system may crash and restart.</value>
-    <comment>First bullet on the Enable Power Display warning dialog.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningList_Item2" xml:space="preserve">
     <value>If a crash is detected, Power Display will auto-disable itself on next launch; you'll need to re-enable the module and dismiss the warning on the settings page each time.</value>
-    <comment>Second bullet on the Enable Power Display warning dialog.</comment>
   </data>
   <data name="PowerDisplay_EnableModule_WarningConfirm" xml:space="preserve">
     <value>Only enable Power Display if you accept the risk above. Continue?</value>
-    <comment>Final confirmation line on the Enable Power Display warning dialog.</comment>
   </data>
   <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
