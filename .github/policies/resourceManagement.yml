@@ -163,7 +163,7 @@ configuration:
             association: Collaborator
       then:
       - addReply:
-          reply: Hi! We've identified this issue as a duplicate of another one that already exists on this Issue Tracker. This specific instance is being closed in favor of tracking the concern over on the referenced thread. Thanks for your report!
+          reply: We've identified this issue as a duplicate of an existing one and are closing this thread so discussion stays in one place.<br/><br/>Please see the comment above for the link to the original tracking issue, and feel free to subscribe there for updates.
       - closeIssue
       - removeLabel:
           label: Needs-Triage
