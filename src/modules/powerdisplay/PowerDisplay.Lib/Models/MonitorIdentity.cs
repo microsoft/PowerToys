@@ -94,13 +94,15 @@ public static class MonitorIdentity
     }
 
     /// <summary>
-    /// Extract the EDID PnP identifier from a new-format <c>Monitor.Id</c>. The new format
-    /// is the DevicePath returned by <c>QueryDisplayConfig</c> with the trailing device-class
-    /// GUID suffix stripped; the EdidId sits between the leading <c>"\\?\DISPLAY#"</c> and
-    /// the next <c>#</c>.
+    /// Extract the EDID PnP identifier (3-letter PNP manufacturer + 4-hex product code,
+    /// e.g. <c>"DELD1A8"</c>) from either a new-format <c>Monitor.Id</c> or a raw
+    /// <c>QueryDisplayConfig</c> DevicePath. The EdidId sits between the leading
+    /// <c>"\\?\DISPLAY#"</c> and the next <c>#</c>, and is identical for every physical
+    /// monitor of the same model — use it for "which model" crash correlation without
+    /// leaking per-unit identifiers.
     /// </summary>
-    /// <param name="monitorId">A Monitor.Id in the new DevicePath-based format.</param>
-    /// <returns>EdidId segment (e.g. <c>"DELD1A8"</c>), or empty string if the input is not a new-format Id.</returns>
+    /// <param name="monitorId">A Monitor.Id (no trailing <c>#{guid}</c>) or a raw DevicePath (with trailing <c>#{guid}</c>).</param>
+    /// <returns>EdidId segment (e.g. <c>"DELD1A8"</c>), or empty string if the input is not a recognized form.</returns>
     public static string EdidIdFromMonitorId(string? monitorId)
     {
         if (string.IsNullOrEmpty(monitorId))
