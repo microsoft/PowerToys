@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 
 #include "KeyboardListener.g.h"
+#include <windows.h>
 #include <mutex>
+#include <functional>
 #include <spdlog/stopwatch.h>
 #include <set>
 

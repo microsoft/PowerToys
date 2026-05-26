@@ -55,7 +55,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;SPDLOG_COMPILED_LIB;SPDLOG_WCHAR_FILENAMES;SPDLOG_WCHAR_TO_UTF8_SUPPORT;FMT_UNICODE=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -71,7 +71,7 @@
     <ClCompile Include="$(RepoRoot)deps\spdlog\src\file_sinks.cpp" />
     <ClCompile Include="$(RepoRoot)deps\spdlog\src\async.cpp" />
     <ClCompile Include="$(RepoRoot)deps\spdlog\src\cfg.cpp" />
-    <ClCompile Include="$(RepoRoot)deps\spdlog\src\fmt.cpp" />
+    <ClCompile Include="$(RepoRoot)deps\spdlog\src\bundled_fmtlib_format.cpp" />
     <ClInclude Include="$(RepoRoot)deps\spdlog\include\spdlog\async.h" />
     <ClInclude Include="$(RepoRoot)deps\spdlog\include\spdlog\async_logger-inl.h" />
     <ClInclude Include="$(RepoRoot)deps\spdlog\include\spdlog\async_logger.h" />

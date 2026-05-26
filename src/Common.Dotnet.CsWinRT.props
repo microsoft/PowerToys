@@ -12,6 +12,17 @@
     <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
   </PropertyGroup>
 
+  <!--
+    Opt out of CsWinRT 2.2 IIDOptimizer. On .NET 10 / CsWinRT 2.2 the tool exits with code -1
+    after producing "0 IID calculations/fetches patched", which generates a noisy MSB3073
+    warning for every CsWinRT-consuming project. The IIDOptimizer is a runtime-perf optimization
+    that interns GUID lookups; disabling it just means a small first-call cost. This switch
+    causes Microsoft.Windows.CsWinRT.IIDOptimizer.targets to not be imported at all.
+  -->
+  <PropertyGroup>
+    <CsWinRTIIDOptimizerOptOut>true</CsWinRTIIDOptimizerOptOut>
+  </PropertyGroup>
+
   <!-- Common from the debug / release items -->
   <PropertyGroup>
     <WarningLevel>4</WarningLevel>
@@ -41,7 +52,54 @@
   <!-- this may need to be removed on future CsWinRT upgrades-->
   <Target Name="RemoveCsWinRTPackageAnalyzer" BeforeTargets="CoreCompile">
     <ItemGroup>
-      <Analyzer Remove="@(Analyzer)" Condition="%(Analyzer.NuGetPackageId) == 'Microsoft.Windows.CsWinRT'" />	  
+      <Analyzer Remove="@(Analyzer)" Condition="%(Analyzer.NuGetPackageId) == 'Microsoft.Windows.CsWinRT'" />	  
     </ItemGroup>
+  </Target>
+
+  <!--
+    Ensure any referenced C++/WinRT (.vcxproj) projects are fully built BEFORE the CsWinRT
+    source generator runs in this csproj. On a clean machine the SDK-style ProjectReference
+    graph does not guarantee that the producing vcxproj has emitted its .winmd before the
+    consuming C# Compile / source-generator stage starts in a parallel solution build,
+    which manifests as CS0246 on the projected namespace (e.g. 'PowerToys.Interop').
+    Forcing a serialized Build of the .vcxproj references here closes that race.
+
+    We hook BEFORE ResolveProjectReferences so the produced .winmd is visible to
+    CsWinRTRemoveWinMDReferences (which moves it into @(CsWinRTInputs)) and we also
+    delete a possibly stale cswinrt.rsp so CsWinRTGenerateProjection re-invokes
+    cswinrt.exe instead of incrementally skipping.
+  -->
+  <Target Name="EnsureNativeWinMDProjectionInputsBuilt"
+          BeforeTargets="ResolveProjectReferences;ResolveAssemblyReferences;CsWinRTPrepareProjection;CsWinRTGenerateProjection"
+          Condition="'@(ProjectReference)' != '' and '$(DesignTimeBuild)' != 'true' and '$(BuildingProject)' != 'false'">
+    <ItemGroup>
+      <_NativeWinMDProjectionRef Include="@(ProjectReference)" Condition="'%(Extension)' == '.vcxproj'" />
+    </ItemGroup>
+    <MSBuild Projects="@(_NativeWinMDProjectionRef)"
+             Properties="Configuration=$(Configuration);Platform=$(Platform)"
+             Targets="Build"
+             BuildInParallel="false"
+             Condition="'@(_NativeWinMDProjectionRef)' != ''" />
+    <!-- Force CsWinRTGenerateProjection to re-run so stale-rsp incremental skip cannot
+         leave us without generated .cs files when the .winmd has just been (re)produced. -->
+    <Delete Files="$(CsWinRTGeneratedFilesDir)cswinrt.rsp;$(CsWinRTGeneratedFilesDir)cswinrt_internal.rsp"
+            Condition="'@(_NativeWinMDProjectionRef)' != '' and '$(CsWinRTGeneratedFilesDir)' != ''" />
+    <!-- Mark that we need to delete the rsp again once CsWinRTGeneratedFilesDir is fully resolved
+         (some projects set it to $(OutDir) which is not evaluated this early). -->
+    <PropertyGroup>
+      <_DeleteStaleCsWinRTRspPending>true</_DeleteStaleCsWinRTRspPending>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Second pass: after CsWinRTPrepareProjection has resolved $(CsWinRTGeneratedFilesDir) to its
+    final value (which may depend on $(OutDir)), delete any stale cswinrt.rsp so the
+    CsWinRTGenerateProjection target's incremental-skip cannot leave us without generated .cs files.
+  -->
+  <Target Name="DeleteStaleCsWinRTRspAfterPrepare"
+          AfterTargets="CsWinRTPrepareProjection"
+          BeforeTargets="CsWinRTGenerateProjection"
+          Condition="'$(_DeleteStaleCsWinRTRspPending)' == 'true' and '$(CsWinRTGeneratedFilesDir)' != ''">
+    <Delete Files="$(CsWinRTGeneratedFilesDir)cswinrt.rsp;$(CsWinRTGeneratedFilesDir)cswinrt_internal.rsp" />
   </Target>
 </Project>

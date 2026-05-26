@@ -308,8 +308,11 @@ pwa
 
 AOT
 Aot
+cswinrt
 ify
+rsp
 TFM
+RTIID
 
 # YML
 onefuzz
