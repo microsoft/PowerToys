@@ -400,6 +400,7 @@ DEVMODE
 DEVMODEW
 DEVNODES
 devpal
+devpackages
 DEVTYP
 dfx
 DIALOGEX
