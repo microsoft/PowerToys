@@ -638,13 +638,17 @@ public sealed partial class DockViewModel : IDisposable
     /// Restores the band order and label settings from the snapshot taken when entering edit mode.
     /// Call this when discarding edit mode changes.
     /// </summary>
-    public void RestoreBandOrder()
+    /// <returns>The restored DockSettings, or null if no snapshot exists.</returns>
+    public DockSettings? RestoreBandOrder()
     {
         if (_snapshotDockSettings == null || _snapshotBandViewModels == null)
         {
             Logger.LogWarning("No snapshot to restore from");
-            return;
+            return null;
         }
+
+        // Capture the snapshot before clearing
+        var restoredSettings = _snapshotDockSettings;
 
         // Restore ShowLabels for all snapshotted bands
         foreach (var band in _snapshotBandViewModels.Values)
@@ -658,10 +662,17 @@ public sealed partial class DockViewModel : IDisposable
         // Rebuild UI collections from restored settings using the snapshotted ViewModels
         RebuildUICollectionsFromSnapshot();
 
+        // Persist restored settings back to the service while _isEditing is still true,
+        // so that if SettingsChanged fires and calls UpdateSettings(), the _isEditing
+        // guard prevents redundant SetupBands() (we just rebuilt from snapshot).
+        SaveSettings();
+
         _snapshotDockSettings = null;
         _snapshotBandViewModels = null;
         _isEditing = false;
         Logger.LogDebug("Restored band order from snapshot");
+
+        return restoredSettings;
     }
 
     private void RebuildUICollectionsFromSnapshot()
