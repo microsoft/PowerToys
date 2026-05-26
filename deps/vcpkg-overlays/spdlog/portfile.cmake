@@ -35,7 +35,14 @@ vcpkg_cmake_configure(
 
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(PACKAGE_NAME spdlog CONFIG_PATH lib/cmake/spdlog)
-vcpkg_fixup_pkgconfig()
+# Intentionally omit vcpkg_fixup_pkgconfig(): PowerToys consumes spdlog via
+# vcpkg's MSBuild auto-link (Cpp.Build.props), not via pkg-config. Calling
+# fixup_pkgconfig triggers a pkgconf tool download from mirror.msys2.org,
+# which is blocked on Microsoft internal Dart build agents. vcpkg falls back
+# to repo.msys2.org and the download succeeds, but the stderr "error:" lines
+# from the failed first attempt confuse MSBuild's Exec task into setting
+# ExitCode=-1 (MSB3077) even though vcpkg.exe itself returns 0. Skipping
+# the call avoids the whole problem; the resulting spdlog.pc is unused.
 vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")
