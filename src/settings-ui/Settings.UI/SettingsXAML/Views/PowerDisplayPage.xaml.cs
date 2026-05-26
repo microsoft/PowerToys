@@ -62,7 +62,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (sender is Button button && button.Tag is MonitorInfo monitor)
             {
                 var diagnosticsText = monitor.GetDiagnosticsAsText();
-        
+
                 var dataPackage = new DataPackage();
                 dataPackage.SetText(diagnosticsText);
                 Clipboard.SetContent(dataPackage);
