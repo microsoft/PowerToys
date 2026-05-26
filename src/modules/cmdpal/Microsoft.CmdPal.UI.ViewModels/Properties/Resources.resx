@@ -262,7 +262,7 @@
     <value>Disabled</value>
   </data>
   <data name="builtin_main_list_page_searchbar_placeholder" xml:space="preserve">
-    <value>Search for apps, files and commands...</value>
+    <value>NEXT Search for apps, files and commands...</value>
   </data>
   <data name="builtin_home_name" xml:space="preserve">
     <value>Home</value>
@@ -306,6 +306,10 @@
   <data name="ShowDetailsCommand" xml:space="preserve">
     <value>Show details</value>
     <comment>Name for the command that shows details of an item</comment>
+  </data>
+  <data name="HideDetailsCommand" xml:space="preserve">
+    <value>Hide details</value>
+    <comment>Name for the command that hides details of an item</comment>
   </data>
   <data name="PinnedItemSuffix" xml:space="preserve">
     <value>Pinned</value>
