@@ -2069,7 +2069,7 @@ The shortcuts always correspond to the most current application/Windows version.
 Take a look around and explore how some of the PowerToys utilities work and can improve your Windows experience..</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Documentation on Microsoft Learn</value>
+    <value>Documentation</value>
   </data>
   <data name="Oobe_Overview_ConfigurePowerToysButton.AutomationProperties.Name" xml:space="preserve">
     <value>Configure PowerToys</value>
