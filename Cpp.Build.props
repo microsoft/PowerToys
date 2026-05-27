@@ -135,6 +135,15 @@
     <VcpkgManifestRoot>$(MSBuildThisFileDirectory)</VcpkgManifestRoot>
     <VcpkgOSTarget>windows</VcpkgOSTarget>
     <VcpkgUseStatic>true</VcpkgUseStatic>
+    <!--
+      Force VcpkgConfiguration to follow $(Configuration). Without this,
+      vcpkg.props infers VcpkgConfiguration from $(UseDebugLibraries), which
+      Microsoft.Cpp.Default.props has already defaulted to 'false' by the
+      time vcpkg.props is imported here (the PowerToys-wide Debug override
+      below runs LATER). That would silently link the Release-built spdlog
+      into Debug consumers and trigger LNK2038 (MT/MTd, _ITERATOR_DEBUG_LEVEL).
+    -->
+    <VcpkgConfiguration>$(Configuration)</VcpkgConfiguration>
     <!-- vcpkg validates triplets case-sensitively; PowerToys uses ARM64 capital-case. -->
     <VcpkgPlatformTarget Condition="'$(Platform)' == 'ARM64'">arm64</VcpkgPlatformTarget>
     <VcpkgApplocalDeps>false</VcpkgApplocalDeps>
