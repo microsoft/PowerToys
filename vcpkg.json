@@ -5,7 +5,14 @@
   "homepage": "https://github.com/microsoft/PowerToys",
   "license": "MIT",
   "dependencies": [
-    "spdlog"
+    "spdlog",
+    "expected-lite"
+  ],
+  "overrides": [
+    {
+      "name": "expected-lite",
+      "version": "0.6.3"
+    }
   ],
   "builtin-baseline": "56bb2411609227288b70117ead2c47585ba07713"
 }
