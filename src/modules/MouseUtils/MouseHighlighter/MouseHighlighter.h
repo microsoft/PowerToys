@@ -19,6 +19,7 @@ struct MouseHighlighterSettings
     int fadeDurationMs = MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS;
     bool autoActivate = MOUSE_HIGHLIGHTER_DEFAULT_AUTO_ACTIVATE;
     bool spotlightMode = false;
+    bool rippleMode = false;
 };
 
 int MouseHighlighterMain(HINSTANCE hinst, MouseHighlighterSettings settings);
