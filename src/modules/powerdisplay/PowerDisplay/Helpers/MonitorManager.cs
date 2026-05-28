@@ -204,8 +204,16 @@ namespace PowerDisplay.Helpers
                     : info.OutputTechnology.ToString(CultureInfo.InvariantCulture);
                 var classification = info.IsInternal ? "Internal" : "External";
 
+                // Log EdidId (manufacturer+product code from EDID) up front, before any
+                // DDC/CI capability fetch runs. QueryDisplayConfig reads OS-cached EDID and
+                // cannot BSOD, so this line is guaranteed on disk before the crash-prone
+                // Phase 2 fetch starts — recovered logs identify every attached model
+                // (and same-model duplicates) for crash correlation.
+                var edidId = MonitorIdentity.EdidIdFromMonitorId(info.DevicePath);
+                var edidIdField = string.IsNullOrEmpty(edidId) ? "?" : edidId;
+
                 Logger.LogInfo(
-                    $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
+                    $"  [Path {info.MonitorNumber}] EdidId={edidIdField} {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
                     $"OutputTechnology={techValue} → {classification}");
             }
 

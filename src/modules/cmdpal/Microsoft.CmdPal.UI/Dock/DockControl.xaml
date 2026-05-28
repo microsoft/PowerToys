@@ -294,11 +294,7 @@
                     ItemsPanel="{StaticResource HorizontalItemsPanel}"
                     ItemsSource="{x:Bind ViewModel.EndItems, Mode=OneWay}"
                     SelectionMode="None"
-                    Style="{StaticResource DockBandListViewStyle}">
-                    <ListView.ItemContainerTransitions>
-                        <TransitionCollection />
-                    </ListView.ItemContainerTransitions>
-                </ListView>
+                    Style="{StaticResource DockBandListViewStyle}" />
             </local:DockContentControl.EndSource>
             <local:DockContentControl.EndActionButton>
                 <Button

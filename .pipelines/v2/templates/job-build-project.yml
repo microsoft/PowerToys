@@ -270,6 +270,34 @@ jobs:
       parameters:
         directory: $(build.sourcesdirectory)\src\modules\cmdpal
 
+  # --- vcpkg detection + binary cache --------------------------------------
+  # PowerToys consumes spdlog (and, over time, other native deps) via vcpkg in
+  # manifest mode. steps-install-vcpkg.yml prefers the vcpkg shipped with
+  # Visual Studio (Microsoft.VisualStudio.Component.Vcpkg) and falls back to a
+  # fresh clone of microsoft/vcpkg into deps/vcpkg if VS doesn't have it.
+  # Either way it sets the VCPKG_ROOT pipeline variable; MSBuild integration
+  # is wired globally from Cpp.Build.props (with vcpkg.targets in
+  # Cpp.Build.targets) using the three-tier VcpkgRoot fallback
+  # (env var > VS-shipped > deps/vcpkg runtime clone).
+  #
+  # Vcpkg's MSBuild integration runs `vcpkg install` once per project, so the
+  # binary cache below saves ~3-5 minutes per triplet on cache hits.
+  - template: .\steps-install-vcpkg.yml
+    parameters:
+      useVSPreview: ${{ parameters.useVSPreview }}
+
+  - ${{ if eq(parameters.enablePackageCaching, true) }}:
+    - task: Cache@2
+      displayName: 'Cache vcpkg binary archives'
+      inputs:
+        # Key on the inputs vcpkg uses to compute its package ABI: the manifest,
+        # configuration, every overlay-port file, and the agent OS.
+        key: '"vcpkg" | "$(Agent.OS)" | vcpkg.json | vcpkg-configuration.json | deps/vcpkg-overlays/**'
+        restoreKeys: |
+           "vcpkg" | "$(Agent.OS)"
+           "vcpkg"
+        path: $(LOCALAPPDATA)\vcpkg\archives
+
 
 
   - ${{ parameters.beforeBuildSteps }}

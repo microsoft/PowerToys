@@ -257,6 +257,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             {
                 Title = $"{_networkUpSpeed}",
                 Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                Icon = Icons.NetworkUpIcon,
                 MoreCommands = _networkPage!.Commands,
             };
 
@@ -264,6 +265,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             {
                 Title = $"{_networkDownSpeed}",
                 Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                Icon = Icons.NetworkDownIcon,
                 MoreCommands = _networkPage!.Commands,
             };
 
