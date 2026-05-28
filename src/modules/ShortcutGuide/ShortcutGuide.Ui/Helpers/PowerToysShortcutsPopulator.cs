@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using static ShortcutGuide.Helpers.ResourceLoaderInstance;
 
@@ -24,6 +25,12 @@ namespace ShortcutGuide.Helpers
         public static void Populate()
         {
             string path = Path.Combine(ManifestInterpreter.PathOfManifestFiles, $"Microsoft.PowerToys.{ManifestInterpreter.Language}.yml");
+
+            if (!File.Exists(path))
+            {
+                Logger.LogWarning($"Skipping PowerToys shortcut manifest population because '{path}' was not found.");
+                return;
+            }
 
             StringBuilder content = new(File.ReadAllText(path));
 
