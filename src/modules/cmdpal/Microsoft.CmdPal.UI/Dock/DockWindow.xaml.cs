@@ -18,6 +18,8 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -171,6 +173,10 @@ public sealed partial class DockWindow : WindowEx,
         ShowDesktop.AddHook(this);
         var userNotificationFlags = WindowHelper.GetUserNotificationFlags();
         _isFullScreenAppOpen = userNotificationFlags.IsFullscreenState || userNotificationFlags.IsBusy;
+
+        // RDP-reconnect bug workaround: see FocusManager_GotFocus.
+        FocusManager.GotFocus += FocusManager_GotFocus;
+
         UpdateSettingsOnUiThread();
     }
 
@@ -207,6 +213,62 @@ public sealed partial class DockWindow : WindowEx,
     {
         var hwnd = WindowNative.GetWindowHandle(window);
         return new HWND(hwnd);
+    }
+
+    private void FocusManager_GotFocus(object? sender, FocusManagerGotFocusEventArgs e)
+    {
+        try
+        {
+            var ourXamlRoot = Content?.XamlRoot;
+            if (ourXamlRoot is null)
+            {
+                return;
+            }
+
+            if (e.NewFocusedElement is not Control control ||
+                control.XamlRoot != ourXamlRoot ||
+                control.FocusState != FocusState.Keyboard)
+            {
+                return;
+            }
+
+            // RDP-reconnect bug workaround:
+            // After an RDP disconnect/reconnect cycle, XAML programmatically
+            // assigns FocusState.Keyboard to the first tab stop inside the
+            // dock even though our HWND is not the foreground window. System
+            // focus visuals (UseSystemFocusVisuals on DockItemControl) only
+            // render for FocusState.Keyboard, so the result is a stale focus
+            // rectangle that lingers until the user manually activates the
+            // dock. Demoting the same element to FocusState.Pointer
+            // suppresses the visual while keeping logical focus intact; a
+            // real keyboard activation (Tab into the dock with us becoming
+            // foreground) is left alone.
+            if (PInvoke.GetForegroundWindow() == _hwnd)
+            {
+                return;
+            }
+
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
+                // Re-check on the UI thread: if the user has genuinely
+                // activated us in the interim, leave keyboard focus alone.
+                if (PInvoke.GetForegroundWindow() == _hwnd)
+                {
+                    return;
+                }
+
+                control.Focus(FocusState.Pointer);
+            });
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("RDP-reconnect focus workaround threw", ex);
+        }
     }
 
     private void UpdateSettingsOnUiThread()
@@ -906,6 +968,7 @@ public sealed partial class DockWindow : WindowEx,
 
         Activated -= DockWindow_Activated;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
+        FocusManager.GotFocus -= FocusManager_GotFocus;
         WeakReferenceMessenger.Default.UnregisterAll(this);
 
         DisposeAcrylic();
