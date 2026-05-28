@@ -335,12 +335,12 @@ namespace ShortcutGuide
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
 
             var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
-            var taskbarWindow = App.TaskBarWindow.AppWindow;
-            bool taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
-            bool taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
+            var taskbarWindow = App.TaskBarWindow?.AppWindow;
+            bool taskbarOnLeft = taskbarWindow is not null && taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
+            bool taskbarOnRight = taskbarWindow is not null && taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
 
             double newHeight = monitorRect.Height / dpi;
-            if (taskbarOnLeft || taskbarOnRight)
+            if ((taskbarOnLeft || taskbarOnRight) && taskbarWindow is not null)
             {
                 newHeight -= taskbarWindow.Size.Height;
             }
