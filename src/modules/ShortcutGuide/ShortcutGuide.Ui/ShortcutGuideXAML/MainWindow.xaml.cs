@@ -113,7 +113,7 @@ namespace ShortcutGuide
 
             // Inset the card from the window edges so the shadow has room to
             // render and the visible chrome doesn't touch the screen edge.
-            this.Card.Margin = new Thickness(24);
+            this.Card.Margin = new Thickness(12);
 
             // Position the window before it's shown so the user doesn't see it
             // flash at the default location, then attach the slide animations

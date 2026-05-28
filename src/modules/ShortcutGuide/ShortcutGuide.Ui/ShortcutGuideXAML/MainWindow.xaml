@@ -7,7 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:ShortcutGuide.Models"
-    Width="634"
+    Width="610"
     mc:Ignorable="d">
     <Grid x:Name="MainPage" Background="Transparent">
         <Grid.RowDefinitions>
@@ -47,10 +47,10 @@
             <NavigationView.Content>
                 <Frame x:Name="ContentFrame" Background="Transparent" />
             </NavigationView.Content>
-            <NavigationView.Resources>
+            <!--<NavigationView.Resources>
                 <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
                 <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
-            </NavigationView.Resources>
+            </NavigationView.Resources>-->
         </NavigationView>
     </Grid>
 </common:TransparentWindow>
