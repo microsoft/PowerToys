@@ -42,6 +42,14 @@ public static class GetCommand
         CancellationToken cancellationToken)
     {
         var monitors = await monitorManager.DiscoverMonitorsAsync(cancellationToken);
+
+        // No selector → emit every discovered monitor with its settings. This is the
+        // "show me everything" shape; scripts that want a single monitor pass -n/-i.
+        if (!monitorNumber.HasValue && string.IsNullOrEmpty(monitorId))
+        {
+            return EmitAll(monitors, settingFilter, output);
+        }
+
         var resolution = MonitorResolver.Resolve(monitors, monitorNumber, monitorId);
 
         if (resolution.Warning is not null)
@@ -58,6 +66,45 @@ public static class GetCommand
         var monitor = resolution.Monitor!;
         var monitorRef = ToRef(monitor);
 
+        var entry = BuildEntry(monitor, monitorRef, settingFilter, out var settingError);
+        if (settingError is not null)
+        {
+            output.WriteError(new CliErrorResult { Command = "get", Monitor = monitorRef, Error = settingError });
+            return settingError.ExitCode;
+        }
+
+        output.WriteGetResult(new CliGetResult { Monitors = [entry!] });
+        return CliExitCodes.Ok;
+    }
+
+    public static int EmitAll(IReadOnlyList<Monitor> monitors, string? settingFilter, ICliOutput output)
+    {
+        var entries = new List<CliGetMonitorEntry>(monitors.Count);
+        foreach (var monitor in monitors)
+        {
+            var monitorRef = ToRef(monitor);
+            var entry = BuildEntry(monitor, monitorRef, settingFilter, out var settingError);
+            if (settingError is not null)
+            {
+                output.WriteError(new CliErrorResult { Command = "get", Monitor = monitorRef, Error = settingError });
+                return settingError.ExitCode;
+            }
+
+            entries.Add(entry!);
+        }
+
+        output.WriteGetResult(new CliGetResult { Monitors = entries });
+        return CliExitCodes.Ok;
+    }
+
+    public static CliGetMonitorEntry? BuildEntry(
+        Monitor monitor,
+        CliMonitorRef monitorRef,
+        string? settingFilter,
+        out CliError? error)
+    {
+        error = null;
+
         IEnumerable<string> settingNames = settingFilter is null
             ? AllSettingNames
             : new[] { settingFilter.ToLowerInvariant() };
@@ -68,27 +115,25 @@ public static class GetCommand
             var value = BuildSettingValue(monitor, name);
             if (value is null)
             {
-                output.WriteError(new CliErrorResult
+                error = new CliError
                 {
-                    Command = "get",
-                    Monitor = monitorRef,
-                    Error = new CliError
-                    {
-                        Code = CliErrorCodes.ArgumentError,
-                        ExitCode = CliExitCodes.ArgumentError,
-                        Setting = name,
-                        Message = $"unknown setting '{name}'",
-                        Hint = $"valid settings: {string.Join(", ", AllSettingNames)}",
-                    },
-                });
-                return CliExitCodes.ArgumentError;
+                    Code = CliErrorCodes.ArgumentError,
+                    ExitCode = CliExitCodes.ArgumentError,
+                    Setting = name,
+                    Message = $"unknown setting '{name}'",
+                    Hint = $"valid settings: {string.Join(", ", AllSettingNames)}",
+                };
+                return null;
             }
 
             results.Add(value);
         }
 
-        output.WriteGetResult(new CliGetResult { Monitor = monitorRef, Settings = results });
-        return CliExitCodes.Ok;
+        return new CliGetMonitorEntry
+        {
+            Monitor = monitorRef,
+            Settings = results,
+        };
     }
 
     private static CliSettingValue? BuildSettingValue(Monitor monitor, string settingName) => settingName switch
@@ -150,5 +195,6 @@ public static class GetCommand
         Number = m.MonitorNumber,
         Id = m.Id,
         Name = m.Name,
+        Method = m.CommunicationMethod,
     };
 }

@@ -13,6 +13,7 @@ namespace PowerDisplay.Cli.Output;
 [JsonSerializable(typeof(CliListResult))]
 [JsonSerializable(typeof(CliSetResult))]
 [JsonSerializable(typeof(CliGetResult))]
+[JsonSerializable(typeof(CliGetMonitorEntry))]
 [JsonSerializable(typeof(CliCapabilitiesResult))]
 [JsonSerializable(typeof(CliErrorResult))]
 public sealed partial class CliJsonContext : JsonSerializerContext

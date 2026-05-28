@@ -452,5 +452,6 @@ public static class SetCommand
         Number = m.MonitorNumber,
         Id = m.Id,
         Name = m.Name,
+        Method = m.CommunicationMethod,
     };
 }

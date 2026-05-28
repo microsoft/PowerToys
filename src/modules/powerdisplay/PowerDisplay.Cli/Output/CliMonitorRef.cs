@@ -15,4 +15,11 @@ public sealed class CliMonitorRef
     public string Id { get; init; } = string.Empty;
 
     public string Name { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Communication transport (<c>DDC/CI</c> for external monitors, <c>WMI</c> for
+    /// internal panels). Empty string when the monitor came from a controller that
+    /// did not populate the field.
+    /// </summary>
+    public string Method { get; init; } = string.Empty;
 }

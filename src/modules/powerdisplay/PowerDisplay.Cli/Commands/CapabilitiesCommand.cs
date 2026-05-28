@@ -84,5 +84,6 @@ public static class CapabilitiesCommand
         Number = m.MonitorNumber,
         Id = m.Id,
         Name = m.Name,
+        Method = m.CommunicationMethod,
     };
 }

@@ -46,24 +46,43 @@ public sealed class TextCliOutput : ICliOutput
 
     public void WriteSetResult(CliSetResult result)
     {
-        var monitor = $"Monitor {result.Monitor.Number} ({result.Monitor.Name})";
+        var via = string.IsNullOrEmpty(result.Monitor.Method)
+            ? string.Empty
+            : $" [{result.Monitor.Method}]";
+        var monitor = $"Monitor {result.Monitor.Number} ({result.Monitor.Name}){via}";
         var before = result.BeforeDisplay is null ? "?" : result.BeforeDisplay;
         _stdout.WriteLine($"{monitor}: {result.Setting} {before} → {result.AfterDisplay}");
     }
 
     public void WriteGetResult(CliGetResult result)
     {
-        var monitor = $"Monitor {result.Monitor.Number} ({result.Monitor.Name})";
-        _stdout.WriteLine(monitor);
-        foreach (var s in result.Settings)
+        if (result.Monitors.Count == 0)
         {
-            if (!s.Supported)
+            _stdout.WriteLine("No monitors discovered.");
+            return;
+        }
+
+        for (int i = 0; i < result.Monitors.Count; i++)
+        {
+            var entry = result.Monitors[i];
+            if (i > 0)
             {
-                _stdout.WriteLine($"  {s.Setting,-18} (not supported)");
-                continue;
+                _stdout.WriteLine();
             }
 
-            _stdout.WriteLine($"  {s.Setting,-18} {s.Display}");
+            _stdout.WriteLine($"Monitor {entry.Monitor.Number} ({entry.Monitor.Name})");
+            _stdout.WriteLine($"  protocol           {entry.Monitor.Method}");
+            _stdout.WriteLine($"  id                 {entry.Monitor.Id}");
+            foreach (var s in entry.Settings)
+            {
+                if (!s.Supported)
+                {
+                    _stdout.WriteLine($"  {s.Setting,-18} (not supported)");
+                    continue;
+                }
+
+                _stdout.WriteLine($"  {s.Setting,-18} {s.Display}");
+            }
         }
     }
 

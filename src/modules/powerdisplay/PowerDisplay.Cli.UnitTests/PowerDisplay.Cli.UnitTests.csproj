@@ -2,6 +2,7 @@
 <!-- Licensed under the MIT License. See LICENSE file in the project root for license information. -->
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
