@@ -510,8 +510,8 @@ DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
-dwrite
 DWRITE
+dwrite
 dxgi
 Dxva
 eab
@@ -1068,8 +1068,8 @@ lusrmgr
 LVal
 LVDS
 LWA
-lwin
 LWIN
+lwin
 LZero
 MAGTRANSFORM
 makeappx
@@ -2099,8 +2099,8 @@ valuegenerator
 VARTYPE
 vbcscompiler
 vcamp
-vcenter
 VCENTER
+vcenter
 vcgtq
 VCINSTALLDIR
 vcp
@@ -2138,8 +2138,8 @@ vorrq
 VOS
 vpaddlq
 vqsubq
-vredraw
 VREDRAW
+vredraw
 vreinterpretq
 VSC
 VSCBD
