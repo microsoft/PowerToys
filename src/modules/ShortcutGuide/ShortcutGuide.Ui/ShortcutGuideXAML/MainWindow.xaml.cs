@@ -9,12 +9,16 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.UI;
+using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI.Animations;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
@@ -31,12 +35,17 @@ namespace ShortcutGuide
 {
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
+        private const int SlideInDurationMs = 280;
+        private const int SlideOutDurationMs = 200;
+
         private readonly Stopwatch _sessionStopwatch = Stopwatch.StartNew();
         private readonly Task<Dictionary<string, string?>> _getAppIdsTask;
+        private readonly Microsoft.UI.Dispatching.DispatcherQueueTimer _slideOutTimer = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().CreateTimer();
         private Dictionary<string, string?> _currentApplicationIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = null!;
         private string _closeType = "Unknown";
+        private bool _isClosing;
 
         internal long SessionDurationMs => _sessionStopwatch.ElapsedMilliseconds;
 
@@ -81,7 +90,7 @@ namespace ShortcutGuide
                 if (e.Key == VirtualKey.Escape)
                 {
                     _closeType = "Escape";
-                    Close();
+                    SlideOutAndClose();
                 }
             };
 
@@ -102,6 +111,9 @@ namespace ShortcutGuide
                     Logger.LogError("Invalid theme value in settings: " + App.ShortcutGuideProperties.Theme.Value);
                     break;
             }
+
+            // Start hidden so the slide-in animation has somewhere to slide from.
+            this.MainPage.Visibility = Visibility.Collapsed;
         }
 
         protected override void OnStateChanged(WindowState state)
@@ -123,7 +135,7 @@ namespace ShortcutGuide
             {
 #if !DEBUG
                 _closeType = "Deactivated";
-                Close();
+                SlideOutAndClose();
 #endif
             }
 
@@ -154,9 +166,92 @@ namespace ShortcutGuide
 
                     this.SetWindowPosition();
                 };
+
+                // Now that the window is correctly positioned, attach the slide
+                // animations and trigger the slide-in by flipping the page from
+                // Collapsed to Visible.
+                AttachSlideAnimations();
+                this.MainPage.Visibility = Visibility.Visible;
             }
 
             _ = this.InitializeNavItemsAsync();
+        }
+
+        private void AttachSlideAnimations()
+        {
+            var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
+
+            // Slide in from off-screen on the same edge the window is pinned to.
+            // Width is in DIPs, which is what TranslationAnimation expects.
+            var offset = windowPosition == ShortcutGuideWindowPosition.Right ? Width : -Width;
+            var offsetString = $"{offset.ToString(System.Globalization.CultureInfo.InvariantCulture)},0,0";
+
+            var showAnimations = new ImplicitAnimationSet
+            {
+                new OpacityAnimation
+                {
+                    From = 0,
+                    To = 1.0,
+                    Duration = TimeSpan.FromMilliseconds(SlideInDurationMs),
+                    EasingMode = EasingMode.EaseOut,
+                    EasingType = EasingType.Cubic,
+                },
+                new TranslationAnimation
+                {
+                    From = offsetString,
+                    To = "0,0,0",
+                    Duration = TimeSpan.FromMilliseconds(SlideInDurationMs),
+                    EasingMode = EasingMode.EaseOut,
+                    EasingType = EasingType.Cubic,
+                },
+            };
+
+            var hideAnimations = new ImplicitAnimationSet
+            {
+                new OpacityAnimation
+                {
+                    From = 1.0,
+                    To = 0,
+                    Duration = TimeSpan.FromMilliseconds(SlideOutDurationMs),
+                    EasingMode = EasingMode.EaseIn,
+                    EasingType = EasingType.Cubic,
+                },
+                new TranslationAnimation
+                {
+                    From = "0,0,0",
+                    To = offsetString,
+                    Duration = TimeSpan.FromMilliseconds(SlideOutDurationMs),
+                    EasingMode = EasingMode.EaseIn,
+                    EasingType = EasingType.Cubic,
+                },
+            };
+
+            Implicit.SetShowAnimations(this.MainPage, showAnimations);
+            Implicit.SetHideAnimations(this.MainPage, hideAnimations);
+        }
+
+        private void SlideOutAndClose()
+        {
+            if (_isClosing)
+            {
+                return;
+            }
+
+            _isClosing = true;
+
+            // If we never finished the slide-in (e.g. Deactivated fires before
+            // first activation completes), just close immediately.
+            if (!_setPosition || this.MainPage.Visibility == Visibility.Collapsed)
+            {
+                Close();
+                return;
+            }
+
+            this.MainPage.Visibility = Visibility.Collapsed;
+            _slideOutTimer.Debounce(
+                Close,
+                interval: TimeSpan.FromMilliseconds(SlideOutDurationMs),
+                immediate: false);
         }
 
         private async Task InitializeNavItemsAsync()
@@ -170,7 +265,7 @@ namespace ShortcutGuide
             {
                 Logger.LogError("Failed to initialize navigation items.", ex);
                 _closeType = "InitializationFailed";
-                this.DispatcherQueue.TryEnqueue(() => this.Close());
+                this.DispatcherQueue.TryEnqueue(() => this.SlideOutAndClose());
             }
         }
 
