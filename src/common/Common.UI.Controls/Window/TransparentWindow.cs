@@ -69,7 +69,6 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     {
         AppWindow.Hide();
         ExtendsContentIntoTitleBar = true;
-        AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
 
