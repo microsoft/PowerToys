@@ -14,11 +14,10 @@ using PowerDisplay.Common.Drivers.DDC;
 using PowerDisplay.Common.Drivers.WMI;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
-namespace PowerDisplay.Helpers
+namespace PowerDisplay.Common.Services
 {
     /// <summary>
     /// Monitor manager for unified control of all monitors

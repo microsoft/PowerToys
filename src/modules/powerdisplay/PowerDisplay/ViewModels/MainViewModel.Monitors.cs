@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 

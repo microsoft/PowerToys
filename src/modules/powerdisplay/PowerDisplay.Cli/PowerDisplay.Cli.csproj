@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="..\..\..\Common.Dotnet.AotCompatibility.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PowerDisplay.Cli</RootNamespace>
+    <ApplicationIcon>..\PowerDisplay\Assets\PowerDisplay\PowerDisplay.ico</ApplicationIcon>
+    <Platforms>x64;ARM64</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AssemblyName>PowerToys.PowerDisplay.Cli</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <!-- Native AOT Configuration -->
+  <PropertyGroup>
+    <PublishSingleFile>false</PublishSingleFile>
+    <DisableRuntimeMarshalling>false</DisableRuntimeMarshalling>
+    <PublishAot>true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Hide build log files from Solution Explorer -->
+    <None Remove="*.log" />
+    <None Remove="*.binlog" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
+    <ProjectReference Include="..\PowerDisplay.Models\PowerDisplay.Models.csproj" />
+  </ItemGroup>
+</Project>

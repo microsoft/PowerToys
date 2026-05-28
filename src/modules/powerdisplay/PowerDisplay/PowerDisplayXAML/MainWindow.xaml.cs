@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
