@@ -28,7 +28,7 @@ Function Generate-FileList() {
 
     $fileExclusionList = @("*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe")
 
-    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri")
+    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml")
 
     # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
     # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
@@ -399,6 +399,8 @@ Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePat
 #ShortcutGuide
 Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideAssetsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\"
 Generate-FileComponents -fileListName "ShortcutGuideAssetsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
+Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideManifestsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests\"
+Generate-FileComponents -fileListName "ShortcutGuideManifestsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
 
 #Settings
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\"

@@ -26,7 +26,6 @@
     <Content Remove="Assets\CopilotKey.png" />
     <Content Remove="Assets\ShortcutGuide\HeroImage.png" />
     <Content Remove="Assets\ShortcutGuide\ShortcutGuide.ico" />
-    <Content Remove="Assets\ShortcutGuide\Manifests\*.yml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,9 +36,9 @@
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Assets\ShortcutGuide\Manifests\*.yml">
+    <Content Include="Assets\ShortcutGuide\Manifests\*.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
@@ -52,6 +51,16 @@
     <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
 
     <Message Text="Copied CopyPRIFileToOutputDir files" Importance="High" />
+  </Target>
+
+  <Target Name="CopyManifestsToOutputDir" AfterTargets="Build">
+    <ItemGroup>
+      <ManifestYmlFiles Include="$(MSBuildProjectDirectory)\Assets\ShortcutGuide\Manifests\*.yml" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(OutDir)Assets\ShortcutGuide\Manifests" />
+    <Copy SourceFiles="@(ManifestYmlFiles)" DestinationFolder="$(OutDir)Assets\ShortcutGuide\Manifests\" SkipUnchangedFiles="true" />
+    <Message Text="Copied %(ManifestYmlFiles.Count) manifest yml files to output" Importance="High" />
   </Target>
 
   <ItemGroup>

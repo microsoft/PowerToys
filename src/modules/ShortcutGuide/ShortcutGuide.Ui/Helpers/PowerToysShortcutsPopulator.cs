@@ -25,6 +25,11 @@ namespace ShortcutGuide.Helpers
         {
             string path = Path.Combine(ManifestInterpreter.PathOfManifestFiles, $"Microsoft.PowerToys.{ManifestInterpreter.Language}.yml");
 
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
             StringBuilder content = new(File.ReadAllText(path));
 
             const string populateStartString = "# <Populate start>";
