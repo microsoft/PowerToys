@@ -12,6 +12,7 @@ using Common.UI;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Animations;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -33,7 +34,7 @@ using WinUIEx.Messaging;
 
 namespace ShortcutGuide
 {
-    public sealed partial class MainWindow : WindowEx, IDisposable
+    public sealed partial class MainWindow : TransparentWindow, IDisposable
     {
         private const int SlideInDurationMs = 280;
         private const int SlideOutDurationMs = 200;
@@ -65,11 +66,9 @@ namespace ShortcutGuide
             });
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
-            ExtendsContentIntoTitleBar = true;
 
 #if !DEBUG
             this.SetIsAlwaysOnTop(true);
-            this.SetIsShownInSwitchers(false);
 #endif
             WindowMessageMonitor msgMonitor = new(this);
             msgMonitor.WindowMessageReceived += (_, e) =>
