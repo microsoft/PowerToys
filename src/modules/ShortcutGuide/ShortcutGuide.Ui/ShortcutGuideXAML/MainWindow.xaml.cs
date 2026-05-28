@@ -111,8 +111,16 @@ namespace ShortcutGuide
                     break;
             }
 
-            // Start hidden so the slide-in animation has somewhere to slide from.
-            this.MainPage.Visibility = Visibility.Collapsed;
+            // Inset the card from the window edges so the shadow has room to
+            // render and the visible chrome doesn't touch the screen edge.
+            this.Card.Margin = new Thickness(24);
+
+            // Position the window before it's shown so the user doesn't see it
+            // flash at the default location, then attach the slide animations
+            // and start the card collapsed so Activate() triggers the slide-in.
+            this.SetWindowPosition();
+            AttachSlideAnimations();
+            this.Card.Visibility = Visibility.Collapsed;
         }
 
         protected override void OnStateChanged(WindowState state)
@@ -144,7 +152,6 @@ namespace ShortcutGuide
                 this.BringToFront();
             }
 
-            // The code below sets the position of the window to the center of the monitor, but only if it hasn't been set before.
             if (!this._setPosition)
             {
                 Content.GettingFocus += (_, _) =>
@@ -153,7 +160,6 @@ namespace ShortcutGuide
                     this.FakeSettingsButton.Height = 0;
                 };
 
-                this.SetWindowPosition();
                 this._setPosition = true;
 
                 AppWindow.Changed += (_, a) =>
@@ -166,11 +172,10 @@ namespace ShortcutGuide
                     this.SetWindowPosition();
                 };
 
-                // Now that the window is correctly positioned, attach the slide
-                // animations and trigger the slide-in by flipping the page from
-                // Collapsed to Visible.
-                AttachSlideAnimations();
-                this.MainPage.Visibility = Visibility.Visible;
+                // Trigger the slide-in by flipping the card from Collapsed to
+                // Visible; the implicit Show animations attached in the ctor
+                // take it from off-screen to its final position.
+                this.Card.Visibility = Visibility.Visible;
             }
 
             _ = this.InitializeNavItemsAsync();
@@ -225,8 +230,8 @@ namespace ShortcutGuide
                 },
             };
 
-            Implicit.SetShowAnimations(this.MainPage, showAnimations);
-            Implicit.SetHideAnimations(this.MainPage, hideAnimations);
+            Implicit.SetShowAnimations(this.Card, showAnimations);
+            Implicit.SetHideAnimations(this.Card, hideAnimations);
         }
 
         private void SlideOutAndClose()
@@ -240,13 +245,13 @@ namespace ShortcutGuide
 
             // If we never finished the slide-in (e.g. Deactivated fires before
             // first activation completes), just close immediately.
-            if (!_setPosition || this.MainPage.Visibility == Visibility.Collapsed)
+            if (!_setPosition || this.Card.Visibility == Visibility.Collapsed)
             {
                 Close();
                 return;
             }
 
-            this.MainPage.Visibility = Visibility.Collapsed;
+            this.Card.Visibility = Visibility.Collapsed;
             _slideOutTimer.Debounce(
                 Close,
                 interval: TimeSpan.FromMilliseconds(SlideOutDurationMs),

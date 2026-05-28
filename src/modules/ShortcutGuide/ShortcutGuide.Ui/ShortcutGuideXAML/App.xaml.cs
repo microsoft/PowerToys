@@ -36,8 +36,8 @@ namespace ShortcutGuide
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             this.LoadData();
-            MainWindow = new MainWindow();
             TaskBarWindow = new TaskbarWindow();
+            MainWindow = new MainWindow();
             MainWindow.Activate();
             MainWindow.Closed += (_, _) =>
             {
