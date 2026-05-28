@@ -77,6 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             string alwaysColor = MouseHighlighterSettingsConfig.Properties.AlwaysColor.Value;
             _highlighterAlwaysColor = !string.IsNullOrEmpty(alwaysColor) ? alwaysColor : "#00FF0000";
             _isSpotlightModeEnabled = MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value;
+            _isRippleModeEnabled = MouseHighlighterSettingsConfig.Properties.RippleMode.Value;
 
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
@@ -603,6 +604,64 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _isSpotlightModeEnabled = value;
                     MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsRippleModeEnabled
+        {
+            get => _isRippleModeEnabled;
+            set
+            {
+                if (_isRippleModeEnabled != value)
+                {
+                    _isRippleModeEnabled = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleMode.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        // ComboBox index for the highlight mode selector.
+        // 0 = Spotlight, 1 = Circle, 2 = Ripple
+        public int HighlightModeIndex
+        {
+            get
+            {
+                if (_isSpotlightModeEnabled)
+                {
+                    return 0;
+                }
+
+                return _isRippleModeEnabled ? 2 : 1;
+            }
+
+            set
+            {
+                bool spotlight = value == 0;
+                bool ripple = value == 2;
+                bool changed = false;
+
+                if (_isSpotlightModeEnabled != spotlight)
+                {
+                    _isSpotlightModeEnabled = spotlight;
+                    MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value = spotlight;
+                    OnPropertyChanged(nameof(IsSpotlightModeEnabled));
+                    changed = true;
+                }
+
+                if (_isRippleModeEnabled != ripple)
+                {
+                    _isRippleModeEnabled = ripple;
+                    MouseHighlighterSettingsConfig.Properties.RippleMode.Value = ripple;
+                    OnPropertyChanged(nameof(IsRippleModeEnabled));
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    OnPropertyChanged(nameof(HighlightModeIndex));
                     NotifyMouseHighlighterPropertyChanged();
                 }
             }
@@ -1214,6 +1273,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _highlighterRightButtonClickColor;
         private string _highlighterAlwaysColor;
         private bool _isSpotlightModeEnabled;
+        private bool _isRippleModeEnabled;
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;

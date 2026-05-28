@@ -44,6 +44,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("spotlight_mode")]
         public BoolProperty SpotlightMode { get; set; }
 
+        [JsonPropertyName("ripple_mode")]
+        public BoolProperty RippleMode { get; set; }
+
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -56,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             HighlightFadeDurationMs = new IntProperty(250);
             AutoActivate = new BoolProperty(false);
             SpotlightMode = new BoolProperty(false);
+            RippleMode = new BoolProperty(false);
         }
     }
 }
