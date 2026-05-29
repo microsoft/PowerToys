@@ -47,6 +47,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("ripple_mode")]
         public BoolProperty RippleMode { get; set; }
 
+        [JsonPropertyName("ripple_size")]
+        public IntProperty RippleSize { get; set; }
+
+        [JsonPropertyName("ripple_intensity")]
+        public DoubleProperty RippleIntensity { get; set; }
+
+        [JsonPropertyName("ripple_duration_ms")]
+        public IntProperty RippleDurationMs { get; set; }
+
+        [JsonPropertyName("ripple_show_drag_trail")]
+        public BoolProperty RippleShowDragTrail { get; set; }
+
+        [JsonPropertyName("ripple_show_release_pulse")]
+        public BoolProperty RippleShowReleasePulse { get; set; }
+
         public MouseHighlighterProperties()
         {
             ActivationShortcut = DefaultActivationShortcut;
@@ -60,6 +75,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             AutoActivate = new BoolProperty(false);
             SpotlightMode = new BoolProperty(false);
             RippleMode = new BoolProperty(false);
+            RippleSize = new IntProperty(60);
+            RippleIntensity = new DoubleProperty(0.7);
+            RippleDurationMs = new IntProperty(480);
+            RippleShowDragTrail = new BoolProperty(true);
+            RippleShowReleasePulse = new BoolProperty(true);
         }
     }
 }

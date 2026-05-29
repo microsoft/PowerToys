@@ -6,6 +6,8 @@
 #include "trace.h"
 #include <cmath>
 #include <algorithm>
+#include <memory>
+#include <vector>
 
 #ifdef COMPOSITION
 namespace winrt
@@ -48,8 +50,16 @@ private:
     void ClearDrawingPoint();
     void ClearDrawing();
     void BringToFront();
-    // Spawn a ClickLight-style expanding ripple pulse for the given click.
-    void SpawnRipplePulse(MouseButton button);
+    // Ripple pulse variants. Press = expanding ring+glow+dot, Release = contracting
+    // dimmer echo on button-up, Drag = small fading dot emitted along a held drag.
+    enum class RippleKind
+    {
+        Press,
+        Release,
+        Drag
+    };
+    // Spawn a ClickLight-style ripple pulse at the given client-area point.
+    void SpawnRipplePulse(POINT clientPt, MouseButton button, RippleKind kind);
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
     // Helpers for spotlight overlay
@@ -87,6 +97,17 @@ private:
     bool m_alwaysPointerEnabled = true;
     bool m_spotlightMode = false;
     bool m_rippleMode = false;
+    bool m_rippleShowDragTrail = MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SHOW_DRAG_TRAIL;
+    bool m_rippleShowReleasePulse = MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SHOW_RELEASE_PULSE;
+    float m_rippleSize = static_cast<float>(MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SIZE);
+    float m_rippleIntensity = static_cast<float>(MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_INTENSITY);
+    int m_rippleDurationMs = MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_DURATION_MS;
+
+    // Tracking for ripple-mode drag emission (independent of the legacy
+    // m_leftButtonPressed / m_rightButtonPressed which drive the circle mode).
+    bool m_rippleLeftPressed = false;
+    bool m_rippleRightPressed = false;
+    POINT m_lastRippleDragPt = { 0, 0 };
 
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
@@ -336,7 +357,11 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             {
                 if (instance->m_leftPointerEnabled)
                 {
-                    instance->SpawnRipplePulse(MouseButton::Left);
+                    POINT pt = hookData->pt;
+                    ScreenToClient(instance->m_hwnd, &pt);
+                    instance->SpawnRipplePulse(pt, MouseButton::Left, Highlighter::RippleKind::Press);
+                    instance->m_rippleLeftPressed = true;
+                    instance->m_lastRippleDragPt = hookData->pt;
                     if (instance->m_timer_id == 0)
                     {
                         instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
@@ -373,7 +398,11 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             {
                 if (instance->m_rightPointerEnabled)
                 {
-                    instance->SpawnRipplePulse(MouseButton::Right);
+                    POINT pt = hookData->pt;
+                    ScreenToClient(instance->m_hwnd, &pt);
+                    instance->SpawnRipplePulse(pt, MouseButton::Right, Highlighter::RippleKind::Press);
+                    instance->m_rippleRightPressed = true;
+                    instance->m_lastRippleDragPt = hookData->pt;
                     if (instance->m_timer_id == 0)
                     {
                         instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
@@ -403,6 +432,25 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             }
             break;
         case WM_MOUSEMOVE:
+            if (instance->m_rippleMode)
+            {
+                if (instance->m_rippleShowDragTrail && (instance->m_rippleLeftPressed || instance->m_rippleRightPressed))
+                {
+                    // Throttle: only emit a drag dot when the cursor has moved a
+                    // few pixels — matches ClickLight's ~2.5 px append threshold.
+                    LONG dx = hookData->pt.x - instance->m_lastRippleDragPt.x;
+                    LONG dy = hookData->pt.y - instance->m_lastRippleDragPt.y;
+                    if ((dx * dx + dy * dy) >= 9)
+                    {
+                        MouseButton heldButton = instance->m_rippleLeftPressed ? MouseButton::Left : MouseButton::Right;
+                        POINT pt = hookData->pt;
+                        ScreenToClient(instance->m_hwnd, &pt);
+                        instance->SpawnRipplePulse(pt, heldButton, Highlighter::RippleKind::Drag);
+                        instance->m_lastRippleDragPt = hookData->pt;
+                    }
+                }
+                break;
+            }
             if (instance->m_leftButtonPressed)
             {
                 instance->UpdateDrawingPointPosition(MouseButton::Left);
@@ -417,6 +465,20 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             }
             break;
         case WM_LBUTTONUP:
+            if (instance->m_rippleMode)
+            {
+                if (instance->m_rippleLeftPressed)
+                {
+                    if (instance->m_rippleShowReleasePulse && instance->m_leftPointerEnabled)
+                    {
+                        POINT pt = hookData->pt;
+                        ScreenToClient(instance->m_hwnd, &pt);
+                        instance->SpawnRipplePulse(pt, MouseButton::Left, Highlighter::RippleKind::Release);
+                    }
+                    instance->m_rippleLeftPressed = false;
+                }
+                break;
+            }
             if (instance->m_leftButtonPressed)
             {
                 instance->StartDrawingPointFading(MouseButton::Left);
@@ -429,6 +491,20 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             }
             break;
         case WM_RBUTTONUP:
+            if (instance->m_rippleMode)
+            {
+                if (instance->m_rippleRightPressed)
+                {
+                    if (instance->m_rippleShowReleasePulse && instance->m_rightPointerEnabled)
+                    {
+                        POINT pt = hookData->pt;
+                        ScreenToClient(instance->m_hwnd, &pt);
+                        instance->SpawnRipplePulse(pt, MouseButton::Right, Highlighter::RippleKind::Release);
+                    }
+                    instance->m_rippleRightPressed = false;
+                }
+                break;
+            }
             if (instance->m_rightButtonPressed)
             {
                 instance->StartDrawingPointFading(MouseButton::Right);
@@ -475,6 +551,8 @@ void Highlighter::StopDrawing()
     m_visible = false;
     m_leftButtonPressed = false;
     m_rightButtonPressed = false;
+    m_rippleLeftPressed = false;
+    m_rippleRightPressed = false;
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
     m_alwaysPointer = nullptr;
@@ -506,6 +584,11 @@ void Highlighter::ApplySettings(MouseHighlighterSettings settings)
     m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
     m_spotlightMode = settings.spotlightMode && settings.alwaysColor.A != 0;
     m_rippleMode = settings.rippleMode && !m_spotlightMode;
+    m_rippleSize = (settings.rippleSize > 0) ? static_cast<float>(settings.rippleSize) : static_cast<float>(MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SIZE);
+    m_rippleIntensity = (settings.rippleIntensity > 0.0) ? static_cast<float>(settings.rippleIntensity) : static_cast<float>(MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_INTENSITY);
+    m_rippleDurationMs = (settings.rippleDurationMs > 0) ? settings.rippleDurationMs : MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_DURATION_MS;
+    m_rippleShowDragTrail = settings.rippleShowDragTrail;
+    m_rippleShowReleasePulse = settings.rippleShowReleasePulse;
 
     if (m_spotlightMode)
     {
@@ -673,16 +756,12 @@ void Highlighter::UpdateSpotlightMask(float cx, float cy, float radius, bool sho
 
 // Spawn a ClickLight-inspired expanding ring + glow pulse at the cursor.
 // Each click emits a transient, self-cleaning pulse — pulses can overlap.
-void Highlighter::SpawnRipplePulse(MouseButton button)
+void Highlighter::SpawnRipplePulse(POINT clientPt, MouseButton button, RippleKind kind)
 {
     if (!m_compositor || !m_shape)
     {
         return;
     }
-
-    POINT pt;
-    GetCursorPos(&pt);
-    ScreenToClient(m_hwnd, &pt);
 
     winrt::Windows::UI::Color color;
     if (button == MouseButton::Left)
@@ -703,92 +782,146 @@ void Highlighter::SpawnRipplePulse(MouseButton button)
         return;
     }
 
-    const float baseRadius = (m_radius < 1.0f) ? 1.0f : m_radius;
+    // Resolve sizing/intensity/duration from the ripple-specific settings so
+    // they're independent of the legacy "always-on dot" controls.
+    const float baseSize = (m_rippleSize > 1.0f) ? m_rippleSize : 1.0f;
+    float intensity = m_rippleIntensity;
+    if (intensity < 0.15f) intensity = 0.15f;
+    if (intensity > 1.35f) intensity = 1.35f;
 
-    // ClickLight-style proportions: ring expands from ~0.20× to ~1.05× of the base radius,
-    // glow halo follows from ~0.30× to ~1.40× at a lower intensity.
-    const float ringStart = baseRadius * 0.20f;
-    const float ringEnd = baseRadius * 1.05f;
-    const float glowStart = baseRadius * 0.30f;
-    const float glowEnd = baseRadius * 1.40f;
-
-    int duration = m_fadeDuration_ms;
-    if (duration < 60)
+    int durationMs = m_rippleDurationMs;
+    if (durationMs < 60) durationMs = 60;
+    if (durationMs > 2000) durationMs = 2000;
+    if (kind == RippleKind::Release)
     {
-        duration = 60;
+        durationMs = static_cast<int>(durationMs * 0.78f);
     }
-    if (duration > 2000)
+    else if (kind == RippleKind::Drag)
     {
-        duration = 2000;
+        durationMs = (std::min)(380, static_cast<int>(durationMs * 0.82f));
     }
-    auto dur = std::chrono::milliseconds(duration);
+    if (durationMs < 40) durationMs = 40;
+    auto dur = std::chrono::milliseconds(durationMs);
 
     // Cubic ease-out (matches ClickLight's 1 - (1 - p)^3 feel).
     auto ease = m_compositor.CreateCubicBezierEasingFunction({ 0.215f, 0.61f }, { 0.355f, 1.0f });
 
-    // Final, fully-transparent target color (preserves RGB to avoid mid-animation tint shifts).
-    auto transparentColor = winrt::Windows::UI::ColorHelper::FromArgb(0, color.R, color.G, color.B);
+    // ClickLight visual recipe: alpha = (0.18 + intensity * 0.78) * baseColor.A,
+    // line width = max(2.25, baseSize * (0.035 + intensity * 0.045)).
+    const float alphaMul = 0.18f + intensity * 0.78f;
 
-    // Glow (filled, low-alpha halo).
-    auto glowColor = winrt::Windows::UI::ColorHelper::FromArgb(
-        static_cast<uint8_t>(static_cast<float>(color.A) * 0.35f),
-        color.R,
-        color.G,
-        color.B);
-    auto glowGeom = m_compositor.CreateEllipseGeometry();
-    glowGeom.Radius({ glowStart, glowStart });
-    auto glowBrush = m_compositor.CreateColorBrush(glowColor);
-    auto glowShape = m_compositor.CreateSpriteShape(glowGeom);
-    glowShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
-    glowShape.FillBrush(glowBrush);
+    auto makeColor = [&](float mul) {
+        float a = static_cast<float>(color.A) * mul;
+        if (a < 0.0f) a = 0.0f;
+        if (a > 255.0f) a = 255.0f;
+        return winrt::Windows::UI::ColorHelper::FromArgb(static_cast<uint8_t>(a), color.R, color.G, color.B);
+    };
+    auto transparent = winrt::Windows::UI::ColorHelper::FromArgb(0, color.R, color.G, color.B);
 
-    // Ring (stroked, full color).
-    auto ringGeom = m_compositor.CreateEllipseGeometry();
-    ringGeom.Radius({ ringStart, ringStart });
-    auto ringBrush = m_compositor.CreateColorBrush(color);
-    auto ringShape = m_compositor.CreateSpriteShape(ringGeom);
-    ringShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
-    ringShape.StrokeBrush(ringBrush);
-    ringShape.StrokeThickness((std::max)(2.0f, baseRadius * 0.18f));
-    ringShape.IsStrokeNonScaling(true);
+    const float fx = static_cast<float>(clientPt.x);
+    const float fy = static_cast<float>(clientPt.y);
 
-    m_shape.Shapes().Append(glowShape);
-    m_shape.Shapes().Append(ringShape);
+    // Track shapes spawned by this pulse so the completion callback can remove them.
+    auto spawned = std::make_shared<std::vector<winrt::CompositionSpriteShape>>();
 
-    // Radius animations (scale-equivalent, keeps stroke crisp).
-    auto glowSizeAnim = m_compositor.CreateVector2KeyFrameAnimation();
-    glowSizeAnim.InsertKeyFrame(0.0f, { glowStart, glowStart });
-    glowSizeAnim.InsertKeyFrame(1.0f, { glowEnd, glowEnd }, ease);
-    glowSizeAnim.Duration(dur);
+    auto addEllipseShape = [&](float startRadius,
+                               float endRadius,
+                               winrt::Windows::UI::Color startColor,
+                               bool stroked,
+                               float strokeWidth) {
+        auto geom = m_compositor.CreateEllipseGeometry();
+        geom.Radius({ startRadius, startRadius });
+        auto brush = m_compositor.CreateColorBrush(startColor);
+        auto shape = m_compositor.CreateSpriteShape(geom);
+        shape.Offset({ fx, fy });
+        if (stroked)
+        {
+            shape.StrokeBrush(brush);
+            shape.StrokeThickness(strokeWidth);
+            shape.IsStrokeNonScaling(true);
+        }
+        else
+        {
+            shape.FillBrush(brush);
+        }
+        m_shape.Shapes().Append(shape);
+        spawned->push_back(shape);
 
-    auto ringSizeAnim = m_compositor.CreateVector2KeyFrameAnimation();
-    ringSizeAnim.InsertKeyFrame(0.0f, { ringStart, ringStart });
-    ringSizeAnim.InsertKeyFrame(1.0f, { ringEnd, ringEnd }, ease);
-    ringSizeAnim.Duration(dur);
+        auto sizeAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        sizeAnim.InsertKeyFrame(0.0f, { startRadius, startRadius });
+        sizeAnim.InsertKeyFrame(1.0f, { endRadius, endRadius }, ease);
+        sizeAnim.Duration(dur);
+        geom.StartAnimation(L"Radius", sizeAnim);
 
-    // Color (alpha) fade-out animations.
-    auto glowColorAnim = m_compositor.CreateColorKeyFrameAnimation();
-    glowColorAnim.InsertKeyFrame(0.0f, glowColor);
-    glowColorAnim.InsertKeyFrame(1.0f, transparentColor, ease);
-    glowColorAnim.Duration(dur);
+        auto colorAnim = m_compositor.CreateColorKeyFrameAnimation();
+        colorAnim.InsertKeyFrame(0.0f, startColor);
+        colorAnim.InsertKeyFrame(1.0f, transparent, ease);
+        colorAnim.Duration(dur);
+        brush.StartAnimation(L"Color", colorAnim);
+    };
 
-    auto ringColorAnim = m_compositor.CreateColorKeyFrameAnimation();
-    ringColorAnim.InsertKeyFrame(0.0f, color);
-    ringColorAnim.InsertKeyFrame(1.0f, transparentColor, ease);
-    ringColorAnim.Duration(dur);
-
-    // Batch the four animations so we can clean up the shapes when the pulse ends.
     auto batch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
-    glowGeom.StartAnimation(L"Radius", glowSizeAnim);
-    ringGeom.StartAnimation(L"Radius", ringSizeAnim);
-    glowBrush.StartAnimation(L"Color", glowColorAnim);
-    ringBrush.StartAnimation(L"Color", ringColorAnim);
+
+    if (kind == RippleKind::Press)
+    {
+        const float ringStart = baseSize * 0.18f;
+        const float ringEnd = baseSize * 0.80f;
+        const float glowStart = baseSize * 0.28f;
+        const float glowEnd = baseSize * 1.06f;
+        const float lineWidth = (std::max)(2.25f, baseSize * (0.035f + intensity * 0.045f));
+
+        // Optional outer glow (only at higher intensities, like ClickLight).
+        if (intensity >= 0.7f)
+        {
+            const float glowMul = (intensity >= 1.2f) ? 0.18f : 0.08f;
+            addEllipseShape(glowStart, glowEnd, makeColor(glowMul * intensity), /*stroked*/ false, 0.0f);
+        }
+        // Expanding stroked ring.
+        addEllipseShape(ringStart, ringEnd, makeColor(alphaMul), /*stroked*/ true, lineWidth);
+        // Small filled center dot for extra punch.
+        const float dotRadius = baseSize * 0.085f;
+        addEllipseShape(dotRadius, dotRadius, makeColor(alphaMul * 0.75f), /*stroked*/ false, 0.0f);
+    }
+    else if (kind == RippleKind::Release)
+    {
+        // Contracting echo: the ring starts large and shrinks inward at lower alpha.
+        const float relSize = baseSize * 0.82f;
+        const float ringStart = relSize * 0.76f;
+        const float ringEnd = relSize * 0.34f;
+        const float glowStart = relSize * 0.76f * 1.25f;
+        const float glowEnd = relSize * 0.34f * 1.25f;
+        const float lineWidth = (std::max)(2.25f, relSize * (0.035f + intensity * 0.045f)) * 0.55f;
+        const float releaseAlpha = alphaMul * 0.55f;
+
+        if (intensity >= 0.7f)
+        {
+            const float glowMul = (intensity >= 1.2f) ? 0.18f : 0.08f;
+            addEllipseShape(glowStart, glowEnd, makeColor(glowMul * intensity * 0.45f), /*stroked*/ false, 0.0f);
+        }
+        addEllipseShape(ringStart, ringEnd, makeColor(releaseAlpha), /*stroked*/ true, lineWidth);
+    }
+    else // RippleKind::Drag
+    {
+        // Small fading dot along the drag path.
+        const float dragBase = baseSize * 0.6f;
+        const float dotRadius = dragBase * (0.08f + 0.065f * intensity);
+        if (dotRadius >= 0.5f)
+        {
+            addEllipseShape(dotRadius, dotRadius, makeColor(alphaMul * 0.78f), /*stroked*/ false, 0.0f);
+        }
+    }
+
     batch.End();
 
+    if (spawned->empty())
+    {
+        return;
+    }
+
     auto dispatcher = m_dispatcherQueueController.DispatcherQueue();
-    batch.Completed([dispatcher, glowShape, ringShape](auto&&, auto&&) {
-        // Marshal shape removal back to the compositor thread.
-        dispatcher.TryEnqueue([glowShape, ringShape]() {
+    batch.Completed([dispatcher, spawned](auto&&, auto&&) {
+        // Marshal shape removal back to the dispatcher thread.
+        dispatcher.TryEnqueue([spawned]() {
             try
             {
                 if (Highlighter::instance == nullptr || Highlighter::instance->m_shape == nullptr)
@@ -796,14 +929,13 @@ void Highlighter::SpawnRipplePulse(MouseButton button)
                     return;
                 }
                 auto shapes = Highlighter::instance->m_shape.Shapes();
-                uint32_t index = 0;
-                if (shapes.IndexOf(ringShape, index))
+                for (auto const& s : *spawned)
                 {
-                    shapes.RemoveAt(index);
-                }
-                if (shapes.IndexOf(glowShape, index))
-                {
-                    shapes.RemoveAt(index);
+                    uint32_t index = 0;
+                    if (shapes.IndexOf(s, index))
+                    {
+                        shapes.RemoveAt(index);
+                    }
                 }
             }
             catch (...)

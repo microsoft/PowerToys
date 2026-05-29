@@ -78,6 +78,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _highlighterAlwaysColor = !string.IsNullOrEmpty(alwaysColor) ? alwaysColor : "#00FF0000";
             _isSpotlightModeEnabled = MouseHighlighterSettingsConfig.Properties.SpotlightMode.Value;
             _isRippleModeEnabled = MouseHighlighterSettingsConfig.Properties.RippleMode.Value;
+            _rippleSize = MouseHighlighterSettingsConfig.Properties.RippleSize.Value;
+            _rippleIntensity = MouseHighlighterSettingsConfig.Properties.RippleIntensity.Value;
+            _rippleDurationMs = MouseHighlighterSettingsConfig.Properties.RippleDurationMs.Value;
+            _rippleShowDragTrail = MouseHighlighterSettingsConfig.Properties.RippleShowDragTrail.Value;
+            _rippleShowReleasePulse = MouseHighlighterSettingsConfig.Properties.RippleShowReleasePulse.Value;
 
             _highlighterRadius = MouseHighlighterSettingsConfig.Properties.HighlightRadius.Value;
             _highlightFadeDelayMs = MouseHighlighterSettingsConfig.Properties.HighlightFadeDelayMs.Value;
@@ -739,6 +744,76 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int RippleSize
+        {
+            get => _rippleSize;
+            set
+            {
+                if (value != _rippleSize)
+                {
+                    _rippleSize = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleSize.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public double RippleIntensity
+        {
+            get => _rippleIntensity;
+            set
+            {
+                if (value != _rippleIntensity)
+                {
+                    _rippleIntensity = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleIntensity.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public int RippleDurationMs
+        {
+            get => _rippleDurationMs;
+            set
+            {
+                if (value != _rippleDurationMs)
+                {
+                    _rippleDurationMs = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleDurationMs.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public bool RippleShowDragTrail
+        {
+            get => _rippleShowDragTrail;
+            set
+            {
+                if (value != _rippleShowDragTrail)
+                {
+                    _rippleShowDragTrail = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleShowDragTrail.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
+        public bool RippleShowReleasePulse
+        {
+            get => _rippleShowReleasePulse;
+            set
+            {
+                if (value != _rippleShowReleasePulse)
+                {
+                    _rippleShowReleasePulse = value;
+                    MouseHighlighterSettingsConfig.Properties.RippleShowReleasePulse.Value = value;
+                    NotifyMouseHighlighterPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyMouseHighlighterPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1274,6 +1349,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private string _highlighterAlwaysColor;
         private bool _isSpotlightModeEnabled;
         private bool _isRippleModeEnabled;
+        private int _rippleSize;
+        private double _rippleIntensity;
+        private int _rippleDurationMs;
+        private bool _rippleShowDragTrail;
+        private bool _rippleShowReleasePulse;
         private int _highlighterRadius;
         private int _highlightFadeDelayMs;
         private int _highlightFadeDurationMs;
