@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="C:\Users\gkhmyznikov\AppData\Local\PowerToys\BuildTools\.versioning\Microsoft.Windows.Terminal.Versioning\build\Microsoft.Windows.Terminal.Versioning.props" />
-  <PropertyGroup>
-    <_MWTVParentDirectoryProps>$([MSBuild]::GetPathOfFileAbove('Directory.Build.Props', '$(MSBuildThisFileDirectory)../'))</_MWTVParentDirectoryProps>
-  </PropertyGroup>
-  <Import Condition="'$(_MWTVParentDirectoryProps)'!='' and exists('$(_MWTVParentDirectoryProps)')" Project="$(_MWTVParentDirectoryProps)" />
-</Project>
