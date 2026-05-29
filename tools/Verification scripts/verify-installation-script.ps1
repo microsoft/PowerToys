@@ -468,6 +468,8 @@ function Test-CoreFiles {
     $winUI3SignedFiles = @(
         'PowerToys.Settings.dll',
         'PowerToys.Settings.exe',
+        'PowerToys.AdvancedPaste.exe',
+        'PowerToys.AdvancedPaste.dll',
         'PowerToys.HostsModuleInterface.dll',
         'PowerToys.HostsUILib.dll',
         'PowerToys.Hosts.dll',
@@ -722,26 +724,6 @@ function Test-CommandPalettePackages {
     }
 }
 
-function Test-AdvancedPastePackage {
-    param(
-        [string]$InstallPath
-    )
-
-    $advancedPastePath = Join-Path $InstallPath "WinUI3Apps"
-    if (Test-Path $advancedPastePath) {
-        $exePath = Join-Path $advancedPastePath "PowerToys.AdvancedPaste.exe"
-        if (Test-Path $exePath) {
-            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste Executable" -Status 'Pass' -Message "Found AdvancedPaste executable: $exePath"
-        }
-        else {
-            Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste Executable" -Status 'Warning' -Message "AdvancedPaste executable not found: $exePath"
-        }
-    }
-    else {
-        Add-CheckResult -Category "Advanced Paste" -CheckName "AdvancedPaste Module" -Status 'Warning' -Message "Advanced Paste module not found at: $advancedPastePath"
-    }
-}
-
 function Test-ContextMenuPackages {
     param(
         [string]$InstallPath
@@ -792,7 +774,6 @@ function Main {
             $installPath = Get-PowerToysInstallPath -Scope 'PerMachine'
             if ($installPath) {
                 Test-CommandPalettePackages -InstallPath $installPath
-                Test-AdvancedPastePackage -InstallPath $installPath
                 Test-ContextMenuPackages -InstallPath $installPath
             }
         }
@@ -805,7 +786,6 @@ function Main {
             $installPath = Get-PowerToysInstallPath -Scope 'PerUser'
             if ($installPath) {
                 Test-CommandPalettePackages -InstallPath $installPath
-                Test-AdvancedPastePackage -InstallPath $installPath
                 Test-ContextMenuPackages -InstallPath $installPath
             }
         }

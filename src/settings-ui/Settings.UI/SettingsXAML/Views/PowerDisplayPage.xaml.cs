@@ -29,9 +29,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 SettingsRepository<PowerDisplaySettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
+            ViewModel.ConfirmDangerousFeatureAsync = ShowDangerousFeatureDialogAsync;
             DataContext = ViewModel;
             InitializeComponent();
             Loaded += (s, e) => ViewModel.OnPageLoaded();
+        }
+
+        private async Task<bool> ShowDangerousFeatureDialogAsync(string resourceKeyPrefix)
+        {
+            var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix) { XamlRoot = XamlRoot };
+            return await dialog.ShowAsync() == ContentDialogResult.Primary;
         }
 
         public void RefreshEnabledState()
@@ -209,112 +216,81 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Flag to prevent reentrant Click handling while we programmatically restore
-        // a checkbox after the user cancels a dangerous-feature confirmation dialog.
-        private bool _isRestoringDangerousFeatureCheckbox;
-
         private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
         {
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_ColorTemperature",
-                (monitor, value) => monitor.EnableColorTemperature = value);
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
+            {
+                return;
+            }
+
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnableColorTemperature,
+                v => monitor.EnableColorTemperature = v,
+                "PowerDisplay_ColorTemperature");
         }
 
         private async void EnablePowerState_Click(object sender, RoutedEventArgs e)
         {
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_PowerState",
-                (monitor, value) => monitor.EnablePowerState = value);
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
+            {
+                return;
+            }
+
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnablePowerState,
+                v => monitor.EnablePowerState = v,
+                "PowerDisplay_PowerState");
         }
 
         private async void EnableInputSource_Click(object sender, RoutedEventArgs e)
         {
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_InputSource",
-                (monitor, value) => monitor.EnableInputSource = value);
+            if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
+            {
+                return;
+            }
+
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnableInputSource,
+                v => monitor.EnableInputSource = v,
+                "PowerDisplay_InputSource");
         }
 
-        private async Task HandleDangerousFeatureClickAsync(
-            object sender,
-            string resourceKeyPrefix,
-            Action<MonitorInfo, bool> setter)
+        // Per-monitor CheckBoxes use OneWay binding + Click (Click only fires for real user
+        // input, so the binding-driven event problem the ToggleSwitch had does not apply).
+        // The "no gesture" check still appears here because Click fires for keyboard space-
+        // bar even when the IsChecked didn't move, and to keep the cancel-revert path safe.
+        private async Task<bool> TryCommitDangerousChangeAsync(
+            CheckBox control,
+            bool desiredValue,
+            bool currentValue,
+            Action<bool> commit,
+            string resourceKeyPrefix)
         {
-            if (_isRestoringDangerousFeatureCheckbox)
+            if (desiredValue == currentValue)
             {
-                return;
+                return false;
             }
 
-            if (sender is not CheckBox checkBox || checkBox.Tag is not MonitorInfo monitor)
+            if (!desiredValue)
             {
-                return;
+                commit(false);
+                return true;
             }
 
-            // Only show the warning when the user is enabling the feature.
-            if (checkBox.IsChecked != true)
+            if (await ShowDangerousFeatureDialogAsync(resourceKeyPrefix))
             {
-                return;
+                commit(true);
+                return true;
             }
 
-            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var dialog = new ContentDialog
-            {
-                XamlRoot = this.XamlRoot,
-                Title = resourceLoader.GetString($"{resourceKeyPrefix}_WarningTitle"),
-                Content = new StackPanel
-                {
-                    Spacing = 12,
-                    Children =
-                    {
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningHeader"),
-                            FontWeight = Microsoft.UI.Text.FontWeights.Bold,
-                            Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["SystemFillColorCriticalBrush"],
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningDescription"),
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningList"),
-                            TextWrapping = TextWrapping.Wrap,
-                            Margin = new Thickness(20, 0, 0, 0),
-                        },
-                        new TextBlock
-                        {
-                            Text = resourceLoader.GetString($"{resourceKeyPrefix}_WarningConfirm"),
-                            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                            TextWrapping = TextWrapping.Wrap,
-                        },
-                    },
-                },
-                PrimaryButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Enable"),
-                CloseButtonText = resourceLoader.GetString("PowerDisplay_Dialog_Cancel"),
-                DefaultButton = ContentDialogButton.Close,
-            };
-
-            var result = await dialog.ShowAsync();
-
-            if (result != ContentDialogResult.Primary)
-            {
-                // User cancelled: revert checkbox to unchecked.
-                _isRestoringDangerousFeatureCheckbox = true;
-                try
-                {
-                    checkBox.IsChecked = false;
-                    setter(monitor, false);
-                }
-                finally
-                {
-                    _isRestoringDangerousFeatureCheckbox = false;
-                }
-            }
+            control.IsChecked = currentValue;
+            return false;
         }
     }
 }
