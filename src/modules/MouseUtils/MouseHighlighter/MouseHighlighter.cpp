@@ -50,6 +50,12 @@ private:
     void BringToFront();
     // Spawn a ClickLight-style expanding ripple pulse for the given click.
     void SpawnRipplePulse(MouseButton button);
+    // Ripple mode hold/drag dot
+    void SpawnRippleHoldDot(MouseButton button);
+    void FadeRippleHoldDot(MouseButton button);
+    // Spotlight press/release animation helpers
+    void SpotlightAnimatePress();
+    void SpotlightAnimateRelease();
     HHOOK m_mouseHook = NULL;
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) noexcept;
     // Helpers for spotlight overlay
@@ -73,6 +79,13 @@ private:
     winrt::CompositionSpriteShape m_leftPointer{ nullptr };
     winrt::CompositionSpriteShape m_rightPointer{ nullptr };
     winrt::CompositionSpriteShape m_alwaysPointer{ nullptr };
+    winrt::CompositionEllipseGeometry m_leftGeometry{ nullptr };
+    winrt::CompositionEllipseGeometry m_rightGeometry{ nullptr };
+    // Held ripple glow (for drag tracking in ripple mode)
+    winrt::CompositionSpriteShape m_leftRippleGlow{ nullptr };
+    winrt::CompositionSpriteShape m_rightRippleGlow{ nullptr };
+    winrt::CompositionEllipseGeometry m_leftGlowGeometry{ nullptr };
+    winrt::CompositionEllipseGeometry m_rightGlowGeometry{ nullptr };
     // Spotlight overlay (mask with soft feathered edge)
     winrt::SpriteVisual m_overlay{ nullptr };
     winrt::CompositionMaskBrush m_spotlightMask{ nullptr };
@@ -86,7 +99,8 @@ private:
     bool m_rightPointerEnabled = true;
     bool m_alwaysPointerEnabled = true;
     bool m_spotlightMode = false;
-    bool m_rippleMode = false;
+    bool m_spotlightPressed = false;
+    bool m_rippleMode = true;
 
     bool m_leftButtonPressed = false;
     bool m_rightButtonPressed = false;
@@ -197,11 +211,33 @@ void Highlighter::AddDrawingPoint(MouseButton button)
     {
         circleShape.FillBrush(m_compositor.CreateColorBrush(m_leftClickColor));
         m_leftPointer = circleShape;
+        m_leftGeometry = circleGeometry;
+
+        // Animate shrink after a short hold delay (won't be visible on quick clicks)
+        const float pressedRadius = m_radius * 0.70f;
+        auto ease = m_compositor.CreateCubicBezierEasingFunction({ 0.2f, 0.0f }, { 0.4f, 1.0f });
+        auto anim = m_compositor.CreateVector2KeyFrameAnimation();
+        anim.InsertKeyFrame(0.0f, { m_radius, m_radius });
+        anim.InsertKeyFrame(1.0f, { pressedRadius, pressedRadius }, ease);
+        anim.Duration(std::chrono::milliseconds(180));
+        anim.DelayTime(std::chrono::milliseconds(150));
+        circleGeometry.StartAnimation(L"Radius", anim);
     }
     else if (button == MouseButton::Right)
     {
         circleShape.FillBrush(m_compositor.CreateColorBrush(m_rightClickColor));
         m_rightPointer = circleShape;
+        m_rightGeometry = circleGeometry;
+
+        // Animate shrink after a short hold delay (won't be visible on quick clicks)
+        const float pressedRadius = m_radius * 0.70f;
+        auto ease = m_compositor.CreateCubicBezierEasingFunction({ 0.2f, 0.0f }, { 0.4f, 1.0f });
+        auto anim = m_compositor.CreateVector2KeyFrameAnimation();
+        anim.InsertKeyFrame(0.0f, { m_radius, m_radius });
+        anim.InsertKeyFrame(1.0f, { pressedRadius, pressedRadius }, ease);
+        anim.Duration(std::chrono::milliseconds(180));
+        anim.DelayTime(std::chrono::milliseconds(150));
+        circleGeometry.StartAnimation(L"Radius", anim);
     }
     else
     {
@@ -241,17 +277,36 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
     if (button == MouseButton::Left)
     {
         m_leftPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        if (m_leftRippleGlow)
+        {
+            m_leftRippleGlow.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        }
     }
     else if (button == MouseButton::Right)
     {
         m_rightPointer.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        if (m_rightRippleGlow)
+        {
+            m_rightRippleGlow.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        }
     }
     else
     {
         // always / spotlight idle
         if (m_spotlightMode)
         {
-            UpdateSpotlightMask(static_cast<float>(pt.x), static_cast<float>(pt.y), m_radius, true);
+            if (m_spotlightPressed)
+            {
+                // Only update position while pressed — radius is being animated
+                if (m_spotlightMaskGradient)
+                {
+                    m_spotlightMaskGradient.EllipseCenter({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+                }
+            }
+            else
+            {
+                UpdateSpotlightMask(static_cast<float>(pt.x), static_cast<float>(pt.y), m_radius, true);
+            }
         }
         else if (m_alwaysPointer)
         {
@@ -262,14 +317,23 @@ void Highlighter::UpdateDrawingPointPosition(MouseButton button)
 void Highlighter::StartDrawingPointFading(MouseButton button)
 {
     winrt::Windows::UI::Composition::CompositionSpriteShape circleShape{ nullptr };
+    winrt::Windows::UI::Composition::CompositionEllipseGeometry geom{ nullptr };
     if (button == MouseButton::Left)
     {
         circleShape = m_leftPointer;
+        geom = m_leftGeometry;
     }
     else
     {
         // right
         circleShape = m_rightPointer;
+        geom = m_rightGeometry;
+    }
+
+    // Stop the shrink animation and let the fade handle disappearance
+    if (geom && m_compositor)
+    {
+        geom.StopAnimation(L"Radius");
     }
 
     auto brushColor = circleShape.FillBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color();
@@ -332,11 +396,17 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
         switch (wParam)
         {
         case WM_LBUTTONDOWN:
+            if (instance->m_spotlightMode)
+            {
+                instance->SpotlightAnimatePress();
+                break;
+            }
             if (instance->m_rippleMode)
             {
                 if (instance->m_leftPointerEnabled)
                 {
-                    instance->SpawnRipplePulse(MouseButton::Left);
+                    instance->SpawnRippleHoldDot(MouseButton::Left);
+                    instance->m_leftButtonPressed = true;
                     if (instance->m_timer_id == 0)
                     {
                         instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
@@ -369,11 +439,17 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             }
             break;
         case WM_RBUTTONDOWN:
+            if (instance->m_spotlightMode)
+            {
+                instance->SpotlightAnimatePress();
+                break;
+            }
             if (instance->m_rippleMode)
             {
                 if (instance->m_rightPointerEnabled)
                 {
-                    instance->SpawnRipplePulse(MouseButton::Right);
+                    instance->SpawnRippleHoldDot(MouseButton::Right);
+                    instance->m_rightButtonPressed = true;
                     if (instance->m_timer_id == 0)
                     {
                         instance->m_timer_id = SetTimer(instance->m_hwnd, BRING_TO_FRONT_TIMER_ID, 10, nullptr);
@@ -417,11 +493,22 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             }
             break;
         case WM_LBUTTONUP:
+            if (instance->m_spotlightPressed)
+            {
+                instance->SpotlightAnimateRelease();
+            }
             if (instance->m_leftButtonPressed)
             {
-                instance->StartDrawingPointFading(MouseButton::Left);
+                if (instance->m_rippleMode)
+                {
+                    instance->FadeRippleHoldDot(MouseButton::Left);
+                }
+                else
+                {
+                    instance->StartDrawingPointFading(MouseButton::Left);
+                }
                 instance->m_leftButtonPressed = false;
-                if (instance->m_alwaysPointerEnabled && !instance->m_rightButtonPressed)
+                if (!instance->m_rippleMode && instance->m_alwaysPointerEnabled && !instance->m_rightButtonPressed)
                 {
                     // Add AlwaysPointer only when it's enabled and RightPointer is not active
                     instance->AddDrawingPoint(MouseButton::None);
@@ -429,11 +516,22 @@ LRESULT CALLBACK Highlighter::MouseHookProc(int nCode, WPARAM wParam, LPARAM lPa
             }
             break;
         case WM_RBUTTONUP:
+            if (instance->m_spotlightPressed)
+            {
+                instance->SpotlightAnimateRelease();
+            }
             if (instance->m_rightButtonPressed)
             {
-                instance->StartDrawingPointFading(MouseButton::Right);
+                if (instance->m_rippleMode)
+                {
+                    instance->FadeRippleHoldDot(MouseButton::Right);
+                }
+                else
+                {
+                    instance->StartDrawingPointFading(MouseButton::Right);
+                }
                 instance->m_rightButtonPressed = false;
-                if (instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed)
+                if (!instance->m_rippleMode && instance->m_alwaysPointerEnabled && !instance->m_leftButtonPressed)
                 {
                     // Add AlwaysPointer only when it's enabled and LeftPointer is not active
                     instance->AddDrawingPoint(MouseButton::None);
@@ -478,6 +576,12 @@ void Highlighter::StopDrawing()
     m_leftPointer = nullptr;
     m_rightPointer = nullptr;
     m_alwaysPointer = nullptr;
+    m_leftGeometry = nullptr;
+    m_rightGeometry = nullptr;
+    m_leftRippleGlow = nullptr;
+    m_rightRippleGlow = nullptr;
+    m_leftGlowGeometry = nullptr;
+    m_rightGlowGeometry = nullptr;
     if (m_overlay)
     {
         m_overlay.IsVisible(false);
@@ -671,6 +775,333 @@ void Highlighter::UpdateSpotlightMask(float cx, float cy, float radius, bool sho
     }
 }
 
+void Highlighter::SpotlightAnimatePress()
+{
+    if (!m_spotlightMaskGradient || !m_compositor)
+    {
+        return;
+    }
+
+    m_spotlightPressed = true;
+
+    // Animate radius shrinking to 85% to give a "pressed" feel
+    const float pressedRadius = m_radius * 0.85f;
+    auto ease = m_compositor.CreateCubicBezierEasingFunction({ 0.2f, 0.0f }, { 0.4f, 1.0f });
+    auto anim = m_compositor.CreateVector2KeyFrameAnimation();
+    anim.InsertKeyFrame(1.0f, { pressedRadius, pressedRadius }, ease);
+    anim.Duration(std::chrono::milliseconds(120));
+    m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", anim);
+}
+
+void Highlighter::SpotlightAnimateRelease()
+{
+    if (!m_spotlightMaskGradient || !m_compositor)
+    {
+        return;
+    }
+
+    m_spotlightPressed = false;
+
+    // Animate radius back to normal
+    auto ease = m_compositor.CreateCubicBezierEasingFunction({ 0.215f, 0.61f }, { 0.355f, 1.0f });
+    auto anim = m_compositor.CreateVector2KeyFrameAnimation();
+    anim.InsertKeyFrame(1.0f, { m_radius, m_radius }, ease);
+    anim.Duration(std::chrono::milliseconds(200));
+    m_spotlightMaskGradient.StartAnimation(L"EllipseRadius", anim);
+}
+
+// Create a held ripple ring+glow that expands to an intermediate size and holds.
+// On release, ReleaseRippleHeld continues the expansion and fades out.
+void Highlighter::SpawnRippleHoldDot(MouseButton button)
+{
+    if (!m_compositor || !m_shape)
+    {
+        return;
+    }
+
+    // Clean up any existing held shapes (e.g., stray double button-down without up)
+    auto shapes = m_shape.Shapes();
+    uint32_t index = 0;
+    if (button == MouseButton::Left)
+    {
+        if (m_leftPointer && shapes.IndexOf(m_leftPointer, index))
+            shapes.RemoveAt(index);
+        if (m_leftRippleGlow && shapes.IndexOf(m_leftRippleGlow, index))
+            shapes.RemoveAt(index);
+    }
+    else
+    {
+        if (m_rightPointer && shapes.IndexOf(m_rightPointer, index))
+            shapes.RemoveAt(index);
+        if (m_rightRippleGlow && shapes.IndexOf(m_rightRippleGlow, index))
+            shapes.RemoveAt(index);
+    }
+
+    POINT pt;
+    GetCursorPos(&pt);
+    ScreenToClient(m_hwnd, &pt);
+
+    winrt::Windows::UI::Color color;
+    if (button == MouseButton::Left)
+    {
+        color = m_leftClickColor;
+    }
+    else
+    {
+        color = m_rightClickColor;
+    }
+
+    if (color.A == 0)
+    {
+        return;
+    }
+
+    const float baseRadius = (m_radius < 1.0f) ? 1.0f : m_radius;
+
+    // Start small (like the ripple) and expand to held size
+    const float ringStart = baseRadius * 0.20f;
+    const float glowStart = baseRadius * 0.30f;
+    const float ringHeld = baseRadius * 0.55f;
+    const float glowHeld = baseRadius * 0.65f;
+
+    // Glow (filled, low-alpha halo)
+    auto glowColor = winrt::Windows::UI::ColorHelper::FromArgb(
+        static_cast<uint8_t>(static_cast<float>(color.A) * 0.30f),
+        color.R, color.G, color.B);
+    auto glowGeom = m_compositor.CreateEllipseGeometry();
+    glowGeom.Radius({ glowStart, glowStart });
+    auto glowBrush = m_compositor.CreateColorBrush(glowColor);
+    auto glowShape = m_compositor.CreateSpriteShape(glowGeom);
+    glowShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+    glowShape.FillBrush(glowBrush);
+
+    // Ring (stroked, full color)
+    auto ringGeom = m_compositor.CreateEllipseGeometry();
+    ringGeom.Radius({ ringStart, ringStart });
+    auto ringBrush = m_compositor.CreateColorBrush(color);
+    auto ringShape = m_compositor.CreateSpriteShape(ringGeom);
+    ringShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+    ringShape.StrokeBrush(ringBrush);
+    ringShape.StrokeThickness((std::max)(1.5f, baseRadius * 0.08f));
+    ringShape.IsStrokeNonScaling(true);
+
+    m_shape.Shapes().Append(glowShape);
+    m_shape.Shapes().Append(ringShape);
+
+    if (button == MouseButton::Left)
+    {
+        m_leftPointer = ringShape;
+        m_leftGeometry = ringGeom;
+        m_leftRippleGlow = glowShape;
+        m_leftGlowGeometry = glowGeom;
+    }
+    else
+    {
+        m_rightPointer = ringShape;
+        m_rightGeometry = ringGeom;
+        m_rightRippleGlow = glowShape;
+        m_rightGlowGeometry = glowGeom;
+    }
+
+    // Animate from small start to held size — no delay, immediate expansion
+    auto ease = m_compositor.CreateCubicBezierEasingFunction({ 0.215f, 0.61f }, { 0.355f, 1.0f });
+
+    auto ringAnim = m_compositor.CreateVector2KeyFrameAnimation();
+    ringAnim.InsertKeyFrame(0.0f, { ringStart, ringStart });
+    ringAnim.InsertKeyFrame(1.0f, { ringHeld, ringHeld }, ease);
+    ringAnim.Duration(std::chrono::milliseconds(250));
+    ringGeom.StartAnimation(L"Radius", ringAnim);
+
+    auto glowAnim = m_compositor.CreateVector2KeyFrameAnimation();
+    glowAnim.InsertKeyFrame(0.0f, { glowStart, glowStart });
+    glowAnim.InsertKeyFrame(1.0f, { glowHeld, glowHeld }, ease);
+    glowAnim.Duration(std::chrono::milliseconds(250));
+    glowGeom.StartAnimation(L"Radius", glowAnim);
+}
+
+// On release: continue expanding the held ring+glow to full size while fading out, then clean up.
+void Highlighter::FadeRippleHoldDot(MouseButton button)
+{
+    winrt::CompositionSpriteShape ringShape{ nullptr };
+    winrt::CompositionSpriteShape glowShape{ nullptr };
+    winrt::CompositionEllipseGeometry ringGeom{ nullptr };
+    winrt::CompositionEllipseGeometry glowGeom{ nullptr };
+
+    if (button == MouseButton::Left)
+    {
+        ringShape = m_leftPointer;
+        glowShape = m_leftRippleGlow;
+        ringGeom = m_leftGeometry;
+        glowGeom = m_leftGlowGeometry;
+        m_leftPointer = nullptr;
+        m_leftGeometry = nullptr;
+        m_leftRippleGlow = nullptr;
+        m_leftGlowGeometry = nullptr;
+    }
+    else
+    {
+        ringShape = m_rightPointer;
+        glowShape = m_rightRippleGlow;
+        ringGeom = m_rightGeometry;
+        glowGeom = m_rightGlowGeometry;
+        m_rightPointer = nullptr;
+        m_rightGeometry = nullptr;
+        m_rightRippleGlow = nullptr;
+        m_rightGlowGeometry = nullptr;
+    }
+
+    if (!ringShape || !m_compositor)
+    {
+        return;
+    }
+
+    const float baseRadius = (m_radius < 1.0f) ? 1.0f : m_radius;
+    const float ringEnd = baseRadius * 1.05f;
+    const float glowEnd = baseRadius * 1.40f;
+
+    int duration = m_fadeDuration_ms;
+    if (duration < 60)
+        duration = 60;
+    if (duration > 2000)
+        duration = 2000;
+    auto dur = std::chrono::milliseconds(duration);
+
+    auto ease = m_compositor.CreateCubicBezierEasingFunction({ 0.215f, 0.61f }, { 0.355f, 1.0f });
+
+    // Expand ring to full size
+    auto ringSizeAnim = m_compositor.CreateVector2KeyFrameAnimation();
+    ringSizeAnim.InsertKeyFrame(1.0f, { ringEnd, ringEnd }, ease);
+    ringSizeAnim.Duration(dur);
+
+    // Expand glow to full size
+    auto glowSizeAnim = m_compositor.CreateVector2KeyFrameAnimation();
+    glowSizeAnim.InsertKeyFrame(1.0f, { glowEnd, glowEnd }, ease);
+    glowSizeAnim.Duration(dur);
+
+    // Fade ring color to transparent
+    auto ringColor = ringShape.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color();
+    auto transparentColor = winrt::Windows::UI::ColorHelper::FromArgb(0, ringColor.R, ringColor.G, ringColor.B);
+
+    auto ringFadeAnim = m_compositor.CreateColorKeyFrameAnimation();
+    ringFadeAnim.InsertKeyFrame(1.0f, transparentColor, ease);
+    ringFadeAnim.Duration(dur);
+
+    // Fade glow color to transparent
+    auto glowFadeAnim = m_compositor.CreateColorKeyFrameAnimation();
+    glowFadeAnim.InsertKeyFrame(1.0f, transparentColor, ease);
+    glowFadeAnim.Duration(dur);
+
+    // For right-click, add animated crosshair lines on release
+    winrt::Windows::UI::Composition::CompositionSpriteShape hLineShape{ nullptr };
+    winrt::Windows::UI::Composition::CompositionSpriteShape vLineShape{ nullptr };
+
+    if (button == MouseButton::Right)
+    {
+        auto ringColor2 = ringShape.StrokeBrush().as<winrt::Windows::UI::Composition::CompositionColorBrush>().Color();
+        const float ringHeld = baseRadius * 0.55f;
+        const float crosshairStart = ringHeld * 0.85f;
+        const float crosshairEnd = ringEnd * 0.85f;
+        const float strokeWidth = (std::max)(1.5f, baseRadius * 0.06f);
+
+        auto crosshairBrush = m_compositor.CreateColorBrush(ringColor2);
+
+        auto hLineGeom = m_compositor.CreateLineGeometry();
+        hLineGeom.Start({ -crosshairStart, 0.0f });
+        hLineGeom.End({ crosshairStart, 0.0f });
+        hLineShape = m_compositor.CreateSpriteShape(hLineGeom);
+        hLineShape.Offset(ringShape.Offset());
+        hLineShape.StrokeBrush(crosshairBrush);
+        hLineShape.StrokeThickness(strokeWidth);
+
+        auto vLineGeom = m_compositor.CreateLineGeometry();
+        vLineGeom.Start({ 0.0f, -crosshairStart });
+        vLineGeom.End({ 0.0f, crosshairStart });
+        vLineShape = m_compositor.CreateSpriteShape(vLineGeom);
+        vLineShape.Offset(ringShape.Offset());
+        vLineShape.StrokeBrush(crosshairBrush);
+        vLineShape.StrokeThickness(strokeWidth);
+
+        m_shape.Shapes().Append(hLineShape);
+        m_shape.Shapes().Append(vLineShape);
+
+        // Animate crosshair expansion
+        auto hStartAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        hStartAnim.InsertKeyFrame(0.0f, { -crosshairStart, 0.0f });
+        hStartAnim.InsertKeyFrame(1.0f, { -crosshairEnd, 0.0f }, ease);
+        hStartAnim.Duration(dur);
+        auto hEndAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        hEndAnim.InsertKeyFrame(0.0f, { crosshairStart, 0.0f });
+        hEndAnim.InsertKeyFrame(1.0f, { crosshairEnd, 0.0f }, ease);
+        hEndAnim.Duration(dur);
+        auto vStartAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        vStartAnim.InsertKeyFrame(0.0f, { 0.0f, -crosshairStart });
+        vStartAnim.InsertKeyFrame(1.0f, { 0.0f, -crosshairEnd }, ease);
+        vStartAnim.Duration(dur);
+        auto vEndAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        vEndAnim.InsertKeyFrame(0.0f, { 0.0f, crosshairStart });
+        vEndAnim.InsertKeyFrame(1.0f, { 0.0f, crosshairEnd }, ease);
+        vEndAnim.Duration(dur);
+
+        hLineGeom.StartAnimation(L"Start", hStartAnim);
+        hLineGeom.StartAnimation(L"End", hEndAnim);
+        vLineGeom.StartAnimation(L"Start", vStartAnim);
+        vLineGeom.StartAnimation(L"End", vEndAnim);
+
+        // Fade crosshairs
+        auto crossFadeAnim = m_compositor.CreateColorKeyFrameAnimation();
+        crossFadeAnim.InsertKeyFrame(1.0f, transparentColor, ease);
+        crossFadeAnim.Duration(dur);
+        crosshairBrush.StartAnimation(L"Color", crossFadeAnim);
+    }
+
+    auto batch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
+    ringGeom.StartAnimation(L"Radius", ringSizeAnim);
+    ringShape.StrokeBrush().StartAnimation(L"Color", ringFadeAnim);
+    if (glowGeom)
+    {
+        glowGeom.StartAnimation(L"Radius", glowSizeAnim);
+    }
+    if (glowShape)
+    {
+        glowShape.FillBrush().StartAnimation(L"Color", glowFadeAnim);
+    }
+    batch.End();
+
+    auto dispatcher = m_dispatcherQueueController.DispatcherQueue();
+    batch.Completed([dispatcher, ringShape, glowShape, hLineShape, vLineShape](auto&&, auto&&) {
+        dispatcher.TryEnqueue([ringShape, glowShape, hLineShape, vLineShape]() {
+            try
+            {
+                if (Highlighter::instance == nullptr || Highlighter::instance->m_shape == nullptr)
+                {
+                    return;
+                }
+                auto shapes = Highlighter::instance->m_shape.Shapes();
+                uint32_t index = 0;
+                if (vLineShape && shapes.IndexOf(vLineShape, index))
+                {
+                    shapes.RemoveAt(index);
+                }
+                if (hLineShape && shapes.IndexOf(hLineShape, index))
+                {
+                    shapes.RemoveAt(index);
+                }
+                if (shapes.IndexOf(ringShape, index))
+                {
+                    shapes.RemoveAt(index);
+                }
+                if (glowShape && shapes.IndexOf(glowShape, index))
+                {
+                    shapes.RemoveAt(index);
+                }
+            }
+            catch (...)
+            {
+            }
+        });
+    });
+}
+
 // Spawn a ClickLight-inspired expanding ring + glow pulse at the cursor.
 // Each click emits a transient, self-cleaning pulse — pulses can overlap.
 void Highlighter::SpawnRipplePulse(MouseButton button)
@@ -749,11 +1180,72 @@ void Highlighter::SpawnRipplePulse(MouseButton button)
     auto ringShape = m_compositor.CreateSpriteShape(ringGeom);
     ringShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
     ringShape.StrokeBrush(ringBrush);
-    ringShape.StrokeThickness((std::max)(2.0f, baseRadius * 0.18f));
+    ringShape.StrokeThickness((std::max)(1.5f, baseRadius * 0.08f));
     ringShape.IsStrokeNonScaling(true);
 
     m_shape.Shapes().Append(glowShape);
     m_shape.Shapes().Append(ringShape);
+
+    // For right-click, add animated crosshair lines (horizontal + vertical) inside the ring.
+    winrt::Windows::UI::Composition::CompositionSpriteShape hLineShape{ nullptr };
+    winrt::Windows::UI::Composition::CompositionSpriteShape vLineShape{ nullptr };
+    winrt::Windows::UI::Composition::CompositionColorBrush crosshairBrush{ nullptr };
+
+    if (button == MouseButton::Right)
+    {
+        const float crosshairStart = ringStart * 0.85f;
+        const float crosshairEnd = ringEnd * 0.85f;
+        const float strokeWidth = (std::max)(1.5f, baseRadius * 0.06f);
+
+        crosshairBrush = m_compositor.CreateColorBrush(color);
+
+        // Horizontal line geometry
+        auto hLineGeom = m_compositor.CreateLineGeometry();
+        hLineGeom.Start({ -crosshairStart, 0.0f });
+        hLineGeom.End({ crosshairStart, 0.0f });
+        hLineShape = m_compositor.CreateSpriteShape(hLineGeom);
+        hLineShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        hLineShape.StrokeBrush(crosshairBrush);
+        hLineShape.StrokeThickness(strokeWidth);
+
+        // Vertical line geometry
+        auto vLineGeom = m_compositor.CreateLineGeometry();
+        vLineGeom.Start({ 0.0f, -crosshairStart });
+        vLineGeom.End({ 0.0f, crosshairStart });
+        vLineShape = m_compositor.CreateSpriteShape(vLineGeom);
+        vLineShape.Offset({ static_cast<float>(pt.x), static_cast<float>(pt.y) });
+        vLineShape.StrokeBrush(crosshairBrush);
+        vLineShape.StrokeThickness(strokeWidth);
+
+        m_shape.Shapes().Append(hLineShape);
+        m_shape.Shapes().Append(vLineShape);
+
+        // Animate crosshair expansion
+        auto hStartAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        hStartAnim.InsertKeyFrame(0.0f, { -crosshairStart, 0.0f });
+        hStartAnim.InsertKeyFrame(1.0f, { -crosshairEnd, 0.0f }, ease);
+        hStartAnim.Duration(dur);
+
+        auto hEndAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        hEndAnim.InsertKeyFrame(0.0f, { crosshairStart, 0.0f });
+        hEndAnim.InsertKeyFrame(1.0f, { crosshairEnd, 0.0f }, ease);
+        hEndAnim.Duration(dur);
+
+        auto vStartAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        vStartAnim.InsertKeyFrame(0.0f, { 0.0f, -crosshairStart });
+        vStartAnim.InsertKeyFrame(1.0f, { 0.0f, -crosshairEnd }, ease);
+        vStartAnim.Duration(dur);
+
+        auto vEndAnim = m_compositor.CreateVector2KeyFrameAnimation();
+        vEndAnim.InsertKeyFrame(0.0f, { 0.0f, crosshairStart });
+        vEndAnim.InsertKeyFrame(1.0f, { 0.0f, crosshairEnd }, ease);
+        vEndAnim.Duration(dur);
+
+        hLineGeom.StartAnimation(L"Start", hStartAnim);
+        hLineGeom.StartAnimation(L"End", hEndAnim);
+        vLineGeom.StartAnimation(L"Start", vStartAnim);
+        vLineGeom.StartAnimation(L"End", vEndAnim);
+    }
 
     // Radius animations (scale-equivalent, keeps stroke crisp).
     auto glowSizeAnim = m_compositor.CreateVector2KeyFrameAnimation();
@@ -777,18 +1269,28 @@ void Highlighter::SpawnRipplePulse(MouseButton button)
     ringColorAnim.InsertKeyFrame(1.0f, transparentColor, ease);
     ringColorAnim.Duration(dur);
 
-    // Batch the four animations so we can clean up the shapes when the pulse ends.
+    // Batch all animations so we can clean up the shapes when the pulse ends.
     auto batch = m_compositor.CreateScopedBatch(winrt::CompositionBatchTypes::Animation);
     glowGeom.StartAnimation(L"Radius", glowSizeAnim);
     ringGeom.StartAnimation(L"Radius", ringSizeAnim);
     glowBrush.StartAnimation(L"Color", glowColorAnim);
     ringBrush.StartAnimation(L"Color", ringColorAnim);
+
+    if (crosshairBrush)
+    {
+        auto crosshairColorAnim = m_compositor.CreateColorKeyFrameAnimation();
+        crosshairColorAnim.InsertKeyFrame(0.0f, color);
+        crosshairColorAnim.InsertKeyFrame(1.0f, transparentColor, ease);
+        crosshairColorAnim.Duration(dur);
+        crosshairBrush.StartAnimation(L"Color", crosshairColorAnim);
+    }
+
     batch.End();
 
     auto dispatcher = m_dispatcherQueueController.DispatcherQueue();
-    batch.Completed([dispatcher, glowShape, ringShape](auto&&, auto&&) {
+    batch.Completed([dispatcher, glowShape, ringShape, hLineShape, vLineShape](auto&&, auto&&) {
         // Marshal shape removal back to the compositor thread.
-        dispatcher.TryEnqueue([glowShape, ringShape]() {
+        dispatcher.TryEnqueue([glowShape, ringShape, hLineShape, vLineShape]() {
             try
             {
                 if (Highlighter::instance == nullptr || Highlighter::instance->m_shape == nullptr)
@@ -797,6 +1299,14 @@ void Highlighter::SpawnRipplePulse(MouseButton button)
                 }
                 auto shapes = Highlighter::instance->m_shape.Shapes();
                 uint32_t index = 0;
+                if (vLineShape && shapes.IndexOf(vLineShape, index))
+                {
+                    shapes.RemoveAt(index);
+                }
+                if (hLineShape && shapes.IndexOf(hLineShape, index))
+                {
+                    shapes.RemoveAt(index);
+                }
                 if (shapes.IndexOf(ringShape, index))
                 {
                     shapes.RemoveAt(index);
