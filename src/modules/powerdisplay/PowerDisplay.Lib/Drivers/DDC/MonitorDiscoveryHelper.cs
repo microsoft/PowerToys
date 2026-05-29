@@ -90,7 +90,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// after discovery to avoid slow I2C operations during the discovery phase.
         /// </summary>
         /// <param name="physicalMonitor">Physical monitor structure with handle and description</param>
-        /// <param name="monitorInfo">Display info from QueryDisplayConfig (EdidId, FriendlyName, MonitorNumber)</param>
+        /// <param name="monitorInfo">Display info from QueryDisplayConfig (DevicePath, FriendlyName, MonitorNumber)</param>
         internal Monitor? CreateMonitorFromPhysical(
             PHYSICAL_MONITOR physicalMonitor,
             MonitorDisplayInfo monitorInfo)
@@ -114,7 +114,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 if (string.IsNullOrEmpty(monitorInfo.DevicePath))
                 {
                     Logger.LogWarning(
-                        $"DDC: Skipping monitor #{monitorInfo.MonitorNumber} (name='{name}', edid='{monitorInfo.EdidId}') — DevicePath unavailable, cannot generate stable Id");
+                        $"DDC: Skipping monitor #{monitorInfo.MonitorNumber} (name='{name}') — DevicePath unavailable, cannot generate stable Id");
                     return null;
                 }
 

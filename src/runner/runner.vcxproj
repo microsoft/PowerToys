@@ -28,7 +28,6 @@
     <PackageReference Include="Microsoft.Windows.ImplementationLibrary" GeneratePathProperty="true" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(RepoRoot)deps\expected.props" />
   <ImportGroup Label="Shared" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>

@@ -10,8 +10,6 @@
     Loaded="UserControl_Loaded"
     mc:Ignorable="d">
     <UserControl.Resources>
-        <x:Double x:Key="PageMaxWidth">1000</x:Double>
-        <x:Double x:Key="PageHeaderMaxWidth">1020</x:Double>
         <converters:UriToImageSourceConverter x:Key="UriToImageSourceConverter" />
     </UserControl.Resources>
     <Grid Padding="20,0,0,0" RowSpacing="24">
@@ -56,7 +54,7 @@
                         VerticalAlignment="Top"
                         CornerRadius="{StaticResource OverlayCornerRadius}"
                         Visibility="{x:Bind ModuleImageSource, Converter={StaticResource EmptyObjectToObjectConverter}}">
-                        <Image AutomationProperties.AccessibilityView="Raw" Source="{x:Bind ModuleImageSource, Converter={StaticResource UriToImageSourceConverter}, Mode=OneWay}" />
+                        <Image AutomationProperties.AccessibilityView="Raw" Source="{x:Bind ModuleImageSource, Mode=OneWay}" />
                     </Border>
 
                     <StackPanel x:Name="DescriptionPanel" Grid.Column="1">

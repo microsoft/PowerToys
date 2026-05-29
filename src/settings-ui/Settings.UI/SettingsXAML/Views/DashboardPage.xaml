@@ -119,8 +119,7 @@
                         <Image
                             Width="120"
                             AutomationProperties.AccessibilityView="Raw"
-                            Source="ms-appx:///Assets/Settings/Modules/PT.png" />
-                        <Grid Background="{ThemeResource SmokeFillColorDefaultBrush}" />
+                            Source="{ThemeResource PTImageUrl}" />
                     </Grid>
                     <StackPanel
                         Grid.Column="1"
