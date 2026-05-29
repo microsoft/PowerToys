@@ -8,6 +8,12 @@ constexpr int MOUSE_HIGHLIGHTER_DEFAULT_RADIUS = 20;
 constexpr int MOUSE_HIGHLIGHTER_DEFAULT_DELAY_MS = 500;
 constexpr int MOUSE_HIGHLIGHTER_DEFAULT_DURATION_MS = 250;
 constexpr bool MOUSE_HIGHLIGHTER_DEFAULT_AUTO_ACTIVATE = false;
+// Ripple-specific defaults (independent of the always-on circle settings above).
+constexpr int MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SIZE = 60;
+constexpr double MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_INTENSITY = 0.7;
+constexpr int MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_DURATION_MS = 480;
+constexpr bool MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SHOW_DRAG_TRAIL = true;
+constexpr bool MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SHOW_RELEASE_PULSE = true;
 
 struct MouseHighlighterSettings
 {
@@ -20,6 +26,11 @@ struct MouseHighlighterSettings
     bool autoActivate = MOUSE_HIGHLIGHTER_DEFAULT_AUTO_ACTIVATE;
     bool spotlightMode = false;
     bool rippleMode = false;
+    int rippleSize = MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SIZE;
+    double rippleIntensity = MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_INTENSITY;
+    int rippleDurationMs = MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_DURATION_MS;
+    bool rippleShowDragTrail = MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SHOW_DRAG_TRAIL;
+    bool rippleShowReleasePulse = MOUSE_HIGHLIGHTER_DEFAULT_RIPPLE_SHOW_RELEASE_PULSE;
 };
 
 int MouseHighlighterMain(HINSTANCE hinst, MouseHighlighterSettings settings);

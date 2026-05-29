@@ -2823,6 +2823,46 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Duration of the disappear animation (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
+  <data name="MouseUtils_MouseHighlighter_RippleSize.Header" xml:space="preserve">
+    <value>Ripple size (px)</value>
+    <comment>Ripple mode only. px = pixels. Base radius of the click pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleSize.Description" xml:space="preserve">
+    <value>Base radius of the ripple pulse in pixels (ripple mode only)</value>
+    <comment>Description for the Ripple size setting.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleIntensity.Header" xml:space="preserve">
+    <value>Ripple intensity</value>
+    <comment>Ripple mode only. Brightness/punch of the pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleIntensity.Description" xml:space="preserve">
+    <value>Brightness and stroke weight of the ripple pulse. Higher values add a soft glow halo.</value>
+    <comment>Description for the Ripple intensity slider.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleDurationMs.Header" xml:space="preserve">
+    <value>Ripple duration (ms)</value>
+    <comment>Ripple mode only. ms = milliseconds.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleDurationMs.Description" xml:space="preserve">
+    <value>How long each ripple pulse takes to fade out (ms)</value>
+    <comment>Description for the Ripple duration setting. ms = milliseconds.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Header" xml:space="preserve">
+    <value>Show drag trail</value>
+    <comment>Ripple mode only. Toggle for emitting small dots while a mouse button is held down and the cursor moves.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Description" xml:space="preserve">
+    <value>Emit small fading dots along the cursor path while a mouse button is held down</value>
+    <comment>Description for the Show drag trail toggle in ripple mode.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Header" xml:space="preserve">
+    <value>Show release pulse</value>
+    <comment>Ripple mode only. Toggle for the contracting pulse drawn when a mouse button is released.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Description" xml:space="preserve">
+    <value>Show a smaller contracting pulse when a mouse button is released</value>
+    <comment>Description for the Show release pulse toggle in ripple mode.</comment>
+  </data>
   <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Refers to the utility name</comment>
