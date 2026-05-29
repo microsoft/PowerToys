@@ -67,7 +67,7 @@ namespace PowerDisplay.Common.Services
 
         /// <summary>
         /// Profiles are per-monitor snapshots. Applying one while linked brightness is active
-        /// should leave linked mode before writing individual monitor values, otherwise the
+        /// should leave linked mode before writing individual monitor values. Otherwise, the
         /// master slider state can diverge from the per-monitor hardware values.
         /// </summary>
         public static bool ShouldDisableLinkedModeBeforeProfileApply(bool linkedLevelsActive) =>
