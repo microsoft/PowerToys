@@ -50,7 +50,7 @@ Alternatively, use the VS Code launch configuration **"Run AdvancedPaste"** from
 
 - The `LanguageModel` API requires a Limited Access Feature (LAF) unlock, which only succeeds when the calling process has a matching package identity.
 - Advanced Paste is an unpackaged, self-contained WinUI 3 app. The sparse package grants it identity without converting it to a full MSIX.
-- The csproj keeps `<ProjectPriFileName>resources.pri</ProjectPriFileName>` as a defensive workaround: WinUI's XAML type-info loader still hard-codes a `resources.pri` lookup under sparse identity even though WindowsAppSDK 2.0.1 ([PR #6376](https://github.com/microsoft/WindowsAppSDK/pull/6376)) fixed the generic MRT fallback. Without this override, `Microsoft.UI.Xaml.dll` crashes with `REGDB_E_CLASSNOTREG` (`0xC000027B`).
+- The csproj uses `<ProjectPriFileName>PowerToys.AdvancedPaste.pri</ProjectPriFileName>` (matching the convention of other WinUI3 apps like ImageResizer). This requires WindowsAppSDK Foundation >= 2.0.22 ([PR #6376](https://github.com/microsoft/WindowsAppSDK/pull/6376)) which fixes MRT PRI lookup under sparse identity so `Application.LoadComponent` resolves custom-named PRI files instead of hard-coding `resources.pri`.
 
 #### One-step dev setup
 
@@ -77,7 +77,7 @@ $pkg.IsDevelopmentMode    # True
 Confirm AP picks up sparse identity at runtime:
 
 ```powershell
-& 'ARM64\Debug\WinUI3Apps\AdvancedPaste\PowerToys.AdvancedPaste.exe' --check-phi-silica
+& 'ARM64\Debug\WinUI3Apps\PowerToys.AdvancedPaste.exe' --check-phi-silica
 # Exit 0 = Available, 1 = NotReady, 2 = NotSupported
 ```
 
@@ -90,7 +90,7 @@ Re-register after rebuilding AP, changing `src/PackageIdentity/AppxManifest.xml`
 | `GetPackageFamilyName` returns `APPMODEL_ERROR_NO_PACKAGE` (15700) at runtime; LAF unlock returns `Unavailable` | Dev certificate not trusted (or sparse package not registered) | Re-run `BuildSparsePackage.ps1 -DevRegister` — auto-imports the cert into `TrustedPeople` and `Root`. |
 | `Microsoft.UI.Xaml.dll` crash with `0xC000027B` / `REGDB_E_CLASSNOTREG` on AP or Settings startup | `<Application>` `Executable` path in `src/PackageIdentity/AppxManifest.xml` does not resolve under the registered `ExternalLocation` (`<Config>\WinUI3Apps\`) | Confirm every `Executable` is relative to `WinUI3Apps\` (per #47177) and the file exists under the build output. |
 | AP launches but never shows a window when triggered via hotkey | Runner's pipe-server wait timed out before AP's cold-start finished bootstrapping WinAppSDK + DI host | Already mitigated by the 15 s pipe timeout in `AdvancedPasteProcessManager.cpp`; warm-start launches connect in well under 1 s. |
-| Per-monitor PRI conflict / `ms-appx:///Microsoft.UI.Xaml/Themes/…` not found | `ProjectPriFileName` override removed; WinUI XAML loader couldn't find `resources.pri` | Keep `<ProjectPriFileName>resources.pri</ProjectPriFileName>` in `AdvancedPaste.csproj`. |
+| `XamlParseException` / `ms-appx:///Microsoft.UI.Xaml/Themes/…` not found | WindowsAppSDK Foundation < 2.0.22; MRT can't resolve custom PRI name under sparse identity | Ensure `Microsoft.WindowsAppSDK.Foundation` >= 2.0.22 in `Directory.Packages.props`. |
 
 ### How Settings UI checks Phi Silica availability
 
@@ -106,7 +106,7 @@ PowerToys.AdvancedPaste.exe --check-phi-silica
 
 - [`src/PackageIdentity/readme.md`](/src/PackageIdentity/readme.md) — full sparse package documentation
 - [microsoft/microsoft-ui-xaml#10856](https://github.com/microsoft/microsoft-ui-xaml/issues/10856) — original WinUI sparse-identity PRI bug
-- [microsoft/WindowsAppSDK#6376](https://github.com/microsoft/WindowsAppSDK/pull/6376) — partial fix in WASDK 2.0.1 / 1.8.7
+- [microsoft/WindowsAppSDK#6376](https://github.com/microsoft/WindowsAppSDK/pull/6376) — MRT sparse PRI fix (Foundation >= 2.0.22)
 
 ## Settings
 
