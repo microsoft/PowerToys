@@ -32,13 +32,22 @@
                         IsExpanded="True">
                         <controls:SettingsExpander.Items>
                             <controls:SettingsCard Header="Throw an unhandled exception from the UI thread">
-                                <Button Click="ThrowPlainMainThreadException_Click" Content="Throw" />
+                                <Button
+                                    AutomationProperties.AutomationId="CmdPal_InternalPage_ThrowMainThreadException"
+                                    Click="ThrowPlainMainThreadException_Click"
+                                    Content="Throw" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Header="Throw an unhandled exception from the UI thread (with PII)">
-                                <Button Click="ThrowPlainMainThreadExceptionPii_Click" Content="Throw" />
+                                <Button
+                                    AutomationProperties.AutomationId="CmdPal_InternalPage_ThrowMainThreadExceptionPii"
+                                    Click="ThrowPlainMainThreadExceptionPii_Click"
+                                    Content="Throw" />
                             </controls:SettingsCard>
                             <controls:SettingsCard Description="Throw with delay, when the task is collected by the GC" Header="Throw unobserved exception from a task">
-                                <Button Click="ThrowExceptionInUnobservedTask_Click" Content="Throw" />
+                                <Button
+                                    AutomationProperties.AutomationId="CmdPal_InternalPage_ThrowUnobservedTaskException"
+                                    Click="ThrowExceptionInUnobservedTask_Click"
+                                    Content="Throw" />
                             </controls:SettingsCard>
                         </controls:SettingsExpander.Items>
                     </controls:SettingsExpander>
@@ -49,20 +58,29 @@
                         x:Name="LogsSettingsCard"
                         Header="Logs folder"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}">
-                        <Button Click="OpenLogsCardClicked" Content="Open folder" />
+                        <Button
+                            AutomationProperties.AutomationId="CmdPal_InternalPage_OpenLogsFolder"
+                            Click="OpenLogsCardClicked"
+                            Content="Open folder" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
                         x:Name="CurrentLogFileSettingsCard"
                         Header="Current log file"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF7BB;}">
-                        <Button Click="OpenCurrentLogCardClicked" Content="Open log" />
+                        <Button
+                            AutomationProperties.AutomationId="CmdPal_InternalPage_OpenCurrentLog"
+                            Click="OpenCurrentLogCardClicked"
+                            Content="Open log" />
                     </controls:SettingsCard>
                     <controls:SettingsCard
                         x:Name="ToggleDevRibbonVisibilitySettingsCard"
                         Description="This is only temporary and state is not saved"
                         Header="Toggle dev ribbon visibility"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE8EC;}">
-                        <Button Click="ToggleDevRibbonClicked" Content="Toggle dev ribbon" />
+                        <Button
+                            AutomationProperties.AutomationId="CmdPal_InternalPage_ToggleDevRibbon"
+                            Click="ToggleDevRibbonClicked"
+                            Content="Toggle dev ribbon" />
                     </controls:SettingsCard>
 
                     <!--  Gallery Section  -->
@@ -85,7 +103,10 @@
                         x:Name="ConfigurationFolderSettingsCard"
                         Header="Configuration folder"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF73D;}">
-                        <Button Click="OpenConfigFolderCardClick" Content="Open folder" />
+                        <Button
+                            AutomationProperties.AutomationId="CmdPal_InternalPage_OpenConfigFolder"
+                            Click="OpenConfigFolderCardClick"
+                            Content="Open folder" />
                     </controls:SettingsCard>
 
 

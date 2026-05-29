@@ -1,0 +1,1370 @@
+PackageName: Adobe.InDesign
+Name: Adobe InDesign
+WindowFilter: "indesign.exe"
+BackgroundProcess: false
+Shortcuts:
+  - SectionName: Tools
+    Properties:
+      - Name: Selection tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - V
+      - Name: Direct Selection tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - A
+      - Name: Toggle Selection and Direct Selection tool
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Tab
+      - Name: Page tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - P
+      - Name: Gap tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - U
+      - Name: Pen tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - P
+      - Name: Add Anchor Point tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - =
+      - Name: Add Anchor Point tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - =
+      - Name: Delete Anchor Point tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Minus
+      - Name: Convert Direction Point tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - C
+      - Name: Type tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - T
+      - Name: Type On A Path tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - T
+      - Name: Pencil tool (Note tool)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - N
+      - Name: Line tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Backslash
+      - Name: Rectangle Frame tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F
+      - Name: Rectangle tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - M
+      - Name: Ellipse tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - L
+      - Name: Rotate tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - R
+      - Name: Scale tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - S
+      - Name: Shear tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - O
+      - Name: Free Transform tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - E
+      - Name: Eyedropper tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - I
+      - Name: Measure tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - K
+      - Name: Gradient tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - G
+      - Name: Scissors tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - C
+      - Name: Hand tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - H
+      - Name: Zoom tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Z
+      - Name: Temporarily selects Zoom In tool
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Space>"
+      - Name: Toggle Fill and Stroke
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - X
+      - Name: Swap Fill and Stroke
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - X
+      - Name: Toggle between Formatting Affects Container and Formatting Affects Text
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - J
+      - Name: Apply Gradient
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - ". [period]"
+      - Name: Apply No Color
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Slash
+      - Name: Switch between Normal View and Preview Mode
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - W
+      - Name: Frame Grid tool (horizontal)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Y
+      - Name: Frame Grid tool (vertical)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Q
+      - Name: Gradient Feather tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - G
+  - SectionName: Selecting and moving objects
+    Properties:
+      - Name: Duplicate and offset selection
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Left Arrow
+      - Name: Duplicate and offset selection by 10 times
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - Left Arrow
+      - Name: Move selection
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Left Arrow
+      - Name: Move selection by 10th
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Left Arrow
+      - Name: Move selection by 10 times
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Left Arrow
+      - Name: Select next or previous frame in story
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Page Down/ Alt
+            - PageUp
+      - Name: Select first or last frame in story
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - Page Down/ Shift
+            - PageUp
+  - SectionName: Transforming objects
+    Properties:
+      - Name: "Decrease scale by 1%"
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+
+      - Name: "Decrease scale by 5%"
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+
+      - Name: "Increase scale by 1%"
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Period
+      - Name: "Increase scale by 5%"
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Period
+      - Name: Switch image from High Quality Display to Fast Display
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - Z
+  - SectionName: Editing paths and frames
+    Properties:
+      - Name: Temporarily select Convert Direction Point tool
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Direct Selection tool
+      - Name: Temporarily switch between Add Anchor Point and Delete Anchor Point tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+
+      - Name: Temporarily select Add Anchor Point tool
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Scissors tool
+      - Name: Keep Pen tool selected when pointer is over path or anchor point
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Pen tool
+      - Name: Move anchor point and handles while drawing
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Pen tool
+            - "<Space>"
+      - Name: Display the Stroke panel
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - F10
+  - SectionName: Tables
+    Properties:
+      - Name: Move to next/previous cell
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Tab/Shift
+            - Tab
+      - Name: Move to first/last cell in column
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Page Up/ Alt
+            - PageDown
+      - Name: Move to first/last cell in row
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Home/ Alt
+            - End
+      - Name: Select cell above/below the current cell
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Up Arrow/ Shift
+            - Down Arrow
+      - Name: Select cell to the right/left of the current cell
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Right Arrow/ Shift
+            - Left Arrow
+      - Name: Start row on next frame
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Enter (numeric keypad)
+      - Name: Toggle between text selection and cell selection
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Escape>"
+  - SectionName: Finding and changing text
+    Properties:
+      - Name: Insert selected text into Find What box
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F1
+      - Name: Insert selected text into Find What box and finds next
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - F1
+      - Name: Find next occurrence of Find What text
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - F2
+      - Name: Insert selected text into Change To box
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F2
+      - Name: Replace selection with Change To text
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F3
+  - SectionName: Working with type
+    Properties:
+      - Name: Bold (only for fonts with bold face)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - B
+      - Name: Italic (only for fonts with italic face)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - I
+      - Name: Normal
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Y
+      - Name: Underline
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - U
+      - Name: Strikethrough
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Slash
+      - Name: All caps (on/off)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - K
+      - Name: Asian language hyphenation
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - K
+      - Name: Small caps (on/off)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - H
+      - Name: Tate-chu-yoko setting
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - H
+      - Name: Superscript
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - (
+            - ") [plus sign]"
+      - Name: Subscript
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - (
+            - ") [plus sign]"
+      - Name: "Reset horizontal or vertical scale to 100%"
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - X
+      - Name: Basic letter group setting or detail setting
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - X
+      - Name: "Align left, right, or center"
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - L
+      - Name: Justify all lines
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - F (all lines)
+      - Name: Align both ends or equal spacing
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - F (align both end)
+      - Name: Increase or decrease point size
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - ">"
+      - Name: Increase or decrease point size by five times
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - ">"
+      - Name: Increase or decrease leading (horizontal text)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Up Arrow/ Alt
+            - Down Arrow
+      - Name: Increase or decrease leading (vertical text)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Right Arrow/ Alt
+            - Left Arrow
+      - Name: Increase or decrease leading by five times (horizontal text)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Up Arrow/ Alt
+            - Down Arrow
+      - Name: Increase or decrease leading by five times (vertical text)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Right Arrow/ Alt
+            - Left Arrow
+      - Name: Auto leading
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - A
+      - Name: Align to grid (on/off)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - G
+      - Name: Auto-hyphenate (on/off)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - H
+      - Name: Increase or decrease kerning and tracking (horizontal text)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Left Arrow/Alt
+            - Right Arrow
+      - Name: Increase or decrease kerning and tracking (vertical text)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Up Arrow/ Alt
+            - Down Arrow
+      - Name: Increase or decrease kerning and tracking by five times (horizontal text)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Left Arrow/ Alt
+            - Right Arrow
+      - Name: Increase or decrease kerning and tracking by five times (vertical text)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Up Arrow/ Alt
+            - Down Arrow
+      - Name: Increase kerning between words
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Backslash
+      - Name: Decrease kerning between words
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - "<Backspace>"
+      - Name: Clear all manual kerning and reset tracking to 0
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Q
+      - Name: Increase or decrease baseline shift (horizontal text)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - Up Arrow/ Shift
+            - Down Arrow
+      - Name: Increase or decrease baseline shift (vertical text)
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: true
+          Keys:
+            - Right Arrow/ Shift
+            - Left Arrow
+      - Name: Increase or decrease baseline shift by five times (horizontal text)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - Up Arrow/ Shift
+            - Down Arrow
+      - Name: Increase or decrease baseline shift by five times (vertical text)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - Right Arrow/ Shift
+            - Left Arrow
+      - Name: Recompose all stories
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Slash
+      - Name: Insert current page number
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - N
+  - SectionName: Navigating through and selecting text
+    Properties:
+      - Name: Move to right or left one word
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Right Arrow/ Ctrl
+            - Left Arrow
+      - Name: Move to start or end of line
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - Home/End
+      - Name: Move to previous or next paragraph
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Up Arrow/ Ctrl
+            - Down Arrow
+      - Name: Move to start or end of story
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Home/ Ctrl
+            - End
+      - Name: Select one character right or left
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Right Arrow/ Shift
+            - Left Arrow
+      - Name: Select one line above or below
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Up Arrow/ Shift
+            - Down Arrow
+      - Name: Select start or end of line
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - Home/ Shift
+            - End
+      - Name: Select one paragraph before or after
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Up Arrow/ Shift
+            - Down Arrow
+      - Name: Select current line
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Backslash
+      - Name: Select start or end of story
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Home/ Shift
+            - End
+      - Name: Select all in story
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - A
+      - Name: Select first/last frame
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - Page Up/ Shift
+            - PageDown
+      - Name: Select previous/next frame
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - Page Up/ Alt
+            - PageDown
+      - Name: Delete word in front of insertion point (Story Editor)
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Backspace>"
+      - Name: Update missing font list
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - Slash
+  - SectionName: Viewing documents and document workspaces
+    Properties:
+      - Name: Temporarily select Zoom In tool
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Space>"
+      - Name: Temporarily select Zoom Out tool
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - "<Space>"
+      - Name: "Zoom to 50%, 200%, or 400%"
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - 5
+      - Name: Redraw screen
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: true
+          Alt: false
+          Keys:
+            - F5
+      - Name: Open new default document
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - N
+      - Name: Switch between current and previous zoom levels
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - 2
+      - Name: Switch to next/previous document window
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "~ [tilde]/ Shift"
+            - F6
+      - Name: Go back/forward to last-viewed page
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - Page Up/ Ctrl
+            - PageDown
+      - Name: Go to previous/next spread
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Page Up/ Alt
+            - PageDown
+      - Name: Activate the Go To command
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - J
+      - Name: Fit selection in window
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - (
+            - ") [plus sign]"
+      - Name: Display the entire object
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - (
+            - ") [plus sign]"
+      - Name: Go to master page while \ panel is closed
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - J
+      - Name: Cycle through units of measurement
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - U
+      - Name: Select all guides
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - G
+      - Name: Show information on installed plug‑ins and InDesign components
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "Help > About Design"
+  - SectionName: Control panel
+    Properties:
+      - Name: Toggle focus to/from Control panel
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - 6
+      - Name: Toggle Character/Paragraph text attributes mode
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - 7
+      - Name: Display the pop-up menu that has focus
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - Down Arrow
+  - SectionName: Type panels and dialog boxes
+    Properties:
+      - Name: Open Justification dialog box
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - J
+      - Name: Open Paragraph Rules dialog box
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - J
+      - Name: Open Keep Options dialog box
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - K
+      - Name: Activate Character panel
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - T
+      - Name: Activate Paragraph panel
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - T
+  - SectionName: Character and paragraph styles
+    Properties:
+      - Name: Open Justification dialog box
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - J
+      - Name: Open Paragraph Rules dialog box
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - J
+      - Name: Open Keep Options dialog box
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - K
+      - Name: Activate Character panel
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - T
+      - Name: Activate Paragraph panel
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - T
+  - SectionName: Tabs panel
+    Properties:
+      - Name: Activate Tabs panel
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - T
+  - SectionName: Pages panel
+    Properties:
+      - Name: Add new page after last page
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - P
+  - SectionName: Separations Preview panel
+    Properties:
+      - Name: Turn on Overprint preview
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - Y
+      - Name: Show all plates
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - "~ [tilde]"
+      - Name: Show Cyan plate
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - 1
+      - Name: Show Magenta plate
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - 2
+      - Name: Show Yellow plate
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - 3
+      - Name: Show Black plate
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - 4
+      - Name: Show 1st Spot plate
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - 5
+      - Name: Show 2nd Spot plate
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - 6
+      - Name: Show 3rd Spot plate
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: true
+          Keys:
+            - 7
+  - SectionName: Transform panel
+    Properties:
+      - Name: Apply value and copy object
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: true
+          Keys:
+            - "<Enter>"
+      - Name: "Apply width, height, or scale value proportionally"
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Enter>"

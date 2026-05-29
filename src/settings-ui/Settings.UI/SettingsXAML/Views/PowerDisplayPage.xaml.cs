@@ -29,9 +29,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
                 SettingsRepository<PowerDisplaySettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
+            ViewModel.ConfirmDangerousFeatureAsync = ShowDangerousFeatureDialogAsync;
             DataContext = ViewModel;
             InitializeComponent();
             Loaded += (s, e) => ViewModel.OnPageLoaded();
+        }
+
+        private async Task<bool> ShowDangerousFeatureDialogAsync(string resourceKeyPrefix)
+        {
+            var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix) { XamlRoot = XamlRoot };
+            return await dialog.ShowAsync() == ContentDialogResult.Primary;
         }
 
         public void RefreshEnabledState()
@@ -209,10 +216,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        // Flag to prevent reentrant Click/Toggled handling while we programmatically restore
-        // a control after the user cancels a dangerous-feature confirmation dialog.
-        private bool _isRestoringDangerousFeatureControl;
-
         private async void EnableColorTemperature_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not CheckBox cb || cb.Tag is not MonitorInfo monitor)
@@ -220,10 +223,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_ColorTemperature",
-                value => monitor.EnableColorTemperature = value);
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnableColorTemperature,
+                v => monitor.EnableColorTemperature = v,
+                "PowerDisplay_ColorTemperature");
         }
 
         private async void EnablePowerState_Click(object sender, RoutedEventArgs e)
@@ -233,10 +238,12 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_PowerState",
-                value => monitor.EnablePowerState = value);
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnablePowerState,
+                v => monitor.EnablePowerState = v,
+                "PowerDisplay_PowerState");
         }
 
         private async void EnableInputSource_Click(object sender, RoutedEventArgs e)
@@ -246,92 +253,44 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return;
             }
 
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_InputSource",
-                value => monitor.EnableInputSource = value);
+            await TryCommitDangerousChangeAsync(
+                cb,
+                cb.IsChecked == true,
+                monitor.EnableInputSource,
+                v => monitor.EnableInputSource = v,
+                "PowerDisplay_InputSource");
         }
 
-        private async void MaxCompatibilityMode_Toggled(object sender, RoutedEventArgs e)
+        // Per-monitor CheckBoxes use OneWay binding + Click (Click only fires for real user
+        // input, so the binding-driven event problem the ToggleSwitch had does not apply).
+        // The "no gesture" check still appears here because Click fires for keyboard space-
+        // bar even when the IsChecked didn't move, and to keep the cancel-revert path safe.
+        private async Task<bool> TryCommitDangerousChangeAsync(
+            CheckBox control,
+            bool desiredValue,
+            bool currentValue,
+            Action<bool> commit,
+            string resourceKeyPrefix)
         {
-            // Guard against re-entry from the cancel path's programmatic IsOn revert,
-            // which fires Toggled a second time. See HandleDangerousFeatureClickAsync.
-            if (_isRestoringDangerousFeatureControl)
+            if (desiredValue == currentValue)
             {
-                return;
+                return false;
             }
 
-            bool before = ViewModel.MaxCompatibilityMode;
-
-            await HandleDangerousFeatureClickAsync(
-                sender,
-                "PowerDisplay_MaxCompatibility",
-                value => ViewModel.MaxCompatibilityMode = value);
-
-            if (ViewModel.MaxCompatibilityMode != before)
+            if (!desiredValue)
             {
-                ViewModel.SignalRescanRequest();
-            }
-        }
-
-        // The bound CheckBoxes/ToggleSwitch use Mode=OneWay, so the control's new state is NOT
-        // pushed to the ViewModel/model automatically. This handler is the sole commit path:
-        // confirmed enable -> setter(true); any disable -> setter(false); cancelled enable ->
-        // revert the control's UI (the model was never touched).
-        private async Task HandleDangerousFeatureClickAsync(
-            object sender,
-            string resourceKeyPrefix,
-            Action<bool> setter)
-        {
-            if (_isRestoringDangerousFeatureControl)
-            {
-                return;
+                commit(false);
+                return true;
             }
 
-            bool newValue;
-            Action revertUi;
-            switch (sender)
+            if (await ShowDangerousFeatureDialogAsync(resourceKeyPrefix))
             {
-                case CheckBox cb:
-                    newValue = cb.IsChecked == true;
-                    revertUi = () => cb.IsChecked = !newValue;
-                    break;
-                case ToggleSwitch ts:
-                    newValue = ts.IsOn;
-                    revertUi = () => ts.IsOn = !newValue;
-                    break;
-                default:
-                    return;
+                commit(true);
+                return true;
             }
 
-            // Disabling a dangerous feature is always safe and needs no confirmation.
-            if (!newValue)
-            {
-                setter(false);
-                return;
-            }
-
-            var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix)
-            {
-                XamlRoot = this.XamlRoot,
-            };
-
-            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
-            {
-                setter(true);
-            }
-            else
-            {
-                _isRestoringDangerousFeatureControl = true;
-                try
-                {
-                    revertUi();
-                }
-                finally
-                {
-                    _isRestoringDangerousFeatureControl = false;
-                }
-            }
+            control.IsChecked = currentValue;
+            return false;
         }
     }
 }

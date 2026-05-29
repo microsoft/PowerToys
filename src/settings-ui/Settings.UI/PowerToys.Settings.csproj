@@ -19,6 +19,7 @@
 		<!-- MRT from windows app sdk will search for a pri file with the same name of the module before defaulting to resources.pri -->
 		<ProjectPriFileName>PowerToys.Settings.pri</ProjectPriFileName>
 	</PropertyGroup>
+
 	<ItemGroup>
 		<None Remove="Assets\Settings\Icons\Models\Azure.svg" />
 		<None Remove="Assets\Settings\Icons\Models\FoundryLocal.svg" />
@@ -29,6 +30,8 @@
 		<None Remove="Assets\Settings\Modules\APDialog.dark.png" />
 		<None Remove="Assets\Settings\Modules\APDialog.light.png" />
 		<None Remove="Assets\Settings\Modules\LightSwitch.png" />
+		<None Remove="Assets\Settings\Modules\OOBE\pt-hero.dark.png" />
+		<None Remove="Assets\Settings\Modules\OOBE\pt-hero.light.png" />
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
 		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
@@ -112,6 +115,7 @@
 		<ProjectReference Include="..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
 		<ProjectReference Include="..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
 		<ProjectReference Include="..\..\common\interop\PowerToys.Interop.vcxproj" />
+		<ProjectReference Include="..\..\modules\poweraccent\PowerAccent.Common\PowerAccent.Common.csproj" />
 		<ProjectReference Include="..\..\modules\ZoomIt\ZoomItSettingsInterop\ZoomItSettingsInterop.vcxproj" />
 		<ProjectReference Include="..\..\common\ManagedCommon\ManagedCommon.csproj" />
 		<ProjectReference Include="..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />

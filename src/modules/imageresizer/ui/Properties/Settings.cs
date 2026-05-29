@@ -11,11 +11,14 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
+using System.Threading.Tasks;
 using ImageResizer.Helpers;
 using ImageResizer.Models;
 using ManagedCommon;
@@ -35,6 +38,7 @@ namespace ImageResizer.Properties
 
     public sealed partial class Settings : IDataErrorInfo, INotifyPropertyChanged
     {
+        private const int WatcherDebounceDelayMs = 500;
         private static readonly IFileSystem _fileSystem = new FileSystem();
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
         {
@@ -44,6 +48,12 @@ namespace ImageResizer.Properties
             TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
         };
 
+        // Used to synchronize access to the settings.json file (in-process only)
+        private static readonly System.Threading.Lock _jsonSyncLock = new();
+
+        // Lock for debouncing watcher events.
+        private static readonly Lock _debounceLock = new();
+
         // Cached UI thread DispatcherQueue for cross-thread property change notifications
         private static DispatcherQueue _uiDispatcherQueue;
 
@@ -52,9 +62,20 @@ namespace ImageResizer.Properties
         private static CompositeFormat ValueMustBeBetween =>
             _valueMustBeBetween ??= System.Text.CompositeFormat.Parse(ResourceLoaderInstance.GetString("ValueMustBeBetween"));
 
-        // Used to synchronize access to the settings.json file (in-process only)
-        private static readonly System.Threading.Lock _jsonSyncLock = new();
         private static string _settingsPath = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer", "settings.json");
+
+        // Watches for external changes to settings file.
+        private static IFileSystemWatcher _watcher;
+        private static bool _isWatcherInitialized;
+
+        // Executed when the watcher detects a file update.
+        private static Action _reloadAction;
+
+        // Debounce token for watcher events.
+        private static CancellationTokenSource _debounceCts;
+
+        private bool _isFirstLoad = true;
+
         private string _fileNameFormat;
         private bool _shrinkOnly;
         private int _selectedSizeIndex;
@@ -93,6 +114,101 @@ namespace ImageResizer.Properties
             CustomSize = new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
             AiSize = new AiSize(2);
             AllSizes = new AllSizesCollection(this);
+        }
+
+        public static string SettingsPath { get => _settingsPath; set => _settingsPath = value; }
+
+        /// <summary>
+        /// Initializes the UI DispatcherQueue for cross-thread property change notifications.
+        /// Must be called from the UI thread during app startup.
+        /// </summary>
+        public static void InitializeDispatcher()
+        {
+            _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        }
+
+        private static void InitializeWatcher(Action reloadAction)
+        {
+            if (_isWatcherInitialized)
+            {
+                return;
+            }
+
+            _reloadAction = reloadAction;
+
+            try
+            {
+                string settingsDirectory = _fileSystem.Path.GetDirectoryName(SettingsPath);
+                string settingsFileName = _fileSystem.Path.GetFileName(SettingsPath);
+
+                if (_fileSystem.Directory.Exists(settingsDirectory))
+                {
+                    _watcher = _fileSystem.FileSystemWatcher.New();
+                    _watcher.Path = settingsDirectory;
+                    _watcher.Filter = settingsFileName;
+                    _watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.CreationTime;
+
+                    _watcher.Changed += OnSettingsFileChanged;
+                    _watcher.Created += OnSettingsFileChanged;
+
+                    _watcher.EnableRaisingEvents = true;
+
+                    _isWatcherInitialized = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(
+                    "Failed to initialize settings file watcher.", ex);
+            }
+        }
+
+        private static async void OnSettingsFileChanged(object sender, FileSystemEventArgs e)
+        {
+            try
+            {
+                await HandleSettingsFileChangedAsync();
+            }
+            catch (Exception ex)
+            {
+                // All expected exceptions are handled in the async method, e.g.
+                // TaskCanceledException.
+                Logger.LogError(
+                    "Error reloading settings from watcher.", ex);
+            }
+        }
+
+        private static async Task HandleSettingsFileChangedAsync()
+        {
+            CancellationToken token;
+
+            // Cancel any pending reload request.
+            lock (_debounceLock)
+            {
+                if (_debounceCts != null)
+                {
+                    _debounceCts.Cancel();
+                    _debounceCts.Dispose();
+                }
+
+                // Create a new debounce token.
+                _debounceCts = new();
+                token = _debounceCts.Token;
+            }
+
+            try
+            {
+                await Task.Delay(WatcherDebounceDelayMs, token);
+
+                if (!token.IsCancellationRequested)
+                {
+                    _reloadAction?.Invoke();
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Ignore cancellation. A new event superseded this one.
+            }
         }
 
         private void ValidateSelectedSizeIndex()
@@ -135,7 +251,8 @@ namespace ImageResizer.Properties
                 {
                     return CustomSize;
                 }
-                else if (ImageResizer.App.AiAvailabilityState != AiAvailabilityState.NotSupported && SelectedSizeIndex == Sizes.Count + 1)
+                else if (App.AiAvailabilityState != AiAvailabilityState.NotSupported &&
+                    SelectedSizeIndex == Sizes.Count + 1)
                 {
                     return AiSize;
                 }
@@ -296,17 +413,19 @@ namespace ImageResizer.Properties
             }
         }
 
-        private static Settings defaultInstance = new Settings();
+        // Lazy<T> guarantees thread-safe single initialization without explicit locking.
+        // Reload() is called before InitializeWatcher() so the settings directory is
+        // created (if absent) before the watcher attempts to observe it.
+        private static readonly Lazy<Settings> _defaultLazy = new(() =>
+        {
+            var s = new Settings();
+            s.Reload();
+            InitializeWatcher(s.Reload);
+            return s;
+        });
 
         [JsonIgnore]
-        public static Settings Default
-        {
-            get
-            {
-                defaultInstance.Reload();
-                return defaultInstance;
-            }
-        }
+        public static Settings Default => _defaultLazy.Value;
 
         [JsonConverter(typeof(WrappedJsonValueConverter))]
         [JsonPropertyName("imageresizer_selectedSizeIndex")]
@@ -322,6 +441,7 @@ namespace ImageResizer.Properties
 
                 _selectedSizeIndex = value;
                 NotifyPropertyChanged();
+                NotifyPropertyChanged(nameof(SelectedSize));
             }
         }
 
@@ -479,17 +599,6 @@ namespace ImageResizer.Properties
             }
         }
 
-        public static string SettingsPath { get => _settingsPath; set => _settingsPath = value; }
-
-        /// <summary>
-        /// Initializes the UI DispatcherQueue for cross-thread property change notifications.
-        /// Must be called from the UI thread during app startup.
-        /// </summary>
-        public static void InitializeDispatcher()
-        {
-            _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread();
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void NotifyPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = "")
@@ -521,7 +630,7 @@ namespace ImageResizer.Properties
         public void Reload()
         {
             string oldSettingsDir = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "ImageResizer");
-            string settingsDir = _fileSystem.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "Image Resizer");
+            string settingsDir = _fileSystem.Path.GetDirectoryName(SettingsPath);
 
             if (_fileSystem.Directory.Exists(oldSettingsDir) && !_fileSystem.Directory.Exists(settingsDir))
             {
@@ -560,7 +669,10 @@ namespace ImageResizer.Properties
                 }
                 else
                 {
-                    _uiDispatcherQueue.TryEnqueue(() => ReloadCore(jsonSettings));
+                    if (!_uiDispatcherQueue.TryEnqueue(() => ReloadCore(jsonSettings)))
+                    {
+                        Logger.LogWarning("Settings reload skipped: dispatcher queue is unavailable.");
+                    }
                 }
             }
             else
@@ -582,18 +694,78 @@ namespace ImageResizer.Properties
             FileName = jsonSettings.FileName;
             KeepDateModified = jsonSettings.KeepDateModified;
             FallbackEncoder = jsonSettings.FallbackEncoder;
-            CustomSize = jsonSettings.CustomSize;
-            AiSize = jsonSettings.AiSize ?? new AiSize(2);
-            SelectedSizeIndex = jsonSettings.SelectedSizeIndex;
 
+            // Recover invalid IDs before any ID-based matching step. This handles corrupted or
+            // user-edited settings files.
             if (jsonSettings.Sizes.Count > 0)
             {
-                Sizes.Clear();
-                Sizes.AddRange(jsonSettings.Sizes);
-                IdRecoveryHelper.RecoverInvalidIds(Sizes);
+                IdRecoveryHelper.RecoverInvalidIds(jsonSettings.Sizes);
             }
 
-            ValidateSelectedSizeIndex();
+            // Remember previous selection to try to preserve it.
+            bool wasCustomSize = SelectedSize is CustomSize;
+            bool wasAiSize = SelectedSize is AiSize;
+            int? selectedId = SelectedSize is IHasId userSize ? userSize.Id : null;
+
+            // Replace Custom/AI instances from disk, and ensure the presets are created if absent.
+            CustomSize = jsonSettings.CustomSize ?? new CustomSize(ResizeFit.Fit, 1024, 640, ResizeUnit.Pixel);
+            AiSize = jsonSettings.AiSize ?? new AiSize(2);
+
+            // Default to the index from the settings file on first load.
+            int targetIndex = jsonSettings.SelectedSizeIndex;
+
+            if (_isFirstLoad)
+            {
+                _isFirstLoad = false;
+            }
+            else
+            {
+                // The settings were updated externally. Try to preserve the selected size.
+                if (wasCustomSize)
+                {
+                    targetIndex = jsonSettings.Sizes.Count;
+                }
+                else if (wasAiSize)
+                {
+                    targetIndex = jsonSettings.Sizes.Count + 1;
+                }
+                else if (selectedId is not null)
+                {
+                    // Match by Id for user-defined size presets, defaulting to CustomSize if not
+                    // found.
+                    targetIndex = jsonSettings.Sizes.Count;
+
+                    for (int i = 0; i < jsonSettings.Sizes.Count; i++)
+                    {
+                        if (jsonSettings.Sizes[i].Id == selectedId)
+                        {
+                            targetIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Validate index. Ensures that if AI is not supported, we don't select an out-of-
+            // range index. Also handles the file value being corrupt or out of range.
+            int maxIndex = App.AiAvailabilityState == AiAvailabilityState.NotSupported
+                ? jsonSettings.Sizes.Count // CustomSize only
+                : jsonSettings.Sizes.Count + 1; // CustomSize + AiSize
+
+            if (targetIndex > maxIndex || targetIndex < 0)
+            {
+                targetIndex = jsonSettings.Sizes.Count; // Fall back to CustomSize
+            }
+
+            Sizes.Clear();
+            if (jsonSettings.Sizes.Count > 0)
+            {
+                Sizes.AddRange(jsonSettings.Sizes);
+            }
+
+            _selectedSizeIndex = targetIndex;
+            NotifyPropertyChanged(nameof(SelectedSizeIndex));
+            NotifyPropertyChanged(nameof(SelectedSize));
         }
     }
 }

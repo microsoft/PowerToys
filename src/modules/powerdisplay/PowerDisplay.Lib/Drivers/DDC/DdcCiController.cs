@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.NativeDelegates;
@@ -170,10 +171,45 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return Enumerable.Empty<Monitor>();
             }
 
-            var pipelines = handles
-                .Select(h => DiscoverFromHandleAsync(h, targetsByGdi, cancellationToken))
-                .ToList();
-            var results = await Task.WhenAll(pipelines);
+            // Wrap the parallel discovery in a CrashDetectionScope. The scope writes
+            // discovery.lock on Begin and deletes it on Dispose. If the process is killed
+            // during capabilities I/O (BSOD, FailFast, TerminateProcess), Dispose never runs
+            // and the lock survives — next PowerDisplay.exe startup notices it via CrashRecovery.
+            //
+            // Scope scope note: the original three-phase design wrapped only Phase 2 (cap-string
+            // fetch). Main's per-handle pipeline interleaves Phase 1 (GDI/MultiMon enumeration)
+            // and Phase 3 (VCP init) with the fetch, so we wrap the whole Task.WhenAll. Phase 1
+            // GDI calls return null on failure (don't throw) and Phase 3 has its own catch-all
+            // in BuildMonitorFromPhysical, so false-positive quarantine from those paths is not
+            // observed in practice. Single Begin/Dispose per discovery is also required because
+            // CrashDetectionScope uses FileMode.CreateNew + FileShare.None and cannot be nested
+            // across the concurrent per-handle pipelines.
+            IReadOnlyList<Monitor>[] results;
+            CrashDetectionScope? scope;
+            try
+            {
+                scope = CrashDetectionScope.Begin();
+            }
+            catch (Exception scopeEx)
+            {
+                // Lock could not be written (e.g. read-only %LOCALAPPDATA%). Proceed without
+                // crash protection rather than failing discovery — log so this is diagnosable.
+                Logger.LogWarning(
+                    $"DDC: CrashDetectionScope.Begin failed ({scopeEx.GetType().Name}: {scopeEx.Message}); proceeding without crash protection");
+                scope = null;
+            }
+
+            try
+            {
+                var pipelines = handles
+                    .Select(h => DiscoverFromHandleAsync(h, targetsByGdi, cancellationToken))
+                    .ToList();
+                results = await Task.WhenAll(pipelines);
+            }
+            finally
+            {
+                scope?.Dispose();
+            }
 
             var monitors = results.SelectMany(r => r).ToList();
             var newHandleMap = new Dictionary<string, IntPtr>();
@@ -654,6 +690,28 @@ namespace PowerDisplay.Common.Drivers.DDC
                     cancellationToken.ThrowIfCancellationRequested();
                     var physical = physicals[i];
                     var info = matchingInfos[i];
+
+#if DEBUG
+                    if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
+                    {
+                        // Debug-only: simulate a hard process kill to test the crash recovery
+                        // pipeline without invoking the kernel BSOD path. FailFast does not run
+                        // finally blocks, so the discovery.lock written by CrashDetectionScope
+                        // survives — just like a real BSOD.
+                        Logger.LogWarning("DEBUG: POWERDISPLAY_SIMULATE_CRASH=1 — invoking FailFast");
+                        Environment.FailFast("Simulated crash for quarantine testing");
+                    }
+#endif
+
+                    // Log identity of the monitor we are about to touch via DDC/CI BEFORE the
+                    // first syscall. If the call triggers a kernel stack-cookie overrun inside
+                    // win32kfull (see GH #47556 / #47968), this is the last log line that
+                    // survives — it has to carry enough to identify the offending hardware:
+                    // EdidId for blacklist matching, plus the human-readable name and full
+                    // DevicePath.
+                    var edidId = MonitorIdentity.EdidIdFromMonitorId(info.DevicePath);
+                    Logger.LogInfo(
+                        $"DDC: probing capabilities [EdidId={edidId}] [FriendlyName='{info.FriendlyName}'] [DevicePath={info.DevicePath}]");
 
                     // Async caps fetch (retry + max-compat probe). Awaits Task.Delay between
                     // retries instead of blocking the threadpool.

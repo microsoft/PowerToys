@@ -1,9 +1,9 @@
-name: Auto-label Issues by Area
+name: Automatic Triaging on Issue Creation
 
 on:
   issues:
     types: [opened, reopened]
-  # Manual trigger: go to Actions → "Auto-label Issues by Area" → Run workflow.
+  # Manual trigger: go to Actions → "Automatic Triaging on Issue Creation" → Run workflow.
   # Enter one or more comma-separated issue numbers (e.g. "1234" or "1234,1235,1236")
   # to apply AI-generated area labels to existing untriaged issues.
   workflow_dispatch:
@@ -88,8 +88,8 @@ jobs:
                 'Product-Advanced Paste',
                 'Product-Always On Top',
                 'Product-Awake',
-                'Product-ColorPicker',
-                'Product-Command Not Found',
+                'Product-Color Picker',
+                'Product-CommandNotFound',
                 'Product-Command Palette',
                 'Product-CropAndLock',
                 'Product-Environment Variables',
@@ -98,7 +98,7 @@ jobs:
                 'Product-File Locksmith',
                 'Product-Find My Mouse',
                 'Product-Grab And Move',
-                'Product-Hosts',
+                'Product-Hosts File Editor',
                 'Product-Image Resizer',
                 'Product-Keyboard Manager',
                 'Product-LightSwitch',
@@ -109,7 +109,7 @@ jobs:
                 'Product-Mouse Without Borders',
                 'Product-New+',
                 'Product-Peek',
-                'Product-Power Display',
+                'Product-PowerDisplay',
                 'Product-PowerRename',
                 'Product-PowerToys Run',
                 'Product-Quick Accent',

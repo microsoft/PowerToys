@@ -51,6 +51,7 @@ resw
 resx
 srt
 Stereolithography
+taskmgr
 terabyte
 UYVY
 xbf
@@ -336,6 +337,10 @@ MRUCMPPROC
 MRUINFO
 REGSTR
 
+#Xaml
+NVI
+Storyboards
+
 # Misc Win32 APIs and PInvokes
 DEFAULTTONEAREST
 INVOKEIDLIST
@@ -353,7 +358,17 @@ WINDOWPOS
 WINEVENTPROC
 WORKERW
 FULLSCREENAPP
+ACLO
+CACLI
+DOENVSUBST
+FILESYSONLY
+URLIS
+WAITTIMEOUT
 DEFAULTTONEAREST
+DWRITE
+LWIN
+VCENTER
+VREDRAW
 
 # COM/WinRT interface prefixes and type fragments
 BAlt

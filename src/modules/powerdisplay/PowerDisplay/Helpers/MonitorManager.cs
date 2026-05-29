@@ -31,6 +31,9 @@ namespace PowerDisplay.Helpers
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
 
+        // Built-in entries are loaded automatically by the service constructor.
+        private readonly MonitorBlacklistService _blacklistService = new();
+
         // Controllers stored by type for O(1) lookup based on CommunicationMethod
         private DdcCiController? _ddcController;
         private WmiController? _wmiController;
@@ -128,6 +131,34 @@ namespace PowerDisplay.Helpers
         {
             var inventory = DisplayConfigInventory.GetAllMonitorDisplayInfo();
 
+            // Filter blacklisted monitors out of the inventory before any controller
+            // is dispatched. Matching uses MonitorIdentity.EdidIdFromMonitorId on each
+            // entry's DevicePath, so blocked monitors are not opened, probed, or queried
+            // — the whole point of the blacklist over the per-monitor IsHidden flag.
+            var beforeCount = inventory.Count;
+            var filteredInventory = new Dictionary<string, MonitorDisplayInfo>(
+                inventory.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in inventory)
+            {
+                if (_blacklistService.IsBlocked(kvp.Value.DevicePath))
+                {
+                    var edidId = MonitorIdentity.EdidIdFromMonitorId(kvp.Value.DevicePath);
+                    Logger.LogInfo(
+                        $"[MonitorBlacklist] Skipping '{kvp.Value.FriendlyName}' (EdidId '{edidId}', path '{kvp.Value.DevicePath}') — EdidId is on the blacklist");
+                    continue;
+                }
+
+                filteredInventory.Add(kvp.Key, kvp.Value);
+            }
+
+            if (filteredInventory.Count < beforeCount)
+            {
+                Logger.LogInfo(
+                    $"[MonitorBlacklist] Filtered out {beforeCount - filteredInventory.Count} monitor(s); {filteredInventory.Count} remain");
+            }
+
+            inventory = filteredInventory;
+
             if (inventory.Count == 0)
             {
                 Logger.LogWarning("[MonitorManager] QueryDisplayConfig returned no displays — discovery aborted");
@@ -173,8 +204,16 @@ namespace PowerDisplay.Helpers
                     : info.OutputTechnology.ToString(CultureInfo.InvariantCulture);
                 var classification = info.IsInternal ? "Internal" : "External";
 
+                // Log EdidId (manufacturer+product code from EDID) up front, before any
+                // DDC/CI capability fetch runs. QueryDisplayConfig reads OS-cached EDID and
+                // cannot BSOD, so this line is guaranteed on disk before the crash-prone
+                // Phase 2 fetch starts — recovered logs identify every attached model
+                // (and same-model duplicates) for crash correlation.
+                var edidId = MonitorIdentity.EdidIdFromMonitorId(info.DevicePath);
+                var edidIdField = string.IsNullOrEmpty(edidId) ? "?" : edidId;
+
                 Logger.LogInfo(
-                    $"  [Path {info.MonitorNumber}] {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
+                    $"  [Path {info.MonitorNumber}] EdidId={edidIdField} {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
                     $"OutputTechnology={techValue} → {classification}");
             }
 

@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -25,6 +27,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class PowerDisplayViewModel : PageViewModelBase
     {
+        // Mirror of PowerDisplay.Lib's PathConstants.CrashDetectedFlagPath. Settings UI cannot
+        // reference PowerDisplay.Lib, so the path is recomputed here. Keep in sync with that file.
+        private static readonly string CrashDetectedFlagPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "PowerToys",
+            "PowerDisplay",
+            "crash_detected.flag");
+
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -75,6 +86,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
                     ReloadMonitorsFromSettings();
                 });
+
+            // Crash quarantine state. The flag file is the single source of truth; the page
+            // re-checks it on construction (catches crashes that happened before Settings UI
+            // launched) and on every navigation via OnPageLoaded (catches crashes while
+            // Settings UI is already open). The AutoDisable event is left as a single-consumer
+            // signal for the runner DLL — Settings UI does not race for it.
+            RefreshCrashLockState();
+        }
+
+        public override void OnPageLoaded()
+        {
+            base.OnPageLoaded();
+            RefreshCrashLockState();
+        }
+
+        private void RefreshCrashLockState()
+        {
+            if (File.Exists(CrashDetectedFlagPath) && !IsCrashLockActive)
+            {
+                Logger.LogInfo("PowerDisplayViewModel: crash flag present, locking page");
+                IsCrashLockActive = true;
+            }
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -106,21 +139,98 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                if (_isEnabled != value)
+                if (_isEnabled == value)
                 {
-                    _isEnabled = value;
-                    OnPropertyChanged(nameof(IsEnabled));
+                    return;
+                }
 
-                    GeneralSettingsConfig.Enabled.PowerDisplay = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-                    SendConfigMSG(outgoing.ToString());
+                if (value)
+                {
+                    // Enabling PowerDisplay can crash some monitors via DDC/CI capability
+                    // fetch (see #47556 / PR #47734). Don't commit yet — confirm with the user
+                    // first, then either commit or revert the toggle via OnPropertyChanged.
+                    _ = ConfirmAndEnableModuleAsync();
+                }
+                else
+                {
+                    CommitIsEnabled(false);
                 }
             }
+        }
+
+        private async Task ConfirmAndEnableModuleAsync()
+        {
+            try
+            {
+                if (await ConfirmDangerousFeatureAsync("PowerDisplay_EnableModule"))
+                {
+                    CommitIsEnabled(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: enable-module confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(IsEnabled));
+            }
+        }
+
+        private void CommitIsEnabled(bool value)
+        {
+            _isEnabled = value;
+            OnPropertyChanged(nameof(IsEnabled));
+
+            GeneralSettingsConfig.Enabled.PowerDisplay = value;
+            OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+            SendConfigMSG(outgoing.ToString());
         }
 
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
+        }
+
+        public bool IsCrashLockActive
+        {
+            get => _isCrashLockActive;
+            private set
+            {
+                if (_isCrashLockActive != value)
+                {
+                    _isCrashLockActive = value;
+                    OnPropertyChanged(nameof(IsCrashLockActive));
+                }
+            }
+        }
+
+        public ButtonClickCommand DismissCrashWarningCommand => new ButtonClickCommand(DismissCrashWarning);
+
+        private void DismissCrashWarning()
+        {
+            try
+            {
+                var path = CrashDetectedFlagPath;
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                    Logger.LogInfo("PowerDisplayViewModel: user dismissed crash warning, flag deleted");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"PowerDisplayViewModel: failed to delete crash flag: {ex.Message}");
+            }
+
+            IsCrashLockActive = false;
         }
 
         public bool RestoreSettingsOnStartup
@@ -129,10 +239,67 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             set => SetSettingsProperty(_settings.Properties.RestoreSettingsOnStartup, value, v => _settings.Properties.RestoreSettingsOnStartup = v);
         }
 
+        /// <summary>
+        /// View-supplied confirmation dialog. Default no-op denies all dangerous enables;
+        /// PowerDisplayPage replaces this in its constructor with a real dialog show.
+        /// </summary>
+        public Func<string, Task<bool>> ConfirmDangerousFeatureAsync { get; set; } = _ => Task.FromResult(false);
+
+        // Dangerous toggle. TwoWay-bound to the UI; the setter handles the "ask first"
+        // gesture entirely inside the ViewModel. Initial-binding push and post-cancel
+        // revert both hit the equality guard at the top and no-op.
         public bool MaxCompatibilityMode
         {
             get => _settings.Properties.MaxCompatibilityMode;
-            set => SetSettingsProperty(_settings.Properties.MaxCompatibilityMode, value, v => _settings.Properties.MaxCompatibilityMode = v);
+            set
+            {
+                if (_settings.Properties.MaxCompatibilityMode == value)
+                {
+                    return;
+                }
+
+                if (value)
+                {
+                    // Don't commit yet. Run the async confirm, then either commit (UI is
+                    // already showing the requested state) or revert via OnPropertyChanged.
+                    _ = ConfirmAndEnableMaxCompatAsync();
+                }
+                else
+                {
+                    _settings.Properties.MaxCompatibilityMode = false;
+                    OnPropertyChanged();
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
+            }
+        }
+
+        private async Task ConfirmAndEnableMaxCompatAsync()
+        {
+            try
+            {
+                if (await ConfirmDangerousFeatureAsync("PowerDisplay_MaxCompatibility"))
+                {
+                    _settings.Properties.MaxCompatibilityMode = true;
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: max-compat confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(MaxCompatibilityMode));
+            }
         }
 
         public bool ShowSystemTrayIcon
@@ -523,6 +690,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isEnabled;
+        private bool _isCrashLockActive;
         private PowerDisplaySettings _settings;
         private ObservableCollection<MonitorInfo> _monitors;
         private bool _hasMonitors;
