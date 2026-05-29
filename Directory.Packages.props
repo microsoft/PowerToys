@@ -79,7 +79,12 @@
     <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.250325.1"/>
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.0.1" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.0.20" />
+    <!-- Minimum 2.0.22 required: PR github.com/microsoft/WindowsAppSDK/pull/6376 fixes MRT
+         PRI lookup under sparse package identity so Application.LoadComponent resolves
+         custom-named PRI files (e.g. PowerToys.AdvancedPaste.pri) instead of hard-coding
+         resources.pri. Without this fix, any WinUI3 app with sparse identity and a custom
+         ProjectPriFileName will crash with XamlParseException in InitializeComponent. -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.0.22" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="2.0.185" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.0.1" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
