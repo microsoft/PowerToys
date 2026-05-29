@@ -64,5 +64,13 @@ namespace PowerDisplay.Common.Services
                 .ThenBy(m => m.Id, System.StringComparer.Ordinal)
                 .Select(m => (int?)m.Brightness)
                 .FirstOrDefault();
+
+        /// <summary>
+        /// Profiles are per-monitor snapshots. Applying one while linked brightness is active
+        /// should leave linked mode before writing individual monitor values, otherwise the
+        /// master slider state can diverge from the per-monitor hardware values.
+        /// </summary>
+        public static bool ShouldDisableLinkedModeBeforeProfileApply(bool linkedLevelsActive) =>
+            linkedLevelsActive;
     }
 }

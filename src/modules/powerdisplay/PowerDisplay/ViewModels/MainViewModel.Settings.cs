@@ -257,10 +257,17 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Apply profile settings to monitors
+    /// Apply profile settings to monitors. Profiles are per-monitor snapshots, so applying one
+    /// turns off linked brightness before writing individual monitor values.
     /// </summary>
     private async Task ApplyProfileAsync(List<ProfileMonitorSetting> monitorSettings)
     {
+        if (LinkedBrightnessPlanner.ShouldDisableLinkedModeBeforeProfileApply(LinkedLevelsActive))
+        {
+            Logger.LogInfo("[Profile] Disabling linked brightness before applying per-monitor profile values");
+            LinkedLevelsActive = false;
+        }
+
         var updateTasks = new List<Task>();
 
         foreach (var setting in monitorSettings)
