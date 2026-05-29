@@ -300,6 +300,58 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public bool SupportsBrightness => _monitor.SupportsBrightness;
 
     /// <summary>
+    /// Gets a value indicating whether this monitor's brightness is currently driven by linked
+    /// mode rather than its own slider. True when the parent has link mode on, this monitor
+    /// supports brightness, and the user has not excluded it. When true the per-card brightness
+    /// row shows a disabled linked-mode hint — the "All Displays" master slider broadcasts the
+    /// value instead.
+    /// </summary>
+    public bool IsBrightnessLinked => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness && !IsExcludedFromSync;
+
+    /// <summary>
+    /// Gets a value indicating whether the per-card brightness slider accepts input. Disabled both
+    /// while the app is busy (<see cref="IsInteractionEnabled"/>) and while link mode owns this
+    /// monitor's brightness (<see cref="IsBrightnessLinked"/>). Excluded monitors keep an active
+    /// slider, so this is true for them whenever interaction is enabled.
+    /// </summary>
+    public bool IsBrightnessSliderEnabled => IsInteractionEnabled && !IsBrightnessLinked;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this monitor is excluded from linked brightness.
+    /// Backed by the parent's shared exclusion set (keyed by <see cref="Id"/>), so the state
+    /// survives monitor-list rebuilds and is persisted to settings.json. An excluded monitor keeps
+    /// its own independent brightness slider while link mode is on.
+    /// </summary>
+    public bool IsExcludedFromSync
+    {
+        get => _mainViewModel?.IsMonitorExcludedFromSync(Id) ?? false;
+        set
+        {
+            if (IsExcludedFromSync != value)
+            {
+                _mainViewModel?.SetMonitorExcludedFromSync(Id, value);
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsBrightnessLinked));
+                OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+                OnPropertyChanged(nameof(SyncToggleToolTip));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the per-card exclude toggle is shown. Only relevant while
+    /// link mode is on and the monitor supports brightness — otherwise exclusion has no effect.
+    /// </summary>
+    public bool ShowExcludeButton => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness;
+
+    /// <summary>
+    /// Gets the tooltip for the per-card linked-brightness toggle. The action reverses with the
+    /// current exclusion state: linked monitors can be excluded, excluded monitors can be included.
+    /// </summary>
+    public string SyncToggleToolTip => ResourceLoaderInstance.ResourceLoader.GetString(
+        IsExcludedFromSync ? "IncludeInSyncToggleToolTip" : "ExcludeFromSyncToggleToolTip");
+
+    /// <summary>
     /// Gets a value indicating whether this monitor supports volume control via VCP 0x62
     /// </summary>
     public bool SupportsVolume => _monitor.SupportsVolume;
@@ -423,6 +475,24 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
                 OnPropertyChanged();
                 ScheduleCommit(ref _brightnessCommitTimer, () => SetBrightnessAsync(_brightness));
             }
+        }
+    }
+
+    /// <summary>
+    /// Update the brightness backing field and notify the UI without scheduling a per-VM commit
+    /// or hardware write. Used by <c>MainViewModel.LinkedBrightness</c> to keep each linked
+    /// monitor's stored brightness aligned with the master value, so it is correct if the
+    /// monitor is later excluded or link mode is disabled. The master broadcast is the single
+    /// source of hardware writes while link mode is on, so this path must not schedule its own
+    /// debounced commit.
+    /// </summary>
+    public void UpdateBrightnessDisplay(int value)
+    {
+        value = Math.Clamp(value, 0, 100);
+        if (_brightness != value)
+        {
+            _brightness = value;
+            OnPropertyChanged(nameof(Brightness));
         }
     }
 
@@ -784,11 +854,19 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         if (e.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
         {
             OnPropertyChanged(nameof(IsInteractionEnabled));
+            OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
         }
         else if (e.PropertyName == nameof(MainViewModel.HasMonitors))
         {
             // Monitor count changed, update display name to show/hide number suffix
             OnPropertyChanged(nameof(DisplayName));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.LinkedLevelsActive))
+        {
+            // Link mode toggled — refresh the linked hint, exclude button, and slider state.
+            OnPropertyChanged(nameof(IsBrightnessLinked));
+            OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+            OnPropertyChanged(nameof(ShowExcludeButton));
         }
     }
 
