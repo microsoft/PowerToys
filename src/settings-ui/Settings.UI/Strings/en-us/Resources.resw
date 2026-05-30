@@ -2848,20 +2848,20 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Description for the Ripple duration setting. ms = milliseconds.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Header" xml:space="preserve">
-    <value>Show drag trail</value>
-    <comment>Ripple mode only. Toggle for emitting small dots while a mouse button is held down and the cursor moves.</comment>
+    <value>Follow cursor while held</value>
+    <comment>Ripple mode only. Toggle for whether the held ring tracks the cursor when dragged.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Description" xml:space="preserve">
-    <value>Emit small fading dots along the cursor path while a mouse button is held down</value>
-    <comment>Description for the Show drag trail toggle in ripple mode.</comment>
+    <value>The held ripple ring moves with the cursor when you drag; turn off to anchor the ring at the click point</value>
+    <comment>Description for the Follow cursor while held toggle in ripple mode.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Header" xml:space="preserve">
-    <value>Show release pulse</value>
-    <comment>Ripple mode only. Toggle for the contracting pulse drawn when a mouse button is released.</comment>
+    <value>Show crosshairs on right-click release</value>
+    <comment>Ripple mode only. Toggle for the expanding crosshair lines drawn when a right-click is released.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Description" xml:space="preserve">
-    <value>Show a smaller contracting pulse when a mouse button is released</value>
-    <comment>Description for the Show release pulse toggle in ripple mode.</comment>
+    <value>Draw expanding crosshair lines when a right-click is released</value>
+    <comment>Description for the Show crosshairs on right-click release toggle in ripple mode.</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>

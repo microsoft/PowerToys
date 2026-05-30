@@ -69,12 +69,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             RightButtonClickColor = new StringProperty("#a60000FF");
             AlwaysColor = new StringProperty("#00FF0000");
             HighlightOpacity = new IntProperty(166); // for migration from <=1.1 to 1.2
-            HighlightRadius = new IntProperty(20);
-            HighlightFadeDelayMs = new IntProperty(500);
-            HighlightFadeDurationMs = new IntProperty(250);
+            HighlightRadius = new IntProperty(30);
+            HighlightFadeDelayMs = new IntProperty(400);
+            HighlightFadeDurationMs = new IntProperty(400);
             AutoActivate = new BoolProperty(false);
             SpotlightMode = new BoolProperty(false);
-            RippleMode = new BoolProperty(false);
+            RippleMode = new BoolProperty(true);
             RippleSize = new IntProperty(60);
             RippleIntensity = new DoubleProperty(0.7);
             RippleDurationMs = new IntProperty(480);
