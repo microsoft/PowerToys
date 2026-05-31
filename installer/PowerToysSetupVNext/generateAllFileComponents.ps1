@@ -397,6 +397,15 @@ Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePat
 ## Plugins
 
 #ShortcutGuide
+# Ensure manifest yml files are in the build output (the Build target's CopyToOutputDirectory
+# may not run reliably under -graph mode in solution builds).
+$sgManifestsSrc = "$PSScriptRoot..\..\src\modules\ShortcutGuide\ShortcutGuide.Ui\Assets\ShortcutGuide\Manifests"
+$sgManifestsDst = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests"
+if ((Test-Path $sgManifestsSrc) -and -not (Test-Path "$sgManifestsDst\*.yml")) {
+    New-Item -Path $sgManifestsDst -ItemType Directory -Force | Out-Null
+    Copy-Item "$sgManifestsSrc\*.yml" -Destination $sgManifestsDst -Force
+    Write-Host "Copied ShortcutGuide manifest yml files to build output"
+}
 Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideAssetsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\"
 Generate-FileComponents -fileListName "ShortcutGuideAssetsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
 Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideManifestsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests\"
