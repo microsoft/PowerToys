@@ -76,8 +76,8 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Workspaces.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Workspaces.wxs.bk""""
-      call cmd /C "if not exist ""$(ProjectDir)..\..\$(Platform)\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests"" mkdir ""$(ProjectDir)..\..\$(Platform)\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests"""
-      call cmd /C "xcopy ""$(ProjectDir)..\..\src\modules\ShortcutGuide\ShortcutGuide.Ui\Assets\ShortcutGuide\Manifests\*.yml"" ""$(ProjectDir)..\..\$(Platform)\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests\"" /Y /Q"
+      call cmd /C "if not exist ""$(ProjectDir)..\..\$(Platform)\$(Configuration)\WinUI3Apps\Assets\ShortcutGuide\Manifests"" mkdir ""$(ProjectDir)..\..\$(Platform)\$(Configuration)\WinUI3Apps\Assets\ShortcutGuide\Manifests"""
+      call cmd /C "xcopy ""$(ProjectDir)..\..\src\modules\ShortcutGuide\ShortcutGuide.Ui\Assets\ShortcutGuide\Manifests\*.yml"" ""$(ProjectDir)..\..\$(Platform)\$(Configuration)\WinUI3Apps\Assets\ShortcutGuide\Manifests\"" /Y /Q"
       call powershell.exe -NonInteractive -executionpolicy Unrestricted -File ..\PowerToysSetupVNext\generateAllFileComponents.ps1 -platform $(Platform)
       </Command>
       <Message>Backing up original files and populating .NET and WPF Runtime dependencies for WiX3 based installer</Message>
