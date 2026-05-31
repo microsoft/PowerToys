@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using static ShortcutGuide.Helpers.ResourceLoaderInstance;
 
@@ -27,6 +28,7 @@ namespace ShortcutGuide.Helpers
 
             if (!File.Exists(path))
             {
+                Logger.LogWarning($"PowerToys manifest file not found: '{path}'. PowerToys-specific shortcuts will not appear in ShortcutGuide.");
                 return;
             }
 
