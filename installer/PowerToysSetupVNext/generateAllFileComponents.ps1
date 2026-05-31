@@ -399,7 +399,7 @@ Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePat
 #ShortcutGuide
 # Ensure manifest yml files are in the build output (the Build target's CopyToOutputDirectory
 # may not run reliably under -graph mode in solution builds).
-$sgManifestsSrc = "$PSScriptRoot..\..\src\modules\ShortcutGuide\ShortcutGuide.Ui\Assets\ShortcutGuide\Manifests"
+$sgManifestsSrc = "$PSScriptRoot..\..\..\src\modules\ShortcutGuide\ShortcutGuide.Ui\Assets\ShortcutGuide\Manifests"
 $sgManifestsDst = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests"
 if ((Test-Path $sgManifestsSrc) -and -not (Test-Path "$sgManifestsDst\*.yml")) {
     New-Item -Path $sgManifestsDst -ItemType Directory -Force | Out-Null
