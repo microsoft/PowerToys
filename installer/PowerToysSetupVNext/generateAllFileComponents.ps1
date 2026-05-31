@@ -401,15 +401,20 @@ Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePat
 # may not run reliably under -graph mode in solution builds).
 $sgManifestsSrc = "$PSScriptRoot..\..\..\src\modules\ShortcutGuide\ShortcutGuide.Ui\Assets\ShortcutGuide\Manifests"
 $sgManifestsDst = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests"
-if ((Test-Path $sgManifestsSrc) -and -not (Test-Path "$sgManifestsDst\*.yml")) {
+Write-Host "ShortcutGuide manifests: src=$sgManifestsSrc exists=$(Test-Path $sgManifestsSrc)"
+Write-Host "ShortcutGuide manifests: dst=$sgManifestsDst exists=$(Test-Path $sgManifestsDst)"
+if (Test-Path $sgManifestsSrc) {
     New-Item -Path $sgManifestsDst -ItemType Directory -Force | Out-Null
     Copy-Item "$sgManifestsSrc\*.yml" -Destination $sgManifestsDst -Force
-    Write-Host "Copied ShortcutGuide manifest yml files to build output"
+    $copied = (Get-ChildItem "$sgManifestsDst\*.yml" -ErrorAction SilentlyContinue).Count
+    Write-Host "ShortcutGuide manifests: copied $copied yml files to build output"
+} else {
+    Write-Host "WARNING: ShortcutGuide manifest source not found at $sgManifestsSrc"
 }
 Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideAssetsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\"
-Generate-FileComponents -fileListName "ShortcutGuideAssetsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ShortcutGuideAssetsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
 Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideManifestsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests\"
-Generate-FileComponents -fileListName "ShortcutGuideManifestsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -regroot $registryroot
+Generate-FileComponents -fileListName "ShortcutGuideManifestsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
 
 #Settings
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\"
