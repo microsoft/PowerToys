@@ -112,6 +112,8 @@ Function Generate-FileComponents() {
 
     foreach ($file in $fileList) {
         $fileTmp = $file -replace "-", "_"
+        $fileTmp = $fileTmp -replace "[^A-Za-z0-9_.]", "_"
+        if ($fileTmp -match "^[^A-Za-z_]") { $fileTmp = "_$fileTmp" }
         $componentDefs +=
     @"
               <File Id="$($fileListName)_File_$($fileTmp)" Source="`$(var.$($fileListName)Path)\$($file)" />`r`n
