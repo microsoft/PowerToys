@@ -85,8 +85,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(Brightness));
         }
 
-        // Apply to hardware
-        await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
+        // A successful write turns a placeholder brightness into a usable linked-mode seed.
+        if (await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync))
+        {
+            _mainViewModel?.TrySeedPendingInitialBrightness();
+        }
     }
 
     /// <summary>
@@ -180,7 +183,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// <param name="propertyName">Name of the property being set (for logging and state persistence)</param>
     /// <param name="value">Value to apply</param>
     /// <param name="setAsyncFunc">Async function to call on MonitorManager</param>
-    private async Task ApplyPropertyToHardwareAsync(
+    private async Task<bool> ApplyPropertyToHardwareAsync(
         string propertyName,
         int value,
         Func<string, int, CancellationToken, Task<MonitorOperationResult>> setAsyncFunc)
@@ -192,6 +195,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             if (result.IsSuccess)
             {
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, propertyName, value);
+                return true;
             }
             else
             {
@@ -202,6 +206,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             Logger.LogError($"[{Id}] Exception setting {propertyName.ToLowerInvariant()}: {ex.Message}");
         }
+
+        return false;
     }
 
     // Property to access IsInteractionEnabled from parent ViewModel
@@ -252,6 +258,16 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// Gets the monitor number from the underlying monitor model (Windows DISPLAY number)
     /// </summary>
     public int MonitorNumber => _monitor.MonitorNumber;
+
+    /// <summary>
+    /// Gets the GDI device name for the display source (for example, "\\.\DISPLAY1").
+    /// </summary>
+    public string GdiDeviceName => _monitor.GdiDeviceName;
+
+    /// <summary>
+    /// Gets a value indicating whether brightness was successfully read from or written to hardware.
+    /// </summary>
+    public bool HasValidBrightness => _monitor.HasValidBrightness;
 
     /// <summary>
     /// Gets the display name - includes monitor number when multiple monitors exist.

@@ -75,6 +75,12 @@ namespace PowerDisplay.Common.Models
         public int BrightnessVcpMax { get; set; } = 100;
 
         /// <summary>
+        /// Gets or sets a value indicating whether the current brightness came from a successful
+        /// hardware read or write rather than a UI placeholder.
+        /// </summary>
+        public bool HasValidBrightness { get; set; }
+
+        /// <summary>
         /// Gets or sets current color temperature VCP preset value (from VCP code 0x14).
         /// This stores the raw VCP value (e.g., 0x05 for 6500K), not Kelvin temperature.
         /// Use ColorTemperaturePresetName to get human-readable name.

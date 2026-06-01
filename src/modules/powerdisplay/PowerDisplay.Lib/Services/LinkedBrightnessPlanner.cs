@@ -10,8 +10,8 @@ namespace PowerDisplay.Common.Services
     /// <summary>
     /// Pure decision logic for linked brightness, factored out of the WinUI ViewModel so it can be
     /// unit-tested without a DispatcherQueue. Answers three questions for a snapshot of monitors:
-    /// which ones the linked master drives, whether the master slider is usable at all, and what
-    /// value to seed the master slider with when link mode turns on.
+    /// which ones the linked master drives, whether there is any broadcast target, and what value
+    /// to seed the master slider with when link mode turns on.
     /// </summary>
     public static class LinkedBrightnessPlanner
     {
@@ -23,12 +23,16 @@ namespace PowerDisplay.Common.Services
         /// <param name="Brightness">Current brightness percentage (0-100).</param>
         /// <param name="SupportsBrightness">Whether the monitor exposes brightness control.</param>
         /// <param name="Excluded">Whether the user excluded the monitor from linked brightness.</param>
+        /// <param name="IsPrimary">Whether the monitor belongs to the Windows primary display source.</param>
+        /// <param name="HasValidBrightness">Whether brightness was successfully read from or written to hardware.</param>
         public readonly record struct LinkTarget(
             string Id,
             int MonitorNumber,
             int Brightness,
             bool SupportsBrightness,
-            bool Excluded);
+            bool Excluded,
+            bool IsPrimary,
+            bool HasValidBrightness);
 
         /// <summary>
         /// True when the monitor is driven by the linked master — it supports brightness and the
@@ -38,8 +42,9 @@ namespace PowerDisplay.Common.Services
             monitor.SupportsBrightness && !monitor.Excluded;
 
         /// <summary>
-        /// True when at least one monitor is a linked target, i.e. the master slider can do
-        /// something. False means the slider should be disabled rather than silently no-op.
+        /// True when at least one monitor is a linked target, i.e. a master-slider write has
+        /// somewhere to go. Initial slider availability additionally requires
+        /// <see cref="Seed"/> to find a readable current brightness.
         /// </summary>
         public static bool HasAnyTarget(IEnumerable<LinkTarget> monitors) =>
             monitors.Any(IsLinkedTarget);
@@ -51,16 +56,31 @@ namespace PowerDisplay.Common.Services
             monitors.Count(IsLinkedTarget);
 
         /// <summary>
+        /// Resolves whether a monitor belongs to the current Windows primary display source.
+        /// Returns false when the lookup failed so seed selection falls back to deterministic
+        /// display-number ordering.
+        /// </summary>
+        public static bool ResolveIsPrimary(
+            string monitorGdiDeviceName,
+            string? currentPrimaryGdiDeviceName) =>
+            !string.IsNullOrEmpty(currentPrimaryGdiDeviceName) &&
+            string.Equals(
+                monitorGdiDeviceName,
+                currentPrimaryGdiDeviceName,
+                System.StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
         /// The value to seed the master slider with when link mode turns on, or null when there is
-        /// no linked target (the slider stays unavailable rather than defaulting to an arbitrary
-        /// value such as 50%). Prefers the linked target with the lowest Windows DISPLAY number —
-        /// "Display 1", the most predictable choice and, on the vast majority of setups, the primary
-        /// display — falling back to Id order for determinism when numbers are missing or tie.
+        /// no linked target with a valid current brightness (the slider stays unavailable rather
+        /// than defaulting to an arbitrary value such as 50%). Prefers the Windows primary display
+        /// when it participates in the linked set, then falls back to the lowest Windows DISPLAY
+        /// number and Id order for determinism when numbers are missing or tie.
         /// </summary>
         public static int? Seed(IEnumerable<LinkTarget> monitors) =>
             monitors
-                .Where(IsLinkedTarget)
-                .OrderBy(m => m.MonitorNumber <= 0 ? int.MaxValue : m.MonitorNumber)
+                .Where(m => IsLinkedTarget(m) && m.HasValidBrightness)
+                .OrderByDescending(m => m.IsPrimary)
+                .ThenBy(m => m.MonitorNumber <= 0 ? int.MaxValue : m.MonitorNumber)
                 .ThenBy(m => m.Id, System.StringComparer.Ordinal)
                 .Select(m => (int?)m.Brightness)
                 .FirstOrDefault();

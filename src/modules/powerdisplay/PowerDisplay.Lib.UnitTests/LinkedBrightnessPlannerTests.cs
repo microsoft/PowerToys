@@ -13,13 +13,20 @@ namespace PowerDisplay.UnitTests;
 /// Behavior tests for the pure linked-brightness decision logic: which monitors the master drives,
 /// whether the slider is usable, and the initial seed value. These cover the cases the review
 /// flagged — restart with no displays yet, all-excluded, single controllable display, and the
-/// "primary-ish" seed preference — without needing a WinUI DispatcherQueue.
+/// primary-display seed preference — without needing a WinUI DispatcherQueue.
 /// </summary>
 [TestClass]
 public class LinkedBrightnessPlannerTests
 {
-    private static LinkTarget Monitor(string id, int number, int brightness, bool supports = true, bool excluded = false)
-        => new LinkTarget(id, number, brightness, supports, excluded);
+    private static LinkTarget Monitor(
+        string id,
+        int number,
+        int brightness,
+        bool supports = true,
+        bool excluded = false,
+        bool isPrimary = false,
+        bool hasValidBrightness = true)
+        => new LinkTarget(id, number, brightness, supports, excluded, isPrimary, hasValidBrightness);
 
     [TestMethod]
     public void HasAnyTarget_EmptyList_False()
@@ -73,6 +80,22 @@ public class LinkedBrightnessPlannerTests
     }
 
     [TestMethod]
+    public void ResolveIsPrimary_CurrentLookupMatchesGdiDeviceName()
+    {
+        Assert.IsTrue(LinkedBrightnessPlanner.ResolveIsPrimary(
+            @"\\.\DISPLAY3",
+            currentPrimaryGdiDeviceName: @"\\.\display3"));
+    }
+
+    [TestMethod]
+    public void ResolveIsPrimary_FailedCurrentLookup_ReturnsFalse()
+    {
+        Assert.IsFalse(LinkedBrightnessPlanner.ResolveIsPrimary(
+            @"\\.\DISPLAY1",
+            currentPrimaryGdiDeviceName: null));
+    }
+
+    [TestMethod]
     public void Seed_EmptyList_Null()
     {
         Assert.IsNull(LinkedBrightnessPlanner.Seed(new List<LinkTarget>()));
@@ -89,6 +112,62 @@ public class LinkedBrightnessPlannerTests
             Monitor("b", 2, 60),
         };
         Assert.AreEqual(30, LinkedBrightnessPlanner.Seed(monitors));
+    }
+
+    [TestMethod]
+    public void Seed_PrefersPrimaryDisplay_RegardlessOfDisplayNumber()
+    {
+        var monitors = new[]
+        {
+            Monitor("a", 1, 30),
+            Monitor("b", 2, 60, isPrimary: true),
+            Monitor("c", 3, 90),
+        };
+        Assert.AreEqual(60, LinkedBrightnessPlanner.Seed(monitors));
+    }
+
+    [TestMethod]
+    public void Seed_MirroredPrimaryDisplays_UsesDeterministicDisplayNumberTieBreak()
+    {
+        var monitors = new[]
+        {
+            Monitor("b", 2, 60, isPrimary: true),
+            Monitor("a", 1, 30, isPrimary: true),
+        };
+        Assert.AreEqual(30, LinkedBrightnessPlanner.Seed(monitors));
+    }
+
+    [TestMethod]
+    public void Seed_UnreadablePrimaryDisplay_FallsBackToReadableDisplay()
+    {
+        var monitors = new[]
+        {
+            Monitor("a", 1, 30, isPrimary: true, hasValidBrightness: false),
+            Monitor("b", 2, 60),
+        };
+        Assert.AreEqual(60, LinkedBrightnessPlanner.Seed(monitors));
+    }
+
+    [TestMethod]
+    public void Seed_ExcludedPrimaryDisplay_FallsBackToLinkedDisplay()
+    {
+        var monitors = new[]
+        {
+            Monitor("a", 1, 30, excluded: true, isPrimary: true),
+            Monitor("b", 2, 60),
+        };
+        Assert.AreEqual(60, LinkedBrightnessPlanner.Seed(monitors));
+    }
+
+    [TestMethod]
+    public void Seed_NoReadableLinkedTarget_Null()
+    {
+        var monitors = new[]
+        {
+            Monitor("a", 1, 30, isPrimary: true, hasValidBrightness: false),
+            Monitor("b", 2, 60, hasValidBrightness: false),
+        };
+        Assert.IsNull(LinkedBrightnessPlanner.Seed(monitors));
     }
 
     [TestMethod]
