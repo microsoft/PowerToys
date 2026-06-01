@@ -37,6 +37,7 @@
       <string id="SUPPORTED_POWERTOYS_0_97_0">PowerToys version 0.97.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_98_0">PowerToys version 0.98.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_99_0">PowerToys version 0.99.0 or later</string>
+      <string id="SUPPORTED_POWERTOYS_0_100_0">PowerToys version 0.100.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_64_0_TO_0_87_1">From PowerToys version 0.64.0 until PowerToys version 0.87.1</string>
 
       <string id="ConfigureAllUtilityGlobalEnabledStateDescription">This policy configures the enabled state for all PowerToys utilities.
@@ -256,6 +257,17 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerMarkdownLocalImages">Markdown preview: Show local images - Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityFileExplorerMarkdownLocalImagesDescription">This policy configures whether local and network images should be displayed in Markdown file previews.
+
+If you enable this setting, images from the document's folder (including network/UNC paths) will always be shown and the user won't be able to disable it.
+
+If you disable this setting, all images will be blocked and the user won't be able to enable local image rendering.
+
+If you don't configure this setting, users are able to enable or disable showing local images.
+
+Note: Online/remote images (http/https URLs) are always blocked regardless of this setting.
+</string>
       <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerPDFPreview">PDF file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerGcodePreview">Gcode file preview: Configure enabled state</string>

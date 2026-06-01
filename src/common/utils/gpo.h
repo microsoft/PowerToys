@@ -38,6 +38,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH = L"ConfigureEnabledUtilityFileLocksmith";
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMarkdownPreview";
+    const std::wstring POLICY_CONFIGURE_ENABLED_MARKDOWN_LOCAL_IMAGES = L"ConfigureEnabledUtilityFileExplorerMarkdownLocalImages";
     const std::wstring POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMonacoPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_PDF_PREVIEW = L"ConfigureEnabledUtilityFileExplorerPDFPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW = L"ConfigureEnabledUtilityFileExplorerGcodePreview";
@@ -341,6 +342,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredMarkdownPreviewEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMarkdownLocalImagesEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_LOCAL_IMAGES);
     }
 
     inline gpo_rule_configured_t getConfiguredMonacoPreviewEnabledValue()

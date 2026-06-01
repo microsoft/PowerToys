@@ -147,6 +147,7 @@
                                 IsEnabled="{x:Bind ViewModel.MDRenderIsEnabled, Mode=OneWay}">
                                 <ToggleSwitch
                                     x:Uid="ToggleSwitch"
+                                    IsEnabled="{x:Bind ViewModel.MDLocalImagesIsGpoEnabled, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
                                     IsOn="{x:Bind ViewModel.MDLocalImagesIsEnabled, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>

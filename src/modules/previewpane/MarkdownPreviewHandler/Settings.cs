@@ -48,9 +48,21 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
         /// <summary>
         /// Returns whether local images should be displayed in the Markdown preview.
+        /// GPO policy takes precedence over user setting.
         /// </summary>
         public static bool GetLocalImagesEnabled()
         {
+            var gpo = global::PowerToys.GPOWrapper.GPOWrapper.GetConfiguredMarkdownLocalImagesEnabledValue();
+            if (gpo == global::PowerToys.GPOWrapper.GpoRuleConfigured.Enabled)
+            {
+                return true;
+            }
+
+            if (gpo == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
+            {
+                return false;
+            }
+
             try
             {
                 return ModuleSettings.GetSettings<PowerPreviewSettings>(PowerPreviewSettings.ModuleName).Properties.EnableMdLocalImages;

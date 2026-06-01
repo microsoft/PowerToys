@@ -57,6 +57,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
         private bool _infoBarDisplayed;
 
         private string _markdownDirectory;
+        private string _allowedBasePath;
         private bool _allowLocalImages;
 
         /// <summary>
@@ -122,6 +123,18 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                 _allowLocalImages = Settings.GetLocalImagesEnabled();
                 _markdownDirectory = Path.GetDirectoryName(filePath) ?? string.Empty;
 
+                _allowedBasePath = _markdownDirectory;
+                if (_markdownDirectory.StartsWith(@"\\", StringComparison.Ordinal))
+                {
+                    string trimmed = _markdownDirectory.Substring(2);
+                    int firstSep = trimmed.IndexOf('\\');
+                    int secondSep = firstSep >= 0 ? trimmed.IndexOf('\\', firstSep + 1) : -1;
+                    if (secondSep >= 0)
+                    {
+                        _allowedBasePath = @"\\" + trimmed.Substring(0, secondSep);
+                    }
+                }
+
                 string fileText = File.ReadAllText(filePath);
 
                 if (!_allowLocalImages)
@@ -133,7 +146,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     }
                 }
 
-                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Settings.GetTheme(), filePath, ImagesBlockedCallBack, _allowLocalImages);
+                string markdownHTML = FilePreviewCommon.MarkdownHelper.MarkdownHtml(fileText, Settings.GetTheme(), filePath, ImagesBlockedCallBack, _allowLocalImages, _allowedBasePath);
 
                 _browser = new WebView2()
                 {
@@ -155,7 +168,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                         _browser.CoreWebView2.SetVirtualHostNameToFolderMapping(VirtualHostName, AssemblyDirectory, CoreWebView2HostResourceAccessKind.Deny);
                         if (_allowLocalImages)
                         {
-                            _browser.CoreWebView2.SetVirtualHostNameToFolderMapping("localmdimages", _markdownDirectory, CoreWebView2HostResourceAccessKind.Allow);
+                            _browser.CoreWebView2.SetVirtualHostNameToFolderMapping("localmdimages", _allowedBasePath, CoreWebView2HostResourceAccessKind.Allow);
                         }
 
                         _browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
@@ -240,7 +253,10 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
 
                         if (_infoBarDisplayed)
                         {
-                            _infoBar = GetTextBoxControl(Resources.BlockedImageInfoText);
+                            string message = _allowLocalImages
+                                ? Resources.RemoteImagesBlockedInfoText
+                                : Resources.BlockedImageInfoText;
+                            _infoBar = GetTextBoxControl(message);
                             Resize += FormResized;
                             Controls.Add(_infoBar);
                         }

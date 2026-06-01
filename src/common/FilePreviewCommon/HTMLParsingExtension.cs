@@ -47,6 +47,12 @@ namespace Microsoft.PowerToys.FilePreviewCommon
         public string FilePath { get; set; }
 
         /// <summary>
+        /// Gets or sets the base path used for path validation and relative URL computation.
+        /// For local files this equals FilePath. For UNC paths this is the share root.
+        /// </summary>
+        public string AllowedBasePath { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether local images should be rendered.
         /// </summary>
         public bool AllowLocalImages { get; set; }
@@ -117,11 +123,12 @@ namespace Microsoft.PowerToys.FilePreviewCommon
                         {
                             if (AllowLocalImages && IsLocalImage(link.Url))
                             {
+                                string basePath = !string.IsNullOrEmpty(AllowedBasePath) ? AllowedBasePath : FilePath;
                                 string resolvedPath = Path.GetFullPath(Path.Combine(FilePath, link.Url));
 
-                                if (resolvedPath.StartsWith(FilePath, StringComparison.OrdinalIgnoreCase))
+                                if (resolvedPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    string relativePath = resolvedPath.Substring(FilePath.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Replace('\\', '/');
+                                    string relativePath = resolvedPath.Substring(basePath.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Replace('\\', '/');
                                     link.Url = "https://localmdimages/" + relativePath;
                                     link.GetAttributes().AddClass("img-fluid");
                                 }

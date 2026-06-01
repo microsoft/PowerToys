@@ -24,6 +24,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue();
             static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredMarkdownPreviewEnabledValue();
+            static GpoRuleConfigured GetConfiguredMarkdownLocalImagesEnabledValue();
             static GpoRuleConfigured GetConfiguredMonacoPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredPdfPreviewEnabledValue();
             static GpoRuleConfigured GetConfiguredGcodePreviewEnabledValue();
