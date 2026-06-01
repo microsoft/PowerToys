@@ -137,6 +137,18 @@ public record SettingsModel
 
     // </Gallery settings>
 
+    // Internal diagnostics settings
+
+    /// <summary>
+    /// Gets a value indicating whether the main window's HWND chrome (title bar, border,
+    /// system-drawn rounded corners) is visible. <strong>For internal debugging only.</strong>
+    /// Off by default. The setting is persisted but only honored in non-CI builds; release /
+    /// CI builds always force the borderless / transparent host window.
+    /// </summary>
+    public bool ShowHwndFrame { get; init; }
+
+    // </Internal diagnostics settings>
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 

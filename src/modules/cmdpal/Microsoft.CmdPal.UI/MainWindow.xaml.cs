@@ -94,6 +94,10 @@ public sealed partial class MainWindow : WindowEx,
     private bool _isUpdatingBackdrop;
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
+    // Tracks the chrome mode currently applied to the HWND. Nullable so the first
+    // call to ApplyHwndFrameMode always runs, regardless of which mode we land in.
+    private bool? _hwndFrameVisible;
+
     private WindowPosition _currentWindowPosition = new();
 
     private bool _preventHideWhenDeactivated;
@@ -127,9 +131,11 @@ public sealed partial class MainWindow : WindowEx,
 
         // The HWND itself is borderless / transparent — the visible card lives inside
         // RootElement (CmdPalMainControl) and draws its own corners, border, shadow, and
-        // backdrop via the SystemBackdropElement.
-        ConfigureTransparentHostWindow();
-        InitializeBackdropSupport();
+        // backdrop via the SystemBackdropElement. The frame can be re-enabled via an
+        // internal-only setting (hot-reloaded through HotReloadSettings) to make the
+        // HWND bounds visible while debugging.
+        var initialSettings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        ApplyHwndFrameMode(ShouldShowHwndFrame(initialSettings));
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
@@ -405,6 +411,42 @@ public sealed partial class MainWindow : WindowEx,
 
         _autoGoHomeInterval = settings.AutoGoHomeInterval;
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
+
+        ApplyHwndFrameMode(ShouldShowHwndFrame(settings));
+    }
+
+    /// <summary>
+    /// Returns true if the user has opted in to seeing the OS-drawn HWND chrome (an internal
+    /// debugging setting). Always false in CI / release builds.
+    /// </summary>
+    private static bool ShouldShowHwndFrame(SettingsModel settings) =>
+        !BuildInfo.IsCiBuild && settings.ShowHwndFrame;
+
+    /// <summary>
+    /// Switches the host window between the default borderless / transparent mode (where
+    /// CmdPalMainControl draws all the chrome) and a debug mode where the OS-drawn title
+    /// bar, border, and rounded corners are visible. No-ops if the requested mode is
+    /// already applied.
+    /// </summary>
+    private void ApplyHwndFrameMode(bool showFrame)
+    {
+        if (_hwndFrameVisible == showFrame)
+        {
+            return;
+        }
+
+        _hwndFrameVisible = showFrame;
+
+        ConfigureTransparentHostWindow();
+        InitializeBackdropSupport();
+        UpdateRegionsForCustomTitleBar(); // TODO! do we need this
+
+        HwndExtensions.ToggleWindowStyle(_hwnd, showFrame, WindowStyle.TiledWindow);
+        unsafe
+        {
+            BOOL value = showFrame;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
+        }
     }
 
     private void InitializeBackdropSupport()
