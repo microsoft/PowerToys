@@ -23,8 +23,6 @@ using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
-using Microsoft.UI.Composition;
-using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -33,13 +31,11 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Graphics;
 using Windows.System;
-using Windows.UI;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
-using WinRT;
 using WinUIEx;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 
@@ -97,6 +93,12 @@ public sealed partial class MainWindow : WindowEx,
     // Tracks the chrome mode currently applied to the HWND. Nullable so the first
     // call to ApplyHwndFrameMode always runs, regardless of which mode we land in.
     private bool? _hwndFrameVisible;
+
+    // Thickness (in DIPs) of the resize grip around the visible card's border. Shared
+    // by the InputNonClientPointerSource region registration (so WM_NCHITTEST actually
+    // fires over the border) and the WM_NCHITTEST handler (so it returns resize codes
+    // over the same band). These MUST match or the two disagree about where resizing is.
+    private const int ResizeBorderThicknessDip = 8;
 
     private WindowPosition _currentWindowPosition = new();
 
@@ -246,28 +248,6 @@ public sealed partial class MainWindow : WindowEx,
         {
             _devRibbon = new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) };
             RootElement.CardContentPanel.Children.Add(_devRibbon);
-        }
-    }
-
-    /// <summary>
-    /// Configures the underlying HWND to be borderless, with a transparent background
-    /// and no DWM-drawn rounded corners. The visible "window" chrome (rounded corners,
-    /// border, drop shadow) is drawn by <see cref="CmdPalMainControl"/> instead.
-    /// </summary>
-    private void ConfigureTransparentHostWindow()
-    {
-        if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
-        {
-            // No system-drawn border or title bar — we draw both ourselves.
-            overlappedPresenter.SetBorderAndTitleBar(false, false);
-        }
-
-        unsafe
-        {
-            // Suppress the DWM rounded-corner shaping so it doesn't fight with the card's
-            // CornerRadius and produce a doubled / clipped outline.
-            var pref = (uint)DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &pref, sizeof(uint));
         }
     }
 
@@ -423,10 +403,10 @@ public sealed partial class MainWindow : WindowEx,
         !BuildInfo.IsCiBuild && settings.ShowHwndFrame;
 
     /// <summary>
-    /// Switches the host window between the default borderless / transparent mode (where
-    /// CmdPalMainControl draws all the chrome) and a debug mode where the OS-drawn title
-    /// bar, border, and rounded corners are visible. No-ops if the requested mode is
-    /// already applied.
+    /// Configures the HWND for the borderless / transparent main-window mode and (when
+    /// the internal debug toggle is enabled) overlays the OS-drawn chrome so the HWND's
+    /// real bounds are easy to spot. Hit testing is always handled by
+    /// <see cref="HitTestForCardResize"/> — the frame flag is purely visual.
     /// </summary>
     private void ApplyHwndFrameMode(bool showFrame)
     {
@@ -437,16 +417,48 @@ public sealed partial class MainWindow : WindowEx,
 
         _hwndFrameVisible = showFrame;
 
-        ConfigureTransparentHostWindow();
+        // The HWND itself never paints — the card draws the backdrop. Re-applying this
+        // each toggle is safe (it just reassigns SystemBackdrop) and guards against the
+        // OS replacing it when chrome changes.
         InitializeBackdropSupport();
-        UpdateRegionsForCustomTitleBar(); // TODO! do we need this
 
-        HwndExtensions.ToggleWindowStyle(_hwnd, showFrame, WindowStyle.TiledWindow);
+        if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
+        {
+            // When the debug flag is off we hide the OS chrome (no title bar, no border).
+            // When on we let the OS draw both so the HWND outline is obvious.
+            // overlappedPresenter.SetBorderAndTitleBar(showFrame, showFrame);
+
+            // IsResizable must stay true so WS_THICKFRAME is present. The OS only honors
+            // resize-style WM_NCHITTEST results (HTLEFT, HTRIGHT, HT{TOP,BOTTOM}{,LEFT,RIGHT})
+            // when the window has a sizing frame, even though we drive the resize from a
+            // custom NCHITTEST handler. Setting it after SetBorderAndTitleBar makes sure a
+            // borderless window still keeps its sizing frame.
+            overlappedPresenter.IsResizable = true;
+        }
+
         unsafe
         {
-            BOOL value = showFrame;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
+            // Rounded corners: let the OS pick when the debug frame is on, suppress
+            // otherwise so the card's CornerRadius isn't doubled by an OS rounding.
+            var corner = (uint)(showFrame
+                ? DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DEFAULT
+                : DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND);
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &corner, sizeof(uint));
+
+            // DWMWA_BORDER_COLOR: 0xFFFFFFFE = DWMWA_COLOR_NONE (no border drawn);
+            // 0xFFFFFFFF = DWMWA_COLOR_DEFAULT (system default). With WS_THICKFRAME still
+            // on, DWM otherwise draws a faint 1px outline around the HWND — which the
+            // user sees as the "frame still appears around the sides" even when our
+            // ShowHwndFrame setting is off. Setting COLOR_NONE removes it.
+            const uint DWMWA_COLOR_NONE = 0xFFFFFFFEu;
+            const uint DWMWA_COLOR_DEFAULT = 0xFFFFFFFFu;
+            var borderColor = showFrame ? DWMWA_COLOR_DEFAULT : DWMWA_COLOR_NONE;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &borderColor, sizeof(uint));
         }
+
+        // Drag regions are computed relative to the visible card; the chrome change can
+        // shift its on-screen position, so refresh.
+        UpdateRegionsForCustomTitleBar();
     }
 
     private void InitializeBackdropSupport()
@@ -913,30 +925,52 @@ public sealed partial class MainWindow : WindowEx,
             return;
         }
 
-        // Get the rectangle around our XAML content. We're going to mark this
-        // rectangle as "Passthrough", so that the normal window operations
-        // (resizing, dragging) don't apply in this space.
+        // All coordinates below are in the card's own (DIP) space: (0,0) is the
+        // top-left of the visible card, (w,h) is the bottom-right. GetRect transforms
+        // them into the physical-pixel client coordinates that
+        // InputNonClientPointerSource expects.
         var transform = card.TransformToVisual(null);
+        var w = card.ActualWidth;
+        var h = card.ActualHeight;
 
-        // Reserve 16px of space at the top for dragging.
-        var topHeight = 16;
-        var bounds = transform.TransformBounds(new Rect(
-            0,
-            topHeight,
-            card.ActualWidth,
-            card.ActualHeight));
-        var contentRect = GetRect(bounds, scaleAdjustment);
-        var rectArray = new RectInt32[] { contentRect };
+        RectInt32 CardRect(double x, double y, double rw, double rh) =>
+            GetRect(transform.TransformBounds(new Rect(x, y, rw, rh)), scaleAdjustment);
+
+        // Reserve some space at the top for dragging the window (caption).
+        const double dragHeight = 16;
+
+        // The resize grip straddles each card edge by `grip` DIPs on either side so the
+        // affordance reaches a little into the drop-shadow padding too.
+        const double grip = ResizeBorderThicknessDip;
+
         var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
-        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
 
-        // Add a drag-able region on top of the card.
-        var dragTopBounds = transform.TransformBounds(new Rect(0, 0, card.ActualWidth, topHeight));
-        var dragSides = new RectInt32[]
+        // Mark the card's border ring AND the top drag bar as non-client (Caption).
+        // This is the critical bit: only regions registered here generate WM_NCHITTEST
+        // on our window proc. Without the side/bottom strips, the XAML content island
+        // swallows the pointer and we never get a hit-test to turn into a resize. Our
+        // HotKeyPrc WM_NCHITTEST handler then decides drag (caption) vs. resize
+        // (HTLEFT / HTRIGHT / HT{TOP,BOTTOM}{,LEFT,RIGHT}) per-pixel via geometry.
+        var caption = new RectInt32[]
         {
-            GetRect(dragTopBounds, scaleAdjustment),
+            CardRect(0, 0, w, dragHeight),                       // top drag bar
+            CardRect(-grip, -grip, 2 * grip, h + (2 * grip)),   // left edge
+            CardRect(w - grip, -grip, 2 * grip, h + (2 * grip)), // right edge
+            CardRect(-grip, -grip, w + (2 * grip), 2 * grip),   // top edge
+            CardRect(-grip, h - grip, w + (2 * grip), 2 * grip), // bottom edge
         };
-        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, dragSides);
+        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, caption);
+
+        // Everything inside the border ring (and below the drag bar) is interactive
+        // content. Marking it Passthrough keeps the search box, list, etc. clickable
+        // and explicitly carves it out of the caption regions above.
+        var interiorWidth = Math.Max(0, w - (2 * grip));
+        var interiorHeight = Math.Max(0, h - dragHeight - grip);
+        var passthrough = new RectInt32[]
+        {
+            CardRect(grip, dragHeight, interiorWidth, interiorHeight),
+        };
+        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, passthrough);
     }
 
     private static RectInt32 GetRect(Rect bounds, double scale)
@@ -1290,6 +1324,17 @@ public sealed partial class MainWindow : WindowEx,
             case PInvoke.WM_DPICHANGED when _suppressDpiChange:
                 return (LRESULT)IntPtr.Zero;
 
+            case PInvoke.WM_NCHITTEST:
+                {
+                    var ht = HitTestForCardResize(lParam);
+                    if (ht != 0)
+                    {
+                        return (LRESULT)(nint)ht;
+                    }
+
+                    break;
+                }
+
             case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
@@ -1312,6 +1357,116 @@ public sealed partial class MainWindow : WindowEx,
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
+    }
+
+    /// <summary>
+    /// Custom WM_NCHITTEST handler that turns the visible card's border (the rounded
+    /// stroke drawn by <see cref="CmdPalMainControl"/>) into the window's resize handles.
+    /// Without this the borderless / transparent HWND has no visible resize affordance,
+    /// even though the OS still allows resizing along the (invisible) HWND edges.
+    /// </summary>
+    /// <returns>
+    /// A non-zero HT* value to override the system hit test, or 0 to fall through to
+    /// the default WndProc (which lets the InputNonClientPointerSource Caption /
+    /// Passthrough regions decide caption vs. client behavior inside the card).
+    /// </returns>
+    private uint HitTestForCardResize(LPARAM lParam)
+    {
+        // NB: We intentionally do *not* short-circuit when the debug frame is showing.
+        // The HWND frame toggle is purely a visual diagnostic; resize hit-testing
+        // remains ours in both modes so the card's border is always the grab area.
+        if (RootElement is null || RootElement.XamlRoot is null)
+        {
+            return 0;
+        }
+
+        // LPARAM packs the screen-space pointer position: low word = x, high word = y,
+        // both as signed 16-bit ints.
+        var ptX = (short)(lParam.Value & 0xFFFF);
+        var ptY = (short)((lParam.Value >> 16) & 0xFFFF);
+
+        if (!PInvoke.GetWindowRect(_hwnd, out var windowRect))
+        {
+            return 0;
+        }
+
+        // Convert the card's ShadowPadding (DIPs) into screen pixels so we can locate
+        // the visible card rect within the (larger, transparent) HWND.
+        var dpi = PInvoke.GetDpiForWindow(_hwnd);
+        var scale = dpi / 96.0;
+        var padding = RootElement.ShadowPadding;
+
+        var cardLeft = windowRect.left + (int)Math.Round(padding.Left * scale);
+        var cardTop = windowRect.top + (int)Math.Round(padding.Top * scale);
+        var cardRight = windowRect.right - (int)Math.Round(padding.Right * scale);
+        var cardBottom = windowRect.bottom - (int)Math.Round(padding.Bottom * scale);
+
+        // Width of the resize grip around the card's visible border, in screen pixels.
+        // Shared with the InputNonClientPointerSource region registration in
+        // UpdateRegionsForCustomTitleBar so the band where WM_NCHITTEST fires lines up
+        // exactly with the band where we return resize codes.
+        var grip = (int)Math.Round(ResizeBorderThicknessDip * scale);
+
+        var onLeftEdge = ptX >= cardLeft - grip && ptX < cardLeft + grip;
+        var onRightEdge = ptX > cardRight - grip && ptX <= cardRight + grip;
+        var onTopEdge = ptY >= cardTop - grip && ptY < cardTop + grip;
+        var onBottomEdge = ptY > cardBottom - grip && ptY <= cardBottom + grip;
+
+        // Corners get priority over edges.
+        if (onTopEdge && onLeftEdge)
+        {
+            return PInvoke.HTTOPLEFT;
+        }
+
+        if (onTopEdge && onRightEdge)
+        {
+            return PInvoke.HTTOPRIGHT;
+        }
+
+        if (onBottomEdge && onLeftEdge)
+        {
+            return PInvoke.HTBOTTOMLEFT;
+        }
+
+        if (onBottomEdge && onRightEdge)
+        {
+            return PInvoke.HTBOTTOMRIGHT;
+        }
+
+        var withinHorizontalSpan = ptX >= cardLeft - grip && ptX <= cardRight + grip;
+        var withinVerticalSpan = ptY >= cardTop - grip && ptY <= cardBottom + grip;
+
+        if (onTopEdge && withinHorizontalSpan)
+        {
+            return PInvoke.HTTOP;
+        }
+
+        if (onBottomEdge && withinHorizontalSpan)
+        {
+            return PInvoke.HTBOTTOM;
+        }
+
+        if (onLeftEdge && withinVerticalSpan)
+        {
+            return PInvoke.HTLEFT;
+        }
+
+        if (onRightEdge && withinVerticalSpan)
+        {
+            return PInvoke.HTRIGHT;
+        }
+
+        // Pointer is inside the card but away from the border: defer to the default
+        // hit test so the InputNonClientPointerSource Caption/Passthrough regions take
+        // effect for dragging vs. normal input.
+        if (ptX >= cardLeft && ptX <= cardRight && ptY >= cardTop && ptY <= cardBottom)
+        {
+            return 0;
+        }
+
+        // Pointer is in the transparent shadow padding around the card. Make that area
+        // click-through so the window behind us receives the mouse input.
+        return unchecked((uint)PInvoke.HTTRANSPARENT);
     }
 
     public void Dispose()
