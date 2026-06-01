@@ -14,76 +14,100 @@ static constexpr float PCM16_SCALE_INV = 1.0f / 32768.0f;
 
 NoiseSuppressor::NoiseSuppressor()
 {
-    m_state = rnnoise_create(nullptr);
 }
 
 NoiseSuppressor::~NoiseSuppressor()
 {
-    if (m_state)
+    for (auto& channel : m_channels)
     {
-        rnnoise_destroy(m_state);
+        if (channel.state)
+        {
+            rnnoise_destroy(channel.state);
+        }
+    }
+}
+
+void NoiseSuppressor::EnsureChannelCount(uint32_t channels)
+{
+    if (m_channels.size() == channels)
+    {
+        return;
+    }
+
+    // Channel count changed (or first call): rebuild per-channel RNNoise state.
+    for (auto& channel : m_channels)
+    {
+        if (channel.state)
+        {
+            rnnoise_destroy(channel.state);
+        }
+    }
+
+    m_channels.clear();
+    m_channels.resize(channels);
+    for (auto& channel : m_channels)
+    {
+        channel.state = rnnoise_create(nullptr);
     }
 }
 
 void NoiseSuppressor::Process(float* samples, uint32_t sampleCount, uint32_t channels)
 {
-    if (!m_state || sampleCount == 0 || channels == 0)
+    if (sampleCount == 0 || channels == 0)
     {
         return;
     }
 
-    // Convert interleaved multi-channel to mono by averaging channels
+    EnsureChannelCount(channels);
+
     uint32_t frameCount = sampleCount / channels;
-    uint32_t totalMonoSamples = static_cast<uint32_t>(m_residualBuffer.size()) + frameCount;
 
-    m_monoBuffer.resize(totalMonoSamples);
-
-    // Copy residual from previous call
-    uint32_t residualCount = static_cast<uint32_t>(m_residualBuffer.size());
-    if (residualCount > 0)
+    // Denoise each channel independently so the original channel layout is
+    // preserved (e.g. a mic wired only to the left channel stays on the left
+    // and silent channels stay silent instead of being filled with the voice).
+    for (uint32_t ch = 0; ch < channels; ch++)
     {
-        memcpy(m_monoBuffer.data(), m_residualBuffer.data(), residualCount * sizeof(float));
-    }
-
-    // Downmix to mono and scale to PCM16 range for RNNoise
-    for (uint32_t i = 0; i < frameCount; i++)
-    {
-        float sum = 0.0f;
-        for (uint32_t ch = 0; ch < channels; ch++)
+        ChannelState& channel = m_channels[ch];
+        if (!channel.state)
         {
-            sum += samples[i * channels + ch];
+            continue;
         }
-        m_monoBuffer[residualCount + i] = (sum / channels) * PCM16_SCALE;
-    }
 
-    // Process complete 480-sample frames through RNNoise
-    uint32_t processedMonoSamples = 0;
-    while (processedMonoSamples + RNNOISE_FRAME_SIZE <= totalMonoSamples)
-    {
-        rnnoise_process_frame(m_state, &m_monoBuffer[processedMonoSamples], &m_monoBuffer[processedMonoSamples]);
-        processedMonoSamples += RNNOISE_FRAME_SIZE;
-    }
+        uint32_t residualCount = static_cast<uint32_t>(channel.residual.size());
+        uint32_t totalSamples = residualCount + frameCount;
 
-    // Save unprocessed residual for next call
-    uint32_t residualRemaining = totalMonoSamples - processedMonoSamples;
-    m_residualBuffer.assign(
-        m_monoBuffer.begin() + processedMonoSamples,
-        m_monoBuffer.end());
+        channel.work.resize(totalSamples);
 
-    // Write denoised mono back to interleaved output, scaling back to normalized float
-    // Only write back samples that correspond to this call's input (skip residual from previous call)
-    uint32_t outputMonoSamples = processedMonoSamples > residualCount
-        ? processedMonoSamples - residualCount
-        : 0;
-
-    for (uint32_t i = 0; i < frameCount; i++)
-    {
-        float denoised = m_monoBuffer[residualCount + i] * PCM16_SCALE_INV;
-
-        // Duplicate mono to all channels
-        for (uint32_t ch = 0; ch < channels; ch++)
+        // Copy residual from previous call
+        if (residualCount > 0)
         {
-            samples[i * channels + ch] = denoised;
+            memcpy(channel.work.data(), channel.residual.data(), residualCount * sizeof(float));
+        }
+
+        // Deinterleave this channel and scale to PCM16 range for RNNoise
+        for (uint32_t i = 0; i < frameCount; i++)
+        {
+            channel.work[residualCount + i] = samples[i * channels + ch] * PCM16_SCALE;
+        }
+
+        // Process complete 480-sample frames through RNNoise
+        uint32_t processedSamples = 0;
+        while (processedSamples + RNNOISE_FRAME_SIZE <= totalSamples)
+        {
+            rnnoise_process_frame(channel.state, &channel.work[processedSamples], &channel.work[processedSamples]);
+            processedSamples += RNNOISE_FRAME_SIZE;
+        }
+
+        // Save unprocessed residual for next call
+        channel.residual.assign(
+            channel.work.begin() + processedSamples,
+            channel.work.end());
+
+        // Write denoised samples back to the interleaved buffer, scaling back to
+        // normalized float. Only this call's input region is written back.
+        for (uint32_t i = 0; i < frameCount; i++)
+        {
+            samples[i * channels + ch] = channel.work[residualCount + i] * PCM16_SCALE_INV;
         }
     }
 }

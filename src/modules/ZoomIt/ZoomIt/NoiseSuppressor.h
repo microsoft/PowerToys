@@ -11,13 +11,24 @@ public:
     NoiseSuppressor(const NoiseSuppressor&) = delete;
     NoiseSuppressor& operator=(const NoiseSuppressor&) = delete;
 
-    // Process interleaved stereo float samples in-place.
-    // Converts to mono, runs RNNoise denoising in 480-sample frames,
-    // and writes the denoised audio back as stereo.
+    // Process interleaved multi-channel float samples in-place.
+    // Each channel is denoised independently through its own RNNoise state in
+    // 480-sample frames, preserving the original channel layout (e.g. a mic
+    // wired only to the left channel stays on the left and is not duplicated
+    // onto the right).
     void Process(float* samples, uint32_t sampleCount, uint32_t channels);
 
 private:
-    DenoiseState* m_state = nullptr;
-    std::vector<float> m_monoBuffer;
-    std::vector<float> m_residualBuffer;  // Leftover samples from previous quantum
+    // Per-channel RNNoise state and buffers so each channel is denoised
+    // independently and the channel layout is preserved.
+    struct ChannelState
+    {
+        DenoiseState* state = nullptr;
+        std::vector<float> work;      // Working buffer for the current quantum
+        std::vector<float> residual;  // Leftover samples from previous quantum
+    };
+
+    void EnsureChannelCount(uint32_t channels);
+
+    std::vector<ChannelState> m_channels;
 };
