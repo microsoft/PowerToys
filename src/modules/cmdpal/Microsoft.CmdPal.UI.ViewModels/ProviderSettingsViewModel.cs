@@ -49,6 +49,8 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     public string DisplayName => _provider.DisplayName;
 
+    public string ProviderId => _provider.ProviderId;
+
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? Resources.builtin_extension_name;
 
     public string ExtensionSubtext

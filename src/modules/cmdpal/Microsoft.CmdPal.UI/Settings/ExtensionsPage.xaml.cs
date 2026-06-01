@@ -21,7 +21,7 @@ public sealed partial class ExtensionsPage : Page
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
     private readonly SettingsViewModel? viewModel;
-    private readonly Dictionary<ProviderSettingsViewModel, WeakReference<SettingsCard>> _vmToCardMap = new();
+    private readonly Dictionary<string, WeakReference<SettingsCard>> _vmToCardMap = new();
 
     public ExtensionsPage()
     {
@@ -46,10 +46,10 @@ public sealed partial class ExtensionsPage : Page
 
     private void SettingsCard_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
     {
-        // Store the card reference for this ViewModel
+        // Store the card reference keyed by ProviderId (not the VM itself) to avoid leaking VM references
         if (sender is SettingsCard card && card.DataContext is ProviderSettingsViewModel newVm)
         {
-            _vmToCardMap[newVm] = new WeakReference<SettingsCard>(card);
+            _vmToCardMap[newVm.ProviderId] = new WeakReference<SettingsCard>(card);
             newVm.PropertyChanged += ProviderViewModel_PropertyChanged;
 
             // Immediately update automation name in case DisplayName is already available
@@ -66,7 +66,7 @@ public sealed partial class ExtensionsPage : Page
         if (e.PropertyName == nameof(ProviderSettingsViewModel.DisplayName) && sender is ProviderSettingsViewModel vm && !string.IsNullOrEmpty(vm.DisplayName))
         {
             // Get the card reference from our map
-            if (_vmToCardMap.TryGetValue(vm, out var cardRef) && cardRef.TryGetTarget(out var card))
+            if (_vmToCardMap.TryGetValue(vm.ProviderId, out var cardRef) && cardRef.TryGetTarget(out var card))
             {
                 if (card.Content is ToggleSwitch toggle)
                 {
