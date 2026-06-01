@@ -1,0 +1,311 @@
+name: Automatic Triaging on Pull Request
+
+on:
+  # Use pull_request_target so we can label PRs from forks (the workflow only
+  # reads PR metadata and the changed-files list — it never checks out PR code,
+  # so the standard pull_request_target risk does not apply here).
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, synchronize]
+  # Manual trigger: go to Actions → "Automatic Triaging on Pull Request" → Run workflow.
+  # Enter one or more comma-separated PR numbers (e.g. "1234" or "1234,1235,1236")
+  # to apply labels to existing PRs.
+  workflow_dispatch:
+    inputs:
+      pr_numbers:
+        description: 'Comma-separated PR number(s) to label (e.g. 1234 or 1234,1235)'
+        required: true
+
+permissions:
+  models: read
+  pull-requests: write
+
+concurrency:
+  # For PR events, group by PR number so a rapid close+reopen only runs once.
+  # For manual dispatch (which may cover multiple PRs), use the unique run ID.
+  group: ${{ github.event_name == 'pull_request_target' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply Product/Area labels (path mapping + AI fallback)
+        uses: actions/github-script@v7
+        env:
+          # actions/github-script does not propagate `github-token` to
+          # process.env. Expose it explicitly so the inline script can
+          # authenticate against the GitHub Models inference endpoint.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // ── Path → Product/Area label mapping ────────────────────────────
+            // Source of truth for the deterministic pass. Keep in sync with
+            // src/modules/ when modules are added/renamed. Longest matching
+            // prefix wins (e.g., MouseUtils/MouseJump/ beats MouseUtils/).
+            const PATH_LABEL_MAP = [
+              ['src/modules/MouseUtils/FindMyMouse/',              'Product-Find My Mouse'],
+              ['src/modules/MouseUtils/MouseHighlighter/',         'Product-Mouse Highlighter'],
+              ['src/modules/MouseUtils/MouseJump/',                'Product-Mouse Jump'],
+              ['src/modules/MouseUtils/MousePointerCrosshairs/',   'Product-Mouse Pointer Crosshairs'],
+              ['src/modules/MouseUtils/',                          'Product-Mouse Utilities'],
+              ['src/modules/AdvancedPaste/',                       'Product-Advanced Paste'],
+              ['src/modules/alwaysontop/',                         'Product-Always On Top'],
+              ['src/modules/awake/',                               'Product-Awake'],
+              ['src/modules/cmdNotFound/',                         'Product-CommandNotFound'],
+              ['src/modules/cmdpal/',                              'Product-Command Palette'],
+              ['src/modules/colorPicker/',                         'Product-Color Picker'],
+              ['src/modules/CropAndLock/',                         'Product-CropAndLock'],
+              ['src/modules/EnvironmentVariables/',                'Product-Environment Variables'],
+              ['src/modules/fancyzones/',                          'Product-FancyZones'],
+              ['src/modules/FileLocksmith/',                       'Product-File Locksmith'],
+              ['src/modules/GrabAndMove/',                         'Product-Grab And Move'],
+              ['src/modules/Hosts/',                               'Product-Hosts File Editor'],
+              ['src/modules/imageresizer/',                        'Product-Image Resizer'],
+              ['src/modules/keyboardmanager/',                     'Product-Keyboard Manager'],
+              ['src/modules/launcher/',                            'Product-PowerToys Run'],
+              ['src/modules/LightSwitch/',                         'Product-LightSwitch'],
+              ['src/modules/MeasureTool/',                         'Product-Screen Ruler'],
+              ['src/modules/MouseWithoutBorders/',                 'Product-Mouse Without Borders'],
+              ['src/modules/NewPlus/',                             'Product-New+'],
+              ['src/modules/peek/',                                'Product-Peek'],
+              ['src/modules/poweraccent/',                         'Product-Quick Accent'],
+              ['src/modules/powerdisplay/',                        'Product-PowerDisplay'],
+              ['src/modules/PowerOCR/',                            'Product-Text Extractor'],
+              ['src/modules/powerrename/',                         'Product-PowerRename'],
+              ['src/modules/previewpane/',                         'Product-File Explorer'],
+              ['src/modules/registrypreview/',                     'Product-Registry Preview'],
+              ['src/modules/ShortcutGuide/',                       'Product-Shortcut Guide'],
+              ['src/modules/Workspaces/',                          'Product-Workspaces'],
+              ['src/modules/ZoomIt/',                              'Product-ZoomIt'],
+              ['src/settings-ui/',                                 'Product-Settings'],
+              ['installer/',                                       'Area-Setup/Install'],
+            ];
+
+            // All valid Product-* and Area-* labels the workflow may apply.
+            // Mirrors the allow-list in auto-label-issues.yml so any AI output
+            // is filtered against the same set.
+            const VALID_LABELS = [
+              'Product-Advanced Paste',
+              'Product-Always On Top',
+              'Product-Awake',
+              'Product-Color Picker',
+              'Product-CommandNotFound',
+              'Product-Command Palette',
+              'Product-CropAndLock',
+              'Product-Environment Variables',
+              'Product-FancyZones',
+              'Product-File Explorer',
+              'Product-File Locksmith',
+              'Product-Find My Mouse',
+              'Product-Grab And Move',
+              'Product-Hosts File Editor',
+              'Product-Image Resizer',
+              'Product-Keyboard Manager',
+              'Product-LightSwitch',
+              'Product-Mouse Highlighter',
+              'Product-Mouse Jump',
+              'Product-Mouse Pointer Crosshairs',
+              'Product-Mouse Utilities',
+              'Product-Mouse Without Borders',
+              'Product-New+',
+              'Product-Peek',
+              'Product-PowerDisplay',
+              'Product-PowerRename',
+              'Product-PowerToys Run',
+              'Product-Quick Accent',
+              'Product-Registry Preview',
+              'Product-Screen Ruler',
+              'Product-Settings',
+              'Product-Shortcut Guide',
+              'Product-Text Extractor',
+              'Product-Workspaces',
+              'Product-ZoomIt',
+              'Area-Setup/Install',
+              'Area-Localization',
+            ];
+
+            // ── Helpers ──────────────────────────────────────────────────────
+            const VALID_SET = new Set(VALID_LABELS);
+
+            // Sort mapping by descending prefix length so longest match wins.
+            const SORTED_MAP = [...PATH_LABEL_MAP].sort((a, b) => b[0].length - a[0].length);
+
+            function labelsFromPaths(filePaths) {
+              const labels = new Set();
+              for (const raw of filePaths) {
+                const path = String(raw).replace(/\\/g, '/');
+                const lower = path.toLowerCase();
+                for (const [prefix, label] of SORTED_MAP) {
+                  if (lower.startsWith(prefix.toLowerCase())) {
+                    labels.add(label);
+                    break;
+                  }
+                }
+                // File-extension rule: any .resw under any path → Area-Localization.
+                if (lower.endsWith('.resw')) {
+                  labels.add('Area-Localization');
+                }
+              }
+              return [...labels].filter(l => VALID_SET.has(l));
+            }
+
+            async function listChangedFiles(prNumber) {
+              const files = [];
+              // Cap at 10 pages = 1000 files. PRs larger than this almost always
+              // touch many areas; path mapping will still catch the obvious modules.
+              for (let page = 1; page <= 10; page++) {
+                const { data } = await github.rest.pulls.listFiles({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  pull_number: prNumber,
+                  per_page: 100,
+                  page,
+                });
+                files.push(...data.map(f => f.filename));
+                if (data.length < 100) break;
+              }
+              return files;
+            }
+
+            async function aiSuggestLabels(title, body) {
+              const MAX_BODY_LENGTH = 4000;
+              const MAX_TOKENS = 200;
+
+              const systemPrompt = `You are a triage assistant for the microsoft/PowerToys repository.
+              Your job is to classify pull requests by assigning the correct area label(s).
+
+              Rules:
+              - Only return labels from the following list, exactly as written:
+              ${VALID_LABELS.map(l => `  • ${l}`).join('\n')}
+              - Choose only the labels that clearly match the PR content.
+              - If the PR mentions multiple areas, include a label for each one.
+              - If no label fits, return an empty array.
+              - Respond with ONLY a JSON array of label strings, no explanation.
+                Example: ["Product-FancyZones","Product-Settings"]`;
+
+              const userPrompt = `PR title: ${title}
+
+              PR description:
+              ${(body || '').slice(0, MAX_BODY_LENGTH)}`;
+
+              const token = process.env.GITHUB_TOKEN;
+              if (!token) {
+                console.log('GITHUB_TOKEN is not set; skipping AI fallback.');
+                return [];
+              }
+
+              const response = await fetch(
+                'https://models.inference.ai.azure.com/chat/completions',
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                      { role: 'system', content: systemPrompt },
+                      { role: 'user',   content: userPrompt   },
+                    ],
+                    max_tokens: MAX_TOKENS,
+                    // temperature: 0 ensures deterministic classification.
+                    temperature: 0,
+                  }),
+                }
+              );
+
+              if (!response.ok) {
+                const errorBody = await response.text();
+                console.log(`GitHub Models API error: ${response.status} ${response.statusText} — ${errorBody}`);
+                return [];
+              }
+
+              const data = await response.json();
+              const text = data.choices?.[0]?.message?.content?.trim() ?? '';
+              console.log(`Model response: ${text}`);
+
+              let suggested;
+              try {
+                suggested = JSON.parse(text);
+              } catch {
+                console.log('Could not parse model response as JSON; skipping.');
+                return [];
+              }
+
+              if (!Array.isArray(suggested)) {
+                console.log('Model response was not a JSON array; skipping.');
+                return [];
+              }
+
+              return [...new Set(suggested.filter(l => VALID_SET.has(l)))];
+            }
+
+            async function labelPR(prNumber) {
+              console.log(`\n--- Processing PR #${prNumber} ---`);
+
+              let pr;
+              try {
+                const r = await github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  pull_number: prNumber,
+                });
+                pr = r.data;
+              } catch (e) {
+                console.log(`Could not fetch PR #${prNumber}: ${e.message}`);
+                return;
+              }
+
+              const existingLabels = new Set((pr.labels || []).map(l => l.name));
+              const files = await listChangedFiles(prNumber);
+              console.log(`PR #${prNumber}: ${files.length} changed file(s).`);
+
+              // Path-mapping pass (deterministic).
+              const pathLabels = labelsFromPaths(files);
+              console.log(`Path mapping suggested: ${JSON.stringify(pathLabels)}`);
+
+              // AI fallback fires only if path mapping returned nothing.
+              let aiLabels = [];
+              if (pathLabels.length === 0) {
+                aiLabels = await aiSuggestLabels(pr.title ?? '', pr.body ?? '');
+                console.log(`AI fallback suggested: ${JSON.stringify(aiLabels)}`);
+              }
+
+              const merged = [...new Set([...pathLabels, ...aiLabels])]
+                .filter(l => !existingLabels.has(l));
+
+              if (merged.length === 0) {
+                console.log(`PR #${prNumber}: nothing to add.`);
+                return;
+              }
+
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: prNumber,
+                labels: merged,
+              });
+              console.log(`PR #${prNumber}: added labels: ${merged.join(', ')}`);
+            }
+
+            // ── Entry point ──────────────────────────────────────────────────
+            let prNumbers;
+            if (context.eventName === 'workflow_dispatch') {
+              prNumbers = String(context.payload.inputs.pr_numbers)
+                .split(',')
+                .map(s => parseInt(s.trim(), 10))
+                .filter(n => Number.isFinite(n) && n > 0);
+            } else {
+              prNumbers = [context.payload.pull_request.number];
+            }
+
+            if (prNumbers.length === 0) {
+              console.log('No valid PR numbers to process; skipping.');
+              return;
+            }
+
+            for (const n of prNumbers) {
+              await labelPR(n);
+            }
