@@ -1235,7 +1235,18 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
                 co_await m_audioGenerator->InitializeAsync();
             }
             RecDiag( L"StartAsync: audio initialized\n" );
-            m_streamSource = winrt::MediaStreamSource(m_videoDescriptor, winrt::AudioStreamDescriptor(m_audioGenerator->GetEncodingProperties()));
+            auto audioProps = m_audioGenerator->GetEncodingProperties();
+            m_streamSource = winrt::MediaStreamSource(m_videoDescriptor, winrt::AudioStreamDescriptor(audioProps));
+
+            // Describe the output audio track (AAC) so it matches the audio stream
+            // exposed by the MediaStreamSource above. Without this, the encoding
+            // profile would contain only a video track while the source exposes an
+            // audio stream, which causes PrepareMediaStreamSourceTranscodeAsync to
+            // never complete (no frames are ever produced and the save dialog is skipped).
+            // 128 kbps matches the standard Windows MP4 preset for AAC audio.
+            // We use 192 kbps.
+            m_encodingProfile.Audio( winrt::AudioEncodingProperties::CreateAac(
+                audioProps.SampleRate(), audioProps.ChannelCount(), 192000 ) );
         }
         else {
 
