@@ -54,7 +54,6 @@
             <Thickness x:Key="MonitorHeaderOffsetMargin">0</Thickness>
             <Thickness x:Key="MonitorNameBaselineMargin">2,0,0,2</Thickness>
             <Thickness x:Key="LinkedBrightnessOverlayPadding">0</Thickness>
-            <SolidColorBrush x:Key="FlyoutActiveLinkIconBrush" Color="#005FB8" />
             <x:Double x:Key="FlyoutContextMenuMinWidth">240</x:Double>
             <x:Double x:Key="FlyoutContextMenuMaxWidth">320</x:Double>
             <Style
@@ -339,7 +338,7 @@
                                                             <Grid>
                                                                 <FontIcon
                                                                     FontSize="{StaticResource FlyoutLinkGlyphFontSize}"
-                                                                    Foreground="{StaticResource FlyoutActiveLinkIconBrush}"
+                                                                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                                                     Glyph="&#xE71B;"
                                                                     Visibility="{x:Bind helpers:VisibilityConverter.InverseBoolToVisibility(IsExcludedFromSync), Mode=OneWay}" />
                                                                 <Grid Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(IsExcludedFromSync), Mode=OneWay}">
@@ -783,7 +782,7 @@
                                     Visibility="{x:Bind helpers:VisibilityConverter.InverseBoolToVisibility(ViewModel.LinkedLevelsActive), Mode=OneWay}" />
                                 <FontIcon
                                     FontSize="{StaticResource FlyoutActionGlyphFontSize}"
-                                    Foreground="{StaticResource FlyoutActiveLinkIconBrush}"
+                                    Foreground="{ThemeResource AccentFillColorDefaultBrush}"
                                     Glyph="&#xE71B;"
                                     Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ViewModel.LinkedLevelsActive), Mode=OneWay}" />
                             </Grid>
