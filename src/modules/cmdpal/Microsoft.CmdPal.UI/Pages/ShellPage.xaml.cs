@@ -861,6 +861,23 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
     }
 
+    /// <summary>
+    /// Forces the shell into its compact (collapsed) layout and flushes layout so the host can
+    /// read the resulting card height. Only has an effect when compact mode is enabled.
+    /// </summary>
+    public void EnsureCompactLayout()
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        if (!settings.CompactMode)
+        {
+            return;
+        }
+
+        this.ExpandedMode = false;
+        PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
+        this.UpdateLayout();
+    }
+
     public void Dispose()
     {
         if (_isDisposed)

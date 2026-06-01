@@ -106,13 +106,24 @@ public sealed partial class CmdPalMainControl : UserControl
     }
 
     /// <summary>
-    /// Switches the card between its expanded (fills the host) and compact (sizes to its
-    /// content, anchored to the top) layouts. The HWND stays the same size; only the visible
-    /// card shrinks or grows.
+    /// Clamps the maximum height of the visible card (in DIPs). Use this to keep an expanded
+    /// compact card from growing past the bottom of the display. Pass
+    /// <see cref="double.PositiveInfinity"/> to remove the clamp.
     /// </summary>
-    public void SetCompact(bool compact)
+    public void SetCardMaxHeight(double maxHeightDip)
     {
-        CardBorder.VerticalAlignment = compact ? VerticalAlignment.Top : VerticalAlignment.Stretch;
+        CardBorder.MaxHeight = maxHeightDip;
+    }
+
+    /// <summary>
+    /// Returns the current height of the visible card (in DIPs). When the card is in its
+    /// compact layout this is the height of just the search box, which callers use to center
+    /// the collapsed card on screen.
+    /// </summary>
+    public double GetCardHeight()
+    {
+        CardBorder.UpdateLayout();
+        return CardBorder.ActualHeight;
     }
 
     /// <summary>

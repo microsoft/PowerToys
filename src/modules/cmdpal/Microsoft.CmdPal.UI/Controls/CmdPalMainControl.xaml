@@ -25,6 +25,7 @@
         -->
         <Border
             x:Name="CardBorder"
+            VerticalAlignment="Top"
             Background="Transparent"
             BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
             BorderThickness="1"

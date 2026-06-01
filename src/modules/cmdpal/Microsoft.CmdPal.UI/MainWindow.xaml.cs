@@ -15,6 +15,7 @@ using Microsoft.CmdPal.UI.Dock;
 using Microsoft.CmdPal.UI.Events;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Pages;
 using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
@@ -288,9 +289,62 @@ public sealed partial class MainWindow : WindowEx,
 
         if (rect is not null)
         {
-            MoveAndResizeDpiAware(rect.Value);
+            var finalRect = rect.Value;
+
+            // In compact mode, center the *visible collapsed card* (the search box) on the
+            // display, not the much larger transparent HWND. The card is anchored to the top
+            // of the HWND, so we offset the HWND upward by the card's center so that growing
+            // the card downward (when results appear) keeps the search box where it was.
+            if (TryGetCompactCardCenterOffsetPhysical(windowDpi, out var cardCenterFromHwndTop))
+            {
+                var workArea = displayArea.WorkArea;
+                var desiredCardCenterY = workArea.Y + (workArea.Height / 2);
+                finalRect.Y = desiredCardCenterY - cardCenterFromHwndTop;
+
+                if (finalRect.Y < workArea.Y)
+                {
+                    finalRect.Y = workArea.Y;
+                }
+            }
+
+            MoveAndResizeDpiAware(finalRect);
         }
     }
+
+    /// <summary>
+    /// When the palette is in compact mode and is being centered on launch, computes the
+    /// distance (in physical pixels) from the top of the HWND to the vertical center of the
+    /// collapsed card, so the caller can position the HWND such that the card is centered.
+    /// Returns false when the card should not be re-centered (compact mode off, or a summon
+    /// behavior that restores the last position).
+    /// </summary>
+    private bool TryGetCompactCardCenterOffsetPhysical(int windowDpi, out int cardCenterFromHwndTop)
+    {
+        cardCenterFromHwndTop = 0;
+
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        if (!settings.CompactMode || !IsCenteringSummon(settings))
+        {
+            return false;
+        }
+
+        // Make sure the card is actually collapsed before we measure it.
+        (RootElement.MainContent as ShellPage)?.EnsureCompactLayout();
+
+        var cardHeightDip = RootElement.GetCardHeight();
+        if (cardHeightDip <= 0)
+        {
+            return false;
+        }
+
+        var scale = windowDpi / 96.0;
+        var cardTopDip = RootElement.ShadowPadding.Top;
+        cardCenterFromHwndTop = (int)Math.Round((cardTopDip + (cardHeightDip / 2.0)) * scale);
+        return true;
+    }
+
+    // Every summon behavior except ToLast centers the window on its target display.
+    private static bool IsCenteringSummon(SettingsModel settings) => settings.SummonOn != MonitorBehavior.ToLast;
 
     private void RestoreWindowPosition(WindowPosition? savedPosition)
     {
@@ -1555,6 +1609,40 @@ public sealed partial class MainWindow : WindowEx,
     private void HandleExpandCompactOnUiThread(bool expanded)
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-        RootElement.SetCompact(settings.CompactMode && !expanded);
+
+        // Only the compact + centered configuration needs a screen-fit clamp. There the card
+        // is anchored near the vertical center of the display, so an expanded list could run
+        // off the bottom edge; cap its height so it always fits. In every other case the card
+        // is free to fill the (fixed-size) HWND as before.
+        if (expanded && settings.CompactMode && IsCenteringSummon(settings))
+        {
+            RootElement.SetCardMaxHeight(ComputeExpandedCardMaxHeightDip());
+        }
+        else
+        {
+            RootElement.SetCardMaxHeight(double.PositiveInfinity);
+        }
+    }
+
+    // Computes how tall (in DIPs) the visible card may grow before it would extend past the
+    // bottom of the work area, given the card's current top on screen.
+    private double ComputeExpandedCardMaxHeightDip()
+    {
+        var dpi = (int)this.GetDpiForWindow();
+        var scale = dpi / 96.0;
+
+        var displayArea = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
+        var workArea = displayArea.WorkArea;
+
+        var padding = RootElement.ShadowPadding;
+        var cardTopPhysical = AppWindow.Position.Y + (padding.Top * scale);
+        var availablePhysical = (workArea.Y + workArea.Height) - cardTopPhysical - (padding.Bottom * scale);
+
+        if (availablePhysical <= 0)
+        {
+            return double.PositiveInfinity;
+        }
+
+        return availablePhysical / scale;
     }
 }
