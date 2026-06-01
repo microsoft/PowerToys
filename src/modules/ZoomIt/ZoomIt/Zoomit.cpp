@@ -3225,7 +3225,8 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                 // Enable/disable audio controls based on selection (GIF has no audio)
                 EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_SYSTEM_AUDIO), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_CAPTURE_AUDIO), !isGifSelected);
-                EnableWindow(GetDlgItem(hDlg, IDC_NOISE_CANCELLATION), !isGifSelected && IsDlgButtonChecked(hDlg, IDC_CAPTURE_AUDIO) == BST_CHECKED);
+                EnableWindow(GetDlgItem(hDlg, IDC_NOISE_CANCELLATION), !isGifSelected);
+                EnableWindow(GetDlgItem(hDlg, IDC_MIC_MONO_MIX), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), !isGifSelected);
                 EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), !isGifSelected);
 
@@ -3241,6 +3242,10 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
         if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_CAPTURE_AUDIO) {
             bool micEnabled = IsDlgButtonChecked(hDlg, IDC_CAPTURE_AUDIO) == BST_CHECKED;
             EnableWindow(GetDlgItem(hDlg, IDC_NOISE_CANCELLATION), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MIC_MONO_MIX), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE_LABEL), micEnabled);
+            EnableWindow(GetDlgItem(hDlg, IDC_MICROPHONE), micEnabled);
+
         }
 
         switch ( LOWORD( wParam )) {
@@ -5156,8 +5161,9 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_SYSTEM_AUDIO), !isGifSelected);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_CAPTURE_AUDIO), !isGifSelected);
         EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_NOISE_CANCELLATION), !isGifSelected && g_CaptureAudio);
-        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE_LABEL), !isGifSelected);
-        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MIC_MONO_MIX), !isGifSelected && g_CaptureAudio);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE_LABEL), !isGifSelected && g_CaptureAudio);
+        EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_MICROPHONE), !isGifSelected && g_CaptureAudio);
 
         // Webcam overlay controls
         CheckDlgButton( g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_OVERLAY,
