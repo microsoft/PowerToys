@@ -60,7 +60,7 @@ namespace PowerDisplay.Common.Drivers
         /// <summary>
         /// GetMonitorInfo: this is the primary display monitor.
         /// </summary>
-        public const uint MonitorInfofPrimary = 0x00000001;
+        public const uint MonitorInfoFlagPrimary = 0x00000001;
 
         /// <summary>
         /// Get source name (GDI device name like "\\.\DISPLAY1")

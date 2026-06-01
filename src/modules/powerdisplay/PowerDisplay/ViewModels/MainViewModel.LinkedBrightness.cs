@@ -205,7 +205,7 @@ public partial class MainViewModel
     /// primary display, then deterministic fallback). When no linked target has a readable
     /// brightness yet — link was persisted ON and this ran during construction before discovery,
     /// every monitor is excluded, or hardware reads failed — the seed is deferred
-    /// (<see cref="_pendingInitialSeed"/>) and applied the moment a readable target appears, so a
+    /// (<see cref="_pendingInitialSeed"/>) and applied as soon as a readable target appears, so a
     /// restart with link enabled never leaves the slider stuck at its default 0. The seed is
     /// positional only: it is never written to hardware (the suppress flag gates
     /// <see cref="OnLinkedBrightnessChanged"/>), so the first user gesture is the first broadcast.

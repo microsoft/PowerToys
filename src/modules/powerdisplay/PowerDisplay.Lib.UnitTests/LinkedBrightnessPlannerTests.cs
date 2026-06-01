@@ -11,8 +11,8 @@ namespace PowerDisplay.UnitTests;
 
 /// <summary>
 /// Behavior tests for the pure linked-brightness decision logic: which monitors the master drives,
-/// whether the slider is usable, and the initial seed value. These cover the cases the review
-/// flagged — restart with no displays yet, all-excluded, single controllable display, and the
+/// whether the slider is usable, and the initial seed value. These cover review-flagged cases:
+/// restart with no displays yet, all-excluded, single controllable display, and the
 /// primary-display seed preference — without needing a WinUI DispatcherQueue.
 /// </summary>
 [TestClass]

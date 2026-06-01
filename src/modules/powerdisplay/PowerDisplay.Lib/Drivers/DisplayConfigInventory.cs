@@ -109,7 +109,7 @@ namespace PowerDisplay.Common.Drivers
             {
                 var monitorInfo = new MonitorInfoEx { CbSize = (uint)sizeof(MonitorInfoEx) };
                 if (GetMonitorInfo(hMonitor, &monitorInfo) &&
-                    (monitorInfo.DwFlags & MonitorInfofPrimary) != 0)
+                    (monitorInfo.DwFlags & MonitorInfoFlagPrimary) != 0)
                 {
                     primaryGdiDeviceName = monitorInfo.GetDeviceName();
                     return false;
