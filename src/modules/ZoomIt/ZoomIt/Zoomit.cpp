@@ -6853,7 +6853,7 @@ winrt::fire_and_forget StartRecordingAsync( HWND hWnd, LPRECT rcCrop, HWND hWndR
     // finish before StartAsync even needs the result.
     std::unique_ptr<AudioSampleGenerator> audioGenerator;
     winrt::Windows::Foundation::IAsyncAction audioInitAction{ nullptr };
-    if( g_RecordingFormat != RecordingFormat::GIF )
+    if ((g_RecordingFormat != RecordingFormat::GIF) && (g_CaptureAudio || g_CaptureSystemAudio))
     {
         audioGenerator = std::make_unique<AudioSampleGenerator>(
             g_CaptureAudio, g_CaptureSystemAudio, g_NoiseCancellation );

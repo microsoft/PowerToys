@@ -1159,6 +1159,14 @@ VideoRecordingSession::VideoRecordingSession(
     // Store frame interval for timeout-based frame production when webcam is active.
     m_frameIntervalTicks = ( frameRate > 0 ) ? ( 10'000'000LL / frameRate ) : 333'333LL;
 
+    if (m_audioGenerator)
+    {
+        // Always set up audio profile for loopback capture (stereo AAC)
+        auto audioProps = m_audioGenerator->GetEncodingProperties();
+        m_encodingProfile.Audio(winrt::AudioEncodingProperties::CreateAac(
+            audioProps.SampleRate(), audioProps.ChannelCount(), 192000));
+    }
+
     // Describe our input: uncompressed BGRA8 buffers
     auto properties = winrt::VideoEncodingProperties::CreateUncompressed(
         winrt::MediaEncodingSubtypes::Bgra8(),
@@ -1235,18 +1243,7 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
                 co_await m_audioGenerator->InitializeAsync();
             }
             RecDiag( L"StartAsync: audio initialized\n" );
-            auto audioProps = m_audioGenerator->GetEncodingProperties();
-            m_streamSource = winrt::MediaStreamSource(m_videoDescriptor, winrt::AudioStreamDescriptor(audioProps));
-
-            // Describe the output audio track (AAC) so it matches the audio stream
-            // exposed by the MediaStreamSource above. Without this, the encoding
-            // profile would contain only a video track while the source exposes an
-            // audio stream, which causes PrepareMediaStreamSourceTranscodeAsync to
-            // never complete (no frames are ever produced and the save dialog is skipped).
-            // 128 kbps matches the standard Windows MP4 preset for AAC audio.
-            // We use 192 kbps.
-            m_encodingProfile.Audio( winrt::AudioEncodingProperties::CreateAac(
-                audioProps.SampleRate(), audioProps.ChannelCount(), 192000 ) );
+            m_streamSource = winrt::MediaStreamSource(m_videoDescriptor, winrt::AudioStreamDescriptor(m_audioGenerator->GetEncodingProperties()));
         }
         else {
 
