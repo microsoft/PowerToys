@@ -55,6 +55,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<DragCompletedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
+    IRecipient<ExpandCompactModeMessage>,
     IDisposable,
     IHostWindow
 {
@@ -174,6 +175,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<DragCompletedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
+        WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
 
         // Hide our titlebar.
         // We need to both ExtendsContentIntoTitleBar, then set the height to Collapsed
@@ -393,6 +395,9 @@ public sealed partial class MainWindow : WindowEx,
         _autoGoHomeTimer.Interval = _autoGoHomeInterval;
 
         ApplyHwndFrameMode(ShouldShowHwndFrame(settings));
+
+        // Start collapsed: the card shrinks to just the search box until there is a query.
+        HandleExpandCompactOnUiThread(false);
     }
 
     /// <summary>
@@ -1538,5 +1543,18 @@ public sealed partial class MainWindow : WindowEx,
     public void Receive(GetHwndMessage message)
     {
         message.Hwnd = this.GetWindowHandle();
+    }
+
+    public void Receive(ExpandCompactModeMessage message)
+    {
+        this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
+    }
+
+    // The HWND is already as large as it will ever need to be (and it's transparent), so
+    // instead of resizing the window we simply shrink or grow the visible card inside it.
+    private void HandleExpandCompactOnUiThread(bool expanded)
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        RootElement.SetCompact(settings.CompactMode && !expanded);
     }
 }

@@ -50,6 +50,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
+    IRecipient<ExpandCompactModeMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -79,8 +80,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public IHostWindow? HostWindow { get; set; }
 
+    public bool ExpandedMode { get; set; }
+
     public ShellPage()
     {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        this.ExpandedMode = !settings.CompactMode;
+
         this.InitializeComponent();
 
         // how we are doing navigation around
@@ -103,6 +109,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
+
+        WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
@@ -839,6 +847,18 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             Logger.LogError("Error handling mouse button press event", ex);
         }
+    }
+
+    public void Receive(ExpandCompactModeMessage message)
+    {
+        this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
+    }
+
+    private void HandleExpandCompactOnUiThread(bool expanded)
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        this.ExpandedMode = settings.CompactMode ? expanded : true;
+        PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
     }
 
     public void Dispose()

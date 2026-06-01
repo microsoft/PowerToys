@@ -106,6 +106,16 @@ public sealed partial class CmdPalMainControl : UserControl
     }
 
     /// <summary>
+    /// Switches the card between its expanded (fills the host) and compact (sizes to its
+    /// content, anchored to the top) layouts. The HWND stays the same size; only the visible
+    /// card shrinks or grows.
+    /// </summary>
+    public void SetCompact(bool compact)
+    {
+        CardBorder.VerticalAlignment = compact ? VerticalAlignment.Top : VerticalAlignment.Stretch;
+    }
+
+    /// <summary>
     /// Forwards the host window's activation state to the current backdrop so the system can
     /// render its active / inactive appearance correctly.
     /// </summary>

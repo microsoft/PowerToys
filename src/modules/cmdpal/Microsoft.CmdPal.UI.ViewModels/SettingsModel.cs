@@ -42,6 +42,8 @@ public record SettingsModel
 
     public bool AllowExternalReload { get; init; }
 
+    public bool CompactMode { get; set; } = true;
+
     private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
 
