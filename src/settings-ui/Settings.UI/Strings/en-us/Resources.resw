@@ -2051,7 +2051,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
   </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
-    <value>Shortcut Guide displays keyboard shortcuts for Windows and various applications. The shortcuts shown always correspond to the most current application or Windows version.</value>
+    <value>Shortcut Guide displays keyboard shortcuts for Windows and various applications. The shortcuts shown always correspond to the most current application version or Windows version.</value>
   </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
