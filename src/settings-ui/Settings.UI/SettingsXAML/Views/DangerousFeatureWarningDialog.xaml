@@ -31,5 +31,9 @@
             x:Name="WarningConfirm"
             FontWeight="SemiBold"
             TextWrapping="Wrap" />
+        <HyperlinkButton
+            x:Name="WarningLearnMoreLink"
+            Margin="-12,0,0,0"
+            Visibility="Collapsed" />
     </StackPanel>
 </ContentDialog>

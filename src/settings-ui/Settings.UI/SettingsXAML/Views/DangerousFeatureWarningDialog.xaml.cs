@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Windows.ApplicationModel.Resources;
 
@@ -17,6 +19,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     /// Bullets are prepended in code so translators only see the body text; the
     /// item loop probes <c>_WarningList_Item1</c>, <c>_Item2</c>, ... until a missing
     /// key is hit, so adding a 4th bullet only requires a new resw entry.
+    /// An optional learn-more hyperlink is shown when both
+    /// <c>{prefix}_WarningLearnMoreText</c> and <c>{prefix}_WarningLearnMoreUrl</c>
+    /// are defined.
     /// </summary>
     public sealed partial class DangerousFeatureWarningDialog : ContentDialog
     {
@@ -58,6 +63,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
 
             WarningList.ItemsSource = items;
+
+            var learnMoreText = ResourceMap.TryGetValue($"{resourceKeyPrefix}_WarningLearnMoreText")?.ValueAsString;
+            var learnMoreUrl = ResourceMap.TryGetValue($"{resourceKeyPrefix}_WarningLearnMoreUrl")?.ValueAsString;
+            if (!string.IsNullOrEmpty(learnMoreText) &&
+                !string.IsNullOrEmpty(learnMoreUrl) &&
+                Uri.TryCreate(learnMoreUrl, UriKind.Absolute, out var learnMoreUri))
+            {
+                WarningLearnMoreLink.Content = learnMoreText;
+                WarningLearnMoreLink.NavigateUri = learnMoreUri;
+                WarningLearnMoreLink.Visibility = Visibility.Visible;
+            }
         }
     }
 }
