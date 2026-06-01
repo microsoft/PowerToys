@@ -1137,11 +1137,11 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <comment>Header for the preview section in the pin to dock dialog</comment>
   </data>
   <data name="PinToDock_SectionHeader.Text" xml:space="preserve">
-    <value>Choose where to pin this command</value>
+    <value>Position</value>
     <comment>Header for the dock section selector in the pin to dock dialog</comment>
   </data>
   <data name="PinToDock_MonitorHeader.Text" xml:space="preserve">
-    <value>Choose which monitor</value>
+    <value>Monitor</value>
     <comment>Header for the monitor selector in the pin to dock dialog</comment>
   </data>
   <data name="PinToDock_Start.Content" xml:space="preserve">
