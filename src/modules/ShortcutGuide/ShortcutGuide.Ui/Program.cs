@@ -99,7 +99,14 @@ namespace ShortcutGuide
                     return;
                 }
 
-                PowerToysShortcutsPopulator.Populate();
+                try
+                {
+                    PowerToysShortcutsPopulator.Populate();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to populate PowerToys shortcuts in manifest.", ex);
+                }
             });
             CopyAndIndexGenerationThread.IsBackground = true;
             CopyAndIndexGenerationThread.Start();
