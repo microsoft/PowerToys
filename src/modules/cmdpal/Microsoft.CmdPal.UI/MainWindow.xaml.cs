@@ -1335,6 +1335,18 @@ public sealed partial class MainWindow : WindowEx,
                     break;
                 }
 
+            // Borderless mode: claim the entire window rectangle as client area.
+            // A resizable window has WS_THICKFRAME, which makes the OS reserve a
+            // non-client sizing frame *and* gives the window a DWM drop shadow / a thin
+            // frame line along the top. We keep WS_THICKFRAME (so our custom WM_NCHITTEST
+            // can still drive resizing) but tell the OS the whole window is client by
+            // returning 0 from WM_NCCALCSIZE — which removes that frame and its shadow.
+            // The visible card draws its own border + shadow inside the transparent HWND.
+            // When the debug frame is on we fall through to the default handling so the
+            // real OS chrome appears.
+            case PInvoke.WM_NCCALCSIZE when wParam.Value != 0 && _hwndFrameVisible != true:
+                return (LRESULT)0;
+
             case PInvoke.WM_HOTKEY:
                 {
                     var hotkeyIndex = (int)wParam.Value;
