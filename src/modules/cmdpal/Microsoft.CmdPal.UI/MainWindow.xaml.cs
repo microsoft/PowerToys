@@ -22,6 +22,7 @@ using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Input;
@@ -90,9 +91,6 @@ public sealed partial class MainWindow : WindowEx,
     private int _sessionMaxNavigationDepth;
     private int _sessionErrorCount;
 
-    private DesktopAcrylicController? _acrylicController;
-    private MicaController? _micaController;
-    private SystemBackdropConfiguration? _configurationSource;
     private bool _isUpdatingBackdrop;
     private TimeSpan _autoGoHomeInterval = Timeout.InfiniteTimeSpan;
 
@@ -127,6 +125,10 @@ public sealed partial class MainWindow : WindowEx,
             CommandPaletteHost.SetHostHwnd((ulong)_hwnd.Value);
         }
 
+        // The HWND itself is borderless / transparent — the visible card lives inside
+        // RootElement (CmdPalMainControl) and draws its own corners, border, shadow, and
+        // backdrop via the SystemBackdropElement.
+        ConfigureTransparentHostWindow();
         InitializeBackdropSupport();
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
@@ -232,11 +234,34 @@ public sealed partial class MainWindow : WindowEx,
         // the DIP size won't trigger it, leaving drag regions at the old physical coordinates.
         RootElement.XamlRoot.Changed += XamlRoot_Changed;
 
-        // Add dev ribbon if enabled
+        // Add dev ribbon if enabled. The ribbon lives inside the visible card so it
+        // doesn't draw into the transparent shadow area outside the rounded border.
         if (!BuildInfo.IsCiBuild)
         {
             _devRibbon = new DevRibbon { Margin = new Thickness(-1, -1, 120, -1) };
-            RootElement.Children.Add(_devRibbon);
+            RootElement.CardContentPanel.Children.Add(_devRibbon);
+        }
+    }
+
+    /// <summary>
+    /// Configures the underlying HWND to be borderless, with a transparent background
+    /// and no DWM-drawn rounded corners. The visible "window" chrome (rounded corners,
+    /// border, drop shadow) is drawn by <see cref="CmdPalMainControl"/> instead.
+    /// </summary>
+    private void ConfigureTransparentHostWindow()
+    {
+        if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
+        {
+            // No system-drawn border or title bar — we draw both ourselves.
+            overlappedPresenter.SetBorderAndTitleBar(false, false);
+        }
+
+        unsafe
+        {
+            // Suppress the DWM rounded-corner shaping so it doesn't fight with the card's
+            // CornerRadius and produce a doubled / clipped outline.
+            var pref = (uint)DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_DONOTROUND;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &pref, sizeof(uint));
         }
     }
 
@@ -384,13 +409,11 @@ public sealed partial class MainWindow : WindowEx,
 
     private void InitializeBackdropSupport()
     {
-        if (DesktopAcrylicController.IsSupported() || MicaController.IsSupported())
-        {
-            _configurationSource = new SystemBackdropConfiguration
-            {
-                IsInputActive = true,
-            };
-        }
+        // The window itself paints nothing (it's transparent). All actual backdrop
+        // rendering lives on the SystemBackdropElement inside CmdPalMainControl, so the
+        // mica/acrylic only fills the rounded card instead of the whole HWND. The empty
+        // tint here keeps the HWND fully transparent.
+        SystemBackdrop = new TransparentTintBackdrop { TintColor = Colors.Transparent };
     }
 
     private void UpdateBackdrop()
@@ -403,35 +426,14 @@ public sealed partial class MainWindow : WindowEx,
 
         _isUpdatingBackdrop = true;
 
-        var backdrop = _themeService.Current.BackdropParameters;
-        var isImageMode = ViewModel.ShowBackgroundImage;
-        var config = BackdropStyles.Get(backdrop.Style);
-
         try
         {
-            switch (config.ControllerKind)
-            {
-                case BackdropControllerKind.Solid:
-                    CleanupBackdropControllers();
-                    var tintColor = Color.FromArgb(
-                        (byte)(backdrop.EffectiveOpacity * 255),
-                        backdrop.TintColor.R,
-                        backdrop.TintColor.G,
-                        backdrop.TintColor.B);
-                    SetupTransparentBackdrop(tintColor);
-                    break;
+            var backdrop = _themeService.Current.BackdropParameters;
+            var isImageMode = ViewModel.ShowBackgroundImage;
+            var config = BackdropStyles.Get(backdrop.Style);
+            var hasColorization = _themeService.Current.HasColorization;
 
-                case BackdropControllerKind.Mica:
-                case BackdropControllerKind.MicaAlt:
-                    SetupMica(backdrop, isImageMode, config.ControllerKind);
-                    break;
-
-                case BackdropControllerKind.Acrylic:
-                case BackdropControllerKind.AcrylicThin:
-                default:
-                    SetupDesktopAcrylic(backdrop, isImageMode, config.ControllerKind);
-                    break;
-            }
+            RootElement.ApplyBackdrop(backdrop, config.ControllerKind, isImageMode, hasColorization);
         }
         catch (Exception ex)
         {
@@ -441,111 +443,6 @@ public sealed partial class MainWindow : WindowEx,
         {
             _isUpdatingBackdrop = false;
         }
-    }
-
-    private void SetupTransparentBackdrop(Color tintColor)
-    {
-        if (SystemBackdrop is TransparentTintBackdrop existingBackdrop)
-        {
-            existingBackdrop.TintColor = tintColor;
-        }
-        else
-        {
-            SystemBackdrop = new TransparentTintBackdrop { TintColor = tintColor };
-        }
-    }
-
-    private void CleanupBackdropControllers()
-    {
-        if (_acrylicController is not null)
-        {
-            _acrylicController.RemoveAllSystemBackdropTargets();
-            _acrylicController.Dispose();
-            _acrylicController = null;
-        }
-
-        if (_micaController is not null)
-        {
-            _micaController.RemoveAllSystemBackdropTargets();
-            _micaController.Dispose();
-            _micaController = null;
-        }
-    }
-
-    private void SetupDesktopAcrylic(BackdropParameters backdrop, bool isImageMode, BackdropControllerKind kind)
-    {
-        CleanupBackdropControllers();
-
-        // Fall back to solid color if acrylic not supported
-        if (_configurationSource is null || !DesktopAcrylicController.IsSupported())
-        {
-            SetupTransparentBackdrop(backdrop.FallbackColor);
-            return;
-        }
-
-        // DesktopAcrylicController and SystemBackdrop can't be active simultaneously
-        SystemBackdrop = null;
-
-        // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
-        var effectiveTintOpacity = isImageMode
-            ? 0.0f
-            : backdrop.EffectiveOpacity;
-
-        _acrylicController = new DesktopAcrylicController
-        {
-            Kind = kind == BackdropControllerKind.AcrylicThin
-                ? DesktopAcrylicKind.Thin
-                : DesktopAcrylicKind.Default,
-            TintColor = backdrop.TintColor,
-            TintOpacity = effectiveTintOpacity,
-            FallbackColor = backdrop.FallbackColor,
-            LuminosityOpacity = backdrop.EffectiveLuminosityOpacity,
-        };
-
-        // Requires "using WinRT;" for Window.As<>()
-        _acrylicController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-        _acrylicController.SetSystemBackdropConfiguration(_configurationSource);
-    }
-
-    private void SetupMica(BackdropParameters backdrop, bool isImageMode, BackdropControllerKind kind)
-    {
-        CleanupBackdropControllers();
-
-        // Fall back to solid color if Mica not supported
-        if (_configurationSource is null || !MicaController.IsSupported())
-        {
-            SetupTransparentBackdrop(backdrop.FallbackColor);
-            return;
-        }
-
-        // MicaController and SystemBackdrop can't be active simultaneously
-        SystemBackdrop = null;
-        _configurationSource.Theme = _themeService.Current.Theme == ElementTheme.Dark
-            ? SystemBackdropTheme.Dark
-            : SystemBackdropTheme.Light;
-
-        var hasColorization = _themeService.Current.HasColorization || isImageMode;
-
-        _micaController = new MicaController
-        {
-            Kind = kind == BackdropControllerKind.MicaAlt
-                ? MicaKind.BaseAlt
-                : MicaKind.Base,
-        };
-
-        // Only set tint properties when colorization is active
-        // Otherwise let system handle light/dark theme defaults automatically
-        if (hasColorization)
-        {
-            // Image mode: no tint here, BlurImageControl handles it (avoids double-tinting)
-            _micaController.TintColor = backdrop.TintColor;
-            _micaController.TintOpacity = isImageMode ? 0.0f : backdrop.EffectiveOpacity;
-            _micaController.FallbackColor = backdrop.FallbackColor;
-            _micaController.LuminosityOpacity = backdrop.EffectiveLuminosityOpacity;
-        }
-
-        _micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
-        _micaController.SetSystemBackdropConfiguration(_configurationSource);
     }
 
     private void ShowHwnd(IntPtr hwndValue, MonitorBehavior target)
@@ -939,8 +836,17 @@ public sealed partial class MainWindow : WindowEx,
 
     private void DisposeAcrylic()
     {
-        CleanupBackdropControllers();
-        _configurationSource = null!;
+        // The backdrop controllers now live on the SystemBackdropElement inside
+        // CmdPalMainControl. Clearing its SystemBackdrop fires OnTargetDisconnected on the
+        // current backdrop, which removes targets and disposes the underlying controller.
+        try
+        {
+            RootElement?.ClearBackdrop();
+        }
+        catch
+        {
+            // Best-effort cleanup; ignore errors during shutdown.
+        }
     }
 
     // Updates our window s.t. the top of the window is draggable.
@@ -955,29 +861,38 @@ public sealed partial class MainWindow : WindowEx,
         // Specify the interactive regions of the title bar.
         var scaleAdjustment = xamlRoot.RasterizationScale;
 
+        // Drag/passthrough regions are computed against the visible card (the rounded
+        // border inside CmdPalMainControl), not the whole HWND. The HWND extends beyond
+        // the card to make room for the drop shadow, and we don't want that transparent
+        // shadow area to be draggable.
+        var card = RootElement.CardElement;
+        if (card.ActualWidth <= 0 || card.ActualHeight <= 0)
+        {
+            return;
+        }
+
         // Get the rectangle around our XAML content. We're going to mark this
         // rectangle as "Passthrough", so that the normal window operations
         // (resizing, dragging) don't apply in this space.
-        var transform = RootElement.TransformToVisual(null);
+        var transform = card.TransformToVisual(null);
 
         // Reserve 16px of space at the top for dragging.
         var topHeight = 16;
         var bounds = transform.TransformBounds(new Rect(
             0,
             topHeight,
-            RootElement.ActualWidth,
-            RootElement.ActualHeight));
+            card.ActualWidth,
+            card.ActualHeight));
         var contentRect = GetRect(bounds, scaleAdjustment);
         var rectArray = new RectInt32[] { contentRect };
         var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, rectArray);
 
-        // Add a drag-able region on top
-        var w = RootElement.ActualWidth;
-        _ = RootElement.ActualHeight;
+        // Add a drag-able region on top of the card.
+        var dragTopBounds = transform.TransformBounds(new Rect(0, 0, card.ActualWidth, topHeight));
         var dragSides = new RectInt32[]
         {
-            GetRect(new Rect(0, 0, w, topHeight), scaleAdjustment), // the top, {topHeight=16} tall
+            GetRect(dragTopBounds, scaleAdjustment),
         };
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, dragSides);
     }
@@ -1043,9 +958,9 @@ public sealed partial class MainWindow : WindowEx,
             PowerToysTelemetry.Log.WriteEvent(new CmdPalDismissedOnLostFocus());
         }
 
-        if (_configurationSource is not null)
+        if (RootElement is not null)
         {
-            _configurationSource.IsInputActive = args.WindowActivationState != WindowActivationState.Deactivated;
+            RootElement.SetIsInputActive(args.WindowActivationState != WindowActivationState.Deactivated);
         }
     }
 
