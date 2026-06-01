@@ -36,7 +36,9 @@
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Assets\ShortcutGuide\Manifests\*.yml" />
+    <None Include="Assets\ShortcutGuide\Manifests\*.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
