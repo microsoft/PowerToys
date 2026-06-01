@@ -36,9 +36,7 @@
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="Assets\ShortcutGuide\Manifests\*.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="Assets\ShortcutGuide\Manifests\*.yml" />
   </ItemGroup>
 
   <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
@@ -51,16 +49,6 @@
     <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
 
     <Message Text="Copied CopyPRIFileToOutputDir files" Importance="High" />
-  </Target>
-
-  <Target Name="CopyManifestsToOutputDir" AfterTargets="Build">
-    <ItemGroup>
-      <ManifestYmlFiles Include="$(MSBuildProjectDirectory)\Assets\ShortcutGuide\Manifests\*.yml" />
-    </ItemGroup>
-
-    <MakeDir Directories="$(OutDir)Assets\ShortcutGuide\Manifests" />
-    <Copy SourceFiles="@(ManifestYmlFiles)" DestinationFolder="$(OutDir)Assets\ShortcutGuide\Manifests\" SkipUnchangedFiles="true" />
-    <Message Text="Copied %(ManifestYmlFiles.Count) manifest yml files to output" Importance="High" />
   </Target>
 
   <ItemGroup>
