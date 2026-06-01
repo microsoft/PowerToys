@@ -61,7 +61,7 @@ namespace ShortcutGuide
             _getAppIdsTask = Task.Run(() =>
             {
                 Program.CopyAndIndexGenerationThread.Join();
-                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
+                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds(Program.OriginalForegroundWindow);
                 return _currentApplicationIds;
             });
 
@@ -372,14 +372,14 @@ namespace ShortcutGuide
             App.CurrentAppName = this._selectedAppName;
             this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
 
-            App.TaskBarWindow.Hide();
+            App.TaskBarWindow?.Hide();
             if (this._shortcutFile is ShortcutFile file)
             {
                 // Show the taskbar button window only when the selected app exposes the <TASKBAR1-9> section.
                 if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true))
                 {
                     this._taskBarWindowActivated = true;
-                    App.TaskBarWindow.Activate();
+                    App.TaskBarWindow?.Activate();
                 }
 
                 // Reposition before navigating so the taskbar window does not clip into the main window.
