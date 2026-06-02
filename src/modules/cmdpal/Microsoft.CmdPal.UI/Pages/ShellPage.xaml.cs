@@ -72,6 +72,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
+
+    // When the shell goes from compact (collapsed) to expanded, the content frame's page
+    // — which was collapsed and therefore never laid out — finally fires its Loaded event.
+    // That late Loaded would otherwise run the post-navigation focus/select logic and
+    // select-all the character the user just typed (which triggered the expand). This
+    // one-shot flag suppresses that select for the expand-driven load.
+    private bool _suppressSelectOnNextLoad;
     private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
@@ -588,6 +595,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
+        // A real navigation always loads a fresh page that we do want to focus/select, so
+        // clear any stale suppression left over from a prior compact expand. (If this
+        // navigation itself expands compact mode, UpdateCompactModeForCurrentPage below
+        // will re-arm the flag for the page that's about to load.)
+        _suppressSelectOnNextLoad = false;
+
         // This listens to the root frame to ensure that we also track the content's page VM as well that we passed as a parameter.
         // This is currently used for both forward and backward navigation.
         // As when we go back that we restore ourselves to the proper state within our VM
@@ -644,7 +657,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return;
         }
 
-        var nested = RootFrame.CanGoBack;
+        var nested = ViewModel.IsNested;
         var hasQuery = !string.IsNullOrEmpty(ViewModel.CurrentPage?.SearchTextBox);
         HandleExpandCompactOnUiThread(nested || hasQuery);
     }
@@ -676,6 +689,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             if (HostWindow?.IsVisibleToUser != true)
             {
+                return;
+            }
+
+            // This Loaded can fire late when expanding out of compact mode (the page was
+            // collapsed and never laid out). In that case the user is mid-typing in the
+            // already-focused search box, so don't steal focus / select-all their input.
+            if (_suppressSelectOnNextLoad)
+            {
+                _suppressSelectOnNextLoad = false;
                 return;
             }
 
@@ -880,7 +902,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private void HandleExpandCompactOnUiThread(bool expanded)
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
-        this.ExpandedMode = settings.CompactMode ? expanded : true;
+        var newExpanded = settings.CompactMode ? expanded : true;
+
+        // Going from collapsed to expanded realizes the (previously collapsed) content
+        // page for the first time, which fires its deferred Loaded event. Suppress the
+        // resulting focus/select so we don't select-all the character the user just typed.
+        if (!this.ExpandedMode && newExpanded)
+        {
+            _suppressSelectOnNextLoad = true;
+        }
+
+        this.ExpandedMode = newExpanded;
         PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
     }
 
