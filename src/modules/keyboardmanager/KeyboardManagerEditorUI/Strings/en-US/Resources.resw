@@ -502,10 +502,10 @@
     <value>Check service status</value>
   </data>
   <data name="ActionType_RunTemplate.Content" xml:space="preserve">
-    <value>Run from template</value>
+    <value>Run PowerToys Command</value>
   </data>
   <data name="ActionType_RunTemplate_Text.Text" xml:space="preserve">
-    <value>Run from template</value>
+    <value>Run PowerToys Command</value>
   </data>
   <data name="TemplatePickerButton.Content" xml:space="preserve">
     <value>PowerToys command</value>
