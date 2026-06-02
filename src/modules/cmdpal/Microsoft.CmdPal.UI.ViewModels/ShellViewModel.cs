@@ -85,6 +85,8 @@ public partial class ShellViewModel : ObservableObject,
 
     public bool IsNested => _isNested && !_currentlyTransient;
 
+    public bool IsTransient => _currentlyTransient;
+
     public PageViewModel NullPage { get; private set; }
 
     public ShellViewModel(

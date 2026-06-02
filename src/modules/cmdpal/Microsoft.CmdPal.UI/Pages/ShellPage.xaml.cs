@@ -648,12 +648,20 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     /// from navigation (rather than only from search-text changes) makes alias-based
     /// navigation expand correctly — an alias clears the search box before navigating, so
     /// the search-text transition alone would otherwise leave the palette collapsed.
+    /// Transient pages always show the expanded UI, ignoring the compact setting entirely.
     /// </summary>
     private void UpdateCompactModeForCurrentPage()
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         if (!settings.CompactMode)
         {
+            return;
+        }
+
+        // Transient pages ignore compact mode and always present as expanded.
+        if (ViewModel.IsTransient)
+        {
+            HandleExpandCompactOnUiThread(true);
             return;
         }
 
