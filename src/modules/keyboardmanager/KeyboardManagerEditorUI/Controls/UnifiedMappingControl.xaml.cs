@@ -45,6 +45,8 @@ namespace KeyboardManagerEditorUI.Controls
         private bool _urlPathDirty;
         private bool _programPathDirty;
 
+        private string _currentActionTag = "KeyOrShortcut";
+
         public bool AllowChords { get; set; } = true;
 
         #endregion
@@ -121,27 +123,16 @@ namespace KeyboardManagerEditorUI.Controls
         /// <summary>
         /// Gets the current action type.
         /// </summary>
-        public ActionType CurrentActionType
+        public ActionType CurrentActionType => _currentActionTag switch
         {
-            get
-            {
-                if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
-                {
-                    return item.Tag?.ToString() switch
-                    {
-                        "Text" => ActionType.Text,
-                        "OpenUrl" => ActionType.OpenUrl,
-                        "OpenApp" => ActionType.OpenApp,
-                        "MouseClick" => ActionType.MouseClick,
-                        "Disable" => ActionType.Disable,
-                        "RunTemplate" => ActionType.RunTemplate,
-                        _ => ActionType.KeyOrShortcut,
-                    };
-                }
-
-                return ActionType.KeyOrShortcut;
-            }
-        }
+            "Text" => ActionType.Text,
+            "OpenUrl" => ActionType.OpenUrl,
+            "OpenApp" => ActionType.OpenApp,
+            "MouseClick" => ActionType.MouseClick,
+            "Disable" => ActionType.Disable,
+            "RunTemplate" => ActionType.RunTemplate,
+            _ => ActionType.KeyOrShortcut,
+        };
 
         #endregion
 
@@ -165,6 +156,9 @@ namespace KeyboardManagerEditorUI.Controls
                 UpdatePlaceholderVisibility();
                 RaiseValidationStateChanged();
             };
+
+            BuildRunPtCommandMenu();
+            UpdateActionButtonContent("KeyOrShortcut");
 
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
@@ -251,29 +245,91 @@ namespace KeyboardManagerEditorUI.Controls
 
         #region Action Type Handling
 
-        private void ActionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void OnActionTypeClick(object sender, RoutedEventArgs e)
         {
-            if (ActionTypeComboBox?.SelectedItem is ComboBoxItem item)
+            if (sender is FrameworkElement fe && fe.Tag is string tag)
             {
-                string? tag = item.Tag?.ToString();
+                SetActionTag(tag);
+            }
+        }
 
-                // Cleanup keyboard hook when switching away from key/shortcut
-                if (tag != "KeyOrShortcut")
+        private void OnCommandClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuFlyoutItem item && item.Tag is string templateId)
+            {
+                SetActionTag("RunTemplate");
+                TemplatePicker?.SelectCommand(templateId);
+                UpdateActionButtonContent("RunTemplate", item.Text);
+            }
+        }
+
+        private void SetActionTag(string tag)
+        {
+            _currentActionTag = tag;
+
+            if (ActionSwitchPresenter != null)
+            {
+                ActionSwitchPresenter.Value = tag;
+            }
+
+            // Cleanup keyboard hook when switching away from key/shortcut
+            if (tag != "KeyOrShortcut")
+            {
+                if (_currentInputMode == KeyInputMode.RemappedKeys)
                 {
-                    if (_currentInputMode == KeyInputMode.RemappedKeys)
-                    {
-                        CleanupKeyboardHook();
-                    }
+                    CleanupKeyboardHook();
+                }
 
-                    if (ActionKeyToggleBtn?.IsChecked == true)
-                    {
-                        ActionKeyToggleBtn.IsChecked = false;
-                    }
+                if (ActionKeyToggleBtn?.IsChecked == true)
+                {
+                    ActionKeyToggleBtn.IsChecked = false;
                 }
             }
 
             HideValidationMessage();
             RaiseValidationStateChanged();
+            UpdateActionButtonContent(tag);
+        }
+
+        private void UpdateActionButtonContent(string tag, string? commandDisplay = null)
+        {
+            if (ActionTypeButton == null)
+            {
+                return;
+            }
+
+            string cmd = commandDisplay ?? TemplatePicker?.CurrentCommandDisplay ?? string.Empty;
+
+            string text = tag switch
+            {
+                "Text" => ActionItem_Text.Text,
+                "OpenUrl" => ActionItem_OpenUrl.Text,
+                "OpenApp" => ActionItem_OpenApp.Text,
+                "Disable" => ActionItem_Disable.Text,
+                "RunTemplate" => string.IsNullOrEmpty(cmd)
+                    ? RunPtCommandSubItem.Text
+                    : $"{RunPtCommandSubItem.Text}: {cmd}",
+                _ => ActionItem_KeyOrShortcut.Text,
+            };
+
+            ActionTypeButton.Content = text;
+        }
+
+        private void BuildRunPtCommandMenu()
+        {
+            foreach (var module in CommandTemplateCatalog.Instance.Data.Modules)
+            {
+                foreach (var cmd in module.Commands)
+                {
+                    var item = new MenuFlyoutItem
+                    {
+                        Text = ResourceHelper.GetString(cmd.DisplayResourceKey),
+                        Tag = cmd.Id,
+                    };
+                    item.Click += OnCommandClick;
+                    RunPtCommandSubItem.Items.Add(item);
+                }
+            }
         }
 
         private void TemplatePicker_MissingTemplateKeepRequested(object sender, EventArgs e)
@@ -908,11 +964,6 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetActionType(ActionType actionType)
         {
-            if (ActionTypeComboBox == null)
-            {
-                return;
-            }
-
             string tag = actionType switch
             {
                 ActionType.Text => "Text",
@@ -924,14 +975,7 @@ namespace KeyboardManagerEditorUI.Controls
                 _ => "KeyOrShortcut",
             };
 
-            foreach (var item in ActionTypeComboBox.Items)
-            {
-                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string itemTag && itemTag == tag)
-                {
-                    ActionTypeComboBox.SelectedItem = comboBoxItem;
-                    return;
-                }
-            }
+            SetActionTag(tag);
         }
 
         /// <summary>
@@ -1030,6 +1074,7 @@ namespace KeyboardManagerEditorUI.Controls
         {
             SetActionType(ActionType.RunTemplate);
             TemplatePicker?.LoadExisting(templateId, parameterValues);
+            UpdateActionButtonContent("RunTemplate");
         }
 
         /// <summary>
@@ -1175,10 +1220,7 @@ namespace KeyboardManagerEditorUI.Controls
                 TriggerTypeComboBox.SelectedIndex = 0;
             }
 
-            if (ActionTypeComboBox != null)
-            {
-                ActionTypeComboBox.SelectedIndex = 0;
-            }
+            SetActionTag("KeyOrShortcut");
 
             if (MouseTriggerComboBox != null)
             {

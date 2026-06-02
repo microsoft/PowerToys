@@ -175,58 +175,67 @@
             Orientation="Vertical"
             Spacing="8">
             <TextBlock x:Uid="ActionLabel" FontWeight="SemiBold" />
-            <ComboBox
-                x:Name="ActionTypeComboBox"
+            <DropDownButton
+                x:Name="ActionTypeButton"
                 HorizontalAlignment="Stretch"
-                SelectionChanged="ActionTypeComboBox_SelectionChanged">
-                <ComboBoxItem
-                    x:Uid="ActionType_KeyOrShortcut"
-                    IsSelected="True"
-                    Tag="KeyOrShortcut">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xEDA7;" />
-                        <TextBlock x:Uid="ActionType_KeyOrShortcut_Text" />
-                    </StackPanel>
-                </ComboBoxItem>
-                <ComboBoxItem x:Uid="ActionType_Text" Tag="Text">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xE8D2;" />
-                        <TextBlock x:Uid="ActionType_Text_Text" />
-                    </StackPanel>
-                </ComboBoxItem>
-                <ComboBoxItem x:Uid="ActionType_OpenUrl" Tag="OpenUrl">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xE774;" />
-                        <TextBlock x:Uid="ActionType_OpenUrl_Text" />
-                    </StackPanel>
-                </ComboBoxItem>
-                <ComboBoxItem x:Uid="ActionType_OpenApp" Tag="OpenApp">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xECAA;" />
-                        <TextBlock x:Uid="ActionType_OpenApp_Text" />
-                    </StackPanel>
-                </ComboBoxItem>
-                <ComboBoxItem x:Uid="ActionType_Disable" Tag="Disable">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xE711;" />
-                        <TextBlock x:Uid="ActionType_Disable_Text" />
-                    </StackPanel>
-                </ComboBoxItem>
-                <ComboBoxItem x:Uid="ActionType_RunTemplate" Tag="RunTemplate">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xE756;" />
-                        <TextBlock x:Uid="ActionType_RunTemplate_Text" />
-                    </StackPanel>
-                </ComboBoxItem>
-                <!--
-                <ComboBoxItem x:Uid="ActionType_MouseClick" Tag="MouseClick">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <FontIcon FontSize="14" Glyph="&#xE962;" />
-                        <TextBlock x:Uid="ActionType_MouseClick_Text" />
-                    </StackPanel>
-                </ComboBoxItem>
-                -->
-            </ComboBox>
+                HorizontalContentAlignment="Left">
+                <DropDownButton.Flyout>
+                    <MenuFlyout x:Name="ActionTypeMenu" Placement="Bottom">
+                        <MenuFlyoutItem
+                            x:Name="ActionItem_KeyOrShortcut"
+                            x:Uid="ActionType_KeyOrShortcut_Text"
+                            Click="OnActionTypeClick"
+                            Tag="KeyOrShortcut">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontSize="14" Glyph="&#xEDA7;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Name="ActionItem_Text"
+                            x:Uid="ActionType_Text_Text"
+                            Click="OnActionTypeClick"
+                            Tag="Text">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontSize="14" Glyph="&#xE8D2;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Name="ActionItem_OpenUrl"
+                            x:Uid="ActionType_OpenUrl_Text"
+                            Click="OnActionTypeClick"
+                            Tag="OpenUrl">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontSize="14" Glyph="&#xE774;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Name="ActionItem_OpenApp"
+                            x:Uid="ActionType_OpenApp_Text"
+                            Click="OnActionTypeClick"
+                            Tag="OpenApp">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontSize="14" Glyph="&#xECAA;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutItem
+                            x:Name="ActionItem_Disable"
+                            x:Uid="ActionType_Disable_Text"
+                            Click="OnActionTypeClick"
+                            Tag="Disable">
+                            <MenuFlyoutItem.Icon>
+                                <FontIcon FontSize="14" Glyph="&#xE711;" />
+                            </MenuFlyoutItem.Icon>
+                        </MenuFlyoutItem>
+                        <MenuFlyoutSubItem
+                            x:Name="RunPtCommandSubItem"
+                            x:Uid="ActionType_RunTemplate_Text">
+                            <MenuFlyoutSubItem.Icon>
+                                <FontIcon FontSize="14" Glyph="&#xE756;" />
+                            </MenuFlyoutSubItem.Icon>
+                        </MenuFlyoutSubItem>
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+            </DropDownButton>
             <Rectangle
                 Height="1"
                 Margin="0,12,0,12"
@@ -235,7 +244,7 @@
             <tkcontrols:SwitchPresenter
                 x:Name="ActionSwitchPresenter"
                 TargetType="x:String"
-                Value="{Binding SelectedItem.Tag, ElementName=ActionTypeComboBox}">
+                Value="KeyOrShortcut">
                 <!--  Key or Shortcut Action  -->
                 <tkcontrols:Case Value="KeyOrShortcut">
                     <ToggleButton
