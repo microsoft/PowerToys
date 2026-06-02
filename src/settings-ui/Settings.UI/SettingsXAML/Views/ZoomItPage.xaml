@@ -369,6 +369,18 @@
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamBrightness"
+                                x:Uid="ZoomIt_Record_WebcamBrightness"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    TickFrequency="10"
+                                    TickPlacement="Outside"
+                                    Value="{x:Bind ViewModel.WebcamBrightness, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
                                 Name="ZoomItRecordWebcamBackgroundImage"
                                 x:Uid="ZoomIt_Record_WebcamBackgroundImage"
                                 Description="{x:Bind ViewModel.WebcamBackgroundImage, Mode=OneWay}"

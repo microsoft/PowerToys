@@ -4891,6 +4891,9 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_WebcamBackground_Image.Content" xml:space="preserve">
     <value>Image</value>
   </data>
+  <data name="ZoomIt_Record_WebcamBrightness.Header" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
   <data name="ZoomIt_Record_WebcamBackgroundImage.Header" xml:space="preserve">
     <value>Background image file</value>
   </data>

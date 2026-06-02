@@ -123,6 +123,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public StringProperty WebcamBackgroundImage { get; set; }
 
+        public IntProperty WebcamBrightness { get; set; }
+
         public BoolProperty RecordAspectRatio { get; set; }
 
         public BoolProperty BreakLockWorkstation { get; set; }

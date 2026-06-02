@@ -1173,6 +1173,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int WebcamBrightness
+        {
+            get => _zoomItSettings.Properties.WebcamBrightness.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamBrightness.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamBrightness.Value = value;
+                    OnPropertyChanged(nameof(WebcamBrightness));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool RecordAspectRatio
         {
             get => _zoomItSettings.Properties.RecordAspectRatio.Value;
