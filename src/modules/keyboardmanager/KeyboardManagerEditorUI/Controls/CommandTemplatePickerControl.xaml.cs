@@ -63,6 +63,24 @@ namespace KeyboardManagerEditorUI.Controls
             MissingTemplateInfoBar.IsOpen = false;
         }
 
+        /// <summary>
+        /// Selects a command template by id (driven by the host action menu) and notifies listeners.
+        /// </summary>
+        public void SelectCommand(string templateId)
+        {
+            ViewModel.SelectTemplate(templateId);
+            MissingTemplateInfoBar.IsOpen = false;
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Gets the display name of the currently selected command (empty when none selected).
+        /// </summary>
+        public string CurrentCommandDisplay =>
+            ViewModel.SelectedTemplate is { } t
+                ? ResourceHelper.GetString(t.DisplayResourceKey)
+                : string.Empty;
+
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             BuildFlyout(TemplateMenuFlyout, CommandTemplateCatalog.Instance.Data);
