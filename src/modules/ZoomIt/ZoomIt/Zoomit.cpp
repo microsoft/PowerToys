@@ -2843,6 +2843,7 @@ INT_PTR CALLBACK WebcamSettingsProc( HWND hDlg, UINT message, WPARAM wParam, LPA
 {
     static std::vector<std::pair<std::wstring, std::wstring>> webcams;
     static UINT currentDpi = DPI_BASELINE;
+    static HWND s_hBrightnessTooltip = nullptr;
 
     switch( message ) {
     case WM_INITDIALOG:
@@ -2938,6 +2939,27 @@ INT_PTR CALLBACK WebcamSettingsProc( HWND hDlg, UINT message, WPARAM wParam, LPA
             HWND hSlider = GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER );
             SendMessage( hSlider, TBM_SETRANGE, FALSE, MAKELONG( 0, 100 ) );
             SendMessage( hSlider, TBM_SETPOS, TRUE, g_WebcamBrightness );
+
+            // Place the built-in drag tooltip (TBS_TOOLTIPS) beneath the slider.
+            SendMessage( hSlider, TBM_SETTIPSIDE, TBTS_BOTTOM, 0 );
+
+            // Hover tooltip that displays the current brightness when not dragging.
+            // TTF_SUBCLASS lets the tooltip detect hover itself; LPSTR_TEXTCALLBACK
+            // makes us supply the current value via TTN_GETDISPINFO.
+            s_hBrightnessTooltip = CreateWindowEx(
+                WS_EX_TOPMOST, TOOLTIPS_CLASS, nullptr,
+                WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
+                CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+                hDlg, nullptr, g_hInstance, nullptr );
+            if( s_hBrightnessTooltip )
+            {
+                TOOLINFO ti = { sizeof(TOOLINFO) };
+                ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+                ti.hwnd = hDlg;
+                ti.uId = reinterpret_cast<UINT_PTR>(hSlider);
+                ti.lpszText = LPSTR_TEXTCALLBACK;
+                SendMessage( s_hBrightnessTooltip, TTM_ADDTOOL, 0, reinterpret_cast<LPARAM>(&ti) );
+            }
         }
 
         // Set initial enabled state
@@ -2987,6 +3009,48 @@ INT_PTR CALLBACK WebcamSettingsProc( HWND hDlg, UINT message, WPARAM wParam, LPA
             return reinterpret_cast<INT_PTR>(hBrush);
         break;
     }
+
+    case WM_NOTIFY:
+    {
+        LPNMHDR pnmh = reinterpret_cast<LPNMHDR>(lParam);
+        if( s_hBrightnessTooltip && pnmh->hwndFrom == s_hBrightnessTooltip )
+        {
+            if( pnmh->code == TTN_GETDISPINFO )
+            {
+                LPNMTTDISPINFO pdi = reinterpret_cast<LPNMTTDISPINFO>(lParam);
+                static wchar_t buf[16];
+                int pos = static_cast<int>(SendMessage(
+                    GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER ), TBM_GETPOS, 0, 0 ));
+                _snwprintf_s( buf, _countof(buf), _TRUNCATE, L"%d", pos );
+                pdi->lpszText = buf;
+                return TRUE;
+            }
+            if( pnmh->code == TTN_SHOW )
+            {
+                // Reposition the tooltip directly beneath the slider, centered on the cursor.
+                HWND hSlider = GetDlgItem( hDlg, IDC_WEBCAM_BRIGHTNESS_SLIDER );
+                RECT rcSlider, rcTip;
+                GetWindowRect( hSlider, &rcSlider );
+                GetWindowRect( s_hBrightnessTooltip, &rcTip );
+                POINT pt;
+                GetCursorPos( &pt );
+                int tipW = rcTip.right - rcTip.left;
+                SetWindowPos( s_hBrightnessTooltip, HWND_TOPMOST,
+                              pt.x - tipW / 2, rcSlider.bottom + 4, 0, 0,
+                              SWP_NOSIZE | SWP_NOACTIVATE );
+                return TRUE;
+            }
+        }
+        break;
+    }
+
+    case WM_DESTROY:
+        if( s_hBrightnessTooltip )
+        {
+            DestroyWindow( s_hBrightnessTooltip );
+            s_hBrightnessTooltip = nullptr;
+        }
+        break;
 
     case WM_COMMAND:
         // Handle size combo change — disable shape when Full screen
