@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <stdint.h>
+
 struct DenoiseState;
 
 class NoiseSuppressor

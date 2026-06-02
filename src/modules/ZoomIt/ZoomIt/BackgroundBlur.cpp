@@ -144,13 +144,13 @@ bool BackgroundBlur::RunSegmentation( const uint8_t* bgraPixels, uint32_t width,
 
             if( m_inputIsNchw )
             {
-                m_inputTensor[0 * mH * mW + y * mW + x] = r;
-                if( mC > 1 ) m_inputTensor[1 * mH * mW + y * mW + x] = g;
-                if( mC > 2 ) m_inputTensor[2 * mH * mW + y * mW + x] = b;
+                m_inputTensor[static_cast<size_t>(0ll * mH * mW + y * mW + x)] = r;
+                if( mC > 1 ) m_inputTensor[static_cast<size_t>(1ll * mH * mW + y * mW + x)] = g;
+                if( mC > 2 ) m_inputTensor[static_cast<size_t>(2ll * mH * mW + y * mW + x)] = b;
             }
             else
             {
-                size_t idx = static_cast<size_t>( y * mW + x ) * mC;
+                size_t idx = static_cast<size_t>( (y * mW + x) * mC );
                 m_inputTensor[idx + 0] = r;
                 if( mC > 1 ) m_inputTensor[idx + 1] = g;
                 if( mC > 2 ) m_inputTensor[idx + 2] = b;
@@ -221,7 +221,7 @@ bool BackgroundBlur::RunSegmentation( const uint8_t* bgraPixels, uint32_t width,
         // Build model-resolution mask first, apply sigmoid sharpening
         // at model resolution (e.g. 256×256 = 65K pixels), then upscale
         // to frame resolution.
-        const size_t modelPixels = static_cast<size_t>( outH ) * outW;
+        const size_t modelPixels = static_cast<size_t>( outH * outW );
         m_erodeBuf.resize( modelPixels );
 
         // Extract person scores at model resolution from the raw array.
@@ -269,11 +269,11 @@ bool BackgroundBlur::RunSegmentation( const uint8_t* bgraPixels, uint32_t width,
                 float* dstRow = m_maskBlurBuf.data() + y * outW;
                 float sum = 0.0f;
                 for( int i = -modelBlurRadius; i <= modelBlurRadius; i++ )
-                    sum += srcRow[(std::max)( int64_t(0), (std::min)( outW - 1, static_cast<int64_t>( i ) ) )];
+                    sum += srcRow[(std::max)( static_cast<int64_t>(0), (std::min)( outW - 1, static_cast<int64_t>( i ) ) )];
                 for( int64_t x = 0; x < outW; x++ )
                 {
                     dstRow[x] = sum / modelDiam;
-                    int64_t remX = (std::max)( int64_t(0), x - modelBlurRadius );
+                    int64_t remX = (std::max)( static_cast<int64_t>(0), x - modelBlurRadius );
                     int64_t addX = (std::min)( outW - 1, x + modelBlurRadius + 1 );
                     sum += srcRow[addX] - srcRow[remX];
                 }
@@ -285,13 +285,13 @@ bool BackgroundBlur::RunSegmentation( const uint8_t* bgraPixels, uint32_t width,
                 float sum = 0.0f;
                 for( int i = -modelBlurRadius; i <= modelBlurRadius; i++ )
                 {
-                    int64_t iy = (std::max)( int64_t(0), (std::min)( outH - 1, static_cast<int64_t>( i ) ) );
+                    int64_t iy = (std::max)( static_cast<int64_t>(0), (std::min)( outH - 1, static_cast<int64_t>( i ) ) );
                     sum += m_maskBlurBuf[static_cast<size_t>( iy * outW + x )];
                 }
                 for( int64_t y = 0; y < outH; y++ )
                 {
                     m_erodeBuf[static_cast<size_t>( y * outW + x )] = sum / modelDiam;
-                    int64_t remY = (std::max)( int64_t(0), y - modelBlurRadius );
+                    int64_t remY = (std::max)( static_cast<int64_t>(0), y - modelBlurRadius );
                     int64_t addY = (std::min)( outH - 1, y + modelBlurRadius + 1 );
                     sum += m_maskBlurBuf[static_cast<size_t>( addY * outW + x )] -
                            m_maskBlurBuf[static_cast<size_t>( remY * outW + x )];
@@ -331,10 +331,10 @@ bool BackgroundBlur::RunSegmentation( const uint8_t* bgraPixels, uint32_t width,
                 int64_t x1 = (std::min)( x0 + 1, outW - 1 );
                 float fx = srcXf - x0;
 
-                float v00 = m_erodeBuf[y0 * outW + x0];
-                float v01 = m_erodeBuf[y0 * outW + x1];
-                float v10 = m_erodeBuf[y1 * outW + x0];
-                float v11 = m_erodeBuf[y1 * outW + x1];
+                float v00 = m_erodeBuf[static_cast<size_t>(y0 * outW + x0)];
+                float v01 = m_erodeBuf[static_cast<size_t>(y0 * outW + x1)];
+                float v10 = m_erodeBuf[static_cast<size_t>(y1 * outW + x0)];
+                float v11 = m_erodeBuf[static_cast<size_t>(y1 * outW + x1)];
 
                 m_mask[static_cast<size_t>( y ) * width + x] =
                     v00 * ( 1.0f - fx ) * ( 1.0f - fy ) +
@@ -395,12 +395,12 @@ bool BackgroundBlur::RunSegmentation( const uint8_t* bgraPixels, uint32_t width,
         // dampening the frame-to-frame jitter around fine details like
         // ears, hair, and fingers.
         {
-            const size_t maskPixels = static_cast<size_t>( width ) * height;
-            if( m_prevMask.size() == maskPixels )
+            const size_t maskPixelsInner = static_cast<size_t>( width ) * height;
+            if( m_prevMask.size() == maskPixelsInner )
             {
                 constexpr float alpha = 0.6f;  // current frame weight
                 constexpr float beta  = 0.4f;  // previous frame weight
-                for( size_t i = 0; i < maskPixels; i++ )
+                for( size_t i = 0; i < maskPixelsInner; i++ )
                 {
                     m_mask[i] = alpha * m_mask[i] + beta * m_prevMask[i];
                 }

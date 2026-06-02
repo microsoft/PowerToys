@@ -21,7 +21,6 @@
 #include "PanoramaCapture.h"
 #include <wtsapi32.h>
 #include <tlhelp32.h>
-#include <limits>
 #include <vector>
 
 #ifdef __ZOOMIT_POWERTOYS__
@@ -725,7 +724,7 @@ RunningOnWin64(
 // this executable.
 //
 //--------------------------------------------------------------------
-BOOLEAN ExtractImageResource( PTCHAR ResourceName, PTCHAR TargetFile )
+BOOLEAN ExtractImageResource( PCTSTR ResourceName, PTCHAR TargetFile )
 {
     HRSRC		hResource;
     HGLOBAL		hImageResource;

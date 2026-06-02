@@ -3,10 +3,14 @@
 #include "LoopbackCapture.h"
 #include "NoiseSuppressor.h"
 
+#include <deque>
+#include <optional>
+#include <memory>
+
 class AudioSampleGenerator
 {
 public:
-    AudioSampleGenerator(bool captureMicrophone = true, bool captureSystemAudio = true, bool micMonoMix = false, bool noiseCancellation = false);
+    AudioSampleGenerator(bool captureMicrophone = true, bool captureSystemAudio = true, bool mixMicrophoneMono = false, bool useNoiseCancellation = false);
     ~AudioSampleGenerator();
 
     winrt::Windows::Foundation::IAsyncAction InitializeAsync();
@@ -71,8 +75,8 @@ private:
     std::atomic<bool> m_started = false;
     bool m_captureMicrophone = true;
     bool m_captureSystemAudio = true;
-    bool m_micMonoMix = false;
-    bool m_noiseCancellation = false;
+    bool m_mixMicrophoneMono = false;
+    bool m_useNoiseCancellation = false;
     std::unique_ptr<NoiseSuppressor> m_noiseSuppressor;
 
     // Timestamp rebasing: audio RelativeTime → video SystemRelativeTime domain.

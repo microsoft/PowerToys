@@ -34,17 +34,17 @@ namespace winrt
     using namespace Windows::Devices::Enumeration;
 }
 
-AudioSampleGenerator::AudioSampleGenerator(bool captureMicrophone, bool captureSystemAudio, bool micMonoMix, bool noiseCancellation)
+AudioSampleGenerator::AudioSampleGenerator(bool captureMicrophone, bool captureSystemAudio, bool mixMicrophoneMono, bool useNoiseCancellation)
     : m_captureMicrophone(captureMicrophone)
     , m_captureSystemAudio(captureSystemAudio)
-    , m_micMonoMix(micMonoMix)
-    , m_noiseCancellation(noiseCancellation)
+    , m_mixMicrophoneMono(mixMicrophoneMono)
+    , m_useNoiseCancellation(useNoiseCancellation)
 {
     OutputDebugStringA(("AudioSampleGenerator created, captureMicrophone=" +
         std::string(captureMicrophone ? "true" : "false") +
         ", captureSystemAudio=" + std::string(captureSystemAudio ? "true" : "false") +
-        ", micMonoMix=" + std::string(micMonoMix ? "true" : "false") +
-        ", noiseCancellation=" + std::string(noiseCancellation ? "true" : "false") + "\n").c_str());
+        ", mixMicrophoneMono=" + std::string(mixMicrophoneMono ? "true" : "false") +
+        ", useNoiseCancellation=" + std::string(useNoiseCancellation ? "true" : "false") + "\n").c_str());
     m_audioEvent.create(wil::EventOptions::ManualReset);
     m_endEvent.create(wil::EventOptions::ManualReset);
     m_startEvent.create(wil::EventOptions::ManualReset);
@@ -161,7 +161,7 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
         }
 
         // Initialize noise suppressor for microphone audio if enabled
-        if (m_noiseCancellation && m_captureMicrophone)
+        if (m_useNoiseCancellation && m_captureMicrophone)
         {
             m_noiseSuppressor = std::make_unique<NoiseSuppressor>();
             OutputDebugStringA("Noise cancellation enabled for microphone\n");
@@ -669,7 +669,7 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
         // Apply mono mixing to microphone audio if enabled
         // This converts stereo mic input (with same signal on both channels) to true mono
         // by averaging the channels and writing the result to both channels
-        if (m_micMonoMix && m_captureMicrophone && numMicSamples > 0 && m_graphChannels >= 2)
+        if (m_mixMicrophoneMono && m_captureMicrophone && numMicSamples > 0 && m_graphChannels >= 2)
         {
             float* micData = reinterpret_cast<float*>(sampleBuffer.data());
             uint32_t numFrames = numMicSamples / m_graphChannels;

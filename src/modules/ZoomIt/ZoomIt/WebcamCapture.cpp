@@ -1432,8 +1432,6 @@ void WebcamCapture::CaptureThread()
                 m_upscalePixels.resize( fullSize );
                 UINT32* outBuf = reinterpret_cast<UINT32*>( m_upscalePixels.data() );
 
-                const UINT32* blurPixels =
-                    reinterpret_cast<const UINT32*>( m_backgroundBlur->GetBlurredFrame().data() );
                 const float* mask = m_backgroundBlur->GetMask().data();
                 const uint32_t maskW = m_backgroundBlur->GetMaskWidth();
                 const uint32_t maskH = m_backgroundBlur->GetMaskHeight();

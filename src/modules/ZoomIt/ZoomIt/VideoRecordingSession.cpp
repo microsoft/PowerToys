@@ -109,16 +109,6 @@ static double RecDiagElapsedMs()
     return static_cast<double>( now.QuadPart - s_origin.QuadPart ) * 1000.0 / s_freq.QuadPart;
 }
 
-static void RecDiagResetOrigin()
-{
-    // Reset the origin so elapsed times start from 0 for each new recording.
-    static LARGE_INTEGER s_freq = {};
-    if( s_freq.QuadPart == 0 )
-        QueryPerformanceFrequency( &s_freq );
-    // Force re-init on next call to RecDiagElapsedMs by zeroing the freq.
-    // Instead, just call RecDiagElapsedMs to establish a new snapshot.
-}
-
 static FILE* s_recDiagFile = nullptr;
 
 static void RecDiagOpenFile()
