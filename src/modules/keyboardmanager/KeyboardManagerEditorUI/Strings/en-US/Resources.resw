@@ -501,14 +501,8 @@
   <data name="CheckServiceBtn.Content" xml:space="preserve">
     <value>Check service status</value>
   </data>
-  <data name="ActionType_RunTemplate.Content" xml:space="preserve">
-    <value>Run PowerToys Command</value>
-  </data>
   <data name="ActionType_RunTemplate_Text.Text" xml:space="preserve">
     <value>Run PowerToys Command</value>
-  </data>
-  <data name="TemplatePickerPlaceholder.Text" xml:space="preserve">
-    <value>Select a template...</value>
   </data>
   <data name="TemplatePreviewLabel.Text" xml:space="preserve">
     <value>Preview</value>
