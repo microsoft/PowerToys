@@ -358,6 +358,23 @@
                                     <ComboBoxItem x:Uid="ZoomIt_Record_WebcamShape_Circle" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamBackground"
+                                x:Uid="ZoomIt_Record_WebcamBackground"
+                                Visibility="{x:Bind ViewModel.WebcamOverlay, Mode=OneWay}">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.WebcamBackgroundMode, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamBackground_None" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamBackground_Blur" />
+                                    <ComboBoxItem x:Uid="ZoomIt_Record_WebcamBackground_Image" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="ZoomItRecordWebcamBackgroundImage"
+                                x:Uid="ZoomIt_Record_WebcamBackgroundImage"
+                                Description="{x:Bind ViewModel.WebcamBackgroundImage, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.WebcamBackgroundIsImage, Mode=OneWay}">
+                                <Button x:Uid="ZoomIt_Record_WebcamBackgroundImage_BrowseButton" Command="{x:Bind ViewModel.SelectWebcamBackgroundImageCommand, Mode=OneWay}" />
+                            </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard>
                                 <tkcontrols:SettingsCard.Description>
                                     <StackPanel Orientation="Vertical" Spacing="4">
