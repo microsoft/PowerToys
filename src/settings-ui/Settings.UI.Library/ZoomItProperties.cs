@@ -103,6 +103,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public BoolProperty CaptureAudio { get; set; }
 
+        public BoolProperty NoiseCancellation { get; set; }
+
         public BoolProperty MicMonoMix { get; set; }
 
         public StringProperty MicrophoneDeviceId { get; set; }

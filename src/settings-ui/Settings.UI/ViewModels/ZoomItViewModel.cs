@@ -1011,6 +1011,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool RecordNoiseCancellation
+        {
+            get => _zoomItSettings.Properties.NoiseCancellation.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.NoiseCancellation.Value != value)
+                {
+                    _zoomItSettings.Properties.NoiseCancellation.Value = value;
+                    OnPropertyChanged(nameof(RecordNoiseCancellation));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool RecordMicMonoMix
         {
             get => _zoomItSettings.Properties.MicMonoMix.Value;

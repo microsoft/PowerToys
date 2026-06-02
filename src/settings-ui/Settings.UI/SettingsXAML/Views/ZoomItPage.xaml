@@ -288,6 +288,12 @@
                                 <CheckBox x:Uid="ZoomIt_Record_CaptureAudio" IsChecked="{x:Bind ViewModel.RecordCaptureAudio, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard
+                                Name="ZoomItRecordNoiseCancellation"
+                                ContentAlignment="Left"
+                                Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}">
+                                <CheckBox x:Uid="ZoomIt_Record_NoiseCancellation" IsChecked="{x:Bind ViewModel.RecordNoiseCancellation, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
                                 Name="ZoomItRecordMicMonoMix"
                                 ContentAlignment="Left"
                                 Visibility="{x:Bind ViewModel.RecordCaptureAudio, Mode=OneWay}">
