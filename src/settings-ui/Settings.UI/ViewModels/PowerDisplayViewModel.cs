@@ -162,7 +162,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                if (await ConfirmDangerousFeatureAsync("PowerDisplay_EnableModule"))
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.EnableModule))
                 {
                     CommitIsEnabled(true);
                 }
@@ -243,7 +243,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// View-supplied confirmation dialog. Default no-op denies all dangerous enables;
         /// PowerDisplayPage replaces this in its constructor with a real dialog show.
         /// </summary>
-        public Func<string, Task<bool>> ConfirmDangerousFeatureAsync { get; set; } = _ => Task.FromResult(false);
+        public Func<PowerDisplayWarningKind, Task<bool>> ConfirmDangerousFeatureAsync { get; set; } = _ => Task.FromResult(false);
 
         // Dangerous toggle. TwoWay-bound to the UI; the setter handles the "ask first"
         // gesture entirely inside the ViewModel. Initial-binding push and post-cancel
@@ -278,7 +278,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             try
             {
-                if (await ConfirmDangerousFeatureAsync("PowerDisplay_MaxCompatibility"))
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.MaxCompatibility))
                 {
                     _settings.Properties.MaxCompatibilityMode = true;
                     NotifySettingsChanged();

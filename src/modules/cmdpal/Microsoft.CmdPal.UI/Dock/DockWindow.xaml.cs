@@ -129,6 +129,9 @@ public sealed partial class DockWindow : WindowEx,
             overlappedPresenter.IsResizable = false;
         }
 
+        _hwnd = GetWindowHandle(this);
+        _dock.OwnerHwnd = (nint)_hwnd;
+
         // immediately when we're created: make sure to remove our window frame
         // and shadow. We don't _always_ get an Activated when we're first
         // created.
@@ -138,9 +141,6 @@ public sealed partial class DockWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
         WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
-
-        _hwnd = GetWindowHandle(this);
-        _dock.OwnerHwnd = (nint)_hwnd;
 
         // Subclass the window to intercept messages
         //

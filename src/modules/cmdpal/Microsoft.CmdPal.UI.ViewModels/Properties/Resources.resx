@@ -307,6 +307,10 @@
     <value>Show details</value>
     <comment>Name for the command that shows details of an item</comment>
   </data>
+  <data name="HideDetailsCommand" xml:space="preserve">
+    <value>Hide details</value>
+    <comment>Name for the command that hides details of an item</comment>
+  </data>
   <data name="PinnedItemSuffix" xml:space="preserve">
     <value>Pinned</value>
     <comment>Suffix shown for pinned items in the dock</comment>
