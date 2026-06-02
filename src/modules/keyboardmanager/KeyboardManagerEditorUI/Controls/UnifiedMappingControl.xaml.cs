@@ -158,7 +158,6 @@ namespace KeyboardManagerEditorUI.Controls
             };
 
             BuildRunPtCommandMenu();
-            UpdateActionButtonContent("KeyOrShortcut");
 
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
@@ -185,6 +184,10 @@ namespace KeyboardManagerEditorUI.Controls
                 _currentInputMode = KeyInputMode.OriginalKeys;
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
+
+            // Initialize the action button label here (not in the constructor) so the flyout
+            // items' localized Text is guaranteed populated before it is read.
+            UpdateActionButtonContent(_currentActionTag);
         }
 
         private void UnifiedMappingControl_Unloaded(object sender, RoutedEventArgs e)

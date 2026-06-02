@@ -180,7 +180,7 @@
                 HorizontalAlignment="Stretch"
                 HorizontalContentAlignment="Left">
                 <DropDownButton.Flyout>
-                    <MenuFlyout x:Name="ActionTypeMenu" Placement="Bottom">
+                    <MenuFlyout Placement="Bottom">
                         <MenuFlyoutItem
                             x:Name="ActionItem_KeyOrShortcut"
                             x:Uid="ActionType_KeyOrShortcut_Text"
