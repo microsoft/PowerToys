@@ -245,6 +245,11 @@ public sealed partial class MainWindow : WindowEx,
         // the DIP size won't trigger it, leaving drag regions at the old physical coordinates.
         RootElement.XamlRoot.Changed += XamlRoot_Changed;
 
+        // The visible card resizes inside the fixed-size HWND (e.g. compact <-> expanded),
+        // which does not raise WindowSizeChanged. Recompute the drag regions and the HWND
+        // clip region whenever the card's own size changes so they keep tracking it.
+        RootElement.CardElement.SizeChanged += CardElement_SizeChanged;
+
         // Add dev ribbon if enabled. The ribbon lives inside the visible card so it
         // doesn't draw into the transparent shadow area outside the rounded border.
         if (!BuildInfo.IsCiBuild)
@@ -255,6 +260,8 @@ public sealed partial class MainWindow : WindowEx,
     }
 
     private void XamlRoot_Changed(XamlRoot sender, XamlRootChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
+
+    private void CardElement_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateRegionsForCustomTitleBar();
 
     private void WindowSizeChanged(object sender, WindowSizeChangedEventArgs args) => UpdateRegionsForCustomTitleBar();
 
@@ -499,7 +506,12 @@ public sealed partial class MainWindow : WindowEx,
         {
             // When the debug flag is off we hide the OS chrome (no title bar, no border).
             // When on we let the OS draw both so the HWND outline is obvious.
-            // overlappedPresenter.SetBorderAndTitleBar(showFrame, showFrame);
+            // This must actually be applied (not just relied on via WM_NCCALCSIZE): now
+            // that the HWND is clipped to the card region, the OS-drawn title bar / frame
+            // is no longer covered by our full-window transparent content, so DWM would
+            // otherwise repaint it (most visibly the inactive caption) behind the card
+            // when the window loses focus.
+            overlappedPresenter.SetBorderAndTitleBar(showFrame, showFrame);
 
             // IsResizable must stay true so WS_THICKFRAME is present. The OS only honors
             // resize-style WM_NCHITTEST results (HTLEFT, HTRIGHT, HT{TOP,BOTTOM}{,LEFT,RIGHT})
@@ -1064,6 +1076,57 @@ public sealed partial class MainWindow : WindowEx,
             CardRect(grip, dragHeight, interiorWidth, interiorHeight),
         };
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, passthrough);
+
+        // Clip the HWND itself down to just the visible card. The window is intentionally
+        // larger than the card (the extra margin holds the drop shadow), but that
+        // transparent margin shouldn't be part of the window at all: clicks there should
+        // fall through to whatever is behind the palette, and the shadow must not be
+        // hit-testable. The region is updated here so it tracks the card as it grows /
+        // shrinks (e.g. compact <-> expanded).
+        ApplyCardWindowRegion(CardRect(0, 0, w, h));
+    }
+
+    /// <summary>
+    /// Restricts the HWND's visible / hit-testable area to the rectangle occupied by the
+    /// visible card (supplied in physical client pixels). Everything outside — the
+    /// transparent drop-shadow margin — becomes click-through and is excluded from the
+    /// window region. When the debug HWND frame is enabled the clip is removed so the full
+    /// window stays visible.
+    /// </summary>
+    private void ApplyCardWindowRegion(RectInt32 cardPhysical)
+    {
+        nint hwnd;
+        unsafe
+        {
+            hwnd = (nint)_hwnd.Value;
+        }
+
+        // Debug frame mode: keep the whole window visible / interactive, no clip.
+        if (_hwndFrameVisible == true)
+        {
+            _ = SetWindowRgn(hwnd, IntPtr.Zero, true);
+            return;
+        }
+
+        // CreateRectRgn coordinates are relative to the window's top-left. For this
+        // borderless popup the client origin coincides with the window origin, so the
+        // card's client-space physical rect maps directly into window space.
+        var region = CreateRectRgn(
+            cardPhysical.X,
+            cardPhysical.Y,
+            cardPhysical.X + cardPhysical.Width,
+            cardPhysical.Y + cardPhysical.Height);
+        if (region == IntPtr.Zero)
+        {
+            return;
+        }
+
+        // On success SetWindowRgn takes ownership of the region (the OS frees it), so we
+        // only delete it ourselves if the call failed.
+        if (SetWindowRgn(hwnd, region, true) == 0)
+        {
+            _ = DeleteObject(region);
+        }
     }
 
     private static RectInt32 GetRect(Rect bounds, double scale)
@@ -1074,6 +1137,19 @@ public sealed partial class MainWindow : WindowEx,
             _Width: (int)Math.Round(bounds.Width * scale),
             _Height: (int)Math.Round(bounds.Height * scale));
     }
+
+    // Raw interop for the window-region clip. Declared here (rather than via CsWin32)
+    // because SetWindowRgn transfers ownership of the HRGN to the OS on success, which is
+    // awkward to express through CsWin32's SafeHandle-returning region creator.
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, [MarshalAs(UnmanagedType.Bool)] bool bRedraw);
+
+    [DllImport("gdi32.dll")]
+    private static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
+
+    [DllImport("gdi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DeleteObject(IntPtr hObject);
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
