@@ -297,8 +297,13 @@ public sealed partial class MainWindow : WindowEx,
             // the card downward (when results appear) keeps the search box where it was.
             if (TryGetCompactCardCenterOffsetPhysical(windowDpi, out var cardCenterFromHwndTop))
             {
+                var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
                 var workArea = displayArea.WorkArea;
-                var desiredCardCenterY = workArea.Y + (workArea.Height / 2);
+
+                // The setting is the relative height measured from the *bottom* of the screen,
+                // so a larger percentage places the search box higher up the display.
+                var fractionFromTop = GetCompactCenterFractionFromTop(settings);
+                var desiredCardCenterY = workArea.Y + (int)Math.Round(workArea.Height * fractionFromTop);
                 finalRect.Y = desiredCardCenterY - cardCenterFromHwndTop;
 
                 if (finalRect.Y < workArea.Y)
@@ -345,6 +350,15 @@ public sealed partial class MainWindow : WindowEx,
 
     // Every summon behavior except ToLast centers the window on its target display.
     private static bool IsCenteringSummon(SettingsModel settings) => settings.SummonOn != MonitorBehavior.ToLast;
+
+    // Converts the "center height" setting (a percentage measured up from the bottom of the
+    // screen) into the fraction of the work area, measured from the top, at which the
+    // collapsed search box should be centered.
+    private static double GetCompactCenterFractionFromTop(SettingsModel settings)
+    {
+        var pct = Math.Clamp(settings.CompactCenterHeightPercentage, 0, 100);
+        return 1.0 - (pct / 100.0);
+    }
 
     private void RestoreWindowPosition(WindowPosition? savedPosition)
     {
@@ -495,6 +509,23 @@ public sealed partial class MainWindow : WindowEx,
             overlappedPresenter.IsResizable = true;
         }
 
+        ApplyHwndBorderAttributes(showFrame);
+
+        // Drag regions are computed relative to the visible card; the chrome change can
+        // shift its on-screen position, so refresh.
+        UpdateRegionsForCustomTitleBar();
+    }
+
+    /// <summary>
+    /// Applies the DWM corner and border attributes for the current frame mode. This is
+    /// split out from <see cref="ApplyHwndFrameMode"/> because the DWM border color does
+    /// not reliably "take" when first set during window construction (before the HWND has
+    /// been shown on a cold process start) — leaving the faint OS outline visible until
+    /// the chrome is toggled. Re-applying it each time the window is shown guarantees the
+    /// borderless look on a cold start.
+    /// </summary>
+    private void ApplyHwndBorderAttributes(bool showFrame)
+    {
         unsafe
         {
             // Rounded corners: let the OS pick when the debug frame is on, suppress
@@ -514,10 +545,6 @@ public sealed partial class MainWindow : WindowEx,
             var borderColor = showFrame ? DWMWA_COLOR_DEFAULT : DWMWA_COLOR_NONE;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &borderColor, sizeof(uint));
         }
-
-        // Drag regions are computed relative to the visible card; the chrome change can
-        // shift its on-screen position, so refresh.
-        UpdateRegionsForCustomTitleBar();
     }
 
     private void InitializeBackdropSupport()
@@ -663,6 +690,13 @@ public sealed partial class MainWindow : WindowEx,
 
         // Just to be sure, SHOW our hwnd.
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
+
+        // Re-apply the borderless DWM attributes now that the window is actually shown.
+        // On a cold process start these are first set during construction before the HWND
+        // has ever been displayed, and DWM doesn't reliably honor the border color until
+        // the window exists on-screen — which left the faint OS outline visible until the
+        // chrome was toggled. Re-applying here makes the borderless look stick on cold start.
+        ApplyHwndBorderAttributes(_hwndFrameVisible ?? false);
 
         // Once we're done, uncloak to avoid all animations
         Uncloak();

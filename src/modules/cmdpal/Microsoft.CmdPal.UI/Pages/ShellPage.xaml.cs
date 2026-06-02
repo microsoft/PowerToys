@@ -624,6 +624,29 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             _lastNavigatedPageRef = new WeakReference<Page>(element);
             element.Loaded += FocusAfterLoaded;
         }
+
+        UpdateCompactModeForCurrentPage();
+    }
+
+    /// <summary>
+    /// Updates the compact/expanded state after a navigation. On any nested (sub) page we
+    /// always show the full expanded UI; on the root page the search box drives the state,
+    /// so we collapse to the compact search box only when the query is empty. Driving this
+    /// from navigation (rather than only from search-text changes) makes alias-based
+    /// navigation expand correctly — an alias clears the search box before navigating, so
+    /// the search-text transition alone would otherwise leave the palette collapsed.
+    /// </summary>
+    private void UpdateCompactModeForCurrentPage()
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        if (!settings.CompactMode)
+        {
+            return;
+        }
+
+        var nested = RootFrame.CanGoBack;
+        var hasQuery = !string.IsNullOrEmpty(ViewModel.CurrentPage?.SearchTextBox);
+        HandleExpandCompactOnUiThread(nested || hasQuery);
     }
 
     private void FocusAfterLoaded(object sender, RoutedEventArgs e)

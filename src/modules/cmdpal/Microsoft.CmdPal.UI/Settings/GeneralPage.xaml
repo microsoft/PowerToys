@@ -119,6 +119,24 @@
                         </ComboBox>
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard x:Uid="Settings_GeneralPage_CompactMode_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE73F;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactMode" IsOn="{x:Bind viewModel.CompactMode, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_CompactCenterHeight_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE74A;}"
+                        IsEnabled="{x:Bind viewModel.CompactMode, Mode=OneWay}">
+                        <Slider
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="CmdPal_GeneralPage_CompactCenterHeight"
+                            Maximum="100"
+                            Minimum="0"
+                            StepFrequency="5"
+                            TickFrequency="25"
+                            TickPlacement="Outside"
+                            Value="{x:Bind viewModel.CompactCenterHeightPercentage, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  'Behavior' section  -->
 
                     <TextBlock x:Uid="BehaviorSettingsHeader" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
