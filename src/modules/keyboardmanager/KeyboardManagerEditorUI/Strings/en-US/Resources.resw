@@ -516,10 +516,10 @@
   <data name="TemplatePreviewLabel.Text" xml:space="preserve">
     <value>Preview</value>
   </data>
-  <data name="TemplateMissingInfoBarTitle.Text" xml:space="preserve">
+  <data name="MissingTemplateInfoBar.Title" xml:space="preserve">
     <value>Template no longer available</value>
   </data>
-  <data name="TemplateMissingInfoBarMessage.Text" xml:space="preserve">
+  <data name="MissingTemplateInfoBar.Message" xml:space="preserve">
     <value>The template originally used for this mapping is no longer in the catalog.</value>
   </data>
   <data name="TemplateMissingChooseButton.Content" xml:space="preserve">

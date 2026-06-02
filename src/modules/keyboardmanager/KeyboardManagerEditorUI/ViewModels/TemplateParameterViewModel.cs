@@ -20,10 +20,7 @@ namespace KeyboardManagerEditorUI.ViewModels
 
         public TemplateParameterViewModel(TemplateParameter definition)
         {
-            if (definition is null)
-            {
-                throw new ArgumentNullException(nameof(definition));
-            }
+            ArgumentNullException.ThrowIfNull(definition);
 
             Name = definition.Name;
             Label = ResourceHelper.GetString(definition.LabelResourceKey);
@@ -82,18 +79,5 @@ namespace KeyboardManagerEditorUI.ViewModels
 
         private void OnPropertyChanged([CallerMemberName] string? prop = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
-    }
-
-    public sealed class TemplateChoiceViewModel
-    {
-        public TemplateChoiceViewModel(string value, string displayText)
-        {
-            Value = value;
-            DisplayText = displayText;
-        }
-
-        public string Value { get; }
-
-        public string DisplayText { get; }
     }
 }

@@ -2,14 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-
 namespace KeyboardManagerEditorUI.Templates
 {
-    public sealed class PowerToysCliCatalog
+    public sealed class TemplateChoice
     {
-        public int SchemaVersion { get; init; }
+        public string Value { get; init; } = string.Empty;
 
-        public List<CommandTemplateModule> Modules { get; init; } = new();
+        public string DisplayResourceKey { get; init; } = string.Empty;
     }
 }

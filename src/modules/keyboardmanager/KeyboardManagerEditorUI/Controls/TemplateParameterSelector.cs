@@ -21,7 +21,7 @@ namespace KeyboardManagerEditorUI.Controls
                 return vm.Type switch
                 {
                     "Combo" => ComboTemplate ?? TextTemplate!,
-                    _       => TextTemplate!,
+                    _ => TextTemplate!,
                 };
             }
 
