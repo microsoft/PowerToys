@@ -10,7 +10,6 @@ using KeyboardManagerEditorUI.Templates;
 using KeyboardManagerEditorUI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace KeyboardManagerEditorUI.Controls
 {
@@ -81,65 +80,9 @@ namespace KeyboardManagerEditorUI.Controls
                 ? ResourceHelper.GetString(t.DisplayResourceKey)
                 : string.Empty;
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
-        {
-            BuildFlyout(TemplateMenuFlyout, CommandTemplateCatalog.Instance.Data);
-        }
-
-        private void BuildFlyout(MenuFlyout flyout, PowerToysCliCatalog catalog)
-        {
-            flyout.Items.Clear();
-
-            foreach (var module in catalog.Modules)
-            {
-                var sub = new MenuFlyoutSubItem
-                {
-                    Text = ResourceHelper.GetString(module.DisplayResourceKey),
-                };
-
-                if (!string.IsNullOrEmpty(module.IconGlyph))
-                {
-                    sub.Icon = new FontIcon
-                    {
-                        Glyph = module.IconGlyph,
-                        FontFamily = new FontFamily("Segoe Fluent Icons"),
-                    };
-                }
-
-                foreach (var cmd in module.Commands)
-                {
-                    var item = new MenuFlyoutItem
-                    {
-                        Text = ResourceHelper.GetString(cmd.DisplayResourceKey),
-                        Tag = cmd.Id,
-                    };
-                    item.Click += OnCommandPicked;
-                    sub.Items.Add(item);
-                }
-
-                flyout.Items.Add(sub);
-            }
-        }
-
-        private void OnCommandPicked(object sender, RoutedEventArgs e)
-        {
-            if (sender is MenuFlyoutItem item && item.Tag is string templateId)
-            {
-                ViewModel.SelectTemplate(templateId);
-                MissingTemplateInfoBar.IsOpen = false;
-                SelectionChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
         private void ShowMissingTemplateInfoBar()
         {
             MissingTemplateInfoBar.IsOpen = true;
-        }
-
-        private void MissingTemplateChooseButton_Click(object sender, RoutedEventArgs e)
-        {
-            MissingTemplateInfoBar.IsOpen = false;
-            TemplatePickerButton.Flyout.ShowAt(TemplatePickerButton);
         }
 
         private void MissingTemplateKeepButton_Click(object sender, RoutedEventArgs e)

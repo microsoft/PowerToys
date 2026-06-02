@@ -7,7 +7,6 @@
     xmlns:local="using:KeyboardManagerEditorUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:KeyboardManagerEditorUI.ViewModels"
-    Loaded="UserControl_Loaded"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -33,15 +32,6 @@
     </UserControl.Resources>
 
     <StackPanel Orientation="Vertical" Spacing="12">
-        <DropDownButton
-            x:Name="TemplatePickerButton"
-            x:Uid="TemplatePickerButton"
-            HorizontalAlignment="Stretch">
-            <DropDownButton.Flyout>
-                <MenuFlyout x:Name="TemplateMenuFlyout" Placement="Bottom" />
-            </DropDownButton.Flyout>
-        </DropDownButton>
-
         <TextBlock
             x:Name="SelectionDescriptionText"
             FontStyle="Italic"
@@ -87,10 +77,6 @@
                 Margin="0,0,0,8"
                 Orientation="Horizontal"
                 Spacing="8">
-                <Button
-                    x:Name="MissingTemplateChooseButton"
-                    x:Uid="TemplateMissingChooseButton"
-                    Click="MissingTemplateChooseButton_Click" />
                 <Button
                     x:Name="MissingTemplateKeepButton"
                     x:Uid="TemplateMissingKeepButton"

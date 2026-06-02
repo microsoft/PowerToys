@@ -507,9 +507,6 @@
   <data name="ActionType_RunTemplate_Text.Text" xml:space="preserve">
     <value>Run PowerToys Command</value>
   </data>
-  <data name="TemplatePickerButton.Content" xml:space="preserve">
-    <value>PowerToys command</value>
-  </data>
   <data name="TemplatePickerPlaceholder.Text" xml:space="preserve">
     <value>Select a template...</value>
   </data>
@@ -521,9 +518,6 @@
   </data>
   <data name="MissingTemplateInfoBar.Message" xml:space="preserve">
     <value>The template originally used for this mapping is no longer in the catalog.</value>
-  </data>
-  <data name="TemplateMissingChooseButton.Content" xml:space="preserve">
-    <value>Choose template</value>
   </data>
   <data name="TemplateMissingKeepButton.Content" xml:space="preserve">
     <value>Keep as plain command</value>
