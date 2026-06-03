@@ -329,6 +329,7 @@ TTN
 TWID
 UADD
 uav
+uavs
 uge
 Unadvise
 upscaled
