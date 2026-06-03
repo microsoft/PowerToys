@@ -895,31 +895,31 @@ public sealed partial class DockViewModel : IDisposable
         switch (targetSide)
         {
             case DockPinSide.Start:
-            {
-                var idx = Math.Min(targetIndex, activeStart.Count);
-                activeStart = activeStart.Insert(idx, bandSettings);
-                var uiIdx = Math.Min(targetIndex, StartItems.Count);
-                StartItems.Insert(uiIdx, bandVm);
-                break;
-            }
+                {
+                    var idx = Math.Min(targetIndex, activeStart.Count);
+                    activeStart = activeStart.Insert(idx, bandSettings);
+                    var uiIdx = Math.Min(targetIndex, StartItems.Count);
+                    StartItems.Insert(uiIdx, bandVm);
+                    break;
+                }
 
             case DockPinSide.Center:
-            {
-                var idx = Math.Min(targetIndex, activeCenter.Count);
-                activeCenter = activeCenter.Insert(idx, bandSettings);
-                var uiIdx = Math.Min(targetIndex, CenterItems.Count);
-                CenterItems.Insert(uiIdx, bandVm);
-                break;
-            }
+                {
+                    var idx = Math.Min(targetIndex, activeCenter.Count);
+                    activeCenter = activeCenter.Insert(idx, bandSettings);
+                    var uiIdx = Math.Min(targetIndex, CenterItems.Count);
+                    CenterItems.Insert(uiIdx, bandVm);
+                    break;
+                }
 
             case DockPinSide.End:
-            {
-                var idx = Math.Min(targetIndex, activeEnd.Count);
-                activeEnd = activeEnd.Insert(idx, bandSettings);
-                var uiIdx = Math.Min(targetIndex, EndItems.Count);
-                EndItems.Insert(uiIdx, bandVm);
-                break;
-            }
+                {
+                    var idx = Math.Min(targetIndex, activeEnd.Count);
+                    activeEnd = activeEnd.Insert(idx, bandSettings);
+                    var uiIdx = Math.Min(targetIndex, EndItems.Count);
+                    EndItems.Insert(uiIdx, bandVm);
+                    break;
+                }
         }
 
         _settings = WithActiveBands(activeStart, activeCenter, activeEnd);
@@ -997,6 +997,9 @@ public sealed partial class DockViewModel : IDisposable
     {
         var isDockEnabled = _settingsService.Settings.EnableDock;
         var dockSide = isDockEnabled ? GetEffectiveSide().ToString().ToLowerInvariant() : "none";
+        /*
+        // TODO: re-enable the collection of active bands at some point, if
+        // we ever get data flowing again.
 
         var (activeStart, activeCenter, activeEnd) = GetActiveBands();
 
@@ -1006,7 +1009,10 @@ public sealed partial class DockViewModel : IDisposable
         var startBands = isDockEnabled ? FormatBands(activeStart) : string.Empty;
         var centerBands = isDockEnabled ? FormatBands(activeCenter) : string.Empty;
         var endBands = isDockEnabled ? FormatBands(activeEnd) : string.Empty;
-
+        */
+        var startBands = string.Empty;
+        var centerBands = string.Empty;
+        var endBands = string.Empty;
         WeakReferenceMessenger.Default.Send(new TelemetryDockConfigurationMessage(
             isDockEnabled, dockSide, startBands, centerBands, endBands));
     }
