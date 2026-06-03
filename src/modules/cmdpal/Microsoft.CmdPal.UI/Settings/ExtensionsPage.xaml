@@ -219,6 +219,7 @@
                                     AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
                                     Click="SettingsCard_Click"
                                     DataContext="{x:Bind}"
+                                    DataContextChanged="SettingsCard_DataContextChanged"
                                     Description="{x:Bind ExtensionSubtext, Mode=OneWay}"
                                     Header="{x:Bind DisplayName, Mode=OneWay}"
                                     IsClickEnabled="True">
