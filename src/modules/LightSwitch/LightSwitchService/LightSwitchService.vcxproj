@@ -63,7 +63,6 @@
         $(RepoRoot)src\common\SettingsAPI;
         $(RepoRoot)src\common\Telemetry;
         $(RepoRoot)src\;
-        ..\..\..\..\deps\spdlog\include;
         ./;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>

@@ -1,6 +1,6 @@
 PackageName: JetBrains.IntelliJIDEA.Community
 Name: IntelliJ IDEA
-WindowFilter: "idea*.exe"
+WindowFilter: "idea64.exe"
 BackgroundProcess: false
 Shortcuts:
   - SectionName: Top shortcuts

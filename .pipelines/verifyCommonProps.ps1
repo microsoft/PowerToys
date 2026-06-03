@@ -48,6 +48,11 @@ foreach ($csprojFile in $csprojFilesArray) {
         continue
     }
 
+    # The PowerAccent.Common project does not target WinRT, so skip it
+    if ($csprojFile -like '*PowerAccent.Common.csproj') {
+        continue
+    }
+
     $importExists = Test-ImportSharedCsWinRTProps -filePath $csprojFile
     if (!$importExists) {
         Write-Output "$csprojFile need to import 'Common.Dotnet.CsWinRT.props'."

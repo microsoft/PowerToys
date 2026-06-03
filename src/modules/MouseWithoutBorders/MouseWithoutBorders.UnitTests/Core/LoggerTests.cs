@@ -3,8 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,6 +16,94 @@ namespace MouseWithoutBorders.UnitTests.Core;
 
 public static class LoggerTests
 {
+    [TestClass]
+    public sealed class GetStackTraceTests
+    {
+        [TestMethod]
+        public void GetStackTraceShouldReturnCorrectValue()
+        {
+            // if we get the stack trace from the current test method with
+            // "new StackTrace()" it's incredibly deep as it contains the
+            // full MSTest call stack so we'll create a Task to capture a
+            // much shallower stack trace from inside the task
+            var stackTrace = default(StackTrace);
+            Task.Run(() =>
+            {
+                void MyMethod1()
+                {
+                    MyMethod2();
+                }
+
+                void MyMethod2()
+                {
+                    stackTrace = new StackTrace();
+                }
+
+                MyMethod1();
+            }).Wait();
+
+            /*
+            // even with the above, the stack trace can still vary depending on the test runner host
+            // being used (e.g. visual studio vs dotnet test) and the version of dotnet being used -
+            // e.g.
+            //
+            //   Void<GetStackTraceShouldReturnCorrectValue> g__MyMethod2| 2()
+            //   <= Void <GetStackTraceShouldReturnCorrectValue> g__MyMethod1 | 1()
+            //   <= Void <GetStackTraceShouldReturnCorrectValue> b__0()
+            //   <= Void RunFromThreadPoolDispatchLoop(System.Threading.Thread, System.Threading.ExecutionContext, System.Threading.ContextCallback, System.Object)
+            //           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            //   <= Void ExecuteWithThreadLocal(System.Threading.Tasks.Task ByRef, System.Threading.Thread)
+            //   ... etc ...
+            //
+            // versus
+            //
+            //   Void<GetStackTraceShouldReturnCorrectValue> g__MyMethod2| 2()
+            //   <= Void <GetStackTraceShouldReturnCorrectValue> g__MyMethod1 | 1()
+            //   <= Void <GetStackTraceShouldReturnCorrectValue> b__0()
+            //   <= Void RunInternal(System.Threading.ExecutionContext, System.Threading.ContextCallback, System.Object)
+            //           ^^^^^^^^^^^
+            //   <= Void ExecuteWithThreadLocal(System.Threading.Tasks.Task ByRef, System.Threading.Thread)
+            //   ... etc ...
+            //
+            // so we're going to ignore everything after our task code.
+            //
+            // however, this is *still* inherently unstable due to compiler-generated uniqueness keys - e.g.
+            //
+            //   Void <GetStackTraceShouldReturnCorrectValue>g__MyMethod1|2()
+            //                                                            ^
+            //
+            // versus
+            //
+            //   Void <GetStackTraceShouldReturnCorrectValue>g__MyMethod1|1()
+            //                                                            ^
+            // but we'll try to suppress the differences with a normalization regex
+            // (which is giving diminishing returns on the value of this test, but
+            // we'll persevere...)
+             */
+
+            string NormalizeStackTrace(string stackTrace, [CallerMemberName] string caller = "")
+            {
+                return string.Join(
+                    " <= ",
+                    stackTrace
+                        .Split(" <= ")
+                        .TakeWhile(line => line.Contains(caller, StringComparison.InvariantCulture))
+                        .Select(f => f.Split('|')[0])
+                        .ToList());
+            }
+
+            var expected = NormalizeStackTrace(
+                "Void <GetStackTraceShouldReturnCorrectValue>g__MyMethod2|2()" +
+                " <= Void <GetStackTraceShouldReturnCorrectValue>g__MyMethod1|1()" +
+                " <= Void <GetStackTraceShouldReturnCorrectValue>b__0()");
+
+            var actual = NormalizeStackTrace(
+                Logger.GetStackTrace(stackTrace));
+
+            Assert.AreEqual(expected, actual);
+        }
+    }
+
     [TestClass]
     public sealed class PrivateDumpTests
     {

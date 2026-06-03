@@ -121,6 +121,31 @@ public class MonitorIdentityTests
     }
 
     [TestMethod]
+    public void EdidIdFromMonitorId_RawDevicePathWithTrailingGuid_ReturnsMiddleSegment()
+    {
+        // The Phase 0 classification log calls EdidIdFromMonitorId with a raw
+        // QueryDisplayConfig DevicePath (still carrying the trailing "#{guid}" segment).
+        // The helper must extract the EdidId correctly for that form too.
+        var input = @"\\?\DISPLAY#DELD1A8#5&abc123&0&UID12345#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
+
+        Assert.AreEqual("DELD1A8", MonitorIdentity.EdidIdFromMonitorId(input));
+    }
+
+    [TestMethod]
+    public void EdidIdFromMonitorId_SameModelMonitorsProduceSameId()
+    {
+        // Two Dell U2723QE on different ports share an EdidId but have different UIDs.
+        // Logging the EdidId identifies the model for crash correlation without leaking
+        // per-unit identifiers.
+        var portA = @"\\?\DISPLAY#DELD1A8#5&abc&0&UID111#{guid}";
+        var portB = @"\\?\DISPLAY#DELD1A8#5&xyz&0&UID222#{guid}";
+
+        Assert.AreEqual(
+            MonitorIdentity.EdidIdFromMonitorId(portA),
+            MonitorIdentity.EdidIdFromMonitorId(portB));
+    }
+
+    [TestMethod]
     public void EdidIdFromMonitorId_NullEmptyOrMalformed_ReturnsEmpty()
     {
         Assert.AreEqual(string.Empty, MonitorIdentity.EdidIdFromMonitorId(null));

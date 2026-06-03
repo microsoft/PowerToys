@@ -5,10 +5,7 @@
 using System;
 using System.Globalization;
 using ManagedCommon;
-using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
 using ShortcutGuide.Controls;
 using ShortcutGuide.Helpers;
 using Windows.Foundation;

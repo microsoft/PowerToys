@@ -212,6 +212,7 @@
             "WinUI3Apps\\PowerToys.NewPlus.ShellExtension.win10.dll",
 
             "PowerAccent.Core.dll",
+            "PowerAccent.Common.dll",
             "PowerToys.PowerAccent.dll",
             "PowerToys.PowerAccent.exe",
             "PowerToys.PowerAccentModuleInterface.dll",
@@ -391,6 +392,7 @@
                 "WinUI3Apps\\Google.Apis.Auth.dll",
                 "WinUI3Apps\\Google.Apis.Core.dll",
                 "WinUI3Apps\\Google.GenAI.dll",
+                "WinUI3Apps\\YamlDotNet.dll",
 
                 "boost_regex-vc143-mt-gd-x32-1_87.dll",
                 "boost_regex-vc143-mt-gd-x64-1_87.dll",

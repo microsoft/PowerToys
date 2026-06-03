@@ -49,7 +49,13 @@ public partial class ProviderSettingsViewModel : ObservableObject
 
     public string DisplayName => _provider.DisplayName;
 
-    public string ProviderId => _provider.ProviderId;
+    /// <summary>
+    /// Stable, non-localized identifier from the underlying provider (e.g.
+    /// "com.microsoft.cmdpal.builtin.calculator"). Exposed for UI tests
+    /// to target the per-provider <see cref="ProviderSettingsViewModel"/>
+    /// row via <c>AutomationProperties.AutomationId</c>.
+    /// </summary>
+    public string Id => _provider.Id;
 
     public string ExtensionName => _provider.Extension?.ExtensionDisplayName ?? Resources.builtin_extension_name;
 
