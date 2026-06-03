@@ -22,7 +22,7 @@ Thank you for contributing to PowerToys. We've detected that this PR might inclu
 const COMMENT_BODY_WITHOUT_PRIVACY_UPDATE = `${COMMENT_MARKER}
 Thank you for contributing to PowerToys. We've detected that this PR might include a new or modified telemetry event. Please ensure the following before merging:
 
-- [ ] Add your telemetry events to DATA_AND_PRIVACY.md within this PR.
+- [ ] Add your telemetry events to [DATA_AND_PRIVACY](https://github.com/microsoft/PowerToys/blob/main/DATA_AND_PRIVACY.md).md within this PR.
 
 - [ ] Reach out to Jessica (${REVIEWER_MENTION}) to follow up on the next steps: https://aka.ms/next-steps`;
 
