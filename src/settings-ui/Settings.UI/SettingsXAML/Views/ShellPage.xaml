@@ -265,6 +265,12 @@
                     SelectsOnInvoked="False">
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem
+                            x:Name="AltWindowCycleNavigationItem"
+                            x:Uid="Shell_AltWindowCycle"
+                            helpers:NavHelper.NavigateTo="views:AltWindowCyclePage"
+                            AutomationProperties.AutomationId="AltWindowCycleNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}" />
+                        <NavigationViewItem
                             x:Name="AlwaysOnTopNavigationItem"
                             x:Uid="Shell_AlwaysOnTop"
                             helpers:NavHelper.NavigateTo="views:AlwaysOnTopPage"
