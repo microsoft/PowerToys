@@ -895,31 +895,31 @@ public sealed partial class DockViewModel : IDisposable
         switch (targetSide)
         {
             case DockPinSide.Start:
-                {
-                    var idx = Math.Min(targetIndex, activeStart.Count);
-                    activeStart = activeStart.Insert(idx, bandSettings);
-                    var uiIdx = Math.Min(targetIndex, StartItems.Count);
-                    StartItems.Insert(uiIdx, bandVm);
-                    break;
-                }
+            {
+                var idx = Math.Min(targetIndex, activeStart.Count);
+                activeStart = activeStart.Insert(idx, bandSettings);
+                var uiIdx = Math.Min(targetIndex, StartItems.Count);
+                StartItems.Insert(uiIdx, bandVm);
+                break;
+            }
 
             case DockPinSide.Center:
-                {
-                    var idx = Math.Min(targetIndex, activeCenter.Count);
-                    activeCenter = activeCenter.Insert(idx, bandSettings);
-                    var uiIdx = Math.Min(targetIndex, CenterItems.Count);
-                    CenterItems.Insert(uiIdx, bandVm);
-                    break;
-                }
+            {
+                var idx = Math.Min(targetIndex, activeCenter.Count);
+                activeCenter = activeCenter.Insert(idx, bandSettings);
+                var uiIdx = Math.Min(targetIndex, CenterItems.Count);
+                CenterItems.Insert(uiIdx, bandVm);
+                break;
+            }
 
             case DockPinSide.End:
-                {
-                    var idx = Math.Min(targetIndex, activeEnd.Count);
-                    activeEnd = activeEnd.Insert(idx, bandSettings);
-                    var uiIdx = Math.Min(targetIndex, EndItems.Count);
-                    EndItems.Insert(uiIdx, bandVm);
-                    break;
-                }
+            {
+                var idx = Math.Min(targetIndex, activeEnd.Count);
+                activeEnd = activeEnd.Insert(idx, bandSettings);
+                var uiIdx = Math.Min(targetIndex, EndItems.Count);
+                EndItems.Insert(uiIdx, bandVm);
+                break;
+            }
         }
 
         _settings = WithActiveBands(activeStart, activeCenter, activeEnd);
