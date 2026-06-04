@@ -322,6 +322,11 @@ namespace KeyboardManagerEditorUI.Controls
         {
             foreach (var module in CommandTemplateCatalog.Instance.Data.Modules)
             {
+                var moduleSub = new MenuFlyoutSubItem
+                {
+                    Text = ResourceHelper.GetString(module.DisplayResourceKey),
+                };
+
                 foreach (var cmd in module.Commands)
                 {
                     var item = new MenuFlyoutItem
@@ -330,8 +335,10 @@ namespace KeyboardManagerEditorUI.Controls
                         Tag = cmd.Id,
                     };
                     item.Click += OnCommandClick;
-                    RunPtCommandSubItem.Items.Add(item);
+                    moduleSub.Items.Add(item);
                 }
+
+                RunPtCommandSubItem.Items.Add(moduleSub);
             }
         }
 
