@@ -20,12 +20,12 @@ public sealed partial class SearchEngine : IDisposable
 {
     private SearchQuery? _searchQuery = new();
 
-    public void Query(string query, uint queryCookie)
+    public SearchNoticeInfo? Query(string query, uint queryCookie)
     {
         var searchQuery = _searchQuery;
         if (searchQuery is null)
         {
-            return;
+            return null;
         }
 
         searchQuery.SearchResults.Clear();
@@ -33,7 +33,7 @@ public sealed partial class SearchEngine : IDisposable
 
         if (string.IsNullOrWhiteSpace(query))
         {
-            return;
+            return null;
         }
 
         Stopwatch stopwatch = new();
@@ -43,11 +43,14 @@ public sealed partial class SearchEngine : IDisposable
 
         stopwatch.Stop();
         Logger.LogDebug($"Query time: {stopwatch.ElapsedMilliseconds} ms, query: \"{query}\"");
+
+        return BuildNotice(searchQuery);
     }
 
-    public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore, bool noIcons = false)
+    public IList<IListItem> FetchItems(int offset, int limit, uint queryCookie, out bool hasMore, out SearchNoticeInfo? notice, bool noIcons = false)
     {
         hasMore = false;
+        notice = null;
 
         var searchQuery = _searchQuery;
         if (searchQuery is null)
@@ -64,6 +67,7 @@ public sealed partial class SearchEngine : IDisposable
         var results = new List<IListItem>();
         var index = 0;
         var hasMoreItems = searchQuery.FetchRows(offset, limit);
+        notice = BuildNotice(searchQuery);
 
         while (!searchQuery.SearchResults.IsEmpty && searchQuery.SearchResults.TryDequeue(out var result) && ++index <= limit)
         {
@@ -98,6 +102,12 @@ public sealed partial class SearchEngine : IDisposable
 
         hasMore = hasMoreItems;
         return results;
+    }
+
+    private static SearchNoticeInfo? BuildNotice(SearchQuery searchQuery)
+    {
+        return SearchNoticeInfoBuilder.FromQueryStatus(searchQuery.GetExecutionStatus())
+            ?? SearchNoticeInfoBuilder.FromCatalogStatus(SearchCatalogStatusReader.GetStatus());
     }
 
     public void Dispose()

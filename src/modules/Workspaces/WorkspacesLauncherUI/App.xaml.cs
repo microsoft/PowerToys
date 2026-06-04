@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Threading;
 using System.Windows;
 
-using Common.UI;
 using ManagedCommon;
 using PowerToys.Interop;
 using WorkspacesLauncherUI.ViewModels;
@@ -27,8 +26,6 @@ namespace WorkspacesLauncherUI
         private StatusWindow _mainWindow;
 
         private MainViewModel _mainViewModel;
-
-        public static ThemeManager ThemeManager { get; set; }
 
         private bool _isDisposed;
 
@@ -92,8 +89,6 @@ namespace WorkspacesLauncherUI
             });
             ipcmanager.Start();
 
-            ThemeManager = new ThemeManager(this);
-
             if (_mainViewModel == null)
             {
                 _mainViewModel = new MainViewModel();
@@ -132,8 +127,6 @@ namespace WorkspacesLauncherUI
             {
                 if (disposing)
                 {
-                    ThemeManager?.Dispose();
-
                     ipcmanager?.End();
                     ipcmanager?.Dispose();
 

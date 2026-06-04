@@ -45,9 +45,13 @@
             Loaded="NavigationView_Loaded"
             OpenPaneLength="296"
             SelectionChanged="NavigationView_SelectionChanged">
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+            </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    x:Uid="Shell_General"
+                    x:Uid="Shell_Welcome"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToys.png}"
                     Tag="Overview" />
                 <NavigationViewItem
@@ -95,6 +99,10 @@
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/FileExplorerPreview.png}"
                     Tag="FileExplorer" />
                 <NavigationViewItem
+                    x:Uid="Shell_GrabAndMove"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/GrabAndMove.png}"
+                    Tag="GrabAndMove" />
+                <NavigationViewItem
                     x:Uid="Shell_Hosts"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Hosts.png}"
                     Tag="Hosts" />
@@ -126,12 +134,10 @@
                     x:Uid="Shell_Peek"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Peek.png}"
                     Tag="Peek" />
-                <!-- TEMPORARILY_DISABLED: PowerDisplay
                 <NavigationViewItem
                     x:Uid="Shell_PowerDisplay"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}"
                     Tag="PowerDisplay" />
-                -->
                 <NavigationViewItem
                     x:Uid="Shell_PowerRename"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerRename.png}"

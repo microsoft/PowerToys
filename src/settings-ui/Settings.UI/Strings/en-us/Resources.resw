@@ -486,6 +486,10 @@ opera.exe</value>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
     <value>Control all computes are once</value>
   </data>
+  <data name="Shell_Welcome.Content" xml:space="preserve">
+    <value>Getting started</value>
+    <comment>Navigation view item name for Getting started</comment>
+  </data>	
   <data name="Shell_General.Content" xml:space="preserve">
     <value>General</value>
     <comment>Navigation view item name for General</comment>
@@ -558,7 +562,7 @@ opera.exe</value>
     <value>Remap a key</value>
     <comment>Keyboard Manager remap keyboard button content</comment>
   </data>
-	<data name="KeyboardManager_Editor.Header" xml:space="preserve">
+  <data name="KeyboardManager_Editor.Header" xml:space="preserve">
     <value>Editor</value>
     <comment>Keyboard Manager new editor header</comment>
   </data>
@@ -1125,17 +1129,13 @@ opera.exe</value>
     <value>Inactive color</value>
   </data>
   <data name="ShortcutGuide.ModuleDescription" xml:space="preserve">
-    <value>Shows a help overlay with Windows shortcuts.</value>
-  </data>
-  <data name="ShortcutGuide_PressTimeForGlobalWindowsShortcuts.Header" xml:space="preserve">
-    <value>Press duration before showing global Windows shortcuts (ms)</value>
-    <comment>ms = milliseconds</comment>
+    <value>Shows an on-screen overlay of keyboard shortcuts for Windows and the active application.</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
   </data>
   <data name="ShortcutGuide_ActivationMethod.Description" xml:space="preserve">
-    <value>Use a shortcut or press the Windows key for some time to activate</value>
+    <value>Use a shortcut to activate Shortcut Guide</value>
   </data>
   <data name="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut.Content" xml:space="preserve">
     <value>Custom shortcut</value>
@@ -1149,7 +1149,10 @@ opera.exe</value>
   <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
-  <data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
+  <data name="StartupAndPermissions.Header" xml:space="preserve">
+    <value>Startup &amp; permissions</value>
+  </data>
+	<data name="General_SettingsBackupAndRestoreTitle.Header" xml:space="preserve">
     <value>Back up &amp; restore</value>
   </data>
   <data name="General_SettingsBackupAndRestore.Header" xml:space="preserve">
@@ -1162,8 +1165,14 @@ opera.exe</value>
     <value>Shortcut Guide</value>
     <comment>do not loc the Product name. Do you want this feature on / off</comment>
   </data>
-  <data name="ShortcutGuide_OverlayOpacity.Header" xml:space="preserve">
-    <value>Background opacity (%)</value>
+  <data name="ShortcutGuide_WindowPosition.Header" xml:space="preserve">
+    <value>Window position</value>
+  </data>
+  <data name="ShortcutGuide_WindowPosition_Left.Content" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="ShortcutGuide_WindowPosition_Right.Content" xml:space="preserve">
+    <value>Right</value>
   </data>
   <data name="ShortcutGuide_DisabledApps.Header" xml:space="preserve">
     <value>Exclude apps</value>
@@ -1377,6 +1386,14 @@ opera.exe</value>
   <data name="General_VersionLastChecked.Text" xml:space="preserve">
     <value>Last checked: </value>
   </data>
+  <data name="General_LastCheckedDate_TodayAt" xml:space="preserve">
+    <value>Today at {0}</value>
+    <comment>Friendly date format when the last update check was today. {0} is the localized short time, e.g. "Today at 1:22 PM".</comment>
+  </data>
+  <data name="General_LastCheckedDate_YesterdayAt" xml:space="preserve">
+    <value>Yesterday at {0}</value>
+    <comment>Friendly date format when the last update check was yesterday. {0} is the localized short time, e.g. "Yesterday at 3:45 PM".</comment>
+  </data>
   <data name="General_SettingsBackupInfo_DateHeader.Text" xml:space="preserve">
     <value>Created at:</value>
   </data>
@@ -1429,7 +1446,7 @@ opera.exe</value>
     <value>Remap shortcuts to other shortcuts, keys or text snippets for all or specific applications</value>
   </data>
   <data name="General.ModuleDescription" xml:space="preserve">
-    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
+    <value>PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.
 Made with 💗 by Microsoft and the PowerToys community.</value>
     <comment>Windows refers to the OS</comment>
   </data>
@@ -1755,7 +1772,7 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Help_floatWithout" xml:space="preserve">
     <value>float without leading zero</value>
   </data>
-   <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
+  <data name="ColorFormatEditorHelpline3.Text" xml:space="preserve">
     <value>The lightness (CIE), chromaticity A (CIE Lab) and chromaticity B (CIE Lab) values can be formatted to the following formats:</value>
   </data>
   <data name="Help_integer" xml:space="preserve">
@@ -1910,19 +1927,19 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="Activation_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to activate this module</value>
   </data>
-	<data name="KeyboardManager_Editor_Shortcut.Header" xml:space="preserve">
+  <data name="KeyboardManager_Editor_Shortcut.Header" xml:space="preserve">
     <value>Editor shortcut</value>
   </data>
-	<data name="KeyboardManager_Editor_Open_Shortcut.Header" xml:space="preserve">
+  <data name="KeyboardManager_Editor_Open_Shortcut.Header" xml:space="preserve">
     <value>Open editor shortcut</value>
   </data>
-	<data name="KeyboardManager_Editor_Open_Shortcut.Description" xml:space="preserve">
+  <data name="KeyboardManager_Editor_Open_Shortcut.Description" xml:space="preserve">
     <value>Customize the shortcut to open the Keyboard Manager editor</value>
   </data>
-	<data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
+  <data name="KeyboardManager_LaunchEditor_Button.Content" xml:space="preserve">
     <value>Open editor</value>
-  </data>	
-	<data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
+  </data>
+  <data name="PasteAsPlainText_Shortcut.Header" xml:space="preserve">
     <value>Paste as plain text directly</value>
   </data>
   <data name="AdvancedPasteUI_Actions.Header" xml:space="preserve">
@@ -2034,25 +2051,25 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
     <value>Screen Ruler is a quick and easy way to measure pixels on your screen.</value>
   </data>
   <data name="Oobe_ShortcutGuide.Description" xml:space="preserve">
-    <value>Shortcut Guide presents the user with a listing of available shortcuts for the current state of the desktop.</value>
+    <value>Shortcut Guide displays keyboard shortcuts for Windows and various applications. The shortcuts shown always correspond to the most current application version or Windows version.</value>
   </data>
   <data name="Oobe_MouseUtils.Description" xml:space="preserve">
     <value>A collection of utilities to enhance your mouse.</value>
     <comment>Mouse as in the hardware peripheral</comment>
   </data>
-  <data name="Oobe_Overview.Description" xml:space="preserve">
-    <value>Microsoft PowerToys is a set of utilities for power users to tune and streamline their Windows experience for greater productivity.
+  <data name="Oobe_Overview_Description.Text" xml:space="preserve">
+    <value>Microsoft PowerToys is a collection of utilities that help you customize Windows and streamline everyday tasks.
 
-Take a moment to preview the various utilities listed or view our comprehensive documentation.</value>
+Take a look around and explore how some of the PowerToys utilities work and can improve your Windows experience..</value>
   </data>
   <data name="Oobe_Overview_DescriptionLinkText.Text" xml:space="preserve">
-    <value>Documentation on Microsoft Learn</value>
+    <value>Documentation</value>
   </data>
-  <data name="Oobe_Overview_Telemetry_Title.Text" xml:space="preserve">
-    <value>Help us make PowerToys better</value>
+  <data name="Oobe_Overview_ConfigurePowerToysButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Configure PowerToys</value>
   </data>
-  <data name="Oobe_Overview_Telemetry_Desc.Text" xml:space="preserve">
-    <value>Diagnostics &amp; feedback helps us to improve PowerToys and keep it secure, up to date, and working as expected.</value>
+  <data name="Oobe_Overview_ConfigurePowerToysButton_Text.Text" xml:space="preserve">
+    <value>Configure PowerToys</value>
   </data>
   <data name="Oobe_Overview_Hotkey_Conflict_Title.Text" xml:space="preserve">
     <value>Shortcut conflict detection</value>
@@ -2199,8 +2216,8 @@ From there, simply click on one of the supported files in the File Explorer and 
     <value>Shortcut Guide</value>
     <comment>Do not localize this string</comment>
   </data>
-  <data name="Oobe_Overview.Title" xml:space="preserve">
-    <value>Welcome</value>
+  <data name="Oobe_Overview_Title.Text" xml:space="preserve">
+    <value>Welcome to PowerToys</value>
   </data>
   <data name="Oobe_WhatsNew_LoadingError.Title" xml:space="preserve">
     <value>Couldn't load the release notes.</value>
@@ -2557,7 +2574,7 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_ActivationMode_HoldingShift.Content" xml:space="preserve">
     <value>Holding Shift</value>
     <comment>CursorWrap: Activation mode - wrap only when Shift held</comment>
-  </data>		
+  </data>
   <data name="Oobe_MouseUtils_MousePointerCrosshairs.Text" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
     <comment>Mouse as in the hardware peripheral.</comment>
@@ -3131,6 +3148,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="Peek_ConfirmFileDelete.Description" xml:space="preserve">
     <value>You'll be asked to confirm before files are moved to the Recycle Bin</value>
   </data>
+  <data name="Peek_ShowFilePreviewTooltip.Header" xml:space="preserve">
+    <value>Show file preview tooltip</value>
+  </data>
+  <data name="Peek_ShowFilePreviewTooltip.Description" xml:space="preserve">
+    <value>Show file information as a tooltip when hovering over the preview</value>
+  </data>
   <data name="Peek_ActivationMethod.Header" xml:space="preserve">
     <value>Activation method</value>
   </data>
@@ -3565,6 +3588,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Greek" xml:space="preserve">
     <value>Greek</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Greek_Polytonic" xml:space="preserve">
+    <value>Greek Polytonic</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Hebrew" xml:space="preserve">
     <value>Hebrew</value>
   </data>
@@ -3762,10 +3788,6 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="EnvironmentVariables_Toggle_LaunchAdministrator.Header" xml:space="preserve">
     <value>Open as administrator</value>
   </data>
-  <data name="ShortcutGuide_PressTimeForTaskbarIconShortcuts.Header" xml:space="preserve">
-    <value>Press duration before showing taskbar icon shortcuts (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="FileLocksmith.ModuleDescription" xml:space="preserve">
     <value>A Windows shell extension to find out which processes are using the selected files and directories.</value>
     <comment>{Locked="Windows"}</comment>
@@ -3830,21 +3852,11 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="Alternate_OOBE_Run_Title.Text" xml:space="preserve">
     <value>PowerToys Run</value>
   </data>
-  <data name="General_Experimentation.Header" xml:space="preserve">
-    <value>Experimentation</value>
-  </data>
-  <data name="GeneralPage_EnableExperimentation.Description" xml:space="preserve">
-    <value>Only Windows Insider builds may be selected for experimentation</value>
-    <comment>{Locked="Windows Insider"}</comment>
-  </data>
-  <data name="GeneralPage_EnableExperimentation.Header" xml:space="preserve">
-    <value>Allow experimentation with new features</value>
-  </data>
   <data name="General_DiagnosticsAndFeedback.Header" xml:space="preserve">
     <value>Diagnostics &amp; feedback</value>
   </data>
   <data name="GeneralPage_DiagnosticsAndFeedback_Link.Content" xml:space="preserve">
-    <value>Learn more about the logged information and how it's used</value>
+    <value>Learn more</value>
   </data>
   <data name="GeneralPage_EnableDataDiagnostics.Header" xml:space="preserve">
     <value>Diagnostic data</value>
@@ -4604,7 +4616,7 @@ Press **Shift + a color key** for a translucent highlighter, **X** for blur, or 
 Press **Shift** for a line, **Ctrl** for a rectangle, **Tab** for an ellipse, or **Shift + Ctrl** for an arrow.
 
 **Screen**
-Press **W** or **K** for a white or black sketch pad.
+Press **K** or **W** for a black or white sketch pad.
 Press **Ctrl + C** to copy or **Ctrl + S** to save, and **Ctrl + Shift** to crop.
     </value>
   </data>
@@ -4807,6 +4819,66 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_Microphones_Default_Name" xml:space="preserve">
     <value>Default</value>
   </data>
+  <data name="ZoomIt_Record_WebcamOverlay.Content" xml:space="preserve">
+    <value>Show webcam overlay (Ctrl+C toggles)</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamDevice.Header" xml:space="preserve">
+    <value>Camera</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamDevices_Default_Name" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition.Header" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize.Header" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape.Header" xml:space="preserve">
+    <value>Shape</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_TopLeft.Content" xml:space="preserve">
+    <value>Top left</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_TopRight.Content" xml:space="preserve">
+    <value>Top right</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_BottomLeft.Content" xml:space="preserve">
+    <value>Bottom left</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamPosition_BottomRight.Content" xml:space="preserve">
+    <value>Bottom right</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Small.Content" xml:space="preserve">
+    <value>Small</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Medium.Content" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_Large.Content" xml:space="preserve">
+    <value>Large</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_XLarge.Content" xml:space="preserve">
+    <value>X-Large</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamSize_FullScreen.Content" xml:space="preserve">
+    <value>Full screen</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_Rectangle.Content" xml:space="preserve">
+    <value>Rectangle</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_RoundedRectangle.Content" xml:space="preserve">
+    <value>Rounded rectangle</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_RoundedSquare.Content" xml:space="preserve">
+    <value>Rounded square</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamShape_Circle.Content" xml:space="preserve">
+    <value>Circle</value>
+  </data>
+  <data name="ZoomIt_Record_AspectRatio.Content" xml:space="preserve">
+    <value>Lock region selection to 16:9 aspect ratio</value>
+  </data>
   <data name="ZoomIt_Break_LockWorkstation.Content" xml:space="preserve">
     <value>Lock workstation during break</value>
   </data>
@@ -4820,25 +4892,25 @@ The break timer font matches the text font.</value>
     <value>Snip activation</value>
   </data>
   <data name="ZoomIt_Snip_Shortcut_Save" xml:space="preserve">
-    <value>Press **{0}** to save the snip to a file instead of the clipboard.</value>
+    <value>Press **{0}** to save the snip to a file</value>
+  </data>
+  <data name="ZoomIt_Panorama_Shortcut_Save" xml:space="preserve">
+    <value>Press **{0}** to save the scrolling screenshot to a file</value>
   </data>
   <data name="ZoomIt_SnipOcr_Shortcut.Header" xml:space="preserve">
-    <value>Snip OCR activation</value>
+    <value>Text recognition and extraction</value>
   </data>
   <data name="ZoomIt_SnipOcr_Shortcut.Description" xml:space="preserve">
-    <value>Copy text from the selected region to the clipboard.</value>
-  </data>
-  <data name="ZoomIt_PanoramaGroup.Header" xml:space="preserve">
-    <value>Panorama</value>
+    <value>Copy text from the selected region to the clipboard</value>
   </data>
   <data name="ZoomIt_PanoramaGroup.Description" xml:space="preserve">
     <value>Capture a scrolling panorama of a selected screen region.</value>
   </data>
   <data name="ZoomIt_Panorama_Shortcut.Header" xml:space="preserve">
-    <value>Panorama activation</value>
+    <value>Scrolling screenshot</value>
   </data>
   <data name="ZoomIt_Panorama_Shortcut.Description" xml:space="preserve">
-    <value>Select the area, then scroll the content. Move slowly and consistently, and do not rewind to previously covered areas. Press the hotkey again or with Shift to save to a file.</value>
+    <value>Select an area, then slowly scroll through the content without rewinding, and press the hotkey again to copy the screenshot to your clipboard</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
     <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
@@ -4967,6 +5039,9 @@ The break timer font matches the text font.</value>
   <data name="LearnMore_CmdPal.Text" xml:space="preserve">
     <value>Learn more about Command Palette</value>
   </data>
+  <data name="LearnMore_CmdPalContent.Content" xml:space="preserve">
+    <value>Learn more</value>
+  </data>
   <data name="Shell_CmdPal.Content" xml:space="preserve">
     <value>Command Palette</value>
     <comment>Product name: Navigation view item name for Command Palette</comment>
@@ -5050,9 +5125,12 @@ The break timer font matches the text font.</value>
     <value>You're up to date</value>
   </data>
   <data name="UpdateAvailableTextBlock.Text" xml:space="preserve">
-    <value>Update Available</value>
+    <value>Update available</value>
   </data>
-  <data name="GeneralVersion.Text" xml:space="preserve">
+  <data name="UpdateAvailableInfoBar.Title" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+	<data name="GeneralVersion.Text" xml:space="preserve">
     <value>Version</value>
   </data>
   <data name="LearnWhatsNew.Text" xml:space="preserve">
@@ -5074,7 +5152,7 @@ The break timer font matches the text font.</value>
     <value>No actions to show..</value>
   </data>
   <data name="NoShortcutsToShow.Text" xml:space="preserve">
-    <value>No shortcuts to show..</value>
+    <value>No shortcuts to show.</value>
   </data>
   <data name="HighlightMode.Description" xml:space="preserve">
     <value>Highlight the cursor or dim the screen to spotlight it</value>
@@ -5094,7 +5172,7 @@ The break timer font matches the text font.</value>
   <data name="AlwaysOnTop_Sound.Header" xml:space="preserve">
     <value>Play a sound when pinning a window</value>
   </data>
-  <data name="GeneralPage_EnableViewDiagnosticDataText.Text" xml:space="preserve">
+  <data name="GeneralPage_EnableViewDiagnosticData.Description" xml:space="preserve">
     <value>Stores diagnostic data locally in .xml format; folder may include .etl files as well. May use up 1 GB or more of disk space.</value>
   </data>
   <data name="Shell_LightSwitch.Content" xml:space="preserve">
@@ -5289,7 +5367,7 @@ The break timer font matches the text font.</value>
     <value>If any shortcut conflicts are detected, they’ll appear below. Conflicts can happen between PowerToys utilities or Windows system shortcuts, and may cause unexpected behavior. If everything works as expected, you can safely ignore the conflict.</value>
   </data>
   <data name="ShortcutConflictWindow_ModulesUsingShortcut.Text" xml:space="preserve">
-    <value>Conflicts found for</value>
+    <value>conflicts</value>
   </data>
   <data name="ShortcutConflictWindow_SystemCard.Header" xml:space="preserve">
     <value>System shortcut</value>
@@ -5377,19 +5455,18 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay.ModuleTitle" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay.ModuleDescription" xml:space="preserve">
     <value>A display management utility for brightness and power control</value>
   </data>
   <data name="PowerDisplay_Enable_PowerDisplay.Header" xml:space="preserve">
     <value>Enable Power Display</value>
-  </data>
-  <data name="PowerDisplay_Configuration_GroupSettings.Header" xml:space="preserve">
-    <value>Configuration</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ToggleWindow" xml:space="preserve">
     <value>Toggle Power Display</value>
-    <comment>Dashboard: Label for the PowerDisplay activation hotkey</comment>
+    <comment>Dashboard: Label for the PowerDisplay activation hotkey. {Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_ActivationShortcut.Header" xml:space="preserve">
     <value>Activation shortcut</value>
@@ -5397,27 +5474,22 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_LaunchButtonControl.Header" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
+  </data>
+  <data name="PowerDisplay_LaunchButton.Content" xml:space="preserve">
+    <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_LaunchButtonControl.Description" xml:space="preserve">
     <value>Launch the Power Display utility</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup.Header" xml:space="preserve">
-    <value>Restore settings on startup</value>
-  </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup.Description" xml:space="preserve">
+  <data name="PowerDisplay_RestoreSettingsOnStartup.Content" xml:space="preserve">
     <value>Restore monitor brightness and color temperature when Power Display launches</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OnContent" xml:space="preserve">
-    <value>On</value>
-  </data>
-  <data name="PowerDisplay_RestoreSettingsOnStartup_ToggleSwitch.OffContent" xml:space="preserve">
-    <value>Off</value>
-  </data>
-  <data name="PowerDisplay_ShowSystemTrayIcon.Header" xml:space="preserve">
+  <data name="PowerDisplay_ShowSystemTrayIcon.Content" xml:space="preserve">
     <value>Show system tray icon</value>
-  </data>
-  <data name="PowerDisplay_ShowSystemTrayIcon.Description" xml:space="preserve">
-    <value>Choose if PowerDisplay is visible in the system tray</value>
   </data>
   <data name="PowerDisplay_MonitorRefreshDelay.Header" xml:space="preserve">
     <value>Monitor refresh delay</value>
@@ -5425,14 +5497,24 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_MonitorRefreshDelay.Description" xml:space="preserve">
     <value>Number of seconds to wait after display changes before refreshing monitors. Increase if monitors are not detected after hot-plug.</value>
   </data>
+  <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
+    <value>Advanced</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibilityMode.Header" xml:space="preserve">
+    <value>Maximum compatibility mode</value>
+  </data>
+  <data name="PowerDisplay_MaxCompatibilityMode.Description" xml:space="preserve">
+    <value>Some monitors do not return a standard capabilities string. Enable this to force Power Display to probe each supported feature directly. This increases discovery time for monitors that already work, so leave it off unless a monitor is missing from Power Display.</value>
+  </data>
   <data name="PowerDisplay_Profiles_GroupSettings.Header" xml:space="preserve">
     <value>Profiles</value>
   </data>
   <data name="PowerDisplay_QuickProfiles.Header" xml:space="preserve">
-    <value>Quick apply profiles</value>
+    <value>Profiles</value>
   </data>
   <data name="PowerDisplay_QuickProfiles.Description" xml:space="preserve">
-    <value>Click a profile button to quickly apply saved monitor settings</value>
+    <value>Click the profile button in the Power Display flyout to quickly apply saved monitor settings</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_AddProfile_Text.Text" xml:space="preserve">
     <value>Add profile</value>
@@ -5445,21 +5527,26 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LearnMore_PowerDisplay.Text" xml:space="preserve">
     <value>Learn more about Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay.Title" xml:space="preserve">
     <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay.Description" xml:space="preserve">
     <value>Power Display provides unified control over display settings across multiple monitors. Adjust brightness, contrast, volume, color temperature, and input source for all connected displays from a single overlay. Supports DDC/CI for external monitors and WMI for laptop displays, with profile support for quick configuration switching and LightSwitch integration for automatic theme-based adjustments.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay_Activation.Text" xml:space="preserve">
     <value>to open the Power Display overlay.</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="Oobe_PowerDisplay_TipsAndTricks.Text" xml:space="preserve">
     <value>**Create profiles** to save your preferred display settings, then configure them in **LightSwitch** to automatically switch profiles when the system theme changes.</value>
   </data>
   <data name="Launch_PowerDisplay.Content" xml:space="preserve">
     <value>Open Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_Monitor_EnableContrast.Content" xml:space="preserve">
     <value>Display contrast slider</value>
@@ -5482,24 +5569,84 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Monitor_HideMonitor.Content" xml:space="preserve">
     <value>Hide monitor</value>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningTitle" xml:space="preserve">
-    <value>Confirm Color Temperature Change</value>
+  <data name="PowerDisplay_Warning_Title" xml:space="preserve">
+    <value>Before you continue</value>
+    <comment>Title shown on every Power Display warning ContentDialog (enable module, color temperature, power state, input source, max compatibility).</comment>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningHeader" xml:space="preserve">
-    <value>⚠️ Warning: This is a potentially dangerous operation!</value>
+  <data name="PowerDisplay_Warning_LearnMore" xml:space="preserve">
+    <value>Learn more about Power Display</value>
+    <comment>Text for the learn-more hyperlink shown at the bottom of every Power Display warning ContentDialog.</comment>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningDescription" xml:space="preserve">
-    <value>Changing the color temperature setting may cause unpredictable results including:</value>
+  <data name="PowerDisplay_Warning_ColorTemperature_InfoBar" xml:space="preserve">
+    <value>Color temperature changes may not be reversible on some monitors</value>
+    <comment>Title shown in the Warning InfoBar at the top of the color temperature confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningList" xml:space="preserve">
-    <value>• Incorrect display colors
-• Display malfunction
-• Settings that cannot be reverted</value>
+  <data name="PowerDisplay_Warning_ColorTemperature_Body" xml:space="preserve">
+    <value>Adjusting color temperature uses DDC/CI to push values your monitor may not fully support.
+
+• Some monitors display incorrect colors or behave unpredictably.
+• A small number of monitors retain the new value even after Power Display is closed and may need a factory reset to restore the original profile.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the color temperature confirmation dialog.</comment>
   </data>
-  <data name="PowerDisplay_ColorTemperature_WarningConfirm" xml:space="preserve">
-    <value>Do you want to enable color temperature control for this monitor?</value>
+  <data name="PowerDisplay_CrashDetected_IgnoreButton.Content" xml:space="preserve">
+    <value>Ignore</value>
+    <comment>Action button on the crash recovery InfoBar that dismisses the warning and unlocks the PowerDisplay settings page.</comment>
   </data>
-  <data name="PowerDisplay_ColorTemperature_EnableButton" xml:space="preserve">
+  <data name="PowerDisplay_CrashDetectedInfoBar.Message" xml:space="preserve">
+    <value>A system crash was detected during the previous PowerDisplay session. PowerDisplay has been disabled to prevent another crash. If you understand the risk, click Ignore to dismiss this warning, then re-enable PowerDisplay manually.</value>
+    <comment>Body text of the crash recovery InfoBar.</comment>
+  </data>
+  <data name="PowerDisplay_CrashDetectedInfoBar.Title" xml:space="preserve">
+    <value>PowerDisplay was automatically disabled</value>
+    <comment>Title of the crash recovery InfoBar shown on PowerDisplay settings page after a detected crash.</comment>
+  </data>
+  <data name="PowerDisplay_Warning_PowerState_InfoBar" xml:space="preserve">
+    <value>Some monitors may need a physical power-cycle to recover</value>
+    <comment>Title shown in the Warning InfoBar at the top of the power state control confirmation dialog.</comment>
+  </data>
+  <data name="PowerDisplay_Warning_PowerState_Body" xml:space="preserve">
+    <value>Power state control uses DDC/CI to put the monitor into standby or wake it back up.
+
+• Some monitors enter standby but don't wake back up from software — you may need to press the physical power button or reseat the cable.
+• Other monitors don't restore the previous state correctly when toggled.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the power state control confirmation dialog.</comment>
+  </data>
+  <data name="PowerDisplay_Warning_InputSource_InfoBar" xml:space="preserve">
+    <value>You may lose software control until you switch back physically</value>
+    <comment>Title shown in the Warning InfoBar at the top of the input source control confirmation dialog.</comment>
+  </data>
+  <data name="PowerDisplay_Warning_InputSource_Body" xml:space="preserve">
+    <value>Input source control switches the monitor to a different input via DDC/CI.
+
+• If the selected input has no signal, the screen will go black until something is connected.
+• After switching, software control may be unavailable until you change inputs again using the monitor's physical buttons.
+• Not every monitor reliably exposes all of its inputs over DDC/CI.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the input source control confirmation dialog.</comment>
+  </data>
+  <data name="PowerDisplay_Warning_MaxCompatibility_InfoBar" xml:space="preserve">
+    <value>Probing every VCP feature can destabilize some monitors</value>
+    <comment>Title shown in the Warning InfoBar at the top of the maximum compatibility mode confirmation dialog.</comment>
+  </data>
+  <data name="PowerDisplay_Warning_MaxCompatibility_Body" xml:space="preserve">
+    <value>Maximum compatibility mode ignores your monitor's capabilities string and probes every supported VCP feature directly. Only enable this if a monitor is missing from Power Display.
+
+• The screen may briefly go black or lose signal during discovery.
+• The monitor may respond unpredictably — including unwanted changes to brightness, contrast, or input source.
+• The monitor may stop responding to DDC/CI altogether until it's power-cycled.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the maximum compatibility mode confirmation dialog.</comment>
+  </data>
+  <data name="PowerDisplay_Warning_EnableModule_InfoBar" xml:space="preserve">
+    <value>This may cause a system crash on a small number of monitors</value>
+    <comment>Title shown in the Warning InfoBar at the top of the Power Display enable confirmation dialog.</comment>
+  </data>
+  <data name="PowerDisplay_Warning_EnableModule_Body" xml:space="preserve">
+    <value>Power Display reads each connected monitor's DDC/CI capabilities at startup. On a small number of monitors with malformed capability strings, this read can trigger a Windows kernel bug that causes a system crash (BSOD). The underlying issue is in Windows, not in Power Display.
+
+• On affected monitors, the system may crash and restart.
+• If a crash is detected, Power Display will automatically disable itself the next time PowerToys launches, and you'll need to re-enable the module each time.</value>
+    <comment>Body paragraph (with bullets) shown beneath the InfoBar in the Power Display enable confirmation dialog.</comment>
+  </data>
+  <data name="PowerDisplay_Dialog_Enable" xml:space="preserve">
     <value>Enable</value>
   </data>
   <data name="PowerDisplay_Dialog_Cancel" xml:space="preserve">
@@ -5604,26 +5751,25 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_Monitor_VcpCodes_CopyText.Text" xml:space="preserve">
     <value>Copy</value>
   </data>
-  <data name="PowerDisplay_FlyoutOptions_GroupSettings.Header" xml:space="preserve">
-    <value>Flyout options</value>
+  <data name="PowerDisplay_ShowProfileSwitcher.Content" xml:space="preserve">
+    <value>Show profile switcher button</value>
   </data>
-  <data name="PowerDisplay_ShowProfileSwitcher.Header" xml:space="preserve">
-    <value>Show profile switcher</value>
-  </data>
-  <data name="PowerDisplay_ShowProfileSwitcher.Description" xml:space="preserve">
-    <value>Show or hide the profile switcher button in the Power Display flyout</value>
-  </data>
-  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Header" xml:space="preserve">
+  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Content" xml:space="preserve">
     <value>Show identify monitors button</value>
   </data>
-  <data name="PowerDisplay_ShowIdentifyMonitorsButton.Description" xml:space="preserve">
-    <value>Show or hide the identify monitors button in the Power Display flyout</value>
-  </data>
   <data name="PowerDisplay_CustomVcpMappings_GroupSettings.Header" xml:space="preserve">
-    <value>Custom VCP Name Mappings</value>
+    <value>Custom VCP name mappings</value>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Header" xml:space="preserve">
     <value>Custom name mappings</value>
+  </data>
+  <data name="PowerDisplayGroupHeader.Header" xml:space="preserve">
+    <value>Power Display</value>
+    <comment>{Locked="Power Display"}</comment>
+  </data>
+  <data name="PowerDisplayFlyoutHeader.Header" xml:space="preserve">
+    <value>Power Display flyout</value>
+    <comment>{Locked="Power Display"}</comment>
   </data>
   <data name="PowerDisplay_CustomVcpMappings.Description" xml:space="preserve">
     <value>Define custom display names for color temperature presets and input sources</value>
@@ -5631,23 +5777,29 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_AddCustomMappingButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Add custom mapping</value>
   </data>
+  <data name="PowerDisplay_EditCustomMapping_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="PowerDisplay_DeleteCustomMapping_Button.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Delete</value>
+  </data>
   <data name="PowerDisplay_AddCustomMapping_Text.Text" xml:space="preserve">
     <value>Add mapping</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_Title" xml:space="preserve">
-    <value>Custom VCP Name Mapping</value>
+    <value>Custom VCP name mapping</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_VcpCode.Header" xml:space="preserve">
-    <value>VCP Code</value>
+    <value>VCP code</value>
   </data>
   <data name="PowerDisplay_VcpCode_Name_0x14" xml:space="preserve">
-    <value>Color Temperature</value>
+    <value>Color temperature</value>
   </data>
   <data name="PowerDisplay_VcpCode_Name_0x60" xml:space="preserve">
-    <value>Input Source</value>
+    <value>Input source</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_CustomName.Header" xml:space="preserve">
-    <value>Custom Name</value>
+    <value>Custom name</value>
   </data>
   <data name="PowerDisplay_CustomMappingEditor_CustomName.PlaceholderText" xml:space="preserve">
     <value>Enter custom name</value>
@@ -5823,7 +5975,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_Description.Text" xml:space="preserve">
-    <value>Find files, launch apps, and do so much more with the most extensible quick launcher.</value>
+    <value>Find files, launch apps, and do so much more with the most extensible launcher and dock.</value>
   </data>
   <data name="CmdPal.ModuleTitle" xml:space="preserve">
     <value>Command Palette</value>
@@ -5834,7 +5986,7 @@ The break timer font matches the text font.</value>
     <comment>Command Palette is a product name, do not loc</comment>
   </data>
   <data name="CmdPal_ExtensibleDescription.Text" xml:space="preserve">
-    <value>Powerful extensions help you do more</value>
+    <value>Rich ecosystem of extensions help you do more</value>
   </data>
   <data name="CmdPal_ExtensibleHeader.Text" xml:space="preserve">
     <value>Extensible</value>
@@ -5921,5 +6073,94 @@ Text uses the current drawing color.</value>
   </data>
   <data name="ZoomIt_Type_DemoSample.Text" xml:space="preserve">
     <value>Sample</value>
+  </data>
+  <data name="GrabAndMove.ModuleDescription" xml:space="preserve">
+    <value>Move and resize windows by holding a modifier key and dragging. Left-click to move, right-click to resize.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove.ModuleTitle" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Shell_GrabAndMove.Content" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove_TouchpadInfoBar.Title" xml:space="preserve">
+    <value>Touchpad support</value>
+  </data>
+  <data name="GrabAndMove_TouchpadInfoBar.Message" xml:space="preserve">
+    <value>Grab And Move may not work reliably with some touchpads.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_GrabAndMove.Text" xml:space="preserve">
+    <value>Learn more about Grab And Move</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove.Title" xml:space="preserve">
+    <value>Grab And Move</value>
+    <comment>Product name. Do not localize this string</comment>
+  </data>
+  <data name="Oobe_GrabAndMove.Description" xml:space="preserve">
+    <value>Grab And Move lets you move and resize windows by holding a modifier key and dragging anywhere inside the window, without needing to target the title bar or window edges.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove_HowToUse.Text" xml:space="preserve">
+    <value>Hold the **activation modifier key** and **left-click drag** anywhere inside a window to move it. Hold the **activation modifier key** and **right-click drag** to resize it from the nearest edge or corner.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_GrabAndMove_TipsAndTricks.Text" xml:space="preserve">
+    <value>Grab And Move works on any window, including maximized windows — dragging a maximized window will automatically restore it first. You can customize the activation shortcut and excluded apps in the settings.</value>
+    <comment>"Grab And Move" is the name of the utility</comment>
+  </data>
+  <data name="GrabAndMove_BehaviorSettingsGroup.Header" xml:space="preserve">
+    <value>Behavior</value>
+  </data>
+  <data name="GrabAndMove_ModifierKey.Header" xml:space="preserve">
+    <value>Activation modifier key</value>
+    <comment>Drop-down to choose which modifier key (Alt or Win) activates Grab And Move drag and resize. "Activation" here means to enable/trigger the feature (활성화 in Korean), NOT product authentication/genuine certification (정품인증 in Korean).</comment>
+  </data>
+  <data name="GrabAndMove_ModifierKey_Alt.Content" xml:space="preserve">
+    <value>Alt</value>
+    <comment>The Alt key on the keyboard</comment>
+  </data>
+  <data name="GrabAndMove_ModifierKey_Win.Content" xml:space="preserve">
+    <value>Windows key</value>
+    <comment>The Windows key on the keyboard</comment>
+  </data>
+  <data name="GrabAndMove_ShouldAbsorbAlt.Content" xml:space="preserve">
+    <value>Prevent Alt from activating the window menu after a drag or resize operation</value>
+  </data>
+  <data name="GrabAndMove_DoNotActivateOnGameMode.Header" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>Game Mode is a Windows feature</comment>
+  </data>
+  <data name="GrabAndMove_ShowGeometry.Header" xml:space="preserve">
+    <value>Show window geometry</value>
+    <comment>When enabled, Grab And Move displays the window position (X, Y) and size (W, H) on the overlay during move and resize.</comment>
+  </data>
+  <data name="GrabAndMove_ShowGeometry.Description" xml:space="preserve">
+    <value>Display the window position and size on the overlay during drag and resize operations</value>
+  </data>
+  <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
+    <value>Resize windows with the modifier key + right-click</value>
+    <comment>Hold the modifier key and right-click, then drag from the nearest edge or corner to resize the window</comment>
+  </data>
+  <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
+    <value>Hold the modifier key and drag with the right mouse button from the nearest edge or corner to resize the window</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps.Description" xml:space="preserve">
+    <value>Excludes an application from being moved or resized by Grab And Move - add one application name per line</value>
+  </data>
+  <data name="GrabAndMove_ExcludeApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>Example: outlook</value>
+    <comment>{Locked="outlook"}</comment>
   </data>
 </root>

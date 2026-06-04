@@ -1,16 +1,20 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public record RecentCommandsManager : IRecentCommandsManager
 {
-    [JsonInclude]
-    internal ImmutableList<HistoryItem> History { get; init; } = ImmutableList<HistoryItem>.Empty;
+    private ImmutableList<HistoryItem>? _history = ImmutableList<HistoryItem>.Empty;
+
+    internal ImmutableList<HistoryItem> History
+    {
+        get => _history ?? ImmutableList<HistoryItem>.Empty;
+        init => _history = value;
+    }
 
     public RecentCommandsManager()
     {

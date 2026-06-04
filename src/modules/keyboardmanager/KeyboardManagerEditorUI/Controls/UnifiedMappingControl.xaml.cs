@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using KeyboardManagerEditorUI.Helpers;
+using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage;
@@ -77,6 +78,7 @@ namespace KeyboardManagerEditorUI.Controls
             OpenUrl,
             OpenApp,
             MouseClick,
+            Disable,
         }
 
         /// <summary>
@@ -129,6 +131,7 @@ namespace KeyboardManagerEditorUI.Controls
                         "OpenUrl" => ActionType.OpenUrl,
                         "OpenApp" => ActionType.OpenApp,
                         "MouseClick" => ActionType.MouseClick,
+                        "Disable" => ActionType.Disable,
                         _ => ActionType.KeyOrShortcut,
                     };
                 }
@@ -148,8 +151,17 @@ namespace KeyboardManagerEditorUI.Controls
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
 
-            _triggerKeys.CollectionChanged += (_, _) => RaiseValidationStateChanged();
-            _actionKeys.CollectionChanged += (_, _) => RaiseValidationStateChanged();
+            _triggerKeys.CollectionChanged += (_, _) =>
+            {
+                UpdatePlaceholderVisibility();
+                RaiseValidationStateChanged();
+            };
+
+            _actionKeys.CollectionChanged += (_, _) =>
+            {
+                UpdatePlaceholderVisibility();
+                RaiseValidationStateChanged();
+            };
 
             this.Unloaded += UnifiedMappingControl_Unloaded;
         }
@@ -209,6 +221,9 @@ namespace KeyboardManagerEditorUI.Controls
                     ActionKeyToggleBtn.IsChecked = false;
                 }
 
+                // Disable dropdowns during recording
+                SetDropDownsEnabled(TriggerKeys, false);
+
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
         }
@@ -219,6 +234,8 @@ namespace KeyboardManagerEditorUI.Controls
             {
                 CleanupKeyboardHook();
             }
+
+            SetDropDownsEnabled(TriggerKeys, true);
         }
 
         #endregion
@@ -262,6 +279,9 @@ namespace KeyboardManagerEditorUI.Controls
                     TriggerKeyToggleBtn.IsChecked = false;
                 }
 
+                // Disable dropdowns during recording
+                SetDropDownsEnabled(ActionKeys, false);
+
                 KeyboardHookHelper.Instance.ActivateHook(this);
             }
         }
@@ -271,6 +291,238 @@ namespace KeyboardManagerEditorUI.Controls
             if (_currentInputMode == KeyInputMode.RemappedKeys)
             {
                 CleanupKeyboardHook();
+            }
+
+            SetDropDownsEnabled(ActionKeys, true);
+        }
+
+        #endregion
+
+        #region Key Dropdown Handling
+
+        private void TriggerKeyDropDown_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                // Ensure we do not accumulate multiple subscriptions when Loaded fires repeatedly.
+                dropDown.KeyChanged -= TriggerKeyDropDown_KeyChanged;
+                dropDown.KeyChanged += TriggerKeyDropDown_KeyChanged;
+
+                // Use a named Unloaded handler so we can detach it and avoid accumulating handlers.
+                dropDown.Unloaded -= TriggerKeyDropDown_Unloaded;
+                dropDown.Unloaded += TriggerKeyDropDown_Unloaded;
+            }
+        }
+
+        private void TriggerKeyDropDown_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                dropDown.KeyChanged -= TriggerKeyDropDown_KeyChanged;
+                dropDown.Unloaded -= TriggerKeyDropDown_Unloaded;
+            }
+        }
+
+        private void ActionKeyDropDown_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                // Ensure we do not accumulate multiple subscriptions when Loaded fires repeatedly.
+                dropDown.KeyChanged -= ActionKeyDropDown_KeyChanged;
+                dropDown.KeyChanged += ActionKeyDropDown_KeyChanged;
+
+                // Use a named Unloaded handler so we can detach it and avoid accumulating handlers.
+                dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
+                dropDown.Unloaded += ActionKeyDropDown_Unloaded;
+            }
+        }
+
+        private void ActionKeyDropDown_Unloaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                dropDown.KeyChanged -= ActionKeyDropDown_KeyChanged;
+                dropDown.Unloaded -= ActionKeyDropDown_Unloaded;
+            }
+        }
+
+        private void TriggerKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                int index = GetDropDownIndex(TriggerKeys, dropDown);
+                if (index >= 0 && index < _triggerKeys.Count)
+                {
+                    // KeyCode 0 means "None" — treat as invalid selection and do not update.
+                    if (e.NewKeyCode == 0)
+                    {
+                        RevertKeySelection(_triggerKeys, index);
+                        return;
+                    }
+
+                    string? validationError = ValidateDropDownSelection(_triggerKeys, index, e.NewKeyCode, e.NewKeyName);
+                    if (validationError != null)
+                    {
+                        RevertKeySelection(_triggerKeys, index);
+                        ShowNotificationTip(validationError);
+                        return;
+                    }
+
+                    _triggerKeys[index] = e.NewKeyName;
+                    HandleAutoGrowShrink(_triggerKeys, index, e.NewKeyCode);
+                }
+            }
+        }
+
+        private void ActionKeyDropDown_KeyChanged(object? sender, KeyChangedEventArgs e)
+        {
+            if (sender is KeyDropDownButton dropDown)
+            {
+                int index = GetDropDownIndex(ActionKeys, dropDown);
+                if (index >= 0 && index < _actionKeys.Count)
+                {
+                    // KeyCode 0 means "None" — treat as invalid selection and do not update.
+                    if (e.NewKeyCode == 0)
+                    {
+                        RevertKeySelection(_actionKeys, index);
+                        return;
+                    }
+
+                    string? validationError = ValidateDropDownSelection(_actionKeys, index, e.NewKeyCode, e.NewKeyName);
+                    if (validationError != null)
+                    {
+                        RevertKeySelection(_actionKeys, index);
+                        ShowNotificationTip(validationError);
+                        return;
+                    }
+
+                    _actionKeys[index] = e.NewKeyName;
+                    HandleAutoGrowShrink(_actionKeys, index, e.NewKeyCode);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reverts a key selection by re-inserting the current value via the bound ObservableCollection,
+        /// which forces the binding to refresh without breaking the binding expression.
+        /// </summary>
+        private static void RevertKeySelection(ObservableCollection<string> keys, int index)
+        {
+            string current = keys[index];
+            keys.RemoveAt(index);
+            keys.Insert(index, current);
+        }
+
+        private static int GetDropDownIndex(ItemsControl itemsControl, KeyDropDownButton dropDown)
+        {
+            for (int i = 0; i < itemsControl.Items.Count; i++)
+            {
+                var container = itemsControl.ContainerFromIndex(i) as ContentPresenter;
+                if (container != null)
+                {
+                    // Walk the visual tree to find the KeyDropDownButton
+                    var child = FindChild<KeyDropDownButton>(container);
+                    if (child == dropDown)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        private static T? FindChild<T>(Microsoft.UI.Xaml.DependencyObject parent)
+            where T : Microsoft.UI.Xaml.DependencyObject
+        {
+            int childCount = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T result)
+                {
+                    return result;
+                }
+
+                var descendant = FindChild<T>(child);
+                if (descendant != null)
+                {
+                    return descendant;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Validates a key selection from a dropdown before it is applied.
+        /// Returns null if valid, or an error message string if invalid.
+        /// </summary>
+        private static string? ValidateDropDownSelection(ObservableCollection<string> keys, int changedIndex, int newKeyCode, string newKeyName)
+        {
+            const int maxShortcutSize = 5;
+
+            // KeyType: 0=Win, 1=Ctrl, 2=Alt, 3=Shift, 4=Action
+            int newKeyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
+            bool isModifier = newKeyType < 4;
+
+            // Count only non-empty (real) entries to determine effective shortcut size.
+            int nonEmptyCount = keys.Count(k => !string.IsNullOrEmpty(k));
+
+            // Rule: action key at position 0 in multi-key shortcut (shortcut must start with modifier)
+            if (!isModifier && changedIndex == 0 && nonEmptyCount > 1)
+            {
+                return ResourceHelper.GetString("Warning_ShortcutStartWithModifier");
+            }
+
+            // Rule: no repeated modifier types (skip empty placeholder slots)
+            if (isModifier)
+            {
+                for (int i = 0; i < keys.Count; i++)
+                {
+                    if (i == changedIndex || string.IsNullOrEmpty(keys[i]))
+                    {
+                        continue;
+                    }
+
+                    int existingKeyCode = KeyboardManagerInterop.GetKeyCodeFromName(keys[i]);
+                    int existingKeyType = KeyboardManagerInterop.GetKeyType(existingKeyCode);
+
+                    if (existingKeyType == newKeyType)
+                    {
+                        return ResourceHelper.GetString("Warning_RepeatedModifier");
+                    }
+                }
+            }
+
+            // Rule: modifier at last position when already at max size
+            if (isModifier && changedIndex == keys.Count - 1 && nonEmptyCount >= maxShortcutSize)
+            {
+                return ResourceHelper.GetString("Warning_MaxShortcutSize");
+            }
+
+            return null;
+        }
+
+        private void HandleAutoGrowShrink(ObservableCollection<string> keys, int changedIndex, int newKeyCode)
+        {
+            const int maxShortcutSize = 5;
+
+            int keyType = KeyboardManagerInterop.GetKeyType(newKeyCode);
+            bool isModifier = keyType < 4;
+
+            if (isModifier && changedIndex == keys.Count - 1 && keys.Count < maxShortcutSize)
+            {
+                // Modifier at last position — auto-grow: add placeholder for next key
+                keys.Add(string.Empty);
+            }
+            else if (!isModifier)
+            {
+                // Action key — trim any trailing entries after this one
+                while (keys.Count > changedIndex + 1)
+                {
+                    keys.RemoveAt(keys.Count - 1);
+                }
             }
         }
 
@@ -453,7 +705,7 @@ namespace KeyboardManagerEditorUI.Controls
 
         public void OnInputLimitReached()
         {
-            ShowNotificationTip("Shortcuts can only have up to 4 modifier keys");
+            ShowNotificationTip(ResourceHelper.GetString("Warning_InputLimitReached"));
         }
 
         #endregion
@@ -463,12 +715,12 @@ namespace KeyboardManagerEditorUI.Controls
         /// <summary>
         /// Gets the trigger keys.
         /// </summary>
-        public List<string> GetTriggerKeys() => _triggerKeys.ToList();
+        public List<string> GetTriggerKeys() => _triggerKeys.Where(k => !string.IsNullOrEmpty(k)).ToList();
 
         /// <summary>
         /// Gets the action keys (for Key/Shortcut action type).
         /// </summary>
-        public List<string> GetActionKeys() => _actionKeys.ToList();
+        public List<string> GetActionKeys() => _actionKeys.Where(k => !string.IsNullOrEmpty(k)).ToList();
 
         /// <summary>
         /// Gets the selected mouse trigger.
@@ -567,6 +819,7 @@ namespace KeyboardManagerEditorUI.Controls
                 ActionType.Text => !string.IsNullOrEmpty(TextContentBox?.Text),
                 ActionType.OpenUrl => !string.IsNullOrWhiteSpace(UrlPathInput?.Text),
                 ActionType.OpenApp => !string.IsNullOrWhiteSpace(ProgramPathInput?.Text),
+                ActionType.Disable => true,
                 _ => false,
             };
         }
@@ -612,18 +865,28 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void SetActionType(ActionType actionType)
         {
-            int index = actionType switch
+            if (ActionTypeComboBox == null)
             {
-                ActionType.Text => 1,
-                ActionType.OpenUrl => 2,
-                ActionType.OpenApp => 3,
-                ActionType.MouseClick => 4,
-                _ => 0,
+                return;
+            }
+
+            string tag = actionType switch
+            {
+                ActionType.Text => "Text",
+                ActionType.OpenUrl => "OpenUrl",
+                ActionType.OpenApp => "OpenApp",
+                ActionType.Disable => "Disable",
+                ActionType.MouseClick => "MouseClick",
+                _ => "KeyOrShortcut",
             };
 
-            if (ActionTypeComboBox != null)
+            foreach (var item in ActionTypeComboBox.Items)
             {
-                ActionTypeComboBox.SelectedIndex = index;
+                if (item is ComboBoxItem comboBoxItem && comboBoxItem.Tag is string itemTag && itemTag == tag)
+                {
+                    ActionTypeComboBox.SelectedItem = comboBoxItem;
+                    return;
+                }
             }
         }
 
@@ -748,9 +1011,42 @@ namespace KeyboardManagerEditorUI.Controls
             }
         }
 
+        private static void SetDropDownsEnabled(ItemsControl itemsControl, bool enabled)
+        {
+            for (int i = 0; i < itemsControl.Items.Count; i++)
+            {
+                var container = itemsControl.ContainerFromIndex(i) as ContentPresenter;
+                if (container != null)
+                {
+                    var dropDown = FindChild<KeyDropDownButton>(container);
+                    if (dropDown != null)
+                    {
+                        dropDown.IsEnabled = enabled;
+                    }
+                }
+            }
+        }
+
         private void CleanupKeyboardHook()
         {
             KeyboardHookHelper.Instance.CleanupHook();
+        }
+
+        private void UpdatePlaceholderVisibility()
+        {
+            if (TriggerKeyPlaceholder != null)
+            {
+                TriggerKeyPlaceholder.Visibility = _triggerKeys.Count == 0
+                    ? Microsoft.UI.Xaml.Visibility.Visible
+                    : Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+
+            if (ActionKeyPlaceholder != null)
+            {
+                ActionKeyPlaceholder.Visibility = _actionKeys.Count == 0
+                    ? Microsoft.UI.Xaml.Visibility.Visible
+                    : Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
         }
 
         private void RaiseValidationStateChanged()
@@ -910,7 +1206,7 @@ namespace KeyboardManagerEditorUI.Controls
         /// </summary>
         public void ShowNotificationTip(string message)
         {
-            ShowValidationMessage("Warning", message, InfoBarSeverity.Warning);
+            ShowValidationMessage(ResourceHelper.GetString("Warning_Title"), message, InfoBarSeverity.Warning);
         }
 
         /// <summary>
@@ -932,7 +1228,7 @@ namespace KeyboardManagerEditorUI.Controls
             }
             else
             {
-                ShowValidationError("Validation Error", "An unknown validation error occurred.");
+                ShowValidationError(ResourceHelper.GetString("Error_UnknownValidation_Title"), ResourceHelper.GetString("Error_UnknownValidation_Message"));
             }
         }
 

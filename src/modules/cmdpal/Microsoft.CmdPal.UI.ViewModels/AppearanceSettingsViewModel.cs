@@ -341,25 +341,25 @@ public sealed partial class AppearanceSettingsViewModel : ObservableObject, IDis
     }
 
     /// <summary>
-    /// Gets whether the backdrop opacity slider should be visible.
+    /// Gets a value indicating whether the backdrop opacity slider should be visible.
     /// </summary>
     public bool IsBackdropOpacityVisible =>
         BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsOpacity;
 
     /// <summary>
-    /// Gets whether the backdrop description (for styles without options) should be visible.
+    /// Gets a value indicating whether the backdrop description (for styles without options) should be visible.
     /// </summary>
     public bool IsMicaBackdropDescriptionVisible =>
         !BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsOpacity;
 
     /// <summary>
-    /// Gets whether background/colorization settings are available.
+    /// Gets a value indicating whether background/colorization settings are available.
     /// </summary>
     public bool IsBackgroundSettingsEnabled =>
         BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsColorization;
 
     /// <summary>
-    /// Gets whether the "not available" message should be shown (inverse of IsBackgroundSettingsEnabled).
+    /// Gets a value indicating whether the "not available" message should be shown (inverse of IsBackgroundSettingsEnabled).
     /// </summary>
     public bool IsBackgroundNotAvailableVisible =>
         !BackdropStyles.Get(_settingsService.Settings.BackdropStyle).SupportsColorization;

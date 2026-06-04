@@ -305,7 +305,7 @@ internal sealed partial class SampleListPage : ListPage
 
         public ListItemChangingCommandInTime()
         {
-            Subtitle = "I change my command every 10 seconds, and the command changes it's icon every 2 seconds";
+            Subtitle = "I change my command every 10 seconds, and the command changes its icon every 2 seconds";
             var timer = new Timer(OnTimerElapsed, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
             this.Command = _commands[0];
         }

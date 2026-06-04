@@ -260,7 +260,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.KeyboardManager.dll",
             L"PowerToys.Launcher.dll",
             L"WinUI3Apps/PowerToys.PowerRenameExt.dll",
-            L"PowerToys.ShortcutGuideModuleInterface.dll",
+            L"WinUI3Apps/PowerToys.ShortcutGuideModuleInterface.dll",
             L"PowerToys.ColorPicker.dll",
             L"PowerToys.AwakeModuleInterface.dll",
             L"PowerToys.FindMyMouse.dll",
@@ -286,7 +286,8 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.CmdPalModuleInterface.dll",
             L"PowerToys.ZoomItModuleInterface.dll",
             L"PowerToys.LightSwitchModuleInterface.dll",
-            // L"PowerToys.PowerDisplayModuleInterface.dll", // TEMPORARILY_DISABLED: PowerDisplay
+            L"PowerToys.PowerDisplayModuleInterface.dll",
+            L"PowerToys.GrabAndMoveModuleInterface.dll",
         };
 
         for (auto moduleSubdir : knownModules)

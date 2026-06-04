@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using Microsoft.CmdPal.Ext.Calc.Helper;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -10,6 +11,25 @@ namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 [TestClass]
 public class QueryHelperTests
 {
+    private CultureInfo originalCulture;
+    private CultureInfo originalUiCulture;
+
+    [TestInitialize]
+    public void Setup()
+    {
+        originalCulture = CultureInfo.CurrentCulture;
+        CultureInfo.CurrentCulture = new CultureInfo("en-us", false);
+        originalUiCulture = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
+    }
+
+    [TestCleanup]
+    public void CleanUp()
+    {
+        CultureInfo.CurrentCulture = originalCulture;
+        CultureInfo.CurrentUICulture = originalUiCulture;
+    }
+
     [DataTestMethod]
     [DataRow("2²", "4")]
     [DataRow("2³", "8")]

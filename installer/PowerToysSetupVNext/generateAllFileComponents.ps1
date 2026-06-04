@@ -28,7 +28,11 @@ Function Generate-FileList() {
 
     $fileExclusionList = @("*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe")
 
-    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri")
+    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml")
+
+    # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
+    # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
+    $fileExclusionList += @("mfc140.dll", "mfc140u.dll", "mfcm140.dll", "mfcm140u.dll")
 
     $dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 
@@ -85,9 +89,14 @@ Function Generate-FileComponents() {
             [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', 'fileList',
             Justification = 'variable is used in another scope')]
 
-            $fileList = $matches[2] -split ';'
+            $fileList = $matches[2] -split ';' | Where-Object { $_ -ne '' }
             return
         }
+    }
+
+    if ($null -eq $fileList -or $fileList.Count -eq 0) {
+        # No files to generate components for — leave placeholder intact
+        return
     }
 
     $componentId = "$($fileListName)_Component"
@@ -103,6 +112,8 @@ Function Generate-FileComponents() {
 
     foreach ($file in $fileList) {
         $fileTmp = $file -replace "-", "_"
+        $fileTmp = $fileTmp -replace "[^A-Za-z0-9_.]", "_"
+        if ($fileTmp -match "^[^A-Za-z_]") { $fileTmp = "_$fileTmp" }
         $componentDefs +=
     @"
               <File Id="$($fileListName)_File_$($fileTmp)" Source="`$(var.$($fileListName)Path)\$($file)" />`r`n
@@ -131,11 +142,90 @@ if ($platform -ceq "arm64") {
 }
 
 #BaseApplications
+# WORKAROUND: Exclude ImageResizer files that leak into the root output directory.
+# ImageResizerCLI (Exe, SelfContained) has a ProjectReference to ImageResizerUI (WinExe, SelfContained).
+# MSBuild copies the referenced WinExe's apphost (.exe, .deps.json, .runtimeconfig.json) to the root
+# output directory as a side effect. These files are incomplete (missing the managed .dll) and should
+# not be included in the installer. The complete ImageResizer files are in WinUI3Apps/ and are handled
+# by WinUI3ApplicationsFiles. TODO: Refactor ImageResizer to use a shared Library project instead.
 Generate-FileList -fileDepsJson "" -fileListName BaseApplicationsFiles -wxsFilePath $PSScriptRoot\BaseApplications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
+
+# Remove leaked ImageResizer artifacts from BaseApplications
+$baseAppWxsPath = "$PSScriptRoot\BaseApplications.wxs"
+$baseAppWxs = Get-Content $baseAppWxsPath -Raw
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.exe;?', ''
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.deps\.json;?', ''
+$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.runtimeconfig\.json;?', ''
+# Clean up trailing/double semicolons left after removal
+$baseAppWxs = $baseAppWxs -replace ';;+', ';'
+$baseAppWxs = $baseAppWxs -replace '=;', '='
+$baseAppWxs = $baseAppWxs -replace ';"', '"'
+Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
 Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
 
 #WinUI3Applications
 Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
+
+# Deduplicate: Remove files from WinUI3Apps that are identical to root (same name + same hash).
+# These will be re-created as plain file copies at install time by CreateWinAppSDKHardlinksCA.
+# (The CA's name is historical: it now uses fs::copy_file rather than CreateHardLinkW to avoid
+# DACL contamination across the shared inode -- see CustomAction.cpp for details.)
+$rootPath = "$PSScriptRoot..\..\..\$platform\Release"
+$winui3Path = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
+$winui3WxsPath = "$PSScriptRoot\WinUI3Applications.wxs"
+$winui3Wxs = Get-Content $winui3WxsPath -Raw
+$manifestPath = Join-Path $winui3Path "hardlinks.txt"
+
+if ($winui3Wxs -match "\<\?define WinUI3ApplicationsFiles=([^?]*)\?\>") {
+    $winui3FileList = $matches[1] -split ';' | Where-Object { $_ -ne '' }
+    $hardlinkFiles = @()
+
+    # Read the BaseApplications WXS file list so we only deduplicate files that the MSI
+    # is actually deploying to the install root. If a file was stripped from BaseApplications
+    # by an earlier step (e.g., the ImageResizer leaked-apphost workaround above), the
+    # install-time CA's source would be missing and both copies would disappear.
+    $baseAppsWxs = Get-Content $baseAppWxsPath -Raw
+    $baseAppsFileList = @()
+    if ($baseAppsWxs -match "\<\?define BaseApplicationsFiles=([^?]*)\?\>") {
+        $baseAppsFileList = $matches[1] -split ';' | Where-Object { $_ -ne '' }
+    }
+
+    foreach ($file in $winui3FileList) {
+        # Skip files that were intentionally not deployed to root by the build
+        if ($baseAppsFileList -notcontains $file) { continue }
+
+        $rootFile = Join-Path $rootPath $file
+        $winui3File = Join-Path $winui3Path $file
+        if ((Test-Path $rootFile) -and (Test-Path $winui3File)) {
+            $rootHash = (Get-FileHash $rootFile -Algorithm SHA256).Hash
+            $winui3Hash = (Get-FileHash $winui3File -Algorithm SHA256).Hash
+            if ($rootHash -eq $winui3Hash) {
+                $hardlinkFiles += $file
+            }
+        }
+    }
+
+    if ($hardlinkFiles.Count -gt 0) {
+        # Remove deduplicated files from WinUI3Apps file list
+        $remainingFiles = $winui3FileList | Where-Object { $_ -notin $hardlinkFiles }
+        if ($remainingFiles.Count -eq 0) {
+            # All files are duplicates — keep at least a dummy entry won't be emitted
+            # Generate-FileComponents handles empty defines by producing no <File> entries
+            $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=?>"
+        } else {
+            $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=$($remainingFiles -join ';')?>"
+        }
+        Set-Content -Path $winui3WxsPath -Value $winui3Wxs
+        Write-Host "Deduplicated $($hardlinkFiles.Count) files from WinUI3Apps (will be copied at install time)"
+    }
+
+    # Always write hardlinks.txt (may be empty — CA handles that gracefully)
+    # Write as UTF-8 without BOM so the install-time CA can read it via std::ifstream
+    # + MultiByteToWideChar(CP_UTF8) without dealing with PS-version-dependent default
+    # encodings or a leading BOM.
+    [System.IO.File]::WriteAllLines($manifestPath, [string[]]$hardlinkFiles, (New-Object System.Text.UTF8Encoding($false)))
+}
+
 Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
 #AdvancedPaste
@@ -173,7 +263,7 @@ Generate-FileList -fileDepsJson "" -fileListName ImageResizerAssetsFiles -wxsFil
 Generate-FileComponents -fileListName "ImageResizerAssetsFiles" -wxsFilePath $PSScriptRoot\ImageResizer.wxs
 
 #KeyboardManager
-Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsFiles -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\KeyboardManager"
+Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsFiles -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\KeyboardManager"
 Generate-FileList -fileDepsJson "" -fileListName KeyboardManagerAssetsWinUI3Files -wxsFilePath $PSScriptRoot\KeyboardManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\KeyboardManagerEditor"
 Generate-FileComponents -fileListName "KeyboardManagerAssetsFiles" -wxsFilePath $PSScriptRoot\KeyboardManager.wxs
 Generate-FileComponents -fileListName "KeyboardManagerAssetsWinUI3Files" -wxsFilePath $PSScriptRoot\KeyboardManager.wxs
@@ -193,6 +283,10 @@ Generate-FileComponents -fileListName "PeekAssetsFiles" -wxsFilePath $PSScriptRo
 #PowerRename
 Generate-FileList -fileDepsJson "" -fileListName PowerRenameAssetsFiles -wxsFilePath $PSScriptRoot\PowerRename.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerRename\"
 Generate-FileComponents -fileListName "PowerRenameAssetsFiles" -wxsFilePath $PSScriptRoot\PowerRename.wxs
+
+#PowerDisplay
+Generate-FileList -fileDepsJson "" -fileListName PowerDisplayAssetsFiles -wxsFilePath $PSScriptRoot\PowerDisplay.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\PowerDisplay\"
+Generate-FileComponents -fileListName "PowerDisplayAssetsFiles" -wxsFilePath $PSScriptRoot\PowerDisplay.wxs
 
 #RegistryPreview
 Generate-FileList -fileDepsJson "" -fileListName RegistryPreviewAssetsFiles -wxsFilePath $PSScriptRoot\RegistryPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\RegistryPreview\"
@@ -305,8 +399,24 @@ Generate-FileComponents -fileListName "ValueGeneratorImagesCmpFiles" -wxsFilePat
 ## Plugins
 
 #ShortcutGuide
-Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideSvgFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\ShortcutGuide\"
-Generate-FileComponents -fileListName "ShortcutGuideSvgFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
+# Ensure manifest yml files are in the build output (the Build target's CopyToOutputDirectory
+# may not run reliably under -graph mode in solution builds).
+$sgManifestsSrc = "$PSScriptRoot..\..\..\src\modules\ShortcutGuide\ShortcutGuide.Ui\Assets\ShortcutGuide\Manifests"
+$sgManifestsDst = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests"
+Write-Host "ShortcutGuide manifests: src=$sgManifestsSrc exists=$(Test-Path $sgManifestsSrc)"
+Write-Host "ShortcutGuide manifests: dst=$sgManifestsDst exists=$(Test-Path $sgManifestsDst)"
+if (Test-Path $sgManifestsSrc) {
+    New-Item -Path $sgManifestsDst -ItemType Directory -Force | Out-Null
+    Copy-Item "$sgManifestsSrc\*.yml" -Destination $sgManifestsDst -Force
+    $copied = (Get-ChildItem "$sgManifestsDst\*.yml" -ErrorAction SilentlyContinue).Count
+    Write-Host "ShortcutGuide manifests: copied $copied yml files to build output"
+} else {
+    Write-Host "WARNING: ShortcutGuide manifest source not found at $sgManifestsSrc"
+}
+Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideAssetsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\"
+Generate-FileComponents -fileListName "ShortcutGuideAssetsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
+Generate-FileList -fileDepsJson "" -fileListName ShortcutGuideManifestsFiles -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\ShortcutGuide\Manifests\"
+Generate-FileComponents -fileListName "ShortcutGuideManifestsFiles" -wxsFilePath $PSScriptRoot\ShortcutGuide.wxs
 
 #Settings
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\"
@@ -314,11 +424,13 @@ Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsModulesFiles -w
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\OOBE\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsFluentIconsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2IconsModelsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\Models\"
+Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsCmdPalFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\CmdPal\"
 Generate-FileComponents -fileListName "SettingsV2AssetsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2AssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsFluentIconsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2IconsModelsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
+Generate-FileComponents -fileListName "SettingsV2AssetsCmdPalFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
 #Workspaces
 Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Workspaces\"

@@ -182,7 +182,6 @@ internal static class Logger
             $"\r\n" +
             $"{sb}\r\n";
 
-        // obfuscate the current encryption key
         if (!string.IsNullOrEmpty(Encryption.MyKey))
         {
             log = log.Replace(Encryption.MyKey, Logger.GetChecksum(Encryption.MyKey));

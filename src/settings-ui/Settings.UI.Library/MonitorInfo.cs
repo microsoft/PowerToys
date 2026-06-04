@@ -8,10 +8,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class MonitorInfo : Observable
+    public class MonitorInfo : Observable, IRetainableMonitor
     {
         private const byte VcpCodeSelectColorPreset = 0x14;
 
@@ -29,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableRotation;
         private bool _enableColorTemperature;
         private bool _enablePowerState;
+        private System.DateTime? _lastSeenUtc;
         private string _capabilitiesRaw = string.Empty;
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
         private int _monitorNumber;
@@ -325,6 +327,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 if (_enablePowerState != value)
                 {
                     _enablePowerState = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the UTC timestamp of the last time PowerDisplay successfully
+        /// discovered this monitor. Used to age out entries for monitors that have
+        /// been disconnected for longer than <see cref="PowerDisplaySettings.MonitorEntryRetentionDays"/>.
+        /// Null on entries written by older PowerDisplay versions that pre-date this field.
+        /// </summary>
+        [JsonPropertyName("lastSeenUtc")]
+        public System.DateTime? LastSeenUtc
+        {
+            get => _lastSeenUtc;
+            set
+            {
+                if (_lastSeenUtc != value)
+                {
+                    _lastSeenUtc = value;
                     OnPropertyChanged();
                 }
             }
@@ -689,6 +711,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsInputSource = other.SupportsInputSource;
             SupportsPowerState = other.SupportsPowerState;
             MonitorNumber = other.MonitorNumber;
+            LastSeenUtc = other.LastSeenUtc;
         }
     }
 }

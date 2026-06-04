@@ -84,6 +84,7 @@
                         Name="Command"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Left"
+                        AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
                         Click="Command_Click"
                         Style="{StaticResource SubtleButtonStyle}"
                         UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
@@ -166,7 +167,12 @@
             <tkcontrols:MarkdownThemes
                 x:Key="DefaultMarkdownThemeConfig"
                 H3FontSize="12"
-                H3FontWeight="Normal" />
+                H3FontWeight="Normal"
+                InlineCodeBackground="{StaticResource ControlFillColorDefaultBrush}"
+                InlineCodeBorderBrush="{StaticResource ControlElevationBorderBrush}"
+                InlineCodeCornerRadius="2"
+                InlineCodeForeground="{StaticResource TextFillColorSecondaryBrush}"
+                InlineCodePadding="2,0,2,1" />
             <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
             <tkcontrols:MarkdownConfig
                 x:Key="DefaultMarkdownConfig"
