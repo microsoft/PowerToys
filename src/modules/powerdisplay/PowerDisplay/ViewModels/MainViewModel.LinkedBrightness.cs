@@ -283,16 +283,21 @@ public partial class MainViewModel
 
     private void ScheduleLinkedBrightnessCommit()
     {
-        if (_linkedBrightnessCommitTimer == null)
+        ScheduleCommit(ref _linkedBrightnessCommitTimer, () => BroadcastLinkedBrightnessAsync(LinkedBrightness));
+    }
+
+    private void ScheduleCommit(ref DispatcherQueueTimer? timer, Func<Task> commit)
+    {
+        if (timer == null)
         {
-            _linkedBrightnessCommitTimer = _dispatcherQueue.CreateTimer();
-            _linkedBrightnessCommitTimer.IsRepeating = false;
-            _linkedBrightnessCommitTimer.Interval = TimeSpan.FromMilliseconds(AppConstants.UI.SliderCommitDebounceMs);
-            _linkedBrightnessCommitTimer.Tick += (_, _) => _ = BroadcastLinkedBrightnessAsync(LinkedBrightness);
+            timer = _dispatcherQueue.CreateTimer();
+            timer.IsRepeating = false;
+            timer.Interval = TimeSpan.FromMilliseconds(AppConstants.UI.SliderCommitDebounceMs);
+            timer.Tick += (_, _) => _ = commit();
         }
 
-        _linkedBrightnessCommitTimer.Stop();
-        _linkedBrightnessCommitTimer.Start();
+        timer.Stop();
+        timer.Start();
     }
 
     /// <summary>

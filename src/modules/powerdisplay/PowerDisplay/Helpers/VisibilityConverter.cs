@@ -18,12 +18,5 @@ namespace PowerDisplay.Helpers
         /// <param name="value">The boolean value to convert.</param>
         /// <returns>Visibility.Visible if true, Visibility.Collapsed if false.</returns>
         public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
-
-        /// <summary>
-        /// Converts a boolean value to its inverse Visibility value.
-        /// </summary>
-        /// <param name="value">The boolean value to convert.</param>
-        /// <returns>Visibility.Collapsed if true, Visibility.Visible if false.</returns>
-        public static Visibility InverseBoolToVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
     }
 }

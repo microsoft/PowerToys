@@ -50,6 +50,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowBrightnessSlider))]
     public partial bool ShowBrightness { get; set; }
 
     [ObservableProperty]
@@ -332,6 +333,10 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public bool IsBrightnessSliderEnabled => IsInteractionEnabled && !IsBrightnessLinked;
 
+    public bool ShowBrightnessSlider => ShowBrightness && !IsBrightnessLinked;
+
+    public bool ShowIncludedInSyncIcon => !IsExcludedFromSync;
+
     /// <summary>
     /// Gets or sets a value indicating whether this monitor is excluded from linked brightness.
     /// Backed by the parent's shared exclusion set (keyed by <see cref="Id"/>), so the state
@@ -349,6 +354,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsBrightnessLinked));
                 OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+                OnPropertyChanged(nameof(ShowBrightnessSlider));
+                OnPropertyChanged(nameof(ShowIncludedInSyncIcon));
                 OnPropertyChanged(nameof(SyncToggleToolTip));
             }
         }
@@ -882,6 +889,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             // Link mode toggled — refresh the linked hint, exclude button, and slider state.
             OnPropertyChanged(nameof(IsBrightnessLinked));
             OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+            OnPropertyChanged(nameof(ShowBrightnessSlider));
             OnPropertyChanged(nameof(ShowExcludeButton));
         }
     }

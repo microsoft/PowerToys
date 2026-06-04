@@ -225,18 +225,11 @@
   <data name="IndividualDisplaysToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Individual displays</value>
   </data>
-  <data name="LinkedBrightnessHint.Text" xml:space="preserve">
-    <value>Brightness controlled by linked mode</value>
-    <comment>Hint shown under a monitor's disabled brightness slider when its brightness is driven by linked mode</comment>
-  </data>
   <data name="ExcludeFromSyncToggle.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Exclude from linked brightness</value>
   </data>
-  <data name="ExcludeFromSyncToggle.ToolTipService.ToolTip" xml:space="preserve">
-    <value>Exclude this display from linked brightness</value>
-  </data>
   <data name="ExcludeFromSyncToggleToolTip" xml:space="preserve">
-    <value>Exclude this display from linked brightness</value>
+    <value>Brightness is controlled by linked mode.</value>
   </data>
   <data name="IncludeInSyncToggleToolTip" xml:space="preserve">
     <value>Include this display in linked brightness</value>

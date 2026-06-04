@@ -138,6 +138,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowIndividualDisplays))]
     [NotifyPropertyChangedFor(nameof(ShowLinkLevelsToggle))]
+    [NotifyPropertyChangedFor(nameof(ShowLinkLevelsInactiveIcon))]
     public partial bool LinkedLevelsActive { get; set; }
 
     /// <summary>
@@ -213,6 +214,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowIndividualDisplays))]
+    [NotifyPropertyChangedFor(nameof(ShowIndividualDisplaysCollapsedIcon))]
     public partial bool IndividualDisplaysExpanded { get; set; }
 
     /// <summary>
@@ -221,6 +223,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// collapsible "Individual displays" section and only shown once the user expands it.
     /// </summary>
     public bool ShowIndividualDisplays => !LinkedLevelsActive || IndividualDisplaysExpanded;
+
+    public bool ShowIndividualDisplaysCollapsedIcon => !IndividualDisplaysExpanded;
 
     /// <summary>
     /// Gets a value indicating whether the link-levels toggle should be visible. Shown when at
@@ -232,6 +236,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// Recomputed by <see cref="UpdateMonitorList"/> and on <see cref="LinkedLevelsActive"/> change.
     /// </summary>
     public bool ShowLinkLevelsToggle => LinkedLevelsActive || Monitors.Count(m => m.SupportsBrightness) >= 2;
+
+    public bool ShowLinkLevelsInactiveIcon => !LinkedLevelsActive;
 
     /// <summary>
     /// Gets a value indicating whether to show the profile switcher button.
