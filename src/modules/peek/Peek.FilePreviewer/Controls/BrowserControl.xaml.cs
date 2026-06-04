@@ -199,6 +199,13 @@ namespace Peek.FilePreviewer.Controls
                 PreviewBrowser.CoreWebView2.Settings.IsScriptEnabled = IsDevFilePreview;
                 PreviewBrowser.CoreWebView2.Settings.IsWebMessageEnabled = false;
 
+                // Disable browser-level accelerator keys (Ctrl+W, Ctrl+T, F5, etc.) so that
+                // the WinUI WebView2 control forwards them to the XAML input system, allowing
+                // KeyboardAccelerators on the parent window (e.g., Ctrl+W to close) to work
+                // even when WebView2 content has focus. Monaco editor shortcuts (Ctrl+F, etc.)
+                // still function because they are handled by JavaScript, not the browser.
+                PreviewBrowser.CoreWebView2.Settings.AreBrowserAcceleratorKeysEnabled = false;
+
                 if (IsDevFilePreview)
                 {
                     PreviewBrowser.CoreWebView2.SetVirtualHostNameToFolderMapping(Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.VirtualHostName, Microsoft.PowerToys.FilePreviewCommon.MonacoHelper.MonacoDirectory, CoreWebView2HostResourceAccessKind.Allow);

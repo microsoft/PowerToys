@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using ManagedCommon;
@@ -20,6 +21,7 @@ using Peek.FilePreviewer.Previewers;
 using Peek.UI.Extensions;
 using Peek.UI.Helpers;
 using Peek.UI.Models;
+using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
 using WinUIEx;
@@ -41,6 +43,9 @@ namespace Peek.UI
         /// </summary>
         private bool _isDeleteInProgress;
         private bool _exitAfterClose;
+
+        private IntPtr _keyboardHookHandle;
+        private NativeMethods.LowLevelKeyboardProc? _keyboardHookProc;
 
         public MainWindow()
         {
@@ -209,6 +214,8 @@ namespace Peek.UI
             ViewModel.ScalingFactor = this.GetMonitorScale();
             this.Content.KeyUp += Content_KeyUp;
 
+            InstallKeyboardHook();
+
             bootTime.Stop();
 
             PowerToysTelemetry.Log.WriteEvent(new OpenedEvent() { FileExtension = ViewModel.CurrentItem?.Extension ?? string.Empty, HotKeyToVisibleTimeMs = bootTime.ElapsedMilliseconds });
@@ -216,6 +223,8 @@ namespace Peek.UI
 
         private void Uninitialize()
         {
+            UninstallKeyboardHook();
+
             this.Restore();
             this.Hide();
 
@@ -309,8 +318,108 @@ namespace Peek.UI
             return false;
         }
 
+        private void InstallKeyboardHook()
+        {
+            if (_keyboardHookHandle != IntPtr.Zero)
+            {
+                return;
+            }
+
+            _keyboardHookProc = LowLevelKeyboardHookCallback;
+            using var process = System.Diagnostics.Process.GetCurrentProcess();
+            using var module = process.MainModule;
+            var moduleHandle = NativeMethods.GetModuleHandle(module?.ModuleName);
+
+            _keyboardHookHandle = NativeMethods.SetWindowsHookEx(
+                NativeMethods.WH_KEYBOARD_LL,
+                _keyboardHookProc,
+                moduleHandle,
+                0);
+
+            if (_keyboardHookHandle == IntPtr.Zero)
+            {
+                Logger.LogError("Failed to install keyboard hook for Peek window.");
+            }
+        }
+
+        private void UninstallKeyboardHook()
+        {
+            if (_keyboardHookHandle != IntPtr.Zero)
+            {
+                NativeMethods.UnhookWindowsHookEx(_keyboardHookHandle);
+                _keyboardHookHandle = IntPtr.Zero;
+                _keyboardHookProc = null;
+            }
+        }
+
+        private IntPtr LowLevelKeyboardHookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            const int WM_KEYDOWN = 0x0100;
+            const uint VK_W = 0x57;
+            const uint VK_ESCAPE = 0x1B;
+            const uint VK_LEFT = 0x25;
+            const uint VK_UP = 0x26;
+            const uint VK_RIGHT = 0x27;
+            const uint VK_DOWN = 0x28;
+
+            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            {
+                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
+                bool ctrlPressed = (NativeMethods.GetAsyncKeyState(0x11) & 0x8000) != 0;
+                bool altPressed = (NativeMethods.GetAsyncKeyState(0x12) & 0x8000) != 0;
+
+                // Only handle when our window is in the foreground
+                var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
+                var ourWindow = new Windows.Win32.Foundation.HWND(this.GetWindowHandle());
+
+                if (foreground == ourWindow)
+                {
+                    bool handled = false;
+
+                    if (ctrlPressed && !altPressed && hookStruct.vkCode == VK_W)
+                    {
+                        DispatcherQueue.TryEnqueue(Uninitialize);
+                        handled = true;
+                    }
+                    else if (!ctrlPressed && !altPressed && hookStruct.vkCode == VK_ESCAPE)
+                    {
+                        DispatcherQueue.TryEnqueue(Uninitialize);
+                        handled = true;
+                    }
+                    else if (!ctrlPressed && !altPressed && hookStruct.vkCode == VK_LEFT)
+                    {
+                        DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
+                        handled = true;
+                    }
+                    else if (!ctrlPressed && !altPressed && hookStruct.vkCode == VK_RIGHT)
+                    {
+                        DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
+                        handled = true;
+                    }
+                    else if (!ctrlPressed && !altPressed && hookStruct.vkCode == VK_UP)
+                    {
+                        DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
+                        handled = true;
+                    }
+                    else if (!ctrlPressed && !altPressed && hookStruct.vkCode == VK_DOWN)
+                    {
+                        DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
+                        handled = true;
+                    }
+
+                    if (handled)
+                    {
+                        return (IntPtr)1;
+                    }
+                }
+            }
+
+            return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
+        }
+
         public void Dispose()
         {
+            UninstallKeyboardHook();
             themeListener?.Dispose();
         }
 
