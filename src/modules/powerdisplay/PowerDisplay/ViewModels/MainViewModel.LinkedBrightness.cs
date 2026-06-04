@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Configuration;
 
@@ -48,9 +47,8 @@ public partial class MainViewModel
 
     /// <summary>
     /// Returns true when the monitor is currently driven by linked brightness — it supports
-    /// brightness and the user has not excluded it. The live-VM counterpart of
-    /// <see cref="LinkedBrightnessPlanner.IsLinkedTarget"/> (same rule), used on the broadcast and
-    /// optimistic-update hot paths to avoid allocating planner structs per slider tick.
+    /// brightness and the user has not excluded it. This mirrors the planner's linked-target rule
+    /// for live ViewModels on the broadcast and optimistic-update hot paths.
     /// </summary>
     private bool IsLinkedTarget(MonitorViewModel monitor) =>
         monitor.SupportsBrightness && !_excludedMonitorIds.Contains(monitor.Id);
@@ -59,22 +57,15 @@ public partial class MainViewModel
     /// Snapshot the current monitors as <see cref="LinkedBrightnessPlanner.LinkTarget"/> values for
     /// the pure planner (seed / availability decisions).
     /// </summary>
-    private List<LinkedBrightnessPlanner.LinkTarget> BuildLinkTargets()
-    {
-        // Switching the Windows primary display does not necessarily trigger monitor rediscovery.
-        // Query it again when planning so the next linked-mode seed follows the current primary.
-        var primaryGdiDeviceName = DisplayConfigInventory.GetPrimaryGdiDeviceName();
-
-        return Monitors.Select(m => new LinkedBrightnessPlanner.LinkTarget(
+    private List<LinkedBrightnessPlanner.LinkTarget> BuildLinkTargets() =>
+        Monitors.Select(m => new LinkedBrightnessPlanner.LinkTarget(
             m.Id,
             m.MonitorNumber,
             m.Brightness,
             m.SupportsBrightness,
             _excludedMonitorIds.Contains(m.Id),
-            LinkedBrightnessPlanner.ResolveIsPrimary(m.GdiDeviceName, primaryGdiDeviceName),
             m.HasValidBrightness))
             .ToList();
-    }
 
     /// <summary>
     /// Gets whether the given monitor Id is excluded from linked brightness. Queried by
@@ -201,8 +192,8 @@ public partial class MainViewModel
 
     /// <summary>
     /// Seeds <see cref="LinkedBrightness"/> with the initial value used to position the master
-    /// slider when link mode turns on, via <see cref="LinkedBrightnessPlanner.Seed"/> (Windows
-    /// primary display, then deterministic fallback). When no linked target has a readable
+    /// slider when link mode turns on, via <see cref="LinkedBrightnessPlanner.Seed"/> (lowest
+    /// DISPLAY number, then deterministic fallback). When no linked target has a readable
     /// brightness yet — link was persisted ON and this ran during construction before discovery,
     /// every monitor is excluded, or hardware reads failed — the seed is deferred
     /// (<see cref="_pendingInitialSeed"/>) and applied as soon as a readable target appears, so a

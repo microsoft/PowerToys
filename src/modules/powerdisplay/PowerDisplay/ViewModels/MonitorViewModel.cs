@@ -261,11 +261,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public int MonitorNumber => _monitor.MonitorNumber;
 
     /// <summary>
-    /// Gets the GDI device name for the display source (for example, "\\.\DISPLAY1").
-    /// </summary>
-    public string GdiDeviceName => _monitor.GdiDeviceName;
-
-    /// <summary>
     /// Gets a value indicating whether brightness was successfully read from or written to hardware.
     /// </summary>
     public bool HasValidBrightness => _monitor.HasValidBrightness;

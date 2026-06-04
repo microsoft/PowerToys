@@ -58,11 +58,6 @@ namespace PowerDisplay.Common.Drivers
         public const uint QdcOnlyActivePaths = 0x00000002;
 
         /// <summary>
-        /// GetMonitorInfo: this is the primary display monitor.
-        /// </summary>
-        public const uint MonitorInfoFlagPrimary = 0x00000001;
-
-        /// <summary>
         /// Get source name (GDI device name like "\\.\DISPLAY1")
         /// </summary>
         public const uint DisplayconfigDeviceInfoGetSourceName = 1;

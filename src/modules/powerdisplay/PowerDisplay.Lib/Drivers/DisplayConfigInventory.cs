@@ -99,35 +99,6 @@ namespace PowerDisplay.Common.Drivers
         }
 
         /// <summary>
-        /// Gets the GDI device name for the Windows primary display source.
-        /// </summary>
-        public static unsafe string? GetPrimaryGdiDeviceName()
-        {
-            string? primaryGdiDeviceName = null;
-
-            bool EnumProc(IntPtr hMonitor, IntPtr hdcMonitor, IntPtr lprcMonitor, IntPtr dwData)
-            {
-                var monitorInfo = new MonitorInfoEx { CbSize = (uint)sizeof(MonitorInfoEx) };
-                if (GetMonitorInfo(hMonitor, &monitorInfo) &&
-                    (monitorInfo.DwFlags & MonitorInfoFlagPrimary) != 0)
-                {
-                    primaryGdiDeviceName = monitorInfo.GetDeviceName();
-                    return false;
-                }
-
-                return true;
-            }
-
-            if (!EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, EnumProc, IntPtr.Zero) &&
-                primaryGdiDeviceName == null)
-            {
-                Logger.LogWarning("DisplayConfigInventory: EnumDisplayMonitors failed while locating the primary display");
-            }
-
-            return primaryGdiDeviceName;
-        }
-
-        /// <summary>
         /// Gets GDI device name for a source (e.g., "\\.\DISPLAY1").
         /// </summary>
         private static unsafe string? GetSourceGdiDeviceName(LUID adapterId, uint sourceId)
