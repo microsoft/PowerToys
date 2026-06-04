@@ -270,6 +270,11 @@ namespace PowerDisplay
                 e.PropertyName == nameof(_viewModel.IndividualDisplaysExpanded) ||
                 e.PropertyName == nameof(_viewModel.ShowIndividualDisplays) ||
                 e.PropertyName == nameof(_viewModel.ShowLinkLevelsToggle) ||
+                e.PropertyName == nameof(_viewModel.LinkedMonitorsCount) ||
+                e.PropertyName == nameof(_viewModel.LinkedMonitorsCountText) ||
+                e.PropertyName == nameof(_viewModel.ExcludedMonitorsCount) ||
+                e.PropertyName == nameof(_viewModel.ExcludedMonitorsCountText) ||
+                e.PropertyName == nameof(_viewModel.HasExcludedMonitors) ||
                 e.PropertyName == nameof(_viewModel.IsLinkedBrightnessAvailable))
             {
                 QueueWindowSizeAdjustment();
@@ -282,6 +287,7 @@ namespace PowerDisplay
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
                 AdjustWindowSizeToContent();
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
             });
         }
 
