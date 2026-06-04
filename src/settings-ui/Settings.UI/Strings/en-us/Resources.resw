@@ -5265,6 +5265,15 @@ The break timer font matches the text font.</value>
   <data name="LightSwitch_PowerDisplayDisabledWarningBar.Message" xml:space="preserve">
     <value />
   </data>
+  <data name="PowerDisplay_Monitor_Diagnostics.Header" xml:space="preserve">
+    <value>Monitor diagnostics</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Diagnostics.Description" xml:space="preserve">
+    <value>Copy monitor details, detected capabilities, and VCP codes to the clipboard for troubleshooting.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Diagnostics_CopyText.Text" xml:space="preserve">
+    <value>Copy diagnostics</value>
+  </data>
   <data name="LightSwitch_ApplyMonitorSettingsExpander.Header" xml:space="preserve">
     <value>Apply monitor settings to</value>
   </data>
