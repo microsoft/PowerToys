@@ -275,15 +275,7 @@ void Highlighter::StartDrawingPointFading(MouseButton button)
     auto animation = m_compositor.CreateColorKeyFrameAnimation();
     animation.InsertKeyFrame(1, winrt::Windows::UI::ColorHelper::FromArgb(0, brushColor.R, brushColor.G, brushColor.B));
     using timeSpan = std::chrono::duration<int, std::ratio<1, 1000>>;
-    // HACK: If user sets these durations to 0, the fade won't work. Setting them to 1ms instead to avoid this.
-    if (m_fadeDuration_ms == 0)
-    {
-        m_fadeDuration_ms = 1;
-    }
-    if (m_fadeDelay_ms == 0)
-    {
-        m_fadeDelay_ms = 1;
-    }
+
     std::chrono::milliseconds duration(m_fadeDuration_ms);
     std::chrono::milliseconds delay(m_fadeDelay_ms);
     animation.Duration(timeSpan(duration));
@@ -468,22 +460,17 @@ void Highlighter::SwitchActivationMode()
 
 void Highlighter::ApplySettings(MouseHighlighterSettings settings)
 {
-    m_radius = static_cast<float>(settings.radius);
-    m_fadeDelay_ms = settings.fadeDelayMs;
-    m_fadeDuration_ms = settings.fadeDurationMs;
-    m_leftClickColor = settings.leftButtonColor;
-    m_rightClickColor = settings.rightButtonColor;
-    m_alwaysColor = settings.alwaysColor;
-    m_leftPointerEnabled = settings.leftButtonColor.A != 0;
-    m_rightPointerEnabled = settings.rightButtonColor.A != 0;
-    m_alwaysPointerEnabled = settings.alwaysColor.A != 0;
-    m_spotlightMode = settings.spotlightMode && settings.alwaysColor.A != 0;
-
-    if (m_spotlightMode)
-    {
-        m_leftPointerEnabled = false;
-        m_rightPointerEnabled = false;
-    }
+    const auto runtimeSettings = NormalizeMouseHighlighterSettings(settings);
+    m_radius = runtimeSettings.radius;
+    m_fadeDelay_ms = runtimeSettings.fadeDelayMs;
+    m_fadeDuration_ms = runtimeSettings.fadeDurationMs;
+    m_leftClickColor = runtimeSettings.leftButtonColor;
+    m_rightClickColor = runtimeSettings.rightButtonColor;
+    m_alwaysColor = runtimeSettings.alwaysColor;
+    m_leftPointerEnabled = runtimeSettings.leftPointerEnabled;
+    m_rightPointerEnabled = runtimeSettings.rightPointerEnabled;
+    m_alwaysPointerEnabled = runtimeSettings.alwaysPointerEnabled;
+    m_spotlightMode = runtimeSettings.spotlightMode;
 
     // Keep spotlight overlay color updated
     if (m_spotlightSource)
