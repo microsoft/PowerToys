@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "ExcludedApps.h"
 #include "KeyboardListener.h"
 #include "KeyboardListener.g.cpp"
 
@@ -98,19 +99,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
     void KeyboardListener::UpdateExcludedApps(std::wstring_view excludedAppsView)
     {
-        std::vector<std::wstring> excludedApps;
-        auto excludedUppercase = std::wstring(excludedAppsView);
-        CharUpperBuffW(excludedUppercase.data(), static_cast<DWORD>(excludedUppercase.length()));
-        std::wstring_view view(excludedUppercase);
-        view = left_trim<wchar_t>(trim<wchar_t>(view));
-
-        while (!view.empty())
-        {
-            auto pos = (std::min)(view.find_first_of(L"\r\n"), view.length());
-            excludedApps.emplace_back(view.substr(0, pos));
-            view.remove_prefix(pos);
-            view = left_trim<wchar_t>(trim<wchar_t>(view));
-        }
+        auto excludedApps = ParseExcludedApps(excludedAppsView);
         {
             std::lock_guard<std::mutex> lock(m_mutex_excluded_apps);
             m_settings.excludedApps = std::move(excludedApps);

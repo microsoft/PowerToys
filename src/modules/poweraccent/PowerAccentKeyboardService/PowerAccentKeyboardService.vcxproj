@@ -79,6 +79,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ExcludedApps.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="KeyboardListener.h">
       <DependentUpon>KeyboardListener.idl</DependentUpon>

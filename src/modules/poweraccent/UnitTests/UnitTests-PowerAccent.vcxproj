@@ -41,6 +41,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="..\PowerAccentKeyboardService\ExcludedApps.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

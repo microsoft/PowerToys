@@ -5,19 +5,25 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 
-#include <common/utils/string_utils.h>
+#include "../PowerAccentKeyboardService/ExcludedApps.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace PowerAccentUnitTests
 {
-    TEST_CLASS(StringUtilsTrimTests)
+    TEST_CLASS(ExcludedAppsTests)
     {
     public:
-        TEST_METHOD(Trim_RemovesLeadingAndTrailingWhitespace)
+        TEST_METHOD(ParseExcludedApps_NormalizesMultilineSettingsForActivationSuppression)
         {
-            const auto result = trim<wchar_t>(std::wstring_view(L"  hello  "));
-            Assert::IsTrue(result == L"hello");
+            using namespace winrt::PowerToys::PowerAccentKeyboardService::implementation;
+
+            const auto result = ParseExcludedApps(L" notepad.exe\r\n\nChrome.exe \n  C:\\Tools\\MixedCase.exe ");
+
+            Assert::IsTrue(result.size() == 3);
+            Assert::AreEqual(L"NOTEPAD.EXE", result[0].c_str());
+            Assert::AreEqual(L"CHROME.EXE", result[1].c_str());
+            Assert::AreEqual(L"C:\\TOOLS\\MIXEDCASE.EXE", result[2].c_str());
         }
     };
 }
