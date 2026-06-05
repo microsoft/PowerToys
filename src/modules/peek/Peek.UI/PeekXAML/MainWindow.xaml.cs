@@ -338,7 +338,8 @@ namespace Peek.UI
 
             if (_keyboardHookHandle == IntPtr.Zero)
             {
-                Logger.LogError("Failed to install keyboard hook for Peek window.");
+                var error = Marshal.GetLastWin32Error();
+                Logger.LogError($"Failed to install keyboard hook for Peek window. Win32 error: {error}");
             }
         }
 
@@ -346,9 +347,16 @@ namespace Peek.UI
         {
             if (_keyboardHookHandle != IntPtr.Zero)
             {
-                NativeMethods.UnhookWindowsHookEx(_keyboardHookHandle);
-                _keyboardHookHandle = IntPtr.Zero;
-                _keyboardHookProc = null;
+                if (NativeMethods.UnhookWindowsHookEx(_keyboardHookHandle))
+                {
+                    _keyboardHookHandle = IntPtr.Zero;
+                    _keyboardHookProc = null;
+                }
+                else
+                {
+                    var error = Marshal.GetLastWin32Error();
+                    Logger.LogError($"Failed to uninstall keyboard hook for Peek window. Win32 error: {error}");
+                }
             }
         }
 
@@ -414,7 +422,7 @@ namespace Peek.UI
                 }
             }
 
-            return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
+            return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
         }
 
         public void Dispose()
