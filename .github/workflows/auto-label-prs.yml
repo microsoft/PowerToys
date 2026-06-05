@@ -122,7 +122,7 @@ jobs:
               'Product-Workspaces',
               'Product-ZoomIt',
               'Area-Setup/Install',
-              'Area-Localization',
+              'Idea-New PowerToy',
             ];
 
             // ── Helpers ──────────────────────────────────────────────────────
@@ -130,23 +130,53 @@ jobs:
 
             // Sort mapping by descending prefix length so longest match wins.
             const SORTED_MAP = [...PATH_LABEL_MAP].sort((a, b) => b[0].length - a[0].length);
+            const MODULE_DIR_RE = /^src\/modules\/([^/]+)\//i;
 
             function labelsFromPaths(filePaths) {
               const labels = new Set();
+              const unmatchedModules = new Set();
               for (const raw of filePaths) {
                 const path = String(raw).replace(/\\/g, '/');
                 const lower = path.toLowerCase();
+                let matched = false;
                 for (const [prefix, label] of SORTED_MAP) {
                   if (lower.startsWith(prefix.toLowerCase())) {
                     labels.add(label);
+                    matched = true;
                     break;
                   }
                 }
-                // File-extension rule: any .resw under any path → Area-Localization.
-                if (lower.endsWith('.resw')) {
-                  labels.add('Area-Localization');
+                // Detect "new module" PRs: files under src/modules/<X>/ where
+                // <X> isn't in PATH_LABEL_MAP yet → candidate for Idea-New PowerToy.
+                if (!matched) {
+                  const m = path.match(MODULE_DIR_RE);
+                  if (m) unmatchedModules.add(m[1]);
                 }
               }
+
+              // Settings-only rule: keep Product-Settings ONLY when it's the
+              // sole path-mapping result (i.e. all changed files live under
+              // src/settings-ui/). Otherwise it's just a side effect of a
+              // module PR that also touches Settings UI — drop it.
+              if (labels.has('Product-Settings') && labels.size > 1) {
+                labels.delete('Product-Settings');
+              }
+
+              // New-module rule: if files live under src/modules/<X>/ but <X>
+              // has no entry in PATH_LABEL_MAP, and no other real Product-*
+              // label was matched, flag the PR with Idea-New PowerToy so
+              // maintainers know to add the new label + map entry.
+              // (Product-Settings is excluded from the "real product" check
+              // because every new module touches Settings UI as a side effect.)
+              const hasRealProductLabel = [...labels].some(
+                l => l.startsWith('Product-') && l !== 'Product-Settings'
+              );
+              if (unmatchedModules.size > 0 && !hasRealProductLabel) {
+                labels.add('Idea-New PowerToy');
+                // A new-module PR is not "settings-only"; drop the side effect.
+                labels.delete('Product-Settings');
+              }
+
               return [...labels].filter(l => VALID_SET.has(l));
             }
 
@@ -263,8 +293,25 @@ jobs:
               console.log(`PR #${prNumber}: ${files.length} changed file(s).`);
 
               // Path-mapping pass (deterministic).
-              const pathLabels = labelsFromPaths(files);
+              let pathLabels = labelsFromPaths(files);
               console.log(`Path mapping suggested: ${JSON.stringify(pathLabels)}`);
+
+              // Final Settings suppression: even if the PR is technically
+              // settings-only by file scope, drop Product-Settings if the PR
+              // has already been triaged with another Product-* label or
+              // Idea-New PowerToy. This catches PRs that fix a string resource
+              // or ViewModel for Product X (which live under src/settings-ui/)
+              // — the existing label already captures the truth.
+              if (pathLabels.includes('Product-Settings')) {
+                const existingNonSettingsSignal = [...existingLabels].some(
+                  l => (l.startsWith('Product-') && l !== 'Product-Settings')
+                    || l === 'Idea-New PowerToy'
+                );
+                if (existingNonSettingsSignal) {
+                  pathLabels = pathLabels.filter(l => l !== 'Product-Settings');
+                  console.log(`Dropped Product-Settings (PR already triaged as non-Settings).`);
+                }
+              }
 
               // AI fallback fires only if path mapping returned nothing.
               let aiLabels = [];
