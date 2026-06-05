@@ -7,6 +7,7 @@
 #include "pch.h"
 
 #include "AltWindowCycle.h"
+#include "AltWindowCycleLogic.h"
 
 #include <uxtheme.h>
 #include <shellscalingapi.h>
@@ -257,7 +258,6 @@ private:
 
     static const UINT_PTR TIMER_ID = 1;
     static const UINT TIMER_MS = 25;
-    static const int MAX_COLS = 6;
 
     static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -278,8 +278,7 @@ private:
     RECT PreviewRect(const RECT& tile) const;
     RECT HeaderRect(const RECT& tile) const;
 
-    static constexpr int Wrap(int i, int n) { return ((i % n) + n) % n; }
-    int Scaled(int v) const { return static_cast<int>(v * scale + 0.5); }
+    int Scaled(int v) const { return AltWindowCycleLogic::ScaledValue(scale, v); }
 
     HINSTANCE hinst = nullptr;
     HWND backdropHost = nullptr;
@@ -295,6 +294,7 @@ private:
     int selected = 0;
 
     double scale = 1.0;
+    AltWindowCycleLogic::OverlayLayout overlayLayout;
     int cols = 1, rows = 1;
     int pad = 0, gap = 0, tileW = 0, tileH = 0, previewH = 0, inner = 0, radius = 0;
     int cardTrimBottom = 0;
@@ -418,7 +418,11 @@ void Switcher::OnHotkey(bool forward)
             idx = 0;
 
         anchorWindow = fg;
-        selected = Wrap(forward ? idx + 1 : idx - 1, static_cast<int>(windows.size()));
+        const auto firstHotkey = AltWindowCycleLogic::BeginCycle(idx, static_cast<int>(windows.size()), forward);
+        if (firstHotkey.action != AltWindowCycleLogic::FirstHotkeyAction::ShowOverlay)
+            return;
+
+        selected = firstHotkey.selected;
         ShowOverlayWindow();
         state = St::Visible;
         SetTimer(overlay, TIMER_ID, TIMER_MS, nullptr);
@@ -426,7 +430,7 @@ void Switcher::OnHotkey(bool forward)
     }
     else
     {
-        selected = Wrap(forward ? selected + 1 : selected - 1, static_cast<int>(windows.size()));
+        selected = AltWindowCycleLogic::WrapIndex(forward ? selected + 1 : selected - 1, static_cast<int>(windows.size()));
         if (state == St::Visible)
             SetSelection(selected);
     }
@@ -637,84 +641,39 @@ void Switcher::SetSelection(int index)
 
 void Switcher::ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int& panelH)
 {
-    pad = Scaled(32);
-    gap = Scaled(26);
-    tileW = Scaled(300);
-    headerH = Scaled(44);
-    previewH = Scaled(158);
-    // Public DWM thumbnails are rectangular and cannot be alpha-clipped, so the
-    // live preview is an intentional inset viewport inside rounded card chrome.
-    inner = Scaled(8);
-    radius = Scaled(8);
-    cardTrimBottom = 0;
-    iconSize = Scaled(24);
-    tileH = headerH + inner + previewH + inner;
+    overlayLayout = AltWindowCycleLogic::ComputeOverlayLayout(work, static_cast<int>(windows.size()), scale);
+    pad = overlayLayout.pad;
+    gap = overlayLayout.gap;
+    tileW = overlayLayout.tileW;
+    headerH = overlayLayout.headerH;
+    previewH = overlayLayout.previewH;
+    inner = overlayLayout.inner;
+    radius = overlayLayout.radius;
+    cardTrimBottom = overlayLayout.cardTrimBottom;
+    iconSize = overlayLayout.iconSize;
+    tileH = overlayLayout.tileH;
+    cols = overlayLayout.cols;
+    rows = overlayLayout.rows;
 
-    int workW = work.right - work.left;
-    int workH = work.bottom - work.top;
-    int n = static_cast<int>(windows.size());
-
-    int maxCols = (std::max)(1, (workW - 2 * pad + gap) / (tileW + gap));
-    cols = (std::min)(n, (std::min)(MAX_COLS, maxCols));
-    if (cols < 1) cols = 1;
-    rows = (n + cols - 1) / cols;
-
-    panelW = 2 * pad + cols * tileW + (cols - 1) * gap;
-    panelH = 2 * pad + rows * tileH + (rows - 1) * gap;
-
-    x = work.left + (workW - panelW) / 2;
-    y = work.top + (workH - panelH) / 2;
+    x = overlayLayout.panelX;
+    y = overlayLayout.panelY;
+    panelW = overlayLayout.panelW;
+    panelH = overlayLayout.panelH;
 }
 
 RECT Switcher::TileRect(int index) const
 {
-    int col = index % cols;
-    int row = index / cols;
-    int left = pad + col * (tileW + gap);
-    int top = pad + row * (tileH + gap);
-    RECT r = { left, top, left + tileW, top + tileH - cardTrimBottom };
-    return r;
+    return AltWindowCycleLogic::TileRect(overlayLayout, index);
 }
 
 RECT Switcher::PreviewRect(const RECT& tile) const
 {
-    RECT r = { tile.left + inner,
-               tile.top + headerH + inner,
-               tile.right - inner,
-               tile.bottom - inner };
-    return r;
+    return AltWindowCycleLogic::PreviewRect(overlayLayout, tile);
 }
 
 RECT Switcher::HeaderRect(const RECT& tile) const
 {
-    int m = Scaled(12);
-    RECT r = { tile.left + m, tile.top, tile.right - m, tile.top + headerH };
-    return r;
-}
-
-static RECT CoverSource(const RECT& dest, const RECT& avail)
-{
-    int aw = avail.right - avail.left;
-    int ah = avail.bottom - avail.top;
-    int dw = dest.right - dest.left;
-    int dh = dest.bottom - dest.top;
-    if (aw <= 0 || ah <= 0 || dw <= 0 || dh <= 0)
-        return avail;
-
-    double destA = static_cast<double>(dw) / dh;
-    double srcA = static_cast<double>(aw) / ah;
-    if (srcA > destA)
-    {
-        int cw = (std::max)(1, static_cast<int>(ah * destA + 0.5));
-        int x = avail.left + (aw - cw) / 2;
-        return { x, avail.top, x + cw, avail.bottom };
-    }
-    else
-    {
-        int ch = (std::max)(1, static_cast<int>(aw / destA + 0.5));
-        int y = avail.top + (ah - ch) / 2;
-        return { avail.left, y, avail.right, y + ch };
-    }
+    return AltWindowCycleLogic::HeaderRect(overlayLayout, tile);
 }
 
 static SIZE QueryThumbSize(HTHUMBNAIL th)
@@ -769,7 +728,7 @@ void Switcher::RegisterThumbnails()
             avail.left += ix; avail.right -= ix;
             avail.top += iy; avail.bottom -= iy;
         }
-        RECT rcSrc = CoverSource(dest, avail);
+        RECT rcSrc = AltWindowCycleLogic::CoverSource(dest, avail);
         DWM_THUMBNAIL_PROPERTIES props = {};
         props.dwFlags = DWM_TNP_RECTDESTINATION | DWM_TNP_RECTSOURCE |
                         DWM_TNP_VISIBLE | DWM_TNP_OPACITY | DWM_TNP_SOURCECLIENTAREAONLY;

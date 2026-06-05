@@ -32,6 +32,9 @@
     <ClInclude Include="AltWindowCycle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AltWindowCycleLogic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
