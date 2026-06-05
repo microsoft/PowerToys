@@ -818,6 +818,9 @@
     <Project Path="src/modules/poweraccent/PowerAccentKeyboardService/PowerAccentKeyboardService.vcxproj" Id="c97d9a5d-206c-454e-997e-009e227d7f02" />
     <Project Path="src/modules/poweraccent/PowerAccentModuleInterface/PowerAccentModuleInterface.vcxproj" Id="34a354c5-23c7-4343-916c-c52daf4fc39d" />
   </Folder>
+  <Folder Name="/modules/PowerAccent/Tests/">
+    <Project Path="src/modules/poweraccent/UnitTests/UnitTests-PowerAccent.vcxproj" Id="c2b3d4e5-2222-3333-4444-555566667777" />
+  </Folder>
   <Folder Name="/modules/PowerOCR/">
     <Project Path="src/modules/PowerOCR/PowerOCR/PowerOCR.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -1139,5 +1142,4 @@
   <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
 </Solution>
-
 
