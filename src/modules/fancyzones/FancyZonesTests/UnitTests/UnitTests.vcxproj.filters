@@ -27,6 +27,9 @@
     <ClCompile Include="JsonHelpers.Tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LayoutSeed.Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

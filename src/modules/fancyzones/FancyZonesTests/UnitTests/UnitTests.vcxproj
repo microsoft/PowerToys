@@ -46,6 +46,7 @@
     <ClCompile Include="DefaultLayoutsTests.Spec.cpp" />
     <ClCompile Include="FancyZonesSettings.Spec.cpp" />
     <ClCompile Include="JsonHelpers.Tests.cpp" />
+    <ClCompile Include="LayoutSeed.Tests.cpp" />
     <ClCompile Include="Layout.Spec.cpp" />
     <ClCompile Include="LayoutHotkeysTests.Spec.cpp" />
     <ClCompile Include="LayoutTemplatesTests.Spec.cpp" />
