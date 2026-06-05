@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Settings.h"
 
+#include <ColorUtils.h>
 #include <ModuleConstants.h>
 #include <SettingsObserver.h>
 #include <WinHookEventIDs.h>
@@ -25,25 +26,6 @@ namespace NonLocalizable
     const static wchar_t* ExcludedAppsID = L"excluded-apps";
     const static wchar_t* FrameAccentColor = L"frame-accent-color";
     const static wchar_t* RoundCornersEnabledID = L"round-corners-enabled";
-}
-
-// TODO: move to common utils
-inline COLORREF HexToRGB(std::wstring_view hex, const COLORREF fallbackColor = RGB(255, 255, 255))
-{
-    hex = left_trim<wchar_t>(trim<wchar_t>(hex), L"#");
-
-    try
-    {
-        const long long tmp = std::stoll(hex.data(), nullptr, 16);
-        const BYTE nR = static_cast<BYTE>((tmp & 0xFF0000) >> 16);
-        const BYTE nG = static_cast<BYTE>((tmp & 0xFF00) >> 8);
-        const BYTE nB = static_cast<BYTE>((tmp & 0xFF));
-        return RGB(nR, nG, nB);
-    }
-    catch (const std::exception&)
-    {
-        return fallbackColor;
-    }
 }
 
 AlwaysOnTopSettings::AlwaysOnTopSettings() :
@@ -150,7 +132,7 @@ void AlwaysOnTopSettings::LoadSettings()
 
         if (const auto jsonVal = values.get_string_value(NonLocalizable::FrameColorID))
         {
-            auto val = HexToRGB(*jsonVal);
+            auto val = AlwaysOnTopColorUtils::HexToRGB(*jsonVal);
             if (updatedSettings->frameColor != val)
             {
                 updatedSettings->frameColor = val;

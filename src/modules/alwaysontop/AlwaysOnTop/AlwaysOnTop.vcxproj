@@ -135,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlwaysOnTop.h" />
+    <ClInclude Include="ColorUtils.h" />
     <ClInclude Include="FrameDrawer.h" />
     <ClInclude Include="Generated Files/resource.h" />
     <ClInclude Include="ModuleConstants.h" />

@@ -79,6 +79,9 @@
     <ClInclude Include="AlwaysOnTop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ColorUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="FrameDrawer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
