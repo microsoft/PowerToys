@@ -378,19 +378,19 @@ namespace Peek.UI
 
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
+                // Only handle when our window is in the foreground (cheap check before marshaling)
+                var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
+                if (foreground != _cachedWindowHandle)
+                {
+                    return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+                }
+
                 var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
 
                 // Fast-path: skip keys we never handle
                 if (hookStruct.vkCode != VK_W && hookStruct.vkCode != VK_ESCAPE &&
                     hookStruct.vkCode != VK_LEFT && hookStruct.vkCode != VK_RIGHT &&
                     hookStruct.vkCode != VK_UP && hookStruct.vkCode != VK_DOWN)
-                {
-                    return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
-                }
-
-                // Only handle when our window is in the foreground
-                var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
-                if (foreground != _cachedWindowHandle)
                 {
                     return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
                 }
@@ -402,33 +402,27 @@ namespace Peek.UI
 
                 if (ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_W)
                 {
-                    DispatcherQueue.TryEnqueue(Uninitialize);
-                    handled = true;
+                    handled = DispatcherQueue.TryEnqueue(Uninitialize);
                 }
                 else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_ESCAPE)
                 {
-                    DispatcherQueue.TryEnqueue(Uninitialize);
-                    handled = true;
+                    handled = DispatcherQueue.TryEnqueue(Uninitialize);
                 }
                 else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_LEFT)
                 {
-                    DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
-                    handled = true;
+                    handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
                 }
                 else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_RIGHT)
                 {
-                    DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
-                    handled = true;
+                    handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
                 }
                 else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_UP)
                 {
-                    DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
-                    handled = true;
+                    handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
                 }
                 else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_DOWN)
                 {
-                    DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
-                    handled = true;
+                    handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
                 }
 
                 if (handled)
