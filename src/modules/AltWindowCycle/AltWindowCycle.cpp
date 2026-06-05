@@ -1,7 +1,8 @@
 // AltWindowCycle.cpp
 // Adapts the POC overlay (C:\Users\crutkas\source\AltWindowCycle\cpp\AltWindowCycle.cpp)
-// for the PowerToys in-proc module.  All overlay windows and the Switcher state machine
+// for the PowerToys in-proc module. All overlay windows and the Switcher state machine
 // live on a dedicated UI thread; the runner's on_hotkey callback only posts a message.
+// Thumbnail previews default to DWM compositor thumbnails for visual fidelity.
 
 #include "pch.h"
 
@@ -131,16 +132,6 @@ static void EnableAcrylic(HWND hwnd, DWORD gradientColorABGR)
     data.cbData = sizeof(accent);
     fn(hwnd, &data);
 }
-
-// =================== Snapshot thumbnail ===================
-
-struct SnapshotThumb
-{
-    HBITMAP bitmap = nullptr;
-    void* bits = nullptr;
-    int width = 0;
-    int height = 0;
-};
 
 // =================== Window enumeration / activation ===================
 
@@ -280,8 +271,6 @@ private:
     void RenderBackdrop();
     void RenderLayered();
     void ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int& panelH);
-    void CaptureSnapshots();
-    void ClearSnapshots();
     void RegisterThumbnails();
     void UnregisterThumbnails();
     void EnsureFont();
@@ -302,7 +291,6 @@ private:
     St state = St::Idle;
     std::vector<HWND> windows;
     std::vector<HTHUMBNAIL> thumbs;
-    std::vector<SnapshotThumb> snapshots;
     std::vector<HICON> icons;
     HWND anchorWindow = nullptr;
     int selected = 0;
@@ -316,7 +304,6 @@ private:
 
     HFONT font = nullptr;
     double fontScale = 0.0;
-    bool snapshotThumbnails = false;
     HBRUSH thumbHostBrush = nullptr;
 };
 
@@ -383,7 +370,6 @@ bool Switcher::Init(HINSTANCE instance)
 void Switcher::Shutdown()
 {
     UnregisterThumbnails();
-    ClearSnapshots();
     if (thumbHost)
     {
         DestroyWindow(thumbHost);
@@ -578,16 +564,6 @@ void Switcher::ShowOverlayWindow()
 
     bool magentaDebug = GetEnvironmentVariableW(L"AWC_MAGENTA", nullptr, 0) != 0;
     bool translucentBackdrop = GetEnvironmentVariableW(L"AWC_TRANSLUCENT_BACKDROP", nullptr, 0) != 0;
-    bool noThumbnails = GetEnvironmentVariableW(L"AWC_NO_THUMBNAILS", nullptr, 0) != 0;
-    bool whitePreview = GetEnvironmentVariableW(L"AWC_WHITE_PREVIEW", nullptr, 0) != 0;
-    bool forceDwmThumbnails = GetEnvironmentVariableW(L"AWC_DWM_THUMBNAILS", nullptr, 0) != 0;
-    snapshotThumbnails = !forceDwmThumbnails && !noThumbnails && !whitePreview;
-
-    if (snapshotThumbnails)
-        CaptureSnapshots();
-    else
-        ClearSnapshots();
-
     if (translucentBackdrop)
     {
         SetWindowPos(backdropHost, HWND_TOPMOST, x, y, panelW, panelH,
@@ -599,63 +575,52 @@ void Switcher::ShowOverlayWindow()
         ShowWindow(backdropHost, SW_HIDE);
     }
 
-    bool showThumbHost = !translucentBackdrop || !snapshotThumbnails;
-    if (showThumbHost)
+    SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
+                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    if (!magentaDebug && !translucentBackdrop)
+        EnableAcrylic(thumbHost, GetAcrylicGradientABGR());
+    DWORD cornerPref = DWMWCP_ROUND;
+    DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
+                          &cornerPref, sizeof(cornerPref));
+    HRGN rgn = nullptr;
+    if (translucentBackdrop)
     {
-        SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
-                     SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        if (!magentaDebug && !translucentBackdrop)
-            EnableAcrylic(thumbHost, GetAcrylicGradientABGR());
-        DWORD cornerPref = DWMWCP_ROUND;
-        DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
-                              &cornerPref, sizeof(cornerPref));
-        HRGN rgn = nullptr;
-        if (translucentBackdrop)
+        rgn = CreateRectRgn(0, 0, 0, 0);
+        const int topOver = (std::max)(3, Scaled(3));
+        const int rr = radius + Scaled(4);
+        for (int i = 0; i < static_cast<int>(windows.size()); ++i)
         {
-            rgn = CreateRectRgn(0, 0, 0, 0);
-            const int topOver = (std::max)(3, Scaled(3));
-            const int rr = radius + Scaled(4);
-            for (int i = 0; i < static_cast<int>(windows.size()); ++i)
-            {
-                RECT pv = PreviewRect(TileRect(i));
-                HRGN topRgn = CreateRectRgn(pv.left, pv.top - topOver, pv.right, pv.bottom - rr);
-                HRGN botRgn = CreateRoundRectRgn(pv.left, pv.bottom - 2 * rr,
-                                                 pv.right + 1, pv.bottom + 1,
-                                                 2 * rr, 2 * rr);
-                HRGN tileRgn = CreateRectRgn(0, 0, 0, 0);
-                CombineRgn(tileRgn, topRgn, botRgn, RGN_OR);
-                CombineRgn(rgn, rgn, tileRgn, RGN_OR);
-                DeleteObject(topRgn);
-                DeleteObject(botRgn);
-                DeleteObject(tileRgn);
-            }
+            RECT pv = PreviewRect(TileRect(i));
+            HRGN topRgn = CreateRectRgn(pv.left, pv.top - topOver, pv.right, pv.bottom - rr);
+            HRGN botRgn = CreateRoundRectRgn(pv.left, pv.bottom - 2 * rr,
+                                             pv.right + 1, pv.bottom + 1,
+                                             2 * rr, 2 * rr);
+            HRGN tileRgn = CreateRectRgn(0, 0, 0, 0);
+            CombineRgn(tileRgn, topRgn, botRgn, RGN_OR);
+            CombineRgn(rgn, rgn, tileRgn, RGN_OR);
+            DeleteObject(topRgn);
+            DeleteObject(botRgn);
+            DeleteObject(tileRgn);
         }
-        else
-        {
-            rgn = CreateRoundRectRgn(0, 0, panelW + 1, panelH + 1,
-                                     2 * Scaled(8), 2 * Scaled(8));
-        }
-        SetWindowRgn(thumbHost, rgn, FALSE);
-        RedrawWindow(thumbHost, nullptr, nullptr,
-                     RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     }
     else
     {
-        ShowWindow(thumbHost, SW_HIDE);
+        rgn = CreateRoundRectRgn(0, 0, panelW + 1, panelH + 1,
+                                 2 * Scaled(8), 2 * Scaled(8));
     }
+    SetWindowRgn(thumbHost, rgn, FALSE);
+    RedrawWindow(thumbHost, nullptr, nullptr,
+                 RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RegisterThumbnails();
 
     SetWindowPos(overlay, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
     RenderLayered();
-    if (showThumbHost)
-    {
-        SetWindowPos(thumbHost, overlay, 0, 0, 0, 0,
-                     SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-    }
+    SetWindowPos(thumbHost, overlay, 0, 0, 0, 0,
+                 SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     if (translucentBackdrop)
     {
-        SetWindowPos(backdropHost, showThumbHost ? thumbHost : overlay, 0, 0, 0, 0,
+        SetWindowPos(backdropHost, thumbHost, 0, 0, 0, 0,
                      SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     }
 }
@@ -666,8 +631,6 @@ void Switcher::HideOverlayWindow()
     ShowWindow(thumbHost, SW_HIDE);
     ShowWindow(backdropHost, SW_HIDE);
     UnregisterThumbnails();
-    ClearSnapshots();
-    snapshotThumbnails = false;
     icons.clear();
 }
 
@@ -773,109 +736,10 @@ static SIZE ClientSourceSize(HWND hwnd)
     return { 0, 0 };
 }
 
-static SnapshotThumb CaptureWindowClientSnapshot(HWND hwnd)
-{
-    SnapshotThumb snap;
-
-    RECT cr = {};
-    if (!GetClientRect(hwnd, &cr))
-        return snap;
-
-    int w = cr.right - cr.left;
-    int h = cr.bottom - cr.top;
-    if (w <= 0 || h <= 0)
-        return snap;
-
-    HDC screen = GetDC(nullptr);
-    HDC mem = CreateCompatibleDC(screen);
-    if (!mem)
-    {
-        ReleaseDC(nullptr, screen);
-        return snap;
-    }
-
-    BITMAPINFO bi = {};
-    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biWidth = w;
-    bi.bmiHeader.biHeight = -h;
-    bi.bmiHeader.biPlanes = 1;
-    bi.bmiHeader.biBitCount = 32;
-    bi.bmiHeader.biCompression = BI_RGB;
-
-    void* bits = nullptr;
-    HBITMAP dib = CreateDIBSection(screen, &bi, DIB_RGB_COLORS, &bits, nullptr, 0);
-    if (!dib)
-    {
-        DeleteDC(mem);
-        ReleaseDC(nullptr, screen);
-        return snap;
-    }
-
-    HGDIOBJ oldBmp = SelectObject(mem, dib);
-    ZeroMemory(bits, static_cast<size_t>(w) * h * 4);
-
-    DWORD_PTR printResult = 0;
-    BOOL ok = SendMessageTimeoutW(hwnd,
-                                  WM_PRINTCLIENT,
-                                  reinterpret_cast<WPARAM>(mem),
-                                  PRF_CLIENT | PRF_CHILDREN | PRF_OWNED,
-                                  SMTO_ABORTIFHUNG | SMTO_BLOCK,
-                                  75,
-                                  &printResult) != 0;
-    if (!ok && !IsIconic(hwnd))
-    {
-        POINT pt = { 0, 0 };
-        if (ClientToScreen(hwnd, &pt))
-        {
-            HDC windowDC = GetDC(nullptr);
-            ok = BitBlt(mem, 0, 0, w, h, windowDC, pt.x, pt.y, SRCCOPY);
-            ReleaseDC(nullptr, windowDC);
-        }
-    }
-
-    if (ok)
-    {
-        BYTE* px = static_cast<BYTE*>(bits);
-        for (size_t i = 0, count = static_cast<size_t>(w) * h; i < count; ++i)
-            px[i * 4 + 3] = 255;
-
-        snap.bitmap = dib;
-        snap.bits = bits;
-        snap.width = w;
-        snap.height = h;
-    }
-
-    SelectObject(mem, oldBmp);
-    if (!ok)
-        DeleteObject(dib);
-    DeleteDC(mem);
-    ReleaseDC(nullptr, screen);
-    return snap;
-}
-
-void Switcher::ClearSnapshots()
-{
-    for (SnapshotThumb& snap : snapshots)
-    {
-        if (snap.bitmap)
-            DeleteObject(snap.bitmap);
-    }
-    snapshots.clear();
-}
-
-void Switcher::CaptureSnapshots()
-{
-    ClearSnapshots();
-    snapshots.reserve(windows.size());
-    for (HWND hwnd : windows)
-        snapshots.push_back(CaptureWindowClientSnapshot(hwnd));
-}
-
 void Switcher::RegisterThumbnails()
 {
     UnregisterThumbnails();
-    if (snapshotThumbnails ||
-        GetEnvironmentVariableW(L"AWC_NO_THUMBNAILS", nullptr, 0) ||
+    if (GetEnvironmentVariableW(L"AWC_NO_THUMBNAILS", nullptr, 0) ||
         GetEnvironmentVariableW(L"AWC_WHITE_PREVIEW", nullptr, 0))
         return;
 
@@ -1308,36 +1172,6 @@ void Switcher::RenderLayered()
                                     static_cast<Gdiplus::REAL>(ph));
                     ClearPreviewBottomCorners(g, pv, static_cast<int>(r));
                     g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-                }
-                else if (snapshotThumbnails)
-                {
-                    if (i < static_cast<int>(snapshots.size()) &&
-                        snapshots[i].bitmap && snapshots[i].bits &&
-                        snapshots[i].width > 0 && snapshots[i].height > 0)
-                    {
-                        SnapshotThumb& snap = snapshots[i];
-                        RECT avail = { 0, 0, snap.width, snap.height };
-                        int ix = (std::min)(2, static_cast<int>(avail.right - avail.left) / 4);
-                        int iy = (std::min)(2, static_cast<int>(avail.bottom - avail.top) / 4);
-                        avail.left += ix; avail.right -= ix;
-                        avail.top += iy; avail.bottom -= iy;
-                        RECT src = CoverSource(pv, avail);
-
-                        Gdiplus::Bitmap srcBmp(snap.width, snap.height, snap.width * 4,
-                                               PixelFormat32bppRGB,
-                                               static_cast<BYTE*>(snap.bits));
-                        Gdiplus::GraphicsState saved = g.Save();
-                        g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
-                        g.SetInterpolationMode(Gdiplus::InterpolationModeHighQualityBicubic);
-                        g.SetPixelOffsetMode(Gdiplus::PixelOffsetModeHalf);
-                        Gdiplus::Rect dest(pv.left, pv.top, pw, ph);
-                        g.DrawImage(&srcBmp, dest,
-                                    src.left, src.top,
-                                    src.right - src.left, src.bottom - src.top,
-                                    Gdiplus::UnitPixel);
-                        g.Restore(saved);
-                        ClearPreviewBottomCorners(g, pv, static_cast<int>(r));
-                    }
                 }
                 else
                 {
