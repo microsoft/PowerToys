@@ -118,7 +118,7 @@ namespace winrt::PowerRenameUI::implementation
 
         // Used by PowerRenameManagerEvents
         HRESULT OnRename(_In_ IPowerRenameItem* renameItem);
-        HRESULT OnError(_In_ IPowerRenameItem*) { return S_OK; }
+        HRESULT OnError(_In_ IPowerRenameItem* renameItem);
         HRESULT OnRegExStarted(_In_ DWORD) { return S_OK; }
         HRESULT OnRegExCanceled(_In_ DWORD) { return S_OK; }
         HRESULT OnRegExCompleted(_In_ DWORD threadId);
@@ -163,6 +163,7 @@ namespace winrt::PowerRenameUI::implementation
         DWORD m_cookie = 0;
         CComPtr<IPowerRenameMRU> m_searchMRU;
         CComPtr<IPowerRenameMRU> m_replaceMRU;
+        bool m_renameHadErrors = false;
         UINT m_selectedCount = 0;
         UINT m_renamingCount = 0;
         winrt::event<Microsoft::UI::Xaml::Data::PropertyChangedEventHandler> m_propertyChanged;
@@ -188,4 +189,3 @@ namespace winrt::PowerRenameUI::factory_implementation
     {
     };
 }
-

@@ -174,6 +174,91 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
 
+        TEST_METHOD (VerifyRenameContinuesWhenOneItemFails)
+        {
+            CTestFileHelper testFileHelper;
+            Assert::IsTrue(testFileHelper.AddFile(L"a_page.html"));
+            Assert::IsTrue(testFileHelper.AddFile(L"b_page.html"));
+            Assert::IsTrue(testFileHelper.AddFile(L"c_page.html"));
+
+            HANDLE lockedFileHandle = CreateFileW(
+                testFileHelper.GetFullPath(L"b_page.html").c_str(),
+                GENERIC_READ,
+                0,
+                nullptr,
+                OPEN_EXISTING,
+                FILE_ATTRIBUTE_NORMAL,
+                nullptr);
+            Assert::IsTrue(lockedFileHandle != INVALID_HANDLE_VALUE);
+
+            CComPtr<IPowerRenameManager> mgr;
+            Assert::IsTrue(CPowerRenameManager::s_CreateInstance(&mgr) == S_OK);
+            CMockPowerRenameManagerEvents* mockMgrEvents = new CMockPowerRenameManagerEvents();
+            CComPtr<IPowerRenameManagerEvents> mgrEvents;
+            Assert::IsTrue(mockMgrEvents->QueryInterface(IID_PPV_ARGS(&mgrEvents)) == S_OK);
+            DWORD cookie = 0;
+            Assert::IsTrue(mgr->Advise(mgrEvents, &cookie) == S_OK);
+
+            struct rename_item
+            {
+                std::wstring name;
+            };
+
+            rename_item items[] = {
+                { L"a_page.html" },
+                { L"b_page.html" },
+                { L"c_page.html" }
+            };
+
+            for (const auto& itemData : items)
+            {
+                CComPtr<IPowerRenameItem> item;
+                CMockPowerRenameItem::CreateInstance(
+                    testFileHelper.GetFullPath(itemData.name).c_str(),
+                    itemData.name.c_str(),
+                    0,
+                    false,
+                    SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 },
+                    &item);
+                mgr->AddItem(item);
+            }
+
+            CComPtr<IPowerRenameRegEx> renRegEx;
+            Assert::IsTrue(mgr->GetRenameRegEx(&renRegEx) == S_OK);
+            renRegEx->PutFlags(DEFAULT_FLAGS);
+            renRegEx->PutSearchTerm(L"_page");
+            renRegEx->PutReplaceTerm(L"_new");
+
+            bool replaceSuccess = false;
+            for (int step = 0; step < 20; step++)
+            {
+                replaceSuccess = mgr->Rename(0, true) == S_OK;
+                if (replaceSuccess)
+                {
+                    break;
+                }
+                Sleep(10);
+            }
+
+            Assert::IsTrue(replaceSuccess);
+
+            Assert::IsTrue(testFileHelper.PathExistsCaseSensitive(L"a_new.html"));
+            Assert::IsTrue(testFileHelper.PathExistsCaseSensitive(L"b_page.html"));
+            Assert::IsTrue(testFileHelper.PathExistsCaseSensitive(L"c_new.html"));
+
+            Assert::IsTrue(mockMgrEvents->m_renameCompleted);
+            Assert::IsFalse(mockMgrEvents->m_closeUIWindowAfterRenaming);
+            Assert::IsNotNull(mockMgrEvents->m_itemError.p);
+
+            if (lockedFileHandle != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(lockedFileHandle);
+            }
+
+            Assert::IsTrue(mgr->Shutdown() == S_OK);
+            mockMgrEvents->Release();
+        }
+
         TEST_METHOD (VerifyFilesOnlyRename)
         {
             // Verify only files are renamed when folders match too

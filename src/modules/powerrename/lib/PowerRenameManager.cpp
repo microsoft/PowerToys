@@ -513,6 +513,7 @@ enum
 {
     SRM_REGEX_ITEM_UPDATED = (WM_APP + 1), // Single rename item processed by regex worker thread
     SRM_REGEX_ITEM_RENAMED_KEEP_UI, // Single rename item processed by rename worker thread in case UI remains opened
+    SRM_FILEOP_ITEM_ERROR, // Single rename item failed during file operation
     SRM_REGEX_STARTED, // RegEx operation was started
     SRM_REGEX_CANCELED, // Regex operation was canceled
     SRM_REGEX_COMPLETE, // Regex worker thread completed
@@ -571,6 +572,16 @@ LRESULT CPowerRenameManager::_WndProc(_In_ HWND hwnd, _In_ UINT msg, _In_ WPARAM
         if (SUCCEEDED(GetItemById(id, &spItem)))
         {
             _OnRename(spItem);
+        }
+        break;
+    }
+    case SRM_FILEOP_ITEM_ERROR:
+    {
+        int id = static_cast<int>(lParam);
+        CComPtr<IPowerRenameItem> spItem;
+        if (SUCCEEDED(GetItemById(id, &spItem)))
+        {
+            _OnError(spItem);
         }
         break;
     }
@@ -665,6 +676,7 @@ HRESULT CPowerRenameManager::_PerformFileOperation()
     if (SUCCEEDED(hr))
     {
         _OnRenameStarted();
+        bool fileOpHadErrors = false;
 
         // Signal the worker thread that they can start working. We needed to wait until we
         // were ready to process thread messages.
@@ -683,6 +695,7 @@ HRESULT CPowerRenameManager::_PerformFileOperation()
             {
                 if (msg.message == SRM_FILEOP_COMPLETE)
                 {
+                    fileOpHadErrors = msg.lParam != 0;
                     // Worker thread completed
                     break;
                 }
@@ -692,6 +705,17 @@ HRESULT CPowerRenameManager::_PerformFileOperation()
                     DispatchMessage(&msg);
                 }
             }
+        }
+
+        DWORD fileOpWorkerExitCode = 0;
+        if (GetExitCodeThread(m_fileOpWorkerThreadHandle, &fileOpWorkerExitCode))
+        {
+            fileOpHadErrors = fileOpHadErrors || fileOpWorkerExitCode != 0;
+        }
+
+        if (fileOpHadErrors)
+        {
+            m_closeUIWindowAfterRenaming = false;
         }
 
         _OnRenameCompleted();
@@ -741,130 +765,168 @@ DWORD WINAPI CPowerRenameManager::s_fileOpWorkerThread(_In_ void* pv)
                 CComPtr<IPowerRenameRegEx> spRenameRegEx;
                 if (SUCCEEDED(pwtd->spsrm->GetRenameRegEx(&spRenameRegEx)))
                 {
-                    // Create IFileOperation interface
-                    CComPtr<IFileOperation> spFileOp;
-                    if (SUCCEEDED(CoCreateInstance(CLSID_FileOperation, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&spFileOp))))
+                    bool fileOpHadErrors = false;
+                    DWORD flags = 0;
+                    spRenameRegEx->GetFlags(&flags);
+
+                    UINT itemCount = 0;
+                    pwtd->spsrm->GetItemCount(&itemCount);
+
+                    // We add the items to the operation in depth-first order.  This allows child items to be
+                    // renamed before parent items.
+
+                    // First pass: find the maximum depth to properly size the matrix
+                    UINT maxDepth = 0;
+                    for (UINT u = 0; u < itemCount; u++)
                     {
-                        DWORD flags = 0;
-                        spRenameRegEx->GetFlags(&flags);
-
-                        UINT itemCount = 0;
-                        pwtd->spsrm->GetItemCount(&itemCount);
-
-                        // We add the items to the operation in depth-first order.  This allows child items to be
-                        // renamed before parent items.
-
-                        // First pass: find the maximum depth to properly size the matrix
-                        UINT maxDepth = 0;
-                        for (UINT u = 0; u < itemCount; u++)
+                        CComPtr<IPowerRenameItem> spItem;
+                        if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
                         {
-                            CComPtr<IPowerRenameItem> spItem;
-                            if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
+                            UINT depth = 0;
+                            spItem->GetDepth(&depth);
+                            if (depth > maxDepth)
                             {
-                                UINT depth = 0;
-                                spItem->GetDepth(&depth);
-                                if (depth > maxDepth)
-                                {
-                                    maxDepth = depth;
-                                }
+                                maxDepth = depth;
                             }
-                        }
-
-                        // Creating a vector of vectors of items of the same depth
-                        // Size by maxDepth+1 (not itemCount) to avoid excessive memory allocation
-                        // Cast to size_t before arithmetic to avoid overflow on 32-bit UINT
-                        std::vector<std::vector<UINT>> matrix(static_cast<size_t>(maxDepth) + 1);
-
-                        for (UINT u = 0; u < itemCount; u++)
-                        {
-                            CComPtr<IPowerRenameItem> spItem;
-                            if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
-                            {
-                                UINT depth = 0;
-                                spItem->GetDepth(&depth);
-                                matrix[depth].push_back(u);
-                            }
-                        }
-
-                        // From the greatest depth first, add all items of that depth to the operation
-                        for (LONG v = static_cast<LONG>(maxDepth); v >= 0; v--)
-                        {
-                            for (auto it : matrix[v])
-                            {
-                                CComPtr<IPowerRenameItem> spItem;
-                                if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(it, &spItem)))
-                                {
-                                    bool shouldRename = false;
-                                    if (SUCCEEDED(spItem->ShouldRenameItem(flags, &shouldRename)) && shouldRename)
-                                    {
-                                        PWSTR newName = nullptr;
-                                        if (SUCCEEDED(spItem->GetNewName(&newName)))
-                                        {
-                                            CComPtr<IShellItem> spShellItem;
-                                            if (SUCCEEDED(spItem->GetShellItem(&spShellItem)))
-                                            {
-                                                spFileOp->RenameItem(spShellItem, newName, nullptr);
-                                                if (!closeUIWindowAfterRenaming)
-                                                {
-                                                    // Update item data
-                                                    PWSTR originalName = nullptr;
-                                                    winrt::check_hresult(spItem->GetOriginalName(&originalName));
-                                                    std::wstring originalNameStr{ originalName };
-
-                                                    PWSTR path = nullptr;
-                                                    winrt::check_hresult(spItem->GetPath(&path));
-                                                    std::wstring pathStr{ path };
-                                                    size_t oldPathSize = pathStr.size();
-
-                                                    auto fileNamePos = pathStr.find_last_of(L"\\");
-                                                    pathStr.replace(fileNamePos + 1, originalNameStr.length(), std::wstring{ newName });
-                                                    spItem->PutPath(pathStr.c_str());
-                                                    spItem->PutOriginalName(newName);
-                                                    spItem->PutNewName(nullptr);
-
-                                                    // if folder, update children path
-                                                    bool isFolder = false;
-                                                    winrt::check_hresult(spItem->GetIsFolder(&isFolder));
-                                                    if (isFolder)
-                                                    {
-                                                        int id = -1;
-                                                        winrt::check_hresult(spItem->GetId(&id));
-                                                        pwtd->spsrm->UpdateChildrenPath(id, oldPathSize);
-                                                    }
-
-                                                    int id = -1;
-                                                    winrt::check_hresult(spItem->GetId(&id));
-                                                    PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_RENAMED_KEEP_UI, GetCurrentThreadId(), id);
-                                                }
-                                            }
-                                            CoTaskMemFree(newName);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Set the operation flags
-                        if (SUCCEEDED(spFileOp->SetOperationFlags(FOF_DEFAULTFLAGS)))
-                        {
-                            // Set the parent window
-                            if (pwtd->hwndParent)
-                            {
-                                spFileOp->SetOwnerWindow(pwtd->hwndParent);
-                            }
-
-                            // Perform the operation
-                            // We don't care about the return code here. We would rather
-                            // return control back to explorer so the user can cleanly
-                            // undo the operation if it failed halfway through.
-                            spFileOp->PerformOperations();
                         }
                     }
+
+                    // Creating a vector of vectors of items of the same depth
+                    // Size by maxDepth+1 (not itemCount) to avoid excessive memory allocation
+                    // Cast to size_t before arithmetic to avoid overflow on 32-bit UINT
+                    std::vector<std::vector<UINT>> matrix(static_cast<size_t>(maxDepth) + 1);
+
+                    for (UINT u = 0; u < itemCount; u++)
+                    {
+                        CComPtr<IPowerRenameItem> spItem;
+                        if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(u, &spItem)))
+                        {
+                            UINT depth = 0;
+                            spItem->GetDepth(&depth);
+                            matrix[depth].push_back(u);
+                        }
+                    }
+
+                    auto markItemError = [&](IPowerRenameItem* renameItem) {
+                        fileOpHadErrors = true;
+                        renameItem->PutStatus(PowerRenameItemRenameStatus::ItemNameAlreadyExists);
+                        int id = -1;
+                        if (SUCCEEDED(renameItem->GetId(&id)))
+                        {
+                            PostMessage(pwtd->hwndManager, SRM_FILEOP_ITEM_ERROR, GetCurrentThreadId(), id);
+                        }
+                    };
+
+                    // From the greatest depth first, add all items of that depth to the operation
+                    for (LONG v = static_cast<LONG>(maxDepth); v >= 0; v--)
+                    {
+                        for (auto it : matrix[v])
+                        {
+                            CComPtr<IPowerRenameItem> spItem;
+                            if (SUCCEEDED(pwtd->spsrm->GetItemByIndex(it, &spItem)))
+                            {
+                                bool shouldRename = false;
+                                if (SUCCEEDED(spItem->ShouldRenameItem(flags, &shouldRename)) && shouldRename)
+                                {
+                                    PWSTR newName = nullptr;
+                                    if (FAILED(spItem->GetNewName(&newName)) || newName == nullptr)
+                                    {
+                                        markItemError(spItem);
+                                        continue;
+                                    }
+
+                                    CComPtr<IShellItem> spShellItem;
+                                    if (FAILED(spItem->GetShellItem(&spShellItem)))
+                                    {
+                                        CoTaskMemFree(newName);
+                                        markItemError(spItem);
+                                        continue;
+                                    }
+
+                                    CComPtr<IFileOperation> spFileOp;
+                                    HRESULT renameHr = CoCreateInstance(CLSID_FileOperation, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&spFileOp));
+                                    if (SUCCEEDED(renameHr))
+                                    {
+                                        renameHr = spFileOp->SetOperationFlags(FOF_DEFAULTFLAGS);
+                                    }
+                                    if (SUCCEEDED(renameHr) && pwtd->hwndParent)
+                                    {
+                                        renameHr = spFileOp->SetOwnerWindow(pwtd->hwndParent);
+                                    }
+                                    if (SUCCEEDED(renameHr))
+                                    {
+                                        renameHr = spFileOp->RenameItem(spShellItem, newName, nullptr);
+                                    }
+                                    if (SUCCEEDED(renameHr))
+                                    {
+                                        renameHr = spFileOp->PerformOperations();
+                                    }
+
+                                    BOOL operationsAborted = FALSE;
+                                    if (SUCCEEDED(renameHr))
+                                    {
+                                        renameHr = spFileOp->GetAnyOperationsAborted(&operationsAborted);
+                                        if (SUCCEEDED(renameHr) && operationsAborted)
+                                        {
+                                            renameHr = HRESULT_FROM_WIN32(ERROR_CANCELLED);
+                                        }
+                                    }
+
+                                    if (FAILED(renameHr))
+                                    {
+                                        CoTaskMemFree(newName);
+                                        markItemError(spItem);
+                                        continue;
+                                    }
+
+                                    if (!closeUIWindowAfterRenaming)
+                                    {
+                                        // Update item data
+                                        PWSTR originalName = nullptr;
+                                        winrt::check_hresult(spItem->GetOriginalName(&originalName));
+                                        std::wstring originalNameStr{ originalName };
+
+                                        PWSTR path = nullptr;
+                                        winrt::check_hresult(spItem->GetPath(&path));
+                                        std::wstring pathStr{ path };
+                                        size_t oldPathSize = pathStr.size();
+
+                                        auto fileNamePos = pathStr.find_last_of(L"\\");
+                                        pathStr.replace(fileNamePos + 1, originalNameStr.length(), std::wstring{ newName });
+                                        spItem->PutPath(pathStr.c_str());
+                                        spItem->PutOriginalName(newName);
+                                        spItem->PutNewName(nullptr);
+
+                                        // if folder, update children path
+                                        bool isFolder = false;
+                                        winrt::check_hresult(spItem->GetIsFolder(&isFolder));
+                                        if (isFolder)
+                                        {
+                                            int id = -1;
+                                            winrt::check_hresult(spItem->GetId(&id));
+                                            pwtd->spsrm->UpdateChildrenPath(id, oldPathSize);
+                                        }
+
+                                        int id = -1;
+                                        winrt::check_hresult(spItem->GetId(&id));
+                                        PostMessage(pwtd->hwndManager, SRM_REGEX_ITEM_RENAMED_KEEP_UI, GetCurrentThreadId(), id);
+                                    }
+
+                                    CoTaskMemFree(newName);
+                                }
+                            }
+                        }
+                    }
+
+                    PostMessage(pwtd->hwndManager, SRM_FILEOP_COMPLETE, GetCurrentThreadId(), fileOpHadErrors ? 1 : 0);
+                    delete pwtd;
+                    CoUninitialize();
+                    return fileOpHadErrors ? 1 : 0;
                 }
             }
 
             // Send the manager thread the completion message
-            PostMessage(pwtd->hwndManager, SRM_FILEOP_COMPLETE, GetCurrentThreadId(), 0);
+            PostMessage(pwtd->hwndManager, SRM_FILEOP_COMPLETE, GetCurrentThreadId(), 1);
 
             delete pwtd;
         }

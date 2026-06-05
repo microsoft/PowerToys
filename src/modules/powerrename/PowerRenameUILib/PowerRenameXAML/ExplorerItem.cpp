@@ -33,6 +33,10 @@ namespace
         {
             return L"Error";
         }
+        case PowerRenameItemRenameStatus::ItemNameAlreadyExists:
+        {
+            return L"Error";
+        }
         default:
             return L"Normal";
         }
@@ -204,6 +208,7 @@ namespace winrt::PowerRenameUI::implementation
         static ResourceManager manager = factory.CreateInstance(L"PowerToys.PowerRename.pri");
         static auto invalid_char_error = manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_InvalidChar").ValueAsString();
         static auto name_too_long_error = manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_FileNameTooLong").ValueAsString();
+        static auto rename_failed_error = manager.MainResourceMap().GetValue(L"Resources/ErrorMessage_RenameFailed").ValueAsString();
 
         switch (m_state)
         {
@@ -214,6 +219,10 @@ namespace winrt::PowerRenameUI::implementation
         case PowerRenameItemRenameStatus::ItemNameTooLong:
         {
             return std::wstring{ name_too_long_error };
+        }
+        case PowerRenameItemRenameStatus::ItemNameAlreadyExists:
+        {
+            return std::wstring{ rename_failed_error };
         }
         default:
             return {};
