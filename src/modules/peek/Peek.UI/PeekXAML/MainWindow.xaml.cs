@@ -46,6 +46,7 @@ namespace Peek.UI
 
         private IntPtr _keyboardHookHandle;
         private NativeMethods.LowLevelKeyboardProc? _keyboardHookProc;
+        private Windows.Win32.Foundation.HWND _cachedWindowHandle;
 
         public MainWindow()
         {
@@ -212,8 +213,10 @@ namespace Peek.UI
             }
 
             ViewModel.ScalingFactor = this.GetMonitorScale();
+            this.Content.KeyUp -= Content_KeyUp;
             this.Content.KeyUp += Content_KeyUp;
 
+            _cachedWindowHandle = new Windows.Win32.Foundation.HWND(this.GetWindowHandle());
             InstallKeyboardHook();
 
             bootTime.Stop();
@@ -379,9 +382,8 @@ namespace Peek.UI
 
                 // Only handle when our window is in the foreground
                 var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
-                var ourWindow = new Windows.Win32.Foundation.HWND(this.GetWindowHandle());
 
-                if (foreground == ourWindow)
+                if (foreground == _cachedWindowHandle)
                 {
                     bool handled = false;
 
