@@ -76,6 +76,15 @@ namespace WorkspacesLibUnitTests
             Assert::IsTrue(result == nonExistentWindowAumid);
         }
 
+        TEST_METHOD(PwaHelper_GetAppIdFromCommandLineArgs_StripsEdgePrefixAndTrailingArguments)
+        {
+            const std::wstring commandLineArgs = L"--app-id=abcdefghijklmnop --profile-directory=Default";
+
+            const auto result = Utils::PwaHelper::GetAppIdFromCommandLineArgs(commandLineArgs);
+
+            Assert::AreEqual(std::wstring(L"abcdefghijklmnop"), result);
+        }
+
         TEST_METHOD (PwaHelper_GetEdgeAppId_ValidConstruction_DoesNotCrash)
         {
             // Arrange

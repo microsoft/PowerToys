@@ -238,7 +238,7 @@ namespace Utils
         return nameFromAumid;
     }
 
-    std::wstring PwaHelper::GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs) const
+    std::wstring PwaHelper::GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs)
     {
         auto result = commandLineArgs;
 

@@ -12,6 +12,8 @@ namespace Utils
         PwaHelper();
         ~PwaHelper() = default;
 
+        static std::wstring GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs);
+
         std::optional<std::wstring> GetEdgeAppId(const std::wstring& windowAumid) const;
         std::optional<std::wstring> GetChromeAppId(const std::wstring& windowAumid) const;
         std::wstring SearchPwaName(const std::wstring& pwaAppId, const std::wstring& windowAumid) const;
@@ -20,8 +22,6 @@ namespace Utils
         void InitAppIds(const std::wstring& browserDataFolder, const std::wstring& browserDirPrefix, const std::function<void(const std::wstring&)>& addingAppIdCallback);
         void InitEdgeAppIds();
         void InitChromeAppIds();
-
-        std::wstring GetAppIdFromCommandLineArgs(const std::wstring& commandLineArgs) const;
 
         std::map<std::wstring, std::wstring> m_edgeAppIds;
         std::vector<std::wstring> m_chromeAppIds;
