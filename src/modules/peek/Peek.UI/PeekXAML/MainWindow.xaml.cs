@@ -371,6 +371,10 @@ namespace Peek.UI
             const uint VK_UP = 0x26;
             const uint VK_RIGHT = 0x27;
             const uint VK_DOWN = 0x28;
+            const int VK_CONTROL = 0x11;
+            const int VK_ALT = 0x12;
+            const int VK_SHIFT = 0x10;
+            const int KEY_PRESSED_MASK = 0x8000;
 
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
@@ -391,9 +395,9 @@ namespace Peek.UI
                     return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
                 }
 
-                bool ctrlPressed = (NativeMethods.GetAsyncKeyState(0x11) & 0x8000) != 0;
-                bool altPressed = (NativeMethods.GetAsyncKeyState(0x12) & 0x8000) != 0;
-                bool shiftPressed = (NativeMethods.GetAsyncKeyState(0x10) & 0x8000) != 0;
+                bool ctrlPressed = (NativeMethods.GetAsyncKeyState(VK_CONTROL) & KEY_PRESSED_MASK) != 0;
+                bool altPressed = (NativeMethods.GetAsyncKeyState(VK_ALT) & KEY_PRESSED_MASK) != 0;
+                bool shiftPressed = (NativeMethods.GetAsyncKeyState(VK_SHIFT) & KEY_PRESSED_MASK) != 0;
                 bool handled = false;
 
                 if (ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_W)
