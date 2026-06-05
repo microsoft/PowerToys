@@ -2,6 +2,7 @@
 //
 #include "pch.h"
 #include "FindMyMouse.h"
+#include "FindMyMouseLogic.h"
 #include "WinHookEventIDs.h"
 #include "trace.h"
 #include "common/utils/game_mode.h"
@@ -88,12 +89,7 @@ protected:
 
 private:
     // Save the mouse movement that occurred in any direction.
-    struct PointerRecentMovement
-    {
-        POINT diff;
-        ULONGLONG tick;
-    };
-    std::vector<PointerRecentMovement> m_movementHistory;
+    std::vector<FindMyMouseLogic::PointerRecentMovement> m_movementHistory;
     // Raw Input may give relative or absolute values. Need to take each case into account.
     bool m_seenAnAbsoluteMousePosition = false;
     POINT m_lastAbsolutePosition = { 0, 0 };
@@ -419,34 +415,9 @@ void SuperSonar<D>::DetectShake()
     ULONGLONG shakeStartTick = GetTickCount64() - m_shakeIntervalMs;
 
     // Prune the story of movements for those movements that started too long ago.
-    std::erase_if(m_movementHistory, [shakeStartTick](const PointerRecentMovement& movement) { return movement.tick < shakeStartTick; });
+    std::erase_if(m_movementHistory, [shakeStartTick](const FindMyMouseLogic::PointerRecentMovement& movement) { return movement.tick < shakeStartTick; });
 
-    double distanceTravelled = 0;
-    LONGLONG currentX = 0, minX = 0, maxX = 0;
-    LONGLONG currentY = 0, minY = 0, maxY = 0;
-
-    for (const PointerRecentMovement& movement : m_movementHistory)
-    {
-        currentX += movement.diff.x;
-        currentY += movement.diff.y;
-        distanceTravelled += sqrt(static_cast<double>(movement.diff.x) * movement.diff.x + static_cast<double>(movement.diff.y) * movement.diff.y); // Pythagorean theorem
-        minX = min(currentX, minX);
-        maxX = max(currentX, maxX);
-        minY = min(currentY, minY);
-        maxY = max(currentY, maxY);
-    }
-
-    if (distanceTravelled < m_shakeMinimumDistance)
-    {
-        return;
-    }
-
-    // Size of the rectangle that the pointer moved in.
-    double rectangleWidth = static_cast<double>(maxX) - minX;
-    double rectangleHeight = static_cast<double>(maxY) - minY;
-
-    double diagonal = sqrt(rectangleWidth * rectangleWidth + rectangleHeight * rectangleHeight);
-    if (diagonal > 0 && distanceTravelled / diagonal > (m_shakeFactor / 100.f))
+    if (FindMyMouseLogic::ShouldActivateFromShake(m_movementHistory, m_shakeMinimumDistance, m_shakeFactor))
     {
         m_movementHistory.clear();
         StartSonar(m_activationMethod);
@@ -485,7 +456,7 @@ void SuperSonar<D>::OnSonarMouseInput(RAWINPUT const& input)
         }
         if (m_movementHistory.size() > 0)
         {
-            PointerRecentMovement& lastMovement = m_movementHistory.back();
+            auto& lastMovement = m_movementHistory.back();
             // If the pointer is still moving in the same direction, just add to that movement instead of adding a new movement.
             // This helps in keeping the list of movements smaller even in cases where a high number of messages is sent.
             if (GetSign(lastMovement.diff.x) == GetSign(relativeX) && GetSign(lastMovement.diff.y) == GetSign(relativeY))

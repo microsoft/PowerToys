@@ -44,6 +44,9 @@
     <ClInclude Include="FindMyMouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FindMyMouseLogic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
