@@ -374,6 +374,8 @@ namespace Peek.UI
             const int VK_CONTROL = 0x11;
             const int VK_ALT = 0x12;
             const int VK_SHIFT = 0x10;
+            const int VK_LWIN = 0x5B;
+            const int VK_RWIN = 0x5C;
             const int KEY_PRESSED_MASK = 0x8000;
 
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
@@ -398,29 +400,31 @@ namespace Peek.UI
                 bool ctrlPressed = (NativeMethods.GetAsyncKeyState(VK_CONTROL) & KEY_PRESSED_MASK) != 0;
                 bool altPressed = (NativeMethods.GetAsyncKeyState(VK_ALT) & KEY_PRESSED_MASK) != 0;
                 bool shiftPressed = (NativeMethods.GetAsyncKeyState(VK_SHIFT) & KEY_PRESSED_MASK) != 0;
+                bool winPressed = (NativeMethods.GetAsyncKeyState(VK_LWIN) & KEY_PRESSED_MASK) != 0 ||
+                                  (NativeMethods.GetAsyncKeyState(VK_RWIN) & KEY_PRESSED_MASK) != 0;
                 bool handled = false;
 
-                if (ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_W)
+                if (ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_W)
                 {
                     handled = DispatcherQueue.TryEnqueue(Uninitialize);
                 }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_ESCAPE)
+                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_ESCAPE)
                 {
                     handled = DispatcherQueue.TryEnqueue(Uninitialize);
                 }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_LEFT)
+                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_LEFT)
                 {
                     handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
                 }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_RIGHT)
+                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_RIGHT)
                 {
                     handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
                 }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_UP)
+                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_UP)
                 {
                     handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
                 }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_DOWN)
+                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_DOWN)
                 {
                     handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
                 }
