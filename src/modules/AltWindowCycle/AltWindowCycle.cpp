@@ -608,7 +608,7 @@ void Switcher::ShowOverlayWindow()
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RegisterThumbnails();
 
-    // Update the hidden layered bitmap before showing it. Otherwise monitor/DPI
+    // Update the hidden layered bitmap before showing it. Otherwise, monitor/DPI
     // switches can flash the previous-size overlay for one frame.
     RenderLayered();
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
@@ -713,14 +713,14 @@ void Switcher::RegisterThumbnails()
         }
         thumbs.push_back(th);
 
-        SIZE csz = IsIconic(windows[i]) ? SIZE{ 0, 0 } : ClientSourceSize(windows[i]);
+        SIZE clientSize = IsIconic(windows[i]) ? SIZE{ 0, 0 } : ClientSourceSize(windows[i]);
         BOOL clientOnly = TRUE;
-        if (csz.cx <= 0 || csz.cy <= 0)
+        if (clientSize.cx <= 0 || clientSize.cy <= 0)
         {
-            csz = QueryThumbSize(th);
+            clientSize = QueryThumbSize(th);
             clientOnly = FALSE;
         }
-        RECT avail = { 0, 0, csz.cx, csz.cy };
+        RECT avail = { 0, 0, clientSize.cx, clientSize.cy };
         if (clientOnly)
         {
             int ix = (std::min)(2, (int)(avail.right - avail.left) / 4);
@@ -895,11 +895,11 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
     ReleaseDC(nullptr, screen);
 }
 
-static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT hfont,
+static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandle,
                            const RECT& rc, const std::wstring& text,
                            COLORREF textColor, COLORREF backgroundColor)
 {
-    if (!destBits || destW <= 0 || destH <= 0 || text.empty() || !hfont)
+    if (!destBits || destW <= 0 || destH <= 0 || text.empty() || !fontHandle)
         return;
 
     int w = rc.right - rc.left;
@@ -928,7 +928,7 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT hfont,
     }
 
     HGDIOBJ oldBmp = SelectObject(textDC, scratch);
-    HGDIOBJ oldFont = SelectObject(textDC, hfont);
+    HGDIOBJ oldFont = SelectObject(textDC, fontHandle);
     RECT fill = { 0, 0, w, h };
     HBRUSH bg = CreateSolidBrush(backgroundColor);
     FillRect(textDC, &fill, bg);
@@ -1175,8 +1175,8 @@ void Switcher::RenderLayered()
             {
                 int gPad = Scaled(10);
                 int gOut = gPad + Scaled(2);
-                Gdiplus::GraphicsPath inr, out;
-                BuildRoundRect(inr, InflateF(tile, gPad),
+                Gdiplus::GraphicsPath innerRing, out;
+                BuildRoundRect(innerRing, InflateF(tile, gPad),
                                static_cast<Gdiplus::REAL>(radius + gPad));
                 BuildRoundRect(out, InflateF(tile, gOut),
                                static_cast<Gdiplus::REAL>(radius + gOut));
@@ -1184,7 +1184,7 @@ void Switcher::RenderLayered()
                                      static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
                 Gdiplus::Pen accentPen(accentClr,
                                        static_cast<Gdiplus::REAL>((std::max)(2, Scaled(3))));
-                g.DrawPath(&darkPen, &inr);
+                g.DrawPath(&darkPen, &innerRing);
                 g.DrawPath(&accentPen, &out);
             }
         }
@@ -1259,9 +1259,9 @@ static DWORD WINAPI UIThreadProc(LPVOID param)
     // thumbnail rects line up on any monitor. Does not affect the host process.
     SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
-    Gdiplus::GdiplusStartupInput gsi = {};
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput = {};
     ULONG_PTR token = 0;
-    Gdiplus::GdiplusStartup(&token, &gsi, nullptr);
+    Gdiplus::GdiplusStartup(&token, &gdiplusStartupInput, nullptr);
 
     HINSTANCE hinst = static_cast<HINSTANCE>(param);
     g_initOk = g_switcher.Init(hinst);
