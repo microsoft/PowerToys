@@ -25,11 +25,6 @@ public partial class MainViewModel
     // persisted by SaveExcludedMonitorIds. Monitors not in this set are linked by default.
     private readonly HashSet<string> _excludedMonitorIds = new(StringComparer.OrdinalIgnoreCase);
 
-    // Set while LoadUIDisplaySettings is pushing the on-disk value into the
-    // LinkedLevelsActive observable property, so the partial-generated change
-    // hook does not re-save the value we just loaded.
-    private bool _suppressLinkedLevelsActiveSave;
-
     // Set while the toggle handler is seeding the initial LinkedBrightness value
     // so OnLinkedBrightnessChanged does not treat the seed as a user-driven change
     // and schedule a broadcast — the design promise is "no auto-write on toggle ON".
@@ -134,10 +129,7 @@ public partial class MainViewModel
     /// </summary>
     partial void OnLinkedLevelsActiveChanged(bool value)
     {
-        if (!_suppressLinkedLevelsActiveSave)
-        {
-            SaveLinkedLevelsActive(value);
-        }
+        SaveLinkedLevelsActive(value);
 
         if (value)
         {

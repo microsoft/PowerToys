@@ -284,11 +284,7 @@ namespace PowerDisplay
         private void QueueWindowSizeAdjustment()
         {
             // Use Low priority to ensure x:Bind visibility/layout updates land before measuring.
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                AdjustWindowSizeToContent();
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
-            });
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
         }
 
         private void OnRefreshClick(object sender, RoutedEventArgs e)

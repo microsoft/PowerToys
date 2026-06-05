@@ -9,7 +9,7 @@ namespace PowerDisplay.Common.Services
 {
     /// <summary>
     /// Pure decision logic for linked brightness, factored out of the WinUI ViewModel so initial
-    /// seed and profile behavior can be unit-tested without a DispatcherQueue.
+    /// seed behavior can be unit-tested without a DispatcherQueue.
     /// </summary>
     public static class LinkedBrightnessPlanner
     {
@@ -47,13 +47,5 @@ namespace PowerDisplay.Common.Services
                 .ThenBy(m => m.Id, System.StringComparer.Ordinal)
                 .Select(m => (int?)m.Brightness)
                 .FirstOrDefault();
-
-        /// <summary>
-        /// Profiles are per-monitor snapshots. Applying one while linked brightness is active
-        /// should leave linked mode before writing individual monitor values. Otherwise, the
-        /// master slider state can diverge from the per-monitor hardware values.
-        /// </summary>
-        public static bool ShouldDisableLinkedModeBeforeProfileApply(bool linkedLevelsActive) =>
-            linkedLevelsActive;
     }
 }

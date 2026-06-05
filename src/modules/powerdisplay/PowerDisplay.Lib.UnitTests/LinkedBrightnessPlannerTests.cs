@@ -96,16 +96,4 @@ public class LinkedBrightnessPlannerTests
         var monitors = new[] { Monitor("only", 1, 64) };
         Assert.AreEqual(64, LinkedBrightnessPlanner.Seed(monitors));
     }
-
-    [TestMethod]
-    public void ShouldDisableLinkedModeBeforeProfileApply_LinkedModeActive_True()
-    {
-        Assert.IsTrue(LinkedBrightnessPlanner.ShouldDisableLinkedModeBeforeProfileApply(linkedLevelsActive: true));
-    }
-
-    [TestMethod]
-    public void ShouldDisableLinkedModeBeforeProfileApply_LinkedModeInactive_False()
-    {
-        Assert.IsFalse(LinkedBrightnessPlanner.ShouldDisableLinkedModeBeforeProfileApply(linkedLevelsActive: false));
-    }
 }

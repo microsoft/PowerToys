@@ -485,17 +485,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             // slider immediately and must see the persisted exclusions.
             LoadExcludedMonitorIds(settings.Properties.ExcludedFromSyncMonitorIds);
 
-            // Suppress the save callback so reading the on-disk value back into the
-            // observable property does not immediately rewrite settings.json with the same value.
-            _suppressLinkedLevelsActiveSave = true;
-            try
-            {
-                LinkedLevelsActive = settings.Properties.LinkedLevelsActive;
-            }
-            finally
-            {
-                _suppressLinkedLevelsActiveSave = false;
-            }
+            LinkedLevelsActive = settings.Properties.LinkedLevelsActive;
 
             // Load custom VCP mappings (now using shared type from PowerDisplay.Common.Models)
             CustomVcpMappings = settings.Properties.CustomVcpMappings?.ToList() ?? new List<CustomVcpValueMapping>();

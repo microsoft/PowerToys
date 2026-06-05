@@ -262,7 +262,7 @@ public partial class MainViewModel
     /// </summary>
     private async Task ApplyProfileAsync(List<ProfileMonitorSetting> monitorSettings)
     {
-        if (LinkedBrightnessPlanner.ShouldDisableLinkedModeBeforeProfileApply(LinkedLevelsActive))
+        if (LinkedLevelsActive)
         {
             Logger.LogInfo("[Profile] Disabling linked brightness before applying per-monitor profile values");
             LinkedLevelsActive = false;
