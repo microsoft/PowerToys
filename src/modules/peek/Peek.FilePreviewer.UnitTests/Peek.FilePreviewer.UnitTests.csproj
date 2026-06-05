@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <ProjectGuid>{7E2F9161-0F5F-49E0-B64D-0F5D27AB1A26}</ProjectGuid>
+    <RootNamespace>Peek.FilePreviewer.UnitTests</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UseWinUI>true</UseWinUI>
+    <OutputType>Library</OutputType>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Peek.FilePreviewer.UnitTests\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Peek.FilePreviewer\Peek.FilePreviewer.csproj" />
+  </ItemGroup>
+</Project>
