@@ -92,6 +92,7 @@ public:
 
     virtual void destroy() override
     {
+        ShutdownAltWindowCycle(); // idempotent
         delete this;
     }
 
@@ -144,12 +145,14 @@ public:
     {
         m_enabled = true;
         Trace::EnableAltWindowCycle(true);
+        InitializeAltWindowCycle(reinterpret_cast<HINSTANCE>(&__ImageBase));
     }
 
     virtual void disable() override
     {
         m_enabled = false;
         Trace::EnableAltWindowCycle(false);
+        ShutdownAltWindowCycle();
     }
 
     virtual bool is_enabled() override
@@ -179,16 +182,14 @@ public:
         {
             Logger::trace(L"AltWindowCycle next-window hotkey pressed");
             Trace::CycleWindow(true);
-            CycleForegroundAppWindows(true);
-            return true;
+            return HandleAltWindowCycleHotkey(true);
         }
 
         if (hotkeyId == HotkeyPrevious)
         {
             Logger::trace(L"AltWindowCycle previous-window hotkey pressed");
             Trace::CycleWindow(false);
-            CycleForegroundAppWindows(false);
-            return true;
+            return HandleAltWindowCycleHotkey(false);
         }
 
         return false;

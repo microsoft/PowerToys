@@ -1,11 +1,18 @@
 #pragma once
 
-// Cycles the top-level windows of the currently focused application.
-//   forward == true  -> next window of the same app
-//   forward == false -> previous window of the same app
-//
-// "Same application" is defined as the same process image path, which correctly
-// groups multi-window apps (and multi-process apps like browsers, whose top-level
-// windows belong to the main process). The group is sorted by HWND so the order
-// is stable across activations and repeated presses cycle through every window.
+// Starts the dedicated UI thread that owns all overlay windows and the Switcher
+// state machine. Must be called from the PowerToys module enable() path.
+// Safe to call multiple times (idempotent).
+bool InitializeAltWindowCycle(HINSTANCE hinst);
+
+// Stops the UI thread and destroys all overlay resources. Safe to call when not
+// initialized (idempotent). Called from disable() and destroy().
+void ShutdownAltWindowCycle();
+
+// Called from on_hotkey() on the runner thread. Does a cheap window-count check
+// and posts to the UI thread. Returns false (do not swallow) if the focused app
+// has fewer than 2 cycle candidates and the overlay is not already active.
+bool HandleAltWindowCycleHotkey(bool forward);
+
+// Instant (no-overlay) cycle helper, kept for internal use.
 void CycleForegroundAppWindows(bool forward);
