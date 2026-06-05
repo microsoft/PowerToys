@@ -523,6 +523,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/MouseUtils/MousePointerCrosshairs.UnitTests/MousePointerCrosshairs.UnitTests.vcxproj" Id="6ff4b4e9-0336-470c-a711-b9adba249a8d" />
     <Project Path="src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1139,5 +1140,4 @@
   <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
   <Project Path="tools/project_template/ModuleTemplate/ModuleTemplateCompileTest.vcxproj" Id="64a80062-4d8b-4229-8a38-dfa1d7497749" />
 </Solution>
-
 

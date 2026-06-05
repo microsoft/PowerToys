@@ -84,12 +84,16 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CrosshairsGeometry.h" />
     <ClInclude Include="InclusiveCrosshairs.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CrosshairsGeometry.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="InclusiveCrosshairs.cpp" />
     <ClCompile Include="pch.cpp">

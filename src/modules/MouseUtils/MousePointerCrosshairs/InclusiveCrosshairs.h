@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include "CrosshairsGeometry.h"
 
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_OPACITY = 75;
 const winrt::Windows::UI::Color INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_COLOR = winrt::Windows::UI::ColorHelper::FromArgb(255, 255, 0, 0);
@@ -12,13 +13,6 @@ constexpr bool INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_IS_FIXED_LENGTH_ENABLED = fals
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_FIXED_LENGTH = 1;
 constexpr int INCLUSIVE_MOUSE_DEFAULT_CROSSHAIRS_ORIENTATION = 0; // 0=Both, 1=Vertical, 2=Horizontal
 constexpr bool INCLUSIVE_MOUSE_DEFAULT_AUTO_ACTIVATE = false;
-
-enum struct CrosshairsOrientation : int
-{
-    Both = 0,
-    VerticalOnly = 1,
-    HorizontalOnly = 2,
-};
 
 struct InclusiveCrosshairsSettings
 {
