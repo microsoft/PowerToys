@@ -21,14 +21,12 @@ namespace PowerDisplay.Common.Services
         /// <param name="Brightness">Current brightness percentage (0-100).</param>
         /// <param name="SupportsBrightness">Whether the monitor exposes brightness control.</param>
         /// <param name="Excluded">Whether the user excluded the monitor from linked brightness.</param>
-        /// <param name="HasValidBrightness">Whether brightness was successfully read from or written to hardware.</param>
         public readonly record struct LinkTarget(
             string Id,
             int MonitorNumber,
             int Brightness,
             bool SupportsBrightness,
-            bool Excluded,
-            bool HasValidBrightness);
+            bool Excluded);
 
         /// <summary>
         /// True when the monitor is driven by the linked master — it supports brightness and the
@@ -39,13 +37,12 @@ namespace PowerDisplay.Common.Services
 
         /// <summary>
         /// The value to seed the master slider with when link mode turns on, or null when there is
-        /// no linked target with a valid current brightness (the slider stays unavailable rather
-        /// than defaulting to an arbitrary value such as 50%). Prefers the lowest Windows DISPLAY
-        /// number and Id order for determinism when numbers are missing or tie.
+        /// no linked target. Prefers the lowest Windows DISPLAY number and Id order for
+        /// determinism when numbers are missing or tie.
         /// </summary>
         public static int? Seed(IEnumerable<LinkTarget> monitors) =>
             monitors
-                .Where(m => IsLinkedTarget(m) && m.HasValidBrightness)
+                .Where(IsLinkedTarget)
                 .OrderBy(m => m.MonitorNumber <= 0 ? int.MaxValue : m.MonitorNumber)
                 .ThenBy(m => m.Id, System.StringComparer.Ordinal)
                 .Select(m => (int?)m.Brightness)

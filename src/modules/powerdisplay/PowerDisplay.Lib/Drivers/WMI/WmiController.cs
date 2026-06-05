@@ -281,7 +281,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 Id = uniqueId,
                                 Name = string.Empty,
                                 CurrentBrightness = currentBrightness,
-                                HasValidBrightness = true,
                                 InstanceName = instanceName,
                                 Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
                                 CommunicationMethod = "WMI",

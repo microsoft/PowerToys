@@ -493,7 +493,6 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 monitor.BrightnessVcpMax = (int)max;
                 monitor.CurrentBrightness = brightnessInfo.ToPercentage();
-                monitor.HasValidBrightness = true;
             }
         }
 

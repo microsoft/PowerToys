@@ -14,8 +14,8 @@ using PowerDisplay.Configuration;
 namespace PowerDisplay.ViewModels;
 
 /// <summary>
-/// MainViewModel — linked-brightness behavior: toggle side effects, initial-value
-/// fallback chain, per-monitor exclusion set, debounced broadcast across linked monitors.
+/// MainViewModel — linked-brightness behavior: toggle side effects, initial value,
+/// per-monitor exclusion set, debounced broadcast across linked monitors.
 /// </summary>
 public partial class MainViewModel
 {
@@ -34,14 +34,6 @@ public partial class MainViewModel
     // so OnLinkedBrightnessChanged does not treat the seed as a user-driven change
     // and schedule a broadcast — the design promise is "no auto-write on toggle ON".
     private bool _suppressLinkedBrightnessBroadcast;
-
-    // True when link mode is active but the initial slider value could not be seeded yet because
-    // no linked target with a readable brightness was available (e.g. link was persisted ON and the
-    // toggle hook ran during construction, before monitor discovery; every monitor is currently
-    // excluded; or hardware reads failed). The seed is applied as soon as a readable target appears
-    // (see TrySeedPendingInitialBrightness), so a restart with link enabled does not leave the
-    // master slider stuck at its default 0.
-    private bool _pendingInitialSeed;
 
     private DispatcherQueueTimer? _linkedBrightnessCommitTimer;
 
@@ -63,8 +55,7 @@ public partial class MainViewModel
             m.MonitorNumber,
             m.Brightness,
             m.SupportsBrightness,
-            _excludedMonitorIds.Contains(m.Id),
-            m.HasValidBrightness))
+            _excludedMonitorIds.Contains(m.Id)))
             .ToList();
 
     /// <summary>
@@ -75,13 +66,14 @@ public partial class MainViewModel
 
     /// <summary>
     /// Add or remove a monitor from the linked-brightness exclusion set, persist the change, and
-    /// refresh the "N linked" summary. When a monitor is brought back into the linked set
+    /// refresh the "N linked" summary. When a monitor is brought back into an existing linked set
     /// (<paramref name="excluded"/> = false) while link mode is on, re-broadcast so it snaps to
-    /// the current master level — that is the user's explicit intent in clicking "link this one".
-    /// Excluding a monitor does not write hardware: it simply stops following the group.
+    /// the current master level. If it is the first linked target, seed the master slider from it
+    /// instead. Excluding a monitor does not write hardware: it simply stops following the group.
     /// </summary>
     internal void SetMonitorExcludedFromSync(string monitorId, bool excluded)
     {
+        var hadLinkedTarget = Monitors.Any(IsLinkedTarget);
         var changed = excluded
             ? _excludedMonitorIds.Add(monitorId)
             : _excludedMonitorIds.Remove(monitorId);
@@ -93,19 +85,24 @@ public partial class MainViewModel
 
         SaveExcludedMonitorIds();
 
-        // Excluding can empty the linked set (slider must disable); including can refill it (slider
-        // re-enables, and a deferred startup seed may now be possible).
-        IsLinkedBrightnessAvailable = !_pendingInitialSeed && Monitors.Any(IsLinkedTarget);
+        // Excluding can empty the linked set (slider must disable); including can refill it.
+        IsLinkedBrightnessAvailable = Monitors.Any(IsLinkedTarget);
         OnPropertyChanged(nameof(LinkedMonitorsCount));
         OnPropertyChanged(nameof(LinkedMonitorsCountText));
         OnPropertyChanged(nameof(ExcludedMonitorsCount));
         OnPropertyChanged(nameof(ExcludedMonitorsCountText));
         OnPropertyChanged(nameof(HasExcludedMonitors));
-        TrySeedPendingInitialBrightness();
 
         if (!excluded && LinkedLevelsActive)
         {
-            ScheduleLinkedBrightnessCommit();
+            if (hadLinkedTarget)
+            {
+                ScheduleLinkedBrightnessCommit();
+            }
+            else
+            {
+                SeedInitialLinkedBrightness();
+            }
         }
     }
 
@@ -193,47 +190,16 @@ public partial class MainViewModel
     /// <summary>
     /// Seeds <see cref="LinkedBrightness"/> with the initial value used to position the master
     /// slider when link mode turns on, via <see cref="LinkedBrightnessPlanner.Seed"/> (lowest
-    /// DISPLAY number, then deterministic fallback). When no linked target has a readable
-    /// brightness yet — link was persisted ON and this ran during construction before discovery,
-    /// every monitor is excluded, or hardware reads failed — the seed is deferred
-    /// (<see cref="_pendingInitialSeed"/>) and applied as soon as a readable target appears, so a
-    /// restart with link enabled never leaves the slider stuck at its default 0. The seed is
-    /// positional only: it is never written to hardware (the suppress flag gates
-    /// <see cref="OnLinkedBrightnessChanged"/>), so the first user gesture is the first broadcast.
+    /// DISPLAY number, then deterministic fallback). The seed is positional only: it is never
+    /// written to hardware (the suppress flag gates <see cref="OnLinkedBrightnessChanged"/>), so
+    /// the first user gesture is the first broadcast.
     /// </summary>
     private void SeedInitialLinkedBrightness()
     {
         var seed = LinkedBrightnessPlanner.Seed(BuildLinkTargets());
-        if (!seed.HasValue)
-        {
-            // No readable target yet — defer until one appears (post-discovery or after un-excluding).
-            _pendingInitialSeed = true;
-            IsLinkedBrightnessAvailable = false;
-            return;
-        }
-
-        _pendingInitialSeed = false;
-        IsLinkedBrightnessAvailable = true;
-        SetLinkedBrightnessSilently(seed.Value);
-    }
-
-    /// <summary>
-    /// Apply the deferred initial seed once link mode is active and a linked target with a readable
-    /// brightness has become available. No-op otherwise. Safe to call after every discovery,
-    /// exclusion change, or successful brightness write.
-    /// </summary>
-    internal void TrySeedPendingInitialBrightness()
-    {
-        if (!_pendingInitialSeed || !LinkedLevelsActive)
-        {
-            return;
-        }
-
-        var seed = LinkedBrightnessPlanner.Seed(BuildLinkTargets());
+        IsLinkedBrightnessAvailable = seed.HasValue;
         if (seed.HasValue)
         {
-            _pendingInitialSeed = false;
-            IsLinkedBrightnessAvailable = true;
             SetLinkedBrightnessSilently(seed.Value);
         }
     }
@@ -258,18 +224,21 @@ public partial class MainViewModel
     /// <summary>
     /// Recompute <see cref="IsLinkedBrightnessAvailable"/> and the linked-monitors count after a
     /// monitor add/remove/refresh. Called from <c>UpdateMonitorList</c> so the master slider's
-    /// enabled state and "N linked" subtitle stay in sync with the live monitor set, and applies a
-    /// deferred startup seed once monitors have been discovered.
+    /// enabled state and "N linked" subtitle stay in sync with the live monitor set.
     /// </summary>
     internal void RecomputeLinkedBrightnessAvailability()
     {
-        IsLinkedBrightnessAvailable = !_pendingInitialSeed && Monitors.Any(IsLinkedTarget);
+        IsLinkedBrightnessAvailable = Monitors.Any(IsLinkedTarget);
         OnPropertyChanged(nameof(LinkedMonitorsCount));
         OnPropertyChanged(nameof(LinkedMonitorsCountText));
         OnPropertyChanged(nameof(ExcludedMonitorsCount));
         OnPropertyChanged(nameof(ExcludedMonitorsCountText));
         OnPropertyChanged(nameof(HasExcludedMonitors));
-        TrySeedPendingInitialBrightness();
+
+        if (LinkedLevelsActive)
+        {
+            SeedInitialLinkedBrightness();
+        }
     }
 
     private void ScheduleLinkedBrightnessCommit()

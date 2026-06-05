@@ -153,11 +153,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public partial int LinkedBrightness { get; set; }
 
     /// <summary>
-    /// Gets a value indicating whether the linked brightness slider has a usable initial value.
-    /// False when no linked monitor reports <see cref="MonitorViewModel.SupportsBrightness"/> with
-    /// a readable current brightness, in which case the master slider stays disabled instead of
-    /// being seeded with an arbitrary default (per design — initial value only positions the
-    /// slider, no auto-write on toggle ON).
+    /// Gets a value indicating whether the linked brightness slider has at least one linked
+    /// brightness-capable monitor to control.
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLinkedBrightnessSliderEnabled))]

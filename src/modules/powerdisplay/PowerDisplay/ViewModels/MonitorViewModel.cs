@@ -86,11 +86,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(Brightness));
         }
 
-        // A successful write turns a placeholder brightness into a usable linked-mode seed.
-        if (await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync))
-        {
-            _mainViewModel?.TrySeedPendingInitialBrightness();
-        }
+        await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
     }
 
     /// <summary>
@@ -259,11 +255,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// Gets the monitor number from the underlying monitor model (Windows DISPLAY number)
     /// </summary>
     public int MonitorNumber => _monitor.MonitorNumber;
-
-    /// <summary>
-    /// Gets a value indicating whether brightness was successfully read from or written to hardware.
-    /// </summary>
-    public bool HasValidBrightness => _monitor.HasValidBrightness;
 
     /// <summary>
     /// Gets the display name - includes monitor number when multiple monitors exist.

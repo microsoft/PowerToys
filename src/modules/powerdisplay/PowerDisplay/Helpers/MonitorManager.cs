@@ -247,11 +247,7 @@ namespace PowerDisplay.Helpers
                 monitorId,
                 brightness,
                 (ctrl, mon, val, ct) => ctrl.SetBrightnessAsync(mon, val, ct),
-                (mon, val) =>
-                {
-                    mon.CurrentBrightness = val;
-                    mon.HasValidBrightness = true;
-                },
+                (mon, val) => mon.CurrentBrightness = val,
                 cancellationToken);
 
         /// <summary>

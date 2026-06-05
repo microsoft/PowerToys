@@ -130,7 +130,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 {
                     Id = monitorId,
                     Name = name.Trim(),
-                    CurrentBrightness = 50, // Placeholder only; HasValidBrightness stays false if the VCP read fails
+                    CurrentBrightness = 50, // Initial placeholder; overwritten if the VCP read succeeds
                     Handle = physicalMonitor.HPhysicalMonitor,
                     Capabilities = MonitorCapabilities.DdcCi,
                     CommunicationMethod = "DDC/CI",
