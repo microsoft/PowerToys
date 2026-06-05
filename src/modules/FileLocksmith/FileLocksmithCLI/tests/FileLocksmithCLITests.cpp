@@ -132,5 +132,17 @@ namespace FileLocksmithCLIUnitTests
             Assert::AreEqual(1, result.exit_code);
             Assert::AreEqual(std::wstring(L"query-wait"), result.command_name);
         }
+
+        TEST_METHOD(TestNoPathsAfterFlags)
+        {
+            MockProcessFinder finder;
+            MockProcessTerminator terminator;
+            MockStringProvider strings;
+
+            wchar_t* argv[] = { (wchar_t*)L"exe", (wchar_t*)L"--json" };
+            auto result = run_command(2, argv, finder, terminator, strings);
+
+            Assert::AreEqual(1, result.exit_code);
+        }
     };
 }
