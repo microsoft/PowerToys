@@ -180,6 +180,12 @@ jobs:
               return [...labels].filter(l => VALID_SET.has(l));
             }
 
+            // Cap on how many labels path-mapping is allowed to apply on its
+            // own. PRs that touch >5 modules are almost always cross-cutting
+            // build/infra changes — adding 10+ Product labels just adds noise.
+            // In those cases we defer to AI reasoning over the PR title/body.
+            const MAX_PATH_LABELS = 5;
+
             async function listChangedFiles(prNumber) {
               const files = [];
               // Cap at 10 pages = 1000 files. PRs larger than this almost always
@@ -313,11 +319,26 @@ jobs:
                 }
               }
 
-              // AI fallback fires only if path mapping returned nothing.
+              // Over-cap suppression: if path mapping returned too many labels
+              // (cross-cutting PR), drop the deterministic suggestions and
+              // defer to AI reasoning over title/body.
+              const overCap = pathLabels.length > MAX_PATH_LABELS;
+              if (overCap) {
+                console.log(`Path mapping returned ${pathLabels.length} labels (>${MAX_PATH_LABELS}) — deferring to AI fallback.`);
+                pathLabels = [];
+              }
+
+              // AI fallback fires when path mapping returned nothing usable
+              // (either no match, or suppressed because over-cap).
               let aiLabels = [];
               if (pathLabels.length === 0) {
                 aiLabels = await aiSuggestLabels(pr.title ?? '', pr.body ?? '');
                 console.log(`AI fallback suggested: ${JSON.stringify(aiLabels)}`);
+                // Apply the same cap to AI output as a safety net.
+                if (aiLabels.length > MAX_PATH_LABELS) {
+                  console.log(`AI returned ${aiLabels.length} labels — capping at ${MAX_PATH_LABELS}.`);
+                  aiLabels = aiLabels.slice(0, MAX_PATH_LABELS);
+                }
               }
 
               const merged = [...new Set([...pathLabels, ...aiLabels])]
