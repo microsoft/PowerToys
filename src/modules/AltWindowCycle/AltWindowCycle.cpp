@@ -78,26 +78,26 @@ namespace AltTabStyle
 
     inline Gdiplus::Color Transparent() { return Gdiplus::Color(0, 0, 0, 0); }
     inline Gdiplus::Color TranslucentBackdrop() { return Gdiplus::Color(180, 0, 255, 0); }
-    inline Gdiplus::Color DebugMagenta() { return Gdiplus::Color(255, 255, 0, 255); }
     inline Gdiplus::Color WhitePreview() { return Gdiplus::Color(255, 255, 255, 255); }
     inline Gdiplus::Color Card(bool selected)
     {
         return selected ? Gdiplus::Color(255, 58, 58, 62)
                         : Gdiplus::Color(255, 43, 43, 46);
     }
-    inline Gdiplus::Color PreviewMask(bool selected, bool magentaDebug, bool translucentBackdrop)
+    constexpr COLORREF CardRef(bool selected)
     {
-        if (translucentBackdrop)
-            return Gdiplus::Color(255, 0, 255, 0);
-        if (magentaDebug)
-            return DebugMagenta();
-        return Card(selected);
+        return selected ? RGB(58, 58, 62) : RGB(43, 43, 46);
     }
     inline Gdiplus::Color Accent(COLORREF accent)
     {
         return Gdiplus::Color(255, GetRValue(accent), GetGValue(accent), GetBValue(accent));
     }
     inline Gdiplus::Color SurfaceStrokeDefault() { return Gdiplus::Color(64, 255, 255, 255); }
+    inline Gdiplus::Color PreviewStroke(bool selected)
+    {
+        return selected ? Gdiplus::Color(90, 255, 255, 255)
+                        : Gdiplus::Color(45, 255, 255, 255);
+    }
     inline Gdiplus::Color FocusShadow() { return Gdiplus::Color(150, 0, 0, 0); }
 }
 
@@ -253,11 +253,10 @@ public:
     void OnHotkey(bool forward);
 
 private:
-    enum class St { Idle, Pending, Visible };
+    enum class St { Idle, Visible };
 
     static const UINT_PTR TIMER_ID = 1;
     static const UINT TIMER_MS = 25;
-    static const DWORD SHOW_DELAY_MS = 180;
     static const int MAX_COLS = 6;
 
     static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -294,7 +293,6 @@ private:
     std::vector<HICON> icons;
     HWND anchorWindow = nullptr;
     int selected = 0;
-    DWORD startTick = 0;
 
     double scale = 1.0;
     int cols = 1, rows = 1;
@@ -421,8 +419,8 @@ void Switcher::OnHotkey(bool forward)
 
         anchorWindow = fg;
         selected = Wrap(forward ? idx + 1 : idx - 1, static_cast<int>(windows.size()));
-        state = St::Pending;
-        startTick = GetTickCount();
+        ShowOverlayWindow();
+        state = St::Visible;
         SetTimer(overlay, TIMER_ID, TIMER_MS, nullptr);
         g_switcherActive.store(true);
     }
@@ -448,11 +446,6 @@ void Switcher::OnTick()
     {
         Commit();
         return;
-    }
-    if (state == St::Pending && (GetTickCount() - startTick) >= SHOW_DELAY_MS)
-    {
-        ShowOverlayWindow();
-        state = St::Visible;
     }
 }
 
@@ -566,8 +559,6 @@ void Switcher::ShowOverlayWindow()
     bool translucentBackdrop = GetEnvironmentVariableW(L"AWC_TRANSLUCENT_BACKDROP", nullptr, 0) != 0;
     if (translucentBackdrop)
     {
-        SetWindowPos(backdropHost, HWND_TOPMOST, x, y, panelW, panelH,
-                     SWP_NOACTIVATE | SWP_SHOWWINDOW);
         RenderBackdrop();
     }
     else
@@ -576,7 +567,7 @@ void Switcher::ShowOverlayWindow()
     }
 
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
-                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                 SWP_NOACTIVATE | SWP_NOOWNERZORDER);
     if (!magentaDebug && !translucentBackdrop)
         EnableAcrylic(thumbHost, GetAcrylicGradientABGR());
     DWORD cornerPref = DWMWCP_ROUND;
@@ -613,15 +604,19 @@ void Switcher::ShowOverlayWindow()
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RegisterThumbnails();
 
+    // Update the hidden layered bitmap before showing it. Otherwise monitor/DPI
+    // switches can flash the previous-size overlay for one frame.
+    RenderLayered();
+    SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
+                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
     SetWindowPos(overlay, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
-    RenderLayered();
     SetWindowPos(thumbHost, overlay, 0, 0, 0, 0,
                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
     if (translucentBackdrop)
     {
         SetWindowPos(backdropHost, thumbHost, 0, 0, 0, 0,
-                     SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+                     SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
     }
 }
 
@@ -646,12 +641,14 @@ void Switcher::ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int&
     gap = Scaled(26);
     tileW = Scaled(300);
     headerH = Scaled(44);
-    previewH = Scaled(176);
-    inner = 0;
+    previewH = Scaled(158);
+    // Public DWM thumbnails are rectangular and cannot be alpha-clipped, so the
+    // live preview is an intentional inset viewport inside rounded card chrome.
+    inner = Scaled(8);
     radius = Scaled(8);
-    cardTrimBottom = radius;
+    cardTrimBottom = 0;
     iconSize = Scaled(24);
-    tileH = headerH + previewH;
+    tileH = headerH + inner + previewH + inner;
 
     int workW = work.right - work.left;
     int workH = work.bottom - work.top;
@@ -681,7 +678,10 @@ RECT Switcher::TileRect(int index) const
 
 RECT Switcher::PreviewRect(const RECT& tile) const
 {
-    RECT r = { tile.left + inner, tile.top + headerH, tile.right - inner, tile.bottom - inner };
+    RECT r = { tile.left + inner,
+               tile.top + headerH + inner,
+               tile.right - inner,
+               tile.bottom - inner };
     return r;
 }
 
@@ -743,11 +743,9 @@ void Switcher::RegisterThumbnails()
         GetEnvironmentVariableW(L"AWC_WHITE_PREVIEW", nullptr, 0))
         return;
 
-    const int topOver = (std::max)(3, Scaled(3));
     for (size_t i = 0; i < windows.size(); ++i)
     {
         RECT dest = PreviewRect(TileRect(static_cast<int>(i)));
-        dest.top -= topOver;
         HTHUMBNAIL th = nullptr;
         if (FAILED(DwmRegisterThumbnail(thumbHost, windows[i], &th)) || !th)
         {
@@ -802,46 +800,13 @@ void Switcher::EnsureFont()
         font = nullptr;
     }
     int height = -Scaled(15);
-    BYTE quality = scale > 1.01 ? ANTIALIASED_QUALITY : CLEARTYPE_NATURAL_QUALITY;
     font = CreateFontW(height, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
                        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                       quality, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
+                       CLEARTYPE_NATURAL_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
     fontScale = scale;
 }
 
 // ---- rendering helpers -------------------------------------------------------
-
-static void ClearPreviewBottomCorners(Gdiplus::Graphics& g, const RECT& pv, int radius)
-{
-    Gdiplus::REAL r = static_cast<Gdiplus::REAL>(radius);
-    if (r <= 0)
-        return;
-
-    Gdiplus::REAL L = static_cast<Gdiplus::REAL>(pv.left);
-    Gdiplus::REAL R = static_cast<Gdiplus::REAL>(pv.right);
-    Gdiplus::REAL B = static_cast<Gdiplus::REAL>(pv.bottom);
-    Gdiplus::SolidBrush clearBrush(AltTabStyle::Transparent());
-
-    Gdiplus::GraphicsState state = g.Save();
-    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-    g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
-
-    Gdiplus::GraphicsPath bottomL;
-    bottomL.AddLine(L, B - r, L, B);
-    bottomL.AddLine(L, B, L + r, B);
-    bottomL.AddArc(L, B - 2 * r, 2 * r, 2 * r, 90, 90);
-    bottomL.CloseFigure();
-    g.FillPath(&clearBrush, &bottomL);
-
-    Gdiplus::GraphicsPath bottomR;
-    bottomR.AddLine(R, B - r, R, B);
-    bottomR.AddLine(R, B, R - r, B);
-    bottomR.AddArc(R - 2 * r, B - 2 * r, 2 * r, 2 * r, 90, -90);
-    bottomR.CloseFigure();
-    g.FillPath(&clearBrush, &bottomR);
-
-    g.Restore(state);
-}
 
 static void BuildRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r, Gdiplus::REAL rad)
 {
@@ -856,25 +821,6 @@ static void BuildRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r,
     path.AddArc(r.GetRight() - d, r.Y, d, d, 270, 90);
     path.AddArc(r.GetRight() - d, r.GetBottom() - d, d, d, 0, 90);
     path.AddArc(r.X, r.GetBottom() - d, d, d, 90, 90);
-    path.CloseFigure();
-}
-
-static void BuildTopRoundRect(Gdiplus::GraphicsPath& path, const Gdiplus::RectF& r, Gdiplus::REAL rad)
-{
-    path.Reset();
-    Gdiplus::REAL d = rad * 2;
-    if (d <= 0 || d > r.Width || d > r.Height)
-    {
-        path.AddRectangle(r);
-        return;
-    }
-    path.StartFigure();
-    path.AddLine(r.X, r.GetBottom(), r.X, r.Y + rad);
-    path.AddArc(r.X, r.Y, d, d, 180, 90);
-    path.AddLine(r.X + rad, r.Y, r.GetRight() - rad, r.Y);
-    path.AddArc(r.GetRight() - d, r.Y, d, d, 270, 90);
-    path.AddLine(r.GetRight(), r.Y + rad, r.GetRight(), r.GetBottom());
-    path.AddLine(r.GetRight(), r.GetBottom(), r.X, r.GetBottom());
     path.CloseFigure();
 }
 
@@ -990,23 +936,81 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
     ReleaseDC(nullptr, screen);
 }
 
-static void DrawHeaderText(HDC dc, HFONT hfont, const RECT& rc,
-                           const std::wstring& text, COLORREF color)
+static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT hfont,
+                           const RECT& rc, const std::wstring& text,
+                           COLORREF textColor, COLORREF backgroundColor)
 {
-    if (text.empty() || !hfont)
+    if (!destBits || destW <= 0 || destH <= 0 || text.empty() || !hfont)
         return;
 
-    HGDIOBJ oldFont = SelectObject(dc, hfont);
-    int oldBk = SetBkMode(dc, TRANSPARENT);
-    COLORREF oldColor = SetTextColor(dc, color);
+    int w = rc.right - rc.left;
+    int h = rc.bottom - rc.top;
+    if (w <= 0 || h <= 0)
+        return;
 
-    RECT textRc = rc;
-    DrawTextW(dc, text.c_str(), static_cast<int>(text.size()), &textRc,
+    HDC screen = GetDC(nullptr);
+    HDC textDC = CreateCompatibleDC(screen);
+
+    BITMAPINFO bi = {};
+    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
+    bi.bmiHeader.biWidth = w;
+    bi.bmiHeader.biHeight = -h;
+    bi.bmiHeader.biPlanes = 1;
+    bi.bmiHeader.biBitCount = 32;
+    bi.bmiHeader.biCompression = BI_RGB;
+
+    void* scratchBits = nullptr;
+    HBITMAP scratch = CreateDIBSection(screen, &bi, DIB_RGB_COLORS, &scratchBits, nullptr, 0);
+    if (!scratch)
+    {
+        DeleteDC(textDC);
+        ReleaseDC(nullptr, screen);
+        return;
+    }
+
+    HGDIOBJ oldBmp = SelectObject(textDC, scratch);
+    HGDIOBJ oldFont = SelectObject(textDC, hfont);
+    RECT fill = { 0, 0, w, h };
+    HBRUSH bg = CreateSolidBrush(backgroundColor);
+    FillRect(textDC, &fill, bg);
+    DeleteObject(bg);
+
+    int oldBk = SetBkMode(textDC, TRANSPARENT);
+    COLORREF oldColor = SetTextColor(textDC, textColor);
+
+    RECT textRc = fill;
+    DrawTextW(textDC, text.c_str(), static_cast<int>(text.size()), &textRc,
               DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX);
 
-    SetTextColor(dc, oldColor);
-    SetBkMode(dc, oldBk);
-    SelectObject(dc, oldFont);
+    SetTextColor(textDC, oldColor);
+    SetBkMode(textDC, oldBk);
+    SelectObject(textDC, oldFont);
+
+    const BYTE* src = static_cast<const BYTE*>(scratchBits);
+    for (int y = 0; y < h; ++y)
+    {
+        int dy = rc.top + y;
+        if (dy < 0 || dy >= destH)
+            continue;
+        for (int x = 0; x < w; ++x)
+        {
+            int dx = rc.left + x;
+            if (dx < 0 || dx >= destW)
+                continue;
+
+            const BYTE* s = src + (static_cast<size_t>(y) * w + x) * 4;
+            BYTE* d = destBits + (static_cast<size_t>(dy) * destW + dx) * 4;
+            d[0] = s[0];
+            d[1] = s[1];
+            d[2] = s[2];
+            d[3] = 255;
+        }
+    }
+
+    SelectObject(textDC, oldBmp);
+    DeleteObject(scratch);
+    DeleteDC(textDC);
+    ReleaseDC(nullptr, screen);
 }
 
 static COLORREF GetAccentColor()
@@ -1121,8 +1125,6 @@ void Switcher::RenderLayered()
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
         g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
 
-        bool magentaDebug = GetEnvironmentVariableW(L"AWC_MAGENTA", nullptr, 0) != 0;
-        bool translucentBackdrop = GetEnvironmentVariableW(L"AWC_TRANSLUCENT_BACKDROP", nullptr, 0) != 0;
         bool noThumbnails = GetEnvironmentVariableW(L"AWC_NO_THUMBNAILS", nullptr, 0) != 0;
         bool whitePreview = GetEnvironmentVariableW(L"AWC_WHITE_PREVIEW", nullptr, 0) != 0;
 
@@ -1148,18 +1150,17 @@ void Switcher::RenderLayered()
             bool sel = (i == selected);
             RECT pv = PreviewRect(tile);
 
-            // Opaque header tab only; no full-height card behind the preview.
-            RECT tab = { tile.left, tile.top, tile.right, pv.top };
-            Gdiplus::GraphicsPath tabPath;
-            BuildTopRoundRect(tabPath, InflateF(tab, 0), static_cast<Gdiplus::REAL>(radius));
-            Gdiplus::SolidBrush tabBrush(AltTabStyle::Card(sel));
-            g.FillPath(&tabBrush, &tabPath);
+            // Full rounded card chrome. The live DWM preview is a rectangular
+            // viewport inside it, which avoids fighting public DWM's square thumbnail.
+            Gdiplus::GraphicsPath cardPath;
+            BuildRoundRect(cardPath, InflateF(tile, 0), static_cast<Gdiplus::REAL>(radius));
+            Gdiplus::SolidBrush cardBrush(AltTabStyle::Card(sel));
+            g.FillPath(&cardBrush, &cardPath);
 
             int pw = pv.right - pv.left;
             int ph = pv.bottom - pv.top;
             if (!noThumbnails && pw > 0 && ph > 0)
             {
-                Gdiplus::REAL r = static_cast<Gdiplus::REAL>(radius + Scaled(4));
                 if (whitePreview)
                 {
                     g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
@@ -1170,7 +1171,6 @@ void Switcher::RenderLayered()
                                     static_cast<Gdiplus::REAL>(pv.top),
                                     static_cast<Gdiplus::REAL>(pw),
                                     static_cast<Gdiplus::REAL>(ph));
-                    ClearPreviewBottomCorners(g, pv, static_cast<int>(r));
                     g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
                 }
                 else
@@ -1185,32 +1185,12 @@ void Switcher::RenderLayered()
                                     static_cast<Gdiplus::REAL>(pw),
                                     static_cast<Gdiplus::REAL>(ph));
                     g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-
-                    Gdiplus::REAL cover = static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1)));
-                    Gdiplus::REAL L = static_cast<Gdiplus::REAL>(pv.left);
-                    Gdiplus::REAL R = static_cast<Gdiplus::REAL>(pv.right);
-                    Gdiplus::REAL B = static_cast<Gdiplus::REAL>(pv.bottom);
-                    Gdiplus::REAL Lc = L - cover;
-                    Gdiplus::REAL Rc = R + cover;
-                    Gdiplus::REAL Bc = B + cover;
-                    Gdiplus::SolidBrush maskBrush(
-                        AltTabStyle::PreviewMask(sel, magentaDebug, translucentBackdrop));
-                    g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-
-                    Gdiplus::GraphicsPath bottomL;
-                    bottomL.AddLine(Lc, Bc - r, Lc, Bc);
-                    bottomL.AddLine(Lc, Bc, Lc + r, Bc);
-                    bottomL.AddArc(Lc, Bc - 2 * r, 2 * r, 2 * r, 90, 90);
-                    bottomL.CloseFigure();
-                    g.FillPath(&maskBrush, &bottomL);
-
-                    Gdiplus::GraphicsPath bottomR;
-                    bottomR.AddLine(Rc, Bc - r, Rc, Bc);
-                    bottomR.AddLine(Rc, Bc, Rc - r, Bc);
-                    bottomR.AddArc(Rc - 2 * r, Bc - 2 * r, 2 * r, 2 * r, 90, -90);
-                    bottomR.CloseFigure();
-                    g.FillPath(&maskBrush, &bottomR);
                 }
+                Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
+                                         static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
+                g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
+                g.DrawRectangle(&previewPen, pv.left, pv.top, pw - 1, ph - 1);
+                g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
             }
 
             // Header tab: app icon + window title.
@@ -1228,7 +1208,8 @@ void Switcher::RenderLayered()
             std::wstring text = GetTitle(windows[i]);
             g.Flush();
             RECT textRc = { textLeft, tile.top, hdr.right, tile.top + headerH };
-            DrawHeaderText(memDC, font, textRc, text, AltTabStyle::HeaderTextRef(sel));
+            DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, textRc, text,
+                           AltTabStyle::HeaderTextRef(sel), AltTabStyle::CardRef(sel));
 
             // Two-ring accent focus ring around the selected tile.
             if (sel)
