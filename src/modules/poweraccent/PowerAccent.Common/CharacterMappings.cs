@@ -83,7 +83,7 @@ public static class CharacterMappings
             [LetterKey.VK_BACKSLASH] = ["`", "~"],
         }),
 
-        // Belarusian Latin (Łacinka)
+        // Belarusian Latin
         new(Language.BE, "Belarusian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_C] = ["ć", "č"],
