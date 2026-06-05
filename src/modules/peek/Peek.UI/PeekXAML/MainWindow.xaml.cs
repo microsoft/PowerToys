@@ -330,12 +330,11 @@ namespace Peek.UI
 
             _keyboardHookProc = LowLevelKeyboardHookCallback;
             using var process = System.Diagnostics.Process.GetCurrentProcess();
-            using var module = process.MainModule;
-            var moduleHandle = NativeMethods.GetModuleHandle(module?.ModuleName);
+            var moduleHandle = NativeMethods.GetModuleHandle(process.MainModule?.ModuleName);
 
             _keyboardHookHandle = NativeMethods.SetWindowsHookEx(
                 NativeMethods.WH_KEYBOARD_LL,
-                _keyboardHookProc,
+                _keyboardHookProc!,
                 moduleHandle,
                 0);
 
@@ -376,52 +375,61 @@ namespace Peek.UI
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
                 var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
-                bool ctrlPressed = (NativeMethods.GetAsyncKeyState(0x11) & 0x8000) != 0;
-                bool altPressed = (NativeMethods.GetAsyncKeyState(0x12) & 0x8000) != 0;
-                bool shiftPressed = (NativeMethods.GetAsyncKeyState(0x10) & 0x8000) != 0;
+
+                // Fast-path: skip keys we never handle
+                if (hookStruct.vkCode != VK_W && hookStruct.vkCode != VK_ESCAPE &&
+                    hookStruct.vkCode != VK_LEFT && hookStruct.vkCode != VK_RIGHT &&
+                    hookStruct.vkCode != VK_UP && hookStruct.vkCode != VK_DOWN)
+                {
+                    return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+                }
 
                 // Only handle when our window is in the foreground
                 var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
-
-                if (foreground == _cachedWindowHandle)
+                if (foreground != _cachedWindowHandle)
                 {
-                    bool handled = false;
+                    return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+                }
 
-                    if (ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_W)
-                    {
-                        DispatcherQueue.TryEnqueue(Uninitialize);
-                        handled = true;
-                    }
-                    else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_ESCAPE)
-                    {
-                        DispatcherQueue.TryEnqueue(Uninitialize);
-                        handled = true;
-                    }
-                    else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_LEFT)
-                    {
-                        DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
-                        handled = true;
-                    }
-                    else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_RIGHT)
-                    {
-                        DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
-                        handled = true;
-                    }
-                    else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_UP)
-                    {
-                        DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
-                        handled = true;
-                    }
-                    else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_DOWN)
-                    {
-                        DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
-                        handled = true;
-                    }
+                bool ctrlPressed = (NativeMethods.GetAsyncKeyState(0x11) & 0x8000) != 0;
+                bool altPressed = (NativeMethods.GetAsyncKeyState(0x12) & 0x8000) != 0;
+                bool shiftPressed = (NativeMethods.GetAsyncKeyState(0x10) & 0x8000) != 0;
+                bool handled = false;
 
-                    if (handled)
-                    {
-                        return (IntPtr)1;
-                    }
+                if (ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_W)
+                {
+                    DispatcherQueue.TryEnqueue(Uninitialize);
+                    handled = true;
+                }
+                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_ESCAPE)
+                {
+                    DispatcherQueue.TryEnqueue(Uninitialize);
+                    handled = true;
+                }
+                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_LEFT)
+                {
+                    DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
+                    handled = true;
+                }
+                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_RIGHT)
+                {
+                    DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
+                    handled = true;
+                }
+                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_UP)
+                {
+                    DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
+                    handled = true;
+                }
+                else if (!ctrlPressed && !altPressed && !shiftPressed && hookStruct.vkCode == VK_DOWN)
+                {
+                    DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
+                    handled = true;
+                }
+
+                if (handled)
+                {
+                    return (IntPtr)1;
                 }
             }
 
