@@ -13,8 +13,6 @@
 #include <shellscalingapi.h>
 #include <objidl.h>
 #include <gdiplus.h>
-#include <cwchar>
-#include <cstdlib>
 #include <atomic>
 
 // Win11 system backdrop / corner attributes (in case SDK is older).
@@ -36,10 +34,6 @@
 #ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
 #endif
-#ifndef PW_RENDERFULLCONTENT
-#define PW_RENDERFULLCONTENT 0x00000002
-#endif
-
 // Undocumented but stable composition API used by the shell for acrylic.
 enum ACCENT_STATE
 {
@@ -70,7 +64,6 @@ namespace AltTabStyle
     constexpr DWORD AcrylicThinGradientABGR = 0x00545454;
     constexpr COLORREF AcrylicThinFallbackRef = RGB(32, 32, 32);
 
-    inline COLORREF DebugMagentaRef() { return RGB(255, 0, 255); }
     inline COLORREF AccentFallbackRef() { return RGB(0, 120, 215); }
     constexpr COLORREF HeaderTextRef(bool selected)
     {
@@ -78,8 +71,6 @@ namespace AltTabStyle
     }
 
     inline Gdiplus::Color Transparent() { return Gdiplus::Color(0, 0, 0, 0); }
-    inline Gdiplus::Color TranslucentBackdrop() { return Gdiplus::Color(180, 0, 255, 0); }
-    inline Gdiplus::Color WhitePreview() { return Gdiplus::Color(255, 255, 255, 255); }
     inline Gdiplus::Color Card(bool selected)
     {
         return selected ? Gdiplus::Color(255, 58, 58, 62)
@@ -100,20 +91,6 @@ namespace AltTabStyle
                         : Gdiplus::Color(45, 255, 255, 255);
     }
     inline Gdiplus::Color FocusShadow() { return Gdiplus::Color(150, 0, 0, 0); }
-}
-
-static DWORD GetAcrylicGradientABGR()
-{
-    wchar_t value[32] = {};
-    DWORD len = GetEnvironmentVariableW(L"AWC_ACRYLIC_ABGR", value, ARRAYSIZE(value));
-    if (len > 0 && len < ARRAYSIZE(value))
-    {
-        wchar_t* end = nullptr;
-        DWORD parsed = static_cast<DWORD>(wcstoul(value, &end, 0));
-        if (end && *end == L'\0')
-            return parsed;
-    }
-    return AltTabStyle::AcrylicThinGradientABGR;
 }
 
 static void EnableAcrylic(HWND hwnd, DWORD gradientColorABGR)
@@ -154,6 +131,64 @@ static std::wstring ProcessImagePath(HWND hwnd)
         result.assign(buf, len);
     CloseHandle(proc);
     return result;
+}
+
+// True for paths whose filename is ApplicationFrameHost.exe (the shared host that
+// owns every UWP/packaged app's top-level ApplicationFrameWindow).
+static bool IsApplicationFrameHost(const std::wstring& path)
+{
+    size_t slash = path.find_last_of(L"\\/");
+    const wchar_t* name = path.c_str() + (slash == std::wstring::npos ? 0 : slash + 1);
+    return _wcsicmp(name, L"ApplicationFrameHost.exe") == 0;
+}
+
+struct CoreWindowFind
+{
+    DWORD hostPid = 0;
+    HWND found = nullptr;
+};
+
+static BOOL CALLBACK FindCoreWindowProc(HWND child, LPARAM lp)
+{
+    CoreWindowFind* cf = reinterpret_cast<CoreWindowFind*>(lp);
+    wchar_t cls[64];
+    if (GetClassNameW(child, cls, ARRAYSIZE(cls)) &&
+        wcscmp(cls, L"Windows.UI.Core.CoreWindow") == 0)
+    {
+        DWORD pid = 0;
+        GetWindowThreadProcessId(child, &pid);
+        if (pid && pid != cf->hostPid)
+        {
+            cf->found = child;
+            return FALSE; // stop enumerating
+        }
+    }
+    return TRUE;
+}
+
+// Image path that identifies the *real* owning app. For UWP/packaged windows the
+// top-level window belongs to ApplicationFrameHost.exe, so all packaged apps would
+// otherwise group together. Resolve to the hosted CoreWindow's actual process so
+// each packaged app is grouped on its own.
+static std::wstring RealProcessImagePath(HWND hwnd)
+{
+    std::wstring path = ProcessImagePath(hwnd);
+    if (!IsApplicationFrameHost(path))
+        return path;
+
+    DWORD hostPid = 0;
+    GetWindowThreadProcessId(hwnd, &hostPid);
+
+    CoreWindowFind cf;
+    cf.hostPid = hostPid;
+    EnumChildWindows(hwnd, FindCoreWindowProc, reinterpret_cast<LPARAM>(&cf));
+    if (cf.found)
+    {
+        std::wstring real = ProcessImagePath(cf.found);
+        if (!real.empty())
+            return real;
+    }
+    return path;
 }
 
 static bool IsAltTabWindow(HWND hwnd)
@@ -197,7 +232,7 @@ static BOOL CALLBACK EnumProc(HWND hwnd, LPARAM lp)
     EnumCtx* ctx = reinterpret_cast<EnumCtx*>(lp);
     if (!IsAltTabWindow(hwnd))
         return TRUE;
-    std::wstring exe = ProcessImagePath(hwnd);
+    std::wstring exe = RealProcessImagePath(hwnd);
     if (!exe.empty() && _wcsicmp(exe.c_str(), ctx->exe.c_str()) == 0)
         ctx->windows.push_back(hwnd);
     return TRUE;
@@ -212,7 +247,7 @@ static bool GetAppWindows(HWND& foreground, std::vector<HWND>& windows)
         return false;
 
     EnumCtx ctx;
-    ctx.exe = ProcessImagePath(foreground);
+    ctx.exe = RealProcessImagePath(foreground);
     if (ctx.exe.empty())
         return false;
 
@@ -267,7 +302,6 @@ private:
     void ShowOverlayWindow();
     void HideOverlayWindow();
     void SetSelection(int index);
-    void RenderBackdrop();
     void RenderLayered();
     void ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int& panelH);
     void RegisterThumbnails();
@@ -281,7 +315,6 @@ private:
     int Scaled(int v) const { return AltWindowCycleLogic::ScaledValue(scale, v); }
 
     HINSTANCE hinst = nullptr;
-    HWND backdropHost = nullptr;
     HWND overlay = nullptr;
     HWND thumbHost = nullptr;
     int ovX = 0, ovY = 0, ovW = 0, ovH = 0;
@@ -290,6 +323,7 @@ private:
     std::vector<HWND> windows;
     std::vector<HTHUMBNAIL> thumbs;
     std::vector<HICON> icons;
+    std::vector<std::wstring> titles;
     HWND anchorWindow = nullptr;
     int selected = 0;
     unsigned int activeHoldModifiers = AltWindowCycleLogic::ModifierAlt;
@@ -303,7 +337,6 @@ private:
 
     HFONT font = nullptr;
     double fontScale = 0.0;
-    HBRUSH thumbHostBrush = nullptr;
 };
 
 // ---- lifecycle ---------------------------------------------------------------
@@ -317,10 +350,7 @@ bool Switcher::Init(HINSTANCE instance)
     hc.lpfnWndProc = &DefWindowProcW;
     hc.hInstance = hinst;
     hc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    thumbHostBrush = GetEnvironmentVariableW(L"AWC_MAGENTA", nullptr, 0)
-                         ? CreateSolidBrush(AltTabStyle::DebugMagentaRef())
-                         : nullptr;
-    hc.hbrBackground = thumbHostBrush;
+    hc.hbrBackground = nullptr;
     hc.lpszClassName = L"AltWindowCycleThumbHost";
     RegisterClassW(&hc);
 
@@ -329,21 +359,6 @@ bool Switcher::Init(HINSTANCE instance)
         hc.lpszClassName, L"", WS_POPUP | WS_DISABLED,
         0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
     if (!thumbHost)
-        return false;
-
-    WNDCLASSW bc = {};
-    bc.lpfnWndProc = &DefWindowProcW;
-    bc.hInstance = hinst;
-    bc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    bc.hbrBackground = nullptr;
-    bc.lpszClassName = L"AltWindowCycleBackdropHost";
-    RegisterClassW(&bc);
-
-    backdropHost = CreateWindowExW(
-        WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_LAYERED,
-        bc.lpszClassName, L"", WS_POPUP | WS_DISABLED,
-        0, 0, 0, 0, nullptr, nullptr, hinst, nullptr);
-    if (!backdropHost)
         return false;
 
     WNDCLASSW wc = {};
@@ -374,11 +389,6 @@ void Switcher::Shutdown()
         DestroyWindow(thumbHost);
         thumbHost = nullptr;
     }
-    if (backdropHost)
-    {
-        DestroyWindow(backdropHost);
-        backdropHost = nullptr;
-    }
     if (font)
     {
         DeleteObject(font);
@@ -391,13 +401,7 @@ void Switcher::Shutdown()
         overlay = nullptr;
     }
     UnregisterClassW(L"AltWindowCycleOverlay", hinst);
-    UnregisterClassW(L"AltWindowCycleBackdropHost", hinst);
     UnregisterClassW(L"AltWindowCycleThumbHost", hinst);
-    if (thumbHostBrush)
-    {
-        DeleteObject(thumbHostBrush);
-        thumbHostBrush = nullptr;
-    }
     g_switcherActive.store(false);
     state = St::Idle;
 }
@@ -562,6 +566,8 @@ static HICON GetWindowIcon(HWND hwnd)
     return icon;
 }
 
+static std::wstring GetTitle(HWND hwnd);
+
 void Switcher::ShowOverlayWindow()
 {
     if (windows.empty())
@@ -583,55 +589,23 @@ void Switcher::ShowOverlayWindow()
     EnsureFont();
 
     icons.clear();
+    titles.clear();
     for (HWND w : windows)
+    {
         icons.push_back(GetWindowIcon(w));
+        titles.push_back(GetTitle(w));
+    }
 
     ovX = x; ovY = y; ovW = panelW; ovH = panelH;
 
-    bool magentaDebug = GetEnvironmentVariableW(L"AWC_MAGENTA", nullptr, 0) != 0;
-    bool translucentBackdrop = GetEnvironmentVariableW(L"AWC_TRANSLUCENT_BACKDROP", nullptr, 0) != 0;
-    if (translucentBackdrop)
-    {
-        RenderBackdrop();
-    }
-    else
-    {
-        ShowWindow(backdropHost, SW_HIDE);
-    }
-
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-    if (!magentaDebug && !translucentBackdrop)
-        EnableAcrylic(thumbHost, GetAcrylicGradientABGR());
+    EnableAcrylic(thumbHost, AltTabStyle::AcrylicThinGradientABGR);
     DWORD cornerPref = DWMWCP_ROUND;
     DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
                           &cornerPref, sizeof(cornerPref));
-    HRGN rgn = nullptr;
-    if (translucentBackdrop)
-    {
-        rgn = CreateRectRgn(0, 0, 0, 0);
-        const int topOver = (std::max)(3, Scaled(3));
-        const int rr = radius + Scaled(4);
-        for (int i = 0; i < static_cast<int>(windows.size()); ++i)
-        {
-            RECT pv = PreviewRect(TileRect(i));
-            HRGN topRgn = CreateRectRgn(pv.left, pv.top - topOver, pv.right, pv.bottom - rr);
-            HRGN botRgn = CreateRoundRectRgn(pv.left, pv.bottom - 2 * rr,
-                                             pv.right + 1, pv.bottom + 1,
-                                             2 * rr, 2 * rr);
-            HRGN tileRgn = CreateRectRgn(0, 0, 0, 0);
-            CombineRgn(tileRgn, topRgn, botRgn, RGN_OR);
-            CombineRgn(rgn, rgn, tileRgn, RGN_OR);
-            DeleteObject(topRgn);
-            DeleteObject(botRgn);
-            DeleteObject(tileRgn);
-        }
-    }
-    else
-    {
-        rgn = CreateRoundRectRgn(0, 0, panelW + 1, panelH + 1,
-                                 2 * Scaled(8), 2 * Scaled(8));
-    }
+    HRGN rgn = CreateRoundRectRgn(0, 0, panelW + 1, panelH + 1,
+                                  2 * Scaled(8), 2 * Scaled(8));
     SetWindowRgn(thumbHost, rgn, FALSE);
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
@@ -646,20 +620,15 @@ void Switcher::ShowOverlayWindow()
                  SWP_NOACTIVATE | SWP_SHOWWINDOW);
     SetWindowPos(thumbHost, overlay, 0, 0, 0, 0,
                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-    if (translucentBackdrop)
-    {
-        SetWindowPos(backdropHost, thumbHost, 0, 0, 0, 0,
-                     SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-    }
 }
 
 void Switcher::HideOverlayWindow()
 {
     ShowWindow(overlay, SW_HIDE);
     ShowWindow(thumbHost, SW_HIDE);
-    ShowWindow(backdropHost, SW_HIDE);
     UnregisterThumbnails();
     icons.clear();
+    titles.clear();
 }
 
 void Switcher::SetSelection(int index)
@@ -727,9 +696,6 @@ static SIZE ClientSourceSize(HWND hwnd)
 void Switcher::RegisterThumbnails()
 {
     UnregisterThumbnails();
-    if (GetEnvironmentVariableW(L"AWC_NO_THUMBNAILS", nullptr, 0) ||
-        GetEnvironmentVariableW(L"AWC_WHITE_PREVIEW", nullptr, 0))
-        return;
 
     for (size_t i = 0; i < windows.size(); ++i)
     {
@@ -878,6 +844,25 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
         }
     }
 
+    // Legacy (1-bit mask) icons carry no per-pixel alpha, so DrawIconEx leaves the
+    // alpha channel at 0 and a pure-black opaque pixel is indistinguishable from a
+    // transparent one by color alone. Render the icon a second time over a white
+    // background: pixels identical on both backgrounds are opaque (preserving black
+    // detail), pixels that differ by ~full white are transparent.
+    void* whiteBits = nullptr;
+    HBITMAP whiteDib = nullptr;
+    if (!hasAlpha)
+    {
+        whiteDib = CreateDIBSection(screen, &bi, DIB_RGB_COLORS, &whiteBits, nullptr, 0);
+        if (whiteDib)
+        {
+            SelectObject(iconDC, whiteDib);
+            memset(whiteBits, 0xFF, static_cast<size_t>(size) * size * 4);
+            DrawIconEx(iconDC, 0, 0, icon, size, size, 0, nullptr, DI_NORMAL);
+        }
+    }
+    BYTE* white = static_cast<BYTE*>(whiteBits);
+
     for (int sy = 0; sy < size; ++sy)
     {
         int dy = y + sy;
@@ -889,7 +874,8 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
             if (dx < 0 || dx >= destW)
                 continue;
 
-            BYTE* s = src + (static_cast<size_t>(sy) * size + sx) * 4;
+            size_t srcOff = (static_cast<size_t>(sy) * size + sx) * 4;
+            BYTE* s = src + srcOff;
             BYTE* d = dst + (static_cast<size_t>(dy) * destW + dx) * 4;
 
             if (hasAlpha)
@@ -911,15 +897,31 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
                 d[2] = static_cast<BYTE>((std::min)(255, sr + (d[2] * inv + 127) / 255));
                 d[3] = 255;
             }
-            else if (s[0] || s[1] || s[2])
+            else
             {
-                d[0] = s[0]; d[1] = s[1]; d[2] = s[2]; d[3] = 255;
+                bool opaque;
+                if (white)
+                {
+                    BYTE* wpx = white + srcOff;
+                    int diff = (wpx[0] - s[0]) + (wpx[1] - s[1]) + (wpx[2] - s[2]);
+                    opaque = diff < 384; // < half of 3*255 → covered on both backgrounds
+                }
+                else
+                {
+                    opaque = (s[0] || s[1] || s[2]);
+                }
+                if (opaque)
+                {
+                    d[0] = s[0]; d[1] = s[1]; d[2] = s[2]; d[3] = 255;
+                }
             }
         }
     }
 
     SelectObject(iconDC, oldBmp);
     DeleteObject(dib);
+    if (whiteDib)
+        DeleteObject(whiteDib);
     DeleteDC(iconDC);
     ReleaseDC(nullptr, screen);
 }
@@ -1022,62 +1024,6 @@ static COLORREF GetAccentColor()
     return AltTabStyle::AccentFallbackRef();
 }
 
-void Switcher::RenderBackdrop()
-{
-    int w = ovW, h = ovH;
-    if (!backdropHost || w <= 0 || h <= 0)
-        return;
-
-    HDC screenDC = GetDC(nullptr);
-    HDC memDC = CreateCompatibleDC(screenDC);
-
-    BITMAPINFO bi = {};
-    bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
-    bi.bmiHeader.biWidth = w;
-    bi.bmiHeader.biHeight = -h;
-    bi.bmiHeader.biPlanes = 1;
-    bi.bmiHeader.biBitCount = 32;
-    bi.bmiHeader.biCompression = BI_RGB;
-
-    void* bits = nullptr;
-    HBITMAP dib = CreateDIBSection(screenDC, &bi, DIB_RGB_COLORS, &bits, nullptr, 0);
-    if (!dib)
-    {
-        DeleteDC(memDC);
-        ReleaseDC(nullptr, screenDC);
-        return;
-    }
-
-    HGDIOBJ oldBmp = SelectObject(memDC, dib);
-    ZeroMemory(bits, static_cast<size_t>(w) * h * 4);
-
-    {
-        Gdiplus::Bitmap bmp(w, h, w * 4, PixelFormat32bppPARGB,
-                            static_cast<BYTE*>(bits));
-        Gdiplus::Graphics g(&bmp);
-        g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
-
-        Gdiplus::GraphicsPath panel;
-        RECT panelRect = { 0, 0, w, h };
-        BuildRoundRect(panel, InflateF(panelRect, 0), static_cast<Gdiplus::REAL>(Scaled(8)));
-        Gdiplus::SolidBrush brush(AltTabStyle::TranslucentBackdrop());
-        g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
-        g.FillPath(&brush, &panel);
-        g.Flush();
-    }
-
-    POINT ptDst = { ovX, ovY };
-    SIZE sz = { w, h };
-    POINT ptSrc = { 0, 0 };
-    BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-    UpdateLayeredWindow(backdropHost, screenDC, &ptDst, &sz, memDC, &ptSrc, 0, &bf, ULW_ALPHA);
-
-    SelectObject(memDC, oldBmp);
-    DeleteObject(dib);
-    DeleteDC(memDC);
-    ReleaseDC(nullptr, screenDC);
-}
-
 void Switcher::RenderLayered()
 {
     int w = ovW, h = ovH;
@@ -1113,9 +1059,6 @@ void Switcher::RenderLayered()
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
         g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
 
-        bool noThumbnails = GetEnvironmentVariableW(L"AWC_NO_THUMBNAILS", nullptr, 0) != 0;
-        bool whitePreview = GetEnvironmentVariableW(L"AWC_WHITE_PREVIEW", nullptr, 0) != 0;
-
         // Leave the panel background transparent; acrylic lives on thumbHost.
         Gdiplus::REAL panelRadius = static_cast<Gdiplus::REAL>(Scaled(8));
         RECT panelRect = { 0, 0, w, h };
@@ -1147,33 +1090,18 @@ void Switcher::RenderLayered()
 
             int pw = pv.right - pv.left;
             int ph = pv.bottom - pv.top;
-            if (!noThumbnails && pw > 0 && ph > 0)
+            if (pw > 0 && ph > 0)
             {
-                if (whitePreview)
-                {
-                    g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
-                    g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
-                    Gdiplus::SolidBrush previewBrush(AltTabStyle::WhitePreview());
-                    g.FillRectangle(&previewBrush,
-                                    static_cast<Gdiplus::REAL>(pv.left),
-                                    static_cast<Gdiplus::REAL>(pv.top),
-                                    static_cast<Gdiplus::REAL>(pw),
-                                    static_cast<Gdiplus::REAL>(ph));
-                    g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-                }
-                else
-                {
-                    // DWM thumbnail path: punch transparent hole; DWM composites behind.
-                    g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
-                    g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
-                    Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
-                    g.FillRectangle(&previewBrush,
-                                    static_cast<Gdiplus::REAL>(pv.left),
-                                    static_cast<Gdiplus::REAL>(pv.top),
-                                    static_cast<Gdiplus::REAL>(pw),
-                                    static_cast<Gdiplus::REAL>(ph));
-                    g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
-                }
+                // DWM thumbnail path: punch transparent hole; DWM composites behind.
+                g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
+                g.SetCompositingMode(Gdiplus::CompositingModeSourceCopy);
+                Gdiplus::SolidBrush previewBrush(AltTabStyle::Transparent());
+                g.FillRectangle(&previewBrush,
+                                static_cast<Gdiplus::REAL>(pv.left),
+                                static_cast<Gdiplus::REAL>(pv.top),
+                                static_cast<Gdiplus::REAL>(pw),
+                                static_cast<Gdiplus::REAL>(ph));
+                g.SetCompositingMode(Gdiplus::CompositingModeSourceOver);
                 Gdiplus::Pen previewPen(AltTabStyle::PreviewStroke(sel),
                                          static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
                 g.SetSmoothingMode(Gdiplus::SmoothingModeNone);
@@ -1193,11 +1121,14 @@ void Switcher::RenderLayered()
                 textLeft = hdr.left + iconSize + Scaled(8);
             }
 
-            std::wstring text = GetTitle(windows[i]);
-            g.Flush();
-            RECT textRc = { textLeft, tile.top, hdr.right, tile.top + headerH };
-            DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, textRc, text,
-                           AltTabStyle::HeaderTextRef(sel), AltTabStyle::CardRef(sel));
+            const std::wstring* text = (i < static_cast<int>(titles.size())) ? &titles[i] : nullptr;
+            if (text)
+            {
+                g.Flush();
+                RECT textRc = { textLeft, tile.top, hdr.right, tile.top + headerH };
+                DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, textRc, *text,
+                               AltTabStyle::HeaderTextRef(sel), AltTabStyle::CardRef(sel));
+            }
 
             // Two-ring accent focus ring around the selected tile.
             if (sel)
