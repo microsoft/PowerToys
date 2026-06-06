@@ -366,6 +366,9 @@ FILESYSONLY
 URLIS
 WAITTIMEOUT
 DEFAULTTONEAREST
+DWRITE
+LWIN
+VCENTER
 
 # COM/WinRT interface prefixes and type fragments
 BAlt
