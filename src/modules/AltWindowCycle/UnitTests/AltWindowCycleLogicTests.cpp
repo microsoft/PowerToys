@@ -132,6 +132,24 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(0, AltWindowCycleLogic::WrapIndex(4, 0));
         }
 
+        TEST_METHOD(StableHoldModifiersPreferNonShiftModifiers)
+        {
+            Assert::AreEqual(AltWindowCycleLogic::ModifierAlt, AltWindowCycleLogic::StableHoldModifiers(AltWindowCycleLogic::ModifierAlt | AltWindowCycleLogic::ModifierShift));
+            Assert::AreEqual(AltWindowCycleLogic::ModifierCtrl, AltWindowCycleLogic::StableHoldModifiers(AltWindowCycleLogic::ModifierCtrl | AltWindowCycleLogic::ModifierShift));
+            Assert::AreEqual(AltWindowCycleLogic::ModifierWin, AltWindowCycleLogic::StableHoldModifiers(AltWindowCycleLogic::ModifierWin));
+            Assert::AreEqual(AltWindowCycleLogic::ModifierShift, AltWindowCycleLogic::StableHoldModifiers(AltWindowCycleLogic::ModifierShift));
+            Assert::AreEqual(0u, AltWindowCycleLogic::StableHoldModifiers(0));
+        }
+
+        TEST_METHOD(AreRequiredModifiersDownRequiresEveryHeldModifier)
+        {
+            Assert::IsFalse(AltWindowCycleLogic::AreRequiredModifiersDown(0, AltWindowCycleLogic::ModifierAlt));
+            Assert::IsFalse(AltWindowCycleLogic::AreRequiredModifiersDown(AltWindowCycleLogic::ModifierAlt, 0));
+            Assert::IsFalse(AltWindowCycleLogic::AreRequiredModifiersDown(AltWindowCycleLogic::ModifierAlt | AltWindowCycleLogic::ModifierCtrl, AltWindowCycleLogic::ModifierAlt));
+            Assert::IsTrue(AltWindowCycleLogic::AreRequiredModifiersDown(AltWindowCycleLogic::ModifierAlt, AltWindowCycleLogic::ModifierAlt | AltWindowCycleLogic::ModifierShift));
+            Assert::IsTrue(AltWindowCycleLogic::AreRequiredModifiersDown(AltWindowCycleLogic::ModifierAlt | AltWindowCycleLogic::ModifierCtrl, AltWindowCycleLogic::ModifierAlt | AltWindowCycleLogic::ModifierCtrl | AltWindowCycleLogic::ModifierShift));
+        }
+
         TEST_METHOD(BeginCycleSelectsNextOrPreviousAndShowsOverlay)
         {
             const auto forward = AltWindowCycleLogic::BeginCycle(0, 3, true);

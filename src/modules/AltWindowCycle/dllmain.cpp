@@ -6,6 +6,7 @@
 #include <common/utils/gpo.h>
 
 #include "AltWindowCycle.h"
+#include "AltWindowCycleLogic.h"
 #include "trace.h"
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
@@ -48,6 +49,29 @@ namespace
         HotkeyNext = 0,
         HotkeyPrevious = 1
     };
+
+    static unsigned int ModifierMaskFromHotkey(const PowertoyModuleIface::Hotkey& hotkey)
+    {
+        unsigned int modifiers = 0;
+        if (hotkey.alt)
+        {
+            modifiers |= AltWindowCycleLogic::ModifierAlt;
+        }
+        if (hotkey.ctrl)
+        {
+            modifiers |= AltWindowCycleLogic::ModifierCtrl;
+        }
+        if (hotkey.shift)
+        {
+            modifiers |= AltWindowCycleLogic::ModifierShift;
+        }
+        if (hotkey.win)
+        {
+            modifiers |= AltWindowCycleLogic::ModifierWin;
+        }
+
+        return AltWindowCycleLogic::StableHoldModifiers(modifiers);
+    }
 }
 
 // Implement the PowerToy Module Interface and all the required methods.
@@ -182,14 +206,14 @@ public:
         {
             Logger::trace(L"AltWindowCycle next-window hotkey pressed");
             Trace::CycleWindow(true);
-            return HandleAltWindowCycleHotkey(true);
+            return HandleAltWindowCycleHotkey(true, ModifierMaskFromHotkey(m_nextHotkey));
         }
 
         if (hotkeyId == HotkeyPrevious)
         {
             Logger::trace(L"AltWindowCycle previous-window hotkey pressed");
             Trace::CycleWindow(false);
-            return HandleAltWindowCycleHotkey(false);
+            return HandleAltWindowCycleHotkey(false, ModifierMaskFromHotkey(m_previousHotkey));
         }
 
         return false;

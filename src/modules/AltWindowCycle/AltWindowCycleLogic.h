@@ -10,6 +10,11 @@
 namespace AltWindowCycleLogic
 {
     constexpr int DefaultMaxColumns = 6;
+    constexpr unsigned int ModifierAlt = 1u << 0;
+    constexpr unsigned int ModifierCtrl = 1u << 1;
+    constexpr unsigned int ModifierShift = 1u << 2;
+    constexpr unsigned int ModifierWin = 1u << 3;
+    constexpr unsigned int AllModifiers = ModifierAlt | ModifierCtrl | ModifierShift | ModifierWin;
 
     struct OverlayLayout
     {
@@ -47,6 +52,18 @@ namespace AltWindowCycleLogic
     constexpr int ScaledValue(double scale, int value)
     {
         return static_cast<int>(value * scale + 0.5);
+    }
+
+    constexpr unsigned int StableHoldModifiers(unsigned int configuredModifiers)
+    {
+        const unsigned int sanitized = configuredModifiers & AllModifiers;
+        const unsigned int nonShiftModifiers = sanitized & ~ModifierShift;
+        return nonShiftModifiers != 0 ? nonShiftModifiers : sanitized;
+    }
+
+    constexpr bool AreRequiredModifiersDown(unsigned int requiredModifiers, unsigned int downModifiers)
+    {
+        return requiredModifiers != 0 && (downModifiers & requiredModifiers) == requiredModifiers;
     }
 
     inline int WrapIndex(int index, int count)
