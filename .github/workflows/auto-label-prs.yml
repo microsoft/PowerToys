@@ -76,6 +76,7 @@ jobs:
               ['src/modules/previewpane/',                         'Product-File Explorer'],
               ['src/modules/registrypreview/',                     'Product-Registry Preview'],
               ['src/modules/ShortcutGuide/',                       'Product-Shortcut Guide'],
+              ['src/modules/shortcut_guide/',                      'Product-Shortcut Guide'],
               ['src/modules/Workspaces/',                          'Product-Workspaces'],
               ['src/modules/ZoomIt/',                              'Product-ZoomIt'],
               ['src/settings-ui/',                                 'Product-Settings'],
@@ -134,7 +135,7 @@ jobs:
 
             function labelsFromPaths(filePaths) {
               const labels = new Set();
-              const unmatchedModules = new Set();
+              const unmatchedModuleCounts = new Map();
               for (const raw of filePaths) {
                 const path = String(raw).replace(/\\/g, '/');
                 const lower = path.toLowerCase();
@@ -150,7 +151,10 @@ jobs:
                 // <X> isn't in PATH_LABEL_MAP yet → candidate for Idea-New PowerToy.
                 if (!matched) {
                   const m = path.match(MODULE_DIR_RE);
-                  if (m) unmatchedModules.add(m[1]);
+                  if (m) {
+                    const key = m[1].toLowerCase();
+                    unmatchedModuleCounts.set(key, (unmatchedModuleCounts.get(key) ?? 0) + 1);
+                  }
                 }
               }
 
@@ -162,16 +166,21 @@ jobs:
                 labels.delete('Product-Settings');
               }
 
-              // New-module rule: if files live under src/modules/<X>/ but <X>
-              // has no entry in PATH_LABEL_MAP, and no other real Product-*
-              // label was matched, flag the PR with Idea-New PowerToy so
-              // maintainers know to add the new label + map entry.
+              // New-module rule: if at least 3 files live under the SAME
+              // src/modules/<X>/ where <X> has no entry in PATH_LABEL_MAP,
+              // and no other real Product-* label was matched, flag the PR
+              // with Idea-New PowerToy so maintainers know to add the new
+              // label + map entry.
+              // The 3-file threshold avoids false positives from old renamed
+              // module dirs (e.g. shortcut_guide/ → ShortcutGuide/) where
+              // small drive-by PRs would otherwise be misclassified.
               // (Product-Settings is excluded from the "real product" check
               // because every new module touches Settings UI as a side effect.)
               const hasRealProductLabel = [...labels].some(
                 l => l.startsWith('Product-') && l !== 'Product-Settings'
               );
-              if (unmatchedModules.size > 0 && !hasRealProductLabel) {
+              const maxUnmatchedCount = Math.max(0, ...unmatchedModuleCounts.values());
+              if (maxUnmatchedCount >= 3 && !hasRealProductLabel) {
                 labels.add('Idea-New PowerToy');
                 // A new-module PR is not "settings-only"; drop the side effect.
                 labels.delete('Product-Settings');
