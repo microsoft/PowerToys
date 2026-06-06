@@ -846,8 +846,8 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
 
     // Legacy (1-bit mask) icons carry no per-pixel alpha, so DrawIconEx leaves the
     // alpha channel at 0 and a pure-black opaque pixel is indistinguishable from a
-    // transparent one by color alone. Render the icon a second time over a white
-    // background: pixels identical on both backgrounds are opaque (preserving black
+    // transparent one by color alone. Render the icon over a white background on
+    // a second pass: pixels identical on both backgrounds are opaque (preserving black
     // detail), pixels that differ by ~full white are transparent.
     void* whiteBits = nullptr;
     HBITMAP whiteDib = nullptr;
@@ -902,8 +902,8 @@ static void DrawIconOverPARGB(void* destBits, int destW, int destH,
                 bool opaque;
                 if (white)
                 {
-                    BYTE* wpx = white + srcOff;
-                    int diff = (wpx[0] - s[0]) + (wpx[1] - s[1]) + (wpx[2] - s[2]);
+                    BYTE* whitePx = white + srcOff;
+                    int diff = (whitePx[0] - s[0]) + (whitePx[1] - s[1]) + (whitePx[2] - s[2]);
                     opaque = diff < 384; // < half of 3*255 → covered on both backgrounds
                 }
                 else
