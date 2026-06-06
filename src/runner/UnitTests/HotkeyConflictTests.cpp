@@ -14,6 +14,16 @@ namespace RunnerUnitTests
     TEST_CLASS(HotkeyConflictTests)
     {
     public:
+        TEST_METHOD_INITIALIZE(ClearHotkeyConflictManagerBeforeTest)
+        {
+            ClearTestModules();
+        }
+
+        TEST_METHOD_CLEANUP(ClearHotkeyConflictManagerAfterTest)
+        {
+            ClearTestModules();
+        }
+
         TEST_METHOD(HasConflict_TwoModulesSameHotkey_InAppConflict)
         {
             using namespace HotkeyConflictDetector;
@@ -23,7 +33,12 @@ namespace RunnerUnitTests
 
             Assert::IsTrue(manager.AddHotkey(hotkey, L"ModuleA", 1, true));
             Assert::AreEqual(static_cast<int>(InAppConflict), static_cast<int>(manager.HasConflict(hotkey, L"ModuleB", 1)));
+        }
 
+    private:
+        static void ClearTestModules()
+        {
+            auto& manager = HotkeyConflictDetector::HotkeyConflictManager::GetInstance();
             manager.RemoveHotkeyByModule(L"ModuleA");
             manager.RemoveHotkeyByModule(L"ModuleB");
         }
