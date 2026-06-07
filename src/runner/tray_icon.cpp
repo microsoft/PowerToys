@@ -11,6 +11,7 @@
 #include <Windows.h>
 
 #include <common/utils/resources.h>
+#include <common/utils/window.h>
 #include <common/version/version.h>
 #include <common/logger/logger.h>
 #include <common/utils/elevation.h>
@@ -155,6 +156,12 @@ void click_timer_elapsed()
 
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
+    LRESULT session_end_result = 0;
+    if (handle_session_end_message(window, message, wparam, session_end_result))
+    {
+        return session_end_result;
+    }
+
     switch (message)
     {
     case WM_HOTKEY:
