@@ -137,13 +137,15 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                 }
             }
 
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
             return Path.GetFileName(vscodeInstance.AppData) switch
             {
-                "Code" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".vscode-shared", "sharedStorage", "state.vscdb"),
-                "Code - Insiders" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".vscode-insiders-shared", "sharedStorage", "state.vscdb"),
-                "Code - Exploration" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".vscode-exploration-shared", "sharedStorage", "state.vscdb"),
-                "VSCodium" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".vscodium-shared", "sharedStorage", "state.vscdb"),
-                "VSCodium - Insiders" => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".vscodium-insiders-shared", "sharedStorage", "state.vscdb"),
+                "Code" => Path.Combine(userProfile, ".vscode-shared", "sharedStorage", "state.vscdb"),
+                "Code - Insiders" => Path.Combine(userProfile, ".vscode-insiders-shared", "sharedStorage", "state.vscdb"),
+                "Code - Exploration" => Path.Combine(userProfile, ".vscode-exploration-shared", "sharedStorage", "state.vscdb"),
+                "VSCodium" => Path.Combine(userProfile, ".vscodium-shared", "sharedStorage", "state.vscdb"),
+                "VSCodium - Insiders" => Path.Combine(userProfile, ".vscodium-insiders-shared", "sharedStorage", "state.vscdb"),
                 _ => string.Empty,
             };
         }
