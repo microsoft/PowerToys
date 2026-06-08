@@ -384,7 +384,7 @@ namespace Peek.UI
                 var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
                 if (foreground != _cachedWindowHandle)
                 {
-                    return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+                    return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
                 }
 
                 var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
@@ -394,7 +394,7 @@ namespace Peek.UI
                     hookStruct.vkCode != VK_LEFT && hookStruct.vkCode != VK_RIGHT &&
                     hookStruct.vkCode != VK_UP && hookStruct.vkCode != VK_DOWN)
                 {
-                    return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+                    return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
                 }
 
                 bool ctrlPressed = (NativeMethods.GetAsyncKeyState(VK_CONTROL) & KEY_PRESSED_MASK) != 0;
@@ -435,7 +435,7 @@ namespace Peek.UI
                 }
             }
 
-            return NativeMethods.CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
+            return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
         }
 
         public void Dispose()
