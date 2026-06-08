@@ -94,11 +94,9 @@ If this method fails, which it will for newer versions of Windows, it falls back
 
 It then enumerates all the button elements inside the selected while skipping such with a same name (which implies the user does not use combining taskbar buttons) and such that do not start with "Appid:" (which are not actual taskbar buttons related to apps, but others like the widgets or the search button).
 
-### [`ShortcutGuide.IndexYmlGenerator`](/src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/)
+### `ManifestInterpreter.GenerateIndexYmlFile`
 
-This application generates the `index.yml` manifest file.
-
-It is a separate project so that its code can be easier ported to WinGet in the future.
+The `index.yml` manifest file is generated in-process by `ManifestInterpreter.GenerateIndexYmlFile` (in `ShortcutGuide.Ui/Helpers/ManifestInterpreter.cs`), called on a background thread from `Program.Main` before the UI loads. It scans the per-user manifest folder and writes the index used by the navigation/lookup code.
 
 ### [`ShortcutGuideModuleInterface`](/src/modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.vcxproj)
 

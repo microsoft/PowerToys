@@ -10,7 +10,7 @@
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="MinHeight" Value="16" />
-        <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
+        <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />

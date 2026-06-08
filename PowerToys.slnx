@@ -996,10 +996,6 @@
     </Project>
   </Folder>
   <Folder Name="/modules/ShortcutGuide/">
-    <Project Path="src/modules/ShortcutGuide/ShortcutGuide.IndexYmlGenerator/ShortcutGuide.IndexYmlGenerator.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
     <Project Path="src/modules/ShortcutGuide/ShortcutGuide.Ui/ShortcutGuide.Ui.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

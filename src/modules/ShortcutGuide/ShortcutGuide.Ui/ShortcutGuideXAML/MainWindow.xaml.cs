@@ -9,12 +9,17 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Common.UI;
+using CommunityToolkit.WinUI;
+using CommunityToolkit.WinUI.Animations;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Media.Imaging;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
@@ -29,14 +34,19 @@ using WinUIEx.Messaging;
 
 namespace ShortcutGuide
 {
-    public sealed partial class MainWindow : WindowEx, IDisposable
+    public sealed partial class MainWindow : TransparentWindow, IDisposable
     {
+        private const int SlideInDurationMs = 280;
+        private const int SlideOutDurationMs = 200;
+
         private readonly Stopwatch _sessionStopwatch = Stopwatch.StartNew();
         private readonly Task<Dictionary<string, string?>> _getAppIdsTask;
+        private readonly Microsoft.UI.Dispatching.DispatcherQueueTimer _slideOutTimer = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().CreateTimer();
         private Dictionary<string, string?> _currentApplicationIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = null!;
         private string _closeType = "Unknown";
+        private bool _isClosing;
 
         internal long SessionDurationMs => _sessionStopwatch.ElapsedMilliseconds;
 
@@ -51,16 +61,14 @@ namespace ShortcutGuide
             _getAppIdsTask = Task.Run(() =>
             {
                 Program.CopyAndIndexGenerationThread.Join();
-                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
+                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds(Program.OriginalForegroundWindow);
                 return _currentApplicationIds;
             });
 
             Title = ResourceLoaderInstance.ResourceLoader.GetString("Title")!;
-            ExtendsContentIntoTitleBar = true;
 
 #if !DEBUG
             this.SetIsAlwaysOnTop(true);
-            this.SetIsShownInSwitchers(false);
 #endif
             WindowMessageMonitor msgMonitor = new(this);
             msgMonitor.WindowMessageReceived += (_, e) =>
@@ -81,7 +89,7 @@ namespace ShortcutGuide
                 if (e.Key == VirtualKey.Escape)
                 {
                     _closeType = "Escape";
-                    Close();
+                    SlideOutAndClose();
                 }
             };
 
@@ -102,6 +110,17 @@ namespace ShortcutGuide
                     Logger.LogError("Invalid theme value in settings: " + App.ShortcutGuideProperties.Theme.Value);
                     break;
             }
+
+            // Inset the card from the window edges so the shadow has room to
+            // render and the visible chrome doesn't touch the screen edge.
+            this.Card.Margin = new Thickness(12);
+
+            // Position the window before it's shown so the user doesn't see it
+            // flash at the default location, then attach the slide animations
+            // and start the card collapsed so Activate() triggers the slide-in.
+            this.SetWindowPosition();
+            AttachSlideAnimations();
+            this.Card.Visibility = Visibility.Collapsed;
         }
 
         protected override void OnStateChanged(WindowState state)
@@ -123,7 +142,7 @@ namespace ShortcutGuide
             {
 #if !DEBUG
                 _closeType = "Deactivated";
-                Close();
+                SlideOutAndClose();
 #endif
             }
 
@@ -133,7 +152,6 @@ namespace ShortcutGuide
                 this.BringToFront();
             }
 
-            // The code below sets the position of the window to the center of the monitor, but only if it hasn't been set before.
             if (!this._setPosition)
             {
                 Content.GettingFocus += (_, _) =>
@@ -142,7 +160,6 @@ namespace ShortcutGuide
                     this.FakeSettingsButton.Height = 0;
                 };
 
-                this.SetWindowPosition();
                 this._setPosition = true;
 
                 AppWindow.Changed += (_, a) =>
@@ -154,9 +171,91 @@ namespace ShortcutGuide
 
                     this.SetWindowPosition();
                 };
+
+                // Trigger the slide-in by flipping the card from Collapsed to
+                // Visible; the implicit Show animations attached in the ctor
+                // take it from off-screen to its final position.
+                this.Card.Visibility = Visibility.Visible;
             }
 
             _ = this.InitializeNavItemsAsync();
+        }
+
+        private void AttachSlideAnimations()
+        {
+            var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
+
+            // Slide in from off-screen on the same edge the window is pinned to.
+            // Width is in DIPs, which is what TranslationAnimation expects.
+            var offset = windowPosition == ShortcutGuideWindowPosition.Right ? Width : -Width;
+            var offsetString = $"{offset.ToString(System.Globalization.CultureInfo.InvariantCulture)},0,0";
+
+            var showAnimations = new ImplicitAnimationSet
+            {
+                new OpacityAnimation
+                {
+                    From = 0,
+                    To = 1.0,
+                    Duration = TimeSpan.FromMilliseconds(SlideInDurationMs),
+                    EasingMode = EasingMode.EaseOut,
+                    EasingType = EasingType.Cubic,
+                },
+                new TranslationAnimation
+                {
+                    From = offsetString,
+                    To = "0,0,0",
+                    Duration = TimeSpan.FromMilliseconds(SlideInDurationMs),
+                    EasingMode = EasingMode.EaseOut,
+                    EasingType = EasingType.Cubic,
+                },
+            };
+
+            var hideAnimations = new ImplicitAnimationSet
+            {
+                new OpacityAnimation
+                {
+                    From = 1.0,
+                    To = 0,
+                    Duration = TimeSpan.FromMilliseconds(SlideOutDurationMs),
+                    EasingMode = EasingMode.EaseIn,
+                    EasingType = EasingType.Cubic,
+                },
+                new TranslationAnimation
+                {
+                    From = "0,0,0",
+                    To = offsetString,
+                    Duration = TimeSpan.FromMilliseconds(SlideOutDurationMs),
+                    EasingMode = EasingMode.EaseIn,
+                    EasingType = EasingType.Cubic,
+                },
+            };
+
+            Implicit.SetShowAnimations(this.Card, showAnimations);
+            Implicit.SetHideAnimations(this.Card, hideAnimations);
+        }
+
+        private void SlideOutAndClose()
+        {
+            if (_isClosing)
+            {
+                return;
+            }
+
+            _isClosing = true;
+
+            // If we never finished the slide-in (e.g. Deactivated fires before
+            // first activation completes), just close immediately.
+            if (!_setPosition || this.Card.Visibility == Visibility.Collapsed)
+            {
+                Close();
+                return;
+            }
+
+            this.Card.Visibility = Visibility.Collapsed;
+            _slideOutTimer.Debounce(
+                Close,
+                interval: TimeSpan.FromMilliseconds(SlideOutDurationMs),
+                immediate: false);
         }
 
         private async Task InitializeNavItemsAsync()
@@ -170,7 +269,7 @@ namespace ShortcutGuide
             {
                 Logger.LogError("Failed to initialize navigation items.", ex);
                 _closeType = "InitializationFailed";
-                this.DispatcherQueue.TryEnqueue(() => this.Close());
+                this.DispatcherQueue.TryEnqueue(() => this.SlideOutAndClose());
             }
         }
 
@@ -236,12 +335,12 @@ namespace ShortcutGuide
             Rect monitorRect = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
 
             var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
-            var taskbarWindow = App.TaskBarWindow.AppWindow;
-            bool taskbarOnLeft = taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
-            bool taskbarOnRight = taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
+            var taskbarWindow = App.TaskBarWindow?.AppWindow;
+            bool taskbarOnLeft = taskbarWindow is not null && taskbarWindow.IsVisible && taskbarWindow.Position.X < AppWindow.Position.X + Width && windowPosition == ShortcutGuideWindowPosition.Left;
+            bool taskbarOnRight = taskbarWindow is not null && taskbarWindow.IsVisible && taskbarWindow.Position.X + taskbarWindow.Size.Width > AppWindow.Position.X && windowPosition == ShortcutGuideWindowPosition.Right;
 
             double newHeight = monitorRect.Height / dpi;
-            if (taskbarOnLeft || taskbarOnRight)
+            if ((taskbarOnLeft || taskbarOnRight) && taskbarWindow is not null)
             {
                 newHeight -= taskbarWindow.Size.Height;
             }
@@ -273,14 +372,14 @@ namespace ShortcutGuide
             App.CurrentAppName = this._selectedAppName;
             this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
 
-            App.TaskBarWindow.Hide();
+            App.TaskBarWindow?.Hide();
             if (this._shortcutFile is ShortcutFile file)
             {
                 // Show the taskbar button window only when the selected app exposes the <TASKBAR1-9> section.
                 if (file.Shortcuts is not null && file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true))
                 {
                     this._taskBarWindowActivated = true;
-                    App.TaskBarWindow.Activate();
+                    App.TaskBarWindow?.Activate();
                 }
 
                 // Reposition before navigating so the taskbar window does not clip into the main window.

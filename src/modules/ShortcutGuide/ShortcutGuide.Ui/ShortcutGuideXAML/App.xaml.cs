@@ -2,9 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
@@ -24,7 +26,10 @@ namespace ShortcutGuide
 
         internal static MainWindow MainWindow { get; private set; } = null!;
 
-        internal static TaskbarWindow TaskBarWindow { get; private set; } = null!;
+        // May remain null if the taskbar overlay window failed to initialize
+        // (e.g. shell automation API failures on some configurations). The
+        // main window must remain usable in that case.
+        internal static TaskbarWindow? TaskBarWindow { get; private set; }
 
         internal static string CurrentAppName { get; set; } = string.Empty;
 
@@ -37,14 +42,25 @@ namespace ShortcutGuide
         {
             this.LoadData();
             MainWindow = new MainWindow();
-            TaskBarWindow = new TaskbarWindow();
+
+            try
+            {
+                TaskBarWindow = new TaskbarWindow();
+            }
+            catch (Exception ex)
+            {
+                // Taskbar overlay is non-critical chrome; keep the main window usable.
+                Logger.LogError("Failed to construct the ShortcutGuide TaskbarWindow; continuing without taskbar overlay.", ex);
+                TaskBarWindow = null;
+            }
+
             MainWindow.Activate();
             MainWindow.Closed += (_, _) =>
             {
                 PowerToysTelemetry.Log.WriteEvent(new ShortcutGuideSessionEvent(
                     MainWindow.SessionDurationMs,
                     MainWindow.CloseType));
-                TaskBarWindow.Close();
+                TaskBarWindow?.Close();
             };
         }
 

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using ManagedCommon;
@@ -21,9 +20,20 @@ namespace ShortcutGuide
     {
         public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
 
+        /// <summary>
+        /// HWND of the window that was in the foreground when the Shortcut Guide
+        /// process started. Captured before any SG window is shown so that
+        /// shortcut lookup matches the user's target app and not SG itself.
+        /// </summary>
+        public static nint OriginalForegroundWindow { get; private set; }
+
         [STAThread]
         public static void Main(string[] args)
         {
+            // Capture the foreground window FIRST, before logger init or any
+            // other work that might run a message pump and let focus shift.
+            OriginalForegroundWindow = NativeMethods.GetForegroundWindow();
+
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
 
             // The module interface passes: <powertoys_pid> [telemetry]
@@ -71,31 +81,13 @@ namespace ShortcutGuide
                     Logger.LogError($"Failed to copy bundled shortcut manifests from '{sourceManifestFolder}'.", ex);
                 }
 
-                string indexGeneratorPath = Path.Combine(
-                    Path.GetDirectoryName(Environment.ProcessPath)!,
-                    "PowerToys.ShortcutGuide.IndexYmlGenerator.exe");
-
                 try
                 {
-                    using Process? indexGeneration = Process.Start(indexGeneratorPath);
-
-                    if (indexGeneration is null)
-                    {
-                        Logger.LogError($"Failed to start index generation process '{indexGeneratorPath}'.");
-                        return;
-                    }
-
-                    indexGeneration.WaitForExit();
-
-                    if (indexGeneration.ExitCode != 0)
-                    {
-                        Logger.LogError($"Index generation failed with exit code {indexGeneration.ExitCode}. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".");
-                        return;
-                    }
+                    ManifestInterpreter.GenerateIndexYmlFile();
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError($"Failed to start or wait for index generation process '{indexGeneratorPath}'.", ex);
+                    Logger.LogError($"Index generation failed. There may be a corrupt shortcuts file in \"{ManifestInterpreter.PathOfManifestFiles}\".", ex);
                     return;
                 }
 

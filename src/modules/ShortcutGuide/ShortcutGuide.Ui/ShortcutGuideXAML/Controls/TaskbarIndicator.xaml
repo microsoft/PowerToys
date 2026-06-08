@@ -12,7 +12,7 @@
             x:Name="IndicatorRectangle"
             Width="36"
             Height="36"
-            Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+            Background="{ThemeResource ControlFillColorDefaultBrush}"
             BorderBrush="{ThemeResource ControlElevationBorderBrush}"
             BorderThickness="1"
             CornerRadius="{StaticResource ControlCornerRadius}">
