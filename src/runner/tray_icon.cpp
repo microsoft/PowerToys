@@ -35,6 +35,15 @@ namespace
     NOTIFYICONDATAW tray_icon_data;
     bool tray_icon_created = false;
 
+    // Set when WM_ENDSESSION(TRUE) arrives so WM_DESTROY can skip the
+    // cross-process cleanup that the OS is already handling. Per
+    // https://learn.microsoft.com/windows/win32/shutdown/wm-endsession
+    // shutdown handlers must not block: WaitForSingleObject on the
+    // Settings child process is illegal here because the OS is delivering
+    // WM_ENDSESSION to that process in parallel and will reap it
+    // independently.
+    bool g_session_ending = false;
+
     bool about_box_shown = false;
 
     HMENU h_menu = nullptr;
@@ -174,17 +183,46 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         }
         break;
     case WM_DESTROY:
-        if (tray_icon_created)
+        // On user-initiated close: do graceful cleanup so the tray icon
+        // doesn't ghost and Settings.exe gets a chance to save state.
+        // On OS-initiated shutdown (g_session_ending): skip both. The
+        // shell is tearing down so NIM_DELETE accomplishes nothing, and
+        // close_settings_window() does a 1500 ms WaitForSingleObject on
+        // PowerToys.Settings.exe which the OS is shutting down in
+        // parallel — that wait would consume ~30% of the ~5 s quiesce
+        // budget for no benefit and could itself produce
+        // APPLICATION_HANG_QUIESCE.
+        if (!g_session_ending)
         {
-            Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
-            tray_icon_created = false;
+            if (tray_icon_created)
+            {
+                Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
+                tray_icon_created = false;
+            }
+            close_settings_window();
         }
-        close_settings_window();
         PostQuitMessage(0);
         break;
     case WM_CLOSE:
         DestroyWindow(window);
         break;
+    case WM_ENDSESSION:
+        // wparam == FALSE means another app vetoed shutdown; the system is
+        // staying up and we MUST NOT tear down. Per
+        // https://learn.microsoft.com/windows/win32/shutdown/wm-endsession
+        // wparam == TRUE means shutdown is actually proceeding. We route
+        // through WM_CLOSE so the close path remains single-sourced — any
+        // future telemetry/flush added to WM_CLOSE applies on shutdown too.
+        //
+        // WM_QUERYENDSESSION is intentionally not handled: DefWindowProc
+        // already returns TRUE, which is what we want (the runner has no
+        // unsaved state worth vetoing for).
+        if (wparam)
+        {
+            g_session_ending = true;
+            SendMessageW(window, WM_CLOSE, 0, 0);
+        }
+        return 0;
     case WM_COMMAND:
         handle_tray_command(window, wparam, lparam);
         break;
