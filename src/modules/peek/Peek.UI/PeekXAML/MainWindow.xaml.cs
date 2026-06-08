@@ -470,7 +470,7 @@ namespace Peek.UI
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Unhandled exception in Peek keyboard hook: {ex.Message}");
+                Logger.LogError("Unhandled exception in Peek keyboard hook.", ex);
             }
 
             return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
