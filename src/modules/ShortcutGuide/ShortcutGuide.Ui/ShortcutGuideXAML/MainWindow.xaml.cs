@@ -51,7 +51,7 @@ namespace ShortcutGuide
             _getAppIdsTask = Task.Run(() =>
             {
                 Program.CopyAndIndexGenerationThread.Join();
-                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds();
+                _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds(Program.ForegroundWindowHandle);
                 return _currentApplicationIds;
             });
 

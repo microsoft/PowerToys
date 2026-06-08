@@ -108,13 +108,11 @@ namespace ShortcutGuide.Helpers
         /// specific executable is associated (for example, wildcard filters like the
         /// default shell).
         /// </returns>
-        public static Dictionary<string, string?> GetAllCurrentApplicationIds()
+        public static Dictionary<string, string?> GetAllCurrentApplicationIds(nint foregroundWindowHandle)
         {
-            nint handle = NativeMethods.GetForegroundWindow();
-
             Dictionary<string, string?> applicationIds = new(StringComparer.Ordinal);
 
-            if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
+            if (NativeMethods.GetWindowThreadProcessId(foregroundWindowHandle, out uint processId) > 0)
             {
                 string? name = null;
                 string? executablePath = null;
