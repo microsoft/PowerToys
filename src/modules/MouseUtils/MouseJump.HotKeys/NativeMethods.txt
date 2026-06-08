@@ -1,0 +1,17 @@
+WM_HOTKEY
+WM_NULL
+WM_QUIT
+WM_USER
+
+WNDPROC
+DefWindowProc
+DispatchMessage
+GetMessage
+PostMessage
+TranslateMessage
+
+HOT_KEY_MODIFIERS
+RegisterHotKey
+UnregisterHotKey
+
+GetCurrentThreadId

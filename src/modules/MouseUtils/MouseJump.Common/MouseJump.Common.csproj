@@ -1,24 +1,32 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
-  <PropertyGroup>
+    <PropertyGroup>
+        <ProjectGuid>{923DF87C-CA99-4D1C-B1D2-959174E95BFA}</ProjectGuid>
+        <AssemblyName>PowerToys.MouseJump.Common</AssemblyName>
+        <AssemblyTitle>PowerToys.MouseJump.Common</AssemblyTitle>
+        <AssemblyDescription>PowerToys MouseJump.Common</AssemblyDescription>
+        <OutputType>Library</OutputType>
+        <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
-    <ProjectGuid>{923DF87C-CA99-4D1C-B1D2-959174E95BFA}</ProjectGuid>
-    <AssemblyName>PowerToys.MouseJump.Common</AssemblyName>
-    <AssemblyTitle>PowerToys.MouseJump.Common</AssemblyTitle>
-    <AssemblyDescription>PowerToys MouseJump.Common</AssemblyDescription>
-    <OutputType>Library</OutputType>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
 
-    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ItemGroup>
+        <ProjectReference Include="..\MouseJump.Models\MouseJump.Models.csproj" />
+    </ItemGroup>
 
-  </PropertyGroup>
-
+    <ItemGroup>
+        <PackageReference Include="System.Drawing.Common" />
+        <PackageReference Include="Microsoft.Windows.CsWin32">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 </Project>

@@ -10,10 +10,11 @@ using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+
 using MouseJump.Common.Helpers;
-using MouseJump.Common.Models.Drawing;
-using MouseJump.Common.Models.Settings;
-using MouseJump.Common.Models.Styles;
+using MouseJump.Models.Drawing;
+using MouseJump.Models.Settings;
+using MouseJump.Models.Styles;
 
 namespace MouseJumpUI.Helpers;
 
@@ -24,7 +25,7 @@ internal sealed class SettingsHelper
         this.LockObject = new();
         this.CurrentSettings = this.LoadSettings();
 
-        // delay loading settings on change by some time to avoid file in use exception
+        // delay loading settings on change by some time to avoid "file in use" exception
         var throttledActionInvoker = new ThrottledActionInvoker();
         this.FileSystemWatcher = Helper.GetFileWatcher(
             moduleName: MouseJumpSettings.ModuleName,
@@ -119,7 +120,7 @@ internal sealed class SettingsHelper
                 canvasStyle: new(
                     marginStyle: new(0),
                     borderStyle: new(
-                        color: ConfigHelper.DeserializeFromConfigColorString(
+                        color: ColorHelper.DeserializeFromConfigColorString(
                             properties.BorderColor),
                         all: properties.BorderThickness,
                         depth: properties.Border3dDepth
@@ -128,9 +129,9 @@ internal sealed class SettingsHelper
                         all: properties.BorderPadding
                     ),
                     backgroundStyle: new(
-                        color1: ConfigHelper.DeserializeFromConfigColorString(
+                        color1: ColorHelper.DeserializeFromConfigColorString(
                             properties.BackgroundColor1),
-                        color2: ConfigHelper.DeserializeFromConfigColorString(
+                        color2: ColorHelper.DeserializeFromConfigColorString(
                             properties.BackgroundColor2)
                     )
                 ),
@@ -139,19 +140,20 @@ internal sealed class SettingsHelper
                         all: properties.ScreenMargin
                     ),
                     borderStyle: new(
-                        color: ConfigHelper.DeserializeFromConfigColorString(
+                        color: ColorHelper.DeserializeFromConfigColorString(
                             properties.BezelColor),
                         all: properties.BezelThickness,
                         depth: properties.Bezel3dDepth
                     ),
                     paddingStyle: new(0),
                     backgroundStyle: new(
-                        color1: ConfigHelper.DeserializeFromConfigColorString(
+                        color1: ColorHelper.DeserializeFromConfigColorString(
                             properties.ScreenColor1),
-                        color2: ConfigHelper.DeserializeFromConfigColorString(
+                        color2: ColorHelper.DeserializeFromConfigColorString(
                             properties.ScreenColor2)
                     )
-                )),
+                ),
+                extraColors: []),
             _ => throw new InvalidOperationException(
                 $"Unhandled {nameof(PreviewType)} '{previewType}'"),
         };
