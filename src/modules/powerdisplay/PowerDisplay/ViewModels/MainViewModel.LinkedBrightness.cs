@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using PowerDisplay.Common.Services;
-using PowerDisplay.Configuration;
+using PowerDisplay.Helpers;
 
 namespace PowerDisplay.ViewModels;
 
@@ -41,16 +41,15 @@ public partial class MainViewModel
         monitor.SupportsBrightness && !_excludedMonitorIds.Contains(monitor.Id);
 
     /// <summary>
-    /// Snapshot the current monitors as <see cref="LinkedBrightnessPlanner.LinkTarget"/> values for
-    /// the pure planner (seed / availability decisions).
+    /// Snapshot the currently included brightness-capable monitors as
+    /// <see cref="LinkedBrightnessPlanner.LinkTarget"/> values for seed decisions.
     /// </summary>
     private List<LinkedBrightnessPlanner.LinkTarget> BuildLinkTargets() =>
-        Monitors.Select(m => new LinkedBrightnessPlanner.LinkTarget(
+        Monitors.Where(IsLinkedTarget)
+            .Select(m => new LinkedBrightnessPlanner.LinkTarget(
             m.Id,
             m.MonitorNumber,
-            m.Brightness,
-            m.SupportsBrightness,
-            _excludedMonitorIds.Contains(m.Id)))
+            m.Brightness))
             .ToList();
 
     /// <summary>
@@ -235,21 +234,10 @@ public partial class MainViewModel
 
     private void ScheduleLinkedBrightnessCommit()
     {
-        ScheduleCommit(ref _linkedBrightnessCommitTimer, () => BroadcastLinkedBrightnessAsync(LinkedBrightness));
-    }
-
-    private void ScheduleCommit(ref DispatcherQueueTimer? timer, Func<Task> commit)
-    {
-        if (timer == null)
-        {
-            timer = _dispatcherQueue.CreateTimer();
-            timer.IsRepeating = false;
-            timer.Interval = TimeSpan.FromMilliseconds(AppConstants.UI.SliderCommitDebounceMs);
-            timer.Tick += (_, _) => _ = commit();
-        }
-
-        timer.Stop();
-        timer.Start();
+        SliderCommitScheduler.Schedule(
+            ref _linkedBrightnessCommitTimer,
+            _dispatcherQueue,
+            () => BroadcastLinkedBrightnessAsync(LinkedBrightness));
     }
 
     /// <summary>

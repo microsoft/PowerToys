@@ -19,10 +19,8 @@ public class LinkedBrightnessPlannerTests
     private static LinkTarget Monitor(
         string id,
         int number,
-        int brightness,
-        bool supports = true,
-        bool excluded = false)
-        => new LinkTarget(id, number, brightness, supports, excluded);
+        int brightness)
+        => new LinkTarget(id, number, brightness);
 
     [TestMethod]
     public void Seed_EmptyList_Null()
@@ -41,41 +39,6 @@ public class LinkedBrightnessPlannerTests
             Monitor("b", 2, 60),
         };
         Assert.AreEqual(30, LinkedBrightnessPlanner.Seed(monitors));
-    }
-
-    [TestMethod]
-    public void Seed_ExcludedLowestDisplay_FallsBackToLinkedDisplay()
-    {
-        var monitors = new[]
-        {
-            Monitor("a", 1, 30, excluded: true),
-            Monitor("b", 2, 60),
-        };
-        Assert.AreEqual(60, LinkedBrightnessPlanner.Seed(monitors));
-    }
-
-    [TestMethod]
-    public void Seed_NoLinkedTarget_Null()
-    {
-        var monitors = new[]
-        {
-            Monitor("a", 1, 30, excluded: true),
-            Monitor("b", 2, 60, supports: false),
-        };
-        Assert.IsNull(LinkedBrightnessPlanner.Seed(monitors));
-    }
-
-    [TestMethod]
-    public void Seed_SkipsExcludedAndNonBrightness_WhenPickingLowestNumber()
-    {
-        // Display 1 is excluded and Display 2 has no brightness control, so the seed is Display 3.
-        var monitors = new[]
-        {
-            Monitor("a", 1, 30, excluded: true),
-            Monitor("b", 2, 55, supports: false),
-            Monitor("c", 3, 72),
-        };
-        Assert.AreEqual(72, LinkedBrightnessPlanner.Seed(monitors));
     }
 
     [TestMethod]

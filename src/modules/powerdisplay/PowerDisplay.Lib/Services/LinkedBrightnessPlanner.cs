@@ -19,30 +19,19 @@ namespace PowerDisplay.Common.Services
         /// <param name="Id">Stable <c>Monitor.Id</c> (DevicePath form).</param>
         /// <param name="MonitorNumber">Windows DISPLAY number (1-based); 0 when unknown.</param>
         /// <param name="Brightness">Current brightness percentage (0-100).</param>
-        /// <param name="SupportsBrightness">Whether the monitor exposes brightness control.</param>
-        /// <param name="Excluded">Whether the user excluded the monitor from linked brightness.</param>
         public readonly record struct LinkTarget(
             string Id,
             int MonitorNumber,
-            int Brightness,
-            bool SupportsBrightness,
-            bool Excluded);
-
-        /// <summary>
-        /// True when the monitor is driven by the linked master — it supports brightness and the
-        /// user has not excluded it.
-        /// </summary>
-        private static bool IsLinkedTarget(LinkTarget monitor) =>
-            monitor.SupportsBrightness && !monitor.Excluded;
+            int Brightness);
 
         /// <summary>
         /// The value to seed the master slider with when link mode turns on, or null when there is
-        /// no linked target. Prefers the lowest Windows DISPLAY number and Id order for
-        /// determinism when numbers are missing or tie.
+        /// no linked target. The caller passes only included brightness-capable targets. Prefers
+        /// the lowest Windows DISPLAY number and Id order for determinism when numbers are missing
+        /// or tie.
         /// </summary>
-        public static int? Seed(IEnumerable<LinkTarget> monitors) =>
-            monitors
-                .Where(IsLinkedTarget)
+        public static int? Seed(IEnumerable<LinkTarget> linkedTargets) =>
+            linkedTargets
                 .OrderBy(m => m.MonitorNumber <= 0 ? int.MaxValue : m.MonitorNumber)
                 .ThenBy(m => m.Id, System.StringComparer.Ordinal)
                 .Select(m => (int?)m.Brightness)

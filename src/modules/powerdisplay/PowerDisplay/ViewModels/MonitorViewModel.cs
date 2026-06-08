@@ -902,16 +902,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     // reads the latest field at fire-time so intermediate values are coalesced.
     private void ScheduleCommit(ref DispatcherQueueTimer? timer, Func<Task> commit)
     {
-        if (timer == null)
-        {
-            timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-            timer.IsRepeating = false;
-            timer.Interval = TimeSpan.FromMilliseconds(AppConstants.UI.SliderCommitDebounceMs);
-            timer.Tick += (_, _) => _ = commit();
-        }
-
-        timer.Stop();
-        timer.Start();
+        SliderCommitScheduler.Schedule(ref timer, DispatcherQueue.GetForCurrentThread(), commit);
     }
 
     // Rotation button handlers — one per orientation to avoid Tag string parsing
