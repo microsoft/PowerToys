@@ -102,52 +102,69 @@ namespace ShortcutGuide.Helpers
         /// <summary>
         /// Retrieves all application IDs that should be displayed, based on the foreground window and background processes.
         /// </summary>
+        /// <param name="capturedForeground">
+        /// Optional snapshot of the foreground app captured at process startup, before any
+        /// Shortcut Guide window was created. When provided, this is used in preference to
+        /// the live foreground window to avoid a race where Shortcut Guide's own window has
+        /// become foreground by the time this method runs. When <c>null</c>, the method
+        /// falls back to querying the live foreground window.
+        /// </param>
         /// <returns>
         /// A dictionary mapping each application ID to the full path of the executable
         /// that caused the match (used for icon extraction), or <c>null</c> when no
         /// specific executable is associated (for example, wildcard filters like the
         /// default shell).
         /// </returns>
-        public static Dictionary<string, string?> GetAllCurrentApplicationIds()
+        public static Dictionary<string, string?> GetAllCurrentApplicationIds(ForegroundAppInfo? capturedForeground = null)
         {
-            nint handle = NativeMethods.GetForegroundWindow();
-
             Dictionary<string, string?> applicationIds = new(StringComparer.Ordinal);
 
-            if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
+            string? name;
+            string? executablePath;
+
+            if (capturedForeground is { } captured)
             {
-                string? name = null;
-                string? executablePath = null;
+                name = captured.ModuleName;
+                executablePath = captured.ExecutablePath;
+            }
+            else
+            {
+                name = null;
+                executablePath = null;
 
-                try
-                {
-                    ProcessModule? mainModule = Process.GetProcessById((int)processId).MainModule;
-                    name = mainModule?.ModuleName;
-                    executablePath = mainModule?.FileName;
-                }
-                catch (Win32Exception)
-                {
-                    // Access denied for elevated processes; we cannot read the module.
-                }
-                catch (InvalidOperationException)
-                {
-                    // Process exited between enumeration and access.
-                }
-
-                if (name is not null)
+                nint handle = NativeMethods.GetForegroundWindow();
+                if (NativeMethods.GetWindowThreadProcessId(handle, out uint processId) > 0)
                 {
                     try
                     {
-                        IndexFile.IndexItem match = ManifestInterpreter.GetCachedIndexYamlFile().Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter));
-                        string? pathForApp = match.WindowFilter == "*" ? null : executablePath;
-                        foreach (var item in match.Apps)
-                        {
-                            applicationIds[item] = pathForApp;
-                        }
+                        ProcessModule? mainModule = Process.GetProcessById((int)processId).MainModule;
+                        name = mainModule?.ModuleName;
+                        executablePath = mainModule?.FileName;
+                    }
+                    catch (Win32Exception)
+                    {
+                        // Access denied for elevated processes; we cannot read the module.
                     }
                     catch (InvalidOperationException)
                     {
+                        // Process exited between enumeration and access.
                     }
+                }
+            }
+
+            if (name is not null)
+            {
+                try
+                {
+                    IndexFile.IndexItem match = ManifestInterpreter.GetCachedIndexYamlFile().Index.First((s) => !s.BackgroundProcess && IsMatch(name, s.WindowFilter));
+                    string? pathForApp = match.WindowFilter == "*" ? null : executablePath;
+                    foreach (var item in match.Apps)
+                    {
+                        applicationIds[item] = pathForApp;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
                 }
             }
 

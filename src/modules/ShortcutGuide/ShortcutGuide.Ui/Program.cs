@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -20,6 +21,16 @@ namespace ShortcutGuide
     public sealed class Program
     {
         public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
+
+        /// <summary>
+        /// Snapshot of the user's foreground application captured at process startup,
+        /// before any Shortcut Guide window has been created. Consumed by
+        /// <see cref="ManifestInterpreter.GetAllCurrentApplicationIds(ForegroundAppInfo?)"/>
+        /// to avoid a race where Shortcut Guide's own window becomes foreground before
+        /// the active-app lookup runs (which can be delayed by first-run manifest copy
+        /// and index generation).
+        /// </summary>
+        public static ForegroundAppInfo? InitialForegroundApp { get; private set; }
 
         [STAThread]
         public static void Main(string[] args)
@@ -46,6 +57,12 @@ namespace ShortcutGuide
             {
                 return;
             }
+
+            // Capture the user's foreground app now, before any Shortcut Guide window
+            // is created and before the manifest copy / index generation thread starts.
+            // The active-app lookup runs after that thread finishes, by which time the
+            // foreground window would otherwise be Shortcut Guide itself.
+            InitialForegroundApp = CaptureForegroundApp();
 
             // Copy every shipped manifest from the install directory to the per-user manifest folder.
             // Enumerating the source folder avoids drift between the deployed assets and a hard-coded list.
@@ -131,6 +148,45 @@ namespace ShortcutGuide
 
             // The WinRT/WinUI dispatcher thread doesn't terminate cleanly; force exit.
             Environment.Exit(0);
+        }
+
+        private static ForegroundAppInfo? CaptureForegroundApp()
+        {
+            try
+            {
+                nint hwnd = NativeMethods.GetForegroundWindow();
+                if (hwnd == IntPtr.Zero)
+                {
+                    return null;
+                }
+
+                if (NativeMethods.GetWindowThreadProcessId(hwnd, out uint processId) == 0)
+                {
+                    return null;
+                }
+
+                using Process process = Process.GetProcessById((int)processId);
+                ProcessModule? mainModule = process.MainModule;
+                return new ForegroundAppInfo(mainModule?.ModuleName, mainModule?.FileName);
+            }
+            catch (Win32Exception ex)
+            {
+                // Access denied for elevated processes; we cannot read the module.
+                Logger.LogInfo($"Could not capture foreground app at startup (access denied): {ex.Message}");
+                return null;
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Process exited between enumeration and access.
+                Logger.LogInfo($"Could not capture foreground app at startup (process exited): {ex.Message}");
+                return null;
+            }
+            catch (ArgumentException ex)
+            {
+                // GetProcessById can throw ArgumentException for stale PIDs.
+                Logger.LogInfo($"Could not capture foreground app at startup (invalid pid): {ex.Message}");
+                return null;
+            }
         }
 
         private static void SendSettingsTelemetry()
