@@ -341,6 +341,7 @@ namespace Peek.UI
             if (_keyboardHookHandle == IntPtr.Zero)
             {
                 var error = Marshal.GetLastWin32Error();
+                _keyboardHookProc = null;
                 Logger.LogError($"Failed to install keyboard hook for Peek window. Win32 error: {error}");
             }
         }
@@ -378,61 +379,98 @@ namespace Peek.UI
             const int VK_RWIN = 0x5C;
             const int KEY_PRESSED_MASK = 0x8000;
 
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            try
             {
-                // Only handle when our window is in the foreground (cheap check before marshaling)
-                var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
-                if (foreground != _cachedWindowHandle)
+                if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN && lParam != IntPtr.Zero)
                 {
-                    return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
-                }
+                    // Only handle when our window is in the foreground (cheap check before marshaling)
+                    var foreground = Windows.Win32.PInvoke_PeekUI.GetForegroundWindow();
+                    if (foreground != _cachedWindowHandle)
+                    {
+                        return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
+                    }
 
-                var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
+                    var hookStruct = Marshal.PtrToStructure<NativeMethods.KBDLLHOOKSTRUCT>(lParam);
 
-                // Fast-path: skip keys we never handle
-                if (hookStruct.vkCode != VK_W && hookStruct.vkCode != VK_ESCAPE &&
-                    hookStruct.vkCode != VK_LEFT && hookStruct.vkCode != VK_RIGHT &&
-                    hookStruct.vkCode != VK_UP && hookStruct.vkCode != VK_DOWN)
-                {
-                    return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
-                }
+                    // Fast-path: skip keys we never handle
+                    if (hookStruct.vkCode != VK_W && hookStruct.vkCode != VK_ESCAPE &&
+                        hookStruct.vkCode != VK_LEFT && hookStruct.vkCode != VK_RIGHT &&
+                        hookStruct.vkCode != VK_UP && hookStruct.vkCode != VK_DOWN)
+                    {
+                        return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
+                    }
 
-                bool ctrlPressed = (NativeMethods.GetAsyncKeyState(VK_CONTROL) & KEY_PRESSED_MASK) != 0;
-                bool altPressed = (NativeMethods.GetAsyncKeyState(VK_ALT) & KEY_PRESSED_MASK) != 0;
-                bool shiftPressed = (NativeMethods.GetAsyncKeyState(VK_SHIFT) & KEY_PRESSED_MASK) != 0;
-                bool winPressed = (NativeMethods.GetAsyncKeyState(VK_LWIN) & KEY_PRESSED_MASK) != 0 ||
-                                  (NativeMethods.GetAsyncKeyState(VK_RWIN) & KEY_PRESSED_MASK) != 0;
-                bool handled = false;
+                    bool ctrlPressed = (NativeMethods.GetAsyncKeyState(VK_CONTROL) & KEY_PRESSED_MASK) != 0;
+                    bool altPressed = (NativeMethods.GetAsyncKeyState(VK_ALT) & KEY_PRESSED_MASK) != 0;
+                    bool shiftPressed = (NativeMethods.GetAsyncKeyState(VK_SHIFT) & KEY_PRESSED_MASK) != 0;
+                    bool winPressed = (NativeMethods.GetAsyncKeyState(VK_LWIN) & KEY_PRESSED_MASK) != 0 ||
+                                      (NativeMethods.GetAsyncKeyState(VK_RWIN) & KEY_PRESSED_MASK) != 0;
+                    bool handled = false;
 
-                if (ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_W)
-                {
-                    handled = DispatcherQueue.TryEnqueue(Uninitialize);
-                }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_ESCAPE)
-                {
-                    handled = DispatcherQueue.TryEnqueue(Uninitialize);
-                }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_LEFT)
-                {
-                    handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
-                }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_RIGHT)
-                {
-                    handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
-                }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_UP)
-                {
-                    handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
-                }
-                else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_DOWN)
-                {
-                    handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
-                }
+                    // Pass keys through while delete confirmation dialog is showing
+                    if (_isDeleteInProgress)
+                    {
+                        return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
+                    }
 
-                if (handled)
-                {
-                    return (IntPtr)1;
+                    if (ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_W)
+                    {
+                        handled = DispatcherQueue.TryEnqueue(() =>
+                        {
+                            if (!_isDeleteInProgress)
+                            {
+                                Uninitialize();
+                            }
+                        });
+                    }
+                    else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_ESCAPE)
+                    {
+                        handled = DispatcherQueue.TryEnqueue(() =>
+                        {
+                            if (!_isDeleteInProgress)
+                            {
+                                Uninitialize();
+                            }
+                        });
+                    }
+                    else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_LEFT)
+                    {
+                        if (ViewModel.DisplayItemCount > 1)
+                        {
+                            handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
+                        }
+                    }
+                    else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_RIGHT)
+                    {
+                        if (ViewModel.DisplayItemCount > 1)
+                        {
+                            handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
+                        }
+                    }
+                    else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_UP)
+                    {
+                        if (ViewModel.DisplayItemCount > 1)
+                        {
+                            handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptPreviousNavigation());
+                        }
+                    }
+                    else if (!ctrlPressed && !altPressed && !shiftPressed && !winPressed && hookStruct.vkCode == VK_DOWN)
+                    {
+                        if (ViewModel.DisplayItemCount > 1)
+                        {
+                            handled = DispatcherQueue.TryEnqueue(() => ViewModel.AttemptNextNavigation());
+                        }
+                    }
+
+                    if (handled)
+                    {
+                        return (IntPtr)1;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Unhandled exception in Peek keyboard hook: {ex.Message}");
             }
 
             return NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
