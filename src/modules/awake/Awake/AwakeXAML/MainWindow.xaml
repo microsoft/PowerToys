@@ -3,7 +3,8 @@
     x:Class="Awake.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:vm="using:Awake.ViewModels"
     xmlns:winuiex="using:WinUIEx"
     MinWidth="0"
@@ -22,22 +23,26 @@
         KeyDown="RootGrid_KeyDown"
         TabFocusNavigation="Local">
         <Grid.Resources>
-            <ResourceDictionary>
-                <ResourceDictionary.MergedDictionaries>
-                    <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.Segmented/Segmented/Segmented.xaml" />
-                </ResourceDictionary.MergedDictionaries>
-            </ResourceDictionary>
+            <Style
+                x:Key="FlyoutIconButtonStyle"
+                BasedOn="{StaticResource SubtleButtonStyle}"
+                TargetType="Button">
+                <Setter Property="Padding" Value="6" />
+                <Setter Property="Width" Value="32" />
+                <Setter Property="Height" Value="32" />
+                <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+            </Style>
         </Grid.Resources>
         <Border x:Name="MainContainer">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="48" />
                 </Grid.RowDefinitions>
 
                 <StackPanel
                     Grid.Row="0"
-                    Padding="16,16,16,12"
+                    Padding="16,16,16,16"
                     Spacing="12">
 
                     <StackPanel Spacing="2">
@@ -58,16 +63,15 @@
                             x:Name="ModeHeaderText"
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <tkcontrols:Segmented
-                            x:Name="ModeSegmentedControl"
+                        <ComboBox
+                            x:Name="ModeComboBox"
                             HorizontalAlignment="Stretch"
-                            SelectionChanged="ModeSegmentedControl_SelectionChanged"
-                            SelectionMode="Single">
-                            <tkcontrols:SegmentedItem x:Name="ModeOffItem" />
-                            <tkcontrols:SegmentedItem x:Name="ModeIndefiniteItem" />
-                            <tkcontrols:SegmentedItem x:Name="ModeTimedItem" />
-                            <tkcontrols:SegmentedItem x:Name="ModeExpirableItem" />
-                        </tkcontrols:Segmented>
+                            SelectionChanged="ModeComboBox_SelectionChanged">
+                            <ComboBoxItem x:Name="ModeOffItem" />
+                            <ComboBoxItem x:Name="ModeIndefiniteItem" />
+                            <ComboBoxItem x:Name="ModeTimedItem" />
+                            <ComboBoxItem x:Name="ModeExpirableItem" />
+                        </ComboBox>
                     </StackPanel>
 
                     <ToggleSwitch
@@ -138,25 +142,43 @@
 
                 <Grid
                     Grid.Row="1"
-                    Padding="12,8"
+                    Padding="8,0,12,0"
                     Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0,1,0,0"
-                    ColumnSpacing="8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Button
-                        x:Name="OpenSettingsButton"
-                        Grid.Column="0"
-                        HorizontalAlignment="Stretch"
-                        Click="OnOpenSettingsClick" />
-                    <Button
-                        x:Name="ExitButton"
-                        Grid.Column="1"
-                        Click="OnExitClick"
-                        Visibility="{x:Bind ViewModel.ExitButtonVisibility, Mode=OneTime}" />
+                    BorderThickness="0,1,0,0">
+                    <StackPanel
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="8">
+                        <Button
+                            x:Name="ExitButton"
+                            Click="OnExitClick"
+                            Content="{ui:FontIcon Glyph=&#xE7E8;,
+                                                  FontSize=16}"
+                            Style="{StaticResource FlyoutIconButtonStyle}"
+                            Visibility="{x:Bind ViewModel.ExitButtonVisibility, Mode=OneTime}">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Name="ExitButtonTooltip" />
+                            </ToolTipService.ToolTip>
+                        </Button>
+                        <Button
+                            x:Name="OpenSettingsButton"
+                            Click="OnOpenSettingsClick"
+                            Style="{StaticResource FlyoutIconButtonStyle}">
+                            <ToolTipService.ToolTip>
+                                <TextBlock x:Name="OpenSettingsButtonTooltip" />
+                            </ToolTipService.ToolTip>
+                            <AnimatedIcon x:Name="SettingsAnimatedIcon">
+                                <AnimatedIcon.Source>
+                                    <animatedVisuals:AnimatedSettingsVisualSource />
+                                </AnimatedIcon.Source>
+                                <AnimatedIcon.FallbackIconSource>
+                                    <SymbolIconSource Symbol="Setting" />
+                                </AnimatedIcon.FallbackIconSource>
+                            </AnimatedIcon>
+                        </Button>
+                    </StackPanel>
                 </Grid>
             </Grid>
         </Border>

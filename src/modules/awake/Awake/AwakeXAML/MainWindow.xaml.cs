@@ -11,6 +11,7 @@ using Microsoft.PowerToys.Common.UI.Controls.Flyout;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
@@ -50,7 +51,7 @@ namespace Awake
 
                 ConfigureWindow();
                 RegisterEventHandlers();
-                SyncSegmentedSelection();
+                SyncModeSelection();
 
                 this.SetIsShownInSwitchers(false);
             }
@@ -84,8 +85,12 @@ namespace Awake
 
             ApplyExpirableButton.Content = Resources.AWAKE_FLYOUT_EXPIRABLE_APPLY;
             EditPresetsLink.Content = Resources.AWAKE_FLYOUT_EDIT_PRESETS;
-            OpenSettingsButton.Content = Resources.AWAKE_FLYOUT_OPEN_SETTINGS;
-            ExitButton.Content = Resources.AWAKE_EXIT;
+
+            OpenSettingsButtonTooltip.Text = Resources.AWAKE_FLYOUT_OPEN_SETTINGS;
+            AutomationProperties.SetName(OpenSettingsButton, Resources.AWAKE_FLYOUT_OPEN_SETTINGS);
+
+            ExitButtonTooltip.Text = Resources.AWAKE_EXIT;
+            AutomationProperties.SetName(ExitButton, Resources.AWAKE_EXIT);
         }
 
         private void ConfigureWindow()
@@ -120,7 +125,7 @@ namespace Awake
         {
             if (e.PropertyName == nameof(AwakeFlyoutViewModel.Mode))
             {
-                SyncSegmentedSelection();
+                SyncModeSelection();
                 DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
             }
             else if (e.PropertyName == nameof(AwakeFlyoutViewModel.TimedSectionVisibility)
@@ -130,7 +135,7 @@ namespace Awake
             }
         }
 
-        private void SyncSegmentedSelection()
+        private void SyncModeSelection()
         {
             int target = _viewModel.Mode switch
             {
@@ -140,22 +145,22 @@ namespace Awake
                 _ => 0,
             };
 
-            if (ModeSegmentedControl.SelectedIndex != target)
+            if (ModeComboBox.SelectedIndex != target)
             {
-                ModeSegmentedControl.SelectedIndex = target;
+                ModeComboBox.SelectedIndex = target;
             }
         }
 
-        private void ModeSegmentedControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // The Segmented control can fire SelectionChanged transiently with SelectedIndex == -1
-            // (e.g. during template apply); ignore those intermediate states.
-            if (ModeSegmentedControl.SelectedIndex < 0)
+            // ComboBox can fire SelectionChanged transiently with SelectedIndex == -1
+            // during template apply; ignore those intermediate states.
+            if (ModeComboBox.SelectedIndex < 0)
             {
                 return;
             }
 
-            var newMode = ModeSegmentedControl.SelectedIndex switch
+            var newMode = ModeComboBox.SelectedIndex switch
             {
                 1 => AwakeMode.INDEFINITE,
                 2 => AwakeMode.TIMED,
