@@ -35,20 +35,22 @@ namespace MouseJump.Kicker
         /// </summary>
         private void InitializeComponent()
         {
-            StartMouseJump = new Button();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(KickerForm));
+            StartWinForms = new Button();
             ActivationHotkey = new Button();
             CloseMouseJump = new Button();
+            StartWinUI3 = new Button();
             SuspendLayout();
             // 
-            // StartMouseJump
-            // 
-            StartMouseJump.Location = new Point(12, 12);
-            StartMouseJump.Name = "StartMouseJump";
-            StartMouseJump.Size = new Size(260, 70);
-            StartMouseJump.TabIndex = 0;
-            StartMouseJump.Text = "Start MouseJump";
-            StartMouseJump.UseVisualStyleBackColor = true;
-            StartMouseJump.Click += StartMouseJump_Click;
+            // StartWinForms
+            //
+            StartWinForms.Location = new Point(12, 12);
+            StartWinForms.Name = "StartWinForms";
+            StartWinForms.Size = new Size(127, 70);
+            StartWinForms.TabIndex = 0;
+            StartWinForms.Text = "Start MouseJump (WinForms)";
+            StartWinForms.UseVisualStyleBackColor = true;
+            StartWinForms.Click += StartWinForms_Click;
             // 
             // ActivationHotkey
             // 
@@ -70,15 +72,27 @@ namespace MouseJump.Kicker
             CloseMouseJump.UseVisualStyleBackColor = true;
             CloseMouseJump.Click += CloseMouseJump_Click;
             // 
+            // StartWinUI3
+            // 
+            StartWinUI3.Location = new Point(145, 12);
+            StartWinUI3.Name = "StartWinUI3";
+            StartWinUI3.Size = new Size(127, 70);
+            StartWinUI3.TabIndex = 3;
+            StartWinUI3.Text = "Start MouseJump (WinUI3)";
+            StartWinUI3.UseVisualStyleBackColor = true;
+            StartWinUI3.Click += StartWinUI3_Click;
+            //
             // KickerForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(281, 242);
+            Controls.Add(StartWinUI3);
             Controls.Add(CloseMouseJump);
             Controls.Add(ActivationHotkey);
-            Controls.Add(StartMouseJump);
+            Controls.Add(StartWinForms);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             MinimizeBox = false;
             Name = "KickerForm";
@@ -88,8 +102,9 @@ namespace MouseJump.Kicker
 
         #endregion
 
-        private Button StartMouseJump;
+        private Button StartWinForms;
         private Button ActivationHotkey;
         private Button CloseMouseJump;
+        private Button StartWinUI3;
     }
 }

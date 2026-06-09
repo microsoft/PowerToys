@@ -31,11 +31,22 @@ public partial class KickerForm : Form
         set;
     }
 
-    private void StartMouseJump_Click(object sender, EventArgs e)
+    private void StartWinForms_Click(object sender, EventArgs e)
     {
         var baseDir = AppContext.BaseDirectory;
         var exePath = Path.Combine(baseDir, "PowerToys.MouseJumpUI.exe");
+        this.Process = this.StartProcess(exePath);
+    }
 
+    private void StartWinUI3_Click(object sender, EventArgs e)
+    {
+        var baseDir = AppContext.BaseDirectory;
+        var exePath = Path.Combine(baseDir, "WinUI3Apps", "PowerToys.MouseJump.WinUI3.exe");
+        this.Process = this.StartProcess(exePath);
+    }
+
+    private Process StartProcess(string exePath)
+    {
         if (!File.Exists(exePath))
         {
             throw new FileNotFoundException($"Could not find {exePath}");
@@ -45,7 +56,7 @@ public partial class KickerForm : Form
         {
             Environment.ProcessId.ToString(CultureInfo.InvariantCulture),
         };
-        this.Process = Process.Start(exePath, args);
+        return Process.Start(exePath, args);
     }
 
     private void ActivationHotkey_Click(object sender, EventArgs e)

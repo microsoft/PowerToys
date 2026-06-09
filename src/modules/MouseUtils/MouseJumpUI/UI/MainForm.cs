@@ -36,7 +36,7 @@ internal sealed partial class MainForm : Form
         set;
     }
 
-    public SettingsHelper SettingsHelper
+    private SettingsHelper SettingsHelper
     {
         get;
     }
@@ -139,14 +139,17 @@ internal sealed partial class MainForm : Form
             if (this.FormLayout is null)
             {
                 // there's no layout data so we can't work out what screen was clicked
-                return;
+                throw new InvalidOperationException();
             }
+
+            // get the *scaled* pointer location
+            var pointerLocation = new PointInfo(mouseEventArgs.Location);
 
             // work out which screenshot was clicked
             var clickedScreen = this.FormLayout.CanvasLayout.DeviceLayouts
                 .SelectMany(deviceLayout => deviceLayout.ScreenLayouts)
                 .FirstOrDefault(
-                    screenLayout => screenLayout.ScreenBounds.OuterBounds.Contains(mouseEventArgs.X, mouseEventArgs.Y));
+                    screenLayout => screenLayout.ScreenBounds.OuterBounds.Contains(pointerLocation));
             if (clickedScreen is null)
             {
                 return;
@@ -165,7 +168,7 @@ internal sealed partial class MainForm : Form
             // might be distorted compared to the physical screen due to the borders around the
             // screenshot, so we need to work out the target location on the physical screen first
             var clickedDisplayArea = clickedScreen.ScreenInfo.DisplayArea;
-            var clickedLocation = new PointInfo(mouseEventArgs.Location)
+            var clickedLocation = pointerLocation
                 .Stretch(
                     source: clickedScreen.ScreenBounds.ContentBounds,
                     target: clickedDisplayArea)
@@ -187,8 +190,6 @@ internal sealed partial class MainForm : Form
         this.OnDeactivate(EventArgs.Empty);
     }
 
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
-
     public async Task ShowPreviewAsync()
     {
         // hide the form while we redraw it...
@@ -202,8 +203,6 @@ internal sealed partial class MainForm : Form
 
         var appSettings = this.SettingsHelper.CurrentSettings ?? throw new InvalidOperationException();
         var displayInfo = DeviceHelper.GetDisplayInfo();
-
-        Logger.LogInfo(JsonSerializer.Serialize(displayInfo, MainForm.JsonOptions));
 
         var activatedScreen = DeviceHelper.GetActivatedScreen(displayInfo.Devices[0], activatedLocation);
 
@@ -226,11 +225,12 @@ internal sealed partial class MainForm : Form
             .ToList();
 
         await DrawingHelper.RenderPreviewAsync(
-            this.FormLayout.CanvasLayout,
-            activatedScreen,
-            imageCopyServices,
-            this.OnPreviewImageCreatedAsync,
-            this.OnPreviewImageUpdatedAsync);
+                this.FormLayout.CanvasLayout,
+                activatedScreen,
+                imageCopyServices,
+                this.OnPreviewImageCreatedAsync,
+                this.OnPreviewImageUpdatedAsync)
+            .ConfigureAwait(false);
 
         stopwatch.Stop();
 
@@ -254,6 +254,7 @@ internal sealed partial class MainForm : Form
         // force preview image memory to be released, otherwise
         // all the disposed images can pile up without being GC'ed
         GC.Collect();
+        GC.WaitForPendingFinalizers();
     }
 
     /// <summary>

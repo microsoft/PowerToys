@@ -19,13 +19,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="HotKeyEventArgs.cs" />
-      <Compile Remove="HotKeyHelper.cs" />
-      <Compile Remove="HotKeyManager.cs" />
-      <Compile Remove="MessageLoop.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\MouseJump.Common\MouseJump.Common.csproj" />
     </ItemGroup>
 
