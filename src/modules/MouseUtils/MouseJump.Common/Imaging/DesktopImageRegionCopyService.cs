@@ -52,7 +52,7 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
         ResultHandler.ThrowIfZero(result, getLastError: false, nameof(PInvoke.StretchBlt));
 
         // we need to release the graphics device context handle before anything
-        // else tries to use the Graphics object otherwise it'll give an error
+        // else tries to use the Graphics object - otherwise it'll give an error
         // from GDI saying "Object is currently in use elsewhere"
         DesktopImageRegionCopyService.FreeGraphicsDeviceContext(targetGraphics, ref previewHdc);
 

@@ -26,6 +26,7 @@
             build fails if there are any compile errors in the main
             UI project.
         -->
+        <ProjectReference Include="..\MouseJump.WinUI3\MouseJump.WinUI3.csproj" />
         <ProjectReference Include="..\MouseJumpUI\MouseJumpUI.csproj" />
     </ItemGroup>
 </Project>
