@@ -910,7 +910,6 @@ Lenovo
 LError
 LEVELID
 LFU
-LGD
 lhwnd
 LIBFUZZER
 LIBID
@@ -990,7 +989,6 @@ luid
 lusrmgr
 LVDS
 LWA
-LWIN
 LZero
 MAGTRANSFORM
 makeappx
@@ -2006,7 +2004,6 @@ visio
 visualeffects
 vkey
 vmovl
-VMs
 vnd
 vorrq
 VOS
