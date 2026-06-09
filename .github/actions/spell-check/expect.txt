@@ -1538,6 +1538,7 @@ REMAPSUCCESSFUL
 REMAPUNSUCCESSFUL
 Remotable
 remotedesktop
+remotehost
 remoteip
 Removelnk
 renamable

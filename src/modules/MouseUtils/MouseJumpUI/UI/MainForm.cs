@@ -305,7 +305,7 @@ internal sealed partial class MainForm : Form
                 if (!this.Visible)
                 {
                     // we seem to need to turn off topmost and then re-enable it again
-                    // when we show the form, otherwise it doesn't always get shown topmost...
+                    // when we show the form - otherwise it doesn't always get shown topmost...
                     this.TopMost = false;
                     this.TopMost = true;
                     this.Show();
