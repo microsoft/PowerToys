@@ -59,7 +59,14 @@ inline int run_message_loop(const bool until_idle = false,
 //
 // Returns true if the message was an end-session message and out_result has
 // been set; the caller should return out_result without further dispatch.
-inline bool handle_session_end_message(HWND window, UINT message, WPARAM wparam, LRESULT& out_result)
+//
+// When out_session_ending is non-null it is set to true exactly when an actual
+// teardown begins (WM_ENDSESSION with wparam == TRUE) and is left untouched
+// otherwise. Callers whose WM_DESTROY performs blocking cross-process cleanup
+// (for example waiting on a child process) can read this flag and skip that
+// work on OS shutdown, where the OS is already reaping those processes in
+// parallel and the quiesce budget is too short to wait on them.
+inline bool handle_session_end_message(HWND window, UINT message, WPARAM wparam, LRESULT& out_result, bool* out_session_ending = nullptr)
 {
     switch (message)
     {
@@ -69,6 +76,10 @@ inline bool handle_session_end_message(HWND window, UINT message, WPARAM wparam,
     case WM_ENDSESSION:
         if (wparam)
         {
+            if (out_session_ending)
+            {
+                *out_session_ending = true;
+            }
             DestroyWindow(window);
         }
         out_result = 0;

@@ -36,6 +36,11 @@ namespace
     NOTIFYICONDATAW tray_icon_data;
     bool tray_icon_created = false;
 
+    // Set once the OS confirms session end (WM_ENDSESSION, wparam == TRUE) so the
+    // WM_DESTROY handler below can skip cross-process cleanup the OS is already
+    // reaping in parallel.
+    bool g_session_ending = false;
+
     bool about_box_shown = false;
 
     HMENU h_menu = nullptr;
@@ -157,7 +162,7 @@ void click_timer_elapsed()
 LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     LRESULT session_end_result = 0;
-    if (handle_session_end_message(window, message, wparam, session_end_result))
+    if (handle_session_end_message(window, message, wparam, session_end_result, &g_session_ending))
     {
         return session_end_result;
     }
@@ -181,12 +186,23 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         }
         break;
     case WM_DESTROY:
-        if (tray_icon_created)
+        // On OS-initiated shutdown skip cross-process cleanup: the shell is tearing
+        // down and close_settings_window() blocks up to 1.5s waiting on
+        // PowerToys.Settings.exe, which the OS is reaping in parallel. That wait, plus
+        // Shell_NotifyIcon during explorer teardown, would burn the limited quiesce
+        // budget and trip APPLICATION_HANG_QUIESCE. PostQuitMessage alone unwinds the
+        // loop in milliseconds. User-initiated Exit (session_ending == false) keeps the
+        // full graceful cleanup.
+        Logger::info(L"Runner WM_DESTROY, session_ending={}", g_session_ending);
+        if (!g_session_ending)
         {
-            Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
-            tray_icon_created = false;
+            if (tray_icon_created)
+            {
+                Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
+                tray_icon_created = false;
+            }
+            close_settings_window();
         }
-        close_settings_window();
         PostQuitMessage(0);
         break;
     case WM_CLOSE:
