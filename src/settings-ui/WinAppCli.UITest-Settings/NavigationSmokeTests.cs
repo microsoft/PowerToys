@@ -134,9 +134,9 @@ namespace Microsoft.Settings.UITests.WinAppCli
             var invokeItem = WinAppCli.Invoke(_host.Pid, navItemSlug);
             Assert.IsTrue(invokeItem.Succeeded, $"Failed to invoke '{navItemSlug}'. {invokeItem.DescribeFailure()}");
 
-            // Give the navigation a moment to land before asserting the process is alive — if a
-            // page constructor throws and the (now-fixed) handler ever regresses, the FailFast
-            // will land in this window.
+            // Pause briefly before asserting the process is still alive. If a page
+            // constructor throws and the (now-fixed) handler ever regresses, the
+            // FailFast will land within this delay.
             Thread.Sleep(250);
 
             using var alive = Process.GetProcessById(_host.Pid);
