@@ -251,7 +251,7 @@ internal sealed partial class MainForm : Form
         this.Thumbnail.Image = null;
         tmp.Dispose();
 
-        // force preview image memory to be released, otherwise
+        // force preview image memory to be released - otherwise
         // all the disposed images can pile up without being GC'ed
         GC.Collect();
         GC.WaitForPendingFinalizers();

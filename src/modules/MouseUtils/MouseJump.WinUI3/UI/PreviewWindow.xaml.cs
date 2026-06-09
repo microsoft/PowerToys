@@ -352,7 +352,7 @@ internal sealed partial class PreviewWindow : Window
 
         this.PreviewImage.Source = null;
 
-        // force preview image memory to be released, otherwise
+        // force preview image memory to be released - otherwise
         // all the disposed images can pile up without being GC'ed
         GC.Collect();
         GC.WaitForPendingFinalizers();
@@ -420,7 +420,7 @@ internal sealed partial class PreviewWindow : Window
                 if (!this.Visible)
                 {
                     // we seem to need to turn off topmost and then re-enable it again
-                    // when we show the form, otherwise it doesn't always get shown topmost...
+                    // when we show the form - otherwise it doesn't always get shown topmost...
                     presenter.IsAlwaysOnTop = false;
                     presenter.IsAlwaysOnTop = true;
                 }

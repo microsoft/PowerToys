@@ -72,7 +72,7 @@ public static class MouseHelper
         // |  (a)    |                |
         // +---------+----------------+
         //
-        // setting the position a second time seems to fix this and moves the
+        // setting the position more than once seems to fix this and moves the
         // cursor to the expected location (b)
         var targetPosition = position.ToPoint();
         for (var i = 0; i < 2; i++)
