@@ -581,6 +581,14 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 {
     switch (message)
     {
+    case WM_QUERYENDSESSION:
+    {
+        // This WndProc returns 0 for unhandled messages (does not call
+        // DefWindowProc). Must explicitly return TRUE here or the OS treats
+        // it as a shutdown veto.
+        return TRUE;
+    }
+
     case WM_ENDSESSION:
     {
         // wparam==FALSE means shutdown was vetoed; only quit on real shutdown.
