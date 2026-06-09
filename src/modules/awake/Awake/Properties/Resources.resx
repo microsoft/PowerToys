@@ -221,4 +221,72 @@
     <value>remaining</value>
     <comment>Suffix for timed mode showing time remaining, e.g. "1:30:00 remaining".</comment>
   </data>
+  <data name="AWAKE_FLYOUT_TITLE" xml:space="preserve">
+    <value>PowerToys Awake</value>
+    <comment>Title shown at the top of the Awake tray flyout.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_MODE_HEADER" xml:space="preserve">
+    <value>Mode</value>
+    <comment>Header label above the mode selector (Off / Indefinite / Timed / Until expiration).</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_MODE_OFF" xml:space="preserve">
+    <value>Off</value>
+    <comment>Short label for the Passive (no keep-awake) mode in the flyout's mode selector.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_MODE_INDEFINITE" xml:space="preserve">
+    <value>Indefinite</value>
+    <comment>Short label for the Indefinite keep-awake mode in the flyout's mode selector.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_MODE_TIMED" xml:space="preserve">
+    <value>Timed</value>
+    <comment>Short label for the Timed keep-awake mode in the flyout's mode selector.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_MODE_EXPIRABLE" xml:space="preserve">
+    <value>Until date</value>
+    <comment>Short label for the Expirable keep-awake mode (active until a specified date and time) in the flyout's mode selector.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_TIMED_HEADER" xml:space="preserve">
+    <value>Keep awake for</value>
+    <comment>Header above the list of preset timed durations.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_EXPIRABLE_HEADER" xml:space="preserve">
+    <value>Keep awake until</value>
+    <comment>Header above the date and time pickers for expirable mode.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_EXPIRABLE_DATE" xml:space="preserve">
+    <value>Date</value>
+    <comment>Label next to the date picker.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_EXPIRABLE_TIME" xml:space="preserve">
+    <value>Time</value>
+    <comment>Label next to the time picker.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_EXPIRABLE_APPLY" xml:space="preserve">
+    <value>Apply</value>
+    <comment>Button that confirms the chosen expiration date/time.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_EDIT_PRESETS" xml:space="preserve">
+    <value>Edit presets in Settings</value>
+    <comment>Link that opens the Awake page in PowerToys Settings to edit the list of preset durations.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_OPEN_SETTINGS" xml:space="preserve">
+    <value>Open settings</value>
+    <comment>Footer button that opens the Awake page in PowerToys Settings.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_STATUS_OFF" xml:space="preserve">
+    <value>Using the system power plan</value>
+    <comment>Status line shown below the title when Awake is in Passive (Off) mode.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_STATUS_INDEFINITE" xml:space="preserve">
+    <value>Keeping your PC awake indefinitely</value>
+    <comment>Status line shown below the title when Awake is in Indefinite mode.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_STATUS_TIMED" xml:space="preserve">
+    <value>Keeping your PC awake for {0}</value>
+    <comment>Status line shown below the title when Awake is in Timed mode. {0} is the duration, e.g. "30 minutes".</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_STATUS_EXPIRABLE" xml:space="preserve">
+    <value>Keeping your PC awake until {0}</value>
+    <comment>Status line shown below the title when Awake is in Expirable mode. {0} is the formatted date/time.</comment>
+  </data>
 </root>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -10,11 +10,14 @@ using Awake.Core.Models;
 
 namespace Awake.Core.Native
 {
+    /// <summary>
+    /// P/Invokes used by the headless Awake core (console attach, power capability query,
+    /// thread execution state, parent-PID lookup). Tray-icon and HMENU P/Invokes were moved
+    /// to <see cref="TrayIconService"/> (CsWin32-generated) when the WinUI flyout replaced
+    /// the legacy popup menu.
+    /// </summary>
     internal sealed class Bridge
     {
-        [UnmanagedFunctionPointer(CallingConvention.Winapi, SetLastError = true)]
-        internal delegate int WndProcDelegate(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
-
         [DllImport("Powrprof.dll", SetLastError = true)]
         internal static extern bool GetPwrCapabilities(out SystemPowerCapabilities lpSystemPowerCapabilities);
 
@@ -48,70 +51,7 @@ namespace Awake.Core.Native
         [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
         IntPtr templateFile);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern IntPtr CreatePopupMenu();
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern bool InsertMenu(IntPtr hMenu, uint uPosition, uint uFlags, uint uIDNewItem, string lpNewItem);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern bool TrackPopupMenuEx(IntPtr hMenu, uint uFlags, int x, int y, IntPtr hWnd, IntPtr lptpm);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern IntPtr SendMessage(IntPtr hWnd, uint msg, nuint wParam, nint lParam);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool DestroyMenu(IntPtr hMenu);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool DestroyWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern void PostQuitMessage(int nExitCode);
-
-        [DllImport("shell32.dll", SetLastError = true)]
-        internal static extern bool Shell_NotifyIcon(int dwMessage, ref NotifyIconData pnid);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool TranslateMessage(ref Msg lpMsg);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern IntPtr DispatchMessage(ref Msg lpMsg);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern IntPtr RegisterClassEx(ref WndClassEx lpwcx);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern IntPtr CreateWindowEx(uint dwExStyle, string lpClassName, string lpWindowName, uint dwStyle, int x, int y, int nWidth, int nHeight, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern int DefWindowProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool GetCursorPos(out Point lpPoint);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool GetMessage(out Msg lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool UpdateWindow(IntPtr hWnd);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        internal static extern bool SetMenuInfo(IntPtr hMenu, ref MenuInfo lpcmi);
-
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool SetForegroundWindow(IntPtr hWnd);
-
         [DllImport("ntdll.dll")]
         internal static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, ref ProcessBasicInformation processInformation, int processInformationLength, out int returnLength);
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        internal static extern int RegisterWindowMessage(string lpString);
     }
 }

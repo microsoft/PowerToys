@@ -338,5 +338,107 @@ namespace Awake.Properties {
                 return ResourceManager.GetString("AWAKE_TRAY_REMAINING", resourceCulture);
             }
         }
+
+        internal static string AWAKE_FLYOUT_TITLE {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_TITLE", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_MODE_HEADER {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_MODE_HEADER", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_MODE_OFF {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_MODE_OFF", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_MODE_INDEFINITE {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_MODE_INDEFINITE", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_MODE_TIMED {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_MODE_TIMED", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_MODE_EXPIRABLE {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_MODE_EXPIRABLE", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_TIMED_HEADER {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_TIMED_HEADER", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_EXPIRABLE_HEADER {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_EXPIRABLE_HEADER", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_EXPIRABLE_DATE {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_EXPIRABLE_DATE", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_EXPIRABLE_TIME {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_EXPIRABLE_TIME", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_EXPIRABLE_APPLY {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_EXPIRABLE_APPLY", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_EDIT_PRESETS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_EDIT_PRESETS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_OPEN_SETTINGS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_OPEN_SETTINGS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_STATUS_OFF {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_STATUS_OFF", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_STATUS_INDEFINITE {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_STATUS_INDEFINITE", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_STATUS_TIMED {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_STATUS_TIMED", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_STATUS_EXPIRABLE {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_STATUS_EXPIRABLE", resourceCulture);
+            }
+        }
     }
 }

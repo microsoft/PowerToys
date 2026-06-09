@@ -39,15 +39,22 @@ namespace Awake.Core
 
         internal static AwakeMode CurrentOperatingMode { get; private set; }
 
-        private static bool IsDisplayOn { get; set; }
+        internal static bool IsDisplayOn { get; private set; }
 
-        private static uint TimeRemaining { get; set; }
+        internal static uint TimeRemaining { get; private set; }
 
         private static string ScreenStateString => IsDisplayOn ? Resources.AWAKE_SCREEN_ON : Resources.AWAKE_SCREEN_OFF;
 
-        private static int ProcessId { get; set; }
+        internal static int ProcessId { get; private set; }
 
-        private static DateTimeOffset ExpireAt { get; set; }
+        internal static DateTimeOffset ExpireAt { get; private set; }
+
+        /// <summary>
+        /// Raised whenever the operating mode, screen state, or expiration target changes
+        /// so the WinUI flyout can refresh its state. Always raised on the thread that
+        /// initiated the change; subscribers must marshal to the UI dispatcher themselves.
+        /// </summary>
+        internal static event EventHandler? ModeChanged;
 
         private static readonly CompositeFormat AwakeMinute = CompositeFormat.Parse(Resources.AWAKE_MINUTE);
         private static readonly CompositeFormat AwakeMinutes = CompositeFormat.Parse(Resources.AWAKE_MINUTES);
@@ -185,30 +192,38 @@ namespace Awake.Core
                         ? string.Empty
                         : $"\nPID: {ProcessId}";
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_INDEFINITE}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}{pidLine}";
-                    icon = TrayHelper.IndefiniteIcon;
+                    icon = TrayIconService.IndefiniteIcon;
                     break;
 
                 case AwakeMode.PASSIVE:
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_SCREEN_OFF}";
-                    icon = TrayHelper.DisabledIcon;
+                    icon = TrayIconService.DisabledIcon;
                     break;
 
                 case AwakeMode.EXPIRABLE:
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_UNTIL} {ExpireAt:MMM d, h:mm tt}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
-                    icon = TrayHelper.ExpirableIcon;
+                    icon = TrayIconService.ExpirableIcon;
                     break;
 
                 case AwakeMode.TIMED:
                     iconText = $"{Constants.FullAppName}\n{Resources.AWAKE_TRAY_TEXT_TIMED}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}";
-                    icon = TrayHelper.TimedIcon;
+                    icon = TrayIconService.TimedIcon;
                     break;
             }
 
-            TrayHelper.SetShellIcon(
-                TrayHelper.WindowHandle,
-                iconText,
-                icon,
-                forceAdd ? TrayIconAction.Add : TrayIconAction.Update);
+            if (icon is not null)
+            {
+                AwakeApp.Current?.UpdateTrayIcon(icon, iconText);
+            }
+
+            try
+            {
+                ModeChanged?.Invoke(null, EventArgs.Empty);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Awake ModeChanged subscriber threw: {ex.Message}");
+            }
         }
 
         internal static void SetIndefiniteKeepAwake(bool keepDisplayOn = false, int processId = 0, [CallerMemberName] string callerName = "")
@@ -373,11 +388,18 @@ namespace Awake.Core
                     {
                         TimeRemaining = (uint)remainingTimeSpan.TotalSeconds;
 
-                        TrayHelper.SetShellIcon(
-                            TrayHelper.WindowHandle,
-                            $"{Constants.FullAppName}\n{remainingTimeSpan.ToHumanReadableString()} {Resources.AWAKE_TRAY_REMAINING}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}",
-                            TrayHelper.TimedIcon,
-                            TrayIconAction.Update);
+                        AwakeApp.Current?.UpdateTrayIcon(
+                            TrayIconService.TimedIcon,
+                            $"{Constants.FullAppName}\n{remainingTimeSpan.ToHumanReadableString()} {Resources.AWAKE_TRAY_REMAINING}\n{Resources.AWAKE_TRAY_DISPLAY}: {ScreenStateString}");
+
+                        try
+                        {
+                            ModeChanged?.Invoke(null, EventArgs.Empty);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"Awake ModeChanged subscriber threw: {ex.Message}");
+                        }
                     },
                     () => HandleTimerCompletion("timed"));
         }
@@ -419,21 +441,17 @@ namespace Awake.Core
             _timerSubscription?.Dispose();
             _timerSubscription = null;
 
-            // Dispose tray icons
-            TrayHelper.DisposeIcons();
-
-            if (TrayHelper.WindowHandle != IntPtr.Zero)
+            // Shut down the WinUI app: this removes the tray icon and closes the hidden flyout
+            // window so the message pump can exit cleanly.
+            try
             {
-                // Delete the icon.
-                TrayHelper.SetShellIcon(TrayHelper.WindowHandle, string.Empty, null, TrayIconAction.Delete);
-
-                // Close the message window that we used for the tray.
-                Bridge.SendMessage(TrayHelper.WindowHandle, Native.Constants.WM_CLOSE, 0, 0);
-
-                Bridge.DestroyWindow(TrayHelper.WindowHandle);
+                AwakeApp.Current?.Shutdown();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to shut down AwakeApp cleanly: {ex.Message}");
             }
 
-            Bridge.PostQuitMessage(exitCode);
             Environment.Exit(exitCode);
         }
 

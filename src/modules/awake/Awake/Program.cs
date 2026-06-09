@@ -23,6 +23,7 @@ using Awake.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 
 namespace Awake
 {
@@ -50,7 +51,8 @@ namespace Awake
         private static ConsoleEventHandler? _handler;
         private static SystemPowerCapabilities _powerCapabilities;
 
-        private static async Task<int> Main(string[] args)
+        [STAThread]
+        private static int Main(string[] args)
         {
             Logger.InitializeLogger(Path.Combine("\\", Core.Constants.AppName, "Logs"));
 
@@ -90,8 +92,7 @@ namespace Awake
                 Logger.LogError("CultureNotFoundException: " + ex.Message);
             }
 
-            await TrayHelper.InitializeTray(TrayHelper.DefaultAwakeIcon, Core.Constants.FullAppName);
-            AppDomain.CurrentDomain.ProcessExit += (_, _) => TrayHelper.RunOnMainThread(() => LockMutex?.ReleaseMutex());
+            AppDomain.CurrentDomain.ProcessExit += (_, _) => LockMutex?.ReleaseMutex();
             AppDomain.CurrentDomain.UnhandledException += AwakeUnhandledExceptionCatcher;
 
             if (!instantiated)
@@ -102,39 +103,67 @@ namespace Awake
                 Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
                 return 1;
             }
-            else
+
+            if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
-                if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
-                {
-                    LogCLITelemetry(successful: false);
-                    Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
-                    return 1;
-                }
-                else
-                {
-                    Logger.LogInfo($"Launching {Core.Constants.AppName}...");
-                    Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
-                    Logger.LogInfo($"Build: {Core.Constants.BuildId}");
-                    Logger.LogInfo($"OS: {Environment.OSVersion}");
-                    Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
-
-                    TaskScheduler.UnobservedTaskException += (sender, args) =>
-                    {
-                        Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
-                        args.SetObserved();
-                    };
-
-                    // To make it easier to diagnose future issues, let's get the
-                    // system power capabilities and aggregate them in the log.
-                    Bridge.GetPwrCapabilities(out _powerCapabilities);
-                    Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities, _serializerOptions));
-
-                    var result = await rootCommand.InvokeAsync(args);
-                    LogCLITelemetry(successful: result == 0);
-                    return result;
-                }
+                LogCLITelemetry(successful: false);
+                Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
+                return 1;
             }
+
+            Logger.LogInfo($"Launching {Core.Constants.AppName}...");
+            Logger.LogInfo(FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion);
+            Logger.LogInfo($"Build: {Core.Constants.BuildId}");
+            Logger.LogInfo($"OS: {Environment.OSVersion}");
+            Logger.LogInfo($"OS Build: {Manager.GetOperatingSystemBuild()}");
+
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
+            {
+                Trace.WriteLine($"Task scheduler error: {args.Exception.Message}"); // somebody forgot to check!
+                args.SetObserved();
+            };
+
+            // To make it easier to diagnose future issues, let's get the
+            // system power capabilities and aggregate them in the log.
+            Bridge.GetPwrCapabilities(out _powerCapabilities);
+            Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities, _serializerOptions));
+
+            // Stash the parsed arguments so the WinUI dispatcher can pick them up after the
+            // tray icon and main window are ready.
+            _pendingArgs = args;
+
+            // Hand control to the WinUI runtime. The callback runs on the dispatcher thread;
+            // we create the AwakeApp there (which creates the tray icon and the hidden flyout)
+            // and then invoke the existing System.CommandLine handler from the UI thread.
+            WinRT.ComWrappersSupport.InitializeComWrappers();
+
+            Microsoft.UI.Xaml.Application.Start((_) =>
+            {
+                var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+                SynchronizationContext.SetSynchronizationContext(context);
+
+                var app = new AwakeApp(_startedFromPowerToys);
+
+                // Defer the handler invocation until after AwakeApp.OnLaunched has run.
+                DispatcherQueue.GetForCurrentThread().TryEnqueue(() =>
+                {
+                    try
+                    {
+                        int handlerResult = rootCommand.Invoke(_pendingArgs ?? Array.Empty<string>());
+                        LogCLITelemetry(successful: handlerResult == 0);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"Unhandled exception while invoking command handler: {ex}");
+                        LogCLITelemetry(successful: false);
+                    }
+                });
+            });
+
+            return Environment.ExitCode;
         }
+
+        private static string[]? _pendingArgs;
 
         private static RootCommand BuildRootCommand()
         {
@@ -523,8 +552,9 @@ namespace Awake
 
         private static void InitializeSettings()
         {
-            AwakeSettings settings = Manager.ModuleSettings?.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
-            TrayHelper.SetTray(settings, _startedFromPowerToys);
+            // The flyout reads CustomTrayTimes directly from settings on open, so there's
+            // nothing for us to push at startup beyond logging that the settings exist.
+            _ = Manager.ModuleSettings?.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
         }
 
         private static void HandleAwakeConfigChange(FileSystemEventArgs fileEvent)
@@ -585,8 +615,6 @@ namespace Awake
                         Logger.LogError("Unknown mode of operation. Check config file.");
                         break;
                 }
-
-                TrayHelper.SetTray(settings, _startedFromPowerToys);
             }
             catch (Exception ex)
             {
