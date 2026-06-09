@@ -76,7 +76,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>UNICODE;_UNICODE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\src;$(MSBuildProjectDirectory)\third_party\catch2;$(MSBuildProjectDirectory)\..\..\src\DesktopGrass.Native\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\src;$(MSBuildProjectDirectory)\third_party\catch2;$(MSBuildProjectDirectory)\..\DesktopGrass.Native\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,20 +151,20 @@
     <ClCompile Include="src\click_through_smoke_test.cpp" />
     <ClCompile Include="src\pacing_tests.cpp" />
     <ClCompile Include="src\prop_spacing_tests.cpp" />
-    <ClCompile Include="..\..\src\DesktopGrass.Native\src\AutoStart.cpp" />
-    <ClCompile Include="..\..\src\DesktopGrass.Native\src\Config.cpp" />
-    <ClCompile Include="..\..\src\DesktopGrass.Native\src\Pacing.cpp" />
-    <ClCompile Include="..\..\src\DesktopGrass.Native\src\Persistence.cpp" />
-    <ClCompile Include="..\..\src\DesktopGrass.Native\src\Sim.cpp" />
+    <ClCompile Include="..\DesktopGrass.Native\src\AutoStart.cpp" />
+    <ClCompile Include="..\DesktopGrass.Native\src\Config.cpp" />
+    <ClCompile Include="..\DesktopGrass.Native\src\Pacing.cpp" />
+    <ClCompile Include="..\DesktopGrass.Native\src\Persistence.cpp" />
+    <ClCompile Include="..\DesktopGrass.Native\src\Sim.cpp" />
   </ItemGroup>
 
   <ItemGroup>
     <ClInclude Include="src\snapshot_data.h" />
-    <ClInclude Include="..\..\src\DesktopGrass.Native\src\AutoStart.h" />
-    <ClInclude Include="..\..\src\DesktopGrass.Native\src\Config.h" />
-    <ClInclude Include="..\..\src\DesktopGrass.Native\src\Json.h" />
-    <ClInclude Include="..\..\src\DesktopGrass.Native\src\Pacing.h" />
-    <ClInclude Include="..\..\src\DesktopGrass.Native\src\Persistence.h" />
+    <ClInclude Include="..\DesktopGrass.Native\src\AutoStart.h" />
+    <ClInclude Include="..\DesktopGrass.Native\src\Config.h" />
+    <ClInclude Include="..\DesktopGrass.Native\src\Json.h" />
+    <ClInclude Include="..\DesktopGrass.Native\src\Pacing.h" />
+    <ClInclude Include="..\DesktopGrass.Native\src\Persistence.h" />
     <ClInclude Include="third_party\catch2\catch.hpp" />
   </ItemGroup>
 
