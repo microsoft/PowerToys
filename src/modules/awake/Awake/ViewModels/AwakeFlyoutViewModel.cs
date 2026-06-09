@@ -3,10 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 using Awake.Core;
 using Awake.Properties;
@@ -47,6 +44,12 @@ namespace Awake.ViewModels
         private TimeSpan _expirationTime;
 
         [ObservableProperty]
+        private uint _intervalHours;
+
+        [ObservableProperty]
+        private uint _intervalMinutes;
+
+        [ObservableProperty]
         private string _statusText = string.Empty;
 
         public bool KeepDisplayOnEnabled => Mode != AwakeMode.PASSIVE;
@@ -59,8 +62,6 @@ namespace Awake.ViewModels
 
         public Microsoft.UI.Xaml.Visibility ExitButtonVisibility =>
             ShowExitButton ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
-
-        public ObservableCollection<TimedPreset> TimedPresets { get; } = new();
 
         public bool ShowExitButton { get; }
 
@@ -78,8 +79,7 @@ namespace Awake.ViewModels
 
         /// <summary>
         /// Re-reads the current Awake state from <see cref="Manager"/> and the
-        /// on-disk settings (for <see cref="TimedPresets"/>) and updates all
-        /// bindable properties. Safe to call repeatedly.
+        /// on-disk settings and updates all bindable properties. Safe to call repeatedly.
         /// </summary>
         public void Refresh()
         {
@@ -99,7 +99,7 @@ namespace Awake.ViewModels
                 ExpirationDate = new DateTimeOffset(expireAt.Date, expireAt.Offset);
                 ExpirationTime = expireAt.TimeOfDay;
 
-                RefreshTimedPresets();
+                LoadIntervalFromSettings();
                 UpdateStatusText();
             }
             finally
@@ -108,54 +108,20 @@ namespace Awake.ViewModels
             }
         }
 
-        /// <summary>
-        /// Rebuilds the <see cref="TimedPresets"/> list from the user's
-        /// <c>CustomTrayTimes</c> setting, falling back to the defaults if empty.
-        /// </summary>
-        private void RefreshTimedPresets()
+        private void LoadIntervalFromSettings()
         {
-            TimedPresets.Clear();
-
-            Dictionary<string, uint> options;
             try
             {
-                var settings = _settingsUtils.GetSettings<AwakeSettings>(Core.Constants.AppName) ?? new AwakeSettings();
-                options = settings.Properties.CustomTrayTimes;
-                if (options is null || options.Count == 0)
+                var settings = _settingsUtils.GetSettings<AwakeSettings>(Core.Constants.AppName);
+                if (settings is not null)
                 {
-                    options = Manager.GetDefaultTrayOptions();
+                    IntervalHours = settings.Properties.IntervalHours;
+                    IntervalMinutes = settings.Properties.IntervalMinutes;
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to load custom tray times: {ex.Message}");
-                options = Manager.GetDefaultTrayOptions();
-            }
-
-            uint? currentTimedSeconds = null;
-            if (Mode == AwakeMode.TIMED)
-            {
-                try
-                {
-                    var s = _settingsUtils.GetSettings<AwakeSettings>(Core.Constants.AppName);
-                    if (s is not null)
-                    {
-                        currentTimedSeconds = (s.Properties.IntervalHours * 3600) + (s.Properties.IntervalMinutes * 60);
-                    }
-                }
-                catch
-                {
-                    // Best-effort selection highlighting; ignore failures.
-                }
-            }
-
-            foreach (var kv in options)
-            {
-                var preset = new TimedPreset(kv.Key, kv.Value)
-                {
-                    IsSelected = currentTimedSeconds.HasValue && currentTimedSeconds.Value == kv.Value,
-                };
-                TimedPresets.Add(preset);
+                Logger.LogWarning($"Failed to load interval from settings: {ex.Message}");
             }
         }
 
@@ -206,6 +172,69 @@ namespace Awake.ViewModels
             }
         }
 
+        partial void OnIntervalHoursChanged(uint value)
+        {
+            OnIntervalChanged();
+        }
+
+        partial void OnIntervalMinutesChanged(uint value)
+        {
+            OnIntervalChanged();
+        }
+
+        partial void OnExpirationDateChanged(DateTimeOffset value)
+        {
+            OnExpirationChanged();
+        }
+
+        partial void OnExpirationTimeChanged(TimeSpan value)
+        {
+            OnExpirationChanged();
+        }
+
+        private void OnIntervalChanged()
+        {
+            if (_suppressApply)
+            {
+                return;
+            }
+
+            if (Mode == AwakeMode.TIMED)
+            {
+                ApplyTimedFromInterval();
+            }
+
+            UpdateStatusText();
+        }
+
+        private void OnExpirationChanged()
+        {
+            if (_suppressApply)
+            {
+                return;
+            }
+
+            if (Mode == AwakeMode.EXPIRABLE)
+            {
+                ApplyExpirableFromPickers();
+            }
+
+            UpdateStatusText();
+        }
+
+        private void ApplyTimedFromInterval()
+        {
+            uint seconds = (IntervalHours * 3600u) + (IntervalMinutes * 60u);
+            if (seconds == 0)
+            {
+                // 0/0 would resolve to an instantaneous expiration; ignore until the user
+                // provides a non-zero interval.
+                return;
+            }
+
+            Manager.SetTimedKeepAwake(seconds, KeepDisplayOn);
+        }
+
         private void ApplyMode(AwakeMode mode)
         {
             try
@@ -221,12 +250,7 @@ namespace Awake.ViewModels
                         break;
 
                     case AwakeMode.TIMED:
-                        var selected = TimedPresets.FirstOrDefault(p => p.IsSelected) ?? TimedPresets.FirstOrDefault();
-                        if (selected is not null)
-                        {
-                            Manager.SetTimedKeepAwake(selected.Seconds, KeepDisplayOn);
-                        }
-
+                        ApplyTimedFromInterval();
                         break;
 
                     case AwakeMode.EXPIRABLE:
@@ -238,30 +262,6 @@ namespace Awake.ViewModels
             {
                 Logger.LogError($"AwakeFlyoutViewModel.ApplyMode failed: {ex}");
             }
-        }
-
-        [RelayCommand]
-        private void SelectTimedPreset(TimedPreset? preset)
-        {
-            if (preset is null)
-            {
-                return;
-            }
-
-            foreach (var p in TimedPresets)
-            {
-                p.IsSelected = ReferenceEquals(p, preset);
-            }
-
-            Manager.SetTimedKeepAwake(preset.Seconds, KeepDisplayOn);
-            UpdateStatusText();
-        }
-
-        [RelayCommand]
-        private void ApplyExpirable()
-        {
-            ApplyExpirableFromPickers();
-            UpdateStatusText();
         }
 
         private void ApplyExpirableFromPickers()
@@ -312,13 +312,28 @@ namespace Awake.ViewModels
                 AwakeMode.TIMED => string.Format(
                     CultureInfo.CurrentCulture,
                     StatusTimedFormat,
-                    TimedPresets.FirstOrDefault(p => p.IsSelected)?.Label ?? string.Empty),
+                    FormatInterval(IntervalHours, IntervalMinutes)),
                 AwakeMode.EXPIRABLE => string.Format(
                     CultureInfo.CurrentCulture,
                     StatusExpirableFormat,
                     Manager.ExpireAt.ToString("g", CultureInfo.CurrentCulture)),
                 _ => Resources.AWAKE_FLYOUT_STATUS_OFF,
             };
+        }
+
+        private static string FormatInterval(uint hours, uint minutes)
+        {
+            if (hours > 0 && minutes > 0)
+            {
+                return string.Format(CultureInfo.CurrentCulture, "{0}h {1}m", hours, minutes);
+            }
+
+            if (hours > 0)
+            {
+                return string.Format(CultureInfo.CurrentCulture, "{0}h", hours);
+            }
+
+            return string.Format(CultureInfo.CurrentCulture, "{0}m", minutes);
         }
 
         public void Dispose()

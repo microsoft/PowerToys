@@ -289,4 +289,12 @@
     <value>Keeping your PC awake until {0}</value>
     <comment>Status line shown below the title when Awake is in Expirable mode. {0} is the formatted date/time.</comment>
   </data>
+  <data name="AWAKE_FLYOUT_INTERVAL_HOURS" xml:space="preserve">
+    <value>Hours</value>
+    <comment>Header above the hours number input in the flyout's Timed mode section.</comment>
+  </data>
+  <data name="AWAKE_FLYOUT_INTERVAL_MINUTES" xml:space="preserve">
+    <value>Minutes</value>
+    <comment>Header above the minutes number input in the flyout's Timed mode section.</comment>
+  </data>
 </root>

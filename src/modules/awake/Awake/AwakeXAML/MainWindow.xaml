@@ -5,17 +5,26 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:animatedVisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
     xmlns:ui="using:CommunityToolkit.WinUI"
-    xmlns:vm="using:Awake.ViewModels"
     xmlns:winuiex="using:WinUIEx"
-    MinWidth="0"
-    MinHeight="0"
+    Width="320"
+    Height="460"
+    MinWidth="320"
+    MinHeight="460"
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
     IsTitleBarVisible="False">
-    <winuiex:WindowEx.SystemBackdrop>
-        <DesktopAcrylicBackdrop />
-    </winuiex:WindowEx.SystemBackdrop>
+    <winuiex:WindowEx.Backdrop>
+        <winuiex:AcrylicSystemBackdrop
+            DarkFallbackColor="#1c1c1c"
+            DarkLuminosityOpacity="0.96"
+            DarkTintColor="#202020"
+            DarkTintOpacity="0.5"
+            LightFallbackColor="#EEEEEE"
+            LightLuminosityOpacity="0.90"
+            LightTintColor="#F3F3F3"
+            LightTintOpacity="0" />
+    </winuiex:WindowEx.Backdrop>
 
     <Grid
         x:Name="RootGrid"
@@ -33,23 +42,26 @@
                 <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
             </Style>
         </Grid.Resources>
-        <Border x:Name="MainContainer">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="48" />
-                </Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="48" />
+        </Grid.RowDefinitions>
 
-                <StackPanel
-                    Grid.Row="0"
-                    Padding="16,16,16,16"
-                    Spacing="12">
-
-                    <StackPanel Spacing="2">
-                        <TextBlock
-                            x:Name="TitleText"
-                            FontWeight="SemiBold"
-                            Style="{StaticResource BodyStrongTextBlockStyle}" />
+        <Grid
+            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,1,0,0">
+            <ScrollViewer
+                Grid.Row="0"
+                HorizontalScrollMode="Disabled"
+                VerticalScrollBarVisibility="Auto"
+                VerticalScrollMode="Auto">
+                <StackPanel Padding="16,16,16,16" Spacing="12">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Image
+                            x:Name="StatusIcon"
+                            Width="16"
+                            Height="16" />
                         <TextBlock
                             x:Name="StatusText"
                             FontSize="12"
@@ -74,10 +86,10 @@
                         </ComboBox>
                     </StackPanel>
 
-                    <ToggleSwitch
-                        x:Name="KeepDisplayOnToggle"
-                        IsEnabled="{x:Bind ViewModel.KeepDisplayOnEnabled, Mode=OneWay}"
-                        IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
+                    <CheckBox
+                        x:Name="KeepDisplayOnCheckBox"
+                        IsChecked="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}"
+                        IsEnabled="{x:Bind ViewModel.KeepDisplayOnEnabled, Mode=OneWay}" />
 
                     <StackPanel
                         x:Name="TimedSection"
@@ -87,24 +99,25 @@
                             x:Name="TimedHeaderText"
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <ItemsControl x:Name="TimedPresetsItemsControl" ItemsSource="{x:Bind ViewModel.TimedPresets, Mode=OneWay}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:TimedPreset">
-                                    <RadioButton
-                                        Margin="0,2"
-                                        HorizontalAlignment="Stretch"
-                                        Checked="TimedPresetRadio_Checked"
-                                        Content="{x:Bind Label}"
-                                        GroupName="AwakeTimedPresets"
-                                        IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
-                                        Tag="{x:Bind}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <HyperlinkButton
-                            x:Name="EditPresetsLink"
-                            Margin="-12,0,0,0"
-                            Click="OnOpenSettingsClick" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <NumberBox
+                                x:Name="IntervalHoursInput"
+                                Width="120"
+                                LargeChange="5"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind ViewModel.IntervalHours, Mode=TwoWay}" />
+                            <NumberBox
+                                x:Name="IntervalMinutesInput"
+                                Width="120"
+                                LargeChange="5"
+                                Maximum="60"
+                                Minimum="0"
+                                SmallChange="1"
+                                SpinButtonPlacementMode="Compact"
+                                Value="{x:Bind ViewModel.IntervalMinutes, Mode=TwoWay}" />
+                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel
@@ -115,73 +128,58 @@
                             x:Name="ExpirableHeaderText"
                             FontSize="12"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <Grid ColumnSpacing="8" RowSpacing="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <CalendarDatePicker
+                        <StackPanel Spacing="8">
+                            <DatePicker
                                 x:Name="ExpirationDatePicker"
-                                Grid.Column="0"
                                 HorizontalAlignment="Stretch"
                                 Date="{x:Bind ViewModel.ExpirationDate, Mode=TwoWay}" />
                             <TimePicker
                                 x:Name="ExpirationTimePicker"
-                                Grid.Column="1"
                                 HorizontalAlignment="Stretch"
+                                ClockIdentifier="24HourClock"
                                 MinuteIncrement="5"
-                                SelectedTime="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" />
-                        </Grid>
-                        <Button
-                            x:Name="ApplyExpirableButton"
-                            HorizontalAlignment="Right"
-                            Click="OnApplyExpirableClick"
-                            Style="{StaticResource AccentButtonStyle}" />
+                                Time="{x:Bind ViewModel.ExpirationTime, Mode=TwoWay}" />
+                        </StackPanel>
                     </StackPanel>
                 </StackPanel>
-
-                <Grid
-                    Grid.Row="1"
-                    Padding="8,0,12,0"
-                    Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0,1,0,0">
-                    <StackPanel
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Center"
-                        Orientation="Horizontal"
-                        Spacing="8">
-                        <Button
-                            x:Name="ExitButton"
-                            Click="OnExitClick"
-                            Content="{ui:FontIcon Glyph=&#xE7E8;,
-                                                  FontSize=16}"
-                            Style="{StaticResource FlyoutIconButtonStyle}"
-                            Visibility="{x:Bind ViewModel.ExitButtonVisibility, Mode=OneTime}">
-                            <ToolTipService.ToolTip>
-                                <TextBlock x:Name="ExitButtonTooltip" />
-                            </ToolTipService.ToolTip>
-                        </Button>
-                        <Button
-                            x:Name="OpenSettingsButton"
-                            Click="OnOpenSettingsClick"
-                            Style="{StaticResource FlyoutIconButtonStyle}">
-                            <ToolTipService.ToolTip>
-                                <TextBlock x:Name="OpenSettingsButtonTooltip" />
-                            </ToolTipService.ToolTip>
-                            <AnimatedIcon x:Name="SettingsAnimatedIcon">
-                                <AnimatedIcon.Source>
-                                    <animatedVisuals:AnimatedSettingsVisualSource />
-                                </AnimatedIcon.Source>
-                                <AnimatedIcon.FallbackIconSource>
-                                    <SymbolIconSource Symbol="Setting" />
-                                </AnimatedIcon.FallbackIconSource>
-                            </AnimatedIcon>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Grid>
-        </Border>
+            </ScrollViewer>
+        </Grid>
+        <Grid Grid.Row="1">
+            <StackPanel
+                Grid.Row="1"
+                Margin="0,0,12,0"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                Spacing="8">
+                <Button
+                    x:Name="ExitButton"
+                    Click="OnExitClick"
+                    Content="{ui:FontIcon Glyph=&#xE7E8;,
+                                          FontSize=16}"
+                    Style="{StaticResource FlyoutIconButtonStyle}"
+                    Visibility="{x:Bind ViewModel.ExitButtonVisibility, Mode=OneTime}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Name="ExitButtonTooltip" />
+                    </ToolTipService.ToolTip>
+                </Button>
+                <Button
+                    x:Name="OpenSettingsButton"
+                    Click="OnOpenSettingsClick"
+                    Style="{StaticResource FlyoutIconButtonStyle}">
+                    <ToolTipService.ToolTip>
+                        <TextBlock x:Name="OpenSettingsButtonTooltip" />
+                    </ToolTipService.ToolTip>
+                    <AnimatedIcon x:Name="SettingsAnimatedIcon">
+                        <AnimatedIcon.Source>
+                            <animatedVisuals:AnimatedSettingsVisualSource />
+                        </AnimatedIcon.Source>
+                        <AnimatedIcon.FallbackIconSource>
+                            <SymbolIconSource Symbol="Setting" />
+                        </AnimatedIcon.FallbackIconSource>
+                    </AnimatedIcon>
+                </Button>
+            </StackPanel>
+        </Grid>
     </Grid>
 </winuiex:WindowEx>
 

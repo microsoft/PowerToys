@@ -440,5 +440,17 @@ namespace Awake.Properties {
                 return ResourceManager.GetString("AWAKE_FLYOUT_STATUS_EXPIRABLE", resourceCulture);
             }
         }
+
+        internal static string AWAKE_FLYOUT_INTERVAL_HOURS {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_INTERVAL_HOURS", resourceCulture);
+            }
+        }
+
+        internal static string AWAKE_FLYOUT_INTERVAL_MINUTES {
+            get {
+                return ResourceManager.GetString("AWAKE_FLYOUT_INTERVAL_MINUTES", resourceCulture);
+            }
+        }
     }
 }

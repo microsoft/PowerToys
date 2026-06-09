@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using Awake.Core;
 using Awake.Properties;
 using Awake.ViewModels;
 using ManagedCommon;
@@ -14,6 +17,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.System;
 using WinUIEx;
 
@@ -26,14 +30,17 @@ namespace Awake
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
-        // 320 dip wide flyout matches PowerDisplay; tall enough to host the expirable section.
-        private const int FlyoutWidthDip = 320;
-        private const int FlyoutMinHeightDip = 200;
-        private const int FlyoutMaxHeightDip = 520;
+        // Flyout size is declared in XAML (Width/Height). We capture those values at
+        // construction time so later DPI transitions don't perturb WindowEx.Width/Height
+        // and our positioning math stays stable across multiple Show/Hide cycles
+        // (same pattern as QuickAccess.UI MainWindow).
         private const int FlyoutRightMarginDip = 12;
         private const int FlyoutBottomMarginDip = 12;
 
         private readonly AwakeFlyoutViewModel _viewModel;
+        private readonly int _designWidthDip;
+        private readonly int _designHeightDip;
+        private readonly Dictionary<AwakeMode, BitmapImage> _statusIconsByMode = CreateStatusIcons();
         private bool _isShowingWindow;
         private bool _disposed;
 
@@ -46,6 +53,11 @@ namespace Awake
                 _viewModel = new AwakeFlyoutViewModel(SettingsUtils.Default, startedFromPowerToys);
 
                 this.InitializeComponent();
+
+                // Snapshot the XAML-declared design size BEFORE anything else touches
+                // the window — see comment above on _designWidthDip.
+                _designWidthDip = (int)Math.Ceiling(this.Width);
+                _designHeightDip = (int)Math.Ceiling(this.Height);
 
                 ApplyLocalizedStrings();
 
@@ -66,7 +78,6 @@ namespace Awake
         {
             this.AppWindow.Title = Resources.AWAKE_FLYOUT_TITLE;
 
-            TitleText.Text = Resources.AWAKE_FLYOUT_TITLE;
             ModeHeaderText.Text = Resources.AWAKE_FLYOUT_MODE_HEADER;
 
             ModeOffItem.Content = Resources.AWAKE_FLYOUT_MODE_OFF;
@@ -74,17 +85,16 @@ namespace Awake
             ModeTimedItem.Content = Resources.AWAKE_FLYOUT_MODE_TIMED;
             ModeExpirableItem.Content = Resources.AWAKE_FLYOUT_MODE_EXPIRABLE;
 
-            KeepDisplayOnToggle.Header = Resources.AWAKE_KEEP_SCREEN_ON;
+            KeepDisplayOnCheckBox.Content = Resources.AWAKE_KEEP_SCREEN_ON;
 
             TimedHeaderText.Text = Resources.AWAKE_FLYOUT_TIMED_HEADER;
             ExpirableHeaderText.Text = Resources.AWAKE_FLYOUT_EXPIRABLE_HEADER;
 
-            ExpirationDatePicker.PlaceholderText = Resources.AWAKE_FLYOUT_EXPIRABLE_DATE;
+            IntervalHoursInput.Header = Resources.AWAKE_FLYOUT_INTERVAL_HOURS;
+            IntervalMinutesInput.Header = Resources.AWAKE_FLYOUT_INTERVAL_MINUTES;
+
             ExpirationTimePicker.Header = Resources.AWAKE_FLYOUT_EXPIRABLE_TIME;
             ExpirationDatePicker.Header = Resources.AWAKE_FLYOUT_EXPIRABLE_DATE;
-
-            ApplyExpirableButton.Content = Resources.AWAKE_FLYOUT_EXPIRABLE_APPLY;
-            EditPresetsLink.Content = Resources.AWAKE_FLYOUT_EDIT_PRESETS;
 
             OpenSettingsButtonTooltip.Text = Resources.AWAKE_FLYOUT_OPEN_SETTINGS;
             AutomationProperties.SetName(OpenSettingsButton, Resources.AWAKE_FLYOUT_OPEN_SETTINGS);
@@ -97,7 +107,6 @@ namespace Awake
         {
             try
             {
-                this.SetWindowSize(FlyoutWidthDip, FlyoutMinHeightDip);
                 PositionFlyout();
 
                 var titleBar = this.AppWindow.TitleBar;
@@ -126,12 +135,6 @@ namespace Awake
             if (e.PropertyName == nameof(AwakeFlyoutViewModel.Mode))
             {
                 SyncModeSelection();
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
-            }
-            else if (e.PropertyName == nameof(AwakeFlyoutViewModel.TimedSectionVisibility)
-                  || e.PropertyName == nameof(AwakeFlyoutViewModel.ExpirableSectionVisibility))
-            {
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
             }
         }
 
@@ -148,6 +151,39 @@ namespace Awake
             if (ModeComboBox.SelectedIndex != target)
             {
                 ModeComboBox.SelectedIndex = target;
+            }
+
+            if (_statusIconsByMode.TryGetValue(_viewModel.Mode, out BitmapImage? iconSource))
+            {
+                StatusIcon.Source = iconSource;
+            }
+        }
+
+        private static Dictionary<AwakeMode, BitmapImage> CreateStatusIcons()
+        {
+            // Mirrors TrayIconService's mode → icon mapping so the flyout's status
+            // glyph stays in lock-step with whatever is currently in the system tray.
+            string baseDir = Path.Combine(AppContext.BaseDirectory, "Assets", "Awake");
+
+            return new Dictionary<AwakeMode, BitmapImage>
+            {
+                [AwakeMode.PASSIVE] = LoadIcon(Path.Combine(baseDir, "disabled.ico")),
+                [AwakeMode.INDEFINITE] = LoadIcon(Path.Combine(baseDir, "indefinite.ico")),
+                [AwakeMode.TIMED] = LoadIcon(Path.Combine(baseDir, "timed.ico")),
+                [AwakeMode.EXPIRABLE] = LoadIcon(Path.Combine(baseDir, "expirable.ico")),
+            };
+        }
+
+        private static BitmapImage LoadIcon(string path)
+        {
+            try
+            {
+                return new BitmapImage(new Uri(path));
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Failed to load Awake status icon '{path}': {ex.Message}");
+                return new BitmapImage();
             }
         }
 
@@ -172,19 +208,6 @@ namespace Awake
             {
                 _viewModel.Mode = newMode;
             }
-        }
-
-        private void TimedPresetRadio_Checked(object sender, RoutedEventArgs e)
-        {
-            if (sender is RadioButton { Tag: TimedPreset preset })
-            {
-                _viewModel.SelectTimedPresetCommand.Execute(preset);
-            }
-        }
-
-        private void OnApplyExpirableClick(object sender, RoutedEventArgs e)
-        {
-            _viewModel.ApplyExpirableCommand.Execute(null);
         }
 
         private void OnOpenSettingsClick(object sender, RoutedEventArgs e)
@@ -227,7 +250,7 @@ namespace Awake
             try
             {
                 _viewModel.Refresh();
-                AdjustWindowSizeToContent();
+                PositionFlyout();
                 this.Activate();
                 this.Show();
                 this.IsAlwaysOnTop = true;
@@ -268,41 +291,17 @@ namespace Awake
             }
         }
 
-        private void AdjustWindowSizeToContent()
-        {
-            try
-            {
-                if (RootGrid is null)
-                {
-                    return;
-                }
-
-                RootGrid.UpdateLayout();
-                MainContainer.Measure(new Windows.Foundation.Size(FlyoutWidthDip, double.PositiveInfinity));
-                var contentHeight = (int)Math.Ceiling(MainContainer.DesiredSize.Height);
-                var finalHeightDip = Math.Clamp(contentHeight, FlyoutMinHeightDip, FlyoutMaxHeightDip);
-
-                FlyoutWindowHelper.PositionWindowBottomRight(
-                    this,
-                    FlyoutWidthDip,
-                    finalHeightDip,
-                    FlyoutRightMarginDip,
-                    FlyoutBottomMarginDip);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"AdjustWindowSizeToContent failed: {ex}");
-            }
-        }
-
         private void PositionFlyout()
         {
             try
             {
+                // Use the cached XAML design size — this.Width/Height are runtime values
+                // that can drift across DPI transitions; reusing them in PositionWindowBottomRight
+                // would slowly walk the flyout off-screen over multiple Show/Hide cycles.
                 FlyoutWindowHelper.PositionWindowBottomRight(
                     this,
-                    FlyoutWidthDip,
-                    FlyoutMinHeightDip,
+                    _designWidthDip,
+                    _designHeightDip,
                     FlyoutRightMarginDip,
                     FlyoutBottomMarginDip);
             }
