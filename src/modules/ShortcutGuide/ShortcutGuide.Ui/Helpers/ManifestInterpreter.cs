@@ -102,6 +102,7 @@ namespace ShortcutGuide.Helpers
         /// <summary>
         /// Retrieves all application IDs that should be displayed, based on the foreground window and background processes.
         /// </summary>
+        /// <param name="foregroundWindowHandle">The window handle captured before Shortcut Guide UI takes focus.</param>
         /// <returns>
         /// A dictionary mapping each application ID to the full path of the executable
         /// that caused the match (used for icon extraction), or <c>null</c> when no
