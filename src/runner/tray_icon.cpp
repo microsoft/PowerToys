@@ -181,9 +181,9 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         // Skip cross-process cleanup on OS shutdown: shell is dying and
         // close_settings_window() blocks 1.5s on Settings.exe which the
         // OS is reaping anyway — that wait would burn the quiesce budget.
-        Logger::info(L"WM_DESTROY received, session_ending={}", g_session_ending);
         if (!g_session_ending)
         {
+            Logger::info(L"WM_DESTROY received (user-initiated)");
             if (tray_icon_created)
             {
                 Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
@@ -200,7 +200,7 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         // wparam==FALSE means shutdown was vetoed; must not tear down.
         // Route through WM_CLOSE so close path stays single-sourced.
         // WM_QUERYENDSESSION intentionally unhandled: DefWindowProc returns TRUE.
-        Logger::info(L"WM_ENDSESSION received, wparam={}", wparam);
+        // No logging on the shutdown path: spdlog flush_on(info) would burn quiesce budget.
         if (wparam)
         {
             g_session_ending = true;
