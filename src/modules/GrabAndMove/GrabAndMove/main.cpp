@@ -1290,6 +1290,8 @@ static void HandleDragResize(POINT pt)
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
     RepositionOverlay(nr.left, nr.top, w, h);
 }
+static bool g_session_ending = false;
+
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
@@ -1313,8 +1315,24 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         return 0;
 
     case WM_DESTROY:
-        RemoveTrayIcon();
+        // Skip Shell_NotifyIcon(NIM_DELETE) on OS shutdown: explorer.exe is
+        // dying and the IPC round-trip would burn the quiesce budget.
+        if (!g_session_ending)
+        {
+            RemoveTrayIcon();
+        }
         PostQuitMessage(0);
+        return 0;
+
+    case WM_ENDSESSION:
+        // wparam==FALSE means shutdown was vetoed; must not tear down.
+        // Route through WM_CLOSE so close path stays single-sourced.
+        // WM_QUERYENDSESSION intentionally unhandled: DefWindowProc returns TRUE.
+        if (wParam)
+        {
+            g_session_ending = true;
+            SendMessageW(hwnd, WM_CLOSE, 0, 0);
+        }
         return 0;
     }
 
