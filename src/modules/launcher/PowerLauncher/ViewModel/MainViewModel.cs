@@ -594,7 +594,7 @@ namespace PowerLauncher.ViewModel
 
                 // Cancel the previous query and swap in a fresh CancellationTokenSource.
                 // We MUST capture the new token into a local that the Task lambda closes over,
-                // rather than reading _updateToken from inside the running task. Otherwise the
+                // rather than reading _updateToken from inside the running task. Otherwise, the
                 // next keystroke replaces _updateToken with a fresh (non-cancelled) token and
                 // the in-flight task's ThrowIfCancellationRequested() calls silently no-op,
                 // leaking the entire query (and its Parallel.ForEach worker fan-out) forever.
