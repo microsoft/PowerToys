@@ -1499,7 +1499,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         DestroyWindow(g_hOverlay);
         g_hOverlay = nullptr;
     }
-    RemoveTrayIcon();
+    if (!g_session_ending)
+    {
+        RemoveTrayIcon();
+    }
     TraceLoggingUnregister(g_hProvider);
 
     return static_cast<int>(msg.wParam);

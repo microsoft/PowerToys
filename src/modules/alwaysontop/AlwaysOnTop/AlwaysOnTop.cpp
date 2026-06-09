@@ -237,8 +237,9 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     else if (message == WM_ENDSESSION)
     {
         // wparam==FALSE means shutdown was vetoed; only quit on real shutdown.
-        // Without this, the message loop would not exit until CSRSS times out
-        // and TerminateProcess'es us, producing APPLICATION_HANG_QUIESCE.
+        // Without this, the message loop would block in GetMessageW until the
+        // OS quiesce timeout expired and forcibly terminated the process,
+        // producing an APPLICATION_HANG_QUIESCE Watson report.
         if (wparam)
         {
             PostQuitMessage(0);
