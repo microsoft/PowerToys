@@ -9,7 +9,7 @@ namespace MouseJump.Common.Interop;
 
 /// <summary>
 /// Wrapper around a WNDPROC delegate that can be handed to
-/// external assemblies to manage native WNDPROC delgate lifetime
+/// external assemblies to manage native WNDPROC delegate lifetime
 /// without exposing internals.
 /// </summary>
 public sealed class Win32WindowProc
