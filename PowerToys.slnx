@@ -1088,6 +1088,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/settings-ui/WinAppCli.UITest-Settings/WinAppCli.UITest-Settings.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".vsconfig" />
