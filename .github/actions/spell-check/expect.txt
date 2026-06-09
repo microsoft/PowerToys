@@ -920,6 +920,7 @@ Lenovo
 LError
 LEVELID
 LFU
+LGD
 lhwnd
 LIBFUZZER
 LIBID
@@ -1203,7 +1204,7 @@ NOMINMAX
 nomove
 NONANTIALIASED
 nonclient
-NonConvert
+Nonconvert
 NONCLIENTMETRICSW
 NONELEVATED
 nonspace
@@ -2026,6 +2027,7 @@ visio
 visualeffects
 vkey
 vmovl
+VMs
 vnd
 vorrq
 VOS
