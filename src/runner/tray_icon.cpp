@@ -194,8 +194,12 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         PostQuitMessage(0);
         break;
     case WM_CLOSE:
+        // Return 0 (don't fall through to DefWindowProc, which would attempt a
+        // second DestroyWindow on the already-destroyed HWND and set
+        // ERROR_INVALID_WINDOW_HANDLE). This path is now hit on every OS
+        // shutdown because WM_ENDSESSION routes through WM_CLOSE.
         DestroyWindow(window);
-        break;
+        return 0;
     case WM_ENDSESSION:
         // wparam==FALSE means shutdown was vetoed; must not tear down.
         // Route through WM_CLOSE so close path stays single-sourced.
