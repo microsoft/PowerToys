@@ -184,6 +184,7 @@ CAPTURECHANGED
 CARETBLINKING
 carlos
 Carlseibert
+cascadia
 caub
 CBN
 cch
@@ -651,6 +652,7 @@ gwl
 GWLP
 GWLSTYLE
 hangeul
+Hanguel
 Hantai
 Hanzi
 Hardlines
@@ -789,6 +791,7 @@ imageresizerinput
 imageresizersettings
 imagingdevices
 ime
+IMEAceept
 imgflip
 inapp
 inbox
@@ -1200,6 +1203,7 @@ NOMINMAX
 nomove
 NONANTIALIASED
 nonclient
+NonConvert
 NONCLIENTMETRICSW
 NONELEVATED
 nonspace
@@ -1250,7 +1254,10 @@ nwc
 ocr
 Ocrsettings
 odbccp
+Oemcomma
 OEMCONVERT
+Oemplus
+Oemtilde
 officehubintl
 OFN
 ofs
