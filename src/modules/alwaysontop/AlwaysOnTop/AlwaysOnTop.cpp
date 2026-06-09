@@ -234,6 +234,17 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     {
         AlwaysOnTopSettings::instance().LoadSettings();
     }
+    else if (message == WM_ENDSESSION)
+    {
+        // wparam==FALSE means shutdown was vetoed; only quit on real shutdown.
+        // Without this, the message loop would not exit until CSRSS times out
+        // and TerminateProcess'es us, producing APPLICATION_HANG_QUIESCE.
+        if (wparam)
+        {
+            PostQuitMessage(0);
+        }
+        return 0;
+    }
     
     return 0;
 }

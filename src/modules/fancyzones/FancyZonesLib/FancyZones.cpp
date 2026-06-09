@@ -581,6 +581,18 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 {
     switch (message)
     {
+    case WM_ENDSESSION:
+    {
+        // wparam==FALSE means shutdown was vetoed; only quit on real shutdown.
+        // Without this, run_message_loop would not exit until CSRSS times out
+        // and TerminateProcess'es us, producing APPLICATION_HANG_QUIESCE.
+        if (wparam)
+        {
+            PostQuitMessage(0);
+        }
+        return 0;
+    }
+
     case WM_HOTKEY:
     {
         if (wparam == static_cast<WPARAM>(HotkeyId::Editor))
