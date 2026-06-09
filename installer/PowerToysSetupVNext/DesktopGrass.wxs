@@ -1,0 +1,25 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <Fragment>
+    <!--
+      DesktopGrass ships a single statically-linked native executable
+      (DesktopGrass.Native.exe, /MT CRT, no external runtime dependencies). It is
+      emitted to the root build output and harvested automatically by the root
+      sweep in generateAllFileComponents.ps1 into BaseApplicationsComponentGroup.
+
+      This component group only carries the module's uninstall marker so the
+      feature can be referenced explicitly from Product.wxs, matching the
+      per-module convention used by Awake/Hosts/etc.
+    -->
+    <ComponentGroup Id="DesktopGrassComponentGroup">
+      <Component Id="RemoveDesktopGrassRegistry" Guid="42C1C544-8FD8-422A-85A2-139D99D38B52" Directory="INSTALLFOLDER">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="RemoveDesktopGrassRegistry" Value="" KeyPath="yes" />
+        </RegistryKey>
+      </Component>
+    </ComponentGroup>
+
+  </Fragment>
+</Wix>

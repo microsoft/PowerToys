@@ -115,6 +115,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="BaseApplications.wxs" />
     <Compile Include="CmdPal.wxs" />
     <Compile Include="ColorPicker.wxs" />
+    <Compile Include="DesktopGrass.wxs" />
     <Compile Include="EnvironmentVariables.wxs" />
     <Compile Include="FileExplorerPreview.wxs" />
     <Compile Include="FileLocksmith.wxs" />

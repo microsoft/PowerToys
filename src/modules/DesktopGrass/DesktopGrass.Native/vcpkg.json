@@ -1,0 +1,6 @@
+{
+  "name": "desktopgrass-native",
+  "version-string": "1.0.0",
+  "description": "DesktopGrass Native (Win32 + Direct2D, C++). Manifest reserved; no vcpkg-managed deps in v1 — vendored where needed.",
+  "dependencies": []
+}

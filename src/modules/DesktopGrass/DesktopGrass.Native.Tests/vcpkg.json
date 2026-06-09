@@ -1,0 +1,6 @@
+{
+  "name": "desktopgrass-native-tests",
+  "version-string": "1.0.0",
+  "description": "DesktopGrass Native test project. Catch2 single-header is vendored under third_party/catch2/ (license MIT) to keep the test build fully offline-friendly.",
+  "dependencies": []
+}

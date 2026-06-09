@@ -468,6 +468,12 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/DesktopGrass/">
+    <Project Path="src/modules/DesktopGrass/DesktopGrass.Native/DesktopGrass.Native.vcxproj" Id="b0d4e1b0-1f5e-4c2d-9f44-da8c3f1a2a11" />
+  </Folder>
+  <Folder Name="/modules/DesktopGrass/Tests/">
+    <Project Path="src/modules/DesktopGrass/DesktopGrass.Native.Tests/DesktopGrass.Native.Tests.vcxproj" />
+  </Folder>
   <Folder Name="/modules/imageresizer/">
     <Project Path="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" Id="0b43679e-edfa-4da0-ad30-f4628b308b1b" />
     <Project Path="src/modules/imageresizer/ImageResizerCLI/ImageResizerCLI.csproj">

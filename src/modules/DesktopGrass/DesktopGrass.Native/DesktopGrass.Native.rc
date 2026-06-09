@@ -1,0 +1,11 @@
+// DesktopGrass.Native.rc
+//
+// Resource script: embeds the icon and the app manifest.
+
+#include <windows.h>
+#include "resource.h"
+
+IDI_APPICON  ICON  "res/icon.ico"
+IDI_TRAYICON ICON  "res/icon.ico"
+
+// Manifest binding handled by linker /MANIFESTUAC + <ApplicationManifest>.
