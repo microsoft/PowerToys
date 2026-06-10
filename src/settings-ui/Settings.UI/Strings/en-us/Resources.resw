@@ -6162,6 +6162,20 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
     <value>Hold the modifier key and drag with the right mouse button from the nearest edge or corner to resize the window</value>
   </data>
+  <data name="GrabAndMove_UseScreenEdgeMaximize.Header" xml:space="preserve">
+    <value>Maximize windows at the top screen edge while dragging</value>
+    <comment>When enabled, holding the modifier key and dragging a window to the top screen edge maximizes it.</comment>
+  </data>
+  <data name="GrabAndMove_UseScreenEdgeMaximize.Description" xml:space="preserve">
+    <value>Hold the modifier key and drag to the top of a screen to maximize or restore the window</value>
+  </data>
+  <data name="GrabAndMove_UseScreenEdgeSnap.Header" xml:space="preserve">
+    <value>Snap windows at side and corner screen edges while dragging</value>
+    <comment>When enabled, holding the modifier key and dragging a window to a side or corner screen edge snaps it to the matching screen area.</comment>
+  </data>
+  <data name="GrabAndMove_UseScreenEdgeSnap.Description" xml:space="preserve">
+    <value>Hold the modifier key and drag to the left, right, or corner of a screen to half-snap or quarter-snap the window</value>
+  </data>
   <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
