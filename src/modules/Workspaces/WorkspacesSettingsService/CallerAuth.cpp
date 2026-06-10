@@ -236,6 +236,26 @@ namespace WorkspacesSvc
         {
             return E_ACCESSDENIED;
         }
+
+        // 3a) Verify the install folder itself is admin-only writable.
+        //     PT MSI lets the user pick a custom install path (see
+        //     PTInstallDirDlg.wxs); if they pick a folder under a user-
+        //     writable parent (e.g. D:\Tools\PowerToys inheriting Authenticated
+        //     Users:Modify, or %LocalAppData% for per-user MSI), then same-
+        //     user malware could plant a fake PowerToys.WorkspacesEditor.exe
+        //     there and pass the path+name check.  Rejecting non-hardened
+        //     install paths closes that bypass.
+        //
+        //     The MSI-side companion to this is a PROTECTED PermissionEx on
+        //     INSTALLFOLDER so the default install — wherever the user puts
+        //     it — always passes this check.  Without that the service
+        //     simply refuses to mediate writes, which is the right failure
+        //     mode (the editor will read-only itself).
+        if (!IsFolderAdminOnlyWritable(installFolder))
+        {
+            return E_ACCESSDENIED;
+        }
+
         if (!IsAllowedExeName(BaseName(canonical)))
         {
             return E_ACCESSDENIED;
