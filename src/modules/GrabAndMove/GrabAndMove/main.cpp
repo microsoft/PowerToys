@@ -1323,19 +1323,29 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
         PostQuitMessage(0);
         return 0;
+    }
 
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+// WndProc for the top-level overlay window. The message-only window above
+// does NOT receive WM_QUERYENDSESSION / WM_ENDSESSION (broadcasts only go
+// to top-level windows), so the overlay class must own the shutdown
+// handshake to make the GetMessageW loop exit before the OS quiesce
+// timeout expires and forcibly terminates the process.
+static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
     case WM_ENDSESSION:
-        // wparam==FALSE means shutdown was vetoed; must not tear down.
-        // Route through WM_CLOSE so close path stays single-sourced.
-        // WM_QUERYENDSESSION intentionally unhandled: DefWindowProc returns TRUE.
+        // wparam==FALSE means shutdown was vetoed; only quit on real shutdown.
         if (wParam)
         {
             g_session_ending = true;
-            SendMessageW(hwnd, WM_CLOSE, 0, 0);
+            PostQuitMessage(0);
         }
         return 0;
     }
-
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
@@ -1408,7 +1418,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     // Register the overlay window class (white background, ARROW cursor)
     WNDCLASSEXW overlayWindowClass = {};
     overlayWindowClass.cbSize = sizeof(overlayWindowClass);
-    overlayWindowClass.lpfnWndProc = DefWindowProcW;
+    overlayWindowClass.lpfnWndProc = OverlayWndProc;
     overlayWindowClass.hInstance = hInstance;
     overlayWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     overlayWindowClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
