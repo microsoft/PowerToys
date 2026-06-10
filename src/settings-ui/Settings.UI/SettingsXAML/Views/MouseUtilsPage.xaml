@@ -283,9 +283,10 @@
                                 <ComboBox
                                     x:Uid="MouseUtils_MouseHighlighter_SpotlightModeType"
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    SelectedIndex="{x:Bind ViewModel.IsSpotlightModeEnabled, Converter={StaticResource ReverseBoolToComboBoxIndexConverter}, Mode=TwoWay}">
+                                    SelectedIndex="{x:Bind ViewModel.HighlightModeIndex, Mode=TwoWay}">
                                     <ComboBoxItem x:Uid="HighlightMode_Spotlight_Mode" />
                                     <ComboBoxItem x:Uid="HighlightMode_Circle_Highlight_Mode" />
+                                    <ComboBoxItem x:Uid="HighlightMode_Ripple_Mode" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius">
@@ -314,6 +315,42 @@
                                     SmallChange="10"
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MouseHighlighterFadeDurationMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_RippleSize">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="10"
+                                    Maximum="300"
+                                    Minimum="10"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.RippleSize, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_RippleIntensity">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="0.1"
+                                    Maximum="1.35"
+                                    Minimum="0.15"
+                                    SmallChange="0.05"
+                                    StepFrequency="0.05"
+                                    Value="{x:Bind ViewModel.RippleIntensity, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_RippleDurationMs">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    LargeChange="100"
+                                    Maximum="2000"
+                                    Minimum="60"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.RippleDurationMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_RippleShowDragTrail">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.RippleShowDragTrail, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_RippleShowReleasePulse">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.RippleShowReleasePulse, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
