@@ -62,7 +62,6 @@
                                 <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </tkcontrols:SettingsCard>
                         </controls:GPOInfoControl>
-
                         <controls:SettingsGroup x:Uid="PowerDisplayGroupHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                             <tkcontrols:SettingsExpander
                                 x:Uid="PowerDisplayFlyoutHeader"
@@ -263,6 +262,17 @@
                                                 </tkcontrols:SettingsCard>
                                                 <tkcontrols:SettingsCard ContentAlignment="Left">
                                                     <CheckBox x:Uid="PowerDisplay_Monitor_HideMonitor" IsChecked="{x:Bind IsHidden, Mode=TwoWay}" />
+                                                </tkcontrols:SettingsCard>
+                                                <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Diagnostics">
+                                                    <Button
+                                                        x:Uid="PowerDisplay_Monitor_Diagnostics_CopyButton"
+                                                        Click="CopyMonitorDiagnostics_Click"
+                                                        Tag="{x:Bind}">
+                                                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayInlineIconSpacing}">
+                                                            <FontIcon FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}" Glyph="&#xE8C8;" />
+                                                            <TextBlock x:Uid="PowerDisplay_Monitor_Diagnostics_CopyText" />
+                                                        </StackPanel>
+                                                    </Button>
                                                 </tkcontrols:SettingsCard>
 
                                                 <!--  VCP Capabilities  -->
