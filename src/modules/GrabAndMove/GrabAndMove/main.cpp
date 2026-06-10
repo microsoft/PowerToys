@@ -1294,6 +1294,11 @@ static bool g_session_ending = false;
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    // Note: WM_QUERYENDSESSION / WM_ENDSESSION are NOT handled here.
+    // This is the message-only window class (created with HWND_MESSAGE).
+    // The OS only broadcasts shutdown messages to top-level windows, so
+    // those cases are owned by OverlayWndProc below. The g_session_ending
+    // flag set there is read by the WM_DESTROY case in this WndProc.
     switch (msg)
     {
     case WM_INVALIDATE_EXCLUDED_CACHE:
