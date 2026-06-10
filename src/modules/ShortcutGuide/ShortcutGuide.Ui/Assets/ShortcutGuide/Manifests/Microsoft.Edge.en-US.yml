@@ -45,7 +45,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - '1 - 8'
       - Name: Switch to the last tab
         Shortcut:
         - Win: false
