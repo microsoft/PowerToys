@@ -257,8 +257,8 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
                 _enabledExtensions.RemoveAll(i => removedExtensions.Contains(i));
 
                 // Build placeholder wrappers for removal notification.
-                // The TLCM matches by Extension reference, so we need to pass something
-                // that carries the IExtensionWrapper identity.
+                // The TopLevelCommandManager matches by Extension reference, so we need to pass
+                // something that carries the IExtensionWrapper identity.
                 var removedProviders = new List<CommandProviderWrapper>();
                 foreach (var ext in removedExtensions)
                 {
@@ -268,7 +268,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
                     }
                     catch
                     {
-                        // Extension may not be startable if it was uninstalled;
+                        // Extension may not be in a runnable state if it was uninstalled;
                         // we still need to signal removal
                     }
                 }
