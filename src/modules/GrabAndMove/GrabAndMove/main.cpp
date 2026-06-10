@@ -1437,6 +1437,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         return 1;
     }
 
+    // Create the (hidden) overlay window up-front so the process always has
+    // a top-level window. WM_QUERYENDSESSION / WM_ENDSESSION broadcasts only
+    // reach top-level windows; if the user never triggers a grab-and-move
+    // gesture (the lazy path), the message-only window above would be the
+    // only HWND and the GetMessageW loop would not exit on shutdown.
+    EnsureOverlayWindow();
+
     // Pre-load system cursors (fix #6 – avoid LoadCursorW in hot path)
     g_curSizeAll  = LoadCursorW(nullptr, IDC_SIZEALL);
     g_curSizeNWSE = LoadCursorW(nullptr, IDC_SIZENWSE);
