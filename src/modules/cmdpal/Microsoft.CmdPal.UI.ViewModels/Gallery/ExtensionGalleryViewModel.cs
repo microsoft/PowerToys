@@ -348,7 +348,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         List<ExtensionGalleryItemViewModel> snapshot;
         try
         {
-            var allInstalledExtensions = new List<Common.Services.IExtensionWrapper>();
+            var allInstalledExtensions = new List<IExtensionWrapper>();
             foreach (var service in _extensionServices)
             {
                 var extensions = refreshInstalledExtensions

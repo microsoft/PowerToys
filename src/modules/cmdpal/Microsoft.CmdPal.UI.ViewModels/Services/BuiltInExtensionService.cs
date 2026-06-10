@@ -32,7 +32,10 @@ public sealed class BuiltInExtensionService : IExtensionService
 
     public Task<IEnumerable<CommandProviderWrapper>> LoadProvidersAsync(CancellationToken ct)
     {
-        ct.ThrowIfCancellationRequested();
+        if (ct.IsCancellationRequested)
+        {
+            return Task.FromResult<IEnumerable<CommandProviderWrapper>>([]);
+        }
 
         var wrappers = new List<CommandProviderWrapper>();
         foreach (var provider in _commandProviders)

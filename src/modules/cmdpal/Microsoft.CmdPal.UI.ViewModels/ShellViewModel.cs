@@ -436,6 +436,7 @@ public partial class ShellViewModel : ObservableObject,
 
             case CommandResultKind.GoHome:
                 {
+                    // Go back to the main page, but keep it open
                     if (onBeforeShowConfirmation is not null)
                     {
                         // Dock context: show the palette window at the correct
@@ -455,8 +456,6 @@ public partial class ShellViewModel : ObservableObject,
                     }
                     else
                     {
-                        // Non-dock context: palette is already visible, just
-                        // pop the navigation stack back to root.
                         GoHome();
                     }
 
