@@ -81,7 +81,9 @@
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.2.2-experimental9" />
     <!-- 2.2.2-experimental9 includes WinAppSDK PR #6376: MRT PRI lookup under sparse package
          identity correctly resolves custom-named PRI files (e.g. PowerToys.AdvancedPaste.pri)
-         instead of hard-coding resources.pri. Required for AdvancedPaste sparse identity. -->
+         instead of hard-coding resources.pri. Required for AdvancedPaste sparse identity.
+         Foundation/AI versions match the transitive deps brought in by the 2.2.2-experimental9 meta-package. -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.1.1-experimental" />
     <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="2.2.6-experimental" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
