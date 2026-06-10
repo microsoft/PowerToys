@@ -1,2 +1,6 @@
 GlobalMemoryStatusEx
 GetSystemPowerStatus
+CreateDXGIFactory1
+IDXGIFactory1
+IDXGIAdapter1
+DXGI_ADAPTER_DESC1
