@@ -143,9 +143,22 @@ namespace WorkspacesSvc
     {
         outIdentity = {};
 
-        // 1) Impersonate the client to get a token we can introspect, then
-        //    immediately revert.  We deliberately don't do any privileged
-        //    work while impersonating.
+        // 1) Capture client pid up front (cheap, doesn't need impersonation).
+        ULONG pid = 0;
+        if (!GetNamedPipeClientProcessId(pipeHandle, &pid))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        outIdentity.processId = pid;
+
+        // 2) Impersonate the client.  We need the caller's token to (a) read
+        //    its SID and (b) open a handle to its own process.  The service
+        //    runs as NT SERVICE\<vacct>, which is NOT a member of
+        //    Authenticated Users and so cannot satisfy the default process
+        //    DACL when calling OpenProcess across user boundaries.  Doing
+        //    the OpenProcess while impersonating means the DACL check is
+        //    against the user's own token, which naturally grants access
+        //    to its own processes.
         if (!ImpersonateNamedPipeClient(pipeHandle))
         {
             return HRESULT_FROM_WIN32(GetLastError());
@@ -157,10 +170,10 @@ namespace WorkspacesSvc
                                         TRUE,
                                         &clientToken);
         DWORD tokenErr = gotToken ? ERROR_SUCCESS : GetLastError();
-        RevertToSelf();
 
         if (!gotToken)
         {
+            RevertToSelf();
             return HRESULT_FROM_WIN32(tokenErr);
         }
 
@@ -168,29 +181,33 @@ namespace WorkspacesSvc
         CloseHandle(clientToken);
         if (FAILED(hr))
         {
+            RevertToSelf();
             return hr;
         }
 
-        // 2) Resolve the client's image path via PID.  Hold a process handle
-        //    across the validation to keep the PID stable and mitigate the
-        //    classic PID-reuse TOCTOU window.
-        ULONG pid = 0;
-        if (!GetNamedPipeClientProcessId(pipeHandle, &pid))
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
-        outIdentity.processId = pid;
-
+        // 3) While still impersonating: open the client process and read its
+        //    image path.  Hold the handle for the rest of validation so the
+        //    PID can't be reused under us.
         HANDLE hProc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid);
-        if (!hProc)
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
+        DWORD openErr = hProc ? ERROR_SUCCESS : GetLastError();
 
         wchar_t exePath[MAX_PATH * 2] = {};
         DWORD cch = ARRAYSIZE(exePath);
-        BOOL gotImage = QueryFullProcessImageNameW(hProc, 0, exePath, &cch);
-        DWORD imageErr = gotImage ? ERROR_SUCCESS : GetLastError();
+        BOOL gotImage = FALSE;
+        DWORD imageErr = ERROR_SUCCESS;
+        if (hProc)
+        {
+            gotImage = QueryFullProcessImageNameW(hProc, 0, exePath, &cch);
+            imageErr = gotImage ? ERROR_SUCCESS : GetLastError();
+        }
+
+        // Revert before we touch any service-side resources (file IO etc).
+        RevertToSelf();
+
+        if (!hProc)
+        {
+            return HRESULT_FROM_WIN32(openErr);
+        }
         CloseHandle(hProc);
 
         if (!gotImage)
