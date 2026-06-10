@@ -6,11 +6,6 @@ parameters:
 steps:
   - task: TouchdownBuildTask@5
     displayName: 'Download Localization Files -- PowerToys 37400'
-    # TEMP: Touchdown returns HTTP 500 deterministically for sv-SE translation of
-    # src/settings-ui/Settings.UI.Controls/Strings/en-us/Resources.resw. Service-side
-    # bug, blocks all PRs. Allow the build to continue with partial loc until Touchdown
-    # team resolves; missing translations fall back to en-US at runtime.
-    continueOnError: true
     inputs:
       teamId: 37400
       FederatedIdentityTDBuildServiceConnection: $(TouchdownServiceConnection)
