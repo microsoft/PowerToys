@@ -11,21 +11,24 @@ namespace Microsoft.ColorPicker.UITests.Next;
 
 /// <summary>
 /// Full end-to-end Color Picker scenario, driven entirely through the Settings UI:
-///   1. From the Settings app, navigate to the Color Picker page via the left nav
-///      (NavigationViewItem "ColorPickerNavItem").
+///   1. From the Settings app, navigate to the Color Picker page via the utilities stack.
 ///   2. On the page, toggle the module OFF and verify <c>PowerToys.ColorPickerUI</c> exits.
 ///   3. Toggle it back ON and verify <c>PowerToys.ColorPickerUI</c> respawns.
 ///   4. Read the activation shortcut from the page's <c>ShortcutControl</c> (the EditButton
 ///      exposes <c>HotkeySettings.ToString()</c> via <c>AutomationProperties.HelpText</c>).
-///   5. Move the cursor, send the shortcut chord.
-///   6. Wait for the small picker overlay window, read the displayed HEX value.
-///   7. Left-click to capture and open the editor.
-///   8. Wait for the editor window and assert the same HEX appears in its tree.
+///   5. Clear the clipboard, move the cursor, send the shortcut chord.
+///   6. Wait for the picker overlay window and read the displayed HEX from the overlay's
+///      automation-peer TextBlock (AutomationId="ColorHexAutomationPeer").
+///   7. Left-click to capture. ColorPicker writes the captured color to the clipboard.
+///   8. Read the captured value from the clipboard and assert it matches the overlay HEX.
+///   9. Wait for the editor window and assert the captured value appears in its tree.
 /// </summary>
 /// <remarks>
-/// Inspired by <c>ScreenRuler.UITests/TestHelper.cs</c>'s pattern of navigating via the
-/// settings nav item, flipping the toggle, and reading the shortcut from the
-/// <c>EditButton.HelpText</c> — but driven through winappcli with no third-party engine.
+/// The overlay's visible ColorTextBlock has <c>AutomationProperties.Name="{Binding ColorName}"</c>
+/// so UIA exposes the friendly color name (e.g. "White"), not the HEX. To work around that,
+/// MainView.xaml carries a hidden sibling TextBlock bound to <c>ColorText</c> with
+/// <c>AutomationId="ColorHexAutomationPeer"</c> — a test-only UIA hook that lets us read the
+/// actually-displayed HEX value without affecting the visual layout or accessibility UX.
 /// </remarks>
 [TestClass]
 public class ColorPickerEndToEndTests : UITestBase
@@ -40,18 +43,6 @@ public class ColorPickerEndToEndTests : UITestBase
     [TestCategory("winappcli-POC")]
     public void NavigateReadShortcutActivateAndCapture()
     {
-        // Flip the picker to two-line layout (`showcolorname=true`) for the test. In one-line mode
-        // (the default) the single ColorTextBlock has AutomationProperties.Name="{Binding ColorName}"
-        // which masks its rendered Text — UIA only exposes the friendly name ("Black"), not the HEX.
-        // In two-line mode the HEX TextBlock has no Name override, so WPF/UIA falls back to
-        // exposing its rendered Text as the UIA Name. We restore the original value in finally.
-        var originalShowColorName = ColorPickerSettingsFile.ReadShowColorName();
-        if (!originalShowColorName)
-        {
-            ColorPickerSettingsFile.WriteShowColorName(true);
-            Thread.Sleep(500); // FileSystemWatcher debounce + UI rebind
-        }
-
         try
         {
             RunTest();
@@ -63,11 +54,6 @@ public class ColorPickerEndToEndTests : UITestBase
             // real test failure.
             WindowControl.TryCloseByApp("PowerToys.ColorPickerUI");
             WindowControl.TryCloseByApp("PowerToys.Settings");
-
-            if (!originalShowColorName)
-            {
-                ColorPickerSettingsFile.WriteShowColorName(false);
-            }
         }
     }
 
@@ -163,7 +149,13 @@ public class ColorPickerEndToEndTests : UITestBase
                 $"Could not parse any keys from shortcut text '{shortcutText}'.");
             TestContext.WriteLine($"Parsed key chord: [{string.Join(", ", keys)}]");
 
-            // -- 6. Park the cursor at a known on-screen location ---------------------------
+            // -- 6. Clear the clipboard and park the cursor ---------------------------------
+            // ClipboardHelper.Clear runs the Clipboard call on an STA thread (required by
+            // System.Windows.Forms.Clipboard) and swallows any contention errors.
+            var seedClipboard = ClipboardHelper.GetText();
+            ClipboardHelper.Clear();
+            TestContext.WriteLine($"Cleared clipboard. (Previous content was {seedClipboard.Length} chars.)");
+
             var screen = System.Windows.Forms.SystemInformation.PrimaryMonitorSize;
             int cx = screen.Width / 2;
             int cy = screen.Height / 2;
@@ -173,7 +165,7 @@ public class ColorPickerEndToEndTests : UITestBase
             // -- 7. Activate via the configured shortcut ------------------------------------
             KeyboardHelper.SendKeys(keys);
 
-            // -- 8. Wait for the small picker overlay window --------------------------------
+            // -- 8. Wait for the small picker overlay window (gate that the hotkey fired) --
             // ColorPickerUI's MainWindow (the cursor-following picker) is ~167x61 — much smaller
             // than the editor (~660x570). Filter by size to disambiguate when both could exist.
             var overlay = WindowsFinder.WaitForWindowByApp(
@@ -194,38 +186,47 @@ public class ColorPickerEndToEndTests : UITestBase
                     (dump.Length > 0 ? dump : "    (none)"));
             }
 
-            TestContext.WriteLine($"Picker overlay: hwnd={overlay!.WindowHandle} title='{overlay.WindowTitle}'");
+            TestContext.WriteLine($"Picker overlay appeared: hwnd={overlay!.WindowHandle}");
 
-            // -- 9. Read the HEX color shown in the picker overlay --------------------------
-            // In two-line layout (showcolorname=true, which we forced above), the overlay contains
-            // two unnamed TextBlocks: row 0 shows ColorText (HEX), row 1 shows ColorName.
-            // Neither sets AutomationProperties.Name, so WPF/UIA falls back to exposing each
-            // TextBlock's rendered Text as its UIA Name. We pick the one whose Name is a 6-hex-char
-            // RGB string — that's the HEX value.
-            var overlayTree = overlay.Inspect(depth: 5);
-            var overlayElements = new List<(string Type, string Name, string Value)>();
-            WalkElements(overlayTree, overlayElements);
-
-            TestContext.WriteLine($"Picker overlay exposed {overlayElements.Count} elements:");
-            foreach (var v in overlayElements)
+            // -- 9. Read the displayed HEX from the overlay's automation-peer TextBlock -----
+            // The peer is a Visibility=Visible, Opacity=0 TextBlock added to MainView.xaml
+            // specifically so UIA-driven tests can read the live HEX value. It is bound to
+            // the same `ColorText` source as the visible TextBlock, so it always matches
+            // what the user sees.
+            string overlayHex = string.Empty;
+            try
             {
-                TestContext.WriteLine($"  [{v.Type,-8}] name='{v.Name}' value='{v.Value}'");
+                var peer = overlay.Find(By.AccessibilityId("ColorHexAutomationPeer"), timeoutMS: 2_000);
+                overlayHex = peer.Name;
+                TestContext.WriteLine($"Overlay HEX (from automation peer): '{overlayHex}'");
+            }
+            catch (Exception ex)
+            {
+                TestContext.WriteLine($"Could not read ColorHexAutomationPeer: {ex.Message}");
             }
 
-            var pickerHex = overlayElements
-                .Where(v => v.Type.Equals("Text", StringComparison.OrdinalIgnoreCase))
-                .Select(v => ExtractHex(v.Name))
-                .FirstOrDefault(h => h is not null);
-
             Assert.IsFalse(
-                string.IsNullOrEmpty(pickerHex),
-                "Could not find a HEX TextBlock in the picker overlay. " +
-                "Did showcolorname flip take effect? See element dump above.");
-            TestContext.WriteLine($"Picker HEX (normalized RGB): #{pickerHex}");
+                string.IsNullOrEmpty(overlayHex),
+                "Failed to read the overlay's HEX value from the ColorHexAutomationPeer TextBlock.");
 
-            // -- 10. Click to capture the color ---------------------------------------------
+            // -- 10. Click to capture; ColorPicker writes the configured format to clipboard
             MouseHelper.LeftClick();
             TestContext.WriteLine("Sent left-click to capture color.");
+
+            var capturedColor = ClipboardHelper.WaitForText(ignoredValue: string.Empty, timeoutMS: 3_000);
+            Assert.IsFalse(
+                string.IsNullOrEmpty(capturedColor),
+                "Nothing was written to the clipboard within 3s after the click. " +
+                "Did the picker actually capture? (Check that left-click is mapped to a 'PickColor' action.)");
+            TestContext.WriteLine($"Captured color (clipboard): '{capturedColor}'");
+
+            // Cross-check: the clipboard value should be the same HEX the overlay was showing.
+            // Both come from `ColorText` in MainViewModel, just routed differently (overlay
+            // binding vs. ColorPickerHelper.CopyToClipboard on Picker_MouseDown).
+            Assert.IsTrue(
+                ContainsIgnoringHash(capturedColor, overlayHex) || ContainsIgnoringHash(overlayHex, capturedColor),
+                $"Overlay HEX '{overlayHex}' and clipboard '{capturedColor}' don't match.");
+            TestContext.WriteLine("Overlay HEX matches clipboard value.");
 
             // -- 11. Wait for the editor window ---------------------------------------------
             var editor = WindowsFinder.WaitForWindowByApp(
@@ -247,12 +248,12 @@ public class ColorPickerEndToEndTests : UITestBase
 
             TestContext.WriteLine($"Editor window: hwnd={editor!.WindowHandle} title='{editor.WindowTitle}'");
 
-            // -- 12. Find the picker HEX inside the editor's tree ---------------------------
-            // From ColorEditorView.xaml the format list is populated from `ColorRepresentations`,
-            // and the first enabled format in settings.json is HEX. Each format renders as a
-            // ColorFormatControl (DataItem in the UIA tree) that contains a TextBox holding the
-            // formatted color string. We inspect deep enough to walk past the DataItems into the
-            // TextBox/Edit children, collect every textual value, and look for our picker HEX.
+            // -- 12. Find the captured color inside the editor's tree ------------------------
+            // From ColorEditorView.xaml the format list is populated from `ColorRepresentations`.
+            // Each format renders as a ColorFormatControl (DataItem in the UIA tree) that
+            // contains a TextBox holding the formatted color string. The captured clipboard
+            // value will be ONE of those formats — we just need to find any element whose Name
+            // or Value contains it.
             var tree = editor.Inspect(depth: 12);
             var values = new List<(string Type, string Name, string Value)>();
             WalkElements(tree, values);
@@ -265,30 +266,28 @@ public class ColorPickerEndToEndTests : UITestBase
 
             Assert.IsTrue(values.Count > 0, "Editor reported no readable elements via inspect --json.");
 
-            // Match: find any element whose Name or Value contains the picker's 6-char RGB hex,
-            // case-insensitively (e.g. picker "000000" matches editor "#FF000000" or "#000000";
-            // for non-hex formats we accept the equivalent hex embedded in an ARGB rendering).
+            // Match: find any element whose Name or Value contains the clipboard text
+            // case-insensitively. If the clipboard had a '#' prefix (e.g. "#FFFFFF") and the
+            // editor renders without it, also try the bare-hex form.
+            var needle = capturedColor.Trim();
+            var needleBareHex = needle.TrimStart('#');
+
             var match = values.FirstOrDefault(v =>
-                v.Name.Contains(pickerHex!, StringComparison.OrdinalIgnoreCase) ||
-                v.Value.Contains(pickerHex!, StringComparison.OrdinalIgnoreCase));
+                v.Name.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
+                v.Value.Contains(needle, StringComparison.OrdinalIgnoreCase) ||
+                (needleBareHex.Length > 0 &&
+                    (v.Name.Contains(needleBareHex, StringComparison.OrdinalIgnoreCase) ||
+                     v.Value.Contains(needleBareHex, StringComparison.OrdinalIgnoreCase))));
 
             if (string.IsNullOrEmpty(match.Name) && string.IsNullOrEmpty(match.Value))
             {
-                // Diagnostic: show what HEX-looking values the editor exposed.
-                var hexFound = string.Join(
-                    Environment.NewLine,
-                    values
-                        .Where(v => ExtractHex(v.Name) is not null || ExtractHex(v.Value) is not null)
-                        .Take(15)
-                        .Select(v => $"    [{v.Type}] name='{v.Name}' value='{v.Value}'"));
                 Assert.Fail(
-                    $"Picker HEX '{pickerHex}' not found in editor tree." + Environment.NewLine +
-                    "  HEX-looking values seen in editor:" + Environment.NewLine +
-                    (hexFound.Length > 0 ? hexFound : "    (none)"));
+                    $"Captured color '{capturedColor}' not found in editor tree." + Environment.NewLine +
+                    "  See element dump above.");
             }
 
             TestContext.WriteLine(
-                $"MATCH: picker HEX '{pickerHex}' found in editor element [{match.Type}] Name='{match.Name}' Value='{match.Value}'");
+                $"MATCH: captured '{capturedColor}' found in editor element [{match.Type}] Name='{match.Name}' Value='{match.Value}'");
         }
         finally
         {
@@ -305,6 +304,21 @@ public class ColorPickerEndToEndTests : UITestBase
             {
             }
         }
+    }
+
+    /// <summary>
+    /// Case-insensitive substring comparison that ignores a leading <c>#</c> on either side.
+    /// Used to cross-check the overlay HEX against the clipboard value when only one of them
+    /// carries the prefix.
+    /// </summary>
+    private static bool ContainsIgnoringHash(string haystack, string needle)
+    {
+        if (string.IsNullOrEmpty(haystack) || string.IsNullOrEmpty(needle))
+        {
+            return false;
+        }
+
+        return haystack.TrimStart('#').Contains(needle.TrimStart('#'), StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -357,34 +371,6 @@ public class ColorPickerEndToEndTests : UITestBase
         }
 
         return false;
-    }
-
-    /// <summary>
-    /// Extract a normalized RGB hex string (uppercase, no #, 6 chars) from arbitrary text,
-    /// or null if the text doesn't represent a hex color. Handles "#RRGGBB", "RRGGBB",
-    /// "#AARRGGBB", "AARRGGBB" forms. We strip the alpha prefix so the picker's RGB-only
-    /// format (default "%Rex%Grx%Blx") matches the editor's ARGB rendering.
-    /// </summary>
-    private static string? ExtractHex(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return null;
-        }
-
-        var trimmed = text.Trim().TrimStart('#');
-        if ((trimmed.Length != 6 && trimmed.Length != 8)
-            || !System.Text.RegularExpressions.Regex.IsMatch(trimmed, @"^[0-9A-Fa-f]+$"))
-        {
-            return null;
-        }
-
-        if (trimmed.Length == 8)
-        {
-            trimmed = trimmed.Substring(2);
-        }
-
-        return trimmed.ToUpperInvariant();
     }
 
     /// <summary>
