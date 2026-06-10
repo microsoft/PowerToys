@@ -1,5 +1,24 @@
 ﻿#pragma once
 #include <windows.h>
+#include <string>
+
+// Validates that lat/lon strings represent non-sentinel, in-range coordinates.
+// Rejects (0,0) as a sentinel for "not configured".
+inline bool CoordinatesAreValid(const std::wstring& lat, const std::wstring& lon)
+{
+    try
+    {
+        double latVal = std::stod(lat);
+        double lonVal = std::stod(lon);
+        return !(latVal == 0 && lonVal == 0) &&
+               (latVal >= -90.0 && latVal <= 90.0) &&
+               (lonVal >= -180.0 && lonVal <= 180.0);
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
 
 constexpr bool ShouldBeLight(int nowMinutes, int lightTime, int darkTime)
 {

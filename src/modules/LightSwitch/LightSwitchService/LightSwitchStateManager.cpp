@@ -91,20 +91,7 @@ void LightSwitchStateManager::OnNightLightChange()
     EvaluateAndApplyIfNeeded();
 }
 
-// Helpers
-bool LightSwitchStateManager::CoordinatesAreValid(const std::wstring& lat, const std::wstring& lon)
-{
-    try
-    {
-        double latVal = std::stod(lat);
-        double lonVal = std::stod(lon);
-        return !(latVal == 0 && lonVal == 0) && (latVal >= -90.0 && latVal <= 90.0) && (lonVal >= -180.0 && lonVal <= 180.0);
-    }
-    catch (...)
-    {
-        return false;
-    }
-}
+// CoordinatesAreValid is now a free function in LightSwitchUtils.h
 
 void LightSwitchStateManager::SyncInitialThemeState()
 {
