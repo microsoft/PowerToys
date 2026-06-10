@@ -478,9 +478,9 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
     }
 
-    // Regex to detect V3 named function interface: def ap_from_text/html/image/files(...)
+    // Regex to detect named function interface: def advanced_paste_from_text/html/image/files(...)
     private static readonly Regex ApFunctionRegex = new(
-        @"^def\s+ap_from_(text|html|image|files)\s*\(",
+        @"^def\s+advanced_paste_from_(text|html|image|files)\s*\(",
         RegexOptions.Compiled);
 
     public PythonScriptMetadata ReadMetadata(string scriptPath)
@@ -516,7 +516,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 allLines.Add(line);
                 var trimmed = line.Trim();
 
-                // Detect V3 named function interface: def ap_from_text/html/image/files(...)
+                // Detect V3 named function interface: def advanced_paste_from_text/html/image/files(...)
                 var apMatch = ApFunctionRegex.Match(trimmed);
                 if (apMatch.Success)
                 {
@@ -579,7 +579,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 }
             }
 
-            // Read remaining lines for import scanning and ap_from_* detection beyond header.
+            // Read remaining lines for import scanning and advanced_paste_from_* detection beyond header.
             string remainingLine;
             while ((remainingLine = reader.ReadLine()) is not null)
             {
@@ -598,19 +598,19 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             Logger.LogError($"Failed to read metadata from {scriptPath}", ex);
         }
 
-        // Only include scripts that define at least one ap_from_* function.
+        // Only include scripts that define at least one advanced_paste_from_* function.
         if (apDetectedFormats == ClipboardFormat.None)
         {
             return null;
         }
 
-        // Infer supported formats from ap_from_* function names.
+        // Infer supported formats from advanced_paste_from_* function names.
         if (!hasExplicitFormats)
         {
             supportedFormats = apDetectedFormats;
         }
 
-        // ap_from_* scripts always use the unified runner.
+        // advanced_paste_from_* scripts always use the unified runner.
         platform = PlatformWindows;
 
         var mergedRequirements = MergeWithAutoDetectedImports(allLines, explicitRequirements);
@@ -619,7 +619,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
     }
 
     /// <summary>
-    /// Maps an ap_from_* input type name to the corresponding ClipboardFormat flag.
+    /// Maps an advanced_paste_from_* input type name to the corresponding ClipboardFormat flag.
     /// </summary>
     private static ClipboardFormat ApInputTypeToFormat(string inputType) => inputType switch
     {

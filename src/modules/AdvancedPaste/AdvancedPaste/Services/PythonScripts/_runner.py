@@ -11,10 +11,10 @@ calls the one matching the current clipboard format, and normalizes the
 return value into JSON on stdout.
 
 Supported function names (declare what clipboard input the function handles):
-  - ap_from_text(text: str)
-  - ap_from_html(html: str)
-  - ap_from_image(image_path: str)
-  - ap_from_files(file_paths: list)
+  - advanced_paste_from_text(text: str)
+  - advanced_paste_from_html(html: str)
+  - advanced_paste_from_image(image_path: str)
+  - advanced_paste_from_files(file_paths: list)
 
 Output is inferred from the return value:
   - str              → text (or html if starts with '<' and contains html tags)
@@ -39,8 +39,8 @@ from pathlib import Path
 # Image file extensions recognized as image output.
 _IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tiff", ".ico"}
 
-# Pattern matching ap_from_* function names.
-_AP_FUNCTION_PATTERN = re.compile(r"^ap_from_(text|html|image|files)$")
+# Pattern matching advanced_paste_from_* function names.
+_AP_FUNCTION_PATTERN = re.compile(r"^advanced_paste_from_(text|html|image|files)$")
 
 
 def _load_user_module(script_path: str):
@@ -59,7 +59,7 @@ def _load_user_module(script_path: str):
 
 def _discover_ap_functions(module) -> dict:
     """
-    Discover all ap_from_* functions in the module.
+    Discover all advanced_paste_from_* functions in the module.
     Returns a dict mapping input_type → function.
     """
     functions = {}
@@ -161,14 +161,14 @@ def main():
     # Load the user script.
     module = _load_user_module(script_path)
 
-    # Discover ap_from_* functions.
+    # Discover advanced_paste_from_* functions.
     ap_functions = _discover_ap_functions(module)
 
     if not ap_functions:
         print(
             f"Error: script '{os.path.basename(script_path)}' does not define any "
-            f"ap_from_* functions.\n"
-            f"Please add: def ap_from_text(text): return text.upper()",
+            f"advanced_paste_from_* functions.\n"
+            f"Please add: def advanced_paste_from_text(text): return text.upper()",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -181,7 +181,7 @@ def main():
     # Find the matching function.
     fn = ap_functions.get(current_format)
     if fn is None:
-        available = ", ".join(f"ap_from_{k}" for k in sorted(ap_functions.keys()))
+        available = ", ".join(f"advanced_paste_from_{k}" for k in sorted(ap_functions.keys()))
         print(
             f"Error: no function for clipboard format '{current_format}'.\n"
             f"Available functions: {available}",

@@ -8,10 +8,10 @@ discovered automatically from a configurable folder and appear as actions in the
 1. Open the scripts folder — by default `%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts`.
    You can change this in **Settings → Advanced Paste → Python scripts → Scripts folder**.
 2. Drop a `.py` file into the folder.
-3. Define one or more `ap_from_*` functions (see [Writing a script](#writing-a-script)).
+3. Define one or more `advanced_paste_from_*` functions (see [Writing a script](#writing-a-script)).
 4. Open the Advanced Paste UI (`Win+Shift+V`) — your script will appear in the action list.
 
-> **Important:** Only `.py` files that define at least one `ap_from_*` function are loaded.
+> **Important:** Only `.py` files that define at least one `advanced_paste_from_*` function are loaded.
 > Plain scripts without these functions are ignored.
 
 ## Writing a script
@@ -23,10 +23,10 @@ No imports from PowerToys are needed — zero setup, zero dependencies on our si
 
 | Function name | Input parameter | When it runs |
 |---------------|-----------------|--------------|
-| `ap_from_text(text)` | `str` — clipboard text | Clipboard has text |
-| `ap_from_html(html)` | `str` — clipboard HTML | Clipboard has HTML |
-| `ap_from_image(image_path)` | `str` — path to temp image file | Clipboard has an image |
-| `ap_from_files(file_paths)` | `list[str]` — file paths | Clipboard has files |
+| `advanced_paste_from_text(text)` | `str` — clipboard text | Clipboard has text |
+| `advanced_paste_from_html(html)` | `str` — clipboard HTML | Clipboard has HTML |
+| `advanced_paste_from_image(image_path)` | `str` — path to temp image file | Clipboard has an image |
+| `advanced_paste_from_files(file_paths)` | `list[str]` — file paths | Clipboard has files |
 
 A single script can define multiple functions to handle different input types.
 
@@ -48,7 +48,7 @@ The return value determines what gets placed on the clipboard:
 For cases where the return type can't be inferred from the value alone:
 
 ```python
-def ap_from_text(text):
+def advanced_paste_from_text(text):
     html = f"<b>{text.upper()}</b>"
     return {"type": "html", "value": html}
 ```
@@ -60,7 +60,7 @@ Supported `"type"` values: `"text"`, `"html"`, `"image"`, `"file"`, `"files"`.
 ### Minimal — uppercase text
 
 ```python
-def ap_from_text(text):
+def advanced_paste_from_text(text):
     return text.upper()
 ```
 
@@ -72,7 +72,7 @@ That's it. No headers required, no imports from PowerToys.
 # @advancedpaste:name   Reverse Text
 # @advancedpaste:desc   Reverses clipboard text character by character
 
-def ap_from_text(text):
+def advanced_paste_from_text(text):
     return text[::-1]
 ```
 
@@ -83,7 +83,7 @@ from PIL import Image
 from pathlib import Path
 import tempfile
 
-def ap_from_image(image_path):
+def advanced_paste_from_image(image_path):
     """Convert image to grayscale."""
     img = Image.open(image_path).convert("L")
     out = Path(tempfile.gettempdir()) / "gray.png"
@@ -94,17 +94,17 @@ def ap_from_image(image_path):
 ### Return HTML
 
 ```python
-def ap_from_text(text):
+def advanced_paste_from_text(text):
     return {"type": "html", "value": f"<pre><code>{text}</code></pre>"}
 ```
 
 ### Multiple input types in one script
 
 ```python
-def ap_from_text(text):
+def advanced_paste_from_text(text):
     return f"Text ({len(text)} chars): {text[:100]}"
 
-def ap_from_files(file_paths):
+def advanced_paste_from_files(file_paths):
     return "\n".join(file_paths)
 ```
 
@@ -113,7 +113,7 @@ def ap_from_files(file_paths):
 ```python
 import os
 
-def ap_from_files(file_paths):
+def advanced_paste_from_files(file_paths):
     lines = []
     for p in file_paths:
         size = os.path.getsize(p)
@@ -196,7 +196,7 @@ The following settings are available under **Settings → Advanced Paste → Pyt
 
 ## Tips
 
-- A `.py` file without any `ap_from_*` function is ignored — use this for helper modules
+- A `.py` file without any `advanced_paste_from_*` function is ignored — use this for helper modules
   that other scripts can import.
 - Scripts can be tested from the command line:
   ```
