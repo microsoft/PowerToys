@@ -26,11 +26,39 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// </remarks>
 public static class WinappCli
 {
+    /// <summary>Stable hint surfaced when the CLI is missing or fails — used in all error paths.</summary>
+    public const string InstallHint =
+        "winapp.exe not found. Install once with: winget install Microsoft.winappcli " +
+        "(or set the WINAPP_CLI_PATH environment variable to its full path).";
+
     private static readonly Lazy<string> ExecutablePath = new(ResolveExecutable);
 
-    public sealed record Result(int ExitCode, string StdOut, string StdErr)
+    public sealed record Result(int ExitCode, string StdOut, string StdErr, IReadOnlyList<string> Args)
     {
         public bool Success => ExitCode == 0;
+
+        /// <summary>
+        /// One-line, assertion-friendly description of a failed invocation. Format:
+        /// <c>"winapp ui invoke X -w 12345 -> exit 1; stderr: not found"</c>. Falls back to
+        /// stdout if stderr is empty.
+        /// </summary>
+        public string DescribeFailure()
+        {
+            var sb = new StringBuilder();
+            sb.Append("winapp ");
+            sb.AppendJoin(' ', Args);
+            sb.Append(" -> exit ").Append(ExitCode);
+            if (!string.IsNullOrWhiteSpace(StdErr))
+            {
+                sb.Append("; stderr: ").Append(StdErr.Trim());
+            }
+            else if (!string.IsNullOrWhiteSpace(StdOut))
+            {
+                sb.Append("; stdout: ").Append(StdOut.Trim());
+            }
+
+            return sb.ToString();
+        }
 
         public JsonDocument ParseJson()
         {
@@ -41,9 +69,32 @@ public static class WinappCli
             catch (JsonException ex)
             {
                 throw new InvalidOperationException(
-                    $"winappcli stdout was not valid JSON (exit {ExitCode}). stdout={StdOut.Trim()} stderr={StdErr.Trim()}",
+                    $"winappcli stdout was not valid JSON. {DescribeFailure()}",
                     ex);
             }
+        }
+    }
+
+    /// <summary>
+    /// Returns true when <c>winapp.exe</c> resolves to a real file AND responds to
+    /// <c>--version</c>. Use from <c>[ClassInitialize]</c> / <c>[AssemblyInitialize]</c> /
+    /// <see cref="UITestBase"/> to fail the entire suite once with a clear install hint,
+    /// instead of letting every test produce its own opaque process-launch failure.
+    /// </summary>
+    public static bool IsAvailable()
+    {
+        if (!TryResolveExecutable(out _))
+        {
+            return false;
+        }
+
+        try
+        {
+            return Invoke("--version").Success;
+        }
+        catch
+        {
+            return false;
         }
     }
 
@@ -71,20 +122,24 @@ public static class WinappCli
         }
 
         using var p = Process.Start(psi) ?? throw new InvalidOperationException(
-            $"Failed to start winapp.exe ({ExecutablePath.Value})");
+            $"Failed to start winapp.exe ({ExecutablePath.Value}). {InstallHint}");
 
         var stdoutTask = p.StandardOutput.ReadToEndAsync();
         var stderrTask = p.StandardError.ReadToEndAsync();
         p.WaitForExit();
 
-        return new Result(p.ExitCode, stdoutTask.GetAwaiter().GetResult(), stderrTask.GetAwaiter().GetResult());
+        return new Result(
+            p.ExitCode,
+            stdoutTask.GetAwaiter().GetResult(),
+            stderrTask.GetAwaiter().GetResult(),
+            args);
     }
 
     /// <summary>Run and throw if the exit code is non-zero. Use for fire-and-forget commands.</summary>
     public static Result InvokeAssertSuccess(params string[] args)
     {
         var r = Invoke(args);
-        Assert.AreEqual(0, r.ExitCode, $"winappcli failed: winapp {string.Join(' ', args)}\nstdout: {r.StdOut}\nstderr: {r.StdErr}");
+        Assert.AreEqual(0, r.ExitCode, r.DescribeFailure());
         return r;
     }
 
@@ -103,7 +158,7 @@ public static class WinappCli
             }
             catch
             {
-                Assert.Fail($"winappcli {string.Join(' ', args)} exited with {r.ExitCode} and non-JSON stdout: {r.StdOut.Trim()} stderr: {r.StdErr.Trim()}");
+                Assert.Fail($"{r.DescribeFailure()} (stdout was not JSON)");
                 return default;
             }
         }
@@ -112,13 +167,19 @@ public static class WinappCli
         return ok.RootElement.Clone();
     }
 
-    private static string ResolveExecutable()
+    /// <summary>
+    /// Locate <c>winapp.exe</c> without throwing or asserting. <see cref="IsAvailable"/> uses
+    /// this to probe quietly; the lazy <see cref="ResolveExecutable"/> wraps it for the
+    /// first real call.
+    /// </summary>
+    public static bool TryResolveExecutable(out string path)
     {
         // 1) Explicit override (CI / dev convenience).
         var env = Environment.GetEnvironmentVariable("WINAPP_CLI_PATH");
         if (!string.IsNullOrEmpty(env) && File.Exists(env))
         {
-            return env;
+            path = env;
+            return true;
         }
 
         // 2) Standard winget install location.
@@ -129,12 +190,13 @@ public static class WinappCli
             "winapp.exe");
         if (File.Exists(winget))
         {
-            return winget;
+            path = winget;
+            return true;
         }
 
         // 3) Anything on PATH.
-        var path = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
-        foreach (var dir in path.Split(Path.PathSeparator))
+        var pathEnv = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        foreach (var dir in pathEnv.Split(Path.PathSeparator))
         {
             if (string.IsNullOrWhiteSpace(dir))
             {
@@ -146,7 +208,8 @@ public static class WinappCli
                 var candidate = Path.Combine(dir, "winapp.exe");
                 if (File.Exists(candidate))
                 {
-                    return candidate;
+                    path = candidate;
+                    return true;
                 }
             }
             catch
@@ -154,9 +217,17 @@ public static class WinappCli
             }
         }
 
-        Assert.Fail(
-            "winapp.exe not found. Install once with: winget install Microsoft.winappcli " +
-            "or set WINAPP_CLI_PATH to its full path.");
-        return string.Empty;
+        path = string.Empty;
+        return false;
+    }
+
+    private static string ResolveExecutable()
+    {
+        if (TryResolveExecutable(out var path))
+        {
+            return path;
+        }
+
+        throw new InvalidOperationException(InstallHint);
     }
 }

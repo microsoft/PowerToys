@@ -10,16 +10,46 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// A test session bound to a specific HWND. All <see cref="Find{T}"/>/<see cref="FindAll{T}"/>
-/// calls route to <c>winapp ui search</c> with <c>-w &lt;hex hwnd&gt;</c> for stable targeting.
+/// A test session bound to either a specific window (HWND) or a whole process (name or PID).
+/// All <see cref="Find{T}"/>/<see cref="FindAll{T}"/> calls route to <c>winapp ui search</c>
+/// scoped by <see cref="TargetFlag"/>/<see cref="TargetValue"/>.
 /// </summary>
+/// <remarks>
+/// Two scopes are supported:
+/// <list type="bullet">
+///   <item><description><c>Window</c> (<c>-w &lt;hwnd&gt;</c>) — the default. Use when the
+///   process owns multiple windows and the test needs to pin one (e.g. ColorPickerUI's
+///   overlay vs editor; Settings vs PopupHost).</description></item>
+///   <item><description><c>Process</c> (<c>-a &lt;name|pid&gt;</c>) — simpler when the target
+///   process owns exactly one user-facing window. Built via <see cref="FromProcess"/>. Matches
+///   the pattern in <see href="https://github.com/microsoft/PowerToys/pull/48414"/>.</description></item>
+/// </list>
+/// </remarks>
 public sealed class Session
 {
-    /// <summary>Decimal HWND of the target window (as returned by <c>list-windows --json</c>).</summary>
+    public enum TargetScope
+    {
+        /// <summary>Scope all CLI calls to a specific HWND via <c>-w</c>.</summary>
+        Window,
+
+        /// <summary>Scope all CLI calls to a process (name substring or PID) via <c>-a</c>.</summary>
+        Process,
+    }
+
+    /// <summary>Decimal HWND of the target window, or 0 when bound by <see cref="TargetScope.Process"/>.</summary>
     public long WindowHandle { get; }
 
     /// <summary>String form of <see cref="WindowHandle"/> for passing to winappcli's <c>-w</c> flag.</summary>
     public string WindowHandleArg { get; }
+
+    /// <summary>The scope these calls run against (window or process).</summary>
+    public TargetScope Scope { get; }
+
+    /// <summary>winappcli flag for the active scope (<c>-w</c> or <c>-a</c>).</summary>
+    public string TargetFlag { get; }
+
+    /// <summary>Value to pass after <see cref="TargetFlag"/> — the decimal HWND or the process name/PID.</summary>
+    public string TargetValue { get; }
 
     public string WindowTitle { get; }
 
@@ -34,9 +64,59 @@ public sealed class Session
         InitScope = scope;
         WindowHandle = hwnd;
         WindowHandleArg = hwnd.ToString(CultureInfo.InvariantCulture);
+        Scope = TargetScope.Window;
+        TargetFlag = "-w";
+        TargetValue = WindowHandleArg;
         WindowTitle = title;
         ProcessId = pid;
         ProcessName = processName;
+    }
+
+    private Session(PowerToysModule scope, string appNameOrPid, int pid, string processName, string title)
+    {
+        InitScope = scope;
+        WindowHandle = 0;
+        WindowHandleArg = "0";
+        Scope = TargetScope.Process;
+        TargetFlag = "-a";
+        TargetValue = appNameOrPid;
+        WindowTitle = title;
+        ProcessId = pid;
+        ProcessName = processName;
+    }
+
+    /// <summary>
+    /// Build a session scoped to a whole process via <c>winapp ... -a &lt;app&gt;</c>. Cheaper than
+    /// resolving a HWND and ideal for the single-window-per-process case (e.g. Settings smoke
+    /// tests). The first matching window's PID/name/title are captured for reporting only — all
+    /// subsequent CLI calls re-resolve via <c>-a</c>, so window-replacement during the test
+    /// (re-navigation, page swap) is handled transparently.
+    /// </summary>
+    /// <param name="appNameOrPid">Process name substring (e.g. <c>"PowerToys.Settings"</c>) or PID as a string.</param>
+    /// <param name="attributeAs">Module label used for diagnostics only.</param>
+    /// <param name="timeoutMS">How long to wait for the process to expose at least one UIA window.</param>
+    public static Session FromProcess(
+        string appNameOrPid,
+        PowerToysModule attributeAs = PowerToysModule.Runner,
+        int timeoutMS = 10_000)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        while (DateTime.UtcNow < deadline)
+        {
+            var windows = WindowsFinder.ListByApp(appNameOrPid);
+            if (windows.Count > 0)
+            {
+                var w = windows[0];
+                return new Session(attributeAs, appNameOrPid, w.ProcessId, w.ProcessName, w.Title);
+            }
+
+            Thread.Sleep(250);
+        }
+
+        Assert.Fail(
+            $"FromProcess('{appNameOrPid}'): no UIA-visible window appeared within {timeoutMS}ms. " +
+            $"Is the app running? Run 'winapp ui list-windows -a {appNameOrPid}' to confirm.");
+        return null!;
     }
 
     public T Find<T>(By by, int timeoutMS = 5000)
@@ -136,22 +216,22 @@ public sealed class Session
         return false;
     }
 
-    /// <summary>Capture a PNG of the session's window via <c>winapp ui screenshot</c>.</summary>
+    /// <summary>Capture a PNG of the session's target via <c>winapp ui screenshot</c>.</summary>
     public string Screenshot(string outputPath)
     {
-        WinappCli.InvokeAssertSuccess("ui", "screenshot", "-w", WindowHandleArg, "-o", outputPath);
+        WinappCli.InvokeAssertSuccess("ui", "screenshot", TargetFlag, TargetValue, "-o", outputPath);
         return outputPath;
     }
 
     /// <summary>
-    /// Dump the full UIA tree for this session's window via <c>winapp ui inspect --json</c>.
+    /// Dump the full UIA tree for this session's target via <c>winapp ui inspect --json</c>.
     /// Returned shape: <c>{ "windows": [{ "elements": [{ "type", "name", "value", "children": [...] }] }] }</c>.
     /// </summary>
     public JsonElement Inspect(int depth = 6)
     {
         return WinappCli.InvokeJson(
             "ui", "inspect",
-            "-w", WindowHandleArg,
+            TargetFlag, TargetValue,
             "--json",
             "-d", depth.ToString(CultureInfo.InvariantCulture));
     }
@@ -167,7 +247,7 @@ public sealed class Session
     private List<SearchHit> ExecuteSearch(By by)
     {
         // winappcli accepts the selector text directly as the first positional argument.
-        var root = WinappCli.InvokeJson("ui", "search", by.Value, "-w", WindowHandleArg, "--json");
+        var root = WinappCli.InvokeJson("ui", "search", by.Value, TargetFlag, TargetValue, "--json");
 
         var result = new List<SearchHit>();
         if (root.TryGetProperty("matches", out var arr) && arr.ValueKind == JsonValueKind.Array)

@@ -7,7 +7,7 @@ using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.ColorPicker.UITests.Next;
+namespace Microsoft.ColorPicker.UITests;
 
 /// <summary>
 /// Full end-to-end Color Picker scenario, driven entirely through the Settings UI:

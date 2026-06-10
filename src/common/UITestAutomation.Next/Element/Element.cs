@@ -79,11 +79,11 @@ public class Element
 
         if (rightClick)
         {
-            WinappCli.InvokeAssertSuccess("ui", "click", Selector, "-w", Owner!.WindowHandleArg, "--right");
+            WinappCli.InvokeAssertSuccess("ui", "click", Selector, Owner!.TargetFlag, Owner!.TargetValue, "--right");
         }
         else
         {
-            WinappCli.InvokeAssertSuccess("ui", "invoke", Selector, "-w", Owner!.WindowHandleArg);
+            WinappCli.InvokeAssertSuccess("ui", "invoke", Selector, Owner!.TargetFlag, Owner!.TargetValue);
         }
 
         if (msPostAction > 0)
@@ -100,7 +100,7 @@ public class Element
     public void MouseClick(int msPostAction = 200)
     {
         EnsureBound();
-        WinappCli.InvokeAssertSuccess("ui", "click", Selector, "-w", Owner!.WindowHandleArg);
+        WinappCli.InvokeAssertSuccess("ui", "click", Selector, Owner!.TargetFlag, Owner!.TargetValue);
         if (msPostAction > 0)
         {
             Thread.Sleep(msPostAction);
@@ -111,7 +111,7 @@ public class Element
     public void Focus()
     {
         EnsureBound();
-        WinappCli.InvokeAssertSuccess("ui", "focus", Selector, "-w", Owner!.WindowHandleArg);
+        WinappCli.InvokeAssertSuccess("ui", "focus", Selector, Owner!.TargetFlag, Owner!.TargetValue);
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ public class Element
     public string GetProperty(string propertyName)
     {
         EnsureBound();
-        var root = WinappCli.InvokeJson("ui", "get-property", Selector, "-p", propertyName, "-w", Owner!.WindowHandleArg, "--json");
+        var root = WinappCli.InvokeJson("ui", "get-property", Selector, "-p", propertyName, Owner!.TargetFlag, Owner!.TargetValue, "--json");
         if (root.TryGetProperty("properties", out var props) &&
             props.TryGetProperty(propertyName, out var v))
         {
@@ -148,7 +148,7 @@ public class Element
     public string GetValue()
     {
         EnsureBound();
-        var root = WinappCli.InvokeJson("ui", "get-value", Selector, "-w", Owner!.WindowHandleArg, "--json");
+        var root = WinappCli.InvokeJson("ui", "get-value", Selector, Owner!.TargetFlag, Owner!.TargetValue, "--json");
         if (root.TryGetProperty("text", out var t))
         {
             return t.GetString() ?? string.Empty;
@@ -166,7 +166,7 @@ public class Element
         EnsureBound();
         var r = WinappCli.Invoke(
             "ui", "wait-for", Selector,
-            "-w", Owner!.WindowHandleArg,
+            Owner!.TargetFlag, Owner!.TargetValue,
             "--property", propertyName,
             "--value", expectedValue,
             "-t", timeoutMS.ToString(System.Globalization.CultureInfo.InvariantCulture));
@@ -182,7 +182,7 @@ public class Element
         EnsureBound();
         var r = WinappCli.Invoke(
             "ui", "wait-for", Selector,
-            "-w", Owner!.WindowHandleArg,
+            Owner!.TargetFlag, Owner!.TargetValue,
             "--gone",
             "-t", timeoutMS.ToString(System.Globalization.CultureInfo.InvariantCulture));
         return r.ExitCode == 0;

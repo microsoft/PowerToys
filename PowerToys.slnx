@@ -188,13 +188,13 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/colorPicker/UITest-ColorPicker.Next/UITest-ColorPicker.Next.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
   </Folder>
   <Folder Name="/modules/colorpicker/Tests/">
     <Project Path="src/modules/colorPicker/ColorPickerUI.UnitTests/ColorPickerUI.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/colorPicker/ColorPicker.UITests/ColorPicker.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1093,6 +1093,10 @@
   </Folder>
   <Folder Name="/settings-ui/Tests/">
     <Project Path="src/settings-ui/Settings.UI.UnitTests/Settings.UI.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/settings-ui/UITest-Settings.Next/UITest-Settings.Next.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

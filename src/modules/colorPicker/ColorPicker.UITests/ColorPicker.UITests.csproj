@@ -6,8 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <RootNamespace>Microsoft.ColorPicker.UITests.Next</RootNamespace>
-    <AssemblyName>UITest-ColorPicker.Next</AssemblyName>
+    <RootNamespace>Microsoft.ColorPicker.UITests</RootNamespace>
+    <AssemblyName>ColorPicker.UITests</AssemblyName>
 
     <!--
       Microsoft.Testing.Platform: same modern runner Directory.Build.props enables for the rest

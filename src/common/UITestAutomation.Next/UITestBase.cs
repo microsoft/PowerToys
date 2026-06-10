@@ -24,6 +24,12 @@ namespace Microsoft.PowerToys.UITest.Next;
 [TestClass]
 public class UITestBase : IDisposable
 {
+    /// <summary>
+    /// Lazy one-shot probe for <c>winapp.exe</c>. Runs the first time any UITest in the
+    /// process initializes — the cost is one extra <c>winapp --version</c> call per test run.
+    /// </summary>
+    private static readonly Lazy<bool> CliAvailable = new(WinappCli.IsAvailable);
+
     private readonly PowerToysModule scope;
     private SessionHelper? sessionHelper;
     private bool disposed;
@@ -40,6 +46,11 @@ public class UITestBase : IDisposable
     [TestInitialize]
     public void TestInit()
     {
+        if (!CliAvailable.Value)
+        {
+            Assert.Fail(WinappCli.InstallHint);
+        }
+
         sessionHelper = new SessionHelper(scope);
         Session = sessionHelper.Init();
     }
