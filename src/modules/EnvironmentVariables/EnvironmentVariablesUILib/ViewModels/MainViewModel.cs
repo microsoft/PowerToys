@@ -115,7 +115,17 @@ namespace EnvironmentVariablesUILib.ViewModels
                 if (appliedProfiles.Count > 0)
                 {
                     var appliedProfile = appliedProfiles.First();
-                    if (appliedProfile.IsCorrectlyApplied())
+                    if (!appliedProfile.Valid)
+                    {
+                        EnvironmentState = EnvironmentState.ProfileNameInvalid;
+                        appliedProfile.IsEnabled = false;
+                    }
+                    else if (!appliedProfile.IsApplicable())
+                    {
+                        EnvironmentState = EnvironmentState.ProfileNotApplicable;
+                        appliedProfile.IsEnabled = false;
+                    }
+                    else if (appliedProfile.IsCorrectlyApplied())
                     {
                         AppliedProfile = appliedProfile;
                         EnvironmentState = EnvironmentState.Unchanged;
@@ -201,6 +211,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         internal void AddDefaultVariable(Variable variable, VariablesSetType type)
         {
+            if (!EnvironmentVariablesHelper.SetVariable(variable))
+            {
+                return;
+            }
+
             if (type == VariablesSetType.User)
             {
                 UserDefaultSet.Variables.Add(variable);
@@ -212,7 +227,6 @@ namespace EnvironmentVariablesUILib.ViewModels
                 SystemDefaultSet.Variables = new ObservableCollection<Variable>(SystemDefaultSet.Variables.OrderBy(x => x.Name).ToList());
             }
 
-            EnvironmentVariablesHelper.SetVariable(variable);
             PopulateAppliedVariables();
         }
 
@@ -313,6 +327,17 @@ namespace EnvironmentVariablesUILib.ViewModels
         {
             if (profile != null)
             {
+                if (!profile.Valid)
+                {
+                    profile.PropertyChanged -= Profile_PropertyChanged;
+                    profile.IsEnabled = false;
+                    profile.PropertyChanged += Profile_PropertyChanged;
+
+                    EnvironmentState = EnvironmentState.ProfileNameInvalid;
+
+                    return;
+                }
+
                 if (!profile.IsApplicable())
                 {
                     profile.PropertyChanged -= Profile_PropertyChanged;
