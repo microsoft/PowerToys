@@ -492,7 +492,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static bool ContainsTag(string line, string tag)
         {
-            return line.IndexOf(tag, StringComparison.OrdinalIgnoreCase) >= 0;
+            return line.Contains(tag, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -539,14 +539,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public static string GenerateHeaderText(AdvancedPastePythonScriptAction action)
         {
             var sb = new System.Text.StringBuilder();
-            sb.AppendLine(string.Concat("# @advancedpaste:name   ", action.Name));
-            sb.AppendLine(string.Concat("# @advancedpaste:desc   ", action.Description));
-            sb.AppendLine(string.Concat("# @advancedpaste:platform   ", action.Platform));
-            sb.AppendLine(string.Concat("# @advancedpaste:formats   ", action.Formats));
-            sb.AppendLine(string.Concat("# @advancedpaste:enabled   ", action.IsEnabled ? "true" : "false"));
-            if (!action.RequiresAutoDetect && !string.IsNullOrWhiteSpace(action.Requires))
+            if (!string.IsNullOrWhiteSpace(action.Name))
             {
-                sb.AppendLine(string.Concat("# @advancedpaste:requires   ", action.Requires));
+                sb.AppendLine(string.Concat("# @advancedpaste:name   ", action.Name));
+            }
+
+            if (!string.IsNullOrWhiteSpace(action.Description))
+            {
+                sb.AppendLine(string.Concat("# @advancedpaste:desc   ", action.Description));
+            }
+
+            if (!action.IsEnabled)
+            {
+                sb.AppendLine("# @advancedpaste:disabled");
             }
 
             return sb.ToString().TrimEnd();
@@ -565,15 +570,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 ["@advancedpaste:name"] = action.Name,
                 ["@advancedpaste:desc"] = action.Description,
-                ["@advancedpaste:platform"] = action.Platform,
-                ["@advancedpaste:formats"] = action.Formats,
-                ["@advancedpaste:enabled"] = action.IsEnabled ? "true" : "false",
             };
 
-            // Only write requires tag in manual mode
-            if (!action.RequiresAutoDetect && !string.IsNullOrWhiteSpace(action.Requires))
+            // @advancedpaste:disabled is a presence-based tag: add when disabled, remove when enabled.
+            var tagsToRemove = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (action.IsEnabled)
             {
-                tagUpdates["@advancedpaste:requires"] = action.Requires;
+                tagsToRemove.Add("@advancedpaste:disabled");
+            }
+            else
+            {
+                tagUpdates["@advancedpaste:disabled"] = string.Empty;
+            }
+
+            // Tags with empty values should be removed entirely (name, desc)
+            foreach (var (tag, val) in tagUpdates)
+            {
+                if (tag != "@advancedpaste:disabled" && string.IsNullOrWhiteSpace(val))
+                {
+                    tagsToRemove.Add(tag);
+                }
             }
 
             var updatedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -622,10 +639,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     if (ContainsTag(trimmed, tag))
                     {
-                        if (!updatedTags.Contains(tag))
+                        if (tagsToRemove.Contains(tag))
+                        {
+                            // Empty value: remove the line entirely
+                            linesToRemove.Add(i);
+                            updatedTags.Add(tag);
+                        }
+                        else if (!updatedTags.Contains(tag))
                         {
                             // First occurrence: update in place
-                            lines[i] = $"# {tag}   {newValue}";
+                            lines[i] = string.IsNullOrEmpty(newValue) ? $"# {tag}" : $"# {tag}   {newValue}";
                             updatedTags.Add(tag);
                             lastTagLine = i;
                         }
@@ -635,6 +658,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                             linesToRemove.Add(i);
                         }
 
+                        break;
+                    }
+                }
+
+                // Remove lines for tags that are only in tagsToRemove (not in tagUpdates)
+                foreach (var removeTag in tagsToRemove)
+                {
+                    if (!tagUpdates.ContainsKey(removeTag) && ContainsTag(trimmed, removeTag))
+                    {
+                        linesToRemove.Add(i);
                         break;
                     }
                 }
@@ -658,9 +691,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var newLines = new List<string>();
             foreach (var (tag, newValue) in tagUpdates)
             {
-                if (!updatedTags.Contains(tag))
+                if (!updatedTags.Contains(tag) && !tagsToRemove.Contains(tag))
                 {
-                    newLines.Add($"# {tag}   {newValue}");
+                    newLines.Add(string.IsNullOrEmpty(newValue) ? $"# {tag}" : $"# {tag}   {newValue}");
                 }
             }
 

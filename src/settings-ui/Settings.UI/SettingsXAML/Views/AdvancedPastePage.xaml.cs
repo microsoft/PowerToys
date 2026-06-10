@@ -327,33 +327,14 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             // Snapshot initial values to detect changes
             var initialName = action.Name;
             var initialDesc = action.Description;
-            var initialPlatform = action.Platform;
-            var initialText = action.SupportsText;
-            var initialHtml = action.SupportsHtml;
-            var initialImage = action.SupportsImage;
-            var initialAudio = action.SupportsAudio;
-            var initialVideo = action.SupportsVideo;
-            var initialFiles = action.SupportsFiles;
-            var initialAutoDetect = action.RequiresAutoDetect;
-            var initialRequires = action.Requires;
+            var initialEnabled = action.IsEnabled;
 
             // Populate dialog fields from the action
             ScriptEditFilePath.Text = action.ScriptPath;
             ScriptEditName.Text = action.Name;
+            ScriptEditName.PlaceholderText = System.IO.Path.GetFileNameWithoutExtension(action.ScriptPath);
             ScriptEditDescription.Text = action.Description;
-            ScriptEditPlatform.SelectedItem = action.Platform;
-            ScriptEditText.IsChecked = action.SupportsText;
-            ScriptEditHtml.IsChecked = action.SupportsHtml;
-            ScriptEditImage.IsChecked = action.SupportsImage;
-            ScriptEditAudio.IsChecked = action.SupportsAudio;
-            ScriptEditVideo.IsChecked = action.SupportsVideo;
-            ScriptEditFiles.IsChecked = action.SupportsFiles;
-            ScriptEditAutoDetectDeps.IsOn = action.RequiresAutoDetect;
-            ScriptEditRequires.Text = action.Requires;
-            ScriptEditRequires.IsEnabled = !action.RequiresAutoDetect;
-
-            void OnDepsToggled(object s, RoutedEventArgs args) =>
-                ScriptEditRequires.IsEnabled = !ScriptEditAutoDetectDeps.IsOn;
+            ScriptEditEnabled.IsOn = action.IsEnabled;
 
             // Change detection: disable Apply button when nothing has changed
             PythonScriptEditDialog.IsPrimaryButtonEnabled = false;
@@ -363,45 +344,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 bool hasChanges =
                     ScriptEditName.Text != initialName ||
                     ScriptEditDescription.Text != initialDesc ||
-                    (ScriptEditPlatform.SelectedItem as string ?? "windows") != initialPlatform ||
-                    (ScriptEditText.IsChecked == true) != initialText ||
-                    (ScriptEditHtml.IsChecked == true) != initialHtml ||
-                    (ScriptEditImage.IsChecked == true) != initialImage ||
-                    (ScriptEditAudio.IsChecked == true) != initialAudio ||
-                    (ScriptEditVideo.IsChecked == true) != initialVideo ||
-                    (ScriptEditFiles.IsChecked == true) != initialFiles ||
-                    ScriptEditAutoDetectDeps.IsOn != initialAutoDetect ||
-                    ScriptEditRequires.Text != initialRequires;
+                    ScriptEditEnabled.IsOn != initialEnabled;
                 PythonScriptEditDialog.IsPrimaryButtonEnabled = hasChanges;
             }
 
             void OnTextChanged(object s, TextChangedEventArgs args) => CheckForChanges(s, args);
-            void OnChecked(object s, RoutedEventArgs args) => CheckForChanges(s, args);
-            void OnToggled(object s, RoutedEventArgs args)
-            {
-                OnDepsToggled(s, args);
-                CheckForChanges(s, args);
-            }
-
-            void OnSelectionChanged(object s, SelectionChangedEventArgs args) => CheckForChanges(s, args);
+            void OnToggled(object s, RoutedEventArgs args) => CheckForChanges(s, args);
 
             ScriptEditName.TextChanged += OnTextChanged;
             ScriptEditDescription.TextChanged += OnTextChanged;
-            ScriptEditRequires.TextChanged += OnTextChanged;
-            ScriptEditPlatform.SelectionChanged += OnSelectionChanged;
-            ScriptEditText.Checked += OnChecked;
-            ScriptEditText.Unchecked += OnChecked;
-            ScriptEditHtml.Checked += OnChecked;
-            ScriptEditHtml.Unchecked += OnChecked;
-            ScriptEditImage.Checked += OnChecked;
-            ScriptEditImage.Unchecked += OnChecked;
-            ScriptEditAudio.Checked += OnChecked;
-            ScriptEditAudio.Unchecked += OnChecked;
-            ScriptEditVideo.Checked += OnChecked;
-            ScriptEditVideo.Unchecked += OnChecked;
-            ScriptEditFiles.Checked += OnChecked;
-            ScriptEditFiles.Unchecked += OnChecked;
-            ScriptEditAutoDetectDeps.Toggled += OnToggled;
+            ScriptEditEnabled.Toggled += OnToggled;
 
             try
             {
@@ -413,15 +365,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     // Write dialog values back to the action
                     action.Name = ScriptEditName.Text;
                     action.Description = ScriptEditDescription.Text;
-                    action.Platform = ScriptEditPlatform.SelectedItem as string ?? "windows";
-                    action.SupportsText = ScriptEditText.IsChecked == true;
-                    action.SupportsHtml = ScriptEditHtml.IsChecked == true;
-                    action.SupportsImage = ScriptEditImage.IsChecked == true;
-                    action.SupportsAudio = ScriptEditAudio.IsChecked == true;
-                    action.SupportsVideo = ScriptEditVideo.IsChecked == true;
-                    action.SupportsFiles = ScriptEditFiles.IsChecked == true;
-                    action.RequiresAutoDetect = ScriptEditAutoDetectDeps.IsOn;
-                    action.Requires = ScriptEditRequires.Text;
+                    action.IsEnabled = ScriptEditEnabled.IsOn;
 
                     await ApplySingleActionAsync(action);
                 }
@@ -430,21 +374,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 ScriptEditName.TextChanged -= OnTextChanged;
                 ScriptEditDescription.TextChanged -= OnTextChanged;
-                ScriptEditRequires.TextChanged -= OnTextChanged;
-                ScriptEditPlatform.SelectionChanged -= OnSelectionChanged;
-                ScriptEditText.Checked -= OnChecked;
-                ScriptEditText.Unchecked -= OnChecked;
-                ScriptEditHtml.Checked -= OnChecked;
-                ScriptEditHtml.Unchecked -= OnChecked;
-                ScriptEditImage.Checked -= OnChecked;
-                ScriptEditImage.Unchecked -= OnChecked;
-                ScriptEditAudio.Checked -= OnChecked;
-                ScriptEditAudio.Unchecked -= OnChecked;
-                ScriptEditVideo.Checked -= OnChecked;
-                ScriptEditVideo.Unchecked -= OnChecked;
-                ScriptEditFiles.Checked -= OnChecked;
-                ScriptEditFiles.Unchecked -= OnChecked;
-                ScriptEditAutoDetectDeps.Toggled -= OnToggled;
+                ScriptEditEnabled.Toggled -= OnToggled;
             }
         }
 

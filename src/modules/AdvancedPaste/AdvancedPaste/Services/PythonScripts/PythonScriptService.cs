@@ -38,7 +38,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
     private static string GetRunnerPath()
     {
         var assemblyDir = Path.GetDirectoryName(typeof(PythonScriptService).Assembly.Location);
-        return Path.Combine(assemblyDir!, "_runner.py");
+        return Path.Combine(assemblyDir!, "Services", "PythonScripts", "_runner.py");
     }
 
     /// <summary>
@@ -478,14 +478,9 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
     }
 
-    // Regex to detect `def convert(...)` function definition.
-    private static readonly Regex ConvertFunctionRegex = new(
-        @"^def\s+convert\s*\(",
-        RegexOptions.Compiled);
-
-    // Regex to extract parameter names from a `def convert(...)` line.
-    private static readonly Regex FunctionParamsRegex = new(
-        @"^def\s+convert\s*\(([^)]*)\)",
+    // Regex to detect V3 named function interface: def ap_from_text/html/image/files(...)
+    private static readonly Regex ApFunctionRegex = new(
+        @"^def\s+ap_from_(text|html|image|files)\s*\(",
         RegexOptions.Compiled);
 
     public PythonScriptMetadata ReadMetadata(string scriptPath)
@@ -501,9 +496,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         var explicitRequirements = new List<PythonRequirement>();
         var allLines = new List<string>();
         var isEnabled = true;
-        bool isV2 = false;
         bool hasExplicitFormats = false;
-        string convertParamsRaw = null;
+        ClipboardFormat apDetectedFormats = ClipboardFormat.None;
 
         try
         {
@@ -522,15 +516,11 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 allLines.Add(line);
                 var trimmed = line.Trim();
 
-                // Detect V2 interface: script defines def convert(...)
-                if (!isV2 && ConvertFunctionRegex.IsMatch(trimmed))
+                // Detect V3 named function interface: def ap_from_text/html/image/files(...)
+                var apMatch = ApFunctionRegex.Match(trimmed);
+                if (apMatch.Success)
                 {
-                    isV2 = true;
-                    var paramsMatch = FunctionParamsRegex.Match(trimmed);
-                    if (paramsMatch.Success)
-                    {
-                        convertParamsRaw = paramsMatch.Groups[1].Value;
-                    }
+                    apDetectedFormats |= ApInputTypeToFormat(apMatch.Groups[1].Value);
                 }
 
                 if (!trimmed.StartsWith('#'))
@@ -581,33 +571,25 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                     continue;
                 }
 
-                tag = ParseTag(trimmed, "@advancedpaste:enabled");
+                tag = ParseTag(trimmed, "@advancedpaste:disabled");
                 if (tag != null)
                 {
-                    isEnabled = !string.Equals(tag, "false", StringComparison.OrdinalIgnoreCase)
-                             && !string.Equals(tag, "0", StringComparison.OrdinalIgnoreCase)
-                             && !string.Equals(tag, "no", StringComparison.OrdinalIgnoreCase);
+                    isEnabled = false;
                     continue;
                 }
             }
 
-            // Read remaining lines for import scanning and V2 detection beyond header.
+            // Read remaining lines for import scanning and ap_from_* detection beyond header.
             string remainingLine;
             while ((remainingLine = reader.ReadLine()) is not null)
             {
                 allLines.Add(remainingLine);
-                if (!isV2)
+                var trimmedRemaining = remainingLine.Trim();
+
+                var apMatchRemaining = ApFunctionRegex.Match(trimmedRemaining);
+                if (apMatchRemaining.Success)
                 {
-                    var trimmedRemaining = remainingLine.Trim();
-                    if (ConvertFunctionRegex.IsMatch(trimmedRemaining))
-                    {
-                        isV2 = true;
-                        var paramsMatch = FunctionParamsRegex.Match(trimmedRemaining);
-                        if (paramsMatch.Success)
-                        {
-                            convertParamsRaw = paramsMatch.Groups[1].Value;
-                        }
-                    }
+                    apDetectedFormats |= ApInputTypeToFormat(apMatchRemaining.Groups[1].Value);
                 }
             }
         }
@@ -616,72 +598,37 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             Logger.LogError($"Failed to read metadata from {scriptPath}", ex);
         }
 
-        // V2: infer supported formats from convert() parameter names if no explicit @advancedpaste:formats tag.
-        if (isV2 && !hasExplicitFormats && convertParamsRaw != null)
+        // Only include scripts that define at least one ap_from_* function.
+        if (apDetectedFormats == ClipboardFormat.None)
         {
-            supportedFormats = InferFormatsFromSignature(convertParamsRaw);
+            return null;
         }
 
-        // V2 scripts don't need a platform tag — they always use the unified runner.
-        if (isV2)
+        // Infer supported formats from ap_from_* function names.
+        if (!hasExplicitFormats)
         {
-            platform = PlatformWindows; // Ignored — unified execution handles both.
+            supportedFormats = apDetectedFormats;
         }
+
+        // ap_from_* scripts always use the unified runner.
+        platform = PlatformWindows;
 
         var mergedRequirements = MergeWithAutoDetectedImports(allLines, explicitRequirements);
 
-        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, isEnabled, mergedRequirements, isV2);
+        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, isEnabled, mergedRequirements, IsV2: true);
     }
 
     /// <summary>
-    /// Infers clipboard format support from the convert() function's parameter names.
-    /// If **kwargs is present, all formats are supported.
+    /// Maps an ap_from_* input type name to the corresponding ClipboardFormat flag.
     /// </summary>
-    internal static ClipboardFormat InferFormatsFromSignature(string paramsRaw)
+    private static ClipboardFormat ApInputTypeToFormat(string inputType) => inputType switch
     {
-        // If **kwargs present, assume all formats.
-        if (paramsRaw.Contains("**"))
-        {
-            return ClipboardFormat.Text | ClipboardFormat.Html |
-                   ClipboardFormat.Image | ClipboardFormat.Audio |
-                   ClipboardFormat.Video | ClipboardFormat.File;
-        }
-
-        var paramNames = paramsRaw
-            .Split(',')
-            .Select(p => p.Trim().Split('=')[0].Trim().Split(':')[0].Trim())
-            .Where(p => !string.IsNullOrEmpty(p) && p != "self")
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        var formats = ClipboardFormat.None;
-
-        if (paramNames.Contains("text"))
-        {
-            formats |= ClipboardFormat.Text;
-        }
-
-        if (paramNames.Contains("html"))
-        {
-            formats |= ClipboardFormat.Html;
-        }
-
-        if (paramNames.Contains("image_path") || paramNames.Contains("image"))
-        {
-            formats |= ClipboardFormat.Image;
-        }
-
-        if (paramNames.Contains("file_paths") || paramNames.Contains("files") || paramNames.Contains("file_path"))
-        {
-            formats |= ClipboardFormat.File;
-        }
-
-        // If no recognized params (e.g. just `work_dir`), default to all formats.
-        return formats == ClipboardFormat.None
-            ? ClipboardFormat.Text | ClipboardFormat.Html |
-              ClipboardFormat.Image | ClipboardFormat.Audio |
-              ClipboardFormat.Video | ClipboardFormat.File
-            : formats;
-    }
+        "text" => ClipboardFormat.Text,
+        "html" => ClipboardFormat.Html,
+        "image" => ClipboardFormat.Image,
+        "files" => ClipboardFormat.File,
+        _ => ClipboardFormat.None,
+    };
 
     /// <summary>
     /// Parses a space-separated requires string.
@@ -946,7 +893,11 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         {
             try
             {
-                scripts.Add(ReadMetadata(file));
+                var metadata = ReadMetadata(file);
+                if (metadata != null)
+                {
+                    scripts.Add(metadata);
+                }
             }
             catch (Exception ex)
             {

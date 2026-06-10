@@ -3,45 +3,44 @@
 # See the LICENSE file in the project root for more information.
 
 """
-Advanced Paste – Script Runner (V2 Interface)
+Advanced Paste – Script Runner (V3 Named Function Interface)
 
 This runner is shipped with PowerToys and is NOT user-editable.
-It loads a user script, inspects its convert() function signature,
-passes the relevant clipboard data as keyword arguments, and returns
-the result as JSON on stdout.
+It loads a user script, discovers ap_from_* functions by name convention,
+calls the one matching the current clipboard format, and normalizes the
+return value into JSON on stdout.
+
+Supported function names (declare what clipboard input the function handles):
+  - ap_from_text(text: str)
+  - ap_from_html(html: str)
+  - ap_from_image(image_path: str)
+  - ap_from_files(file_paths: list)
+
+Output is inferred from the return value:
+  - str              → text (or html if starts with '<' and contains html tags)
+  - pathlib.Path     → image (if .png/.jpg/.jpeg/.bmp/.gif/.webp) or file
+  - list of paths    → files
+  - dict             → explicit: {"type": "text|html|image|file|files", "value": "..."}
+  - None             → no-op (empty text)
 
 Protocol:
   - Input:  JSON on stdin (clipboard data from C#)
   - Output: JSON on stdout (result for C# to set on clipboard)
   - Errors: stderr (displayed to user on failure)
-
-Input JSON schema:
-  {
-    "version": 2,
-    "format": ["text"],
-    "work_dir": "/tmp/...",
-    "text": "...",
-    "html": "...",
-    "image_path": "...",
-    "file_paths": ["..."]
-  }
-
-Output JSON schema:
-  {
-    "result_type": "text" | "html" | "image" | "file" | "files",
-    "text": "...",
-    "html": "...",
-    "image_path": "...",
-    "file_paths": ["..."]
-  }
 """
 
 import importlib.util
-import inspect
 import json
 import os
+import re
 import sys
 from pathlib import Path
+
+# Image file extensions recognized as image output.
+_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tiff", ".ico"}
+
+# Pattern matching ap_from_* function names.
+_AP_FUNCTION_PATTERN = re.compile(r"^ap_from_(text|html|image|files)$")
 
 
 def _load_user_module(script_path: str):
@@ -58,99 +57,88 @@ def _load_user_module(script_path: str):
     return module
 
 
-def _build_kwargs(sig: inspect.Signature, data: dict) -> dict:
+def _discover_ap_functions(module) -> dict:
     """
-    Build keyword arguments for the convert() function based on its signature.
-
-    Only passes parameters that the function actually declares, so that a simple
-    script like `def convert(text): ...` only receives the text field.
+    Discover all ap_from_* functions in the module.
+    Returns a dict mapping input_type → function.
     """
-    # Map from parameter name to the corresponding key in the input JSON.
-    param_to_json_key = {
-        "text": "text",
-        "html": "html",
-        "image_path": "image_path",
-        "image": "image_path",      # alias
-        "file_paths": "file_paths",
-        "files": "file_paths",      # alias
-        "file_path": "file_paths",  # alias (will be first element)
-        "work_dir": "work_dir",
-        "format": "format",
-        "formats": "format",        # alias
-    }
-
-    kwargs = {}
-    for param_name, param in sig.parameters.items():
-        if param_name == "self":
-            continue
-
-        # If the function accepts **kwargs, pass everything available.
-        if param.kind == inspect.Parameter.VAR_KEYWORD:
-            for key, value in data.items():
-                if key not in kwargs and key != "version":
-                    kwargs[key] = value
-            break
-
-        json_key = param_to_json_key.get(param_name, param_name)
-        if json_key in data:
-            value = data[json_key]
-            # Special case: file_path (singular) gets the first element of file_paths list.
-            if param_name == "file_path" and isinstance(value, list):
-                value = value[0] if value else None
-            kwargs[param_name] = value
-        elif param.default is not inspect.Parameter.empty:
-            # Has a default value; don't pass it — let Python use the default.
-            pass
-        else:
-            # Required parameter not available in input — pass None.
-            kwargs[param_name] = None
-
-    return kwargs
+    functions = {}
+    for name in dir(module):
+        match = _AP_FUNCTION_PATTERN.match(name)
+        if match:
+            fn = getattr(module, name)
+            if callable(fn):
+                input_type = match.group(1)
+                functions[input_type] = fn
+    return functions
 
 
-def _normalize_result(result) -> dict:
+def _infer_output(result) -> dict:
     """
-    Normalize the return value of convert() into the output JSON schema.
+    Infer the output type from the return value.
 
-    Accepted return types:
-      - str              → {"result_type": "text", "text": "..."}
-      - dict             → passed through (must include "result_type")
-      - pathlib.Path     → {"result_type": "file", "file_paths": ["..."]}
-      - list of str/Path → {"result_type": "files", "file_paths": [...]}
-      - None             → {"result_type": "text", "text": ""}
+    Rules:
+      - None             → empty text
+      - str              → text
+      - Path(.png/etc)   → image
+      - Path(other)      → file
+      - list/tuple       → files
+      - dict with "type" → explicit (escape hatch)
+      - dict without     → infer from keys
     """
     if result is None:
         return {"result_type": "text", "text": ""}
 
+    # Explicit dict escape hatch: {"type": "html", "value": "<b>hi</b>"}
+    if isinstance(result, dict):
+        if "type" in result:
+            rtype = result["type"]
+            value = result.get("value", "")
+            if rtype == "text":
+                return {"result_type": "text", "text": str(value)}
+            elif rtype == "html":
+                return {"result_type": "html", "html": str(value)}
+            elif rtype == "image":
+                return {"result_type": "image", "image_path": str(value)}
+            elif rtype == "file":
+                return {"result_type": "file", "file_paths": [str(value)]}
+            elif rtype == "files":
+                paths = [str(p) for p in value] if isinstance(value, (list, tuple)) else [str(value)]
+                return {"result_type": "files", "file_paths": paths}
+        # Dict without explicit "type" key: infer from known keys
+        if "html" in result:
+            return {"result_type": "html", **result}
+        if "image_path" in result:
+            return {"result_type": "image", **result}
+        if "file_paths" in result:
+            return {"result_type": "files", **result}
+        if "text" in result:
+            return {"result_type": "text", **result}
+        return {"result_type": "text", "text": str(result)}
+
+    # String → text
     if isinstance(result, str):
         return {"result_type": "text", "text": result}
 
+    # Path → image or file based on extension
     if isinstance(result, Path):
+        ext = result.suffix.lower()
+        if ext in _IMAGE_EXTENSIONS:
+            return {"result_type": "image", "image_path": str(result)}
         return {"result_type": "file", "file_paths": [str(result)]}
 
-    if isinstance(result, dict):
-        if "result_type" not in result:
-            # Infer result_type from keys present (most specific first).
-            if "html" in result:
-                result["result_type"] = "html"
-            elif "image_path" in result:
-                result["result_type"] = "image"
-            elif "file_paths" in result:
-                result["result_type"] = "files"
-            elif "text" in result:
-                result["result_type"] = "text"
-            else:
-                result["result_type"] = "text"
-                result["text"] = ""
-        return result
-
+    # List/tuple → files
     if isinstance(result, (list, tuple)):
         paths = [str(p) for p in result]
         return {"result_type": "files", "file_paths": paths}
 
-    # Fallback: convert to string.
+    # Fallback: convert to string
     return {"result_type": "text", "text": str(result)}
 
+
+# ---------------------------------------------------------------------------
+# Main entry point
+# ---------------------------------------------------------------------------
 
 def main():
     if len(sys.argv) < 2:
@@ -173,25 +161,49 @@ def main():
     # Load the user script.
     module = _load_user_module(script_path)
 
-    # Find the convert() function.
-    convert_fn = getattr(module, "convert", None)
-    if convert_fn is None or not callable(convert_fn):
+    # Discover ap_from_* functions.
+    ap_functions = _discover_ap_functions(module)
+
+    if not ap_functions:
         print(
-            f"Error: script '{os.path.basename(script_path)}' does not define a 'convert()' function.\n"
-            f"Please add: def convert(text=None, **kwargs): ...",
+            f"Error: script '{os.path.basename(script_path)}' does not define any "
+            f"ap_from_* functions.\n"
+            f"Please add: def ap_from_text(text): return text.upper()",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    # Inspect signature and build keyword arguments.
-    sig = inspect.signature(convert_fn)
-    kwargs = _build_kwargs(sig, data)
+    # Determine current clipboard format.
+    current_format = data.get("format", "text")
+    if isinstance(current_format, list):
+        current_format = current_format[0] if current_format else "text"
 
-    # Call the user function.
-    result = convert_fn(**kwargs)
+    # Find the matching function.
+    fn = ap_functions.get(current_format)
+    if fn is None:
+        available = ", ".join(f"ap_from_{k}" for k in sorted(ap_functions.keys()))
+        print(
+            f"Error: no function for clipboard format '{current_format}'.\n"
+            f"Available functions: {available}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
-    # Normalize and output.
-    output = _normalize_result(result)
+    # Get the input value.
+    input_map = {
+        "text": "text",
+        "html": "html",
+        "image": "image_path",
+        "files": "file_paths",
+    }
+    input_key = input_map.get(current_format, "text")
+    input_value = data.get(input_key, "")
+
+    # Call the function.
+    result = fn(input_value)
+    output = _infer_output(result)
+
+    # Output JSON result.
     json.dump(output, sys.stdout, ensure_ascii=False)
 
 

@@ -34,8 +34,23 @@ public sealed class AdvancedPastePythonScriptAction : Observable, IAdvancedPaste
     public string Name
     {
         get => _name;
-        set => Set(ref _name, value ?? string.Empty);
+        set
+        {
+            if (Set(ref _name, value ?? string.Empty))
+            {
+                OnPropertyChanged(nameof(DisplayName));
+            }
+        }
     }
+
+    /// <summary>
+    /// Returns Name if non-empty, otherwise falls back to the script filename without extension.
+    /// </summary>
+    [JsonIgnore]
+    public string DisplayName =>
+        !string.IsNullOrWhiteSpace(_name)
+            ? _name
+            : System.IO.Path.GetFileNameWithoutExtension(_scriptPath);
 
     [JsonPropertyName("description")]
     public string Description

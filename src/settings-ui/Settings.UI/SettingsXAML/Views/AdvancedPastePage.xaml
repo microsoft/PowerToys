@@ -465,7 +465,7 @@
                                 <DataTemplate x:DataType="models:AdvancedPastePythonScriptAction">
                                     <tkcontrols:SettingsCard
                                         Margin="0,0,0,2"
-                                        Header="{x:Bind Name, Mode=OneWay}"
+                                        Header="{x:Bind DisplayName, Mode=OneWay}"
                                         Description="{x:Bind ScriptPath, Mode=OneWay}"
                                         IsActionIconVisible="False">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
@@ -548,52 +548,18 @@
                     x:Name="ScriptEditName"
                     Header="Name"
                     Width="380"
-                    HorizontalAlignment="Left" />
+                    HorizontalAlignment="Left"
+                    PlaceholderText="Script filename" />
                 <TextBox
                     x:Name="ScriptEditDescription"
                     Header="Description"
                     Width="380"
                     HorizontalAlignment="Left" />
-                <ComboBox
-                    x:Name="ScriptEditPlatform"
-                    Header="Platform"
-                    MinWidth="160">
-                    <x:String>windows</x:String>
-                    <x:String>linux</x:String>
-                    <x:String>any</x:String>
-                </ComboBox>
-                <TextBlock
-                    Text="Supported formats"
-                    Style="{StaticResource BodyTextBlockStyle}"
-                    Margin="0,4,0,0" />
-                <Grid ColumnSpacing="12" RowSpacing="4">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <CheckBox x:Name="ScriptEditText" Content="Text" Grid.Row="0" Grid.Column="0" />
-                    <CheckBox x:Name="ScriptEditHtml" Content="HTML" Grid.Row="0" Grid.Column="1" />
-                    <CheckBox x:Name="ScriptEditImage" Content="Image" Grid.Row="0" Grid.Column="2" />
-                    <CheckBox x:Name="ScriptEditAudio" Content="Audio" Grid.Row="1" Grid.Column="0" />
-                    <CheckBox x:Name="ScriptEditVideo" Content="Video" Grid.Row="1" Grid.Column="1" />
-                    <CheckBox x:Name="ScriptEditFiles" Content="Files" Grid.Row="1" Grid.Column="2" />
-                </Grid>
                 <ToggleSwitch
-                    x:Name="ScriptEditAutoDetectDeps"
-                    Header="Dependencies"
-                    OnContent="Auto-detect from imports"
-                    OffContent="Manual" />
-                <TextBox
-                    x:Name="ScriptEditRequires"
-                    Header="Required packages (space-separated)"
-                    Width="380"
-                    HorizontalAlignment="Left"
-                    PlaceholderText="e.g. numpy requests cv2=opencv-python-headless" />
+                    x:Name="ScriptEditEnabled"
+                    Header="Enabled"
+                    OnContent="Active"
+                    OffContent="Disabled" />
             </StackPanel>
         </ContentDialog>
         <ContentDialog

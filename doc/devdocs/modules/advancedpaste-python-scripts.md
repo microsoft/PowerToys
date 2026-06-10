@@ -8,206 +8,151 @@ discovered automatically from a configurable folder and appear as actions in the
 1. Open the scripts folder — by default `%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts`.
    You can change this in **Settings → Advanced Paste → Python scripts → Scripts folder**.
 2. Drop a `.py` file into the folder.
-3. Define a `convert()` function (see [V2 Interface](#v2-interface-recommended)).
+3. Define one or more `ap_from_*` functions (see [Writing a script](#writing-a-script)).
 4. Open the Advanced Paste UI (`Win+Shift+V`) — your script will appear in the action list.
 
-## V2 Interface (Recommended)
+> **Important:** Only `.py` files that define at least one `ap_from_*` function are loaded.
+> Plain scripts without these functions are ignored.
 
-The V2 interface is the simplest way to write scripts. You define a single `convert()` function
-that receives clipboard data as arguments and returns the result. **No platform-specific code needed.**
+## Writing a script
 
-### Minimal example — reverse text:
+You write normal Python functions whose **names** declare what clipboard input they accept.
+No imports from PowerToys are needed — zero setup, zero dependencies on our side.
 
-```python
-# @advancedpaste:name  Reverse Text
+### Function naming convention
 
-def convert(text):
-    """Reverse the clipboard text."""
-    return text[::-1]
-```
+| Function name | Input parameter | When it runs |
+|---------------|-----------------|--------------|
+| `ap_from_text(text)` | `str` — clipboard text | Clipboard has text |
+| `ap_from_html(html)` | `str` — clipboard HTML | Clipboard has HTML |
+| `ap_from_image(image_path)` | `str` — path to temp image file | Clipboard has an image |
+| `ap_from_files(file_paths)` | `list[str]` — file paths | Clipboard has files |
 
-That's it. No `import sys`, no `json.load`, no clipboard libraries. Advanced Paste handles all the plumbing.
-
-### How it works
-
-1. Advanced Paste reads the clipboard and serializes it as JSON.
-2. A built-in runner inspects your `convert()` function signature.
-3. Only the parameters your function declares are passed as keyword arguments.
-4. Your function returns the result — Advanced Paste sets it on the clipboard and pastes.
-
-### Parameter convention
-
-Declare only the parameters you need:
-
-| Parameter | Type | Content |
-|-----------|------|---------|
-| `text` | `str` | Clipboard text content |
-| `html` | `str` | Clipboard HTML content |
-| `image_path` | `str` | Path to temp PNG file of clipboard image |
-| `image` | `str` | Alias for `image_path` |
-| `file_paths` | `list[str]` | List of clipboard file paths |
-| `files` | `list[str]` | Alias for `file_paths` |
-| `file_path` | `str` | First file path (convenience for single-file) |
-| `work_dir` | `str` | Writable temp directory (cleaned up after execution) |
-| `format` | `list[str]` | Detected clipboard format names |
-
-**Format inference:** Advanced Paste infers which clipboard formats your script supports from
-the parameter names. A script with `def convert(text)` only appears when the clipboard has text.
-Use `**kwargs` to accept all formats.
+A single script can define multiple functions to handle different input types.
 
 ### Return value convention
+
+The return value determines what gets placed on the clipboard:
 
 | Return type | Effect |
 |-------------|--------|
 | `str` | Sets clipboard to text |
-| `dict` | Full control — must include `result_type` key (see [Output schema](#output-payload)) |
-| `pathlib.Path` | Sets clipboard to that file |
-| `list` of paths | Sets clipboard to multiple files |
+| `pathlib.Path` (`.png`, `.jpg`, etc.) | Sets clipboard to image |
+| `pathlib.Path` (other extension) | Sets clipboard to file |
+| `list` of `Path`/`str` | Sets clipboard to multiple files |
+| `dict` with `"type"` key | Explicit output type (escape hatch — see below) |
 | `None` | No-op (clipboard unchanged) |
 
-### More examples
+### Dict escape hatch
 
-**Convert text to uppercase:**
+For cases where the return type can't be inferred from the value alone:
+
 ```python
-# @advancedpaste:name  Upper Case
+def ap_from_text(text):
+    html = f"<b>{text.upper()}</b>"
+    return {"type": "html", "value": html}
+```
 
-def convert(text):
+Supported `"type"` values: `"text"`, `"html"`, `"image"`, `"file"`, `"files"`.
+
+## Examples
+
+### Minimal — uppercase text
+
+```python
+def ap_from_text(text):
     return text.upper()
 ```
 
-**Convert image to grayscale:**
-```python
-# @advancedpaste:name  Grayscale Image
-# @advancedpaste:requires PIL=Pillow
+That's it. No headers required, no imports from PowerToys.
 
+### With optional metadata
+
+```python
+# @advancedpaste:name   Reverse Text
+# @advancedpaste:desc   Reverses clipboard text character by character
+
+def ap_from_text(text):
+    return text[::-1]
+```
+
+### Image processing
+
+```python
 from PIL import Image
 from pathlib import Path
+import tempfile
 
-def convert(image_path, work_dir):
+def ap_from_image(image_path):
+    """Convert image to grayscale."""
     img = Image.open(image_path).convert("L")
-    out = Path(work_dir) / "gray.png"
+    out = Path(tempfile.gettempdir()) / "gray.png"
     img.save(out)
     return out
 ```
 
-**Return HTML:**
-```python
-# @advancedpaste:name  Wrap in Code Block
-
-def convert(text):
-    return {
-        "result_type": "html",
-        "html": f"<pre><code>{text}</code></pre>",
-        "text": text,  # fallback for apps that don't support HTML
-    }
-```
-
-**Accept any format with kwargs:**
-```python
-# @advancedpaste:name  Debug Clipboard
-
-def convert(**kwargs):
-    """Show what's on the clipboard as formatted text."""
-    import json
-    return json.dumps(kwargs, indent=2, default=str)
-```
-
-## Header format
-
-The only required header is `name`:
+### Return HTML
 
 ```python
-# @advancedpaste:name   My Script Name
+def ap_from_text(text):
+    return {"type": "html", "value": f"<pre><code>{text}</code></pre>"}
 ```
 
-### Optional tags
+### Multiple input types in one script
+
+```python
+def ap_from_text(text):
+    return f"Text ({len(text)} chars): {text[:100]}"
+
+def ap_from_files(file_paths):
+    return "\n".join(file_paths)
+```
+
+### File listing
+
+```python
+import os
+
+def ap_from_files(file_paths):
+    lines = []
+    for p in file_paths:
+        size = os.path.getsize(p)
+        lines.append(f"{os.path.basename(p)} ({size} bytes)")
+    return "\n".join(lines)
+```
+
+## Header tags
+
+All header tags are **optional**. Tags are placed in comment lines at the top of the script.
 
 | Tag | Description |
 |-----|-------------|
-| `name` | **Required.** Display name shown in the Advanced Paste UI. |
-| `desc` | Short description / tooltip. (Can also use the `convert()` docstring.) |
-| `formats` | Override auto-detected formats. Comma-separated: `text`, `html`, `image`, `file`, `any`. |
-| `requires` | Declare Python package dependencies (see [Declaring dependencies](#declaring-dependencies)). |
-| `enabled` | Set to `false` to disable the script without deleting it. |
+| `name` | Display name in the Advanced Paste UI. If omitted, the filename is used. |
+| `desc` | Short description / tooltip. |
+| `disabled` | Presence of this tag disables the script (it won't appear in the UI). |
+| `requires` | Declare Python package dependencies (see [Dependencies](#declaring-dependencies)). |
 
-### Tags no longer needed in V2
-
-| Tag | Why |
-|-----|-----|
-| `platform` | Eliminated — V2 scripts run identically on Windows and WSL. |
-| `version` | Reserved, not useful in practice. |
-
-## Legacy Interface (V1)
-
-Scripts that do NOT define a `convert()` function are treated as V1 (legacy) scripts and
-continue to work as before:
-
-### Windows mode (`platform windows`)
-
-The script runs directly and owns the clipboard via `win32clipboard`.
+### Example header
 
 ```python
-# @advancedpaste:name   Reverse text
-# @advancedpaste:formats text
-# @advancedpaste:platform windows
-import win32clipboard
-
-win32clipboard.OpenClipboard()
-text = win32clipboard.GetClipboardData(win32clipboard.CF_UNICODETEXT)
-win32clipboard.EmptyClipboard()
-win32clipboard.SetClipboardData(win32clipboard.CF_UNICODETEXT, text[::-1])
-win32clipboard.CloseClipboard()
+# @advancedpaste:name   My Formatter
+# @advancedpaste:desc   Formats clipboard text as markdown table
 ```
 
-### WSL / Linux mode (`platform linux`)
-
-The script reads JSON from stdin and writes JSON to stdout.
+To disable a script without deleting it, add:
 
 ```python
-# @advancedpaste:name   WSL Upper Case
-# @advancedpaste:formats text
-# @advancedpaste:platform linux
-import sys, json
-
-data = json.load(sys.stdin)
-text = data.get("text", "")
-json.dump({"result_type": "text", "text": text.upper()}, sys.stdout)
+# @advancedpaste:disabled
 ```
 
-## Input/Output JSON Schema (for V1 Linux and advanced V2 dict returns)
-
-### Input payload
-
-```jsonc
-{
-  "version": 2,
-  "format": ["text"],           // array of detected clipboard format names
-  "work_dir": "C:\\Temp\\...",  // writable temp directory
-  "text": "Hello, world!",     // present when clipboard has text
-  "html": "<b>Hello</b>",      // present when clipboard has HTML
-  "image_path": "C:\\...\\input.png",  // present when clipboard has an image
-  "file_paths": ["C:\\...\\file.txt"]  // present when clipboard has files
-}
-```
-
-### Output payload
-
-```jsonc
-{
-  "result_type": "text",        // "text" | "html" | "image" | "file" | "files"
-  "text": "HELLO, WORLD!",     // for result_type "text"
-  "html": "<b>HELLO</b>",      // for result_type "html"
-  "image_path": "C:\\...\\output.png",  // for result_type "image"
-  "file_paths": ["C:\\...\\out.txt"]    // for result_type "file"/"files"
-}
-```
+Remove the line to re-enable.
 
 ## Declaring dependencies
 
 Use `requires` to declare Python packages the script needs:
 
 ```python
-# @advancedpaste:requires markitdown='markitdown[all]'
+# @advancedpaste:requires PIL=Pillow
 # @advancedpaste:requires cv2=opencv-python-headless numpy requests
 ```
 
@@ -251,11 +196,11 @@ The following settings are available under **Settings → Advanced Paste → Pyt
 
 ## Tips
 
-- Put reusable helper functions in a separate `.py` file without a `# @advancedpaste:name`
-  header — it will be ignored by the script discovery and can be imported by other scripts.
-- The `work_dir` parameter points to a temporary directory that is cleaned up after execution.
-  Use it for intermediate files (e.g., image processing output).
-- V2 scripts are testable from the command line:
+- A `.py` file without any `ap_from_*` function is ignored — use this for helper modules
+  that other scripts can import.
+- Scripts can be tested from the command line:
   ```
-  echo {"text":"hello"} | python _runner.py my_script.py
+  echo {"format":"text","text":"hello"} | python _runner.py my_script.py
   ```
+- The script's directory is added to `sys.path` at runtime, so you can import sibling `.py`
+  files as helper modules.
