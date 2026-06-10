@@ -800,9 +800,10 @@
                                 MinHeight="{ThemeResource RailNavigationViewItemOnLeftMinHeight}"
                                 RowSpacing="6">
                                 <!--  Store: Added Grid.RowDefinitions & Removed Grid.ColumnDefinitions  -->
+                                <!--  Row 0 fixed height tuned so the 20px icon vertically aligns with the selection pill center (~y=28).  -->
                                 <Grid.RowDefinitions>
-                                    <RowDefinition />
-                                    <RowDefinition />
+                                    <RowDefinition Height="12" />
+                                    <RowDefinition Height="Auto" />
                                     <RowDefinition Height="Auto" />
                                     <RowDefinition />
                                 </Grid.RowDefinitions>

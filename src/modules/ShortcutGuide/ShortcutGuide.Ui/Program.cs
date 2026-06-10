@@ -21,9 +21,12 @@ namespace ShortcutGuide
     {
         public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
 
+        public static nint ForegroundWindowHandle { get; private set; } = nint.Zero;
+
         [STAThread]
         public static void Main(string[] args)
         {
+            ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
 
             // The module interface passes: <powertoys_pid> [telemetry]
@@ -99,7 +102,14 @@ namespace ShortcutGuide
                     return;
                 }
 
-                PowerToysShortcutsPopulator.Populate();
+                try
+                {
+                    PowerToysShortcutsPopulator.Populate();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to populate PowerToys shortcuts in manifest.", ex);
+                }
             });
             CopyAndIndexGenerationThread.IsBackground = true;
             CopyAndIndexGenerationThread.Start();

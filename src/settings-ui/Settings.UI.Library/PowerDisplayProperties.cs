@@ -24,6 +24,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowProfileSwitcher = true;
             ShowIdentifyMonitorsButton = true;
             MaxCompatibilityMode = false;
+            LinkedLevelsActive = false;
+            ExcludedFromSyncMonitorIds = new List<string>();
             CustomVcpMappings = new List<CustomVcpValueMapping>();
 
             // Note: saved_monitor_settings has been moved to monitor_state.json
@@ -78,6 +80,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("show_identify_monitors_button")]
         public bool ShowIdentifyMonitorsButton { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether brightness slider changes are broadcast
+        /// to all connected monitors as a single linked level. When false (default), each
+        /// monitor's slider operates independently. The toggle is only meaningful when two
+        /// or more monitors are connected; the UI hides the entry point otherwise.
+        /// </summary>
+        [JsonPropertyName("linked_levels_active")]
+        public bool LinkedLevelsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets the set of monitor <c>Id</c> values excluded from linked brightness.
+        /// Keyed by <c>Monitor.Id</c> (the DevicePath-based identifier, unique per physical
+        /// device × port — the same key profiles use), so three identical monitors of the same
+        /// model are distinguished. An excluded monitor keeps its own independent brightness
+        /// slider while link mode is on. Monitors not present here are linked by default,
+        /// including newly connected ones.
+        /// </summary>
+        [JsonPropertyName("excluded_from_sync_monitor_ids")]
+        public List<string> ExcludedFromSyncMonitorIds { get; set; }
 
         /// <summary>
         /// Gets or sets custom VCP value name mappings shared across all monitors.
