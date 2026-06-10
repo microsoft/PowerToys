@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
 using System.Reflection;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -91,15 +90,18 @@ public sealed class SettingsNavigationSmokeTests
         new NavigationCase("AdvancedNavItem", "RegistryPreviewNavItem"),
     };
 
-    private const string SettingsProcessName = "PowerToys.Settings";
-    private const string SettingsExeName = "PowerToys.Settings.exe";
-    private const string SettingsSubDirectory = "WinUI3Apps";
+    private const string ScopeProcessName = "PowerToys.Settings";
+    private const PowerToysModule Scope = PowerToysModule.PowerToysSettings;
 
-    // Parent groups are only expanded on first encounter \u2014 mirrors the PR's _expandedGroups set.
+    // Parent groups are only expanded on first encounter — mirrors the PR's _expandedGroups set.
     private static readonly HashSet<string> ExpandedGroups = new(StringComparer.Ordinal);
 
-    private static Process? settingsProcess;
     private static Session? session;
+
+    // True when ClassInit had to launch Settings itself. ClassCleanup uses this to decide
+    // whether to close the window on the way out — if the user already had Settings open
+    // before the run, we leave their state alone.
+    private static bool launchedByUs;
 
     public TestContext TestContext { get; set; } = null!;
 
@@ -108,11 +110,13 @@ public sealed class SettingsNavigationSmokeTests
     {
         Assert.IsTrue(WinappCli.IsAvailable(), WinappCli.InstallHint);
 
-        settingsProcess = LaunchSettings();
+        // SessionHelper handles exe location, single-instance handoff, ShellExecute launch
+        // semantics, and UIA-window readiness — identical flow to the per-test UITestBase path.
+        launchedByUs = SessionHelper.EnsureRunning(Scope, TimeSpan.FromSeconds(30));
 
-        // Process-scope session: PR #48414 pattern. Single window, no need to pin a HWND \u2014 the
-        // CLI re-resolves -a on every call so page swaps don't invalidate the binding.
-        session = Session.FromProcess(SettingsProcessName, PowerToysModule.PowerToysSettings, timeoutMS: 20_000);
+        // Process-scope session: every CLI call re-resolves -a so window-replacement during
+        // navigation (page swaps, PopupHost siblings) is handled transparently.
+        session = Session.FromProcess(SessionHelper.GetProcessName(Scope), Scope, timeoutMS: 20_000);
 
         // Confirm the shell finished loading by waiting for an item that's always present.
         Assert.IsTrue(
@@ -123,30 +127,15 @@ public sealed class SettingsNavigationSmokeTests
     [ClassCleanup]
     public static void ClassTeardown()
     {
-        WindowControl.TryCloseByApp(SettingsProcessName);
-
-        if (settingsProcess is not null)
+        if (launchedByUs)
         {
-            try
-            {
-                if (!settingsProcess.HasExited)
-                {
-                    settingsProcess.Kill(entireProcessTree: true);
-                    settingsProcess.WaitForExit(5_000);
-                }
-            }
-            catch (InvalidOperationException)
-            {
-                // Process already gone.
-            }
-            finally
-            {
-                settingsProcess.Dispose();
-                settingsProcess = null;
-            }
+            var processName = SessionHelper.GetProcessName(Scope);
+            WindowControl.TryCloseByApp(processName);
+            WindowControl.TryKillProcess(processName);
         }
 
         session = null;
+        launchedByUs = false;
         ExpandedGroups.Clear();
     }
 
@@ -172,7 +161,6 @@ public sealed class SettingsNavigationSmokeTests
     public void NavigationItem_NavigatesWithoutCrashing(string parentGroupSlug, string navItemSlug)
     {
         Assert.IsNotNull(session, "Session was not initialized in ClassInit.");
-        Assert.IsNotNull(settingsProcess, "Settings process was not launched in ClassInit.");
 
         if (!string.IsNullOrEmpty(parentGroupSlug) && ExpandedGroups.Add(parentGroupSlug))
         {
@@ -187,102 +175,15 @@ public sealed class SettingsNavigationSmokeTests
         // has time to land in RoFailFast.
         Thread.Sleep(250);
 
-        settingsProcess!.Refresh();
-        Assert.IsFalse(
-            settingsProcess.HasExited,
-            $"PowerToys.Settings.exe exited after invoking '{navItemSlug}' (exit code {settingsProcess.ExitCode}). " +
+        // Check by process name, not by launcher PID. Settings is single-instance: the EXE we
+        // started in ClassInit often exits cleanly after handing off to an existing instance,
+        // so the actual window may be owned by a different PID than the one we launched.
+        Assert.IsTrue(
+            SessionHelper.IsRunning(Scope),
+            $"No {ScopeProcessName} process remains after invoking '{navItemSlug}'. " +
             "Likely a navigation FailFast regression \u2014 see ShellViewModel.Frame_NavigationFailed.");
-    }
-
-    private static Process LaunchSettings()
-    {
-        var exe = LocateSettingsExe()
-            ?? throw new FileNotFoundException(
-                $"Could not find {SettingsExeName} in any installed or dev-build location.");
-
-        var psi = new ProcessStartInfo
-        {
-            FileName = exe,
-            WorkingDirectory = Path.GetDirectoryName(exe)!,
-            UseShellExecute = false,
-        };
-
-        var p = Process.Start(psi)
-            ?? throw new InvalidOperationException($"Process.Start returned null for {exe}");
-
-        WaitForMainWindow(p, TimeSpan.FromSeconds(30));
-        return p;
-    }
-
-    private static string? LocateSettingsExe()
-    {
-        foreach (var root in CandidateInstallRoots())
-        {
-            var path = Path.Combine(root, SettingsSubDirectory, SettingsExeName);
-            if (File.Exists(path))
-            {
-                return path;
-            }
-        }
-
-        return null;
-    }
-
-    private static IEnumerable<string> CandidateInstallRoots()
-    {
-        // Installed PowerToys (preferred in pipeline runs).
-        foreach (var path in new[]
-        {
-            @"C:\Program Files\PowerToys",
-            @"C:\Program Files (x86)\PowerToys",
-            Environment.ExpandEnvironmentVariables(@"%LocalAppData%\PowerToys"),
-        })
-        {
-            if (Directory.Exists(path))
-            {
-                yield return path;
-            }
-        }
-
-        // Dev build sitting near the test assembly. The csproj's OutputPath puts us at
-        // <repo>\<plat>\<cfg>\... and PowerToys.Settings.exe lands at <repo>\<plat>\<cfg>\WinUI3Apps\...
-        var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        if (assemblyDir is not null)
-        {
-            var probe = new DirectoryInfo(assemblyDir);
-            for (int i = 0; i < 6 && probe is not null; i++, probe = probe.Parent)
-            {
-                if (Directory.Exists(Path.Combine(probe.FullName, SettingsSubDirectory)))
-                {
-                    yield return probe.FullName;
-                }
-            }
-        }
-    }
-
-    private static void WaitForMainWindow(Process process, TimeSpan timeout)
-    {
-        var deadline = DateTime.UtcNow + timeout;
-        while (DateTime.UtcNow < deadline)
-        {
-            process.Refresh();
-            if (process.HasExited)
-            {
-                throw new InvalidOperationException(
-                    $"{SettingsExeName} exited during startup with code {process.ExitCode}.");
-            }
-
-            if (process.MainWindowHandle != IntPtr.Zero)
-            {
-                Thread.Sleep(750);
-                return;
-            }
-
-            Thread.Sleep(100);
-        }
-
-        throw new TimeoutException($"{SettingsExeName} did not produce a main window within {timeout.TotalSeconds}s.");
     }
 
     private readonly record struct NavigationCase(string? ParentGroupSlug, string NavItemSlug);
 }
+
