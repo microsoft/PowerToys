@@ -1096,7 +1096,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/settings-ui/UITest-Settings.Next/UITest-Settings.Next.csproj">
+    <Project Path="src/settings-ui/Settings.UITests/Settings.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

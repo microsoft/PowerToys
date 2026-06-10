@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Settings.UITests.Next;
+namespace Microsoft.Settings.UITests;
 
 /// <summary>
 /// Smoke test that drives the Settings shell via winappcli and asserts that clicking every
