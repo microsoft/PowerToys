@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PowerToys Workspaces Settings Service (PTWorkspacesSvc) installer fragment.
+
+  Per-machine only — per-user installs cannot register a Windows service
+  without an admin elevation, so the service is omitted from PowerToysUserSetup
+  by guarding this fragment with $(var.PerUser) at the consumer site.
+
+  The fragment is responsible for:
+    1. Dropping the service binaries under <InstallFolder>\WorkspacesSettingsService\
+    2. Registering PTWorkspacesSvc as a virtual-account service (NT SERVICE\PTWorkspacesSvc)
+    3. Starting it after install and stopping it on uninstall
+    4. Creating %ProgramData%\Microsoft\PowerToys\Workspaces with a protective
+       DACL.  Per-user subfolders are created lazily by the service itself
+       (it knows the user SID via the impersonated pipe token).
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <?include $(sys.CURRENTDIR)\Common.wxi?>
+
+  <?define WorkspacesSvcFilesPath=$(var.BinDir)\WorkspacesSettingsService\?>
+
+  <Fragment>
+    <!-- Service binaries directory -->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="WorkspacesSettingsServiceFolder" Name="WorkspacesSettingsService" />
+    </DirectoryRef>
+
+    <!-- Service exe + registration -->
+    <DirectoryRef Id="WorkspacesSettingsServiceFolder"
+                  FileSource="$(var.WorkspacesSvcFilesPath)">
+      <Component Id="RegisterWorkspacesSettingsService"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0001}">
+
+        <File Id="WorkspacesSettingsSvcExe"
+              Name="PowerToys.WorkspacesSettingsSvc.exe"
+              KeyPath="yes" />
+
+        <!--
+          Virtual service account: PTWorkspacesSvc gets its own SID under
+          NT SERVICE\, no password to manage, isolated from LocalService /
+          LocalSystem.  WiX 4 passes Account through to CreateService as
+          lpServiceStartName with password == nullptr automatically.
+        -->
+        <ServiceInstall Id="PTWorkspacesSvcInstall"
+                        Name="PTWorkspacesSvc"
+                        DisplayName="PowerToys Workspaces Settings Service"
+                        Description="Protects PowerToys Workspaces configuration from tampering by mediating all writes through an authenticated local channel."
+                        Type="ownProcess"
+                        Start="demand"
+                        ErrorControl="normal"
+                        Account="NT SERVICE\PTWorkspacesSvc"
+                        Vital="yes">
+          <ServiceDependency Id="RpcSs" />
+          <util:ServiceConfig FirstFailureActionType="restart"
+                              SecondFailureActionType="restart"
+                              ThirdFailureActionType="none"
+                              ResetPeriodInDays="1"
+                              RestartServiceDelayInSeconds="60" />
+        </ServiceInstall>
+
+        <ServiceControl Id="PTWorkspacesSvcControl"
+                        Name="PTWorkspacesSvc"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall"
+                        Wait="yes" />
+      </Component>
+
+      <!-- Component to ensure the per-install folder is removed on uninstall -->
+      <Component Id="RemoveWorkspacesSettingsServiceFolder"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0002}"
+                 Directory="INSTALLFOLDER">
+        <RegistryKey Root="$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string"
+                         Name="RemoveWorkspacesSettingsServiceFolder"
+                         Value=""
+                         KeyPath="yes" />
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderWorkspacesSettingsServiceFolder"
+                      Directory="WorkspacesSettingsServiceFolder"
+                      On="uninstall" />
+      </Component>
+    </DirectoryRef>
+
+    <!--
+      %ProgramData%\Microsoft\PowerToys\Workspaces — created at install
+      with a protected DACL.  PROTECTED stops it inheriting %ProgramData%'s
+      default Users-can-write ACE.  Per-user subdirectories underneath are
+      created by the service when the first write for that user arrives.
+    -->
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="WorkspacesDataMicrosoft" Name="Microsoft">
+        <Directory Id="WorkspacesDataPT" Name="PowerToys">
+          <Directory Id="WorkspacesDataRoot" Name="Workspaces">
+            <Component Id="CreateWorkspacesDataRoot"
+                       Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0003}">
+              <CreateFolder>
+                <util:PermissionEx User="PTWorkspacesSvc" Domain="NT SERVICE"
+                                   GenericAll="yes" />
+                <util:PermissionEx User="Administrators" Domain="BUILTIN"
+                                   GenericRead="yes" GenericExecute="yes" />
+                <util:PermissionEx User="Authenticated Users" Domain="NT AUTHORITY"
+                                   GenericRead="yes" GenericExecute="yes" />
+              </CreateFolder>
+              <RegistryKey Root="HKLM"
+                           Key="Software\Microsoft\PowerToys\Workspaces">
+                <RegistryValue Type="integer"
+                               Name="DataRootCreated"
+                               Value="1"
+                               KeyPath="yes" />
+              </RegistryKey>
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <ComponentGroup Id="WorkspacesSettingsServiceComponentGroup">
+      <ComponentRef Id="RegisterWorkspacesSettingsService" />
+      <ComponentRef Id="RemoveWorkspacesSettingsServiceFolder" />
+      <ComponentRef Id="CreateWorkspacesDataRoot" />
+    </ComponentGroup>
+  </Fragment>
+</Wix>

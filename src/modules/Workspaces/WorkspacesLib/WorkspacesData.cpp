@@ -4,23 +4,78 @@
 
 #include <workspaces-common/GuidUtils.h>
 
+#include <windows.h>
+#include <sddl.h>
+#include <shlobj.h>
+#include <vector>
+
+#pragma comment(lib, "Advapi32.lib")
+#pragma comment(lib, "Shell32.lib")
+
 namespace NonLocalizable
 {
     const inline wchar_t ModuleKey[] = L"Workspaces";
+}
+
+namespace
+{
+    // v6: settings folder is %ProgramData%\Microsoft\PowerToys\Workspaces\<sid>.
+    // The launcher reads directly from this path (DACL grants R+X to the
+    // owning user).  Writers (Editor / SnapshotTool) must go through the
+    // PTWorkspacesSvc named pipe — see WorkspacesSettingsClient.
+    std::wstring GetServiceManagedUserFolder()
+    {
+        PWSTR programData = nullptr;
+        std::wstring root;
+        if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_ProgramData, 0, nullptr, &programData)))
+        {
+            root = programData;
+            CoTaskMemFree(programData);
+        }
+        else
+        {
+            root = L"C:\\ProgramData";
+        }
+        root += L"\\Microsoft\\PowerToys\\Workspaces";
+
+        // Resolve current user SID.
+        HANDLE token = nullptr;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+        {
+            return root;
+        }
+        DWORD size = 0;
+        GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+        std::vector<BYTE> buf(size);
+        if (!GetTokenInformation(token, TokenUser, buf.data(), size, &size))
+        {
+            CloseHandle(token);
+            return root;
+        }
+        CloseHandle(token);
+
+        LPWSTR sidStr = nullptr;
+        if (!ConvertSidToStringSidW(
+                reinterpret_cast<TOKEN_USER*>(buf.data())->User.Sid, &sidStr))
+        {
+            return root;
+        }
+        std::wstring full = root + L"\\" + sidStr;
+        LocalFree(sidStr);
+        return full;
+    }
 }
 
 namespace WorkspacesData
 {
     std::wstring WorkspacesFile()
     {
-        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\workspaces.json";
+        return GetServiceManagedUserFolder() + L"\\workspaces.json";
     }
 
     std::wstring TempWorkspacesFile()
     {
-        std::wstring settingsFolderPath = PTSettingsHelper::get_module_save_folder_location(NonLocalizable::ModuleKey);
-        return settingsFolderPath + L"\\temp-workspaces.json";
+        return GetServiceManagedUserFolder() + L"\\temp-workspaces.json";
     }
 
     RECT WorkspacesProject::Application::Position::toRect() const noexcept

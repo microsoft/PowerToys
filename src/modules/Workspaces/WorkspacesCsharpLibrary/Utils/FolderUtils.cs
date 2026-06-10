@@ -5,6 +5,8 @@
 using System;
 using System.IO;
 
+using WorkspacesCsharpLibrary.SettingsService;
+
 namespace WorkspacesCsharpLibrary.Utils;
 
 public class FolderUtils
@@ -19,8 +21,19 @@ public class FolderUtils
         return Path.GetTempPath();
     }
 
-    // Note: the same path should be used in SnapshotTool and Launcher
+    // v6: settings live in the service-managed per-user folder under
+    // %ProgramData% (ACL'd so only PTWorkspacesSvc can write).  Callers
+    // that just want to *read* (Launcher, Editor's initial load) can still
+    // use this path directly — the user has Read+Execute via the DACL.
+    // Writers must round-trip through WorkspacesSvcClient.PutSettings.
     public static string DataFolder()
+    {
+        return SettingsPaths.CurrentUserFolder();
+    }
+
+    // The pre-v6 location.  Exposed only for the one-shot migration; nothing
+    // else should be using it.
+    public static string LegacyDataFolder()
     {
         return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\Microsoft\\PowerToys\\Workspaces";
     }

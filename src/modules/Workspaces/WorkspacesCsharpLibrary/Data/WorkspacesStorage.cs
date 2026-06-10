@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using WorkspacesCsharpLibrary.SettingsService;
+
 namespace WorkspacesCsharpLibrary.Data;
 
 /// <summary>
@@ -58,8 +60,10 @@ public static class WorkspacesStorage
 
     public static string GetDefaultFilePath()
     {
-        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(localAppData, "Microsoft", "PowerToys", "Workspaces", "workspaces.json");
+        // v6: the read path is the service-managed per-user file.  The user
+        // can read it directly (DACL grants R+X); writes must go through
+        // WorkspacesSvcClient.PutSettings.
+        return SettingsPaths.CurrentUserWorkspacesFile();
     }
 
     internal sealed class WorkspacesFile
