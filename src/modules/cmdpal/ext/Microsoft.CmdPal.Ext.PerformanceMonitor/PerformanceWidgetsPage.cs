@@ -175,6 +175,14 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _gpuPage.Updated += (s, e) =>
             {
                 _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
+                if (_isBandPage)
+                {
+                    // Bands only show the usage percentage as the title, so put
+                    // the active GPU's name in the subtitle - otherwise cycling
+                    // Prev/Next GPU between two idle adapters looks like nothing
+                    // changed.
+                    _gpuItem.Subtitle = _gpuPage.GetBandSubtitle();
+                }
             };
         }
 
@@ -1046,6 +1054,16 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         {
             return isBandPage ? Resources.GetResource("GPU_Usage_Unknown") : Resources.GetResource("GPU_Usage_Unknown_Label");
         }
+    }
+
+    public string GetBandSubtitle()
+    {
+        if (ContentData.TryGetValue("gpuName", out var name) && !string.IsNullOrEmpty(name))
+        {
+            return name;
+        }
+
+        return Resources.GetResource("GPU_Usage_Subtitle");
     }
 
     internal override void PushActivate()
