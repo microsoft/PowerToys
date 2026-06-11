@@ -472,7 +472,6 @@ DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
 dworigin
-DWRITE
 dxgi
 Dxva
 eab
@@ -681,6 +680,8 @@ HDROP
 hdwwiz
 Helpline
 helptext
+HELPTEXTA
+HELPTEXTW
 hgdiobj
 HGFE
 hglobal
@@ -998,7 +999,6 @@ luid
 lusrmgr
 LVDS
 LWA
-LWIN
 LZero
 MAGTRANSFORM
 makeappx
@@ -1208,7 +1208,6 @@ nonclient
 NONCLIENTMETRICSW
 NONELEVATED
 nonspace
-nonstd
 NOOWNERZORDER
 NOPARENTNOTIFY
 NOPREFIX
@@ -1995,12 +1994,13 @@ uwp
 uxt
 uxtheme
 vabdq
+VALIDATEA
+VALIDATEW
 validmodulename
 valuegenerator
 VARTYPE
 vbcscompiler
 vcamp
-VCENTER
 vcgtq
 VCINSTALLDIR
 vcp
@@ -2011,6 +2011,7 @@ VCRT
 vcruntime
 vcvars
 vdupq
+VERBA
 VERBSONLY
 VERBW
 VERIFYCONTEXT
@@ -2038,7 +2039,6 @@ vorrq
 VOS
 vpaddlq
 vqsubq
-VREDRAW
 vreinterpretq
 VSC
 VSCBD
