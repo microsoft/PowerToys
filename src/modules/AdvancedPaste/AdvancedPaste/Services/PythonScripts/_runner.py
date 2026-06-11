@@ -174,30 +174,60 @@ def main():
         sys.exit(1)
 
     # Determine current clipboard format.
-    current_format = data.get("format", "text")
-    if isinstance(current_format, list):
-        current_format = current_format[0] if current_format else "text"
-
-    # Find the matching function.
-    fn = ap_functions.get(current_format)
-    if fn is None:
-        available = ", ".join(f"advanced_paste_from_{k}" for k in sorted(ap_functions.keys()))
-        print(
-            f"Error: no function for clipboard format '{current_format}'.\n"
-            f"Available functions: {available}",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-
-    # Get the input value.
+    # The format field is an array of available formats (e.g. ["text", "image"]).
+    # Pick the first format that has both a matching function AND available data.
     input_map = {
         "text": "text",
         "html": "html",
         "image": "image_path",
         "files": "file_paths",
     }
-    input_key = input_map.get(current_format, "text")
-    input_value = data.get(input_key, "")
+
+    formats = data.get("format", ["text"])
+    if isinstance(formats, str):
+        formats = [formats]
+
+    current_format = None
+    fn = None
+    input_value = None
+
+    for fmt in formats:
+        if fmt in ap_functions:
+            key = input_map.get(fmt, fmt)
+            value = data.get(key)
+            if value:
+                current_format = fmt
+                fn = ap_functions[fmt]
+                input_value = value
+                break
+
+    if fn is None:
+        # Fallback: try any format that has a matching function (even without data)
+        for fmt in formats:
+            if fmt in ap_functions:
+                current_format = fmt
+                fn = ap_functions[fmt]
+                key = input_map.get(fmt, fmt)
+                input_value = data.get(key, "")
+                break
+
+    if fn is None:
+        available = ", ".join(f"advanced_paste_from_{k}" for k in sorted(ap_functions.keys()))
+        fmt_list = ", ".join(formats)
+        print(
+            f"Error: no matching function for clipboard formats [{fmt_list}].\n"
+            f"Available functions: {available}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    if not input_value:
+        print(
+            f"Error: no data available for format '{current_format}' "
+            f"(expected '{input_map.get(current_format, current_format)}' in input payload).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     # Call the function.
     result = fn(input_value)
