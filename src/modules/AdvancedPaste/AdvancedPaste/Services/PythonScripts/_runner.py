@@ -202,7 +202,19 @@ def main():
                 break
 
     if fn is None:
-        # Fallback: try any format that has a matching function (even without data)
+        # Fallback: try any format that has a matching function, prefer one with data
+        for fmt in formats:
+            if fmt in ap_functions:
+                key = input_map.get(fmt, fmt)
+                value = data.get(key)
+                if value:
+                    current_format = fmt
+                    fn = ap_functions[fmt]
+                    input_value = value
+                    break
+
+    if fn is None:
+        # Last resort: pick any matching function even without data
         for fmt in formats:
             if fmt in ap_functions:
                 current_format = fmt

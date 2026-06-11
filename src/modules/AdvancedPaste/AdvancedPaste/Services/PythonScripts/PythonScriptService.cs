@@ -175,29 +175,57 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             ["work_dir"] = workDir,
         };
 
-        if (clipboardData.Contains(StandardDataFormats.Text))
+        if (detectedFormat.HasFlag(ClipboardFormat.Text))
         {
-            obj["text"] = await clipboardData.GetTextAsync();
-        }
-
-        if (clipboardData.Contains(StandardDataFormats.Html))
-        {
-            var rawHtml = await clipboardData.GetHtmlFormatAsync();
-            obj["html"] = ExtractHtmlFragment(rawHtml);
-        }
-
-        if (clipboardData.Contains(StandardDataFormats.Bitmap))
-        {
-            var pngBytes = await clipboardData.GetImageAsPngBytesAsync();
-            if (pngBytes != null)
+            try
             {
-                var inputPng = Path.Combine(workDir, "input.png");
-                await File.WriteAllBytesAsync(inputPng, pngBytes, cancellationToken);
-                obj["image_path"] = inputPng;
+                obj["text"] = await clipboardData.GetTextAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to get text from clipboard", ex);
+                RemoveFromFormatArray(formatArray, "text");
             }
         }
 
-        if (clipboardData.Contains(StandardDataFormats.StorageItems))
+        if (detectedFormat.HasFlag(ClipboardFormat.Html))
+        {
+            try
+            {
+                var rawHtml = await clipboardData.GetHtmlFormatAsync();
+                obj["html"] = ExtractHtmlFragment(rawHtml);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to get HTML from clipboard", ex);
+                RemoveFromFormatArray(formatArray, "html");
+            }
+        }
+
+        if (detectedFormat.HasFlag(ClipboardFormat.Image))
+        {
+            try
+            {
+                var pngBytes = await clipboardData.GetImageAsPngBytesAsync();
+                if (pngBytes != null)
+                {
+                    var inputPng = Path.Combine(workDir, "input.png");
+                    await File.WriteAllBytesAsync(inputPng, pngBytes, cancellationToken);
+                    obj["image_path"] = inputPng;
+                }
+                else
+                {
+                    RemoveFromFormatArray(formatArray, "image");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to extract image from clipboard", ex);
+                RemoveFromFormatArray(formatArray, "image");
+            }
+        }
+
+        if (detectedFormat.HasFlag(ClipboardFormat.File) || clipboardData.Contains(StandardDataFormats.StorageItems))
         {
             var storageItems = await clipboardData.GetStorageItemsAsync();
             var filePathArray = new JsonArray();
@@ -210,6 +238,17 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
 
         return obj;
+    }
+
+    private static void RemoveFromFormatArray(JsonArray formatArray, string format)
+    {
+        for (int i = formatArray.Count - 1; i >= 0; i--)
+        {
+            if (string.Equals(formatArray[i]?.GetValue<string>(), format, StringComparison.OrdinalIgnoreCase))
+            {
+                formatArray.RemoveAt(i);
+            }
+        }
     }
 
     /// <summary>
