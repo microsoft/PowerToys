@@ -8,6 +8,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.UITest.Next;
 
+/// <summary>Direction for <see cref="Element.Scroll"/> (maps to <c>winapp ui scroll --direction</c>).</summary>
+public enum ScrollDirection
+{
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
 /// <summary>
 /// Reference to a UI element resolved via winappcli. Wraps the resolved <see cref="Selector"/>
 /// (slug or text query), the owning <see cref="Session"/>, and the metadata captured at lookup
@@ -127,6 +136,74 @@ public class Element
     {
         EnsureBound();
         WinappCli.InvokeAssertSuccess("ui", "scroll-into-view", Selector, Owner!.TargetFlag, Owner!.TargetValue);
+    }
+
+    /// <summary>
+    /// Scroll the element's nearest scrollable container in <paramref name="direction"/> via
+    /// <c>winapp ui scroll</c>. If this element isn't scrollable, the CLI walks up to the nearest
+    /// scrollable ancestor.
+    /// </summary>
+    public void Scroll(ScrollDirection direction)
+    {
+        EnsureBound();
+        WinappCli.InvokeAssertSuccess(
+            "ui", "scroll", Selector,
+            Owner!.TargetFlag, Owner!.TargetValue,
+            "--direction", direction.ToString().ToLowerInvariant());
+    }
+
+    /// <summary>Jump the element's scrollable container to the top or bottom via <c>winapp ui scroll --to</c>.</summary>
+    public void ScrollToEdge(bool toBottom)
+    {
+        EnsureBound();
+        WinappCli.InvokeAssertSuccess(
+            "ui", "scroll", Selector,
+            Owner!.TargetFlag, Owner!.TargetValue,
+            "--to", toBottom ? "bottom" : "top");
+    }
+
+    /// <summary>
+    /// Drag this element by a pixel offset using real mouse input (down → stepped move → up).
+    /// Win32-based: winappcli has no drag verb. Uses the element's center from its search bounds.
+    /// </summary>
+    public void Drag(int offsetX, int offsetY, int steps = 10)
+    {
+        EnsureBound();
+        var startX = X + (Width / 2);
+        var startY = Y + (Height / 2);
+        MouseHelper.Drag(startX, startY, startX + offsetX, startY + offsetY, steps);
+    }
+
+    /// <summary>Drag this element's center onto <paramref name="target"/>'s center (real mouse input).</summary>
+    public void DragTo(Element target, int steps = 10)
+    {
+        EnsureBound();
+        var startX = X + (Width / 2);
+        var startY = Y + (Height / 2);
+        var endX = target.X + (target.Width / 2);
+        var endY = target.Y + (target.Height / 2);
+        MouseHelper.Drag(startX, startY, endX, endY, steps);
+    }
+
+    /// <summary>
+    /// Hold <paramref name="key"/> down, drag this element's center to absolute screen
+    /// (<paramref name="targetX"/>, <paramref name="targetY"/>), then release the key. Used for
+    /// modifier-drag scenarios (FancyZones merge, tab tear-off).
+    /// </summary>
+    public void KeyDownAndDrag(Key key, int targetX, int targetY, int steps = 10)
+    {
+        EnsureBound();
+        var startX = X + (Width / 2);
+        var startY = Y + (Height / 2);
+        KeyboardHelper.PressKey(key);
+        try
+        {
+            MouseHelper.Drag(startX, startY, targetX, targetY, steps);
+        }
+        finally
+        {
+            KeyboardHelper.ReleaseKey(key);
+        }
     }
 
     /// <summary>Move keyboard focus to this element.</summary>

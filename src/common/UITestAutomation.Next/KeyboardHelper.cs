@@ -20,6 +20,15 @@ public enum Key : byte
     Space = 0x20,
     Backspace = 0x08,
     Delete = 0x2E,
+    Insert = 0x2D,
+    Home = 0x24,
+    End = 0x23,
+    PageUp = 0x21,
+    PageDown = 0x22,
+    Left = 0x25,
+    Up = 0x26,
+    Right = 0x27,
+    Down = 0x28,
 
     A = 0x41,
     B = 0x42,
@@ -47,6 +56,30 @@ public enum Key : byte
     X = 0x58,
     Y = 0x59,
     Z = 0x5A,
+
+    Num0 = 0x30,
+    Num1 = 0x31,
+    Num2 = 0x32,
+    Num3 = 0x33,
+    Num4 = 0x34,
+    Num5 = 0x35,
+    Num6 = 0x36,
+    Num7 = 0x37,
+    Num8 = 0x38,
+    Num9 = 0x39,
+
+    F1 = 0x70,
+    F2 = 0x71,
+    F3 = 0x72,
+    F4 = 0x73,
+    F5 = 0x74,
+    F6 = 0x75,
+    F7 = 0x76,
+    F8 = 0x77,
+    F9 = 0x78,
+    F10 = 0x79,
+    F11 = 0x7A,
+    F12 = 0x7B,
 }
 
 /// <summary>
@@ -64,6 +97,7 @@ public static class KeyboardHelper
 #pragma warning restore SA1300
 
     private const uint KEYEVENTF_KEYUP = 0x2;
+    private const uint KEYEVENTF_EXTENDEDKEY = 0x1;
     private const byte VK_LWIN = 0x5B;
 
     /// <summary>
@@ -93,6 +127,27 @@ public static class KeyboardHelper
                 case Key.Space: chord.Append(' '); break;
                 case Key.Backspace: chord.Append("{BACKSPACE}"); break;
                 case Key.Delete: chord.Append("{DELETE}"); break;
+                case Key.Insert: chord.Append("{INSERT}"); break;
+                case Key.Home: chord.Append("{HOME}"); break;
+                case Key.End: chord.Append("{END}"); break;
+                case Key.PageUp: chord.Append("{PGUP}"); break;
+                case Key.PageDown: chord.Append("{PGDN}"); break;
+                case Key.Up: chord.Append("{UP}"); break;
+                case Key.Down: chord.Append("{DOWN}"); break;
+                case Key.Left: chord.Append("{LEFT}"); break;
+                case Key.Right: chord.Append("{RIGHT}"); break;
+                case Key.F1: chord.Append("{F1}"); break;
+                case Key.F2: chord.Append("{F2}"); break;
+                case Key.F3: chord.Append("{F3}"); break;
+                case Key.F4: chord.Append("{F4}"); break;
+                case Key.F5: chord.Append("{F5}"); break;
+                case Key.F6: chord.Append("{F6}"); break;
+                case Key.F7: chord.Append("{F7}"); break;
+                case Key.F8: chord.Append("{F8}"); break;
+                case Key.F9: chord.Append("{F9}"); break;
+                case Key.F10: chord.Append("{F10}"); break;
+                case Key.F11: chord.Append("{F11}"); break;
+                case Key.F12: chord.Append("{F12}"); break;
                 default:
                     // Letter / digit keys map to their lowercase character for SendKeys.
                     chord.Append(((char)k).ToString().ToLowerInvariant());
@@ -115,4 +170,35 @@ public static class KeyboardHelper
             }
         }
     }
+
+    /// <summary>Press (and hold) a key via <c>keybd_event</c>. Pair with <see cref="ReleaseKey"/>.</summary>
+    public static void PressKey(Key key) =>
+        keybd_event((byte)key, 0, IsExtended(key) ? KEYEVENTF_EXTENDEDKEY : 0u, UIntPtr.Zero);
+
+    /// <summary>Release a key previously pressed with <see cref="PressKey"/>.</summary>
+    public static void ReleaseKey(Key key) =>
+        keybd_event((byte)key, 0, KEYEVENTF_KEYUP | (IsExtended(key) ? KEYEVENTF_EXTENDEDKEY : 0u), UIntPtr.Zero);
+
+    /// <summary>Press + release a single key.</summary>
+    public static void SendKey(Key key)
+    {
+        PressKey(key);
+        Thread.Sleep(20);
+        ReleaseKey(key);
+    }
+
+    /// <summary>Press + release each key in order (independent taps, not a held chord).</summary>
+    public static void SendKeySequence(params Key[] keys)
+    {
+        foreach (var k in keys)
+        {
+            SendKey(k);
+            Thread.Sleep(20);
+        }
+    }
+
+    private static bool IsExtended(Key key) => key is
+        Key.Left or Key.Up or Key.Right or Key.Down or
+        Key.Home or Key.End or Key.PageUp or Key.PageDown or
+        Key.Insert or Key.Delete;
 }

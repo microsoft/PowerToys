@@ -119,6 +119,37 @@ public sealed class Session
         return null!;
     }
 
+    /// <summary>
+    /// Attach to a running module's first window (window-scoped, so it carries a HWND) and
+    /// optionally resize it to a preset <see cref="WindowSize"/>. Useful when a test needs a
+    /// deterministic window size or wants to drive an already-running module.
+    /// </summary>
+    public static Session Attach(PowerToysModule module, WindowSize size = WindowSize.UnSpecified, int timeoutMS = 10_000)
+    {
+        var processName = ModulePaths.ProcessNameFor(module);
+        var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
+        while (DateTime.UtcNow < deadline)
+        {
+            var windows = WindowsFinder.ListByApp(processName);
+            if (windows.Count > 0)
+            {
+                var w = windows[0];
+                if (size != WindowSize.UnSpecified && w.Hwnd != 0)
+                {
+                    WindowHelper.SetWindowSize(new IntPtr(w.Hwnd), size);
+                    Thread.Sleep(200);
+                }
+
+                return new Session(module, w.Hwnd, w.Title, w.ProcessId, w.ProcessName);
+            }
+
+            Thread.Sleep(250);
+        }
+
+        Assert.Fail($"Attach: no UIA-visible window for module {module} ('{processName}') within {timeoutMS}ms.");
+        return null!;
+    }
+
     public T Find<T>(By by, int timeoutMS = 5000)
         where T : Element, new() => FindUnder<T>(by, timeoutMS);
 
