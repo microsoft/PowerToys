@@ -247,7 +247,7 @@ Thank you for using PowerToys!
 | Event Name | Description |
 | --- | --- |
 | Microsoft.PowerToys.GrabAndMove_EnableGrabAndMove | Triggered when Grab And Move is enabled or disabled. |
-| Microsoft.PowerToys.GrabAndMove_ShortcutUse | Logs an attempt to move, resize, or maximize/restore a window via Grab And Move mouse shortcuts, including whether it succeeded, the action type (move, resize, or maximize), and the reason (e.g., started, toggled, blocked by game mode, or not maximizable). |
+| Microsoft.PowerToys.GrabAndMove_ShortcutUse | Logs an attempt to move, resize, or maximize/restore a window via Grab And Move mouse shortcuts, including whether it succeeded, the action type (move, resize, or maximize), and the reason (e.g., started, toggled, blocked by game mode, or missing a maximize box). |
 
 ### Hosts File Editor
 

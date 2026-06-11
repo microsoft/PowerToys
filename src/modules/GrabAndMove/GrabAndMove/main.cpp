@@ -255,14 +255,14 @@ static void TraceShortcutUse(bool successful, GrabAndMoveShortcutAction action, 
         TraceLoggingWideString(reason, "Reason"));
 }
 
-static bool IsWindowMaximizable(HWND hwnd)
+static bool CanWindowMaximize(HWND hwnd)
 {
     return (GetWindowLongPtrW(hwnd, GWL_STYLE) & WS_MAXIMIZEBOX) != 0;
 }
 
 static bool ToggleWindowMaximized(HWND hwnd)
 {
-    if (!hwnd || !IsWindowMaximizable(hwnd))
+    if (!hwnd || !CanWindowMaximize(hwnd))
     {
         return false;
     }
@@ -1088,7 +1088,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                     return 1;
                 }
 
-                TraceShortcutUse(false, GrabAndMoveShortcutAction::Maximize, L"not_maximizable");
+                TraceShortcutUse(false, GrabAndMoveShortcutAction::Maximize, L"missing_maximize_box");
             }
         }
 
