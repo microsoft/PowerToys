@@ -47,7 +47,7 @@ public partial class App : Application
         _window = null;
     }
 
-    private void App_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
     {
         // QuickAccess is a transient launcher flyout owned by the runner. An unhandled XAML
         // exception here would otherwise be stowed and FailFast the process; mark the event
