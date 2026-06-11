@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!--
+      WinForms is needed for System.Windows.Forms.SendKeys.SendWait, used by the global-hotkey
+      injection in KeyboardHelper. (Same approach as the legacy harness.)
+    -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Microsoft.PowerToys.UITest.Next</RootNamespace>
+    <AssemblyName>Microsoft.PowerToys.UITest.Next</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Engine is winappcli (Microsoft.WinAppCli) — installed once per machine via
+      `winget install Microsoft.winappcli`. We shell out to winapp.exe and parse its
+      JSON output. No managed dependency on the engine — only MSTest's attribute surface.
+    -->
+    <PackageReference Include="MSTest.TestFramework" />
+  </ItemGroup>
+</Project>
