@@ -59,6 +59,9 @@ public sealed class Session
 
     public PowerToysModule InitScope { get; }
 
+    /// <summary>True when the target process is elevated; null when unknown (no PID captured).</summary>
+    public bool? IsElevated => ProcessId > 0 ? ElevationHelper.IsProcessElevated(ProcessId) : null;
+
     internal Session(PowerToysModule scope, long hwnd, string title, int pid, string processName)
     {
         InitScope = scope;
@@ -374,6 +377,9 @@ public sealed class Session
 
         return string.Empty;
     }
+
+    /// <summary>Connection / target info for diagnostics via <c>winapp ui status --json</c>.</summary>
+    public JsonElement Status() => WinappCli.InvokeJson("ui", "status", TargetFlag, TargetValue, "--json");
 
     /// <summary>Send keystrokes via Win32 <c>keybd_event</c>. Required for global PowerToys hotkeys.</summary>
     public void SendKeys(params Key[] keys) => KeyboardHelper.SendKeys(keys);
