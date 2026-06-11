@@ -697,6 +697,7 @@
                                     Height="36"
                                     HorizontalAlignment="Center" />
                                 <TextBlock
+                                    x:Name="PhiSilicaLoadingText"
                                     x:Uid="AdvancedPaste_PhiSilicaLoadingStatus"
                                     HorizontalAlignment="Center"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -743,6 +744,14 @@
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     TextAlignment="Center"
                                     TextWrapping="Wrap" />
+                                <Button
+                                    x:Name="PhiSilicaPrepareButton"
+                                    x:Uid="AdvancedPaste_PhiSilicaPrepareButton"
+                                    Margin="0,4,0,0"
+                                    HorizontalAlignment="Center"
+                                    Click="PhiSilicaPrepareButton_Click"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    Visibility="Collapsed" />
                                 <HyperlinkButton
                                     x:Uid="AdvancedPaste_PhiSilicaCopilotLearnMore"
                                     HorizontalAlignment="Center"

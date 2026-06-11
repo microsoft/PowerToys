@@ -478,7 +478,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                     _isPhiSilicaAvailable = false;
                     ShowPhiSilicaNotAvailableState(
                         resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Title"),
-                        resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Description"));
+                        resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Description"),
+                        showPrepareButton: true);
                 }
                 else
                 {
@@ -500,8 +501,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void ShowPhiSilicaLoadingState()
+        private void ShowPhiSilicaLoadingState(string message = null)
         {
+            if (PhiSilicaLoadingText is not null && !string.IsNullOrEmpty(message))
+            {
+                PhiSilicaLoadingText.Text = message;
+            }
+
             if (PhiSilicaLoadingPanel is not null)
             {
                 PhiSilicaLoadingPanel.Visibility = Visibility.Visible;
@@ -541,7 +547,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void ShowPhiSilicaNotAvailableState(string title, string description)
+        private void ShowPhiSilicaNotAvailableState(string title, string description, bool showPrepareButton = false)
         {
             if (PhiSilicaLoadingPanel is not null)
             {
@@ -566,6 +572,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             if (PhiSilicaNotAvailableDescription is not null)
             {
                 PhiSilicaNotAvailableDescription.Text = description;
+            }
+
+            if (PhiSilicaPrepareButton is not null)
+            {
+                PhiSilicaPrepareButton.Visibility = showPrepareButton ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -611,6 +622,98 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 "NotReady" => "NotReady",
                 _ => "NotSupported",
             };
+        }
+
+        /// <summary>
+        /// Triggers Phi Silica model preparation (download) by launching AdvancedPaste.exe with
+        /// --prepare-phi-silica. AdvancedPaste has sparse package identity and can call EnsureReadyAsync.
+        /// Returns "Ready", "Failed", or "NotSupported".
+        /// </summary>
+        private static string PreparePhiSilicaViaAdvancedPaste()
+        {
+            var settingsDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var advancedPastePath = Path.Combine(settingsDir, "PowerToys.AdvancedPaste.exe");
+
+            if (!File.Exists(advancedPastePath))
+            {
+                return "NotSupported";
+            }
+
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = advancedPastePath,
+                Arguments = "--prepare-phi-silica",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+
+            using var process = Process.Start(startInfo);
+            if (process == null)
+            {
+                return "NotSupported";
+            }
+
+            // Model download can take a while; ReadToEnd blocks until the process closes stdout.
+            var output = process.StandardOutput.ReadToEnd().Trim();
+            process.WaitForExit(600_000);
+
+            return output switch
+            {
+                "Ready" => "Ready",
+                "Failed" => "Failed",
+                _ => "NotSupported",
+            };
+        }
+
+        private async void PhiSilicaPrepareButton_Click(object sender, RoutedEventArgs e)
+        {
+            var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+
+            ShowPhiSilicaLoadingState(resourceLoader.GetString("AdvancedPaste_PhiSilicaPreparing_Status"));
+
+            if (PasteAIProviderConfigurationDialog is not null)
+            {
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
+            }
+
+            string prepareResult;
+            try
+            {
+                prepareResult = await Task.Run(() => PreparePhiSilicaViaAdvancedPaste());
+            }
+            catch (Exception)
+            {
+                prepareResult = "Failed";
+            }
+
+            if (prepareResult == "Ready")
+            {
+                // Model is now ready; re-probe so the UI flips to the available state and Save enables.
+                await UpdatePhiSilicaUIAsync();
+                return;
+            }
+
+            _isPhiSilicaAvailable = false;
+
+            if (prepareResult == "NotSupported")
+            {
+                ShowPhiSilicaNotAvailableState(
+                    resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Title"),
+                    resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Description"));
+            }
+            else
+            {
+                ShowPhiSilicaNotAvailableState(
+                    resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Title"),
+                    resourceLoader.GetString("AdvancedPaste_PhiSilicaPrepareFailed_Description"),
+                    showPrepareButton: true);
+            }
+
+            if (PasteAIProviderConfigurationDialog is not null)
+            {
+                PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
+            }
         }
 
         private async Task LoadFoundryLocalModelsAsync()

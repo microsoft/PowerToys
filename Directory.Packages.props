@@ -78,21 +78,16 @@
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.250325.1"/>
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.2.2-experimental9" />
-    <!-- 2.2.2-experimental9 includes WinAppSDK PR #6376: MRT PRI lookup under sparse package
-         identity correctly resolves custom-named PRI files (e.g. PowerToys.AdvancedPaste.pri)
-         instead of hard-coding resources.pri. Required for AdvancedPaste sparse identity.
-         Foundation/AI versions match the transitive deps brought in by the 2.2.2-experimental9 meta-package. -->
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.1.1-experimental" />
-    <!-- AI pinned to last STABLE (2.0.185). The experimental 2.2.6-experimental AI projection
-         (impl 2.2.5) mismatches the OS Windows AI runtime and makes LanguageModel/Phi Silica
-         fail (GetReadyState=>NotReady, EnsureReadyAsync=>E_NOINTERFACE); stable 2.0.185
-         (impl 2.0.184) matches the runtime and works. Only Foundation needs to be experimental
-         (for the sparse-identity PRI fix); the meta package ships no AI impl DLLs, so this pin
-         is sufficient. NOTE: after switching AI versions, do a CLEAN build — incremental builds
-         leave stale experimental AI DLLs in the output (mixing 2.0 projections with 2.2 impls
-         re-triggers E_NOINTERFACE). -->
-    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="2.0.185" />
+    <!-- WinApp SDK pinned to the coherent STABLE 2.2.0 line (these are exactly what the stable
+         meta 2.2.0 resolves transitively). All STABLE (no -experimental) so the AI projection
+         matches the OS Windows AI runtime and Phi Silica works — the experimental 2.2.6 AI fails
+         EnsureReadyAsync with E_NOINTERFACE. Stable Foundation 2.1.0 already contains WinAppSDK
+         PR #6376 (MRT PRI lookup under sparse package identity, required for AdvancedPaste's
+         custom-named PRI), so nothing needs to be experimental. Keep these four in lockstep. -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.1.0" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="2.2.3" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />

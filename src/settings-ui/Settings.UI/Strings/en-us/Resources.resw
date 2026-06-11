@@ -6085,7 +6085,16 @@ The break timer font matches the text font.</value>
     <comment>Do not localize "Phi Silica", it's a model name</comment>
   </data>
   <data name="AdvancedPaste_PhiSilicaNotReady_Description" xml:space="preserve">
-    <value>The model needs to be downloaded. Check Windows Update for the AI model download progress.</value>
+    <value>The model needs to be downloaded before it can be used. Select "Download model" to start, or check Windows Update for progress.</value>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaPrepareButton.Content" xml:space="preserve">
+    <value>Download model</value>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaPreparing_Status" xml:space="preserve">
+    <value>Downloading and preparing the model. This may take several minutes...</value>
+  </data>
+  <data name="AdvancedPaste_PhiSilicaPrepareFailed_Description" xml:space="preserve">
+    <value>Couldn't prepare the model. Check Windows Update for the AI model download, then try again.</value>
   </data>
   <data name="AdvancedPaste_PhiSilicaAvailable_Message" xml:space="preserve">
     <value>Phi Silica is available and ready on this device.</value>
