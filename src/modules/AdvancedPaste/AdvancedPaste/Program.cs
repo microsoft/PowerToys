@@ -26,6 +26,11 @@ namespace AdvancedPaste
                 return CheckPhiSilicaAvailability();
             }
 
+            if (args.Contains("--prepare-phi-silica", StringComparer.OrdinalIgnoreCase))
+            {
+                return PreparePhiSilica();
+            }
+
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAdvancedPasteEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
@@ -75,6 +80,54 @@ namespace AdvancedPaste
                         Console.Out.WriteLine("Available");
                         return 0;
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                Console.Out.WriteLine("NotSupported");
+                return 2;
+            }
+        }
+
+        /// <summary>
+        /// Triggers Phi Silica model preparation (download) without starting the WinUI app.
+        /// Moves the model from NotReady to Ready by calling EnsureReadyAsync.
+        /// Exit codes: 0 = ready, 1 = preparation failed, 2 = not supported or error.
+        /// </summary>
+        private static int PreparePhiSilica()
+        {
+            try
+            {
+                PhiSilicaLafHelper.TryUnlock();
+                var readyState = Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
+
+                if (readyState is Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem
+                    or Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser)
+                {
+                    Console.Out.WriteLine("NotSupported");
+                    return 2;
+                }
+
+                if (readyState == Microsoft.Windows.AI.AIFeatureReadyState.Ready)
+                {
+                    Console.Out.WriteLine("Ready");
+                    return 0;
+                }
+
+                // Run on a thread-pool (MTA) thread: the WinRT async operation does not
+                // marshal correctly when blocked on from the [STAThread] entry point.
+                var result = System.Threading.Tasks.Task.Run(
+                    () => Microsoft.Windows.AI.Text.LanguageModel.EnsureReadyAsync().AsTask()).GetAwaiter().GetResult();
+
+                if (result.Status != Microsoft.Windows.AI.AIFeatureReadyResultState.Success)
+                {
+                    Console.Error.WriteLine(result.ExtendedError?.Message ?? result.Status.ToString());
+                    Console.Out.WriteLine("Failed");
+                    return 1;
+                }
+
+                Console.Out.WriteLine("Ready");
+                return 0;
             }
             catch (Exception ex)
             {
