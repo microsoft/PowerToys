@@ -226,6 +226,9 @@
   <data name="PasteAsJson" xml:space="preserve">
     <value>Paste as JSON</value>
   </data>
+  <data name="PasteAsKeystrokes" xml:space="preserve">
+    <value>Paste as keystrokes</value>
+  </data>
   <data name="PasteAsMarkdown" xml:space="preserve">
     <value>Paste as markdown</value>
   </data>

@@ -63,6 +63,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     () => Properties.PasteAsJsonShortcut,
                     value => Properties.PasteAsJsonShortcut = value ?? new HotkeySettings(),
                     "PasteAsJson_Shortcut"),
+                new HotkeyAccessor(
+                    () => Properties.PasteAsKeystrokeShortcut,
+                    value => Properties.PasteAsKeystrokeShortcut = value ?? new HotkeySettings(),
+                    "PasteAsKeystrokes_Shortcut"),
             };
 
             string[] additionalActionHeaderKeys =
