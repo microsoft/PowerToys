@@ -316,3 +316,8 @@ ms-windows-store://\S+
 # Phi Silica internal token/ID literals
 <PhiSilicaLafToken\b[^>]*>[^<]+</PhiSilicaLafToken>
 \bdjwsxzxb4ksa8\b
+# Special licenses text from RNNoise (BSD-style disclaimer: ``AS IS'')
+``AS IS''
+
+# Old school moniker for macOS from RNNoise
+MacOS
