@@ -282,6 +282,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                 m_hideToolbarCb(InputType::Char);
 
                 m_toolbarVisible = false;
+                return true;
             }
         }
 
