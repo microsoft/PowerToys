@@ -50,12 +50,22 @@ public sealed class SessionHelper
         Process.GetProcessesByName(GetProcessName(scope)).Length > 0;
 
     /// <summary>
-    /// Ensure the module's process is running and has presented a UIA-visible window. If the
-    /// module is already running, this returns <c>false</c> without launching anything. If a
-    /// launch was needed, returns <c>true</c> — callers track this so cleanup only kills what
-    /// the test itself started.
+    /// Ensure the runner-owned environment for <paramref name="scope"/> is up and has presented a
+    /// UIA-visible window. Returns <c>false</c> when the target was already running (nothing
+    /// launched), <c>true</c> when a launch was needed — callers track this so cleanup only kills
+    /// what the test itself started.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// The PowerToys <b>runner</b> (<c>PowerToys.exe</c>) is the single entry point. It installs the
+    /// centralized keyboard hook and owns every module's start/stop lifecycle. Tests therefore
+    /// launch the runner and drive modules through the Settings UI — they never launch a module's
+    /// UI exe (e.g. <c>PowerToys.ColorPickerUI.exe</c>) standalone. A standalone module process has
+    /// no runner behind it, so its activation hotkey never fires and toggling it in Settings does
+    /// nothing. For the <see cref="PowerToysModule.PowerToysSettings"/> scope we launch
+    /// <c>PowerToys.exe --open-settings</c>: the runner starts (or, being single-instance, the
+    /// already-running one is signalled) and presents the Settings window.
+    /// </para>
     /// <para>
     /// <c>UseShellExecute = true</c> is intentional: with <c>UseShellExecute = false</c> the
     /// spawned process inherits this test-host's stdin/stdout/stderr handles, and the
@@ -64,10 +74,10 @@ public sealed class SessionHelper
     /// ShellExecute gives the child its own console and detaches the handles.
     /// </para>
     /// <para>
-    /// PowerToys modules with single-instance gates (Settings, ColorPicker) often hand off to an
-    /// existing instance and let the launcher PID exit with code 0 immediately. The launcher
-    /// PID is therefore intentionally discarded; readiness is judged purely by whether a UIA
-    /// window owned by the target process becomes visible.
+    /// PowerToys processes with single-instance gates (runner, Settings, ColorPicker) often hand
+    /// off to an existing instance and let the launcher PID exit with code 0 immediately. The
+    /// launcher PID is therefore intentionally discarded; readiness is judged purely by whether a
+    /// UIA window owned by the target process becomes visible.
     /// </para>
     /// </remarks>
     public static bool EnsureRunning(PowerToysModule scope, TimeSpan timeout)
@@ -80,28 +90,48 @@ public sealed class SessionHelper
             return false;
         }
 
-        var exe = ModulePaths.ExePathFor(scope);
-        Assert.IsTrue(File.Exists(exe), $"Module exe not found: {exe}");
+        // The Settings UI is owned by the runner — open it through PowerToys.exe rather than
+        // launching PowerToys.Settings.exe standalone (see <remarks>). This is what gives the
+        // runner ownership of module toggles and activation hotkeys during the test.
+        if (scope == PowerToysModule.PowerToysSettings)
+        {
+            LaunchViaShell(ModulePaths.ExePathFor(PowerToysModule.Runner), "--open-settings");
+            WaitForAnyWindow(processName, timeout);
+            return true;
+        }
+
+        // Runner scope (and modules that legitimately run standalone) launch their own exe.
+        LaunchViaShell(ModulePaths.ExePathFor(scope), null);
+        WaitForAnyWindow(processName, timeout);
+        return true;
+    }
+
+    /// <summary>
+    /// Launch <paramref name="exe"/> detached via ShellExecute (see <see cref="EnsureRunning"/>
+    /// remarks for why <c>UseShellExecute = true</c> is required). The launcher PID is discarded;
+    /// readiness is judged by window presence, not the process handle.
+    /// </summary>
+    private static void LaunchViaShell(string exe, string? arguments)
+    {
+        Assert.IsTrue(File.Exists(exe), $"Executable not found: {exe}");
 
         try
         {
             using (Process.Start(new ProcessStartInfo
             {
                 FileName = exe,
+                Arguments = arguments ?? string.Empty,
                 WorkingDirectory = Path.GetDirectoryName(exe)!,
                 UseShellExecute = true,
             }) ?? throw new InvalidOperationException($"Process.Start returned null for {exe}"))
             {
-                // Fire and forget — see <remarks>.
+                // Fire and forget — see EnsureRunning <remarks>.
             }
         }
         catch (Exception ex)
         {
-            Assert.Fail($"Failed to launch {exe}: {ex.Message}");
+            Assert.Fail($"Failed to launch '{exe} {arguments}': {ex.Message}");
         }
-
-        WaitForAnyWindow(processName, timeout);
-        return true;
     }
 
     /// <summary>

@@ -162,16 +162,25 @@ public class ColorPickerEndToEndTests : UITestBase
             MouseHelper.MoveTo(cx, cy);
             TestContext.WriteLine($"Cursor parked at ({cx}, {cy}) — primary screen center.");
 
-            // -- 7. Activate via the configured shortcut ------------------------------------
-            KeyboardHelper.SendKeys(keys);
+            // -- 7+8. Activate via the shortcut, then wait for the picker overlay ------------
+            // Enabling the module from Settings spawns the ColorPickerUI process, but the runner
+            // wires its activation hotkey into the centralized WH_KEYBOARD_LL hook
+            // asynchronously — the first chord can land before the hook is live. So send the
+            // chord, wait briefly for the overlay, and resend if it didn't appear. ColorPickerUI's
+            // MainWindow (cursor-following picker) is ~167x61 — much smaller than the editor
+            // (~660x570) — so filter by size to disambiguate when both could exist.
+            const int activationAttempts = 3;
+            Session? overlay = null;
+            for (int attempt = 1; attempt <= activationAttempts && overlay is null; attempt++)
+            {
+                TestContext.WriteLine($"Sending activation chord [{string.Join(", ", keys)}] (attempt {attempt}/{activationAttempts}).");
+                KeyboardHelper.SendKeys(keys);
 
-            // -- 8. Wait for the small picker overlay window (gate that the hotkey fired) --
-            // ColorPickerUI's MainWindow (the cursor-following picker) is ~167x61 — much smaller
-            // than the editor (~660x570). Filter by size to disambiguate when both could exist.
-            var overlay = WindowsFinder.WaitForWindowByApp(
-                "PowerToys.ColorPickerUI",
-                w => w.Width < 300 && w.Height < 200,
-                timeoutMS: 5_000);
+                overlay = WindowsFinder.WaitForWindowByApp(
+                    "PowerToys.ColorPickerUI",
+                    w => w.Width < 300 && w.Height < 200,
+                    timeoutMS: attempt < activationAttempts ? 2_000 : 5_000);
+            }
 
             if (overlay is null)
             {
@@ -180,7 +189,7 @@ public class ColorPickerEndToEndTests : UITestBase
                     WindowsFinder.ListByApp("PowerToys.ColorPickerUI")
                         .Select(w => $"    hwnd={w.Hwnd} title='{w.Title}' class='{w.ClassName}' size={w.Width}x{w.Height}"));
                 Assert.Fail(
-                    "Picker overlay did not appear within 5s after sending the shortcut." + Environment.NewLine +
+                    $"Picker overlay did not appear after {activationAttempts} shortcut attempts." + Environment.NewLine +
                     "  Hotkey may not have fired through the runner's WH_KEYBOARD_LL hook." + Environment.NewLine +
                     "  Current ColorPickerUI windows:" + Environment.NewLine +
                     (dump.Length > 0 ? dump : "    (none)"));

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -121,8 +122,7 @@ public static class WinappCli
             psi.ArgumentList.Add(a);
         }
 
-        using var p = Process.Start(psi) ?? throw new InvalidOperationException(
-            $"Failed to start winapp.exe ({ExecutablePath.Value}). {InstallHint}");
+        using var p = StartWinappProcess(psi);
 
         var stdoutTask = p.StandardOutput.ReadToEndAsync();
         var stderrTask = p.StandardError.ReadToEndAsync();
@@ -219,6 +219,34 @@ public static class WinappCli
 
         path = string.Empty;
         return false;
+    }
+
+    /// <summary>
+    /// Start <c>winapp.exe</c>, retrying the transient launch failure that affects Windows App
+    /// Execution Aliases. The <c>winapp.exe</c> found on PATH is the reparse-point stub under
+    /// <c>%LOCALAPPDATA%\Microsoft\WindowsApps</c>; launching an alias through <c>CreateProcess</c>
+    /// (<c>UseShellExecute = false</c>) intermittently throws <see cref="Win32Exception"/> with
+    /// <c>ERROR_INVALID_PARAMETER</c> (87, "The parameter is incorrect") before the alias resolves.
+    /// The launch is atomic — nothing ran — so retrying with a short backoff is safe and
+    /// idempotent. Other Win32 errors (missing file, access denied) propagate immediately so a
+    /// genuine misconfiguration still fails fast.
+    /// </summary>
+    private static Process StartWinappProcess(ProcessStartInfo psi)
+    {
+        const int maxAttempts = 4;
+        for (int attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return Process.Start(psi) ?? throw new InvalidOperationException(
+                    $"Failed to start winapp.exe ({psi.FileName}). {InstallHint}");
+            }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 87 && attempt < maxAttempts)
+            {
+                // App Execution Alias not resolved yet — back off briefly and retry.
+                Thread.Sleep(100 * attempt);
+            }
+        }
     }
 
     private static string ResolveExecutable()
