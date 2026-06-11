@@ -90,5 +90,16 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             // Assert
             Assert.IsFalse(string.IsNullOrEmpty(displayName));
         }
+
+        [TestMethod]
+        public void GetDockBands_ReturnsNonEmptyArray()
+        {
+            var provider = new TimeDateCommandsProvider();
+
+            var bands = provider.GetDockBands();
+
+            Assert.IsTrue(bands.Length > 0, "GetDockBands should return at least one item");
+            Assert.IsNotNull(bands[0], "First dock band should not be null");
+        }
     }
 }
