@@ -59,6 +59,9 @@
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_ShowGeometry" HeaderIcon="{ui:FontIcon Glyph=&#xE809;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowGeometry, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_UseMiddleClickMaximize" HeaderIcon="{ui:FontIcon Glyph=&#xE740;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.UseMiddleClickMaximize, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

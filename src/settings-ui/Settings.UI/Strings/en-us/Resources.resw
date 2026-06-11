@@ -6162,6 +6162,13 @@ Text uses the current drawing color.</value>
   <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
     <value>Hold the modifier key and drag with the right mouse button from the nearest edge or corner to resize the window</value>
   </data>
+  <data name="GrabAndMove_UseMiddleClickMaximize.Header" xml:space="preserve">
+    <value>Maximize or restore windows with the modifier key + middle-click</value>
+    <comment>Middle-click refers to clicking the mouse wheel button.</comment>
+  </data>
+  <data name="GrabAndMove_UseMiddleClickMaximize.Description" xml:space="preserve">
+    <value>Hold the modifier key and middle-click inside a window to toggle between maximized and restored</value>
+  </data>
   <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
   </data>
