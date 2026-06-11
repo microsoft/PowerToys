@@ -577,7 +577,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private static string CheckPhiSilicaViaAdvancedPaste()
         {
             var settingsDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var advancedPastePath = Path.Combine(settingsDir, "AdvancedPaste", "PowerToys.AdvancedPaste.exe");
+
+            // PowerToys.AdvancedPaste.exe ships in the same WinUI3Apps folder as PowerToys.Settings.exe
+            // (see installer harvest and .vscode/launch.json), not in an "AdvancedPaste" subfolder.
+            var advancedPastePath = Path.Combine(settingsDir, "PowerToys.AdvancedPaste.exe");
 
             if (!File.Exists(advancedPastePath))
             {
