@@ -19,6 +19,9 @@
 [Rr]eleases/
 x64/
 x86/
+!**/rnnoise/
+!**/rnnoise/x86/
+!**/rnnoise/x86/**
 ARM64/
 bld/
 [Bb]in/
