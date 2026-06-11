@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -107,6 +108,27 @@ public class Element
         }
     }
 
+    /// <summary>
+    /// Double-click via <c>winapp ui click &lt;slug&gt; --double</c> (real mouse simulation). Use
+    /// for controls where a double-click has distinct behavior (list items, headers).
+    /// </summary>
+    public void DoubleClick(int msPostAction = 200)
+    {
+        EnsureBound();
+        WinappCli.InvokeAssertSuccess("ui", "click", Selector, Owner!.TargetFlag, Owner!.TargetValue, "--double");
+        if (msPostAction > 0)
+        {
+            Thread.Sleep(msPostAction);
+        }
+    }
+
+    /// <summary>Scroll this element into the visible area via <c>winapp ui scroll-into-view</c>.</summary>
+    public void ScrollIntoView()
+    {
+        EnsureBound();
+        WinappCli.InvokeAssertSuccess("ui", "scroll-into-view", Selector, Owner!.TargetFlag, Owner!.TargetValue);
+    }
+
     /// <summary>Move keyboard focus to this element.</summary>
     public void Focus()
     {
@@ -121,11 +143,24 @@ public class Element
     public string GetProperty(string propertyName)
     {
         EnsureBound();
-        var root = WinappCli.InvokeJson("ui", "get-property", Selector, "-p", propertyName, Owner!.TargetFlag, Owner!.TargetValue, "--json");
-        if (root.TryGetProperty("properties", out var props) &&
-            props.TryGetProperty(propertyName, out var v))
+        var r = WinappCli.Invoke("ui", "get-property", Selector, "-p", propertyName, Owner!.TargetFlag, Owner!.TargetValue, "--json");
+        if (string.IsNullOrEmpty(r.StdOut))
         {
-            return v.GetString() ?? string.Empty;
+            return string.Empty;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(r.StdOut);
+            if (doc.RootElement.TryGetProperty("properties", out var props) &&
+                props.TryGetProperty(propertyName, out var v))
+            {
+                return JsonValueToString(v);
+            }
+        }
+        catch
+        {
+            // Non-JSON / error output (e.g. property unsupported on this element) — treat as empty.
         }
 
         return string.Empty;
@@ -137,6 +172,27 @@ public class Element
     /// (e.g. <c>"Win + Shift + C"</c>).
     /// </summary>
     public string HelpText => GetProperty("HelpText");
+
+    /// <summary>True when UIA reports the element as enabled (defaults to true when unknown).</summary>
+    public bool IsEnabled => ParseBool(GetProperty("IsEnabled"), defaultValue: true);
+
+    /// <summary>True when UIA reports the element off-screen (defaults to false when unknown).</summary>
+    public bool IsOffscreen => ParseBool(GetProperty("IsOffscreen"), defaultValue: false);
+
+    /// <summary>Convenience inverse of <see cref="IsOffscreen"/> — mirrors the legacy harness's <c>Displayed</c>.</summary>
+    public bool Displayed => !IsOffscreen;
+
+    /// <summary>True when the element is selected (UIA SelectionItemPattern.IsSelected).</summary>
+    public bool Selected => ParseBool(GetProperty("IsSelected"), defaultValue: false);
+
+    /// <summary>The element's UIA AutomationId (empty when it has none).</summary>
+    public string AutomationId => GetProperty("AutomationId");
+
+    /// <summary>
+    /// Read any UIA property by name via <c>winapp ui get-property</c>. Alias of
+    /// <see cref="GetProperty"/> kept for parity with the legacy harness's <c>GetAttribute</c>.
+    /// </summary>
+    public string GetAttribute(string attributeName) => GetProperty(attributeName);
 
     /// <summary>
     /// Read the element's value via <c>winapp ui get-value … --json</c>. winappcli walks
@@ -174,6 +230,30 @@ public class Element
     }
 
     /// <summary>
+    /// Wait for this element's value (smart fallback: TextPattern → ValuePattern →
+    /// SelectionPattern → Name) to match <paramref name="expectedValue"/>. When
+    /// <paramref name="contains"/> is true, matches on substring instead of equality
+    /// (<c>winapp ui wait-for … --value … --contains</c>). Returns true on match, false on timeout.
+    /// </summary>
+    public bool WaitForValue(string expectedValue, bool contains = false, int timeoutMS = 5000)
+    {
+        EnsureBound();
+        var args = new List<string>
+        {
+            "ui", "wait-for", Selector,
+            Owner!.TargetFlag, Owner!.TargetValue,
+            "--value", expectedValue,
+            "-t", timeoutMS.ToString(CultureInfo.InvariantCulture),
+        };
+        if (contains)
+        {
+            args.Add("--contains");
+        }
+
+        return WinappCli.Invoke(args.ToArray()).ExitCode == 0;
+    }
+
+    /// <summary>
     /// Wait for any element matching the original selector to disappear from the tree
     /// (<c>winapp ui wait-for … --gone</c>).
     /// </summary>
@@ -203,9 +283,31 @@ public class Element
     public T Find<T>(string name, int timeoutMS = 5000)
         where T : Element, new() => Find<T>(By.Name(name), timeoutMS);
 
-    private void EnsureBound()
+    protected void EnsureBound()
     {
         Assert.IsNotNull(Owner, "Element is not bound to a Session.");
         Assert.IsFalse(string.IsNullOrEmpty(Selector), "Element has no selector.");
+    }
+
+    /// <summary>Stringify a JSON property value regardless of kind (string / bool / number).</summary>
+    private static string JsonValueToString(JsonElement v) => v.ValueKind switch
+    {
+        JsonValueKind.String => v.GetString() ?? string.Empty,
+        JsonValueKind.True => "true",
+        JsonValueKind.False => "false",
+        JsonValueKind.Number => v.GetRawText(),
+        JsonValueKind.Null => string.Empty,
+        _ => v.GetRawText(),
+    };
+
+    /// <summary>Parse a winappcli boolean-ish property string; falls back to <paramref name="defaultValue"/> when empty.</summary>
+    private static bool ParseBool(string raw, bool defaultValue)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            return defaultValue;
+        }
+
+        return raw.Trim().ToLowerInvariant() is "true" or "on" or "1" or "yes";
     }
 }

@@ -216,6 +216,19 @@ public sealed class Session
         return false;
     }
 
+    /// <summary>
+    /// Wait for an element matching <paramref name="by"/> to appear in the tree via
+    /// <c>winapp ui wait-for</c>. Returns true if it appeared within <paramref name="timeoutMS"/>.
+    /// </summary>
+    public bool WaitForElement(By by, int timeoutMS = 5000)
+    {
+        var r = WinappCli.Invoke(
+            "ui", "wait-for", by.Value,
+            TargetFlag, TargetValue,
+            "-t", timeoutMS.ToString(CultureInfo.InvariantCulture));
+        return r.ExitCode == 0;
+    }
+
     /// <summary>Capture a PNG of the session's target via <c>winapp ui screenshot</c>.</summary>
     public string Screenshot(string outputPath)
     {

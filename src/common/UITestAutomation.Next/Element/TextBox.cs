@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>Edit / TextBox control. Drives via <c>winapp ui set-value</c> and <c>get-value</c>.</summary>
@@ -17,8 +15,8 @@ public class TextBox : Element
     /// <summary>Set the textbox content via winappcli's <c>set-value</c> (UIA ValuePattern).</summary>
     public TextBox SetText(string value)
     {
-        Assert.IsNotNull(Owner, "TextBox is not bound to a Session.");
-        WinappCli.InvokeAssertSuccess("ui", "set-value", Selector, value, "-w", Owner!.WindowHandleArg);
+        EnsureBound();
+        WinappCli.InvokeAssertSuccess("ui", "set-value", Selector, value, Owner!.TargetFlag, Owner!.TargetValue);
         return this;
     }
 
@@ -27,8 +25,8 @@ public class TextBox : Element
     {
         get
         {
-            Assert.IsNotNull(Owner, "TextBox is not bound to a Session.");
-            var r = WinappCli.Invoke("ui", "get-value", Selector, "-w", Owner!.WindowHandleArg, "--json");
+            EnsureBound();
+            var r = WinappCli.Invoke("ui", "get-value", Selector, Owner!.TargetFlag, Owner!.TargetValue, "--json");
             if (!r.Success)
             {
                 return string.Empty;
