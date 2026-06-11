@@ -229,24 +229,119 @@ public sealed class Session
         return r.ExitCode == 0;
     }
 
-    /// <summary>Capture a PNG of the session's target via <c>winapp ui screenshot</c>.</summary>
-    public string Screenshot(string outputPath)
+    /// <summary>
+    /// Capture a PNG of the session's target via <c>winapp ui screenshot</c>. Pass an
+    /// <paramref name="element"/> to crop to that element's bounds, or set
+    /// <paramref name="captureScreen"/> to grab from the screen (includes popups / overlays /
+    /// flyouts that <c>PrintWindow</c> misses).
+    /// </summary>
+    public string Screenshot(string outputPath, Element? element = null, bool captureScreen = false)
     {
-        WinappCli.InvokeAssertSuccess("ui", "screenshot", TargetFlag, TargetValue, "-o", outputPath);
+        WinappCli.InvokeAssertSuccess(BuildScreenshotArgs(outputPath, element, captureScreen));
         return outputPath;
     }
 
+    /// <summary>Non-asserting screenshot for cleanup / failure-artifact paths. Returns false on error.</summary>
+    public bool TryScreenshot(string outputPath, Element? element = null, bool captureScreen = false)
+    {
+        try
+        {
+            return WinappCli.Invoke(BuildScreenshotArgs(outputPath, element, captureScreen)).Success;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private string[] BuildScreenshotArgs(string outputPath, Element? element, bool captureScreen)
+    {
+        var args = new List<string> { "ui", "screenshot" };
+        if (element is not null && !string.IsNullOrEmpty(element.Selector))
+        {
+            args.Add(element.Selector);
+        }
+
+        args.Add(TargetFlag);
+        args.Add(TargetValue);
+        args.Add("-o");
+        args.Add(outputPath);
+        if (captureScreen)
+        {
+            args.Add("--capture-screen");
+        }
+
+        return args.ToArray();
+    }
+
     /// <summary>
-    /// Dump the full UIA tree for this session's target via <c>winapp ui inspect --json</c>.
+    /// Dump the UIA tree for this session's target via <c>winapp ui inspect --json</c>.
     /// Returned shape: <c>{ "windows": [{ "elements": [{ "type", "name", "value", "children": [...] }] }] }</c>.
     /// </summary>
-    public JsonElement Inspect(int depth = 6)
+    /// <param name="depth">Tree depth (ignored by winappcli when <paramref name="interactive"/> is set).</param>
+    /// <param name="interactive">Only invokable elements (auto-depth), as a flat list.</param>
+    /// <param name="hideDisabled">Omit disabled elements.</param>
+    /// <param name="hideOffscreen">Omit off-screen elements.</param>
+    public JsonElement Inspect(int depth = 6, bool interactive = false, bool hideDisabled = false, bool hideOffscreen = false)
     {
-        return WinappCli.InvokeJson(
+        var args = new List<string>
+        {
             "ui", "inspect",
             TargetFlag, TargetValue,
             "--json",
-            "-d", depth.ToString(CultureInfo.InvariantCulture));
+            "-d", depth.ToString(CultureInfo.InvariantCulture),
+        };
+        if (interactive)
+        {
+            args.Add("--interactive");
+        }
+
+        if (hideDisabled)
+        {
+            args.Add("--hide-disabled");
+        }
+
+        if (hideOffscreen)
+        {
+            args.Add("--hide-offscreen");
+        }
+
+        return WinappCli.InvokeJson(args.ToArray());
+    }
+
+    /// <summary>
+    /// Walk the ancestor chain from <paramref name="element"/> up to the root via
+    /// <c>winapp ui inspect --ancestors</c>.
+    /// </summary>
+    public JsonElement InspectAncestors(Element element) =>
+        WinappCli.InvokeJson("ui", "inspect", "--ancestors", element.Selector, TargetFlag, TargetValue, "--json");
+
+    /// <summary>The element that currently has keyboard focus, via <c>winapp ui get-focused --json</c>.</summary>
+    public JsonElement GetFocused() => WinappCli.InvokeJson("ui", "get-focused", TargetFlag, TargetValue, "--json");
+
+    /// <summary>
+    /// Convenience reader for the focused element's Name (empty if none / unknown). Useful for
+    /// keyboard-navigation assertions.
+    /// </summary>
+    public string GetFocusedName()
+    {
+        try
+        {
+            var root = GetFocused();
+            foreach (var prop in new[] { "name", "Name" })
+            {
+                if (root.TryGetProperty(prop, out var v) && v.ValueKind == JsonValueKind.String)
+                {
+                    return v.GetString() ?? string.Empty;
+                }
+            }
+        }
+        catch
+        {
+            // Best effort — no focused element or unexpected envelope.
+        }
+
+        return string.Empty;
     }
 
     /// <summary>Send keystrokes via Win32 <c>keybd_event</c>. Required for global PowerToys hotkeys.</summary>

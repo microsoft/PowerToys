@@ -104,6 +104,24 @@ public sealed class SessionHelper
         return true;
     }
 
+    /// <summary>
+    /// Force a clean restart of the module: kill any running instance, wait for it to exit, then
+    /// launch a fresh one and wait for its window. Returns true once a window is visible.
+    /// </summary>
+    public static bool RestartScope(PowerToysModule scope, TimeSpan timeout)
+    {
+        var processName = GetProcessName(scope);
+        WindowControl.TryKillProcess(processName);
+
+        var killDeadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while (DateTime.UtcNow < killDeadline && Process.GetProcessesByName(processName).Length > 0)
+        {
+            Thread.Sleep(150);
+        }
+
+        return EnsureRunning(scope, timeout);
+    }
+
     private static void WaitForAnyWindow(string processName, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;

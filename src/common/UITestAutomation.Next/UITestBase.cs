@@ -60,6 +60,17 @@ public class UITestBase : IDisposable
     {
         try
         {
+            if (TestContext.CurrentTestOutcome == UnitTestOutcome.Failed)
+            {
+                CaptureFailureScreenshot();
+            }
+        }
+        catch
+        {
+        }
+
+        try
+        {
             Session?.Cleanup();
         }
         catch
@@ -67,6 +78,27 @@ public class UITestBase : IDisposable
         }
 
         Dispose();
+    }
+
+    /// <summary>
+    /// On failure, grab a full-screen PNG (<c>--capture-screen</c> so popups / overlays are
+    /// included) and attach it to the test result. Best-effort — never throws.
+    /// </summary>
+    private void CaptureFailureScreenshot()
+    {
+        if (Session is null)
+        {
+            return;
+        }
+
+        var dir = TestContext.TestRunResultsDirectory ?? Path.GetTempPath();
+        Directory.CreateDirectory(dir);
+        var file = Path.Combine(dir, $"{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+
+        if (Session.TryScreenshot(file, captureScreen: true) && File.Exists(file))
+        {
+            TestContext.AddResultFile(file);
+        }
     }
 
     /// <summary>Find an element on the session's window. Shortcut for <c>Session.Find&lt;T&gt;</c>.</summary>
