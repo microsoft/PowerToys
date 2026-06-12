@@ -290,9 +290,22 @@ namespace Peek.UI
         /// <param name="args">AppWindowClosingEventArgs</param>
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
-            args.Cancel = true;
-            PowerToysTelemetry.Log.WriteEvent(new ClosedEvent());
-            Uninitialize();
+            // Any exception that escapes a WinRT event handler is projected back to
+            // the CsWinRT dispatcher as a failed HRESULT, and CFlat fail-fasts the
+            // process. We want a Closing handler that can never crash Peek, even if
+            // a callee (e.g., a cached preview-handler RCW that has been separated
+            // during teardown) throws InvalidComObjectException.
+            try
+            {
+                args.Cancel = true;
+                PowerToysTelemetry.Log.WriteEvent(new ClosedEvent());
+                Uninitialize();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Unhandled exception in Peek MainWindow.AppWindow_Closing; suppressing to avoid fail-fast.", ex);
+                args.Cancel = true;
+            }
         }
 
         private bool IsNewSingleSelectedItem(SelectedItem selectedItem)

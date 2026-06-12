@@ -213,11 +213,29 @@ namespace Peek.FilePreviewer.Previewers
 
         public static void ReleaseHandlerFactories()
         {
-            foreach (var factory in HandlerFactories.Values)
+            // Snapshot and clear the dictionary up front so that a subsequent call
+            // or a concurrent LoadPreviewAsync can't pick up a stale RCW we are
+            // about to release. This also makes the method idempotent: a second
+            // call won't try to FinalRelease the same already-separated RCWs.
+            var factories = HandlerFactories.ToArray();
+            HandlerFactories.Clear();
+
+            foreach (var kvp in factories)
             {
+                // Mirror the LockServer(true) we did when caching, so the local
+                // server can shut down cleanly. Both calls are wrapped because the
+                // RCW may already be unreachable during process teardown.
                 try
                 {
-                    Marshal.FinalReleaseComObject(factory);
+                    kvp.Value.LockServer(false);
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    Marshal.FinalReleaseComObject(kvp.Value);
                 }
                 catch
                 {
