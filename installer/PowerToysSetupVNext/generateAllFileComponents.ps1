@@ -39,6 +39,12 @@ Function Generate-FileList() {
     # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
     $fileExclusionList += @("mfc140.dll", "mfc140u.dll", "mfcm140.dll", "mfcm140u.dll")
 
+    # Microsoft.CommandPalette.Extensions.winmd already has a dedicated WiX component
+    # (Microsoft_CommandPalette_Extensions_winmd in BaseApplications.wxs, placed in WinUI3Apps for
+    # CmdPal's WinRT resolution). Exclude it from the generic *.winmd harvest so it isn't declared
+    # by two components (WIX ICE30 "installed by two different components" breaks ref-counting).
+    $fileExclusionList += @("Microsoft.CommandPalette.Extensions.winmd")
+
     $dllsToIgnore = @("System.CodeDom.dll", "WindowsBase.dll")
 
     if ($fileDepsJson -eq [string]::Empty) {
