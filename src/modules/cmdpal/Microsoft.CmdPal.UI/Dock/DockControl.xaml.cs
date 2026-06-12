@@ -261,7 +261,12 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
         IsEditMode = false;
 
         // Restore the original band order from snapshot
-        ViewModel.RestoreBandOrder();
+        var restoredSettings = ViewModel.RestoreBandOrder();
+        if (restoredSettings != null)
+        {
+            // Sync DockControl state (DockSize, Side, etc.) to the restored settings
+            UpdateSettings(restoredSettings);
+        }
     }
 
     private void DoneEditingButton_Click(object sender, RoutedEventArgs e)
