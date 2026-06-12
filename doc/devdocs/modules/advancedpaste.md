@@ -104,6 +104,7 @@ PowerToys.AdvancedPaste.exe --check-phi-silica
 
 ### See also
 
+- [Phi Silica local testing & troubleshooting runbook](advancedpaste-phisilica-local-testing.md) — layer-by-layer diagnostics for Phi Silica availability
 - [`src/PackageIdentity/readme.md`](/src/PackageIdentity/readme.md) — full sparse package documentation
 - [microsoft/microsoft-ui-xaml#10856](https://github.com/microsoft/microsoft-ui-xaml/issues/10856) — original WinUI sparse-identity PRI bug
 - [microsoft/WindowsAppSDK#6376](https://github.com/microsoft/WindowsAppSDK/pull/6376) — MRT sparse PRI fix (Foundation >= 2.0.22)
