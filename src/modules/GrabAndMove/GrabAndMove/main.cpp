@@ -58,7 +58,9 @@ static DWORD g_absorbedFlags = 0;      // flags for replay (extended key, etc.)
 static bool g_showGeometry = false;            // true if we want to draw the X, Y, W and H on the overlay on move and resize
 static bool g_doNotActivateOnGameMode = true; // true if GrabAndMove is suppressed when Windows Game Mode is active
 
-static bool g_useAltResize = true;      // This can be toggled from the settings. If false, Alt + right click does nothing.
+static bool g_useAltResize = true;             // This can be toggled from the settings. If false, Alt + right click does nothing.
+static bool g_useMiddleClickMaximize = true;   // If true, modifier + middle click toggles maximize/restore.
+static bool g_middleClickConsumed = false;     // Swallow the matching middle-button release after a handled press.
 
 // Count of non-modifier keys currently held. Used to suppress GrabAndMove when the
 // modifier key is pressed while another key is already down (e.g. Q held, then modifier pressed).
@@ -225,11 +227,23 @@ enum class GrabAndMoveShortcutAction
 {
     Move,
     Resize,
+    Maximize,
 };
 
 static void TraceShortcutUse(bool successful, GrabAndMoveShortcutAction action, const wchar_t* reason) noexcept
 {
-    const wchar_t* actionName = action == GrabAndMoveShortcutAction::Move ? L"move" : L"resize";
+    const wchar_t* actionName = L"move";
+    switch (action)
+    {
+    case GrabAndMoveShortcutAction::Resize:
+        actionName = L"resize";
+        break;
+    case GrabAndMoveShortcutAction::Maximize:
+        actionName = L"maximize";
+        break;
+    default:
+        break;
+    }
 
     TraceLoggingWrite(
         g_hProvider,
@@ -239,6 +253,22 @@ static void TraceShortcutUse(bool successful, GrabAndMoveShortcutAction action, 
         TraceLoggingBoolean(successful, "Successful"),
         TraceLoggingWideString(actionName, "Action"),
         TraceLoggingWideString(reason, "Reason"));
+}
+
+static bool CanWindowMaximize(HWND hwnd)
+{
+    return (GetWindowLongPtrW(hwnd, GWL_STYLE) & WS_MAXIMIZEBOX) != 0;
+}
+
+static bool ToggleWindowMaximized(HWND hwnd)
+{
+    if (!hwnd || !CanWindowMaximize(hwnd))
+    {
+        return false;
+    }
+
+    ShowWindow(hwnd, IsZoomed(hwnd) ? SW_RESTORE : SW_MAXIMIZE);
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -268,6 +298,11 @@ static void LoadSettingsFromFile()
         if (auto v = values.get_bool_value(L"useAltResize"))
         {
             g_useAltResize = *v;
+        }
+
+        if (auto v = values.get_bool_value(L"useMiddleClickMaximize"))
+        {
+            g_useMiddleClickMaximize = *v;
         }
 
         if (auto v = values.get_int_value(L"modifierKey"))
@@ -1011,14 +1046,50 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             goto forward;
 
         // Recovery path: if a non-modifier click occurs while stale drag/resize state exists, clear it.
-        if ((wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN) && !IsActivationModifierPressed())
+        if ((wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN || wParam == WM_MBUTTONDOWN) && !IsActivationModifierPressed())
         {
             EndInteraction(true, true);
+        }
+
+        if (wParam == WM_MBUTTONUP && g_middleClickConsumed)
+        {
+            g_middleClickConsumed = false;
+            return 1;
         }
 
         if (!g_dragging && !g_resizing && g_hOverlay && IsWindowVisible(g_hOverlay))
         {
             HideOverlay();
+        }
+
+        // ----- Alt + Middle Button Down: toggle maximize/restore -----
+        if (wParam == WM_MBUTTONDOWN && g_useMiddleClickMaximize && IsActivationModifierPressed())
+        {
+            if (IsSuppressedByGameMode())
+            {
+                TraceShortcutUse(false, GrabAndMoveShortcutAction::Maximize, L"game_mode");
+                goto forward;
+            }
+
+            POINT pt = ms->pt;
+            HWND hwnd = ResolveTargetWindow(pt);
+            if (hwnd)
+            {
+                if (IsExcluded(hwnd))
+                {
+                    goto forward;
+                }
+
+                if (ToggleWindowMaximized(hwnd))
+                {
+                    g_dragConsumedAlt = true;
+                    g_middleClickConsumed = true;
+                    TraceShortcutUse(true, GrabAndMoveShortcutAction::Maximize, L"toggled");
+                    return 1;
+                }
+
+                TraceShortcutUse(false, GrabAndMoveShortcutAction::Maximize, L"missing_maximize_box");
+            }
         }
 
         // ----- Alt + Left Button Down: start drag -----
