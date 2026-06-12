@@ -1826,14 +1826,12 @@ namespace KeyboardEventHandlers
         // Release held modifiers before text injection to prevent Ctrl+text corruption
         constexpr int modifierKeys[] = { VK_LCONTROL, VK_RCONTROL, VK_LSHIFT, VK_RSHIFT, VK_LMENU, VK_RMENU, VK_LWIN, VK_RWIN };
         std::vector<INPUT> releaseEvents;
-        std::vector<int> releasedKeys;
 
         for (int vk : modifierKeys)
         {
             if (ii.GetVirtualKeyState(vk))
             {
                 Helpers::SetKeyEvent(releaseEvents, INPUT_KEYBOARD, static_cast<WORD>(vk), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                releasedKeys.push_back(vk);
             }
         }
 
@@ -1847,19 +1845,13 @@ namespace KeyboardEventHandlers
 
         Helpers::SendTextInput(*remapping);
 
-        // Re-press modifiers that were held before text injection
-        if (!releasedKeys.empty())
-        {
-            std::vector<INPUT> restoreEvents;
-            for (int vk : releasedKeys)
-            {
-                Helpers::SetKeyEvent(restoreEvents, INPUT_KEYBOARD, static_cast<WORD>(vk), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-            }
-            ii.SendVirtualInput(restoreEvents);
-            // Note: not checking return here — failing to restore modifiers is
-            // less harmful than failing to release them (text already sent correctly).
-            // The user can tap the modifier to resync state.
-        }
+        // Intentionally do NOT re-press the released modifiers. Once we inject a
+        // KEYUP for a modifier, GetAsyncKeyState (and therefore GetVirtualKeyState)
+        // reports it as up, so there is no reliable way to tell whether the user is
+        // still physically holding the key or has released it. Re-pressing
+        // unconditionally would risk leaving a modifier stuck down if the user let
+        // go during injection — the exact failure this change set prevents. Leaving
+        // the modifier released is always safe: the user taps it again to re-engage.
 
         return 1;
     }

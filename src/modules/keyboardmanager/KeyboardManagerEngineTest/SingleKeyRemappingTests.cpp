@@ -347,8 +347,9 @@ namespace RemappingLogicTests
             mockedInputHandler.SetHookProc(currentHookProc);
         }
 
-        // Test if Win key is released and restored when held during text remap
-        TEST_METHOD (HandleSingleKeyToTextRemapEvent_ShouldReleaseAndRestoreWinKey_WhenWinKeyIsHeld)
+        // A held Win key must be released before the text is injected and then left
+        // released — never re-pressed — so it can never be left stuck down.
+        TEST_METHOD (HandleSingleKeyToTextRemapEvent_ShouldReleaseWinKeyAndNotRestore_WhenWinKeyIsHeld)
         {
             // Remap X to text "hello"
             testState.AddSingleKeyToTextRemap(0x58, L"hello");
@@ -361,15 +362,15 @@ namespace RemappingLogicTests
                 { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x58 } },
             };
 
-            // Send X keydown — handler should release LWin before text and restore after
+            // Send X keydown — handler releases LWin before the text and does not restore it
             mockedInputHandler.SendVirtualInput(inputs);
 
-            // After the handler completes, LWin should be restored (re-pressed)
-            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+            // LWin must be left released so it can never be stuck down
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
         }
 
-        // Test if Ctrl key is released and restored when held during text remap
-        TEST_METHOD (HandleSingleKeyToTextRemapEvent_ShouldReleaseAndRestoreCtrl_WhenCtrlIsHeld)
+        // A held Ctrl must be released before the text and left released afterwards.
+        TEST_METHOD (HandleSingleKeyToTextRemapEvent_ShouldReleaseCtrlAndNotRestore_WhenCtrlIsHeld)
         {
             // Remap X to text "hello"
             testState.AddSingleKeyToTextRemap(0x58, L"hello");
@@ -385,8 +386,60 @@ namespace RemappingLogicTests
             // Send X keydown
             mockedInputHandler.SendVirtualInput(inputs);
 
-            // After the handler completes, LCtrl should be restored
-            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            // LCtrl must be left released so it can never be stuck down
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+        }
+
+        // Every modifier that was held should be released, and none re-pressed.
+        TEST_METHOD (HandleSingleKeyToTextRemapEvent_ShouldReleaseAllHeldModifiers_AndNotRestore)
+        {
+            // Remap X to text "hello"
+            testState.AddSingleKeyToTextRemap(0x58, L"hello");
+
+            // Simulate LCtrl and LShift being held down together
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_LSHIFT, true);
+
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x58 } },
+            };
+
+            // Send X keydown
+            mockedInputHandler.SendVirtualInput(inputs);
+
+            // Both modifiers must be left released
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LSHIFT));
+        }
+
+        // The handler must never inject a modifier key-down (re-press) event. Doing
+        // so could leave a modifier stuck down if the user released it during text
+        // injection, since GetAsyncKeyState cannot distinguish a still-held key from
+        // one we just released ourselves.
+        TEST_METHOD (HandleSingleKeyToTextRemapEvent_ShouldNeverRePressModifier_WhenModifierIsHeld)
+        {
+            // Remap X to text "hello"
+            testState.AddSingleKeyToTextRemap(0x58, L"hello");
+
+            // Simulate LCtrl being held down
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+
+            // Count any modifier key-down events the handler injects (i.e. a re-press)
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* keyEvent) {
+                const DWORD vk = keyEvent->lParam->vkCode;
+                const bool isModifier = (vk == VK_LCONTROL || vk == VK_RCONTROL || vk == VK_LSHIFT || vk == VK_RSHIFT || vk == VK_LMENU || vk == VK_RMENU || vk == VK_LWIN || vk == VK_RWIN);
+                return isModifier && keyEvent->wParam == WM_KEYDOWN;
+            });
+
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x58 } },
+            };
+
+            // Send X keydown
+            mockedInputHandler.SendVirtualInput(inputs);
+
+            // No modifier re-press should ever be injected
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
         }
     };
 }
