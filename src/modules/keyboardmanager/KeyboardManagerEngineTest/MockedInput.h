@@ -22,6 +22,10 @@ namespace KeyboardManagerInput
         int sendVirtualInputCallCount = 0;
         std::function<bool(LowlevelKeyboardEvent*)> sendVirtualInputCallCondition;
 
+        // Optional predicate; when set and it returns true for a SendVirtualInput
+        // call, that call fails (returns false) to simulate a SendInput failure.
+        std::function<bool(const std::vector<INPUT>&)> sendVirtualInputShouldFail;
+
         std::wstring currentProcess;
 
     public:
@@ -50,6 +54,9 @@ namespace KeyboardManagerInput
 
         // Function to set SendVirtualInput call count condition
         void SetSendVirtualInputTestHandler(std::function<bool(LowlevelKeyboardEvent*)> condition);
+
+        // Function to force SendVirtualInput to fail for calls matching a predicate
+        void SetSendVirtualInputShouldFail(std::function<bool(const std::vector<INPUT>&)> condition);
 
         // Function to get SendVirtualInput call count
         int GetSendVirtualInputCallCount();
