@@ -238,6 +238,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool Dock_AutoHide
+    {
+        get => _settingsService.Settings.DockSettings.AutoHide;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { DockSettings = s.DockSettings with { AutoHide = value } });
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;
