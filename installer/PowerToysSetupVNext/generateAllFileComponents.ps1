@@ -28,7 +28,12 @@ Function Generate-FileList() {
 
     $fileExclusionList = @("*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe")
 
-    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml")
+    # *.winmd: WinRT metadata for the Windows App SDK AI APIs (Phi Silica, Imaging, etc.). The AI
+    # runtime resolves these from the app directory at runtime, so they must ship with the product.
+    # Without them GetReadyState() reports NotReady and EnsureReadyAsync() fails with
+    # RO_E_METADATA_NAME_NOT_FOUND (0x8000000F). The build already emits them into the app output
+    # (e.g. WinUI3Apps); they were previously dropped here because the harvest didn't include them.
+    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml", "*.winmd")
 
     # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
     # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
