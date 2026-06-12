@@ -3,6 +3,8 @@
 #include "pch.h"
 #include "ContextMenuHandler.h"
 
+#include <strsafe.h>
+
 #include <Settings.h>
 #include <trace.h>
 
@@ -181,19 +183,32 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
 
 HRESULT CContextMenuHandler::GetCommandString(UINT_PTR idCmd, UINT uType, _In_ UINT* /*pReserved*/, LPSTR pszName, UINT cchMax)
 {
-    if (idCmd == ID_RESIZE_PICTURES)
-    {
-        if (uType == GCS_VERBW)
-        {
-            wcscpy_s(reinterpret_cast<LPWSTR>(pszName), cchMax, RESIZE_PICTURES_VERBW);
-        }
-    }
-    else
+    if (idCmd != ID_RESIZE_PICTURES)
     {
         return E_INVALIDARG;
     }
 
-    return S_OK;
+    switch (uType)
+    {
+    case GCS_VERBW:
+    {
+        // Per the IContextMenu::GetCommandString contract, when the GCS_UNICODE
+        // flag is set (it is bundled into GCS_VERBW), pszName points to a wide
+        // character buffer whose size in wchar_t units is cchMax, regardless of
+        // the LPSTR-typed declaration on the interface method.
+        const auto pszNameW = reinterpret_cast<LPWSTR>(pszName);
+        return StringCchCopyW(pszNameW, cchMax, RESIZE_PICTURES_VERBW);
+    }
+    case GCS_VERBA:
+        return StringCchCopyA(pszName, cchMax, RESIZE_PICTURES_VERBA);
+    case GCS_HELPTEXTA:
+    case GCS_HELPTEXTW:
+    case GCS_VALIDATEA:
+    case GCS_VALIDATEW:
+        return S_OK;
+    default:
+        return E_NOTIMPL;
+    }
 }
 
 HRESULT CContextMenuHandler::InvokeCommand(_In_ CMINVOKECOMMANDINFO* pici)
