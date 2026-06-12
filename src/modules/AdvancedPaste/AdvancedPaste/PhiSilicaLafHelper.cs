@@ -15,6 +15,14 @@ internal static class PhiSilicaLafHelper
     private static readonly object _lock = new();
     private static bool _unlocked;
 
+    /// <summary>
+    /// Gets the status of the most recent <see cref="TryUnlock"/> attempt
+    /// (e.g. Available, AvailableWithoutToken, Unavailable, or "Exception: ...").
+    /// Exposed so callers can surface the real LAF result for diagnostics; the
+    /// generic "Access is denied" from downstream model calls does not reveal it.
+    /// </summary>
+    public static string LastUnlockStatus { get; private set; } = "NotAttempted";
+
     public static bool TryUnlock()
     {
         // Only cache a successful unlock. Negative results (Unavailable, Unknown, exceptions)
@@ -43,10 +51,12 @@ internal static class PhiSilicaLafHelper
                 _unlocked = access.Status == LimitedAccessFeatureStatus.Available
                          || access.Status == LimitedAccessFeatureStatus.AvailableWithoutToken;
 
+                LastUnlockStatus = access.Status.ToString();
                 Debug.WriteLine($"Phi Silica LAF unlock status: {access.Status}");
             }
             catch (Exception ex)
             {
+                LastUnlockStatus = "Exception: " + ex.Message;
                 Debug.WriteLine($"Phi Silica LAF unlock failed: {ex.Message}");
                 _unlocked = false;
             }

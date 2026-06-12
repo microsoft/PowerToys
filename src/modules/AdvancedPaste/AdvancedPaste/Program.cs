@@ -68,6 +68,8 @@ namespace AdvancedPaste
                 PhiSilicaLafHelper.TryUnlock();
                 var readyState = Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
 
+                Console.Error.WriteLine($"[phi-silica] LAF unlock status: {PhiSilicaLafHelper.LastUnlockStatus}; ReadyState: {readyState}");
+
                 switch (readyState)
                 {
                     case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
@@ -101,6 +103,8 @@ namespace AdvancedPaste
                 PhiSilicaLafHelper.TryUnlock();
                 var readyState = Microsoft.Windows.AI.Text.LanguageModel.GetReadyState();
 
+                Console.Error.WriteLine($"[phi-silica] LAF unlock status: {PhiSilicaLafHelper.LastUnlockStatus}; ReadyState: {readyState}");
+
                 if (readyState is Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem
                     or Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser)
                 {
@@ -121,6 +125,8 @@ namespace AdvancedPaste
 
                 if (result.Status != Microsoft.Windows.AI.AIFeatureReadyResultState.Success)
                 {
+                    int hresult = result.ExtendedError?.HResult ?? 0;
+                    Console.Error.WriteLine($"[phi-silica] EnsureReadyAsync Status: {result.Status}; HRESULT: 0x{hresult:X8}; Message: {result.ExtendedError?.Message}");
                     Console.Error.WriteLine(result.ExtendedError?.Message ?? result.Status.ToString());
                     Console.Out.WriteLine("Failed");
                     return 1;
