@@ -54,7 +54,13 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
         base.OnSourceInitialized(e);
         _powerAccent.OnChangeDisplay += PowerAccent_OnChangeDisplay;
         _powerAccent.OnSelectCharacter += PowerAccent_OnSelectionCharacter;
+        this.Deactivated += Selector_Deactivated;
         this.Visibility = Visibility.Hidden;
+    }
+
+    private void Selector_Deactivated(object sender, EventArgs e)
+    {
+        _powerAccent.ForceResetKeyboardState();
     }
 
     private void PowerAccent_OnSelectionCharacter(int index, string character)

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "KeyboardListener.g.h"
+#include <atomic>
 #include <mutex>
 #include <spdlog/stopwatch.h>
 
@@ -53,18 +54,23 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
         static inline KeyboardListener* s_instance;
         HHOOK s_llKeyboardHook = nullptr;
-        bool m_toolbarVisible;
+        // State flags below are written from the LL keyboard hook thread (OnKeyDown/OnKeyUp)
+        // and from the UI/Dispatcher thread (ForceReset, via Selector_Deactivated). They are
+        // atomic so those accesses don't race. A mutex is intentionally avoided here: the
+        // PowerAccent.cs callbacks invoked from OnKeyDown/OnKeyUp Dispatcher.Invoke onto the UI
+        // thread, where ForceReset runs, so holding a lock across them would deadlock.
+        std::atomic<bool> m_toolbarVisible;
         PowerAccentSettings m_settings;
         std::function<void(LetterKey)> m_showToolbarCb;
         std::function<void(InputType)> m_hideToolbarCb;
         std::function<void(TriggerKey, bool)> m_nextCharCb;
         std::function<bool(LetterKey)> m_isLanguageLetterCb;
-        bool m_triggeredWithSpace;
-        bool m_triggeredWithLeftArrow;
-        bool m_triggeredWithRightArrow;
+        std::atomic<bool> m_triggeredWithSpace;
+        std::atomic<bool> m_triggeredWithLeftArrow;
+        std::atomic<bool> m_triggeredWithRightArrow;
         spdlog::stopwatch m_stopwatch;
-        bool m_leftShiftPressed;
-        bool m_rightShiftPressed;
+        std::atomic<bool> m_leftShiftPressed;
+        std::atomic<bool> m_rightShiftPressed;
 
         std::mutex m_mutex_excluded_apps;
         std::pair<HWND, bool> m_prevForegroundAppExcl{ NULL, false };
@@ -113,7 +119,7 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                                                                LetterKey::VK_DIVIDE_,
                                                                LetterKey::VK_MULTIPLY_,
                                                                LetterKey::VK_BACKSLASH, };
-        LetterKey letterPressed{};
+        std::atomic<LetterKey> letterPressed{};
 
         static inline const std::vector<TriggerKey> triggers = { TriggerKey::Right, TriggerKey::Left, TriggerKey::Space };
     };
