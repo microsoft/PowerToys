@@ -50,7 +50,7 @@ static HWND g_hOverlay = nullptr; // semi-transparent overlay during drag
 static int g_overlayInfoX = 0, g_overlayInfoY = 0;
 static int g_overlayInfoW = 0, g_overlayInfoH = 0;
 
-// Visible-frame overlay metrics. Computed once per drag/resize (cold path) and
+// Visible frame overlay metrics. Computed once per drag/resize (cold path) and
 // reused while rendering - never recomputed in the mouse-move hot path.
 // Margins are the difference between GetWindowRect and the DWM extended frame
 // bounds (the invisible resize border), so the fill and border hug the visible
@@ -61,7 +61,7 @@ static int g_overlayMarginL = 0, g_overlayMarginT = 0, g_overlayMarginR = 0, g_o
 static int g_overlayCornerRadius = 0; // physical px; 0 = square corners
 static int g_overlayBorderThickness = 4; // physical px
 
-// Fluent "warning" gold - the literal equivalent of WinUI SystemFillColorCaution
+// Fluent "warning" gold - copy of WinUI SystemFillColorCaution
 // (used as a ThemeResource for warnings across the Settings UI). A Win32 layered
 // window can't resolve a ThemeResource, so the literal is required here.
 static constexpr COLORREF OVERLAY_BORDER_COLOR = RGB(255, 185, 0); // #FFB900
@@ -480,7 +480,6 @@ static void DrawOverlayBorder(Gdiplus::Graphics& graphics, const RECT& rect, int
 }
 
 // Renders the overlay surface using per-pixel alpha via UpdateLayeredWindow.
-// Renders the overlay surface using per-pixel alpha via UpdateLayeredWindow.
 // A translucent white wash covers the visible window (matching the prior overlay)
 // with a tight warning-gold border on top, both hugging the visible window frame;
 // the optional geometry label box is painted fully opaque so it remains legible
@@ -514,8 +513,8 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
     // Start fully transparent.
     memset(pBits, 0, static_cast<size_t>(cw) * ch * sizeof(DWORD));
 
-    // Translucent white wash over the visible window (prior-system fill) with a tight
-    // warning-gold border on top. The overlay window spans GetWindowRect, so inset by
+    // We apply a translucent white rect with a gold border. 
+    // The overlay window spans GetWindowRect, so inset by
     // the invisible-border margins so both hug the visible edge; Always On Top draws
     // its own border just outside that edge, giving a clean double layer.
     {
