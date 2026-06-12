@@ -332,7 +332,7 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="232" />
                             </Grid.RowDefinitions>
 
                             <TextBlock
@@ -365,6 +365,7 @@
                                                 <SolidColorBrush x:Key="ItemContainerBackgroundPressed" Color="Transparent" />
                                             </ItemContainer.Resources>
                                             <Border
+                                                Width="356"
                                                 Height="200"
                                                 Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
