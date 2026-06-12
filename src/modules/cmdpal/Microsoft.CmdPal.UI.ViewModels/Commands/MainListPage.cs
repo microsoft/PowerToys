@@ -6,10 +6,12 @@
  #define CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
 */
 
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Core.Common.Helpers;
@@ -70,6 +72,12 @@ public sealed partial class MainListPage : DynamicListPage,
 
     private bool _includeApps;
     private bool _filteredItemsIncludesApps;
+
+    // LRU query result cache: avoids re-filtering on backspace/retype.
+    // Bounded to prevent unbounded memory growth.
+    private const int QueryCacheCapacity = 16;
+    private readonly Dictionary<string, QueryCacheEntry> _queryCache = new(QueryCacheCapacity, StringComparer.CurrentCultureIgnoreCase);
+    private readonly LinkedList<string> _queryCacheOrder = new();
 
     private int AppResultLimit => AllAppsCommandProvider.TopLevelResultLimit;
 
@@ -168,19 +176,28 @@ public sealed partial class MainListPage : DynamicListPage,
     {
         if (e.PropertyName == nameof(IsLoading))
         {
+            var wasLoading = IsLoading;
             IsLoading = ActuallyLoading();
+
+            // Prewarm the query cache once all commands/apps have loaded
+            if (wasLoading && !IsLoading)
+            {
+                _ = Task.Run(PrewarmQueryCache);
+            }
         }
     }
 
     private void PinnedCommands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         _defaultViewDirty = true;
+        InvalidateQueryCache();
         RaiseItemsChanged();
     }
 
     private void Commands_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         _defaultViewDirty = true;
+        InvalidateQueryCache();
         _includeApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
         if (_includeApps != _filteredItemsIncludesApps)
         {
@@ -363,6 +380,229 @@ public sealed partial class MainListPage : DynamicListPage,
         _scoredFallbackItems = null;
     }
 
+    /// <summary>
+    /// Invalidates the query result cache. Call when underlying data changes
+    /// (commands added/removed, extensions reloaded, apps list changed).
+    /// </summary>
+    private void InvalidateQueryCache()
+    {
+        lock (_queryCache)
+        {
+            _queryCache.Clear();
+            _queryCacheOrder.Clear();
+        }
+    }
+
+    private bool TryGetCachedResults(string query, out QueryCacheEntry entry)
+    {
+        lock (_queryCache)
+        {
+            if (_queryCache.TryGetValue(query, out entry!))
+            {
+                // Move to front (most recently used)
+                _queryCacheOrder.Remove(query);
+                _queryCacheOrder.AddFirst(query);
+                return true;
+            }
+        }
+
+        entry = default!;
+        return false;
+    }
+
+    private void StoreCacheEntry(string query, RoScored<IListItem>[]? filteredItems, RoScored<IListItem>[]? filteredApps, RoScored<IListItem>[]? scoredFallbackItems, RoScored<IListItem>[]? fallbackItems, bool includesApps)
+    {
+        lock (_queryCache)
+        {
+            // Evict oldest if at capacity
+            while (_queryCacheOrder.Count >= QueryCacheCapacity)
+            {
+                var oldest = _queryCacheOrder.Last!.Value;
+                _queryCacheOrder.RemoveLast();
+                _queryCache.Remove(oldest);
+            }
+
+            var entry = new QueryCacheEntry(filteredItems, filteredApps, scoredFallbackItems, fallbackItems, includesApps);
+            _queryCache[query] = entry;
+            _queryCacheOrder.Remove(query);
+            _queryCacheOrder.AddFirst(query);
+        }
+    }
+
+    private readonly record struct QueryCacheEntry(
+        RoScored<IListItem>[]? FilteredItems,
+        RoScored<IListItem>[]? FilteredApps,
+        RoScored<IListItem>[]? ScoredFallbackItems,
+        RoScored<IListItem>[]? FallbackItems,
+        bool IncludesApps);
+
+    /// <summary>
+    /// Prewarms the query cache by filtering the first few characters of the
+    /// user's most frequently launched commands. This eliminates the cold-start
+    /// latency spike on the first keystroke.
+    ///
+    /// IMPORTANT: This method only populates the cache dictionary. It does NOT
+    /// modify _filteredItems/_filteredApps or trigger RaiseItemsChanged, so it
+    /// is safe to run on a background thread while the user is interacting.
+    /// </summary>
+    private void PrewarmQueryCache()
+    {
+        try
+        {
+            // If the user has already typed something, skip prewarm —
+            // they're already past the cold-start window.
+            if (!string.IsNullOrEmpty(SearchText))
+            {
+                return;
+            }
+
+            var recentCommands = _appStateService.State.RecentCommands;
+            var commands = _tlcManager.TopLevelCommands;
+
+            // Collect titles of the user's most recently used commands (up to 8)
+            List<string> titlesToPrewarm = [];
+            lock (commands)
+            {
+                foreach (var cmd in commands)
+                {
+                    if (cmd.IsFallback || string.IsNullOrEmpty(cmd.Title))
+                    {
+                        continue;
+                    }
+
+                    var weight = recentCommands.GetCommandHistoryWeight(cmd.Id);
+                    if (weight > 0)
+                    {
+                        titlesToPrewarm.Add(cmd.Title);
+                    }
+
+                    if (titlesToPrewarm.Count >= 8)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (titlesToPrewarm.Count == 0)
+            {
+                // Fallback: no history yet — prewarm from the first 8 command titles.
+                // This ensures cold-start benefit even for new users or dev builds.
+                lock (commands)
+                {
+                    foreach (var cmd in commands)
+                    {
+                        if (cmd.IsFallback || string.IsNullOrEmpty(cmd.Title))
+                        {
+                            continue;
+                        }
+
+                        titlesToPrewarm.Add(cmd.Title);
+                        if (titlesToPrewarm.Count >= 8)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (titlesToPrewarm.Count == 0)
+            {
+                return;
+            }
+
+            // Extract unique first characters and short prefixes (1-2 chars)
+            var prefixes = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
+            foreach (var title in titlesToPrewarm)
+            {
+                if (title.Length >= 1)
+                {
+                    prefixes.Add(title[..1]);
+                }
+
+                if (title.Length >= 2)
+                {
+                    prefixes.Add(title[..2]);
+                }
+            }
+
+            // Run each prefix through the filter pipeline INTO LOCAL VARIABLES
+            // and store directly to cache. Does NOT touch _filteredItems or trigger UI refresh.
+            foreach (var prefix in prefixes)
+            {
+                // Bail if user started typing — their real queries take priority
+                if (!string.IsNullOrEmpty(SearchText))
+                {
+                    break;
+                }
+
+                // Already cached (e.g., from a previous prewarm or user query)
+                if (TryGetCachedResults(prefix, out _))
+                {
+                    continue;
+                }
+
+                PrewarmSinglePrefix(prefix, commands);
+            }
+
+            CoreLogger.LogInfo($"[QueryCache] Prewarmed {prefixes.Count} prefix(es) from {titlesToPrewarm.Count} recent command(s)");
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("[QueryCache] Prewarm failed", ex);
+        }
+    }
+
+    /// <summary>
+    /// Filters a single prefix query and stores results directly to cache
+    /// without modifying any live display state.
+    /// </summary>
+    private void PrewarmSinglePrefix(string prefix, ObservableCollection<TopLevelViewModel> commands)
+    {
+        // Snapshot data under the lock (fast), then release and filter outside it.
+        // This minimizes contention with user keystrokes that also acquire lock(commands).
+        IListItem[] itemsSnapshot;
+        IListItem[] specialFallbacksSnapshot;
+        IListItem[] commonFallbacksSnapshot;
+        IListItem[] appsSnapshot;
+        bool includesApps;
+
+        lock (commands)
+        {
+            var configuredGlobalFallbackIds = _settingsService.Settings.GetGlobalFallbacks();
+
+            itemsSnapshot = commands.Where(s => !s.IsFallback).Cast<IListItem>().ToArray();
+            specialFallbacksSnapshot = commands.Where(s => s.IsFallback && configuredGlobalFallbackIds.Contains(s.Id)).Cast<IListItem>().ToArray();
+            commonFallbacksSnapshot = commands.Where(s => s.IsFallback && !configuredGlobalFallbackIds.Contains(s.Id)).Cast<IListItem>().ToArray();
+
+            includesApps = _tlcManager.IsProviderActive(AllAppsCommandProvider.WellKnownId);
+            if (includesApps)
+            {
+                var appItems = AllAppsCommandProvider.Page.GetItems().Cast<AppListItem>();
+                var pinnedCommandIds = _settingsService.Settings.GetPinnedCommandIds(AllAppsCommandProvider.WellKnownId);
+                appsSnapshot = pinnedCommandIds.Count > 0
+                    ? appItems.Where(li => li.Command != null && !pinnedCommandIds.Contains(li.Command.Id)).Cast<IListItem>().ToArray()
+                    : appItems.Cast<IListItem>().ToArray();
+            }
+            else
+            {
+                appsSnapshot = [];
+            }
+        }
+
+        // Expensive filtering happens OUTSIDE the lock — user keystrokes won't be blocked.
+        var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(prefix);
+
+        var filteredItems = InternalListHelpers.FilterListWithScores<IListItem>(itemsSnapshot, searchQuery, _scoringFunction);
+        var filteredApps = appsSnapshot.Length > 0
+            ? InternalListHelpers.FilterListWithScores<IListItem>(appsSnapshot, searchQuery, _scoringFunction)
+            : null;
+        var scoredFallbacks = InternalListHelpers.FilterListWithScores<IListItem>(specialFallbacksSnapshot, searchQuery, _scoringFunction);
+        var fallbackItems = InternalListHelpers.FilterListWithScores<IListItem>(commonFallbacksSnapshot, searchQuery, _fallbackScoringFunction);
+
+        // Store to cache only — no UI side effects
+        StoreCacheEntry(prefix, filteredItems, filteredApps, scoredFallbacks, fallbackItems, includesApps);
+    }
+
     public override void UpdateSearchText(string oldSearch, string newSearch)
     {
         UpdateSearchTextCore(oldSearch, newSearch, isUserInput: true);
@@ -371,6 +611,7 @@ public sealed partial class MainListPage : DynamicListPage,
     private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
     {
         var stopwatch = Stopwatch.StartNew();
+        var benchmarkSession = QueryBenchmark.Instance.StartSession(newSearch, isUserInput ? "UserInput" : "Programmatic");
 
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
@@ -457,6 +698,24 @@ public sealed partial class MainListPage : DynamicListPage,
                 var wasAlreadyEmpty = string.IsNullOrWhiteSpace(oldSearch);
                 RequestRefresh(fullRefresh: true, interval: wasAlreadyEmpty ? null : TimeSpan.Zero);
 
+                return;
+            }
+
+            // Query result cache: if we've seen this exact query before and
+            // the underlying data hasn't changed, restore from cache.
+            if (TryGetCachedResults(newSearch, out var cached) && cached.IncludesApps == _includeApps)
+            {
+                _filteredItems = cached.FilteredItems;
+                _filteredApps = cached.FilteredApps;
+                _scoredFallbackItems = cached.ScoredFallbackItems;
+                _fallbackItems = cached.FallbackItems;
+                _filteredItemsIncludesApps = cached.IncludesApps;
+
+                benchmarkSession.RecordMilestone("CacheHit");
+                benchmarkSession.Complete();
+
+                RequestRefresh(fullRefresh: true, interval: TimeSpan.Zero);
+                stopwatch.Stop();
                 return;
             }
 
@@ -555,6 +814,8 @@ public sealed partial class MainListPage : DynamicListPage,
 
             var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
 
+            benchmarkSession.RecordMilestone("PreFilterSetup");
+
             // Produce a list of everything that matches the current filter.
             _filteredItems = InternalListHelpers.FilterListWithScores(newFilteredItems, searchQuery, _scoringFunction);
 
@@ -581,6 +842,7 @@ public sealed partial class MainListPage : DynamicListPage,
             // Produce a list of filtered apps with the appropriate limit
             if (newApps.Any())
             {
+                benchmarkSession.RecordMilestone("FilterCommands");
                 _filteredApps = InternalListHelpers.FilterListWithScores(newApps, searchQuery, _scoringFunction);
 
                 if (token.IsCancellationRequested)
@@ -588,6 +850,11 @@ public sealed partial class MainListPage : DynamicListPage,
                     return;
                 }
             }
+
+            // Store results in query cache for fast retrieval on backspace/retype
+            var cachedFallbacks = _scoredFallbackItems as RoScored<IListItem>[] ?? _scoredFallbackItems?.ToArray();
+            var cachedFallbackItems = _fallbackItems as RoScored<IListItem>[] ?? _fallbackItems?.ToArray();
+            StoreCacheEntry(newSearch, _filteredItems, _filteredApps, cachedFallbacks, cachedFallbackItems, _filteredItemsIncludesApps);
 
 #if CMDPAL_FF_MAINPAGE_TIME_RAISE_ITEMS
             var filterDoneTimestamp = stopwatch.ElapsedMilliseconds;
@@ -614,6 +881,8 @@ public sealed partial class MainListPage : DynamicListPage,
             Logger.LogDebug($"Render items with '{newSearch}' in {listPageUpdatedTimestamp}ms /d {listPageUpdatedTimestamp - filterDoneTimestamp}ms");
 #endif
 
+            benchmarkSession.RecordMilestone("FilterComplete");
+            benchmarkSession.Complete();
             stopwatch.Stop();
         }
     }
@@ -756,12 +1025,17 @@ public sealed partial class MainListPage : DynamicListPage,
 
     public void Receive(UpdateFallbackItemsMessage message)
     {
+        InvalidateQueryCache();
         _tlcManager.RebuildPinnedCache();
         _defaultViewDirty = true;
         RequestRefresh(fullRefresh: false);
     }
 
-    private void SettingsChangedHandler(ISettingsService sender, SettingsModel args) => HotReloadSettings(args);
+    private void SettingsChangedHandler(ISettingsService sender, SettingsModel args)
+    {
+        InvalidateQueryCache();
+        HotReloadSettings(args);
+    }
 
     private void HotReloadSettings(SettingsModel settings) => ShowDetails = settings.ShowAppDetails;
 

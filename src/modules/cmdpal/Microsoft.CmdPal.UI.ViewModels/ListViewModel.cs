@@ -292,6 +292,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         System.Diagnostics.Debug.Assert(!IsCurrentThreadUiThread(), "FetchItems should not run on the UI thread.");
 
+        var fetchBenchmark = QueryBenchmark.Instance.StartSession(SearchText, "FetchItems");
+
         // If this fetch should reset selection, remember that intent even if
         // a later incremental fetch cancels us.
         if (!keepSelection)
@@ -337,6 +339,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 ExitGetItemsScope();
             }
 
+            fetchBenchmark.RecordMilestone("GetItems");
+
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             // Collect all the items into new viewmodels
@@ -365,6 +369,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         newViewModels.Add(existing);
                         nextCache[item] = existing;
                         reused++;
+                        if (newViewModels.Count == 1)
+                        {
+                            fetchBenchmark.MarkFirstResult();
+                        }
+
                         continue;
                     }
 
@@ -380,6 +389,10 @@ public partial class ListViewModel : PageViewModel, IDisposable
                         createdViewModels.Add(viewModel);
                         nextCache[item] = viewModel;
                         created++;
+                        if (newViewModels.Count == 1)
+                        {
+                            fetchBenchmark.MarkFirstResult();
+                        }
                     }
                 }
                 catch (OperationCanceledException)
@@ -434,6 +447,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
             }
 
             itemsTransferredToList = true;
+
+            fetchBenchmark.RecordMilestone("ItemsTransferred");
+            fetchBenchmark.Complete();
 
             // If we removed items, we need to clean them up, to remove our event handlers
             foreach (var removedItem in removedItems)

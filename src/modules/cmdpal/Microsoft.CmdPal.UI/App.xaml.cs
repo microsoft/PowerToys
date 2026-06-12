@@ -291,6 +291,10 @@ public partial class App : Application, IDisposable
 
     public void Dispose()
     {
+        // Dump benchmark report on shutdown
+        var report = QueryBenchmark.Instance.GenerateReport();
+        Logger.LogInfo(report);
+
         (Services as IDisposable)?.Dispose();
         _globalErrorHandler.Dispose();
         EtwTrace.Dispose();
