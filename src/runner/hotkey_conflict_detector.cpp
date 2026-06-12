@@ -36,6 +36,7 @@ namespace HotkeyConflictDetector
 
     HotkeyConflictType HotkeyConflictManager::HasConflict(Hotkey const& _hotkey, const wchar_t* _moduleName, const int _hotkeyID)
     {
+        std::lock_guard<std::recursive_mutex> lock(hotkeyMutex);
         if (disabledHotkeys.find(_moduleName) != disabledHotkeys.end())
         {
             return HotkeyConflictType::NoConflict;
@@ -79,6 +80,7 @@ namespace HotkeyConflictDetector
 
     HotkeyConflictType HotkeyConflictManager::HasConflict(Hotkey const& _hotkey)
     {
+        std::lock_guard<std::recursive_mutex> lock(hotkeyMutex);
         uint16_t handle = GetHotkeyHandle(_hotkey);
 
         if (handle == 0)
@@ -113,6 +115,7 @@ namespace HotkeyConflictDetector
     // It returns a list of all conflicting shortcuts.
     std::vector<HotkeyConflictInfo> HotkeyConflictManager::GetAllConflicts(Hotkey const& _hotkey)
     {
+        std::lock_guard<std::recursive_mutex> lock(hotkeyMutex);
         std::vector<HotkeyConflictInfo> conflicts;
         uint16_t handle = GetHotkeyHandle(_hotkey);
 
@@ -164,6 +167,7 @@ namespace HotkeyConflictDetector
 
     bool HotkeyConflictManager::AddHotkey(Hotkey const& _hotkey, const wchar_t* _moduleName, const int _hotkeyID, bool isEnabled)
     {
+        std::lock_guard<std::recursive_mutex> lock(hotkeyMutex);
         if (!isEnabled)
         {
             disabledHotkeys[_moduleName].push_back({ _hotkey, _moduleName, _hotkeyID });
@@ -211,12 +215,13 @@ namespace HotkeyConflictDetector
     {
         std::vector<HotkeyConflictInfo> removedHotkeys;
 
+        std::lock_guard<std::recursive_mutex> lock(hotkeyMutex);
+
         if (disabledHotkeys.find(moduleName) != disabledHotkeys.end())
         {
             disabledHotkeys.erase(moduleName);
         }
 
-        std::lock_guard<std::mutex> lock(hotkeyMutex);
         bool foundRecord = false;
 
         for (auto it = sysConflictHotkeyMap.begin(); it != sysConflictHotkeyMap.end();)
@@ -310,6 +315,7 @@ namespace HotkeyConflictDetector
 
     void HotkeyConflictManager::EnableHotkeyByModule(const std::wstring& moduleName)
     {
+        std::lock_guard<std::recursive_mutex> lock(hotkeyMutex);
         if (disabledHotkeys.find(moduleName) == disabledHotkeys.end())
         {
             return; // No disabled hotkeys for this module
@@ -327,6 +333,7 @@ namespace HotkeyConflictDetector
 
     void HotkeyConflictManager::DisableHotkeyByModule(const std::wstring& moduleName)
     {
+        std::lock_guard<std::recursive_mutex> lock(hotkeyMutex);
         auto hotkeys = RemoveHotkeyByModule(moduleName);
         disabledHotkeys[moduleName] = hotkeys;
     }
@@ -382,7 +389,7 @@ namespace HotkeyConflictDetector
 
     json::JsonObject HotkeyConflictManager::GetHotkeyConflictsAsJson()
     {
-        std::lock_guard<std::mutex> lock(hotkeyMutex);
+        std::lock_guard<std::recursive_mutex> lock(hotkeyMutex);
 
         using namespace json;
         JsonObject root;
