@@ -35,6 +35,10 @@ namespace
     NOTIFYICONDATAW tray_icon_data;
     bool tray_icon_created = false;
 
+    // True once OS-initiated shutdown is in progress, so WM_DESTROY can
+    // skip cross-process cleanup that the OS is reaping in parallel.
+    bool g_session_ending = false;
+
     bool about_box_shown = false;
 
     HMENU h_menu = nullptr;
@@ -174,17 +178,39 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         }
         break;
     case WM_DESTROY:
-        if (tray_icon_created)
+        // Skip cross-process cleanup on OS shutdown: shell is dying and
+        // close_settings_window() blocks 1.5s on Settings.exe which the
+        // OS is reaping anyway — that wait would burn the quiesce budget.
+        if (!g_session_ending)
         {
-            Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
-            tray_icon_created = false;
+            Logger::info(L"WM_DESTROY received (user-initiated)");
+            if (tray_icon_created)
+            {
+                Shell_NotifyIcon(NIM_DELETE, &tray_icon_data);
+                tray_icon_created = false;
+            }
+            close_settings_window();
         }
-        close_settings_window();
         PostQuitMessage(0);
         break;
     case WM_CLOSE:
+        // Return 0 (don't fall through to DefWindowProc, which would attempt a
+        // second DestroyWindow on the already-destroyed HWND and set
+        // ERROR_INVALID_WINDOW_HANDLE). This path is now hit on every OS
+        // shutdown because WM_ENDSESSION routes through WM_CLOSE.
         DestroyWindow(window);
-        break;
+        return 0;
+    case WM_ENDSESSION:
+        // wparam==FALSE means shutdown was vetoed; must not tear down.
+        // Route through WM_CLOSE so close path stays single-sourced.
+        // WM_QUERYENDSESSION intentionally unhandled: DefWindowProc returns TRUE.
+        // No logging on the shutdown path: spdlog flush_on(info) would burn quiesce budget.
+        if (wparam)
+        {
+            g_session_ending = true;
+            SendMessageW(window, WM_CLOSE, 0, 0);
+        }
+        return 0;
     case WM_COMMAND:
         handle_tray_command(window, wparam, lparam);
         break;
