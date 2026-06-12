@@ -108,6 +108,7 @@ public:
 
     std::optional<CaptureFrame> TryGetNextFrame();
     std::optional<CaptureFrame> TryGetNextFrame( DWORD timeoutMs );
+    std::optional<CaptureFrame> PeekCurrentFrame() const;
     void StopCapture();
     void EnableCursorCapture( bool enable = true )
     {

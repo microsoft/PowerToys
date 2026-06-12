@@ -13,6 +13,12 @@
       <UniqueIdentifier>{e1fa606f-a2e6-40c8-8779-8ca1813d9f01}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
+    <Filter Include="Source Files\rnnoise">
+      <UniqueIdentifier>{c1cc2820-c3a4-413d-b5d8-0d2034de2474}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\rnnoise">
+      <UniqueIdentifier>{7795b908-e073-46ed-b209-c07ac0324adb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Zoomit.cpp">
@@ -64,6 +70,48 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ZoomItBreak\BreakTimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BackgroundBlur.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebcamCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebcamPreviewWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\celt_lpc.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\denoise.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\kiss_fft.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\nnet.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\nnet_default.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\parse_lpcnet_weights.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\pitch.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\rnn.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\rnnoise_data_little.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="rnnoise\rnnoise_tables.c">
+      <Filter>Source Files\rnnoise</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseSuppressor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,6 +167,27 @@
     <ClInclude Include="..\ZoomItBreak\BreakTimer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BackgroundBlur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebcamCapture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebcamPreviewWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rnnoise\vec.h">
+      <Filter>Header Files\rnnoise</Filter>
+    </ClInclude>
+    <ClInclude Include="rnnoise\nnet_arch.h">
+      <Filter>Header Files\rnnoise</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseSuppressor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rnnoise\rnnoise.h">
+      <Filter>Header Files\rnnoise</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="appicon.ico">
@@ -150,5 +219,6 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natstepfilter" />
   </ItemGroup>
 </Project>
