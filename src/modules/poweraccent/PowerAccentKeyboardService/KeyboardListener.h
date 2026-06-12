@@ -44,6 +44,8 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         void UpdateHoldDuration(int32_t holdDuration);
         void UpdateExcludedApps(std::wstring_view excludedApps);
 
+        void ForceReset();
+
         static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 
     private:
