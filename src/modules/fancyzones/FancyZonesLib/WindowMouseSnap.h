@@ -18,6 +18,7 @@ public:
     bool MoveSizeStart(HMONITOR monitor, bool isSnapping);
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool isSnapping, bool isSelectManyZonesState);
     void MoveSizeEnd();
+    void Abort();
 
 private:
     void SwitchSnappingMode(bool isSnapping);

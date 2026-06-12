@@ -533,7 +533,7 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 
     // Only suppress the bare Shift key itself during drag (used for drag-toggle).
     // Do NOT swallow Shift+<other key> combos - that steals keystrokes from apps.
-    if (m_draggingState.IsDragging() && shift &&
+    if (m_draggingState.IsDragging() &&
         (info->vkCode == VK_LSHIFT || info->vkCode == VK_RSHIFT))
     {
         return true;
@@ -717,11 +717,15 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_WINDOWDESTROYED)
         {
             auto hwnd = reinterpret_cast<HWND>(wparam);
-            // If the destroyed window was being dragged, force-end the drag
+            // If the destroyed window was being dragged, abort the drag without
+            // snapping. Calling MoveSizeEnd() here would snap the now-destroyed
+            // HWND into a zone and corrupt the layout state.
             if (m_windowMouseSnapper && m_windowMouseSnapper->GetDraggedWindow() == hwnd)
             {
-                Logger::info(L"Window destroyed during drag - forcing MoveSizeEnd");
-                MoveSizeEnd();
+                Logger::info(L"Window destroyed during drag - aborting drag");
+                m_windowMouseSnapper->Abort();
+                m_windowMouseSnapper = nullptr;
+                m_draggingState.Disable();
             }
         }
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)

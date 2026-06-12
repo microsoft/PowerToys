@@ -175,6 +175,7 @@ void FancyZonesApp::HandleWinHookEvent(WinHookEvent* data) noexcept
     case EVENT_OBJECT_UNCLOAKED:
     case EVENT_OBJECT_SHOW:
     case EVENT_OBJECT_CREATE:
+    case EVENT_OBJECT_DESTROY:
     {
         fzCallback->HandleWinHookEvent(data);
     }
