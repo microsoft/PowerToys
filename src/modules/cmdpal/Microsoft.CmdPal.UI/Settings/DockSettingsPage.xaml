@@ -249,6 +249,10 @@
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_AlwaysOnTop" IsOn="{x:Bind ViewModel.Dock_AlwaysOnTop, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard x:Uid="DockBehavior_AutoHide_SettingsCard" HeaderIcon="{ui:FontIcon Glyph=&#xE8A7;}">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_DockSettingsPage_AutoHide" IsOn="{x:Bind ViewModel.Dock_AutoHide, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  Monitors Section  -->
                     <TextBlock x:Uid="DockMonitors_Header" Style="{StaticResource SettingsSectionHeaderTextBlockStyle}" />
 
