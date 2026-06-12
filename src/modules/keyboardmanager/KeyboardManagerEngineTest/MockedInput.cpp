@@ -130,6 +130,12 @@ bool MockedInput::GetVirtualKeyState(int key)
     return keyboardState[key];
 }
 
+// Function to set the state of a particular key for test setup
+void MockedInput::SetKeyboardState(int key, bool state)
+{
+    keyboardState[key] = state;
+}
+
 // Function to reset the mocked keyboard state
 void MockedInput::ResetKeyboardState()
 {

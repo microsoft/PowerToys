@@ -15,6 +15,7 @@ namespace TestHelpers
         state.ClearSingleKeyRemaps();
         state.ClearOSLevelShortcuts();
         state.ClearAppSpecificShortcuts();
+        state.ClearSingleKeyToTextRemaps();
 
         // Allocate memory for the keyboardManagerState activatedApp member to avoid CRT assert errors
         std::wstring maxLengthString;

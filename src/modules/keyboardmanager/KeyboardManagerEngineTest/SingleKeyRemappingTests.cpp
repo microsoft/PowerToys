@@ -329,4 +329,64 @@ namespace RemappingLogicTests
             Assert::AreEqual(mockedInputHandler.GetVirtualKeyState(0x56), false);
         }
     };
+
+    // Tests for single key to text remap modifier release logic
+    TEST_CLASS (SingleKeyToTextRemapModifierTests)
+    {
+    private:
+        KeyboardManagerInput::MockedInput mockedInputHandler;
+        State testState;
+
+    public:
+        TEST_METHOD_INITIALIZE(InitializeTestEnv)
+        {
+            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+
+            // Set HandleSingleKeyToTextRemapEvent as the hook procedure
+            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyToTextRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
+            mockedInputHandler.SetHookProc(currentHookProc);
+        }
+
+        // Test if Win key is released and restored when held during text remap
+        TEST_METHOD (HandleSingleKeyToTextRemapEvent_ShouldReleaseAndRestoreWinKey_WhenWinKeyIsHeld)
+        {
+            // Remap X to text "hello"
+            testState.AddSingleKeyToTextRemap(0x58, L"hello");
+
+            // Simulate LWin being held down
+            mockedInputHandler.SetKeyboardState(VK_LWIN, true);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x58 } },
+            };
+
+            // Send X keydown — handler should release LWin before text and restore after
+            mockedInputHandler.SendVirtualInput(inputs);
+
+            // After the handler completes, LWin should be restored (re-pressed)
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LWIN));
+        }
+
+        // Test if Ctrl key is released and restored when held during text remap
+        TEST_METHOD (HandleSingleKeyToTextRemapEvent_ShouldReleaseAndRestoreCtrl_WhenCtrlIsHeld)
+        {
+            // Remap X to text "hello"
+            testState.AddSingleKeyToTextRemap(0x58, L"hello");
+
+            // Simulate LCtrl being held down
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 0x58 } },
+            };
+
+            // Send X keydown
+            mockedInputHandler.SendVirtualInput(inputs);
+
+            // After the handler completes, LCtrl should be restored
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+        }
+    };
 }

@@ -42,6 +42,9 @@ namespace KeyboardManagerInput
         // Function to get the state of a particular key
         bool GetVirtualKeyState(int key);
 
+        // Function to set the state of a particular key for test setup
+        void SetKeyboardState(int key, bool state);
+
         // Function to reset the mocked keyboard state
         void ResetKeyboardState();
 

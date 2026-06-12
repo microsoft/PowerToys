@@ -1824,7 +1824,7 @@ namespace KeyboardEventHandlers
         }
 
         // Release held modifiers before text injection to prevent Ctrl+text corruption
-        constexpr int modifierKeys[] = { VK_LCONTROL, VK_RCONTROL, VK_LSHIFT, VK_RSHIFT, VK_LMENU, VK_RMENU };
+        constexpr int modifierKeys[] = { VK_LCONTROL, VK_RCONTROL, VK_LSHIFT, VK_RSHIFT, VK_LMENU, VK_RMENU, VK_LWIN, VK_RWIN };
         std::vector<INPUT> releaseEvents;
         std::vector<int> releasedKeys;
 
@@ -1839,7 +1839,10 @@ namespace KeyboardEventHandlers
 
         if (!releaseEvents.empty())
         {
-            ii.SendVirtualInput(releaseEvents);
+            if (!ii.SendVirtualInput(releaseEvents))
+            {
+                return 0;
+            }
         }
 
         Helpers::SendTextInput(*remapping);
@@ -1853,6 +1856,9 @@ namespace KeyboardEventHandlers
                 Helpers::SetKeyEvent(restoreEvents, INPUT_KEYBOARD, static_cast<WORD>(vk), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
             }
             ii.SendVirtualInput(restoreEvents);
+            // Note: not checking return here — failing to restore modifiers is
+            // less harmful than failing to release them (text already sent correctly).
+            // The user can tap the modifier to resync state.
         }
 
         return 1;
