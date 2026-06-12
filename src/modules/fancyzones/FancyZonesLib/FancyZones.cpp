@@ -581,6 +581,27 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
 {
     switch (message)
     {
+    case WM_QUERYENDSESSION:
+    {
+        // This WndProc returns 0 for unhandled messages (does not call
+        // DefWindowProc). Must explicitly return TRUE here or the OS treats
+        // it as a shutdown veto.
+        return TRUE;
+    }
+
+    case WM_ENDSESSION:
+    {
+        // wparam==FALSE means shutdown was vetoed; only quit on real shutdown.
+        // Without this, run_message_loop would block in GetMessageW until the
+        // OS quiesce timeout expired and forcibly terminated the process,
+        // producing an APPLICATION_HANG_QUIESCE Watson report.
+        if (wparam)
+        {
+            PostQuitMessage(0);
+        }
+        return 0;
+    }
+
     case WM_HOTKEY:
     {
         if (wparam == static_cast<WPARAM>(HotkeyId::Editor))

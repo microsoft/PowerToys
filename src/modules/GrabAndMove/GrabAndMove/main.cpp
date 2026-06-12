@@ -1290,8 +1290,15 @@ static void HandleDragResize(POINT pt)
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
     RepositionOverlay(nr.left, nr.top, w, h);
 }
+static bool g_session_ending = false;
+
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    // Note: WM_QUERYENDSESSION / WM_ENDSESSION are NOT handled here.
+    // This is the message-only window class (created with HWND_MESSAGE).
+    // The OS only broadcasts shutdown messages to top-level windows, so
+    // those cases are owned by OverlayWndProc below. The g_session_ending
+    // flag set there is read by the WM_DESTROY case in this WndProc.
     switch (msg)
     {
     case WM_INVALIDATE_EXCLUDED_CACHE:
@@ -1313,11 +1320,37 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         return 0;
 
     case WM_DESTROY:
-        RemoveTrayIcon();
+        // Skip Shell_NotifyIcon(NIM_DELETE) on OS shutdown: explorer.exe is
+        // dying and the IPC round-trip would burn the quiesce budget.
+        if (!g_session_ending)
+        {
+            RemoveTrayIcon();
+        }
         PostQuitMessage(0);
         return 0;
     }
 
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+// WndProc for the top-level overlay window. The message-only window above
+// does NOT receive WM_QUERYENDSESSION / WM_ENDSESSION (broadcasts only go
+// to top-level windows), so the overlay class must own the shutdown
+// handshake to make the GetMessageW loop exit before the OS quiesce
+// timeout expires and forcibly terminates the process.
+static LRESULT CALLBACK OverlayWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch (msg)
+    {
+    case WM_ENDSESSION:
+        // wparam==FALSE means shutdown was vetoed; only quit on real shutdown.
+        if (wParam)
+        {
+            g_session_ending = true;
+            PostQuitMessage(0);
+        }
+        return 0;
+    }
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
@@ -1390,7 +1423,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     // Register the overlay window class (white background, ARROW cursor)
     WNDCLASSEXW overlayWindowClass = {};
     overlayWindowClass.cbSize = sizeof(overlayWindowClass);
-    overlayWindowClass.lpfnWndProc = DefWindowProcW;
+    overlayWindowClass.lpfnWndProc = OverlayWndProc;
     overlayWindowClass.hInstance = hInstance;
     overlayWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     overlayWindowClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
@@ -1408,6 +1441,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         TraceLoggingUnregister(g_hProvider);
         return 1;
     }
+
+    // Create the (hidden) overlay window up-front so the process always has
+    // a top-level window. WM_QUERYENDSESSION / WM_ENDSESSION broadcasts only
+    // reach top-level windows; if the user never triggers a grab-and-move
+    // gesture (the lazy path), the message-only window above would be the
+    // only HWND and the GetMessageW loop would not exit on shutdown.
+    EnsureOverlayWindow();
 
     // Pre-load system cursors (fix #6 – avoid LoadCursorW in hot path)
     g_curSizeAll  = LoadCursorW(nullptr, IDC_SIZEALL);
@@ -1481,7 +1521,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         DestroyWindow(g_hOverlay);
         g_hOverlay = nullptr;
     }
-    RemoveTrayIcon();
+    if (!g_session_ending)
+    {
+        RemoveTrayIcon();
+    }
     TraceLoggingUnregister(g_hProvider);
 
     return static_cast<int>(msg.wParam);
