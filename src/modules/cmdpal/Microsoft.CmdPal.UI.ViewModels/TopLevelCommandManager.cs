@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -20,6 +19,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public sealed partial class TopLevelCommandManager : ObservableObject,
     IRecipient<ReloadCommandsMessage>,
+    IRecipient<ProviderEnabledStateChangedMessage>,
     IRecipient<PinCommandItemMessage>,
     IRecipient<UnpinCommandItemMessage>,
     IRecipient<PinToDockMessage>,
@@ -52,6 +52,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
+        WeakReferenceMessenger.Default.Register<ProviderEnabledStateChangedMessage>(this);
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
@@ -323,6 +324,99 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         {
             IsLoading = false;
             WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
+        }
+    }
+
+    private async Task UpdateProviderEnabledStateAsyncCore(string providerId, bool isEnabled)
+    {
+        IsLoading = true;
+
+        try
+        {
+            // If disabled, we'll remove that providers commands from top level commands, dock bands, and pinned commands.
+            if (!isEnabled)
+            {
+                lock (TopLevelCommands)
+                {
+                    var commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId);
+                    foreach (var command in commandsToRemove)
+                    {
+                        TopLevelCommands.Remove(command);
+                    }
+                }
+
+                lock (_dockBandsLock)
+                {
+                    var dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId);
+                    foreach (var band in dockBandsToRemove)
+                    {
+                        DockBands.Remove(band);
+                    }
+                }
+
+                lock (PinnedCommands)
+                {
+                    var pinnedToRemove = PinnedCommands.Where(p => p.ProviderId == providerId);
+                    foreach (var command in pinnedToRemove)
+                    {
+                        PinnedCommands.Remove(command);
+                    }
+                }
+            }
+            else
+            {
+                CommandProviderWrapper? provider;
+                lock (_commandProvidersLock)
+                {
+                    provider = _commandProviders.FirstOrDefault(p => p.ProviderId == providerId);
+                }
+
+                if (provider != null)
+                {
+                    await provider.LoadTopLevelCommands(_serviceProvider);
+
+                    lock (TopLevelCommands)
+                    {
+                        foreach (var command in provider.TopLevelItems)
+                        {
+                            if (!TopLevelCommands.Any(a => a.Id == command.Id))
+                            {
+                                TopLevelCommands.Add(command);
+                            }
+                        }
+
+                        foreach (var item in provider.FallbackItems)
+                        {
+                            if (item.IsEnabled)
+                            {
+                                TopLevelCommands.Add(item);
+                            }
+                        }
+                    }
+
+                    lock (_dockBandsLock)
+                    {
+                        foreach (var band in provider.DockBandItems)
+                        {
+                            if (!DockBands.Any(a => a.Id == band.Id))
+                            {
+                                DockBands.Add(band);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Logger.LogWarning($"Could not find provider with id '{providerId}' to update enabled state.");
+                    return;
+                }
+            }
+
+            WeakReferenceMessenger.Default.Send<UpdateFallbackItemsMessage>(new());
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 
@@ -599,6 +693,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     public void Receive(ReloadCommandsMessage message) =>
         _ = ReloadAllCommandsAsync();
+
+    public void Receive(ProviderEnabledStateChangedMessage message) =>
+        _ = UpdateProviderEnabledStateAsyncCore(message.ProviderId, message.IsEnabled);
 
     public void Receive(PinCommandItemMessage message)
     {
