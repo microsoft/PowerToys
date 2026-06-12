@@ -136,6 +136,40 @@ namespace Wox.Test
         }
 
         [TestMethod]
+        public void CancelAndWait_DoesNotDisposeCtsWhileTaskStillRuns()
+        {
+            // Regression: CancelAndWait used to dispose the underlying CTS unconditionally
+            // on timeout, leaving any still-running task body holding a disposed source —
+            // a future code path that touches token WaitHandles (e.g. Register, WaitOne)
+            // would crash with ObjectDisposedException, violating the PR's own
+            // "tasks never observe a disposed CTS" invariant. The fix defers disposal
+            // until the task actually completes.
+            var release = new ManualResetEventSlim(initialState: false);
+            CancellationToken capturedToken = default;
+
+            var session = QuerySession.Start(token =>
+            {
+                capturedToken = token;
+                return Task.Run(() => release.Wait(WaitBudget));
+            });
+
+            bool completed = session.CancelAndWait(TimeSpan.FromMilliseconds(50));
+            Assert.IsFalse(completed, "Sanity: task must outlive the timeout.");
+
+            // While the task is still running with the CTS undisposed,
+            // CancellationToken.Register must succeed (would throw ODE if disposed).
+            using (capturedToken.Register(() => { }))
+            {
+                // no-op; just proves Register didn't throw
+            }
+
+            // Allow the task to complete; the deferred ContinueWith should then dispose
+            // the CTS, and a subsequent Register attempt is allowed to throw ODE.
+            release.Set();
+            session.Completion.Wait(WaitBudget);
+        }
+
+        [TestMethod]
         public void Dispose_IsIdempotent_AndSafeAfterCancel()
         {
             var session = QuerySession.Start(_ => Task.CompletedTask);

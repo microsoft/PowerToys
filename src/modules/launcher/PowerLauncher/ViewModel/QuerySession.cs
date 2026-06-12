@@ -29,6 +29,12 @@ namespace PowerLauncher.ViewModel
     /// captures the token as a local cannot be tricked by a later
     /// <c>_currentSession = new QuerySession()</c> reassignment into observing a
     /// fresh (non-cancelled) token.
+    /// <para>
+    /// Note: "structural" applies only to callers that capture <see cref="Token"/>
+    /// into a local before passing it into a task body. <see cref="QuerySession"/>
+    /// cannot prevent a future author from re-reading <c>_currentSession.Token</c>
+    /// inside a loop / continuation, which would reintroduce the original bug
+    /// shape — code review of every observer site is still required.
     /// </para>
     /// </remarks>
     internal sealed class QuerySession : IDisposable
@@ -147,7 +153,24 @@ namespace PowerLauncher.ViewModel
 
             if (Interlocked.Exchange(ref _disposed, 1) == 0)
             {
-                _cts.Dispose();
+                if (completed)
+                {
+                    _cts.Dispose();
+                }
+                else
+                {
+                    // The tracked task outlived our timeout; disposing _cts under
+                    // it would risk ObjectDisposedException if the task later
+                    // touches token WaitHandles. Defer disposal until the task
+                    // actually completes. DenyChildAttach so an attached child
+                    // task cannot delay disposal past the parent's completion.
+                    _ = Completion.ContinueWith(
+                        static (_, state) => ((CancellationTokenSource)state).Dispose(),
+                        _cts,
+                        CancellationToken.None,
+                        TaskContinuationOptions.DenyChildAttach,
+                        TaskScheduler.Default);
+                }
             }
 
             return completed;
