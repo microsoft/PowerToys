@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:backdrops="using:Microsoft.PowerToys.Common.UI.Controls.Backdrops"
+    xmlns:local="using:Microsoft.PowerToys.Common.UI.Controls">
+
+    <Style BasedOn="{StaticResource DefaultTransparentCardStyle}" TargetType="local:TransparentCard" />
+
+    <Style x:Key="DefaultTransparentCardStyle" TargetType="local:TransparentCard">
+        <Setter Property="BorderBrush" Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:TransparentCard">
+                    <Grid
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Translation="0,0,24">
+                        <Grid.Shadow>
+                            <ThemeShadow />
+                        </Grid.Shadow>
+                        <SystemBackdropElement CornerRadius="{TemplateBinding CornerRadius}">
+                            <SystemBackdropElement.SystemBackdrop>
+                                <backdrops:AlwaysActiveDesktopAcrylicBackdrop />
+                            </SystemBackdropElement.SystemBackdrop>
+                        </SystemBackdropElement>
+                        <ContentPresenter
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>
