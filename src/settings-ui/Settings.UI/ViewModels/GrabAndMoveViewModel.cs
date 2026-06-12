@@ -147,6 +147,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool UseScreenEdgeSnap
+        {
+            get => _moduleSettings.Properties.UseScreenEdgeSnap.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.UseScreenEdgeSnap.Value != value)
+                {
+                    _moduleSettings.Properties.UseScreenEdgeSnap.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(UseScreenEdgeSnap));
+                }
+            }
+        }
+
+        public bool UseScreenEdgeMaximize
+        {
+            get => _moduleSettings.Properties.UseScreenEdgeMaximize.Value;
+
+            set
+            {
+                if (_moduleSettings.Properties.UseScreenEdgeMaximize.Value != value)
+                {
+                    _moduleSettings.Properties.UseScreenEdgeMaximize.Value = value;
+                    NotifyModuleSettingsChanged();
+                    OnPropertyChanged(nameof(UseScreenEdgeMaximize));
+                }
+            }
+        }
+
         public bool DoNotActivateOnGameMode
         {
             get => _moduleSettings.Properties.DoNotActivateOnGameMode.Value;
