@@ -959,5 +959,23 @@ namespace Microsoft.CmdPal.Ext.TimeDate {
                 return ResourceManager.GetString("timedate_copy_time_command_name", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open notification center.
+        /// </summary>
+        public static string timedate_show_notification_center_command_name {
+            get {
+                return ResourceManager.GetString("timedate_show_notification_center_command_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Notification center.
+        /// </summary>
+        public static string timedate_notification_center_band_title {
+            get {
+                return ResourceManager.GetString("timedate_notification_center_band_title", resourceCulture);
+            }
+        }
     }
 }
