@@ -1364,6 +1364,7 @@ pii
 pinfo
 pinvoke
 pipename
+Pitjantjatjara
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI

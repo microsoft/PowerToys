@@ -537,6 +537,14 @@ public static class CharacterMappings
             [LetterKey.VK_COMMA] = ["“", "”", "‘", "’", "«", "»"],
         }),
 
+        new(Language.PJ, "Pitjantjatjara", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_L] = ["ḻ"],
+            [LetterKey.VK_N] = ["ṉ"],
+            [LetterKey.VK_R] = ["ṟ"],
+            [LetterKey.VK_T] = ["ṯ"],
+        }),
+
         new(Language.RO, "Romanian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["ă", "â"],
@@ -726,6 +734,7 @@ public static class CharacterMappings
         Language.PI,
         Language.PL,
         Language.PT,
+        Language.PJ,
         Language.RO,
         Language.SK,
         Language.SL,
