@@ -476,6 +476,12 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="DockBehavior_AlwaysOnTop_SettingsCard.Description" xml:space="preserve">
     <value>Keep the dock above other windows, except while an app is fullscreen</value>
   </data>
+  <data name="DockBehavior_AutoHide_SettingsCard.Header" xml:space="preserve">
+    <value>Auto-hide dock</value>
+  </data>
+  <data name="DockBehavior_AutoHide_SettingsCard.Description" xml:space="preserve">
+    <value>Collapse the dock until you hover over its screen edge</value>
+  </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
   </data>

@@ -126,4 +126,28 @@ public class BasicTests : CommandPaletteTestBase
 
         Assert.IsNotNull(this.Find<NavigationViewItem>("Put computer to sleep"));
     }
+
+    [TestMethod]
+    public void DockSettingsAutoHideToggleTest()
+    {
+        OpenSettingsWindow();
+        NavigateToDockSettings();
+
+        var autoHideToggle = FindDockAutoHideToggle();
+        Assert.IsNotNull(autoHideToggle);
+
+        var initialState = autoHideToggle.IsOn;
+        autoHideToggle.Toggle(!initialState);
+        Assert.AreEqual(!initialState, autoHideToggle.IsOn);
+
+        this.Find<NavigationViewItem>("General").Click();
+        NavigateToDockSettings();
+
+        autoHideToggle = FindDockAutoHideToggle();
+        Assert.IsNotNull(autoHideToggle);
+        Assert.AreEqual(!initialState, autoHideToggle.IsOn);
+
+        autoHideToggle.Toggle(initialState);
+        Assert.AreEqual(initialState, autoHideToggle.IsOn);
+    }
 }
