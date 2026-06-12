@@ -338,7 +338,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             {
                 lock (TopLevelCommands)
                 {
-                    var commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId);
+                    var commandsToRemove = TopLevelCommands.Where(c => c.CommandProviderId == providerId).ToList();
                     foreach (var command in commandsToRemove)
                     {
                         TopLevelCommands.Remove(command);
@@ -347,7 +347,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
                 lock (_dockBandsLock)
                 {
-                    var dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId);
+                    var dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
                     foreach (var band in dockBandsToRemove)
                     {
                         DockBands.Remove(band);
@@ -356,7 +356,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
                 lock (PinnedCommands)
                 {
-                    var pinnedToRemove = PinnedCommands.Where(p => p.ProviderId == providerId);
+                    var pinnedToRemove = PinnedCommands.Where(p => p.ProviderId == providerId).ToList();
                     foreach (var command in pinnedToRemove)
                     {
                         PinnedCommands.Remove(command);
@@ -387,7 +387,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
                         foreach (var item in provider.FallbackItems)
                         {
-                            if (item.IsEnabled)
+                            if (!TopLevelCommands.Any(a => a.Id == item.Id) && item.IsEnabled)
                             {
                                 TopLevelCommands.Add(item);
                             }
@@ -411,8 +411,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                     return;
                 }
             }
-
-            WeakReferenceMessenger.Default.Send<UpdateFallbackItemsMessage>(new());
         }
         finally
         {
