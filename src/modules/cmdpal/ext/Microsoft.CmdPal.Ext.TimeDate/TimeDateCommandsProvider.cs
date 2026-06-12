@@ -59,14 +59,17 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         var clockBand = new WrappedDockItem(
             [_bandItem],
             "com.microsoft.cmdpal.timedate.dockBand",
-            Resources.Microsoft_plugin_timedate_dock_band_title);
+            Resources.Microsoft_plugin_timedate_dock_band_title)
+        {
+            Icon = Icons.TimeDateExtIcon,
+        };
 
         var notificationBand = new WrappedDockItem(
             [_notificationCenterBandItem],
             "com.microsoft.cmdpal.timedate.notificationCenterBand",
             Resources.timedate_notification_center_band_title)
         {
-            Icon = new IconInfo("\uEA8F"),
+            Icon = Icons.NotificationCenterIcon,
         };
 
         return new ICommandItem[] { clockBand, notificationBand };
@@ -148,7 +151,7 @@ internal sealed partial class NotificationCenterDockBand : ListItem
 {
     public NotificationCenterDockBand()
     {
-        Icon = new IconInfo("\uEA8F"); // Notification bell
+        Icon = Icons.NotificationCenterIcon; // Notification bell
         Title = Resources.timedate_notification_center_band_title;
         Command = new OpenUrlCommand("ms-actioncenter:")
         {
