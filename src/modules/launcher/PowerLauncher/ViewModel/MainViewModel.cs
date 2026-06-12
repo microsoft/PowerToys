@@ -803,12 +803,23 @@ namespace PowerLauncher.ViewModel
                     });
 
                     _currentSession = currentSession;
+                }
 
-                    if (previousSession != null)
-                    {
-                        previousSession.Cancel();
-                        _ = previousSession.DisposeWhenComplete();
-                    }
+                // Cancel the prior in-flight query for ANY non-empty query, even one
+                // that produced zero plugin pairs (e.g. all globals disabled + no
+                // keyword match, so QueryBuilder.Build returns an empty dictionary).
+                // The pre-refactor code cancelled _updateSource unconditionally before
+                // the Count check; this restores that invariant so a non-empty query
+                // whose Build() yields zero pairs still tears down the previous
+                // fan-out instead of leaking it. Cancel() and DisposeWhenComplete()
+                // are idempotent, and Token is a stored snapshot, so leaving
+                // _currentSession bound to the just-cancelled session keeps late
+                // IResultUpdated events suppressed via their captured token rather
+                // than falling back to CancellationToken.None and slipping through.
+                if (previousSession != null)
+                {
+                    previousSession.Cancel();
+                    _ = previousSession.DisposeWhenComplete();
                 }
             }
             else
