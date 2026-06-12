@@ -68,6 +68,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             string[] additionalActionHeaderKeys =
             [
                 "ImageToText",
+                "FixSpellingAndGrammar",
                 "PasteAsTxtFile",
                 "PasteAsPngFile",
                 "PasteAsHtmlFile",
@@ -79,10 +80,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 if (action is AdvancedPasteAdditionalAction additionalAction)
                 {
+                    var headerKey = additionalActionHeaderKeys[Math.Min(index, additionalActionHeaderKeys.Length - 1)];
                     hotkeyAccessors.Add(new HotkeyAccessor(
                         () => additionalAction.Shortcut,
                         value => additionalAction.Shortcut = value ?? new HotkeySettings(),
-                        additionalActionHeaderKeys[index]));
+                        headerKey));
                     index++;
                 }
             }
@@ -95,6 +97,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     value => customAction.Shortcut = value ?? new HotkeySettings(),
                     customAction.Name));
             }
+
+            // Coaching shortcut for Fix Spelling and Grammar
+            var fixSpellingAction = Properties.AdditionalActions.FixSpellingAndGrammar;
+            hotkeyAccessors.Add(new HotkeyAccessor(
+                () => fixSpellingAction.CoachingShortcut,
+                value => fixSpellingAction.CoachingShortcut = value ?? new HotkeySettings(),
+                "FixSpellingAndGrammarCoaching"));
 
             return hotkeyAccessors.ToArray();
         }

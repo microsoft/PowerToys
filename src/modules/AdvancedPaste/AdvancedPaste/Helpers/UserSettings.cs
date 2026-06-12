@@ -46,6 +46,22 @@ namespace AdvancedPaste.Settings
 
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
 
+        public string FixSpellingAndGrammarPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarSystemPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarProviderId { get; private set; } = string.Empty;
+
+        public bool FixSpellingAndGrammarCoachingEnabled { get; private set; }
+
+        public bool FixSpellingAndGrammarCoachingShortcutSet { get; private set; }
+
+        public string FixSpellingAndGrammarCoachingPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarCoachingSystemPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarCoachingProviderId { get; private set; } = string.Empty;
+
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
         public UserSettings(IFileSystem fileSystem)
@@ -113,10 +129,21 @@ namespace AdvancedPaste.Settings
                                 EnableClipboardPreview = properties.EnableClipboardPreview;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
 
+                                var fixSpellingAction = properties.AdditionalActions.FixSpellingAndGrammar;
+                                FixSpellingAndGrammarPrompt = fixSpellingAction.Prompt ?? string.Empty;
+                                FixSpellingAndGrammarSystemPrompt = fixSpellingAction.SystemPrompt ?? string.Empty;
+                                FixSpellingAndGrammarProviderId = fixSpellingAction.ProviderId ?? string.Empty;
+                                FixSpellingAndGrammarCoachingEnabled = fixSpellingAction.CoachingEnabled;
+                                FixSpellingAndGrammarCoachingShortcutSet = fixSpellingAction.CoachingShortcut?.Code > 0;
+                                FixSpellingAndGrammarCoachingPrompt = fixSpellingAction.CoachingPrompt ?? string.Empty;
+                                FixSpellingAndGrammarCoachingSystemPrompt = fixSpellingAction.CoachingSystemPrompt ?? string.Empty;
+                                FixSpellingAndGrammarCoachingProviderId = fixSpellingAction.CoachingProviderId ?? string.Empty;
+
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =
                                 [
                                     (PasteFormats.ImageToText, [sourceAdditionalActions.ImageToText]),
+                                    (PasteFormats.FixSpellingAndGrammar, [sourceAdditionalActions.FixSpellingAndGrammar]),
                                     (PasteFormats.PasteAsTxtFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsTxtFile]),
                                     (PasteFormats.PasteAsPngFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsPngFile]),
                                     (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile]),

@@ -492,6 +492,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     var newValue = value ?? new PasteAIConfiguration();
                     _advancedPasteSettings.Properties.PasteAIConfiguration = newValue;
+                    SyncProviderActiveFlags(newValue);
                     SubscribeToPasteAIConfiguration(newValue);
 
                     OnPropertyChanged(nameof(PasteAIConfiguration));
@@ -779,6 +780,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 SaveAndNotifySettings();
                 OnPropertyChanged(nameof(PasteAIConfiguration));
             }
+        }
+
+        public void SetAsDefaultProvider(PasteAIProviderDefinition provider)
+        {
+            if (provider is null || string.IsNullOrEmpty(provider.Id))
+            {
+                return;
+            }
+
+            var config = PasteAIConfiguration;
+            if (config is null)
+            {
+                return;
+            }
+
+            config.ActiveProviderId = provider.Id;
+            SyncProviderActiveFlags(config);
+            SaveAndNotifySettings();
+            OnPropertyChanged(nameof(PasteAIConfiguration));
         }
 
         protected override void Dispose(bool disposing)
@@ -1324,7 +1344,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return true;
                 }
 
-                if (existing?.ModerationEnabled != updated?.ModerationEnabled || existing?.EnableAdvancedAI != updated?.EnableAdvancedAI || existing?.IsActive != updated?.IsActive)
+                if (existing?.ModerationEnabled != updated?.ModerationEnabled || existing?.EnableAdvancedAI != updated?.EnableAdvancedAI)
                 {
                     return true;
                 }
@@ -1411,6 +1431,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             if (sender is PasteAIProviderDefinition provider)
             {
+                // IsActive is a UI-only (JsonIgnore) flag; don't save when it changes.
+                if (string.Equals(e.PropertyName, nameof(PasteAIProviderDefinition.IsActive), StringComparison.Ordinal))
+                {
+                    return;
+                }
+
                 // When service type changes we may need to update credentials entry names.
                 if (string.Equals(e.PropertyName, nameof(PasteAIProviderDefinition.ServiceType), StringComparison.Ordinal))
                 {
@@ -1427,12 +1453,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.Providers), StringComparison.Ordinal))
             {
                 SubscribeToPasteAIProviders(PasteAIConfiguration);
+                SyncProviderActiveFlags(PasteAIConfiguration);
                 SaveAndNotifySettings();
                 return;
             }
 
             if (string.Equals(e.PropertyName, nameof(PasteAIConfiguration.ActiveProviderId), StringComparison.Ordinal))
             {
+                SyncProviderActiveFlags(PasteAIConfiguration);
                 SaveAndNotifySettings();
             }
         }
@@ -1448,7 +1476,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             pasteConfig.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
 
+            SyncProviderActiveFlags(pasteConfig);
             SubscribeToPasteAIProviders(pasteConfig);
+        }
+
+        private static void SyncProviderActiveFlags(PasteAIConfiguration config)
+        {
+            if (config?.Providers is null)
+            {
+                return;
+            }
+
+            var activeId = config.ActiveProviderId;
+
+            // If no explicit active ID, default to the first provider
+            if (string.IsNullOrEmpty(activeId) && config.Providers.Count > 0)
+            {
+                activeId = config.Providers[0].Id;
+                config.ActiveProviderId = activeId;
+            }
+
+            foreach (var provider in config.Providers)
+            {
+                provider.IsActive = !string.IsNullOrEmpty(activeId) && string.Equals(provider.Id, activeId, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         private static string RetrieveCredentialValue(string credentialResource, string credentialUserName)

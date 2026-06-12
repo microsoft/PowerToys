@@ -118,6 +118,15 @@ public static class AIServiceTypeRegistry
             PrivacyLabel = "AdvancedPaste_OpenAI_PrivacyLabel",
             PrivacyUri = new Uri("https://openai.com/privacy"),
         },
+        [AIServiceType.PhiSilica] = new AIServiceTypeMetadata
+        {
+            ServiceType = AIServiceType.PhiSilica,
+            DisplayName = "Phi Silica",
+            IconPath = "ms-appx:///Assets/Settings/Icons/Models/WindowsML.svg",
+            IsOnlineService = false,
+            IsLocalModel = true,
+            LegalDescription = "AdvancedPaste_LocalModel_LegalDescription",
+        },
         [AIServiceType.Unknown] = new AIServiceTypeMetadata
         {
             ServiceType = AIServiceType.Unknown,

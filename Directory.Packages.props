@@ -78,10 +78,16 @@
     <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.250325.1"/>
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.0.1" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.0.20" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="2.0.185" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.0.1" />
+    <!-- WinApp SDK pinned to the coherent STABLE 2.2.0 line (these are exactly what the stable
+         meta 2.2.0 resolves transitively). All STABLE (no -experimental) so the AI projection
+         matches the OS Windows AI runtime and Phi Silica works — the experimental 2.2.6 AI fails
+         EnsureReadyAsync with E_NOINTERFACE. Stable Foundation 2.1.0 already contains WinAppSDK
+         PR #6376 (MRT PRI lookup under sparse package identity, required for AdvancedPaste's
+         custom-named PRI), so nothing needs to be experimental. Keep these four in lockstep. -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.1.0" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="2.2.3" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.2.0" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
