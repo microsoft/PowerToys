@@ -52,10 +52,7 @@ namespace PowerLauncher.ViewModel
 
         private string _queryTextBeforeLeaveResults;
 
-        private CancellationTokenSource _updateSource;
-
-        private CancellationToken _updateToken;
-        private Task _currentQueryTask;
+        private QuerySession _currentSession;
         private CancellationToken _nativeWaiterCancelToken;
         private bool _saved;
         private ushort _hotkeyHandle;
@@ -163,13 +160,17 @@ namespace PowerLauncher.ViewModel
                 var plugin = (IResultUpdated)pair.Plugin;
                 plugin.ResultsUpdated += (s, e) =>
                 {
+                    // Intentional field read: late plugin events should be tied to the
+                    // CURRENT session so stale updates don't accumulate. Null fallback
+                    // covers the pre-first-query window.
+                    var token = _currentSession?.Token ?? CancellationToken.None;
                     Task.Run(
                         () =>
                         {
                             PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
-                            UpdateResultView(e.Results, e.Query.RawQuery, _updateToken);
+                            UpdateResultView(e.Results, e.Query.RawQuery, token);
                         },
-                        _updateToken);
+                        token);
                 };
             }
         }
@@ -569,11 +570,14 @@ namespace PowerLauncher.ViewModel
                     r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet() ||
                          StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()).ToList();
 
-                History.AddResults(filtered, _updateToken);
+                // Capture once; never re-read the field across the call.
+                var historyToken = _currentSession?.Token ?? CancellationToken.None;
+                History.AddResults(filtered, historyToken);
             }
             else
             {
-                History.AddResults(results, _updateToken);
+                var historyToken = _currentSession?.Token ?? CancellationToken.None;
+                History.AddResults(results, historyToken);
             }
         }
 
@@ -592,42 +596,18 @@ namespace PowerLauncher.ViewModel
                 var queryTimer = new System.Diagnostics.Stopwatch();
                 queryTimer.Start();
 
-                // Cancel the previous query and swap in a fresh CancellationTokenSource.
-                // We MUST capture the new token into a local that the Task lambda closes over,
-                // rather than reading _updateToken from inside the running task. Otherwise, the
-                // next keystroke replaces _updateToken with a fresh (non-cancelled) token and
-                // the in-flight task's ThrowIfCancellationRequested() calls silently no-op,
-                // leaking the entire query (and its Parallel.ForEach worker fan-out) forever.
-                // Over time the leaked tasks exhaust the ThreadPool's worker creation budget
-                // and PT Run dies with OutOfMemoryException on Thread.StartInternal.
-                var previousUpdateSource = _updateSource;
-                var previousQueryTask = _currentQueryTask;
-                var currentUpdateSource = new CancellationTokenSource();
-                _updateSource = currentUpdateSource;
-                _updateToken = currentUpdateSource.Token;
-                var updateToken = currentUpdateSource.Token;
-
-                previousUpdateSource?.Cancel();
-
-                if (previousUpdateSource != null)
-                {
-                    // Defer Dispose until the previous task has observed cancellation.
-                    // Disposing while in-flight code still references the token would turn
-                    // the next ThrowIfCancellationRequested into ObjectDisposedException
-                    // (which the outer catch does NOT handle).
-                    if (previousQueryTask != null)
-                    {
-                        previousQueryTask.ContinueWith(
-                            _ => previousUpdateSource.Dispose(),
-                            CancellationToken.None,
-                            TaskContinuationOptions.ExecuteSynchronously,
-                            TaskScheduler.Default);
-                    }
-                    else
-                    {
-                        previousUpdateSource.Dispose();
-                    }
-                }
+                // Swap in a fresh QuerySession. The PREVIOUS session is cancelled and its
+                // CTS disposed only after its tracked task(s) complete (see QuerySession).
+                //
+                // Why this matters: CancellationToken is a struct holding a reference to its
+                // source's state. If the in-flight task re-reads a FIELD token after the
+                // next keystroke replaced it with a fresh (non-cancelled) one, the task's
+                // ThrowIfCancellationRequested() silently no-ops, the whole plugin fan-out
+                // runs to completion, and rapid typing leaks ThreadPool workers until PT
+                // Run dies with OutOfMemoryException on Thread.StartInternal (#36041).
+                // Mitigation: every observer inside the task body must use the captured
+                // local 'updateToken' below, never the field via _currentSession.
+                var previousSession = _currentSession;
 
                 var queryText = QueryText.Trim();
 
@@ -637,9 +617,19 @@ namespace PowerLauncher.ViewModel
                     queryText = pluginQueryPairs.Values.First().RawQuery;
                     _currentQuery = queryText;
 
-                    var queryResultsTask = Task.Factory.StartNew(
-                        () =>
-                        {
+                    // QuerySession.Start builds the entire task pipeline once,
+                    // against this session's token, and captures the tail as the
+                    // session's immutable Completion. No add-task / register
+                    // surface exists post-construction, which is why no internal
+                    // lock is needed.
+                    var currentSession = QuerySession.Start(updateToken =>
+                    {
+                        // Task.Run pins TaskScheduler.Default + DenyChildAttach so attached
+                        // child tasks created inside plugin code cannot extend the outer
+                        // task's lifetime past cancellation.
+                        var queryResultsTask = Task.Run(
+                            () =>
+                            {
                             Thread.Sleep(20);
 
                             // Keep track of total number of results for telemetry
@@ -790,32 +780,40 @@ namespace PowerLauncher.ViewModel
                                 QueryLength = queryText.Length,
                             };
                             PowerToysTelemetry.Log.WriteEvent(queryEvent);
-                        },
-                        updateToken,
-                        TaskCreationOptions.None,
-                        TaskScheduler.Default);
-
-                    _currentQueryTask = queryResultsTask;
-
-                    if (doFinalSort)
-                    {
-                        Task.Factory.ContinueWhenAll(
-                            new Task[] { queryResultsTask },
-                            completedTasks =>
-                            {
-                                Results.Sort(queryTuning);
-                                Results.SelectedItem = Results.Results.FirstOrDefault();
-                                UpdateResultsListViewAfterQuery(queryText, false, false);
                             },
-                            updateToken,
-                            TaskContinuationOptions.None,
-                            TaskScheduler.Default);
+                            updateToken);
+
+                        if (doFinalSort)
+                        {
+                            // The continuation IS the tail of the pipeline whose completion gates
+                            // CTS disposal. DenyChildAttach for the same reason as Task.Run above.
+                            return queryResultsTask.ContinueWith(
+                                _ =>
+                                {
+                                    Results.Sort(queryTuning);
+                                    Results.SelectedItem = Results.Results.FirstOrDefault();
+                                    UpdateResultsListViewAfterQuery(queryText, false, false);
+                                },
+                                updateToken,
+                                TaskContinuationOptions.DenyChildAttach,
+                                TaskScheduler.Default);
+                        }
+
+                        return queryResultsTask;
+                    });
+
+                    _currentSession = currentSession;
+
+                    if (previousSession != null)
+                    {
+                        previousSession.Cancel();
+                        _ = previousSession.DisposeWhenComplete();
                     }
                 }
             }
             else
             {
-                _updateSource?.Cancel();
+                _currentSession?.Cancel();
                 _currentQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Visibility = Visibility.Collapsed;
@@ -1234,7 +1232,11 @@ namespace PowerLauncher.ViewModel
                     }
 
                     HotkeyManager?.Dispose();
-                    _updateSource?.Dispose();
+
+                    // Shutdown: cancel any in-flight query, give it a short budget to
+                    // observe cancellation, then dispose the CTS. Per CTS.Dispose docs,
+                    // Dispose alone does NOT communicate cancellation.
+                    _currentSession?.CancelAndWait(TimeSpan.FromSeconds(2));
                     _disposed = true;
                 }
             }
