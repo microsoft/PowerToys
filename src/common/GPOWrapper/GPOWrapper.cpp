@@ -12,6 +12,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredAwakeEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredAwakeIndefinitelyEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredAwakeIndefinitelyEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredCmdNotFoundEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCmdNotFoundEnabledValue());

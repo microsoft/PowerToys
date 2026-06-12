@@ -90,6 +90,65 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IsIndefiniteEnabled
+        {
+            get
+            {
+                if (_enabledIndefiniteStateIsGPOConfigured)
+                {
+                    return _enabledIndefiniteGPOConfiguration;
+                }
+                else
+                {
+                    return _isIndefiniteEnabled;
+                }
+            }
+
+            set
+            {
+                if (_isIndefiniteEnabled != value)
+                {
+                    if (_enabledIndefiniteGPOConfiguration)
+                    {
+                        // If it's GPO configured, shouldn't be able to change this state.
+                        return;
+                    }
+
+                    _isIndefiniteEnabled = value;
+
+                    RefreshEnabledState();
+
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsIndefiniteEnabledGpoConfigured
+        {
+            get => _enabledIndefiniteStateIsGPOConfigured;
+            set
+            {
+                if (_enabledIndefiniteStateIsGPOConfigured != value)
+                {
+                    _enabledIndefiniteStateIsGPOConfigured = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IndefiniteEnabledGPOConfiguration
+        {
+            get => _enabledIndefiniteGPOConfiguration;
+            set
+            {
+                if (_enabledIndefiniteGPOConfiguration != value)
+                {
+                    _enabledIndefiniteGPOConfiguration = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool IsExpirationConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.EXPIRABLE && IsEnabled;
 
         public bool IsTimeConfigurationEnabled => ModuleSettings.Properties.Mode == AwakeMode.TIMED && IsEnabled;
@@ -198,6 +257,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool IndefiniteEnabledValue
+        {
+            get => ModuleSettings.Properties.IndefiniteEnabledValue;
+            set
+            {
+                if (ModuleSettings.Properties.IndefiniteEnabledValue != value)
+                {
+                    ModuleSettings.Properties.IndefiniteEnabledValue = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyPropertyChanged([CallerMemberName] string propertyName = null)
         {
             Logger.LogInfo($"Changed the property {propertyName}");
@@ -219,11 +291,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(IntervalHours));
             OnPropertyChanged(nameof(IntervalMinutes));
             OnPropertyChanged(nameof(ExpirationDateTime));
+            OnPropertyChanged(nameof(IsIndefiniteEnabled));
         }
 
+        private bool _enabledIndefiniteStateIsGPOConfigured;
+        private bool _enabledIndefiniteGPOConfiguration;
         private bool _enabledStateIsGPOConfigured;
         private bool _enabledGPOConfiguration;
         private AwakeSettings _moduleSettings;
         private bool _isEnabled;
+        private bool _isIndefiniteEnabled;
     }
 }
