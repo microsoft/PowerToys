@@ -34,6 +34,21 @@ namespace Microsoft.CmdPal.UI.Dock;
 
 #pragma warning disable SA1402 // File may only contain a single type
 
+/// <summary>
+/// The main window for the dock feature. Uses the Windows AppBar API to reserve
+/// screen work area and position itself at the edge of the display.
+///
+/// <para><strong>Phase 1 UX Contract:</strong></para>
+/// <list type="bullet">
+///   <item><description><strong>Pinned mode</strong>: The dock is always-visible and reserves work area
+///     via <c>ABM_NEW</c>/<c>ABM_SETPOS</c>. Maximized windows will not overlap the dock.</description></item>
+///   <item><description><strong>Auto-hide mode (future)</strong>: When implemented, the dock will use
+///     <c>ABM_SETAUTOHIDEBAR</c> and will NOT reserve work area — maximized windows will
+///     extend beneath the hidden dock.</description></item>
+///   <item><description><strong>v1 scope</strong>: Global-only dock positioning. Per-monitor side overrides
+///     exist but per-monitor enable/disable and customized bands are future work.</description></item>
+/// </list>
+/// </summary>
 public sealed partial class DockWindow : WindowEx,
     IRecipient<BringToTopMessage>,
     IRecipient<RequestShowPaletteAtMessage>,
@@ -370,6 +385,12 @@ public sealed partial class DockWindow : WindowEx,
         });
     }
 
+    /// <summary>
+    /// Registers this window as a Windows AppBar, reserving work area on the
+    /// target edge. In Phase 1 (pinned mode), the dock always reserves space
+    /// so maximized windows do not overlap it. Future auto-hide mode will use
+    /// <c>ABM_SETAUTOHIDEBAR</c> instead and will NOT reserve work area.
+    /// </summary>
     private void CreateAppBar(HWND hwnd)
     {
         _appBarData = new APPBARDATA
@@ -379,7 +400,9 @@ public sealed partial class DockWindow : WindowEx,
             uCallbackMessage = _callbackMessageId,
         };
 
-        // Register this window as an app bar
+        // Register this window as an app bar. Phase 1 uses ABM_NEW which
+        // reserves work area (pinned mode). Auto-hide would use ABM_SETAUTOHIDEBAR
+        // and would NOT reserve work area.
         PInvoke.SHAppBarMessage(PInvoke.ABM_NEW, ref _appBarData);
 
         // Stash the last size we created the bar at, so we know when to hot-
@@ -467,8 +490,13 @@ public sealed partial class DockWindow : WindowEx,
 
         PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
 
-        // TODO: investigate ABS_AUTOHIDE and auto hide bars.
-        // I think it's something like this, but I don't totally know
+        // PHASE 1 UX CONTRACT: Pinned mode reserves work area (current behavior).
+        //
+        // TODO: Future auto-hide mode implementation notes:
+        // - Auto-hide bars do NOT reserve work area — maximized windows extend beneath
+        // - Use ABM_SETAUTOHIDEBAR instead of ABM_NEW/ABM_SETPOS
+        // - Only one auto-hide bar per edge per monitor is allowed by Windows
+        // - Example API calls (untested):
         //   _appBarData.lParam = ABS_ALWAYSONTOP;
         //   _appBarData.lParam = (LPARAM)(int)PInvoke.ABS_AUTOHIDE;
         //   PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
