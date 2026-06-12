@@ -113,6 +113,26 @@ namespace Common.UI
             return ControlzEx.Theming.WindowsThemeHelper.GetWindowsBaseColor();
         }
 
+        /// <summary>
+        /// Gets the Monaco theme name based on Windows theme and high contrast mode.
+        /// </summary>
+        /// <returns>Monaco theme name: "hc-black", "hc-light", "vs-dark", or "vs".</returns>
+        public static string GetMonacoTheme()
+        {
+            if (ControlzEx.Theming.WindowsThemeHelper.IsHighContrastEnabled())
+            {
+                // In high contrast mode, check if it's a dark or light high contrast theme
+                string baseColor = ControlzEx.Theming.WindowsThemeHelper.GetWindowsBaseColor();
+                return baseColor.Equals("Dark", StringComparison.OrdinalIgnoreCase) ? "hc-black" : "hc-light";
+            }
+            else
+            {
+                // Normal mode: use standard themes
+                string baseColor = ControlzEx.Theming.WindowsThemeHelper.GetWindowsBaseColor();
+                return baseColor.Equals("Dark", StringComparison.OrdinalIgnoreCase) ? "vs-dark" : "vs";
+            }
+        }
+
         public void ChangeTheme(Theme theme, bool fromSettings = false)
         {
             if (fromSettings)
