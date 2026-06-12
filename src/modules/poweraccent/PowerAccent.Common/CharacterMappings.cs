@@ -204,7 +204,6 @@ public static class CharacterMappings
         new(Language.DE, "German", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["ä"],
-            [LetterKey.VK_E] = ["€"],
             [LetterKey.VK_O] = ["ö"],
             [LetterKey.VK_S] = ["ß"],
             [LetterKey.VK_U] = ["ü"],
@@ -606,7 +605,7 @@ public static class CharacterMappings
         new(Language.SP, "Spanish", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["á"],
-            [LetterKey.VK_E] = ["é", "€"],
+            [LetterKey.VK_E] = ["é"],
             [LetterKey.VK_H] = ["ḥ"],
             [LetterKey.VK_I] = ["í"],
             [LetterKey.VK_L] = ["ḷ"],
