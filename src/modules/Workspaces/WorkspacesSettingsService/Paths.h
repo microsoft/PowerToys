@@ -5,21 +5,23 @@
 
 #include <string>
 
-namespace WorkspacesSvc
+namespace PTSettingsSvc
 {
-    // %ProgramData%\Microsoft\PowerToys\Workspaces
-    std::wstring GetWorkspacesRoot();
+    // %ProgramData%\Microsoft\PowerToys\SettingsSvc
+    std::wstring GetSettingsSvcRoot();
 
-    // %ProgramData%\Microsoft\PowerToys\Workspaces\<sid>
-    std::wstring GetUserWorkspacesFolder(const std::wstring& userSidString);
+    // %ProgramData%\Microsoft\PowerToys\SettingsSvc\<namespaceId>
+    std::wstring GetNamespaceFolder(const std::wstring& namespaceId);
 
-    // %ProgramData%\Microsoft\PowerToys\Workspaces\<sid>\workspaces.json
-    std::wstring GetUserWorkspacesFile(const std::wstring& userSidString);
+    // %ProgramData%\Microsoft\PowerToys\SettingsSvc\<namespaceId>\<sid>
+    std::wstring GetUserNamespaceFolder(const std::wstring& namespaceId,
+                                        const std::wstring& userSidString);
 
-    // %ProgramData%\Microsoft\PowerToys\Workspaces\<sid>\workspaces.json.legacy.bak
-    std::wstring GetUserLegacyBackupFile(const std::wstring& userSidString);
+    // %ProgramData%\Microsoft\PowerToys\SettingsSvc\<namespaceId>\<sid>\blob.bin
+    std::wstring GetUserBlobPath(const std::wstring& namespaceId,
+                                 const std::wstring& userSidString);
 
-    // Path to PowerToys install folder (from HKLM\SOFTWARE\Classes\powertoys
+    // Path to the PowerToys install folder (from HKLM\SOFTWARE\Classes\PowerToys
     // or the registry key the bootstrapper writes).  Empty string on failure.
     std::wstring GetPowerToysInstallFolder();
 
@@ -29,8 +31,7 @@ namespace WorkspacesSvc
     // pipeline to reject install paths that landed in a user-writable
     // location (custom MSI directory under a Users-writable parent, per-user
     // MSI under %LocalAppData%, etc.) — in those cases same-user malware
-    // could plant a fake `PowerToys.WorkspacesEditor.exe` and pass the
-    // path+name check.
+    // could plant a fake allow-listed exe there and pass the path+name check.
     bool IsFolderAdminOnlyWritable(const std::wstring& folder);
 
     // Convert a binary SID to its string form (S-1-5-21-...).  Empty on failure.

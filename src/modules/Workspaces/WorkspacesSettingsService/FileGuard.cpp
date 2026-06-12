@@ -13,7 +13,7 @@
 #pragma comment(lib, "Advapi32.lib")
 #pragma comment(lib, "Pathcch.lib")
 
-namespace WorkspacesSvc
+namespace PTSettingsSvc
 {
     namespace
     {
@@ -24,10 +24,9 @@ namespace WorkspacesSvc
 
         HRESULT GetServiceSid(PSID& outSid)
         {
-            // "NT SERVICE\PTWorkspacesSvc" virtual account.  Resolved via
-            // ConvertStringSidToSid isn't possible — we have a name, not a
-            // SID — so use LookupAccountName.
-            wchar_t name[] = L"NT SERVICE\\PTWorkspacesSvc";
+            // "NT SERVICE\PTSettingsSvc" virtual account.  Resolved via
+            // LookupAccountName since we have a name, not a SID.
+            wchar_t name[] = L"NT SERVICE\\PTSettingsSvc";
             DWORD sidLen = 0;
             DWORD domLen = 0;
             SID_NAME_USE use{};
@@ -76,6 +75,12 @@ namespace WorkspacesSvc
             }
             std::unique_ptr<void, LocalFreeDeleter> adminSidGuard(adminSid);
 
+            // Per Design-v6-Final.md §9 the per-user folder DACL is:
+            //   svc:F, admin:F, <specific user>:RX
+            // Everyone else implicitly denied because we PROTECT the DACL
+            // below (no inheritance from <root>\<namespace>\, so the blanket
+            // AuthUsers:RX granted at the root level does NOT carry through
+            // here — that's how user A can't read user B's blob).
             EXPLICIT_ACCESS_W ea[3] = {};
 
             ea[0].grfAccessPermissions = GENERIC_ALL;
@@ -85,19 +90,19 @@ namespace WorkspacesSvc
             ea[0].Trustee.TrusteeType = TRUSTEE_IS_USER;
             ea[0].Trustee.ptstrName = static_cast<LPWSTR>(serviceSid);
 
-            ea[1].grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE;
+            ea[1].grfAccessPermissions = GENERIC_ALL;
             ea[1].grfAccessMode = SET_ACCESS;
             ea[1].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
             ea[1].Trustee.TrusteeForm = TRUSTEE_IS_SID;
-            ea[1].Trustee.TrusteeType = TRUSTEE_IS_USER;
-            ea[1].Trustee.ptstrName = static_cast<LPWSTR>(userSid);
+            ea[1].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
+            ea[1].Trustee.ptstrName = static_cast<LPWSTR>(adminSid);
 
             ea[2].grfAccessPermissions = GENERIC_READ | GENERIC_EXECUTE;
             ea[2].grfAccessMode = SET_ACCESS;
             ea[2].grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
             ea[2].Trustee.TrusteeForm = TRUSTEE_IS_SID;
-            ea[2].Trustee.TrusteeType = TRUSTEE_IS_WELL_KNOWN_GROUP;
-            ea[2].Trustee.ptstrName = static_cast<LPWSTR>(adminSid);
+            ea[2].Trustee.TrusteeType = TRUSTEE_IS_USER;
+            ea[2].Trustee.ptstrName = static_cast<LPWSTR>(userSid);
 
             PACL acl = nullptr;
             DWORD rc = SetEntriesInAclW(ARRAYSIZE(ea), ea, nullptr, &acl);
@@ -108,9 +113,8 @@ namespace WorkspacesSvc
             std::unique_ptr<void, LocalFreeDeleter> aclGuard(acl);
 
             // PROTECTED_DACL_SECURITY_INFORMATION blocks inheritance from
-            // %ProgramData% (which is read+write for Users by default).
-            // SetNamedSecurityInfoW takes a non-const LPWSTR by historical
-            // signature; copy into a local mutable buffer.
+            // <root>\<namespace>\.  SetNamedSecurityInfoW takes a non-const
+            // LPWSTR by historical signature; copy into a local mutable buffer.
             std::vector<wchar_t> mutableName(target.begin(), target.end());
             mutableName.push_back(L'\0');
             rc = SetNamedSecurityInfoW(mutableName.data(),

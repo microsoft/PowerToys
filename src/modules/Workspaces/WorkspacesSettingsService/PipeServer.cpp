@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 #include "PipeServer.h"
+#include "Bindings.h"
 #include "CallerAuth.h"
 #include "FileGuard.h"
 #include "Paths.h"
@@ -16,7 +17,7 @@
 
 #pragma comment(lib, "Advapi32.lib")
 
-namespace WorkspacesSvc
+namespace PTSettingsSvc
 {
     namespace
     {
@@ -82,30 +83,19 @@ namespace WorkspacesSvc
             SendResponse(pipe, status);
         }
 
-        bool LooksLikeJson(const std::vector<BYTE>& bytes)
+        void HandleGetBlob(HANDLE pipe, const CallerIdentity& id)
         {
-            // Cheap structural check, NOT a full parse.  Real validation
-            // happens when Editor / Launcher parse the file.  The service
-            // just refuses obvious garbage so we don't write trash to disk.
-            size_t i = 0;
-            while (i < bytes.size() && (bytes[i] == ' ' || bytes[i] == '\t' ||
-                                        bytes[i] == '\r' || bytes[i] == '\n'))
-            {
-                ++i;
-            }
-            return i < bytes.size() && (bytes[i] == '{' || bytes[i] == '[');
-        }
-
-        void HandleGetSettings(HANDLE pipe, const CallerIdentity& id)
-        {
-            std::wstring target = GetUserWorkspacesFile(id.userSidString);
+            std::wstring target = GetUserBlobPath(id.binding->namespaceId,
+                                                  id.userSidString);
             std::vector<BYTE> bytes;
             HRESULT hr = ReadFileFully(target, kMaxPayloadBytes, bytes);
             if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) ||
                 hr == HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND))
             {
-                // Brand new user — return an empty payload, not an error.
-                SendStatus(pipe, Status::Ok);
+                // Brand new user / namespace — explicit NotFound so the
+                // caller can distinguish "blob is empty" from "blob doesn't
+                // exist yet" (matters for migration).
+                SendStatus(pipe, Status::NotFound);
                 return;
             }
             if (FAILED(hr))
@@ -118,78 +108,43 @@ namespace WorkspacesSvc
             SendResponse(pipe, Status::Ok, bytes);
         }
 
-        void HandlePutSettings(HANDLE pipe, const CallerIdentity& id,
-                               const std::vector<BYTE>& payload)
+        void HandlePutBlob(HANDLE pipe, const CallerIdentity& id,
+                           const std::vector<BYTE>& payload)
         {
-            if (!LooksLikeJson(payload))
+            // No structural / schema check on the payload.  The service is
+            // payload-agnostic; the caller is responsible for whatever
+            // shape it wants on disk.  See Design-v6-Final.md §4.
+
+            // Ensure intermediate <namespace>\ folder exists.  Inherits the
+            // root's PROTECTED DACL (svc:F, admin:F, AuthUsers:RX); no
+            // tightening needed at this level.
+            std::wstring nsFolder = GetNamespaceFolder(id.binding->namespaceId);
+            if (!CreateDirectoryW(nsFolder.c_str(), nullptr))
             {
-                SendStatus(pipe, Status::JsonInvalid);
-                return;
+                DWORD err = GetLastError();
+                if (err != ERROR_ALREADY_EXISTS)
+                {
+                    SendStatus(pipe, Status::IoError);
+                    return;
+                }
             }
 
-            HRESULT hr = EnsureUserFolder(GetUserWorkspacesFolder(id.userSidString),
-                                          id.userSidString);
+            // Ensure <namespace>\<sid>\ exists and tighten its DACL so user
+            // A can't read user B's blob (replace blanket AuthUsers:RX with
+            // specific user-SID:RX).  See Design-v6-Final.md §9.
+            HRESULT hr = EnsureUserFolder(
+                GetUserNamespaceFolder(id.binding->namespaceId, id.userSidString),
+                id.userSidString);
             if (FAILED(hr))
             {
                 SendStatus(pipe, Status::IoError);
                 return;
             }
 
-            hr = WriteFileAtomically(GetUserWorkspacesFile(id.userSidString),
-                                     payload);
+            hr = WriteFileAtomically(
+                GetUserBlobPath(id.binding->namespaceId, id.userSidString),
+                payload);
             SendStatus(pipe, FAILED(hr) ? Status::IoError : Status::Ok);
-        }
-
-        void HandleMigrateFromLegacy(HANDLE pipe, const CallerIdentity& id,
-                                     const std::vector<BYTE>& payload)
-        {
-            std::wstring target = GetUserWorkspacesFile(id.userSidString);
-
-            // Idempotent: if target already exists we treat this as a no-op
-            // success.  Runner calls us at every startup; we want it cheap.
-            DWORD attrs = GetFileAttributesW(target.c_str());
-            if (attrs != INVALID_FILE_ATTRIBUTES &&
-                !(attrs & FILE_ATTRIBUTE_DIRECTORY))
-            {
-                SendStatus(pipe, Status::Ok);
-                return;
-            }
-
-            if (!LooksLikeJson(payload))
-            {
-                SendStatus(pipe, Status::JsonInvalid);
-                return;
-            }
-
-            HRESULT hr = EnsureUserFolder(GetUserWorkspacesFolder(id.userSidString),
-                                          id.userSidString);
-            if (FAILED(hr))
-            {
-                SendStatus(pipe, Status::IoError);
-                return;
-            }
-            hr = WriteFileAtomically(target, payload);
-            if (FAILED(hr))
-            {
-                SendStatus(pipe, Status::IoError);
-                return;
-            }
-
-            // Also drop a sentinel so the runner doesn't have to retry the
-            // upload on every launch.  Best-effort — failure here doesn't
-            // invalidate the migration itself.
-            std::wstring sentinel = GetUserWorkspacesFolder(id.userSidString) +
-                                    L"\\.migrated";
-            HANDLE h = CreateFileW(sentinel.c_str(),
-                                   GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
-                                   FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_HIDDEN,
-                                   nullptr);
-            if (h != INVALID_HANDLE_VALUE)
-            {
-                CloseHandle(h);
-            }
-
-            SendStatus(pipe, Status::Ok);
         }
 
         void HandleConnection(HANDLE pipe)
@@ -198,8 +153,11 @@ namespace WorkspacesSvc
             HRESULT hr = AuthenticateCaller(pipe, id);
             if (FAILED(hr))
             {
-                Status s = (hr == E_ACCESSDENIED) ? Status::AuthFailCallerPath
-                                                  : Status::AuthFailToken;
+                Status s = (hr == E_ACCESSDENIED)
+                               ? Status::AuthFailCaller
+                               : (hr == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
+                                     ? Status::NamespaceUnknown
+                                     : Status::AuthFailToken;
                 SendStatus(pipe, s);
                 return;
             }
@@ -233,25 +191,12 @@ namespace WorkspacesSvc
                 SendStatus(pipe, Status::Ok);
                 break;
 
-            case Opcode::GetSchemaVersion:
-            {
-                uint32_t v = kCurrentSchemaVersion;
-                std::vector<BYTE> resp(sizeof(v));
-                std::memcpy(resp.data(), &v, sizeof(v));
-                SendResponse(pipe, Status::Ok, resp);
-                break;
-            }
-
-            case Opcode::GetSettings:
-                HandleGetSettings(pipe, id);
+            case Opcode::GetBlob:
+                HandleGetBlob(pipe, id);
                 break;
 
-            case Opcode::PutSettings:
-                HandlePutSettings(pipe, id, payload);
-                break;
-
-            case Opcode::MigrateFromLegacy:
-                HandleMigrateFromLegacy(pipe, id, payload);
+            case Opcode::PutBlob:
+                HandlePutBlob(pipe, id, payload);
                 break;
 
             default:

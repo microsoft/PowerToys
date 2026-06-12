@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation
 // Licensed under the MIT license.
 //
-// PowerToys Workspaces Settings Service (PTWorkspacesSvc).
+// PTSettingsSvc — PowerToys Settings Service.
 //
-// Design context — see Design-v6-LocalService-Investigation.md and
-// Design-v6-Prototype-Notes.md in the Workspaces-EoP-Fix folder.
+// Design context — see Design-v6-Final.md in the Workspaces-EoP-Fix folder.
 //
-// The service runs as a virtual service account (NT SERVICE\PTWorkspacesSvc),
-// owns the DACL on %ProgramData%\Microsoft\PowerToys\Workspaces\<sid>\ and
-// is the only writer to the workspaces.json files inside it.  Editor /
-// SnapshotTool / Runner connect over the local named pipe to read or write.
+// The service runs as a virtual service account (NT SERVICE\PTSettingsSvc),
+// owns the DACL on %ProgramData%\Microsoft\PowerToys\SettingsSvc\<ns>\<sid>\
+// and is the only writer to the blob.bin file inside it.  Callers (Editor,
+// SnapshotTool, runner, etc. — see Bindings.cpp) connect over a named pipe
+// to GetBlob / PutBlob.
 
 #include <windows.h>
 #include <tchar.h>
@@ -44,7 +44,7 @@ namespace
 
     DWORD WINAPI WorkerThread(LPVOID)
     {
-        return WorkspacesSvc::RunPipeServer(g_stopEvent);
+        return PTSettingsSvc::RunPipeServer(g_stopEvent);
     }
 
     VOID WINAPI ServiceCtrlHandler(DWORD ctrl)
@@ -67,7 +67,7 @@ namespace
     VOID WINAPI ServiceMain(DWORD, LPTSTR*)
     {
         g_statusHandle = RegisterServiceCtrlHandlerW(
-            WorkspacesSvc::kServiceName, ServiceCtrlHandler);
+            PTSettingsSvc::kServiceName, ServiceCtrlHandler);
         if (!g_statusHandle)
         {
             return;
@@ -129,12 +129,12 @@ int wmain(int argc, wchar_t* argv[])
             if (g_stopEvent) { SetEvent(g_stopEvent); }
             return TRUE;
         }, TRUE);
-        DWORD rc = WorkspacesSvc::RunPipeServer(g_stopEvent);
+        DWORD rc = PTSettingsSvc::RunPipeServer(g_stopEvent);
         CloseHandle(g_stopEvent);
         return static_cast<int>(rc);
     }
 
-    wchar_t name[] = L"PTWorkspacesSvc";
+    wchar_t name[] = L"PTSettingsSvc";
     SERVICE_TABLE_ENTRYW table[] = {
         { name, ServiceMain },
         { nullptr, nullptr },

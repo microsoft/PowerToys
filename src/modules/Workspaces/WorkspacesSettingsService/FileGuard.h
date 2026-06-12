@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace WorkspacesSvc
+namespace PTSettingsSvc
 {
     // Creates `folder` if it doesn't exist and applies the DACL that locks
     // the directory to:

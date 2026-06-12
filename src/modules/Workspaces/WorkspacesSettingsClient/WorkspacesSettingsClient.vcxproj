@@ -45,10 +45,10 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="WorkspacesSvcClient.cpp" />
+    <ClCompile Include="PTSettingsClient.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="WorkspacesSvcClient.h" />
+    <ClInclude Include="PTSettingsClient.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

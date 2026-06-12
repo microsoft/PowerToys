@@ -41,7 +41,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
-    <TargetName>PowerToys.WorkspacesSettingsSvc</TargetName>
+    <TargetName>PowerToys.PTSettingsSvc</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -62,12 +62,14 @@
     <ClCompile Include="WorkspacesSettingsService.cpp" />
     <ClCompile Include="PipeServer.cpp" />
     <ClCompile Include="CallerAuth.cpp" />
+    <ClCompile Include="Bindings.cpp" />
     <ClCompile Include="FileGuard.cpp" />
     <ClCompile Include="Paths.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PipeServer.h" />
     <ClInclude Include="CallerAuth.h" />
+    <ClInclude Include="Bindings.h" />
     <ClInclude Include="FileGuard.h" />
     <ClInclude Include="Paths.h" />
     <ClInclude Include="protocol\Protocol.h" />

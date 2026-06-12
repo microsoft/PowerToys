@@ -1,21 +1,21 @@
 // Copyright (c) Microsoft Corporation
 // Licensed under the MIT license.
 
-#include "WorkspacesSvcClient.h"
+#include "PTSettingsClient.h"
 #include "../WorkspacesSettingsService/protocol/Protocol.h"
 
 #include <windows.h>
 #include <vector>
 #include <cstring>
 
-namespace WorkspacesSvcClient
+namespace PTSettingsClient
 {
     namespace
     {
-        using WorkspacesSvc::kPipeName;
-        using WorkspacesSvc::kMaxPayloadBytes;
-        using WorkspacesSvc::Opcode;
-        using WorkspacesSvc::Status;
+        using PTSettingsSvc::kPipeName;
+        using PTSettingsSvc::kMaxPayloadBytes;
+        using PTSettingsSvc::Opcode;
+        using PTSettingsSvc::Status;
 
         struct PipeHandle
         {
@@ -26,8 +26,6 @@ namespace WorkspacesSvcClient
             }
         };
 
-        // Opens a connected pipe handle, waiting briefly for the service if
-        // it isn't running yet (the SCM may need to launch it on demand).
         bool Connect(PipeHandle& out)
         {
             for (int attempt = 0; attempt < 3; ++attempt)
@@ -88,27 +86,26 @@ namespace WorkspacesSvcClient
         {
             switch (s)
             {
-            case Status::Ok:                   return Result::Ok;
+            case Status::Ok:               return Result::Ok;
             case Status::AuthFailToken:
-            case Status::AuthFailCallerPath:   return Result::AuthRejected;
+            case Status::AuthFailCaller:   return Result::AuthRejected;
+            case Status::NamespaceUnknown: return Result::NamespaceUnknown;
             case Status::BadRequest:
-            case Status::UnknownOpcode:        return Result::ProtocolError;
-            case Status::PayloadTooLarge:
-            case Status::JsonInvalid:
-            case Status::SchemaUnsupported:    return Result::PayloadInvalid;
-            case Status::IoError:
-            case Status::Internal:             return Result::ServerError;
+            case Status::UnknownOpcode:    return Result::ProtocolError;
+            case Status::PayloadTooLarge:  return Result::PayloadTooLarge;
+            case Status::NotFound:         return Result::NotFound;
+            case Status::IoError:          return Result::IoError;
             }
-            return Result::ServerError;
+            return Result::UnknownStatus;
         }
 
         Result RoundTrip(Opcode op, const void* payload, uint32_t payloadLen,
-                         std::vector<BYTE>& outResp)
+                         std::vector<uint8_t>& outResp)
         {
             outResp.clear();
             if (payloadLen > kMaxPayloadBytes)
             {
-                return Result::PayloadInvalid;
+                return Result::PayloadTooLarge;
             }
 
             PipeHandle pipe;
@@ -151,40 +148,21 @@ namespace WorkspacesSvcClient
 
     Result Ping()
     {
-        std::vector<BYTE> resp;
+        std::vector<uint8_t> resp;
         return RoundTrip(Opcode::Ping, nullptr, 0, resp);
     }
 
-    Result GetSettings(std::string& outJsonUtf8)
+    Result GetBlob(std::vector<uint8_t>& outBytes)
     {
-        std::vector<BYTE> resp;
-        Result r = RoundTrip(Opcode::GetSettings, nullptr, 0, resp);
-        if (r == Result::Ok)
-        {
-            outJsonUtf8.assign(reinterpret_cast<const char*>(resp.data()), resp.size());
-        }
-        else
-        {
-            outJsonUtf8.clear();
-        }
-        return r;
+        return RoundTrip(Opcode::GetBlob, nullptr, 0, outBytes);
     }
 
-    Result PutSettings(const std::string& jsonUtf8)
+    Result PutBlob(const std::vector<uint8_t>& bytes)
     {
-        std::vector<BYTE> resp;
-        return RoundTrip(Opcode::PutSettings,
-                         jsonUtf8.data(),
-                         static_cast<uint32_t>(jsonUtf8.size()),
-                         resp);
-    }
-
-    Result MigrateFromLegacy(const std::string& legacyJsonUtf8)
-    {
-        std::vector<BYTE> resp;
-        return RoundTrip(Opcode::MigrateFromLegacy,
-                         legacyJsonUtf8.data(),
-                         static_cast<uint32_t>(legacyJsonUtf8.size()),
+        std::vector<uint8_t> resp;
+        return RoundTrip(Opcode::PutBlob,
+                         bytes.data(),
+                         static_cast<uint32_t>(bytes.size()),
                          resp);
     }
 }

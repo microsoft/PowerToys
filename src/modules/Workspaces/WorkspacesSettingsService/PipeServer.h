@@ -6,10 +6,9 @@
 #include <windows.h>
 #include <atomic>
 
-namespace WorkspacesSvc
+namespace PTSettingsSvc
 {
-    // Runs the named-pipe loop until `stopEvent` is signalled or
-    // `kIdleShutdownSeconds` elapses without any client connecting.
+    // Runs the named-pipe loop until `stopEvent` is signalled.
     // Returns 0 on a clean stop, non-zero on a fatal error.
     DWORD RunPipeServer(HANDLE stopEvent);
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 #include "CallerAuth.h"
+#include "Bindings.h"
 #include "Paths.h"
 
 #include <windows.h>
@@ -13,20 +14,10 @@
 #pragma comment(lib, "Advapi32.lib")
 #pragma comment(lib, "Pathcch.lib")
 
-namespace WorkspacesSvc
+namespace PTSettingsSvc
 {
     namespace
     {
-        // Allow-list of PowerToys binaries that may issue writes.  Everything
-        // not on this list is rejected even if it lives under the PT install
-        // folder.  Kept narrow on purpose.
-        const wchar_t* const kAllowedCallerExeNames[] = {
-            L"PowerToys.WorkspacesEditor.exe",
-            L"PowerToys.WorkspacesSnapshotTool.exe",
-            L"PowerToys.exe",            // runner — needed for the one-shot
-                                         // MigrateFromLegacy call at startup.
-        };
-
         HRESULT RejectionForToken(HANDLE token, std::wstring& outSidString)
         {
             DWORD size = 0;
@@ -91,8 +82,6 @@ namespace WorkspacesSvc
             {
                 return path;
             }
-            // GetFinalPathNameByHandle prefixes with \\?\ — strip it for nicer
-            // comparison, but only when it's the literal prefix.
             std::wstring result(buf);
             if (result.compare(0, 4, L"\\\\?\\") == 0)
             {
@@ -116,7 +105,6 @@ namespace WorkspacesSvc
             {
                 return false;
             }
-            // Case-insensitive prefix match — Win32 paths are case-insensitive.
             return _wcsnicmp(file.c_str(), d.c_str(), d.size()) == 0;
         }
 
@@ -124,18 +112,6 @@ namespace WorkspacesSvc
         {
             auto pos = path.find_last_of(L"\\/");
             return pos == std::wstring::npos ? path : path.substr(pos + 1);
-        }
-
-        bool IsAllowedExeName(const std::wstring& name)
-        {
-            for (auto allowed : kAllowedCallerExeNames)
-            {
-                if (_wcsicmp(name.c_str(), allowed) == 0)
-                {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 
@@ -218,12 +194,13 @@ namespace WorkspacesSvc
         std::wstring canonical = CanonicalizePath(exePath);
         outIdentity.imagePath = canonical;
 
-        // 3) Path + allow-list check.
+        // 4) Path-under-InstallFolder check.
         std::wstring installFolder = GetPowerToysInstallFolder();
         // Prototype dev override — lets the smoke test demonstrate the
-        // happy path without requiring an MSI install + HKLM write.
-        // Removed before production: real builds rely on the MSI-written
-        // HKLM\SOFTWARE\Classes\PowerToys\InstallFolder value.
+        // happy path without requiring a real MSI install + HKLM write.
+        // Production builds rely on the MSI-written
+        // HKLM\SOFTWARE\Classes\PowerToys\InstallFolder value.  This
+        // override should be removed (or #ifdef _DEBUG'd) before merge.
         if (installFolder.empty())
         {
             wchar_t dev[MAX_PATH] = {};
@@ -237,30 +214,32 @@ namespace WorkspacesSvc
             return E_ACCESSDENIED;
         }
 
-        // 3a) Verify the install folder itself is admin-only writable.
-        //     PT MSI lets the user pick a custom install path (see
-        //     PTInstallDirDlg.wxs); if they pick a folder under a user-
-        //     writable parent (e.g. D:\Tools\PowerToys inheriting Authenticated
-        //     Users:Modify, or %LocalAppData% for per-user MSI), then same-
-        //     user malware could plant a fake PowerToys.WorkspacesEditor.exe
-        //     there and pass the path+name check.  Rejecting non-hardened
-        //     install paths closes that bypass.
-        //
-        //     The MSI-side companion to this is a PROTECTED PermissionEx on
-        //     INSTALLFOLDER so the default install — wherever the user puts
-        //     it — always passes this check.  Without that the service
-        //     simply refuses to mediate writes, which is the right failure
-        //     mode (the editor will read-only itself).
+        // 5) Install-folder DACL-hardness check.  Rejects custom MSI install
+        //    paths under a user-writable parent (where same-user malware
+        //    could otherwise drop an allow-listed exe name and pass the
+        //    path+name check).  See Design-v6-Final.md §8.
         if (!IsFolderAdminOnlyWritable(installFolder))
         {
             return E_ACCESSDENIED;
         }
 
-        if (!IsAllowedExeName(BaseName(canonical)))
+        // 6) Caller binding lookup (basename allow-list + namespace selection).
+        std::wstring basename = BaseName(canonical);
+        const CallerBinding* binding = FindBindingByExeBasename(basename);
+        if (!binding)
         {
             return E_ACCESSDENIED;
         }
 
+        // Defensive: the table should always carry a well-formed namespace id;
+        // verify before we hand it to the storage layer to use as a directory
+        // name.  Failure here is a build-time misconfiguration of Bindings.cpp.
+        if (!IsValidNamespaceId(binding->namespaceId))
+        {
+            return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+        }
+
+        outIdentity.binding = binding;
         return S_OK;
     }
 }

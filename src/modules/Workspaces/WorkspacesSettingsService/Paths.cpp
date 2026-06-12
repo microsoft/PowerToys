@@ -14,7 +14,7 @@
 #pragma comment(lib, "Pathcch.lib")
 #pragma comment(lib, "Advapi32.lib")
 
-namespace WorkspacesSvc
+namespace PTSettingsSvc
 {
     namespace
     {
@@ -31,24 +31,26 @@ namespace WorkspacesSvc
         }
     }
 
-    std::wstring GetWorkspacesRoot()
+    std::wstring GetSettingsSvcRoot()
     {
-        return GetProgramDataFolder() + L"\\Microsoft\\PowerToys\\Workspaces";
+        return GetProgramDataFolder() + L"\\Microsoft\\PowerToys\\SettingsSvc";
     }
 
-    std::wstring GetUserWorkspacesFolder(const std::wstring& userSidString)
+    std::wstring GetNamespaceFolder(const std::wstring& namespaceId)
     {
-        return GetWorkspacesRoot() + L"\\" + userSidString;
+        return GetSettingsSvcRoot() + L"\\" + namespaceId;
     }
 
-    std::wstring GetUserWorkspacesFile(const std::wstring& userSidString)
+    std::wstring GetUserNamespaceFolder(const std::wstring& namespaceId,
+                                        const std::wstring& userSidString)
     {
-        return GetUserWorkspacesFolder(userSidString) + L"\\workspaces.json";
+        return GetNamespaceFolder(namespaceId) + L"\\" + userSidString;
     }
 
-    std::wstring GetUserLegacyBackupFile(const std::wstring& userSidString)
+    std::wstring GetUserBlobPath(const std::wstring& namespaceId,
+                                 const std::wstring& userSidString)
     {
-        return GetUserWorkspacesFolder(userSidString) + L"\\workspaces.json.legacy.bak";
+        return GetUserNamespaceFolder(namespaceId, userSidString) + L"\\blob.bin";
     }
 
     std::wstring GetPowerToysInstallFolder()

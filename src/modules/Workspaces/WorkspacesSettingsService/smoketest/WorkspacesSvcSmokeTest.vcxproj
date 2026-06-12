@@ -32,7 +32,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <PropertyGroup>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
-    <TargetName>PowerToys.WorkspacesSvcSmokeTest</TargetName>
+    <TargetName>PowerToys.PTSettingsSvcSmokeTest</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
