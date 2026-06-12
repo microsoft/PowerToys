@@ -32,6 +32,8 @@ public static partial class QueryHelper
         // Enables better looking characters for multiplication and division (e.g., '×' and '÷')
         displayQuery = CalculateHelper.NormalizeCharsForDisplayQuery(query);
 
+        displayQuery = CalculateHelper.NormalizeMultiplicationSymbols(displayQuery);
+
         // Happens if the user has only typed the action key so far
         if (string.IsNullOrEmpty(displayQuery))
         {
@@ -58,6 +60,8 @@ public static partial class QueryHelper
 
         // normalize again to engine chars after translation
         input = CalculateHelper.NormalizeCharsToEngine(input);
+
+        input = CalculateHelper.NormalizeMultiplicationSymbols(input);
 
         // Auto fix incomplete queries (if enabled)
         if (settings.AutoFixQuery && TryGetIncompleteQuery(input, out var newInput))
