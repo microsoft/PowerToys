@@ -1,11 +1,11 @@
-PackageName: Google.Chrome
-Name: Google Chrome
-WindowFilter: "chrome.exe"
+PackageName: Postman.Postman
+Name: Postman
+WindowFilter: "Postman.exe"
 BackgroundProcess: false
 Shortcuts:
-  - SectionName: Tabs and windows
+  - SectionName: Tabs
     Properties:
-      - Name: New window
+      - Name: Close tab
         Recommended: true
         Shortcut:
         - Win: false
@@ -13,34 +13,16 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - N
-      - Name: New incognito window
-        Recommended: true
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - N
-      - Name: New tab
-        Recommended: true
+            - W
+      - Name: Force close tab
         Shortcut:
         - Win: false
           Ctrl: true
           Shift: false
-          Alt: false
+          Alt: true
           Keys:
-            - T
-      - Name: Reopen previously closed tab
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - T
-      - Name: Jump to next tab
+            - W
+      - Name: Switch to next tab
         Shortcut:
         - Win: false
           Ctrl: true
@@ -48,7 +30,7 @@ Shortcuts:
           Alt: false
           Keys:
             - Tab
-      - Name: Jump to previous tab
+      - Name: Switch to previous tab
         Shortcut:
         - Win: false
           Ctrl: true
@@ -56,7 +38,7 @@ Shortcuts:
           Alt: false
           Keys:
             - Tab
-      - Name: Jump to specific tab (1–8)
+      - Name: Switch to tab at position (1–8)
         Shortcut:
         - Win: false
           Ctrl: true
@@ -64,7 +46,7 @@ Shortcuts:
           Alt: false
           Keys:
             - '1 - 8'
-      - Name: Jump to rightmost tab
+      - Name: Switch to last tab
         Shortcut:
         - Win: false
           Ctrl: true
@@ -72,23 +54,65 @@ Shortcuts:
           Alt: false
           Keys:
             - 9
-      - Name: Open home page in current tab
+      - Name: Reopen last closed tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - T
+      - Name: New runner tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - R
+      - Name: Search tabs
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - A
+  - SectionName: Sidebar
+    Properties:
+      - Name: Search sidebar
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - F
+      - Name: Next item
         Shortcut:
         - Win: false
           Ctrl: false
           Shift: false
-          Alt: true
+          Alt: false
           Keys:
-            - Home
-      - Name: Open previous page in history
+            - "<Down>"
+      - Name: Previous item
         Shortcut:
         - Win: false
           Ctrl: false
           Shift: false
-          Alt: true
+          Alt: false
           Keys:
-            - "<Left>"
-      - Name: Open next page in history
+            - "<Up>"
+      - Name: Expand item
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Right>"
+      - Name: Expand all
         Shortcut:
         - Win: false
           Ctrl: false
@@ -96,189 +120,81 @@ Shortcuts:
           Alt: true
           Keys:
             - "<Right>"
-      - Name: Close current tab
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - W
-      - Name: Close current window
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - W
-      - Name: Move tab right
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - PageDown
-      - Name: Move tab left
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - PageUp
-      - Name: Turn full-screen mode on/off
+      - Name: Collapse item
         Shortcut:
         - Win: false
           Ctrl: false
           Shift: false
           Alt: false
           Keys:
-            - F11
-      - Name: Open split view in active tab
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: true
-          Alt: true
-          Keys:
-            - N
-  - SectionName: Chrome features
-    Properties:
-      - Name: Open the Chrome menu
+            - "<Left>"
+      - Name: Collapse all
         Shortcut:
         - Win: false
           Ctrl: false
           Shift: false
           Alt: true
           Keys:
-            - F
-      - Name: Show or hide bookmarks bar
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - B
-      - Name: Open Bookmarks Manager
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - O
-      - Name: Open History page
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - H
-      - Name: Open Downloads page
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - J
-      - Name: Open Chrome Task Manager
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: true
-          Alt: false
-          Keys:
-            - "<Escape>"
-      - Name: Open Find Bar
-        Recommended: true
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - F
-      - Name: Find next match
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - G
-      - Name: Find previous match
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - G
-      - Name: Open Developer Tools
-        Recommended: true
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - I
-      - Name: Open Developer Tools (alt)
+            - "<Left>"
+      - Name: Select item
         Shortcut:
         - Win: false
           Ctrl: false
           Shift: false
           Alt: false
           Keys:
-            - F12
-      - Name: Clear Browsing Data
+            - "<Enter>"
+      - Name: Rename item
         Shortcut:
         - Win: false
           Ctrl: true
-          Shift: true
+          Shift: false
+          Alt: false
+          Keys:
+            - E
+      - Name: Cut item
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - X
+      - Name: Copy item
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - C
+      - Name: Paste item
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - V
+      - Name: Duplicate item
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - D
+      - Name: Delete item
+        Shortcut:
+        - Win: false
+          Ctrl: false
+          Shift: false
           Alt: false
           Keys:
             - "<Delete>"
-      - Name: Open Help Center
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: false
-          Alt: false
-          Keys:
-            - F1
-      - Name: Switch user / browse as guest
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - M
-      - Name: Open feedback form
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: true
-          Alt: true
-          Keys:
-            - I
-      - Name: Toggle caret browsing
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: false
-          Alt: false
-          Keys:
-            - F7
-  - SectionName: Address bar
+  - SectionName: Request
     Properties:
-      - Name: Jump to address bar
+      - Name: Request URL
         Recommended: true
         Shortcut:
         - Win: false
@@ -287,57 +203,8 @@ Shortcuts:
           Alt: false
           Keys:
             - L
-      - Name: Jump to address bar (alt)
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: false
-          Alt: true
-          Keys:
-            - D
-      - Name: Add www. and .com and open in current tab
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - "<Enter>"
-      - Name: Add www. and .com and open in new window
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - "<Enter>"
-      - Name: Open new tab and search
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: false
-          Alt: true
-          Keys:
-            - "<Enter>"
-      - Name: Search from anywhere on the page
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - K
-  - SectionName: Web page
-    Properties:
-      - Name: Print current page
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - P
-      - Name: Save current page
+      - Name: Save request
+        Recommended: true
         Shortcut:
         - Win: false
           Ctrl: true
@@ -345,62 +212,33 @@ Shortcuts:
           Alt: false
           Keys:
             - S
-      - Name: Reload current page
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: false
-          Alt: false
-          Keys:
-            - F5
-      - Name: "Reload, ignoring cache"
+      - Name: Save request as
         Shortcut:
         - Win: false
           Ctrl: true
           Shift: true
           Alt: false
           Keys:
-            - R
-      - Name: Stop loading
-        Shortcut:
-        - Win: false
-          Ctrl: false
-          Shift: false
-          Alt: false
-          Keys:
-            - "<Escape>"
-      - Name: Open file in Chrome
+            - S
+      - Name: Send request
+        Recommended: true
         Shortcut:
         - Win: false
           Ctrl: true
           Shift: false
           Alt: false
           Keys:
-            - O
-      - Name: View page source
+            - "<Enter>"
+      - Name: Send and download request
         Shortcut:
         - Win: false
           Ctrl: true
           Shift: false
-          Alt: false
+          Alt: true
           Keys:
-            - U
-      - Name: Bookmark current page
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: false
-          Alt: false
-          Keys:
-            - D
-      - Name: Bookmark all open tabs
-        Shortcut:
-        - Win: false
-          Ctrl: true
-          Shift: true
-          Alt: false
-          Keys:
-            - D
+            - "<Enter>"
+  - SectionName: Interface
+    Properties:
       - Name: Zoom in
         Shortcut:
         - Win: false
@@ -425,59 +263,201 @@ Shortcuts:
           Alt: false
           Keys:
             - 0
-      - Name: Scroll down a screen
+      - Name: Toggle two-pane view
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - V
+      - Name: Toggle left sidebar
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "\\"
+      - Name: Toggle right sidebar
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - "\\"
+      - Name: Toggle workbench
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - M
+      - Name: Swap sidebars
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - S
+      - Name: Reset layout
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - R
+      - Name: Environment selector
         Shortcut:
         - Win: false
           Ctrl: false
           Shift: false
-          Alt: false
+          Alt: true
           Keys:
-            - "<Space>"
-      - Name: Scroll up a screen
+            - E
+  - SectionName: Window and modals
+    Properties:
+      - Name: New…
+        Recommended: true
         Shortcut:
         - Win: false
-          Ctrl: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - N
+      - Name: New Postman window
+        Shortcut:
+        - Win: false
+          Ctrl: true
           Shift: true
           Alt: false
           Keys:
-            - "<Space>"
-      - Name: Go to top of page
+            - N
+      - Name: New console window
         Shortcut:
         - Win: false
-          Ctrl: false
+          Ctrl: true
           Shift: false
-          Alt: false
+          Alt: true
           Keys:
-            - Home
-      - Name: Go to bottom of page
+            - C
+      - Name: Find
         Shortcut:
         - Win: false
-          Ctrl: false
-          Shift: false
+          Ctrl: true
+          Shift: true
           Alt: false
           Keys:
-            - End
-      - Name: Move cursor to start of previous word
+            - F
+      - Name: Import
         Shortcut:
         - Win: false
           Ctrl: true
           Shift: false
           Alt: false
           Keys:
-            - "<Left>"
-      - Name: Move cursor to next word
+            - O
+      - Name: Settings
         Shortcut:
         - Win: false
           Ctrl: true
           Shift: false
           Alt: false
           Keys:
-            - "<Right>"
-      - Name: Delete previous word in text field
+            - ","
+      - Name: Open shortcut help
         Shortcut:
         - Win: false
           Ctrl: true
           Shift: false
           Alt: false
           Keys:
-            - "<Backspace>"
+            - "/"
+      - Name: Search
+        Recommended: true
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - K
+      - Name: Search in current workspace
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - K
+      - Name: Open Postbot
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: true
+          Keys:
+            - P
+      - Name: Open Vault
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - V
+      - Name: Open browser tab
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - B
+      - Name: Cancel conversation
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - C
+      - Name: Accept all
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - Y
+      - Name: Reject all
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "<Escape>"
+  - SectionName: Console
+    Properties:
+      - Name: Clear console
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: true
+          Alt: false
+          Keys:
+            - K
+      - Name: Show/hide console
+        Shortcut:
+        - Win: false
+          Ctrl: true
+          Shift: false
+          Alt: false
+          Keys:
+            - "`"

@@ -485,7 +485,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - '1 - 8'
       - Name: Go to last tab
         Shortcut:
         - Win: false
