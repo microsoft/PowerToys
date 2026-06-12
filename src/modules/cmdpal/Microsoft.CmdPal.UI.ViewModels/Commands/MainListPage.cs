@@ -510,18 +510,16 @@ public sealed partial class MainListPage : DynamicListPage,
                 return;
             }
 
-            // Extract unique first characters and short prefixes (1-2 chars)
+            // Extract unique first characters only. Two-char prefixes are not
+            // prewarmed because the narrowing optimization already makes them
+            // fast (they reuse the 1-char result set). This keeps memory usage
+            // minimal — at most 8 cache entries from prewarm.
             var prefixes = new HashSet<string>(StringComparer.CurrentCultureIgnoreCase);
             foreach (var title in titlesToPrewarm)
             {
                 if (title.Length >= 1)
                 {
                     prefixes.Add(title[..1]);
-                }
-
-                if (title.Length >= 2)
-                {
-                    prefixes.Add(title[..2]);
                 }
             }
 
