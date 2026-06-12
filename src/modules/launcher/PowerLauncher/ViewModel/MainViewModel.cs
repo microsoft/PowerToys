@@ -52,9 +52,7 @@ namespace PowerLauncher.ViewModel
 
         private string _queryTextBeforeLeaveResults;
 
-        private CancellationTokenSource _updateSource;
-
-        private CancellationToken _updateToken;
+        private QuerySession _currentSession;
         private CancellationToken _nativeWaiterCancelToken;
         private bool _saved;
         private ushort _hotkeyHandle;
@@ -162,13 +160,17 @@ namespace PowerLauncher.ViewModel
                 var plugin = (IResultUpdated)pair.Plugin;
                 plugin.ResultsUpdated += (s, e) =>
                 {
+                    // Intentional field read: late plugin events should be tied to the
+                    // CURRENT session so stale updates don't accumulate. Null fallback
+                    // covers the pre-first-query window.
+                    var token = _currentSession?.Token ?? CancellationToken.None;
                     Task.Run(
                         () =>
                         {
                             PluginManager.UpdatePluginMetadata(e.Results, pair.Metadata, e.Query);
-                            UpdateResultView(e.Results, e.Query.RawQuery, _updateToken);
+                            UpdateResultView(e.Results, e.Query.RawQuery, token);
                         },
-                        _updateToken);
+                        token);
                 };
             }
         }
@@ -568,11 +570,14 @@ namespace PowerLauncher.ViewModel
                     r => StringMatcher.FuzzySearch(query, r.Title).IsSearchPrecisionScoreMet() ||
                          StringMatcher.FuzzySearch(query, r.SubTitle).IsSearchPrecisionScoreMet()).ToList();
 
-                History.AddResults(filtered, _updateToken);
+                // Capture once; never re-read the field across the call.
+                var historyToken = _currentSession?.Token ?? CancellationToken.None;
+                History.AddResults(filtered, historyToken);
             }
             else
             {
-                History.AddResults(results, _updateToken);
+                var historyToken = _currentSession?.Token ?? CancellationToken.None;
+                History.AddResults(results, historyToken);
             }
         }
 
@@ -590,11 +595,20 @@ namespace PowerLauncher.ViewModel
             {
                 var queryTimer = new System.Diagnostics.Stopwatch();
                 queryTimer.Start();
-                _updateSource?.Cancel();
-                _updateSource?.Dispose();
-                var currentUpdateSource = new CancellationTokenSource();
-                _updateSource = currentUpdateSource;
-                _updateToken = _updateSource.Token;
+
+                // Swap in a fresh QuerySession. The PREVIOUS session is cancelled and its
+                // CTS disposed only after its tracked task(s) complete (see QuerySession).
+                //
+                // Why this matters: CancellationToken is a struct holding a reference to its
+                // source's state. If the in-flight task re-reads a FIELD token after the
+                // next keystroke replaced it with a fresh (non-cancelled) one, the task's
+                // ThrowIfCancellationRequested() silently no-ops, the whole plugin fan-out
+                // runs to completion, and rapid typing leaks ThreadPool workers until PT
+                // Run dies with OutOfMemoryException on Thread.StartInternal (#36041).
+                // Mitigation: every observer inside the task body must use the captured
+                // local 'updateToken' below, never the field via _currentSession.
+                var previousSession = _currentSession;
+
                 var queryText = QueryText.Trim();
 
                 var pluginQueryPairs = QueryBuilder.Build(queryText);
@@ -603,9 +617,19 @@ namespace PowerLauncher.ViewModel
                     queryText = pluginQueryPairs.Values.First().RawQuery;
                     _currentQuery = queryText;
 
-                    var queryResultsTask = Task.Factory.StartNew(
-                        () =>
-                        {
+                    // QuerySession.Start builds the entire task pipeline once,
+                    // against this session's token, and captures the tail as the
+                    // session's immutable Completion. No add-task / register
+                    // surface exists post-construction, which is why no internal
+                    // lock is needed.
+                    var currentSession = QuerySession.Start(updateToken =>
+                    {
+                        // Task.Run pins TaskScheduler.Default + DenyChildAttach so attached
+                        // child tasks created inside plugin code cannot extend the outer
+                        // task's lifetime past cancellation.
+                        var queryResultsTask = Task.Run(
+                            () =>
+                            {
                             Thread.Sleep(20);
 
                             // Keep track of total number of results for telemetry
@@ -622,7 +646,10 @@ namespace PowerLauncher.ViewModel
 
                                 if (_settings.PTRunNonDelayedSearchInParallel)
                                 {
-                                    Parallel.ForEach(pluginQueryPairs, (pluginQueryItem) =>
+                                    Parallel.ForEach(
+                                        pluginQueryPairs,
+                                        new ParallelOptions { CancellationToken = updateToken },
+                                        (pluginQueryItem) =>
                                     {
                                         try
                                         {
@@ -631,7 +658,7 @@ namespace PowerLauncher.ViewModel
                                             query.SelectedItems = _userSelectedRecord.GetGenericHistory();
                                             var results = PluginManager.QueryForPlugin(plugin, query);
                                             resultPluginPair[plugin.Metadata] = results;
-                                            _updateToken.ThrowIfCancellationRequested();
+                                            updateToken.ThrowIfCancellationRequested();
                                         }
                                         catch (OperationCanceledException)
                                         {
@@ -642,7 +669,7 @@ namespace PowerLauncher.ViewModel
                                 }
                                 else
                                 {
-                                    _updateToken.ThrowIfCancellationRequested();
+                                    updateToken.ThrowIfCancellationRequested();
 
                                     // To execute a query corresponding to each plugin
                                     foreach (KeyValuePair<PluginPair, Query> pluginQueryItem in pluginQueryPairs)
@@ -652,7 +679,7 @@ namespace PowerLauncher.ViewModel
                                         query.SelectedItems = _userSelectedRecord.GetGenericHistory();
                                         var results = PluginManager.QueryForPlugin(plugin, query);
                                         resultPluginPair[plugin.Metadata] = results;
-                                        _updateToken.ThrowIfCancellationRequested();
+                                        updateToken.ThrowIfCancellationRequested();
                                     }
                                 }
 
@@ -664,11 +691,11 @@ namespace PowerLauncher.ViewModel
                                         Results.Clear();
                                         foreach (var p in resultPluginPair)
                                         {
-                                            UpdateResultView(p.Value, queryText, _updateToken);
-                                            _updateToken.ThrowIfCancellationRequested();
+                                            UpdateResultView(p.Value, queryText, updateToken);
+                                            updateToken.ThrowIfCancellationRequested();
                                         }
 
-                                        _updateToken.ThrowIfCancellationRequested();
+                                        updateToken.ThrowIfCancellationRequested();
                                         numResults = Results.Results.Count;
                                         if (!doFinalSort)
                                         {
@@ -677,7 +704,7 @@ namespace PowerLauncher.ViewModel
                                         }
                                     }
 
-                                    _updateToken.ThrowIfCancellationRequested();
+                                    updateToken.ThrowIfCancellationRequested();
                                     if (!doFinalSort)
                                     {
                                         UpdateResultsListViewAfterQuery(queryText);
@@ -689,15 +716,18 @@ namespace PowerLauncher.ViewModel
                                 if (!delayedExecution.HasValue || delayedExecution.Value)
                                 {
                                     // Run the slower query of the DelayedExecution plugins
-                                    _updateToken.ThrowIfCancellationRequested();
-                                    Parallel.ForEach(plugins, (plugin) =>
+                                    updateToken.ThrowIfCancellationRequested();
+                                    Parallel.ForEach(
+                                        plugins,
+                                        new ParallelOptions { CancellationToken = updateToken },
+                                        (plugin) =>
                                     {
                                         try
                                         {
                                             Query query;
                                             pluginQueryPairs.TryGetValue(plugin, out query);
                                             var results = PluginManager.QueryForPlugin(plugin, query, true);
-                                            _updateToken.ThrowIfCancellationRequested();
+                                            updateToken.ThrowIfCancellationRequested();
                                             if ((results?.Count ?? 0) != 0)
                                             {
                                                 lock (_addResultsLock)
@@ -705,16 +735,16 @@ namespace PowerLauncher.ViewModel
                                                     // Using CurrentCultureIgnoreCase since this is user facing
                                                     if (queryText.Equals(_currentQuery, StringComparison.CurrentCultureIgnoreCase))
                                                     {
-                                                        _updateToken.ThrowIfCancellationRequested();
+                                                        updateToken.ThrowIfCancellationRequested();
 
                                                         // Remove the original results from the plugin
                                                         Results.Results.RemoveAll(r => r.Result.PluginID == plugin.Metadata.ID);
-                                                        _updateToken.ThrowIfCancellationRequested();
+                                                        updateToken.ThrowIfCancellationRequested();
 
                                                         // Add the new results from the plugin
-                                                        UpdateResultView(results, queryText, _updateToken);
+                                                        UpdateResultView(results, queryText, updateToken);
 
-                                                        _updateToken.ThrowIfCancellationRequested();
+                                                        updateToken.ThrowIfCancellationRequested();
                                                         numResults = Results.Results.Count;
                                                         if (!doFinalSort)
                                                         {
@@ -722,7 +752,7 @@ namespace PowerLauncher.ViewModel
                                                         }
                                                     }
 
-                                                    _updateToken.ThrowIfCancellationRequested();
+                                                    updateToken.ThrowIfCancellationRequested();
                                                     if (!doFinalSort)
                                                     {
                                                         UpdateResultsListViewAfterQuery(queryText, noInitialResults, true);
@@ -750,26 +780,51 @@ namespace PowerLauncher.ViewModel
                                 QueryLength = queryText.Length,
                             };
                             PowerToysTelemetry.Log.WriteEvent(queryEvent);
-                        },
-                        _updateToken);
-
-                    if (doFinalSort)
-                    {
-                        Task.Factory.ContinueWhenAll(
-                            new Task[] { queryResultsTask },
-                            completedTasks =>
-                            {
-                                Results.Sort(queryTuning);
-                                Results.SelectedItem = Results.Results.FirstOrDefault();
-                                UpdateResultsListViewAfterQuery(queryText, false, false);
                             },
-                            _updateToken);
-                    }
+                            updateToken);
+
+                        if (doFinalSort)
+                        {
+                            // The continuation IS the tail of the pipeline whose completion gates
+                            // CTS disposal. DenyChildAttach for the same reason as Task.Run above.
+                            return queryResultsTask.ContinueWith(
+                                _ =>
+                                {
+                                    Results.Sort(queryTuning);
+                                    Results.SelectedItem = Results.Results.FirstOrDefault();
+                                    UpdateResultsListViewAfterQuery(queryText, false, false);
+                                },
+                                updateToken,
+                                TaskContinuationOptions.DenyChildAttach,
+                                TaskScheduler.Default);
+                        }
+
+                        return queryResultsTask;
+                    });
+
+                    _currentSession = currentSession;
+                }
+
+                // Cancel the prior in-flight query for ANY non-empty query, even one
+                // that produced zero plugin pairs (e.g. all globals disabled + no
+                // keyword match, so QueryBuilder.Build returns an empty dictionary).
+                // The pre-refactor code cancelled _updateSource unconditionally before
+                // the Count check; this restores that invariant so a non-empty query
+                // whose Build() yields zero pairs still tears down the previous
+                // fan-out instead of leaking it. Cancel() and DisposeWhenComplete()
+                // are idempotent, and Token is a stored snapshot, so leaving
+                // _currentSession bound to the just-cancelled session keeps late
+                // IResultUpdated events suppressed via their captured token rather
+                // than falling back to CancellationToken.None and slipping through.
+                if (previousSession != null)
+                {
+                    previousSession.Cancel();
+                    _ = previousSession.DisposeWhenComplete();
                 }
             }
             else
             {
-                _updateSource?.Cancel();
+                _currentSession?.Cancel();
                 _currentQuery = _emptyQuery;
                 Results.SelectedItem = null;
                 Results.Visibility = Visibility.Collapsed;
@@ -1188,7 +1243,11 @@ namespace PowerLauncher.ViewModel
                     }
 
                     HotkeyManager?.Dispose();
-                    _updateSource?.Dispose();
+
+                    // Shutdown: cancel any in-flight query, give it a short budget to
+                    // observe cancellation, then dispose the CTS. Per CTS.Dispose docs,
+                    // Dispose alone does NOT communicate cancellation.
+                    _currentSession?.CancelAndWait(TimeSpan.FromSeconds(2));
                     _disposed = true;
                 }
             }
