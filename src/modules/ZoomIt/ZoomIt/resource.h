@@ -87,6 +87,7 @@
 #define IDC_HIGHLIGHT_AND_BLUR          1065
 #define IDC_SHAPES                      1066
 #define IDC_SCREEN                      1067
+#define IDC_ERASER                      1124
 #define IDC_DEMOTYPE_TEXT               1068
 #define IDC_DEMOTYPE_BROWSE             1069
 #define IDC_DEMOTYPE_FILE               1070
@@ -142,7 +143,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40015
-#define _APS_NEXT_CONTROL_VALUE         1124
+#define _APS_NEXT_CONTROL_VALUE         1125
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

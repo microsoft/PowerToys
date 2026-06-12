@@ -186,23 +186,25 @@ BEGIN
     LTEXT           "Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,6,34,230,18
 END
 
-DRAW DIALOGEX 0, 0, 260, 228
+DRAW DIALOGEX 0, 0, 260, 249
 STYLE DS_SETFONT | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Once zoomed, toggle drawing mode by pressing the left mouse button. Undo with Ctrl+Z and all drawing by pressing E. Center the cursor with the space bar. Exit drawing mode by pressing the right mouse button.",IDC_STATIC,7,7,230,24
-    LTEXT           "Pen Control ",IDC_PEN_CONTROL,7,38,40,8
-    LTEXT           "Change the pen width by pressing left Ctrl and using the mouse wheel or the up and down arrow keys.",IDC_STATIC,19,48,218,16
-    LTEXT           "Colors",IDC_COLORS,7,70,21,8
-    LTEXT           "Change the pen color by pressing R (red), G (green), B (blue),\nO (orange), Y (yellow), P (pink), W (white) or K (black).",IDC_STATIC,19,80,218,16
-    LTEXT           "Highlight and Blur",IDC_HIGHLIGHT_AND_BLUR,7,102,58,8
-    LTEXT           "Hold Shift while pressing a color key for a translucent highlighter color. Press X for blur or Shift+X for a stronger blur.",IDC_STATIC,19,113,218,16
-    LTEXT           "Shapes",IDC_SHAPES,7,134,23,8
-    LTEXT           "Draw a line by holding down the Shift key, a rectangle with the Ctrl key, an ellipse with the Tab key and an arrow with Shift+Ctrl.",IDC_STATIC,19,144,218,16
-    LTEXT           "Screen",IDC_SCREEN,7,166,22,8
-    LTEXT           "Clear the screen for a sketch pad by pressing Ctrl+W (white) or Ctrl+K (black). Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,19,176,218,24
-    CONTROL         "",IDC_DRAW_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,207,80,12
-    LTEXT           "Draw w/out Zoom:",IDC_STATIC,7,210,63,11
+    LTEXT           "Pen Control ",IDC_PEN_CONTROL,7,34,40,8
+    LTEXT           "Change the pen width by pressing left Ctrl and using the mouse wheel or the up and down arrow keys.",IDC_STATIC,19,44,218,16
+    LTEXT           "Colors",IDC_COLORS,7,64,21,8
+    LTEXT           "Change the pen color by pressing R (red), G (green), B (blue),\nO (orange), Y (yellow), P (pink), W (white) or K (black).",IDC_STATIC,19,74,218,16
+    LTEXT           "Highlight and Blur",IDC_HIGHLIGHT_AND_BLUR,7,94,58,8
+    LTEXT           "Hold Shift while pressing a color key for a translucent highlighter color. Press X for blur or Shift+X for a stronger blur.",IDC_STATIC,19,104,218,16
+    LTEXT           "Shapes",IDC_SHAPES,7,124,23,8
+    LTEXT           "Draw a line by holding down the Shift key, a rectangle with the Ctrl key, an ellipse with the Tab key and an arrow with Shift+Ctrl.",IDC_STATIC,19,134,218,16
+    LTEXT           "Eraser",IDC_ERASER,7,154,22,8
+    LTEXT           "Press Shift+E to cycle the eraser (pixel, then stroke, then off). Click once to start erasing and click again to stop, so you don't have to hold the mouse button. Change the eraser size by pressing Ctrl and using the mouse wheel.",IDC_STATIC,19,164,230,24
+    LTEXT           "Screen",IDC_SCREEN,7,192,22,8
+    LTEXT           "Clear the screen for a sketch pad by pressing Ctrl+W (white) or Ctrl+K (black). Copy a zoomed screen with Ctrl+C or save it by typing Ctrl+S. Crop the copy or save region by entering Ctrl+Shift instead of Ctrl.",IDC_STATIC,19,202,230,24
+    CONTROL         "",IDC_DRAW_HOTKEY,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,73,229,80,12
+    LTEXT           "Draw w/out Zoom:",IDC_STATIC,7,232,63,11
 END
 
 TYPE DIALOGEX 0, 0, 260, 104

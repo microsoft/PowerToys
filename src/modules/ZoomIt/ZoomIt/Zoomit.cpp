@@ -182,6 +182,28 @@ HWND	hWndOptions = NULL;
 BOOLEAN	g_DrawPointer = FALSE;
 BOOLEAN g_PenDown = FALSE;
 BOOLEAN g_PenInverted = FALSE;
+
+// Eraser tool: lets the user scrub away annotations instead of drawing.
+//  EraserModePixel  - restores only the pixels the eraser tip passes over.
+//  EraserModeStroke - restores the whole connected mark the eraser touches.
+// "Clear screen" (the third erase option) is the existing 'E' shortcut.
+typedef enum {
+    EraserModeOff = 0,
+    EraserModePixel,
+    EraserModeStroke,
+} EraserMode;
+EraserMode g_EraserMode = EraserModeOff;
+
+// Click-to-toggle erasing: when the eraser tool is active the user clicks once to
+// start erasing and clicks again (or releases) to stop, rather than holding the
+// button down. While disengaged the eraser glyph simply follows the cursor.
+BOOLEAN g_EraserEngaged = FALSE;
+
+// Transient on-screen indicator shown when the eraser mode is toggled.
+BOOLEAN g_EraserPopupVisible = FALSE;
+const UINT ERASER_POPUP_TIMER = 6;
+const UINT ERASER_POPUP_DURATION_MS = 1500;
+
 DWORD	g_OsVersion;
 HWND	g_hWndLiveZoom = NULL;
 HWND    g_hWndLiveZoomMag = NULL;
@@ -3380,7 +3402,7 @@ void UpdateDrawTabHeaderFont()
     static HFONT	headerFont = nullptr;
     TCHAR 			text[64];
 
-    constexpr int headers[] = { IDC_PEN_CONTROL, IDC_COLORS, IDC_HIGHLIGHT_AND_BLUR, IDC_SHAPES, IDC_SCREEN };
+    constexpr int headers[] = { IDC_PEN_CONTROL, IDC_COLORS, IDC_HIGHLIGHT_AND_BLUR, IDC_SHAPES, IDC_ERASER, IDC_SCREEN };
 
     HWND hPage = g_OptionsTabs[DRAW_PAGE].hPage;
     if( !hPage )
@@ -6145,6 +6167,405 @@ void RestoreCursorArea( HDC hDcTarget, HDC hDcSource, POINT pt )
 
 //----------------------------------------------------------------------------
 //
+// AddRoundedRectPath
+//
+//----------------------------------------------------------------------------
+static void AddRoundedRectPath( Gdiplus::GraphicsPath& path, float x, float y,
+                                float w, float h, float r )
+{
+    if( r * 2 > w ) r = w / 2;
+    if( r * 2 > h ) r = h / 2;
+    float d = r * 2;
+    path.StartFigure();
+    path.AddArc( x, y, d, d, 180.0f, 90.0f );
+    path.AddArc( x + w - d, y, d, d, 270.0f, 90.0f );
+    path.AddArc( x + w - d, y + h - d, d, d, 0.0f, 90.0f );
+    path.AddArc( x, y + h - d, d, d, 90.0f, 90.0f );
+    path.CloseFigure();
+}
+
+//----------------------------------------------------------------------------
+//
+// DrawEraserCursor
+//
+// Draws a classic block-eraser glyph centered on pt. It is sized to stay
+// within the area saved by SaveCursorArea so RestoreCursorArea can fully
+// remove it as the cursor moves.
+//
+//----------------------------------------------------------------------------
+void DrawEraserCursor( HDC hDcTarget, POINT pt )
+{
+    Gdiplus::Graphics	dstGraphics( hDcTarget );
+    bool layered = ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) != 0;
+    if( !layered )
+    {
+        dstGraphics.SetSmoothingMode( Gdiplus::SmoothingModeAntiAlias );
+    }
+
+    float s = static_cast<float>( g_PenWidth );
+    if( s < 12.0f ) s = 12.0f;
+
+    float w = s * 0.95f;
+    float h = s * 0.62f;
+    float x0 = -w / 2.0f;
+    float y0 = -h / 2.0f;
+    float radius = h * 0.25f;
+    float bandY = y0 + h * 0.55f;
+
+    Gdiplus::GraphicsState state = dstGraphics.Save();
+    dstGraphics.TranslateTransform( static_cast<Gdiplus::REAL>( pt.x ), static_cast<Gdiplus::REAL>( pt.y ) );
+    dstGraphics.RotateTransform( -30.0f );
+
+    Gdiplus::GraphicsPath body;
+    AddRoundedRectPath( body, x0, y0, w, h, radius );
+
+    // Eraser body (the rubber part).
+    Gdiplus::SolidBrush rubberBrush( Gdiplus::Color( 255, 250, 224, 233 ) );
+    dstGraphics.FillPath( &rubberBrush, &body );
+
+    // Colored sleeve / band on the lower part.
+    dstGraphics.SetClip( &body );
+    Gdiplus::RectF bandRect( x0 - 2.0f, bandY, w + 4.0f, ( y0 + h ) - bandY + 2.0f );
+    Gdiplus::SolidBrush sleeveBrush( Gdiplus::Color( 255, 74, 122, 214 ) );
+    dstGraphics.FillRectangle( &sleeveBrush, bandRect );
+    dstGraphics.ResetClip();
+
+    float outlineWidth = s * 0.06f;
+    if( outlineWidth < 1.0f ) outlineWidth = 1.0f;
+    Gdiplus::Pen outline( Gdiplus::Color( 255, 45, 45, 45 ), outlineWidth );
+    outline.SetLineJoin( Gdiplus::LineJoinRound );
+    dstGraphics.DrawPath( &outline, &body );
+    dstGraphics.DrawLine( &outline, x0, bandY, x0 + w, bandY );
+
+    dstGraphics.Restore( state );
+}
+
+//----------------------------------------------------------------------------
+//
+// DrawEraserModePopup
+//
+// Draws a small auto-dismissing badge near the top center of the screen that
+// tells the user which eraser mode is now active. Rendered onto the window DC
+// at paint time so it never becomes part of the annotation bitmap.
+//
+//----------------------------------------------------------------------------
+void DrawEraserModePopup( HDC hdc, int width, int height )
+{
+    const WCHAR* label;
+    switch( g_EraserMode )
+    {
+    case EraserModePixel:  label = L"Eraser: Pixel"; break;
+    case EraserModeStroke: label = L"Eraser: Stroke"; break;
+    default:               label = L"Eraser: Off"; break;
+    }
+
+    Gdiplus::Graphics g( hdc );
+    g.SetSmoothingMode( Gdiplus::SmoothingModeAntiAlias );
+    g.SetTextRenderingHint( Gdiplus::TextRenderingHintAntiAlias );
+
+    Gdiplus::FontFamily fontFamily( L"Segoe UI" );
+    Gdiplus::Font font( &fontFamily, 20.0f, Gdiplus::FontStyleBold, Gdiplus::UnitPixel );
+
+    Gdiplus::RectF layout( 0.0f, 0.0f, static_cast<Gdiplus::REAL>( width ), 200.0f );
+    Gdiplus::RectF textBounds;
+    g.MeasureString( label, -1, &font, layout, &textBounds );
+
+    const float padX = 18.0f, padY = 12.0f;
+    const float iconSize = 26.0f, iconGap = 12.0f;
+    float boxW = textBounds.Width + padX * 2.0f + iconSize + iconGap;
+    float boxH = max( textBounds.Height, iconSize ) + padY * 2.0f;
+    float boxX = ( width - boxW ) / 2.0f;
+    float boxY = 48.0f;
+
+    Gdiplus::GraphicsPath box;
+    AddRoundedRectPath( box, boxX, boxY, boxW, boxH, 12.0f );
+
+    Gdiplus::SolidBrush back( Gdiplus::Color( 224, 30, 30, 30 ) );
+    g.FillPath( &back, &box );
+    Gdiplus::Pen border( Gdiplus::Color( 235, 74, 122, 214 ), 1.5f );
+    g.DrawPath( &border, &box );
+
+    // Mini eraser glyph on the left.
+    float iconCx = boxX + padX + iconSize / 2.0f;
+    float iconCy = boxY + boxH / 2.0f;
+    Gdiplus::GraphicsState st = g.Save();
+    g.TranslateTransform( iconCx, iconCy );
+    g.RotateTransform( -30.0f );
+    float iw = iconSize * 0.95f, ih = iconSize * 0.6f;
+    Gdiplus::GraphicsPath glyph;
+    AddRoundedRectPath( glyph, -iw / 2.0f, -ih / 2.0f, iw, ih, ih * 0.25f );
+    Gdiplus::SolidBrush rubber( Gdiplus::Color( 255, 250, 224, 233 ) );
+    g.FillPath( &rubber, &glyph );
+    g.SetClip( &glyph );
+    Gdiplus::RectF bandRect( -iw / 2.0f - 2.0f, ih * 0.05f, iw + 4.0f, ih * 0.45f + 2.0f );
+    Gdiplus::SolidBrush sleeve( Gdiplus::Color( 255, 74, 122, 214 ) );
+    g.FillRectangle( &sleeve, bandRect );
+    g.ResetClip();
+    Gdiplus::Pen glyphOutline( Gdiplus::Color( 255, 45, 45, 45 ), 1.5f );
+    glyphOutline.SetLineJoin( Gdiplus::LineJoinRound );
+    g.DrawPath( &glyphOutline, &glyph );
+    g.Restore( st );
+
+    // Label.
+    Gdiplus::SolidBrush textBrush( Gdiplus::Color( 255, 245, 245, 245 ) );
+    Gdiplus::PointF textPos( boxX + padX + iconSize + iconGap,
+        boxY + ( boxH - textBounds.Height ) / 2.0f );
+    g.DrawString( label, -1, &font, textPos, &textBrush );
+}
+
+//----------------------------------------------------------------------------
+//
+// BuildEraserCapsuleRegion
+//
+// Builds a round-tipped region covering the segment p1->p2 with the current
+// pen width, so the eraser leaves a smooth rounded trail.
+//
+//----------------------------------------------------------------------------
+static HRGN BuildEraserCapsuleRegion( POINT p1, POINT p2, int r )
+{
+    if( r < 1 ) r = 1;
+    HRGN rgn = CreateEllipticRgn( p1.x - r, p1.y - r, p1.x + r + 1, p1.y + r + 1 );
+    HRGN rgnEnd = CreateEllipticRgn( p2.x - r, p2.y - r, p2.x + r + 1, p2.y + r + 1 );
+    if( rgn && rgnEnd )
+    {
+        CombineRgn( rgn, rgn, rgnEnd, RGN_OR );
+    }
+    if( rgnEnd ) DeleteObject( rgnEnd );
+
+    double dx = static_cast<double>( p2.x - p1.x );
+    double dy = static_cast<double>( p2.y - p1.y );
+    double len = sqrt( dx * dx + dy * dy );
+    if( rgn && len > 0.0001 )
+    {
+        double nx = -dy / len * r;
+        double ny = dx / len * r;
+        POINT poly[4];
+        poly[0].x = static_cast<LONG>( p1.x + nx ); poly[0].y = static_cast<LONG>( p1.y + ny );
+        poly[1].x = static_cast<LONG>( p2.x + nx ); poly[1].y = static_cast<LONG>( p2.y + ny );
+        poly[2].x = static_cast<LONG>( p2.x - nx ); poly[2].y = static_cast<LONG>( p2.y - ny );
+        poly[3].x = static_cast<LONG>( p1.x - nx ); poly[3].y = static_cast<LONG>( p1.y - ny );
+        HRGN band = CreatePolygonRgn( poly, 4, WINDING );
+        if( band )
+        {
+            CombineRgn( rgn, rgn, band, RGN_OR );
+            DeleteObject( band );
+        }
+    }
+    return rgn;
+}
+
+//----------------------------------------------------------------------------
+//
+// EraseScrubSegment
+//
+// Pixel eraser: restores the original background under a round-tipped band
+// following the segment prevPt->currentPt.
+//
+//----------------------------------------------------------------------------
+void EraseScrubSegment( HDC hdcDst, HDC hdcBase, POINT p1, POINT p2,
+                        int width, int height, int blankMode )
+{
+    int r = g_PenWidth / 2;
+    if( r < 1 ) r = 1;
+
+    int minX = min( p1.x, p2.x ) - r - 1;
+    int minY = min( p1.y, p2.y ) - r - 1;
+    int maxX = max( p1.x, p2.x ) + r + 1;
+    int maxY = max( p1.y, p2.y ) + r + 1;
+    if( minX < 0 ) minX = 0;
+    if( minY < 0 ) minY = 0;
+    if( maxX > width ) maxX = width;
+    if( maxY > height ) maxY = height;
+    if( maxX <= minX || maxY <= minY ) return;
+
+    HRGN rgn = BuildEraserCapsuleRegion( p1, p2, r );
+    if( !rgn ) return;
+
+    HRGN savedClip = CreateRectRgn( 0, 0, 0, 0 );
+    int hadClip = GetClipRgn( hdcDst, savedClip );
+    SelectClipRgn( hdcDst, rgn );
+
+    if( blankMode )
+    {
+        RECT rc = { minX, minY, maxX, maxY };
+        BlankScreenArea( hdcDst, &rc, blankMode );
+    }
+    else
+    {
+        BitBlt( hdcDst, minX, minY, maxX - minX, maxY - minY,
+            hdcBase, minX, minY, SRCCOPY | CAPTUREBLT );
+    }
+
+    if( hadClip == 1 ) SelectClipRgn( hdcDst, savedClip );
+    else SelectClipRgn( hdcDst, NULL );
+    DeleteObject( savedClip );
+    DeleteObject( rgn );
+}
+
+//----------------------------------------------------------------------------
+//
+// EraserPixelDiffers
+//
+//----------------------------------------------------------------------------
+static inline bool EraserPixelDiffers( DWORD a, DWORD b )
+{
+    a &= 0xFFFFFF;
+    b &= 0xFFFFFF;
+    if( a == b ) return false;
+    int dr = abs( static_cast<int>( ( a >> 16 ) & 0xFF ) - static_cast<int>( ( b >> 16 ) & 0xFF ) );
+    int dg = abs( static_cast<int>( ( a >> 8 ) & 0xFF ) - static_cast<int>( ( b >> 8 ) & 0xFF ) );
+    int db = abs( static_cast<int>( a & 0xFF ) - static_cast<int>( b & 0xFF ) );
+    return ( dr + dg + db ) > 24;
+}
+
+//----------------------------------------------------------------------------
+//
+// EraserIsInkPixel
+//
+// Cheap test (single GetPixel pair) used to avoid a full-screen flood fill
+// when the stroke eraser is hovering over empty background.
+//
+//----------------------------------------------------------------------------
+bool EraserIsInkPixel( HDC hdcDst, HDC hdcBase, int x, int y, int blankMode )
+{
+    COLORREF c = GetPixel( hdcDst, x, y );
+    if( c == CLR_INVALID ) return false;
+    COLORREF b;
+    if( blankMode == 'K' ) b = RGB( 0, 0, 0 );
+    else if( blankMode ) b = GetSysColor( COLOR_WINDOW );
+    else
+    {
+        b = GetPixel( hdcBase, x, y );
+        if( b == CLR_INVALID ) return false;
+    }
+    DWORD cv = ( GetRValue( c ) << 16 ) | ( GetGValue( c ) << 8 ) | GetBValue( c );
+    DWORD bv = ( GetRValue( b ) << 16 ) | ( GetGValue( b ) << 8 ) | GetBValue( b );
+    return EraserPixelDiffers( cv, bv );
+}
+
+//----------------------------------------------------------------------------
+//
+// EraseConnectedStroke
+//
+// Stroke eraser: flood-fills the connected drawn region (pixels that differ
+// from the original background) that the eraser touched and restores it.
+//
+//----------------------------------------------------------------------------
+void EraseConnectedStroke( HDC hdcDst, HDC hdcBase, POINT pt,
+                           int width, int height, int blankMode )
+{
+    if( pt.x < 0 || pt.y < 0 || pt.x >= width || pt.y >= height ) return;
+    if( width <= 0 || height <= 0 ) return;
+
+    BITMAPINFO bmi = {};
+    bmi.bmiHeader.biSize = sizeof( BITMAPINFOHEADER );
+    bmi.bmiHeader.biWidth = width;
+    bmi.bmiHeader.biHeight = -height; // top-down
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+
+    HDC memCur = CreateCompatibleDC( hdcDst );
+    HDC memBase = CreateCompatibleDC( hdcDst );
+    if( !memCur || !memBase )
+    {
+        if( memCur ) DeleteDC( memCur );
+        if( memBase ) DeleteDC( memBase );
+        return;
+    }
+
+    void* curBits = nullptr;
+    void* baseBits = nullptr;
+    HBITMAP curBmp = CreateDIBSection( hdcDst, &bmi, DIB_RGB_COLORS, &curBits, NULL, 0 );
+    HBITMAP baseBmp = CreateDIBSection( hdcDst, &bmi, DIB_RGB_COLORS, &baseBits, NULL, 0 );
+    if( !curBmp || !baseBmp || !curBits || !baseBits )
+    {
+        if( curBmp ) DeleteObject( curBmp );
+        if( baseBmp ) DeleteObject( baseBmp );
+        DeleteDC( memCur );
+        DeleteDC( memBase );
+        return;
+    }
+
+    HGDIOBJ oldCur = SelectObject( memCur, curBmp );
+    HGDIOBJ oldBase = SelectObject( memBase, baseBmp );
+
+    BitBlt( memCur, 0, 0, width, height, hdcDst, 0, 0, SRCCOPY | CAPTUREBLT );
+    if( blankMode )
+    {
+        RECT rc = { 0, 0, width, height };
+        BlankScreenArea( memBase, &rc, blankMode );
+    }
+    else
+    {
+        BitBlt( memBase, 0, 0, width, height, hdcBase, 0, 0, SRCCOPY | CAPTUREBLT );
+    }
+
+    DWORD* cur = static_cast<DWORD*>( curBits );
+    DWORD* base = static_cast<DWORD*>( baseBits );
+    size_t total = static_cast<size_t>( width ) * static_cast<size_t>( height );
+    int start = pt.y * width + pt.x;
+
+    if( EraserPixelDiffers( cur[start], base[start] ) )
+    {
+        std::vector<uint8_t> visited( total, 0 );
+        std::vector<int> stack;
+        stack.reserve( 1024 );
+        stack.push_back( start );
+        visited[start] = 1;
+
+        int bx0 = pt.x, by0 = pt.y, bx1 = pt.x, by1 = pt.y;
+
+        while( !stack.empty() )
+        {
+            int idx = stack.back();
+            stack.pop_back();
+            int px = idx % width;
+            int py = idx / width;
+
+            // Restore this pixel from the background.
+            cur[idx] = base[idx];
+
+            if( px < bx0 ) bx0 = px;
+            if( px > bx1 ) bx1 = px;
+            if( py < by0 ) by0 = py;
+            if( py > by1 ) by1 = py;
+
+            for( int dy = -1; dy <= 1; dy++ )
+            {
+                int ny = py + dy;
+                if( ny < 0 || ny >= height ) continue;
+                for( int dx = -1; dx <= 1; dx++ )
+                {
+                    if( dx == 0 && dy == 0 ) continue;
+                    int nx = px + dx;
+                    if( nx < 0 || nx >= width ) continue;
+                    int nidx = ny * width + nx;
+                    if( visited[nidx] ) continue;
+                    visited[nidx] = 1;
+                    if( EraserPixelDiffers( cur[nidx], base[nidx] ) )
+                    {
+                        stack.push_back( nidx );
+                    }
+                }
+            }
+        }
+
+        // Copy the restored region back to the canvas.
+        BitBlt( hdcDst, bx0, by0, bx1 - bx0 + 1, by1 - by0 + 1,
+            memCur, bx0, by0, SRCCOPY | CAPTUREBLT );
+    }
+
+    SelectObject( memCur, oldCur );
+    SelectObject( memBase, oldBase );
+    DeleteObject( curBmp );
+    DeleteObject( baseBmp );
+    DeleteDC( memCur );
+    DeleteDC( memBase );
+}
+
+//----------------------------------------------------------------------------
+//
 // DrawCursor
 //
 //----------------------------------------------------------------------------
@@ -6152,7 +6573,11 @@ void DrawCursor( HDC hDcTarget, POINT pt, float ZoomLevel, int Width, int Height
 {
     RECT	rc;
 
-    if( g_DrawPointer ) {
+    if( g_EraserMode != EraserModeOff ) {
+
+        DrawEraserCursor( hDcTarget, pt );
+
+    } else if( g_DrawPointer ) {
 
         Gdiplus::Graphics	dstGraphics(hDcTarget);
         if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
@@ -6253,11 +6678,30 @@ void ResizePen( HWND hWnd, HDC hdcScreenCompat, HDC hdcScreenCursorCompat, POINT
 
     if(prevWidth == static_cast<int>(g_PenWidth) ) {
         // No change
+        if( g_EraserMode != EraserModeOff ) {
+
+            // The glyph was lifted at the top of this function; redraw it so the
+            // eraser stays visible even when the size is already at its limit.
+            SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+            DrawEraserCursor( hdcScreenCompat, prevPt );
+            InvalidateRect( hWnd, NULL, FALSE );
+        }
         return;
     }
 
     OutputDebug( L"newWidth: %d\nRESIZE_PEN-POST: penWidth: %d\n", newWidth, g_PenWidth );
     reg.WriteRegSettings( RegSettings );
+
+    if( g_EraserMode != EraserModeOff ) {
+
+        // Eraser: just refresh the glyph at its new size. Don't change the drawing
+        // state or synthesize a click, which would toggle erasing on or off.
+        SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+        DrawEraserCursor( hdcScreenCompat, prevPt );
+        InvalidateRect( hWnd, NULL, FALSE );
+        return;
+    }
+
     SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
     *g_Drawing = FALSE;
     EnableDisableStickyKeys( TRUE );
@@ -7357,6 +7801,10 @@ LRESULT APIENTRY MainWndProc(
             g_TypeMode = TypeModeOff;
             g_HaveTyped = FALSE;
             g_Drawing = FALSE;
+            g_EraserMode = EraserModeOff;
+            g_EraserEngaged = FALSE;
+            g_EraserPopupVisible = FALSE;
+            KillTimer( hWnd, ERASER_POPUP_TIMER );
             EnableDisableStickyKeys( TRUE );
             DeleteObject( hTypingFont );
             DeleteDC( hdcScreen );
@@ -9065,6 +9513,10 @@ LRESULT APIENTRY MainWndProc(
 
             if( (g_Zoomed || g_TimerActive) && (g_TypeMode == TypeModeOff)) {
 
+                // Choosing a pen color leaves the eraser tool.
+                g_EraserMode = EraserModeOff;
+                g_EraserEngaged = FALSE;
+
                 PDWORD	penColor;
                 if( g_TimerActive )
                     penColor = &g_BreakPenColor;
@@ -9164,6 +9616,45 @@ LRESULT APIENTRY MainWndProc(
             break;
 
         case 'E':
+            // Shift+E cycles the scrub eraser tool: off -> pixel -> stroke -> off.
+            // The scrub eraser needs the pristine buffer, so it isn't offered in
+            // LiveDraw (layered window). Plain E still clears the whole screen.
+            if( ( GetKeyState( VK_SHIFT ) & 0x8000 ) &&
+                g_Zoomed && ( g_TypeMode == TypeModeOff ) &&
+                ( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 ) {
+
+                if( g_EraserMode == EraserModeOff )        g_EraserMode = EraserModePixel;
+                else if( g_EraserMode == EraserModePixel ) g_EraserMode = EraserModeStroke;
+                else                                       g_EraserMode = EraserModeOff;
+
+                // Switching modes stops any in-progress erasing; the user clicks
+                // again to engage with the newly selected tool.
+                g_EraserEngaged = FALSE;
+
+                // Show the auto-dismissing mode indicator.
+                g_EraserPopupVisible = TRUE;
+                KillTimer( hWnd, ERASER_POPUP_TIMER );
+                SetTimer( hWnd, ERASER_POPUP_TIMER, ERASER_POPUP_DURATION_MS, NULL );
+
+                // Refresh the on-canvas cursor to reflect the new tool.
+                if( g_Drawing && !g_Tracing ) {
+
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                    DrawCursor( hdcScreenCompat, prevPt, zoomLevel, width, height );
+                    InvalidateRect( hWnd, NULL, FALSE );
+                }
+                else {
+
+                    InvalidateRect( hWnd, NULL, FALSE );
+                }
+                break;
+            }
+
+            // Plain E: clear the whole screen. Also exits the eraser tool.
+            g_EraserMode = EraserModeOff;
+            g_EraserEngaged = FALSE;
+
             // Don't allow erase while we have the typing cursor active
             if( g_HaveDrawn && (g_TypeMode == TypeModeOff)) {
 
@@ -9292,6 +9783,56 @@ LRESULT APIENTRY MainWndProc(
                     OutputDebug(L"Mousemove: Dropping\n");
                     break;
 
+                } else if( g_EraserMode != EraserModeOff &&
+                    ( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 ) {
+
+                    // Eraser tool. The glyph always follows the cursor so the user
+                    // can see where it is; we only scrub pixels while erasing has
+                    // been engaged (click-to-toggle), so there is no need to hold
+                    // the mouse button down.
+                    OutputDebug(L"Mousemove: Eraser\n");
+
+                    // Restore the area under the previous glyph before erasing or
+                    // moving so the eraser image never gets baked into the canvas.
+                    RestoreCursorArea( hdcScreenCompat, hdcScreenCursorCompat, prevPt );
+
+                    BOOLEAN erasedStroke = FALSE;
+                    if( g_EraserEngaged ) {
+
+                        g_HaveDrawn = TRUE;
+
+                        if( g_EraserMode == EraserModePixel ) {
+
+                            EraseScrubSegment( hdcScreenCompat, hdcScreenSaveCompat,
+                                prevPt, currentPt, width, height, g_BlankedScreen );
+
+                        } else if( EraserIsInkPixel( hdcScreenCompat, hdcScreenSaveCompat,
+                                        currentPt.x, currentPt.y, g_BlankedScreen ) ) {
+
+                            EraseConnectedStroke( hdcScreenCompat, hdcScreenSaveCompat,
+                                currentPt, width, height, g_BlankedScreen );
+                            erasedStroke = TRUE;
+                        }
+                    }
+
+                    // Save the area that will be covered by the glyph at its new
+                    // position and draw the glyph there.
+                    SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, currentPt );
+                    DrawCursor( hdcScreenCompat, currentPt, zoomLevel, width, height );
+
+                    if( erasedStroke ) {
+
+                        // A connected stroke can span far beyond the cursor, so
+                        // repaint the whole canvas to reflect the restored region.
+                        InvalidateRect( hWnd, NULL, FALSE );
+
+                    } else {
+
+                        InvalidateCursorMoveArea( hWnd, zoomLevel, width, height, currentPt, prevPt, cursorPos );
+                    }
+                    prevPt = currentPt;
+                    return TRUE;
+
                 } else if(g_DrawingShape) {
 
                     SetROP2(hdcScreenCompat, R2_NOT);
@@ -9389,6 +9930,25 @@ LRESULT APIENTRY MainWndProc(
                     OutputDebug(L"Mousemove: Tracing\n");
 
                     g_HaveDrawn = TRUE;
+
+                    if( g_EraserMode != EraserModeOff &&
+                        ( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 ) {
+
+                        if( g_EraserMode == EraserModePixel ) {
+
+                            EraseScrubSegment( hdcScreenCompat, hdcScreenSaveCompat,
+                                prevPt, currentPt, width, height, g_BlankedScreen );
+
+                        } else if( EraserIsInkPixel( hdcScreenCompat, hdcScreenSaveCompat,
+                                        currentPt.x, currentPt.y, g_BlankedScreen ) ) {
+
+                            EraseConnectedStroke( hdcScreenCompat, hdcScreenSaveCompat,
+                                currentPt, width, height, g_BlankedScreen );
+                            InvalidateRect( hWnd, NULL, FALSE );
+                        }
+
+                    } else {
+
                     Gdiplus::Graphics	dstGraphics(hdcScreenCompat);
                     if( ( GetWindowLong( g_hWndMain, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 )
                     {
@@ -9522,6 +10082,8 @@ LRESULT APIENTRY MainWndProc(
                                 static_cast<INT>(currentPt.x), static_cast<INT>(currentPt.y));
                     }
 
+                    } // end of non-eraser pen drawing
+
                 } else {
 
                     OutputDebug(L"Mousemove: Moving cursor\n");
@@ -9597,13 +10159,19 @@ LRESULT APIENTRY MainWndProc(
             }
 
             // don't push undo if we sent this to ourselves for a pen resize
-            if( wParam != -1 ) {
+            if( wParam == -1 ) {
 
-                PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
+                wParam = 0;
+
+            } else if( g_EraserMode != EraserModeOff && g_EraserEngaged &&
+                ( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 ) {
+
+                // Eraser disengage click: the undo entry for this erase gesture was
+                // already pushed when erasing was engaged, so don't add another.
 
             } else {
 
-                wParam = 0;
+                PushDrawUndo( hdcScreenCompat, &drawUndoList, width, height );
             }
 
             // Are we in pen mode on a tablet?
@@ -9614,6 +10182,68 @@ LRESULT APIENTRY MainWndProc(
 
                 // Drop it
                 break;
+
+            }
+
+            if( g_EraserMode != EraserModeOff &&
+                ( GetWindowLong( hWnd, GWL_EXSTYLE ) & WS_EX_LAYERED ) == 0 ) {
+
+                // Eraser tool uses click-to-toggle: the first click engages erasing
+                // and a second click stops it, so the user doesn't have to hold the
+                // mouse button down. The glyph keeps following the cursor either way.
+                prevPt.x = LOWORD( lParam );
+                prevPt.y = HIWORD( lParam );
+
+                g_EraserEngaged = !g_EraserEngaged;
+
+                // Keep g_Drawing on so the glyph tracks the cursor and Ctrl+wheel
+                // can resize the eraser. g_Tracing stays off so WM_LBUTTONUP never
+                // lays down a pen dot.
+                g_Drawing = TRUE;
+                g_Tracing = FALSE;
+                SetROP2( hdcScreenCompat, R2_COPYPEN );
+
+                if( g_EraserEngaged ) {
+
+                    // Establish the drawing canvas if nothing has been drawn yet.
+                    if( !g_HaveDrawn ) {
+
+                        BitBlt( hdcScreenCompat, 0, 0, bmp.bmWidth, bmp.bmHeight,
+                            hdcScreenSaveCompat, 0, 0, SRCCOPY | CAPTUREBLT );
+                    }
+                    g_HaveDrawn = TRUE;
+
+                    // Erase at the initial click point so a single click still erases.
+                    if( g_EraserMode == EraserModePixel ) {
+
+                        EraseScrubSegment( hdcScreenCompat, hdcScreenSaveCompat,
+                            prevPt, prevPt, width, height, g_BlankedScreen );
+
+                    } else if( EraserIsInkPixel( hdcScreenCompat, hdcScreenSaveCompat,
+                                    prevPt.x, prevPt.y, g_BlankedScreen ) ) {
+
+                        EraseConnectedStroke( hdcScreenCompat, hdcScreenSaveCompat,
+                            prevPt, width, height, g_BlankedScreen );
+                    }
+
+                    EnableDisableStickyKeys( FALSE );
+
+                    // Constrain the mouse to the visible region while erasing.
+                    boundRc = BoundMouse( zoomLevel, &monInfo, width, height, &cursorPos );
+
+                } else {
+
+                    // Stopped erasing: release the mouse constraint.
+                    EnableDisableStickyKeys( TRUE );
+                    ClipCursor( NULL );
+                }
+
+                // Redraw the glyph so it stays visible after the click.
+                SaveCursorArea( hdcScreenCursorCompat, hdcScreenCompat, prevPt );
+                DrawCursor( hdcScreenCompat, prevPt, zoomLevel, width, height );
+
+                InvalidateRect( hWnd, NULL, FALSE );
+                return TRUE;
 
             } else if( g_Drawing ) {
 
@@ -9750,6 +10380,13 @@ LRESULT APIENTRY MainWndProc(
     case WM_LBUTTONUP:
         OutputDebug(L"LBUTTONUP: zoomed: %d drawing: %d tracing: %d\n",
             g_Zoomed, g_Drawing, g_Tracing);
+
+        // The eraser uses click-to-toggle, so button-up must not finalize a pen
+        // stroke (which would leave a stray dot where the user released).
+        if( g_EraserMode != EraserModeOff ) {
+
+            return TRUE;
+        }
 
         if( g_Zoomed && g_Drawing && g_Tracing ) {
 
@@ -10751,6 +11388,13 @@ LRESULT APIENTRY MainWndProc(
 
     case WM_TIMER:
         switch( wParam ) {
+        case ERASER_POPUP_TIMER:
+            // Dismiss the eraser mode indicator.
+            KillTimer( hWnd, ERASER_POPUP_TIMER );
+            g_EraserPopupVisible = FALSE;
+            InvalidateRect( hWnd, NULL, FALSE );
+            break;
+
         case 0:
             //
             // Break timer
@@ -10840,7 +11484,6 @@ LRESULT APIENTRY MainWndProc(
         break;
 
     case WM_PAINT:
-
         hDc = BeginPaint(hWnd, &ps);
 
         if( ( ( g_RecordCropping == FALSE ) || ( zoomLevel == 1 ) ) && g_Zoomed ) {
@@ -10991,6 +11634,12 @@ LRESULT APIENTRY MainWndProc(
 
             // Copy to screen
             BitBlt( ps.hdc, 0, 0, width, height, hdcScreenCompat, 0, 0, SRCCOPY|CAPTUREBLT  );
+        }
+
+        // Overlay the eraser mode indicator (not baked into the drawing bitmap).
+        if( g_EraserPopupVisible && g_Zoomed ) {
+
+            DrawEraserModePopup( ps.hdc, bmp.bmWidth, bmp.bmHeight );
         }
         EndPaint(hWnd, &ps);
         return TRUE;
