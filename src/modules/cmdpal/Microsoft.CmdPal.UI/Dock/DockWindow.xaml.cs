@@ -42,7 +42,7 @@ namespace Microsoft.CmdPal.UI.Dock;
 /// <list type="bullet">
 ///   <item><description><strong>Pinned mode</strong>: The dock is always-visible and reserves work area
 ///     via <c>ABM_NEW</c>/<c>ABM_SETPOS</c>. Maximized windows will not overlap the dock.</description></item>
-///   <item><description><strong>Auto-hide mode (future)</strong>: When implemented, the dock will use
+///   <item><description><strong>Auto-hide mode</strong>: The dock uses
 ///     <c>ABM_SETAUTOHIDEBAR</c> and will NOT reserve work area — maximized windows will
 ///     extend beneath the hidden dock.</description></item>
 ///   <item><description><strong>v1 scope</strong>: Global-only dock positioning. Per-monitor side overrides
@@ -55,6 +55,12 @@ public sealed partial class DockWindow : WindowEx,
     IRecipient<QuitMessage>,
     IDisposable
 {
+    private enum DockAppBarMode
+    {
+        None,
+        Pinned,
+        AutoHide,
+    }
 #pragma warning disable SA1306 // Field names should begin with lower-case letter
 #pragma warning disable SA1310 // Field names should not contain underscore
     private readonly uint WM_TASKBAR_RESTART;
@@ -82,6 +88,15 @@ public sealed partial class DockWindow : WindowEx,
     private BackdropParameters? _lastAppliedAcrylicBackdrop;
     private DockSize _lastSize;
     private bool _isDisposed;
+    private DockAppBarMode _appBarMode;
+    private bool _autoHideRegistrationSucceeded;
+    private bool _isDockRevealed = true;
+    private bool _trackingMouseLeave;
+    private RECT _revealedRect;
+    private RECT _collapsedRect;
+    private DispatcherQueueTimer? _collapseTimer;
+    private const int AutoHideCollapsedThicknessDips = 2;
+    private static readonly TimeSpan AutoHideCollapseDelay = TimeSpan.FromMilliseconds(250);
 
     /// <summary>
     /// The monitor this dock window is displayed on. Null means primary monitor (legacy behavior).
@@ -124,7 +139,7 @@ public sealed partial class DockWindow : WindowEx,
         _settingsService.SettingsChanged += SettingsChangedHandler;
         _monitorService = serviceProvider.GetRequiredService<IMonitorService>();
         _settings = mainSettings.DockSettings;
-        _lastSize = EffectiveDockSize(_settings);
+        _lastSize = EffectiveDockSize(_settings, EffectiveSide);
 
         viewModel = dockViewModel;
         _themeService = serviceProvider.GetRequiredService<IThemeService>();
@@ -237,13 +252,23 @@ public sealed partial class DockWindow : WindowEx,
         _dock.UpdateSettings(_settings, EffectiveSide);
 
         var side = DockSettingsToViews.GetAppBarEdge(EffectiveSide);
+        var desiredMode = GetDesiredAppBarMode();
+        var effectiveSize = EffectiveDockSize(_settings, EffectiveSide);
 
         if (_appBarData.hWnd != IntPtr.Zero)
         {
             var sameEdge = _appBarData.uEdge == side;
-            var sameSize = _lastSize == EffectiveDockSize(_settings);
-            if (sameEdge && sameSize)
+            var sameSize = _lastSize == effectiveSize;
+            var sameMode = _appBarMode == desiredMode;
+
+            if (sameEdge && sameSize && sameMode)
             {
+                if (_appBarMode == DockAppBarMode.AutoHide)
+                {
+                    UpdateAutoHideShellState();
+                    UpdateWindowPosition();
+                }
+
                 UpdateTopmostState();
                 return;
             }
@@ -400,22 +425,52 @@ public sealed partial class DockWindow : WindowEx,
             uCallbackMessage = _callbackMessageId,
         };
 
-        // Register this window as an app bar. Phase 1 uses ABM_NEW which
-        // reserves work area (pinned mode). Auto-hide would use ABM_SETAUTOHIDEBAR
-        // and would NOT reserve work area.
-        PInvoke.SHAppBarMessage(PInvoke.ABM_NEW, ref _appBarData);
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_NEW, ref _appBarData);
 
-        // Stash the last size we created the bar at, so we know when to hot-
-        // reload it
-        _lastSize = EffectiveDockSize(_settings);
+        _appBarMode = DockAppBarMode.None;
+        _autoHideRegistrationSucceeded = false;
 
+        if (GetDesiredAppBarMode() == DockAppBarMode.AutoHide && TryRegisterAutoHideAppBar())
+        {
+            _appBarMode = DockAppBarMode.AutoHide;
+            _autoHideRegistrationSucceeded = true;
+            UpdateAutoHideShellState();
+        }
+        else
+        {
+            _appBarMode = DockAppBarMode.Pinned;
+            if (_settings.AutoHide)
+            {
+                Logger.LogWarning($"Dock auto-hide registration rejected on edge {EffectiveSide} for monitor {MonitorForLogs()}. Falling back to pinned mode.");
+            }
+        }
+
+        _lastSize = EffectiveDockSize(_settings, EffectiveSide);
         UpdateWindowPosition();
+
+        if (_appBarMode == DockAppBarMode.AutoHide)
+        {
+            CollapseAutoHideDock(immediate: true);
+        }
     }
 
     private void DestroyAppBar(HWND hwnd)
     {
-        PInvoke.SHAppBarMessage(PInvoke.ABM_REMOVE, ref _appBarData);
+        StopCollapseTimer();
+
+        if (_appBarMode == DockAppBarMode.AutoHide && _autoHideRegistrationSucceeded)
+        {
+            _ = TrySetAutoHideRegistration(register: false);
+            _autoHideRegistrationSucceeded = false;
+        }
+
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_REMOVE, ref _appBarData);
         _appBarData = default;
+        _appBarMode = DockAppBarMode.None;
+        _trackingMouseLeave = false;
+        _isDockRevealed = true;
+        _revealedRect = default;
+        _collapsedRect = default;
     }
 
     private void UpdateTopmostState(bool bringToFront = false)
@@ -455,23 +510,27 @@ public sealed partial class DockWindow : WindowEx,
 
     private void UpdateWindowPosition()
     {
-        Logger.LogDebug("UpdateWindowPosition");
+        Logger.LogDebug($"UpdateWindowPosition mode={_appBarMode} autoHideRequested={_settings.AutoHide} monitor={MonitorForLogs()}");
 
         var dpi = PInvoke.GetDpiForWindow(_hwnd);
-
         var scaleFactor = dpi / 96.0;
-        var effectiveSize = EffectiveDockSize(_settings);
+        var effectiveSize = EffectiveDockSize(_settings, EffectiveSide);
+
+        if (_appBarMode == DockAppBarMode.AutoHide)
+        {
+            UpdateAutoHideWindowPosition(effectiveSize, scaleFactor);
+            return;
+        }
+
+        UpdatePinnedWindowPosition(effectiveSize, scaleFactor);
+    }
+
+    private void UpdatePinnedWindowPosition(DockSize effectiveSize, double scaleFactor)
+    {
         UpdateAppBarDataForEdge(EffectiveSide, effectiveSize, scaleFactor);
 
-        // Query and set position
-        PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_QUERYPOS, ref _appBarData);
 
-        // ABM_QUERYPOS adjusts our rect so we don't overlap other app bars,
-        // but it may have shifted our anchored edge without updating the
-        // opposite edge. We need to re-apply our desired thickness so the
-        // bar keeps its correct size. Without this, a second bar docked to
-        // the same side would get a zero-height/width rect and fail to
-        // reserve work-area space.
         switch (EffectiveSide)
         {
             case DockSide.Top:
@@ -488,23 +547,8 @@ public sealed partial class DockWindow : WindowEx,
                 break;
         }
 
-        PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_SETPOS, ref _appBarData);
 
-        // PHASE 1 UX CONTRACT: Pinned mode reserves work area (current behavior).
-        //
-        // TODO: Future auto-hide mode implementation notes:
-        // - Auto-hide bars do NOT reserve work area — maximized windows extend beneath
-        // - Use ABM_SETAUTOHIDEBAR instead of ABM_NEW/ABM_SETPOS
-        // - Only one auto-hide bar per edge per monitor is allowed by Windows
-        // - Example API calls (untested):
-        //   _appBarData.lParam = ABS_ALWAYSONTOP;
-        //   _appBarData.lParam = (LPARAM)(int)PInvoke.ABS_AUTOHIDE;
-        //   PInvoke.SHAppBarMessage(ABM_SETSTATE, ref _appBarData);
-        //   PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
-
-        // The dock window is borderless (SetBorderAndTitleBar(false, false),
-        // IsResizable = false) so no frame compensation is needed — the
-        // app bar rect matches the window rect exactly.
         PInvoke.MoveWindow(
             _hwnd,
             _appBarData.rc.left,
@@ -512,6 +556,8 @@ public sealed partial class DockWindow : WindowEx,
             _appBarData.rc.right - _appBarData.rc.left,
             _appBarData.rc.bottom - _appBarData.rc.top,
             true);
+
+        _isDockRevealed = true;
     }
 
     /// <summary>
@@ -550,10 +596,273 @@ public sealed partial class DockWindow : WindowEx,
     /// Compact mode is only supported for Top/Bottom dock positions.
     /// For Left/Right, always use Default size.
     /// </summary>
-    private static DockSize EffectiveDockSize(DockSettings settings)
+    private static DockSize EffectiveDockSize(DockSettings settings, DockSide side)
     {
-        var isHorizontal = settings.Side == DockSide.Top || settings.Side == DockSide.Bottom;
+        var isHorizontal = side == DockSide.Top || side == DockSide.Bottom;
         return isHorizontal ? settings.DockSize : DockSize.Default;
+    }
+
+    private DockAppBarMode GetDesiredAppBarMode()
+    {
+        return _settings.AutoHide ? DockAppBarMode.AutoHide : DockAppBarMode.Pinned;
+    }
+
+    private bool TryRegisterAutoHideAppBar()
+    {
+        return TrySetAutoHideRegistration(register: true);
+    }
+
+    private bool TrySetAutoHideRegistration(bool register)
+    {
+        _appBarData.rc = GetMonitorBoundsRect();
+        _appBarData.uEdge = DockSettingsToViews.GetAppBarEdge(EffectiveSide);
+        _appBarData.lParam = register ? new LPARAM(1) : new LPARAM(0);
+
+        if (_targetMonitor is null)
+        {
+            var result = PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR, ref _appBarData);
+            return result != 0;
+        }
+
+        var exResult = PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR_EX, ref _appBarData);
+        return exResult != 0;
+    }
+
+    private void UpdateAutoHideShellState()
+    {
+        var state = (nint)PInvoke.ABS_AUTOHIDE;
+        if (_settings.AlwaysOnTop)
+        {
+            state |= (nint)PInvoke.ABS_ALWAYSONTOP;
+        }
+
+        _appBarData.lParam = new LPARAM(state);
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_SETSTATE, ref _appBarData);
+    }
+
+    private string MonitorForLogs()
+    {
+        return _targetMonitor?.StableId ?? "primary";
+    }
+
+    private RECT GetMonitorBoundsRect()
+    {
+        if (_targetMonitor is not null)
+        {
+            return new RECT
+            {
+                left = _targetMonitor.Bounds.Left,
+                top = _targetMonitor.Bounds.Top,
+                right = _targetMonitor.Bounds.Right,
+                bottom = _targetMonitor.Bounds.Bottom,
+            };
+        }
+
+        return new RECT
+        {
+            left = 0,
+            top = 0,
+            right = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN),
+            bottom = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN),
+        };
+    }
+
+    private void UpdateAutoHideWindowPosition(DockSize effectiveSize, double scaleFactor)
+    {
+        UpdateAppBarDataForEdge(EffectiveSide, effectiveSize, scaleFactor);
+
+        _revealedRect = _appBarData.rc;
+        _collapsedRect = BuildCollapsedRect(_revealedRect, EffectiveSide, scaleFactor);
+
+        ApplyAutoHideRect(_isDockRevealed ? _revealedRect : _collapsedRect);
+
+        if (_isDockRevealed)
+        {
+            EnsureMouseLeaveTracking();
+        }
+    }
+
+    private RECT BuildCollapsedRect(RECT revealedRect, DockSide side, double scaleFactor)
+    {
+        var collapsedRect = revealedRect;
+        var thickness = Math.Max(1, (int)Math.Round(AutoHideCollapsedThicknessDips * scaleFactor));
+
+        switch (side)
+        {
+            case DockSide.Top:
+                collapsedRect.bottom = collapsedRect.top + thickness;
+                break;
+            case DockSide.Bottom:
+                collapsedRect.top = collapsedRect.bottom - thickness;
+                break;
+            case DockSide.Left:
+                collapsedRect.right = collapsedRect.left + thickness;
+                break;
+            case DockSide.Right:
+                collapsedRect.left = collapsedRect.right - thickness;
+                break;
+        }
+
+        return collapsedRect;
+    }
+
+    private void ApplyAutoHideRect(RECT rect)
+    {
+        PInvoke.MoveWindow(
+            _hwnd,
+            rect.left,
+            rect.top,
+            Math.Max(1, rect.right - rect.left),
+            Math.Max(1, rect.bottom - rect.top),
+            true);
+    }
+
+    private void RevealAutoHideDock(bool immediate = false)
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide || _isDockRevealed)
+        {
+            return;
+        }
+
+        StopCollapseTimer();
+        _isDockRevealed = true;
+        ApplyAutoHideRect(_revealedRect);
+        EnsureMouseLeaveTracking();
+
+        if (immediate)
+        {
+            UpdateTopmostState(bringToFront: true);
+        }
+    }
+
+    private void CollapseAutoHideDock(bool immediate = false)
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide || !_isDockRevealed)
+        {
+            return;
+        }
+
+        if (!immediate && !CanCollapseAutoHideDock())
+        {
+            return;
+        }
+
+        StopCollapseTimer();
+        _isDockRevealed = false;
+        ApplyAutoHideRect(_collapsedRect);
+    }
+
+    private bool CanCollapseAutoHideDock()
+    {
+        if (_dock.IsEditMode || _dock.HasOpenTransientUi || _dock.IsDragOperationActive)
+        {
+            return false;
+        }
+
+        if (!PInvoke.GetCursorPos(out var cursor))
+        {
+            return true;
+        }
+
+        return !IsPointInRect(_revealedRect, cursor);
+    }
+
+    private static bool IsPointInRect(RECT rect, POINT point)
+    {
+        return point.X >= rect.left && point.X < rect.right && point.Y >= rect.top && point.Y < rect.bottom;
+    }
+
+    private void ScheduleCollapseAutoHideDock()
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide || !_isDockRevealed)
+        {
+            return;
+        }
+
+        _collapseTimer ??= CreateCollapseTimer();
+        _collapseTimer.Stop();
+        _collapseTimer.Start();
+    }
+
+    private DispatcherQueueTimer CreateCollapseTimer()
+    {
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = AutoHideCollapseDelay;
+        timer.IsRepeating = false;
+        timer.Tick += (sender, _) =>
+        {
+            sender.Stop();
+            CollapseAutoHideDock();
+        };
+
+        return timer;
+    }
+
+    private void StopCollapseTimer()
+    {
+        _collapseTimer?.Stop();
+    }
+
+    private void EnsureMouseLeaveTracking()
+    {
+        if (_trackingMouseLeave)
+        {
+            return;
+        }
+
+        unsafe
+        {
+            var track = new TRACKMOUSEEVENT
+            {
+                cbSize = (uint)Marshal.SizeOf<TRACKMOUSEEVENT>(),
+                dwFlags = TRACKMOUSEEVENT_FLAGS.TME_LEAVE,
+                hwndTrack = _hwnd,
+            };
+
+            if (PInvoke.TrackMouseEvent(track))
+            {
+                _trackingMouseLeave = true;
+            }
+        }
+    }
+
+    private void HandleMouseMoveForAutoHide()
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide)
+        {
+            return;
+        }
+
+        if (!_isDockRevealed)
+        {
+            RevealAutoHideDock();
+            return;
+        }
+
+        StopCollapseTimer();
+        EnsureMouseLeaveTracking();
+    }
+
+    private void HandleMouseLeaveForAutoHide()
+    {
+        _trackingMouseLeave = false;
+
+        if (_appBarMode != DockAppBarMode.AutoHide)
+        {
+            return;
+        }
+
+        ScheduleCollapseAutoHideDock();
+    }
+
+    private void HandleDeactivationForAutoHide()
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide)
+        {
+            return;
+        }
+
+        ScheduleCollapseAutoHideDock();
     }
 
     private void UpdateAppBarDataForEdge(DockSide side, DockSize size, double scaleFactor)
@@ -659,8 +968,33 @@ public sealed partial class DockWindow : WindowEx,
                 }
 
                 RefreshTargetMonitor();
-                UpdateWindowPosition();
+
+                if (_appBarData.hWnd != IntPtr.Zero)
+                {
+                    DestroyAppBar(_hwnd);
+                    CreateAppBar(_hwnd);
+                }
+                else
+                {
+                    UpdateWindowPosition();
+                }
             });
+        }
+        else if (msg == PInvoke.WM_MOUSEMOVE)
+        {
+            HandleMouseMoveForAutoHide();
+        }
+        else if (msg == PInvoke.WM_MOUSELEAVE)
+        {
+            HandleMouseLeaveForAutoHide();
+        }
+        else if (msg == PInvoke.WM_ACTIVATEAPP && wParam.Value == 0)
+        {
+            HandleDeactivationForAutoHide();
+        }
+        else if (msg == PInvoke.WM_ACTIVATE && (wParam.Value & 0xFFFF) == PInvoke.WA_INACTIVE)
+        {
+            HandleDeactivationForAutoHide();
         }
 
         // Intercept WM_SYSCOMMAND to prevent minimize and maximize
@@ -761,6 +1095,11 @@ public sealed partial class DockWindow : WindowEx,
             else if (wParam.Value == PInvoke.ABN_FULLSCREENAPP)
             {
                 _isFullScreenAppOpen = lParam != 0;
+                if (_isFullScreenAppOpen)
+                {
+                    CollapseAutoHideDock(immediate: true);
+                }
+
                 UpdateTopmostState();
             }
         }
@@ -768,7 +1107,15 @@ public sealed partial class DockWindow : WindowEx,
         {
             Logger.LogDebug("WM_TASKBAR_RESTART");
 
-            DispatcherQueue.TryEnqueue(() => CreateAppBar(_hwnd));
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_appBarData.hWnd != IntPtr.Zero)
+                {
+                    DestroyAppBar(_hwnd);
+                }
+
+                CreateAppBar(_hwnd);
+            });
 
             WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(false));
         }
@@ -781,6 +1128,11 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
+            if (message.BringToFront)
+            {
+                RevealAutoHideDock(immediate: true);
+            }
+
             UpdateTopmostState(message.BringToFront);
         });
     }
@@ -802,7 +1154,12 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RequestShowPaletteOnUiThread(message.PosDips));
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        {
+            RevealAutoHideDock(immediate: true);
+            RequestShowPaletteOnUiThread(message.PosDips);
+            ScheduleCollapseAutoHideDock();
+        });
     }
 
     private void RequestShowPaletteOnUiThread(Point posDips)
@@ -936,6 +1293,7 @@ public sealed partial class DockWindow : WindowEx,
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);
 
+        StopCollapseTimer();
         DisposeAcrylic();
         _windowViewModel.Dispose();
 
