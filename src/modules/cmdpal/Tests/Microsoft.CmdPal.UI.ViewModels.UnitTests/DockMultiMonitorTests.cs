@@ -345,6 +345,26 @@ public class DockMultiMonitorTests
         Assert.IsFalse(deserialized.MonitorConfigs[1].Enabled);
     }
 
+    [TestMethod]
+    public void DockSettings_AutoHide_DefaultsToFalse()
+    {
+        var settings = CreateMinimalDockSettings();
+
+        Assert.IsFalse(settings.AutoHide);
+    }
+
+    [TestMethod]
+    public void DockSettings_AutoHide_JsonRoundTrip()
+    {
+        var settings = CreateMinimalDockSettings() with { AutoHide = true };
+
+        var json = JsonSerializer.Serialize(settings, JsonSerializationContext.Default.DockSettings);
+        var deserialized = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.DockSettings);
+
+        Assert.IsNotNull(deserialized);
+        Assert.IsTrue(deserialized.AutoHide);
+    }
+
     private static DockSettings CreateMinimalDockSettings()
     {
         // Deserialize from minimal JSON to avoid WinUI3 dependencies
