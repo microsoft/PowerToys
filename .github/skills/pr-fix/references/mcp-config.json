@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "github-artifacts": {
+      "command": "cmd",
+      "args": ["/c", "for /f %i in ('git rev-parse --show-toplevel') do node %i/tools/mcp/github-artifacts/launch.js"],
+      "tools": ["*"]
+    }
+  }
+}
