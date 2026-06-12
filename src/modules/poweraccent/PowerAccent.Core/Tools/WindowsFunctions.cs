@@ -4,6 +4,7 @@
 
 using System.Runtime.InteropServices;
 
+using ManagedCommon;
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.HiDpi;
@@ -14,6 +15,10 @@ namespace PowerAccent.Core.Tools;
 
 internal static class WindowsFunctions
 {
+    // Mirrors PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG (0x110) so the
+    // centralized keyboard hook ignores the keys PowerAccent injects and they don't re-trigger shortcuts.
+    private const nuint POWERTOYS_INJECTED_TAG = 0x110;
+
     public static void Insert(string s, bool back = false)
     {
         unsafe
@@ -31,6 +36,7 @@ internal static class WindowsFunctions
                             ki = new KEYBDINPUT
                             {
                                 wVk = VIRTUAL_KEY.VK_BACK,
+                                dwExtraInfo = POWERTOYS_INJECTED_TAG,
                             },
                         },
                     },
@@ -43,12 +49,17 @@ internal static class WindowsFunctions
                             {
                                 wVk = VIRTUAL_KEY.VK_BACK,
                                 dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                                dwExtraInfo = POWERTOYS_INJECTED_TAG,
                             },
                         },
                     },
                 };
 
-                _ = PInvoke.SendInput(inputsBack, Marshal.SizeOf<INPUT>());
+                uint backSent = PInvoke.SendInput(inputsBack, Marshal.SizeOf<INPUT>());
+                if (backSent != (uint)inputsBack.Length)
+                {
+                    Logger.LogError($"SendInput backspace failed: sent {backSent}/{inputsBack.Length}");
+                }
                 Thread.Sleep(1); // Some apps, like Terminal, need a little wait to process the sent backspace or they'll ignore it.
             }
 
@@ -66,6 +77,7 @@ internal static class WindowsFunctions
                             {
                                 wScan = s[i],
                                 dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_UNICODE,
+                                dwExtraInfo = POWERTOYS_INJECTED_TAG,
                             },
                         },
                     };
@@ -78,12 +90,17 @@ internal static class WindowsFunctions
                             {
                                 wScan = s[i],
                                 dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_UNICODE | KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                                dwExtraInfo = POWERTOYS_INJECTED_TAG,
                             },
                         },
                     };
                 }
 
-                _ = PInvoke.SendInput(inputsInsert, Marshal.SizeOf<INPUT>());
+                uint charSent = PInvoke.SendInput(inputsInsert, Marshal.SizeOf<INPUT>());
+                if (charSent != (uint)inputsInsert.Length)
+                {
+                    Logger.LogError($"SendInput character failed: sent {charSent}/{inputsInsert.Length}");
+                }
             }
         }
     }
@@ -120,5 +137,46 @@ internal static class WindowsFunctions
     {
         var shift = PInvoke.GetAsyncKeyState((int)VIRTUAL_KEY.VK_SHIFT);
         return shift < 0;
+    }
+
+    public static void SendArrowKey(VIRTUAL_KEY arrowKey)
+    {
+        unsafe
+        {
+            var inputs = new INPUT[]
+            {
+                new INPUT
+                {
+                    type = INPUT_TYPE.INPUT_KEYBOARD,
+                    Anonymous = new INPUT._Anonymous_e__Union
+                    {
+                        ki = new KEYBDINPUT
+                        {
+                            wVk = arrowKey,
+                            dwExtraInfo = POWERTOYS_INJECTED_TAG,
+                        },
+                    },
+                },
+                new INPUT
+                {
+                    type = INPUT_TYPE.INPUT_KEYBOARD,
+                    Anonymous = new INPUT._Anonymous_e__Union
+                    {
+                        ki = new KEYBDINPUT
+                        {
+                            wVk = arrowKey,
+                            dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                            dwExtraInfo = POWERTOYS_INJECTED_TAG,
+                        },
+                    },
+                },
+            };
+
+            uint arrowSent = PInvoke.SendInput(inputs, Marshal.SizeOf<INPUT>());
+            if (arrowSent != (uint)inputs.Length)
+            {
+                Logger.LogError($"SendInput arrow key failed: sent {arrowSent}/{inputs.Length}");
+            }
+        }
     }
 }

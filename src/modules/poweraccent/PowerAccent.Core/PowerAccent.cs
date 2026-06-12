@@ -208,13 +208,13 @@ public partial class PowerAccent : IDisposable
 
             case InputType.Right:
                 {
-                    SendKeys.SendWait("{RIGHT}");
+                    WindowsFunctions.SendArrowKey(Windows.Win32.UI.Input.KeyboardAndMouse.VIRTUAL_KEY.VK_RIGHT);
                     break;
                 }
 
             case InputType.Left:
                 {
-                    SendKeys.SendWait("{LEFT}");
+                    WindowsFunctions.SendArrowKey(Windows.Win32.UI.Input.KeyboardAndMouse.VIRTUAL_KEY.VK_LEFT);
                     break;
                 }
 
