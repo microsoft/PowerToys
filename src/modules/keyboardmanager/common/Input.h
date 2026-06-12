@@ -11,8 +11,8 @@ namespace KeyboardManagerInput
     class Input : public InputInterface
     {
     public:
-        // Function to simulate input
-        void SendVirtualInput(const std::vector<INPUT>& inputs)
+        // Function to simulate input. Returns true if all events were injected successfully.
+        bool SendVirtualInput(const std::vector<INPUT>& inputs)
         {
             std::vector<INPUT> copy = inputs;
             UINT eventCount = SendInput(static_cast<UINT>(copy.size()), copy.data(), sizeof(INPUT));
@@ -21,7 +21,9 @@ namespace KeyboardManagerInput
                 Logger::error(
                     L"Failed to send input events. {}",
                     get_last_error_or_default(GetLastError()));
+                return false;
             }
+            return true;
         }
 
         // Function to get the state of a particular key

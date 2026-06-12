@@ -169,7 +169,10 @@ namespace KeyboardEventHandlers
                     }
                 }
 
-                ii.SendVirtualInput(keyEventList);
+                if (!ii.SendVirtualInput(keyEventList))
+                {
+                    return 0;
+                }
 
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
@@ -540,7 +543,10 @@ namespace KeyboardEventHandlers
 
                         // Send modifier release events first, then send text directly
                         // (SendTextInput handles multiline by flushing between chunks)
-                        ii.SendVirtualInput(keyEventList);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
                         keyEventList.clear();
                         Helpers::SendTextInput(remapping);
                     }
@@ -554,7 +560,10 @@ namespace KeyboardEventHandlers
 
                     Logger::trace(L"ChordKeyboardHandler:keyEventList.size:{}", keyEventList.size());
 
-                    ii.SendVirtualInput(keyEventList);
+                    if (!ii.SendVirtualInput(keyEventList))
+                    {
+                        return 0;
+                    }
                     if (activatedApp.has_value())
                     {
                         if (remapToKey)
@@ -693,7 +702,10 @@ namespace KeyboardEventHandlers
                         state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                     }
 
-                    ii.SendVirtualInput(keyEventList);
+                    if (!ii.SendVirtualInput(keyEventList))
+                    {
+                        return 0;
+                    }
                     return 1;
                 }
 
@@ -728,7 +740,10 @@ namespace KeyboardEventHandlers
                             return 1;
                         }
 
-                        ii.SendVirtualInput(keyEventList);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
                         return 1;
                     }
 
@@ -815,11 +830,14 @@ namespace KeyboardEventHandlers
                             }
                         }
 
-                        ii.SendVirtualInput(keyEventList);
+                        if (!ii.SendVirtualInput(keyEventList))
+                        {
+                            return 0;
+                        }
                         return 1;
                     }
 
-                    // Case 4: If a modifier key in the original shortcut is pressed then suppress that key event since the original shortcut is already held down physically - This case can occur only if a user has a duplicated modifier key (possibly by remapping) or if user presses both L/R versions of a modifier remapped with "Both"
+                    // Case 4: If a modifier key in the original shortcut is pressedthen suppress that key event since the original shortcut is already held down physically - This case can occur only if a user has a duplicated modifier key (possibly by remapping) or if user presses both L/R versions of a modifier remapped with "Both"
                     if ((it->first.CheckWinKey(data->lParam->vkCode) || it->first.CheckCtrlKey(data->lParam->vkCode) || it->first.CheckAltKey(data->lParam->vkCode) || it->first.CheckShiftKey(data->lParam->vkCode)) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
                     {
                         if (remapToShortcut)
@@ -940,7 +958,10 @@ namespace KeyboardEventHandlers
                                 state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                             }
 
-                            ii.SendVirtualInput(keyEventList);
+                            if (!ii.SendVirtualInput(keyEventList))
+                            {
+                                return 0;
+                            }
                             return 1;
                         }
                         else
@@ -1009,7 +1030,10 @@ namespace KeyboardEventHandlers
                                     state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
                                 }
 
-                                ii.SendVirtualInput(keyEventList);
+                                if (!ii.SendVirtualInput(keyEventList))
+                                {
+                                    return 0;
+                                }
                                 return 1;
                             }
                             else
@@ -1799,7 +1823,37 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
+        // Release held modifiers before text injection to prevent Ctrl+text corruption
+        constexpr int modifierKeys[] = { VK_LCONTROL, VK_RCONTROL, VK_LSHIFT, VK_RSHIFT, VK_LMENU, VK_RMENU };
+        std::vector<INPUT> releaseEvents;
+        std::vector<int> releasedKeys;
+
+        for (int vk : modifierKeys)
+        {
+            if (ii.GetVirtualKeyState(vk))
+            {
+                Helpers::SetKeyEvent(releaseEvents, INPUT_KEYBOARD, static_cast<WORD>(vk), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+                releasedKeys.push_back(vk);
+            }
+        }
+
+        if (!releaseEvents.empty())
+        {
+            ii.SendVirtualInput(releaseEvents);
+        }
+
         Helpers::SendTextInput(*remapping);
+
+        // Re-press modifiers that were held before text injection
+        if (!releasedKeys.empty())
+        {
+            std::vector<INPUT> restoreEvents;
+            for (int vk : releasedKeys)
+            {
+                Helpers::SetKeyEvent(restoreEvents, INPUT_KEYBOARD, static_cast<WORD>(vk), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            }
+            ii.SendVirtualInput(restoreEvents);
+        }
 
         return 1;
     }
