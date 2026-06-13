@@ -156,6 +156,13 @@ public:
 
         if (IsProcessActive())
         {
+            // Toggle: re-pressing the hotkey while SG is open dismisses it.
+            // In a Debug build the SG window doesn't auto-close on Deactivated
+            // (#if !DEBUG guard in MainWindow.xaml.cs), so a held-over instance
+            // can cause every other long-press to land here instead of launching
+            // a new window. In Release the deactivate-handler closes SG, so this
+            // path only fires when the user explicitly re-invokes the hotkey.
+            Logger::trace("OnHotkeyEx: existing SG instance is alive, terminating it");
             TerminateProcess(m_hProcess, 0);
             return;
         }
