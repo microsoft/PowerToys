@@ -2080,6 +2080,7 @@ winapi
 winappsdk
 windir
 WINDOWCREATED
+WINDOWDESTROYED
 windowedge
 WINDOWINFO
 WINDOWNAME
