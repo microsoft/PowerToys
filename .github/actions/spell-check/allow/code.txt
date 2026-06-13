@@ -72,6 +72,8 @@ Noto
 Roboto
 Segoe
 
+# Interfaces
+ISQ
 
 # IN URLs
 
