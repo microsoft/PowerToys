@@ -23,9 +23,39 @@
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="Shortcut" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard x:Uid="Activation_Shortcut" HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                    <tkcontrols:SettingsCard
+                        Name="ShortcutGuideActivationMethod"
+                        x:Uid="ShortcutGuide_ActivationMethod"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=TwoWay, Converter={StaticResource BoolToComboBoxIndexConverter}}">
+                            <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_CustomizedShortcut" />
+                            <ComboBoxItem x:Uid="Radio_ShortcutGuide_ActivationMethod_LongPressWindowsKey" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        x:Uid="Activation_Shortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.OpenShortcutGuide, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="ShortcutGuidePressTime"
+                        x:Uid="ShortcutGuide_PressTime"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
+                        Visibility="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <NumberBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            Minimum="100"
+                            SmallChange="50"
+                            SpinButtonPlacementMode="Compact"
+                            Value="{x:Bind ViewModel.PressTime, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <InfoBar
+                        x:Uid="ShortcutGuide_PressWinKeyWarning"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.UseLegacyPressWinKeyBehavior, Mode=OneWay}"
+                        IsTabStop="True"
+                        Severity="Warning" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="Appearance_Behavior" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">

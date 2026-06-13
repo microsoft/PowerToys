@@ -104,5 +104,47 @@ namespace ViewModelTests
             Func<string, bool> isDark = s => JsonSerializer.Deserialize<ShortcutGuideSettings>(s).Properties.Theme.Value == "dark";
             settingsUtilsMock.Verify(x => x.SaveSettings(It.Is<string>(y => isDark(y)), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
+
+        [TestMethod]
+        public void LegacyPressWinKeyDefaultsMatchPreV2Behavior()
+        {
+            // Customized shortcut is the default; long-press is opt-in.
+            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(settingsUtilsMock.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), msg => { return 0; }, ShortCutGuideTestFolderName);
+
+            Assert.IsFalse(viewModel.UseLegacyPressWinKeyBehavior);
+            Assert.AreEqual(ShortcutGuideProperties.DefaultPressTimeMs, viewModel.PressTime);
+        }
+
+        [TestMethod]
+        public void TogglingUseLegacyPressWinKeyBehaviorPersistsSetting()
+        {
+            // Arrange
+            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(settingsUtilsMock.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), msg => { return 0; }, ShortCutGuideTestFolderName);
+
+            // Act
+            viewModel.UseLegacyPressWinKeyBehavior = true;
+
+            // Assert: SaveSettings is called once with a payload that has the legacy flag flipped on.
+            Func<string, bool> isLegacy = s => JsonSerializer.Deserialize<ShortcutGuideSettings>(s).Properties.UseLegacyPressWinKeyBehavior.Value;
+            settingsUtilsMock.Verify(x => x.SaveSettings(It.Is<string>(y => isLegacy(y)), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [TestMethod]
+        public void SettingPressTimeRoundTripsThroughSerialization()
+        {
+            // Arrange
+            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
+            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(settingsUtilsMock.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), msg => { return 0; }, ShortCutGuideTestFolderName);
+
+            // Act
+            viewModel.PressTime = 1500;
+
+            // Assert
+            Assert.AreEqual(1500, viewModel.PressTime);
+            Func<string, bool> hasPressTime = s => JsonSerializer.Deserialize<ShortcutGuideSettings>(s).Properties.PressTime.Value == 1500;
+            settingsUtilsMock.Verify(x => x.SaveSettings(It.Is<string>(y => hasPressTime(y)), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
     }
 }
