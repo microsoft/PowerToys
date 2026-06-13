@@ -216,19 +216,37 @@ namespace Peek.UI
 
         private void Uninitialize()
         {
-            this.Restore();
-            this.Hide();
-
-            ViewModel.Uninitialize();
-            ViewModel.ScalingFactor = 1;
-
-            this.Content.KeyUp -= Content_KeyUp;
-
-            ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
-
-            if (_exitAfterClose)
+            // Round 2 cross-review caught a regression in the previous defensive
+            // wrap: if the outer try/catch in AppWindow_Closing swallows an
+            // exception thrown from inside this method, the `Environment.Exit(0)`
+            // tail below is never reached and the CLI/`-FilePath` exit-after-close
+            // path turns into a hang (process stays alive with no window).
+            //
+            // To keep the fail-fast prevention AND the CLI exit contract, move the
+            // try/catch inline here so cleanup failures are logged-and-swallowed
+            // while `Environment.Exit(0)` still runs in `finally`.
+            try
             {
-                Environment.Exit(0);
+                this.Restore();
+                this.Hide();
+
+                ViewModel.Uninitialize();
+                ViewModel.ScalingFactor = 1;
+
+                this.Content.KeyUp -= Content_KeyUp;
+
+                ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Unhandled exception in Peek MainWindow.Uninitialize; continuing to honor exit-after-close.", ex);
+            }
+            finally
+            {
+                if (_exitAfterClose)
+                {
+                    Environment.Exit(0);
+                }
             }
         }
 
@@ -290,9 +308,22 @@ namespace Peek.UI
         /// <param name="args">AppWindowClosingEventArgs</param>
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
-            args.Cancel = true;
-            PowerToysTelemetry.Log.WriteEvent(new ClosedEvent());
-            Uninitialize();
+            // Any exception that escapes a WinRT event handler is projected back to
+            // the CsWinRT dispatcher as a failed HRESULT, and CFlat fail-fasts the
+            // process. We want a Closing handler that can never crash Peek, even if
+            // a callee (e.g., a cached preview-handler RCW that has been separated
+            // during teardown) throws InvalidComObjectException.
+            try
+            {
+                args.Cancel = true;
+                PowerToysTelemetry.Log.WriteEvent(new ClosedEvent());
+                Uninitialize();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Unhandled exception in Peek MainWindow.AppWindow_Closing; suppressing to avoid fail-fast.", ex);
+                args.Cancel = true;
+            }
         }
 
         private bool IsNewSingleSelectedItem(SelectedItem selectedItem)
