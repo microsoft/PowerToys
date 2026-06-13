@@ -134,6 +134,15 @@ public:
     virtual std::optional<HotkeyEx> GetHotkeyEx() override
     {
         Logger::trace("GetHotkeyEx()");
+
+        // When the user opted into the legacy long-press Windows-key activation,
+        // suppress the customized shortcut so the two activation methods stay
+        // mutually exclusive (matches v0.99 behavior).
+        if (m_shouldReactToPressedWinKey)
+        {
+            return std::nullopt;
+        }
+
         return m_hotkey;
     }
 
@@ -169,6 +178,19 @@ public:
         }
     }
 
+    // Enables the legacy long-press-Windows-key activation in the runner's
+    // CentralizedKeyboardHook. The runner re-asks this method whenever settings
+    // change (via UpdateHotkeyEx), so toggling the setting takes effect immediately.
+    virtual bool keep_track_of_pressed_win_key() override
+    {
+        return m_shouldReactToPressedWinKey;
+    }
+
+    virtual UINT milliseconds_win_key_must_be_pressed() override
+    {
+        return m_millisecondsWinKeyPressTime;
+    }
+
 private:
     std::wstring app_name;
     //contains the non localized key of the powertoy
@@ -179,11 +201,10 @@ private:
     // Hotkey to invoke the module
     HotkeyEx m_hotkey;
 
-    // If the module should be activated through the legacy pressing windows key behavior.
-    const UINT DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS = 900;
-    const UINT DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS = 900;
-    UINT m_millisecondsWinKeyPressTimeForGlobalWindowsShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_GLOBAL_WINDOWS_SHORTCUTS;
-    UINT m_millisecondsWinKeyPressTimeForTaskbarIconShortcuts = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME_FOR_TASKBAR_ICON_SHORTCUTS;
+    // Legacy long-press-Windows-key activation (mutually exclusive with m_hotkey).
+    static constexpr UINT DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME = 900;
+    bool m_shouldReactToPressedWinKey = false;
+    UINT m_millisecondsWinKeyPressTime = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME;
 
     HANDLE triggerEvent;
     HANDLE exitEvent;
@@ -263,6 +284,11 @@ private:
     void ParseSettings(PowerToysSettings::PowerToyValues& settings)
     {
         auto settingsObject = settings.get_raw_json();
+
+        // Reset to defaults so a removed key in settings.json restores default behavior.
+        m_shouldReactToPressedWinKey = false;
+        m_millisecondsWinKeyPressTime = DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME;
+
         if (settingsObject.GetView().Size())
         {
             try
@@ -296,6 +322,32 @@ private:
             catch (...)
             {
                 Logger::warn("Failed to initialize Shortcut Guide start shortcut");
+            }
+
+            // Parse legacy long-press-Windows-key activation. Both keys are optional;
+            // missing or malformed entries leave the defaults above untouched.
+            try
+            {
+                auto propertiesObject = settingsObject.GetNamedObject(L"properties");
+                if (propertiesObject.HasKey(L"use_legacy_press_win_key_behavior"))
+                {
+                    auto legacyObject = propertiesObject.GetNamedObject(L"use_legacy_press_win_key_behavior");
+                    m_shouldReactToPressedWinKey = legacyObject.GetNamedBoolean(L"value", false);
+                }
+
+                if (propertiesObject.HasKey(L"press_time"))
+                {
+                    auto pressTimeObject = propertiesObject.GetNamedObject(L"press_time");
+                    int value = static_cast<int>(pressTimeObject.GetNamedNumber(L"value", DEFAULT_MILLISECONDS_WIN_KEY_PRESS_TIME));
+                    if (value > 0)
+                    {
+                        m_millisecondsWinKeyPressTime = static_cast<UINT>(value);
+                    }
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to parse Shortcut Guide legacy activation settings");
             }
         }
         else

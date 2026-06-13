@@ -152,6 +152,42 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        // Activation method: false = customized shortcut (default), true = long-press of Windows key.
+        // Surfaced as the index of a two-item ComboBox in the settings page via BoolToComboBoxIndexConverter.
+        public bool UseLegacyPressWinKeyBehavior
+        {
+            get
+            {
+                return Settings.Properties.UseLegacyPressWinKeyBehavior.Value;
+            }
+
+            set
+            {
+                if (Settings.Properties.UseLegacyPressWinKeyBehavior.Value != value)
+                {
+                    Settings.Properties.UseLegacyPressWinKeyBehavior.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public int PressTime
+        {
+            get
+            {
+                return Settings.Properties.PressTime.Value;
+            }
+
+            set
+            {
+                if (Settings.Properties.PressTime.Value != value)
+                {
+                    Settings.Properties.PressTime.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int ThemeIndex
         {
             get
