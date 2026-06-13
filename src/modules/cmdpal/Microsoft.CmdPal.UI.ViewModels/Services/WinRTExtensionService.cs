@@ -2,28 +2,34 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
+using System.Diagnostics;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.AppExtensions;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-namespace Microsoft.CmdPal.UI.ViewModels.Models;
+namespace Microsoft.CmdPal.UI.ViewModels.Services;
 
-public partial class ExtensionService : IExtensionService, IDisposable
+/// <summary>
+/// Extension service that manages out-of-process WinRT AppExtension-based command providers.
+/// Handles package catalog monitoring, extension startup with timeouts, and background retries.
+/// </summary>
+public partial class WinRTExtensionService : IExtensionService, IDisposable
 {
-    public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionAdded;
-
-    public event TypedEventHandler<IExtensionService, IEnumerable<IExtensionWrapper>>? OnExtensionRemoved;
+    private static readonly TimeSpan ExtensionStartTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan BackgroundStartTimeout = TimeSpan.FromSeconds(60);
 
     private static readonly PackageCatalog _catalog = PackageCatalog.OpenForCurrentUser();
     private static readonly Lock _lock = new();
     private readonly SemaphoreSlim _getInstalledExtensionsLock = new(1, 1);
-    private readonly SemaphoreSlim _getInstalledWidgetsLock = new(1, 1);
+    private readonly TaskScheduler _taskScheduler;
+    private readonly ICommandProviderCache _commandProviderCache;
 
-    // private readonly ILocalSettingsService _localSettingsService;
     private bool _disposedValue;
 
     private const string CreateInstanceProperty = "CreateInstance";
@@ -32,17 +38,119 @@ public partial class ExtensionService : IExtensionService, IDisposable
     private static readonly List<IExtensionWrapper> _installedExtensions = [];
     private static readonly List<IExtensionWrapper> _enabledExtensions = [];
 
-    public ExtensionService()
+    public event TypedEventHandler<IExtensionService, IEnumerable<CommandProviderWrapper>>? OnProviderAdded;
+
+    public event TypedEventHandler<IExtensionService, IEnumerable<CommandProviderWrapper>>? OnProviderRemoved;
+
+    public WinRTExtensionService(TaskScheduler taskScheduler, ICommandProviderCache commandProviderCache)
     {
+        _taskScheduler = taskScheduler;
+        _commandProviderCache = commandProviderCache;
+
         _catalog.PackageInstalling += Catalog_PackageInstalling;
         _catalog.PackageUninstalling += Catalog_PackageUninstalling;
         _catalog.PackageUpdating += Catalog_PackageUpdating;
+    }
 
-        //// These two were an investigation into getting updates when a package
-        //// gets redeployed from VS. Neither get raised (nor do the above)
-        //// _catalog.PackageStatusChanged += Catalog_PackageStatusChanged;
-        //// _catalog.PackageStaging += Catalog_PackageStaging;
-        // _localSettingsService = settingsService;
+    public async Task<IEnumerable<CommandProviderWrapper>> LoadProvidersAsync(CancellationToken ct)
+    {
+        var extensions = (await GetInstalledExtensionsAsync().ConfigureAwait(false)).ToImmutableList();
+
+        var timer = Stopwatch.StartNew();
+
+        // Start all extensions in parallel
+        var startResults = await Task.WhenAll(extensions.Select(ext => TryStartExtensionAsync(ext, ct))).ConfigureAwait(false);
+
+        var startedWrappers = new List<CommandProviderWrapper>();
+        foreach (var r in startResults)
+        {
+            if (r.IsStarted)
+            {
+                startedWrappers.Add(r.Wrapper);
+            }
+            else if (r.IsTimedOut)
+            {
+                _ = StartExtensionWhenReadyAsync(r.Extension, r.PendingStartTask, r.Stopwatch, ct);
+            }
+        }
+
+        timer.Stop();
+        Logger.LogInfo($"WinRTExtensionService: Started {startedWrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
+
+        return startedWrappers;
+    }
+
+    public async Task SignalStopAsync()
+    {
+        var installedExtensions = await GetInstalledExtensionsAsync().ConfigureAwait(false);
+        foreach (var installedExtension in installedExtensions)
+        {
+            Logger.LogDebug($"Signaling dispose to {installedExtension.ExtensionUniqueId}");
+            try
+            {
+                if (installedExtension.IsRunning())
+                {
+                    installedExtension.SignalDispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to send dispose signal to extension {installedExtension.ExtensionUniqueId}", ex);
+            }
+        }
+    }
+
+    private async Task<ExtensionStartResult> TryStartExtensionAsync(IExtensionWrapper extension, CancellationToken ct)
+    {
+        Logger.LogDebug($"Starting {extension.PackageFullName}");
+        var sw = Stopwatch.StartNew();
+        var startTask = extension.StartExtensionAsync();
+        try
+        {
+            await startTask.WaitAsync(ExtensionStartTimeout, ct).ConfigureAwait(false);
+            Logger.LogInfo($"Started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
+            return ExtensionStartResult.Started(extension, new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache));
+        }
+        catch (TimeoutException)
+        {
+            Logger.LogWarning($"Starting extension {extension.PackageFullName} timed out after {sw.ElapsedMilliseconds} ms, continuing in background");
+            return ExtensionStartResult.TimedOut(extension, startTask, sw);
+        }
+        catch (OperationCanceledException)
+        {
+            Logger.LogDebug($"Starting extension {extension.PackageFullName} was cancelled after {sw.ElapsedMilliseconds} ms");
+            return ExtensionStartResult.Failed(extension);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to start extension {extension.PackageFullName} after {sw.ElapsedMilliseconds} ms: {ex}");
+            return ExtensionStartResult.Failed(extension);
+        }
+    }
+
+    private async Task StartExtensionWhenReadyAsync(
+        IExtensionWrapper extension,
+        Task startTask,
+        Stopwatch sw,
+        CancellationToken ct)
+    {
+        try
+        {
+            await startTask.WaitAsync(BackgroundStartTimeout, ct).ConfigureAwait(false);
+
+            var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
+            Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
+
+            OnProviderAdded?.Invoke(this, [wrapper]);
+        }
+        catch (OperationCanceledException)
+        {
+            // Reload happened -- discard stale results
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Background start of extension {extension.PackageFullName} failed after {sw.ElapsedMilliseconds} ms: {ex}");
+        }
     }
 
     private void Catalog_PackageInstalling(PackageCatalog sender, PackageInstallingEventArgs args)
@@ -73,10 +181,7 @@ public partial class ExtensionService : IExtensionService, IDisposable
         {
             lock (_lock)
             {
-                // Get any extension providers that we previously had from this app
                 UninstallPackageUnderLock(args.TargetPackage);
-
-                // then add the new ones.
                 InstallPackageUnderLock(args.TargetPackage);
             }
         }
@@ -103,7 +208,25 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
                     UpdateExtensionsListsFromWrappers(wrappers);
 
-                    OnExtensionAdded?.Invoke(this, wrappers);
+                    // Start extensions and notify via OnProviderAdded
+                    var startedProviders = new List<CommandProviderWrapper>();
+                    foreach (var wrapper in wrappers)
+                    {
+                        try
+                        {
+                            await wrapper.StartExtensionAsync().ConfigureAwait(false);
+                            startedProviders.Add(new CommandProviderWrapper(wrapper, _taskScheduler, _commandProviderCache));
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogError($"Failed to start newly installed extension {wrapper.ExtensionUniqueId}: {ex}");
+                        }
+                    }
+
+                    if (startedProviders.Count > 0)
+                    {
+                        OnProviderAdded?.Invoke(this, startedProviders);
+                    }
                 }
                 finally
                 {
@@ -121,7 +244,6 @@ public partial class ExtensionService : IExtensionService, IDisposable
             if (extension.PackageFullName == package.Id.FullName)
             {
                 CommandPaletteHost.Instance.DebugLog($"Uninstalled extension app {extension.PackageDisplayName}");
-
                 removedExtensions.Add(extension);
             }
         }
@@ -134,7 +256,24 @@ public partial class ExtensionService : IExtensionService, IDisposable
                 _installedExtensions.RemoveAll(i => removedExtensions.Contains(i));
                 _enabledExtensions.RemoveAll(i => removedExtensions.Contains(i));
 
-                OnExtensionRemoved?.Invoke(this, removedExtensions);
+                // Build placeholder wrappers for removal notification.
+                // The TopLevelCommandManager matches by Extension reference, so we need to pass
+                // something that carries the IExtensionWrapper identity.
+                var removedProviders = new List<CommandProviderWrapper>();
+                foreach (var ext in removedExtensions)
+                {
+                    try
+                    {
+                        removedProviders.Add(new CommandProviderWrapper(ext, _taskScheduler, _commandProviderCache));
+                    }
+                    catch
+                    {
+                        // Extension may not be in a runnable state if it was uninstalled;
+                        // we still need to signal removal
+                    }
+                }
+
+                OnProviderRemoved?.Invoke(this, removedProviders);
             }
             finally
             {
@@ -142,52 +281,6 @@ public partial class ExtensionService : IExtensionService, IDisposable
             }
         });
     }
-
-    private static async Task<IsExtensionResult> IsValidCmdPalExtension(Package package)
-    {
-        var extensions = await AppExtensionCatalog.Open("com.microsoft.commandpalette").FindAllAsync();
-        foreach (var extension in extensions)
-        {
-            if (package.Id?.FullName == extension.Package?.Id?.FullName)
-            {
-                var (cmdPalProvider, classId) = await GetCmdPalExtensionPropertiesAsync(extension);
-
-                return new(cmdPalProvider is not null && classId.Count != 0, extension);
-            }
-        }
-
-        return new(false, null);
-    }
-
-    private static async Task<(IPropertySet? CmdPalProvider, List<string> ClassIds)> GetCmdPalExtensionPropertiesAsync(AppExtension extension)
-    {
-        var classIds = new List<string>();
-        var properties = await extension.GetExtensionPropertiesAsync();
-
-        if (properties is null)
-        {
-            return (null, classIds);
-        }
-
-        var cmdPalProvider = GetSubPropertySet(properties, "CmdPalProvider");
-        if (cmdPalProvider is null)
-        {
-            return (null, classIds);
-        }
-
-        var activation = GetSubPropertySet(cmdPalProvider, "Activation");
-        if (activation is null)
-        {
-            return (cmdPalProvider, classIds);
-        }
-
-        // Handle case where extension creates multiple instances.
-        classIds.AddRange(GetCreateInstanceList(activation));
-
-        return (cmdPalProvider, classIds);
-    }
-
-    private static async Task<IEnumerable<AppExtension>> GetInstalledAppExtensionsAsync() => await AppExtensionCatalog.Open("com.microsoft.commandpalette").FindAllAsync();
 
     public async Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(bool includeDisabledExtensions = false)
     {
@@ -215,25 +308,22 @@ public partial class ExtensionService : IExtensionService, IDisposable
         }
     }
 
-    private static void UpdateExtensionsListsFromWrappers(List<ExtensionWrapper> wrappers)
+    public IExtensionWrapper? GetInstalledExtension(string extensionUniqueId)
     {
-        foreach (var extensionWrapper in wrappers)
-        {
-            // var localSettingsService = Application.Current.GetService<ILocalSettingsService>();
-            var extensionUniqueId = extensionWrapper.ExtensionUniqueId;
-            var isExtensionDisabled = false; // await localSettingsService.ReadSettingAsync<bool>(extensionUniqueId + "-ExtensionDisabled");
+        var extension = _installedExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
+        return extension.FirstOrDefault();
+    }
 
-            _installedExtensions.Add(extensionWrapper);
-            if (!isExtensionDisabled)
-            {
-                _enabledExtensions.Add(extensionWrapper);
-            }
+    public void EnableExtension(string extensionUniqueId)
+    {
+        var extension = _installedExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
+        _enabledExtensions.Add(extension.First());
+    }
 
-            // TelemetryFactory.Get<ITelemetry>().Log(
-            //    "Extension_ReportInstalled",
-            //    LogLevel.Critical,
-            //    new ReportInstalledExtensionEvent(extensionUniqueId, isEnabled: !isExtensionDisabled));
-        }
+    public void DisableExtension(string extensionUniqueId)
+    {
+        var extension = _enabledExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
+        _enabledExtensions.Remove(extension.First());
     }
 
     private static async Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsyncUnderLock(bool includeDisabledExtensions, bool refresh)
@@ -295,6 +385,8 @@ public partial class ExtensionService : IExtensionService, IDisposable
         }
     }
 
+    private static async Task<IEnumerable<AppExtension>> GetInstalledAppExtensionsAsync() => await AppExtensionCatalog.Open("com.microsoft.commandpalette").FindAllAsync();
+
     private static async Task<List<ExtensionWrapper>> CreateWrappersForExtension(AppExtension extension)
     {
         var (cmdPalProvider, classIds) = await GetCmdPalExtensionPropertiesAsync(extension);
@@ -337,7 +429,6 @@ public partial class ExtensionService : IExtensionService, IDisposable
                 }
                 else
                 {
-                    // log warning  that extension declared unsupported extension interface
                     CommandPaletteHost.Instance.DebugLog($"Extension {extension.DisplayName} declared an unsupported interface: {supportedInterface.Key}");
                 }
             }
@@ -346,77 +437,68 @@ public partial class ExtensionService : IExtensionService, IDisposable
         return extensionWrapper;
     }
 
-    public IExtensionWrapper? GetInstalledExtension(string extensionUniqueId)
+    private static void UpdateExtensionsListsFromWrappers(List<ExtensionWrapper> wrappers)
     {
-        var extension = _installedExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
-        return extension.FirstOrDefault();
-    }
-
-    public async Task SignalStopExtensionsAsync()
-    {
-        var installedExtensions = await GetInstalledExtensionsAsync();
-        foreach (var installedExtension in installedExtensions)
+        foreach (var extensionWrapper in wrappers)
         {
-            Logger.LogDebug($"Signaling dispose to {installedExtension.ExtensionUniqueId}");
-            try
+            var extensionUniqueId = extensionWrapper.ExtensionUniqueId;
+            var isExtensionDisabled = false;
+
+            _installedExtensions.Add(extensionWrapper);
+            if (!isExtensionDisabled)
             {
-                if (installedExtension.IsRunning())
-                {
-                    installedExtension.SignalDispose();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to send dispose signal to extension {installedExtension.ExtensionUniqueId}", ex);
+                _enabledExtensions.Add(extensionWrapper);
             }
         }
     }
 
-    public async Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(ProviderType providerType, bool includeDisabledExtensions = false)
+    private static async Task<IsExtensionResult> IsValidCmdPalExtension(Package package)
     {
-        var installedExtensions = await GetInstalledExtensionsAsync(includeDisabledExtensions);
-
-        List<IExtensionWrapper> filteredExtensions = [];
-        foreach (var installedExtension in installedExtensions)
+        var extensions = await AppExtensionCatalog.Open("com.microsoft.commandpalette").FindAllAsync();
+        foreach (var extension in extensions)
         {
-            if (installedExtension.HasProviderType(providerType))
+            if (package.Id?.FullName == extension.Package?.Id?.FullName)
             {
-                filteredExtensions.Add(installedExtension);
+                var (cmdPalProvider, classId) = await GetCmdPalExtensionPropertiesAsync(extension);
+
+                return new(cmdPalProvider is not null && classId.Count != 0, extension);
             }
         }
 
-        return filteredExtensions;
+        return new(false, null);
     }
 
-    public void Dispose()
+    private static async Task<(IPropertySet? CmdPalProvider, List<string> ClassIds)> GetCmdPalExtensionPropertiesAsync(AppExtension extension)
     {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
-    }
+        var classIds = new List<string>();
+        var properties = await extension.GetExtensionPropertiesAsync();
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_disposedValue)
+        if (properties is null)
         {
-            if (disposing)
-            {
-                _getInstalledExtensionsLock.Dispose();
-                _getInstalledWidgetsLock.Dispose();
-            }
-
-            _disposedValue = true;
+            return (null, classIds);
         }
+
+        var cmdPalProvider = GetSubPropertySet(properties, "CmdPalProvider");
+        if (cmdPalProvider is null)
+        {
+            return (null, classIds);
+        }
+
+        var activation = GetSubPropertySet(cmdPalProvider, "Activation");
+        if (activation is null)
+        {
+            return (cmdPalProvider, classIds);
+        }
+
+        classIds.AddRange(GetCreateInstanceList(activation));
+
+        return (cmdPalProvider, classIds);
     }
 
     private static IPropertySet? GetSubPropertySet(IPropertySet propSet, string name) => propSet.TryGetValue(name, out var value) ? value as IPropertySet : null;
 
     private static object[]? GetSubPropertySetArray(IPropertySet propSet, string name) => propSet.TryGetValue(name, out var value) ? value as object[] : null;
 
-    /// <summary>
-    /// There are cases where the extension creates multiple COM instances.
-    /// </summary>
-    /// <param name="activationPropSet">Activation property set object</param>
-    /// <returns>List of ClassId strings associated with the activation property</returns>
     private static List<string> GetCreateInstanceList(IPropertySet activationPropSet)
     {
         var propSetList = new List<string>();
@@ -424,8 +506,6 @@ public partial class ExtensionService : IExtensionService, IDisposable
         if (singlePropertySet is not null)
         {
             var classId = GetProperty(singlePropertySet, ClassIdProperty);
-
-            // If the instance has a classId as a single string, then it's only supporting a single instance.
             if (classId is not null)
             {
                 propSetList.Add(classId);
@@ -457,35 +537,24 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private static string? GetProperty(IPropertySet propSet, string name) => propSet[name] as string;
 
-    public void EnableExtension(string extensionUniqueId)
+    public void Dispose()
     {
-        var extension = _installedExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
-        _enabledExtensions.Add(extension.First());
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 
-    public void DisableExtension(string extensionUniqueId)
+    private void Dispose(bool disposing)
     {
-        var extension = _enabledExtensions.Where(extension => extension.ExtensionUniqueId.Equals(extensionUniqueId, StringComparison.Ordinal));
-        _enabledExtensions.Remove(extension.First());
-    }
+        if (!_disposedValue)
+        {
+            if (disposing)
+            {
+                _getInstalledExtensionsLock.Dispose();
+            }
 
-    /*
-    ///// <inheritdoc cref="IExtensionService.DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper)"/>
-    //public async Task<bool> DisableExtensionIfWindowsFeatureNotAvailable(IExtensionWrapper extension)
-    //{
-    //    // Only attempt to disable feature if its available.
-    //    if (IsWindowsOptionalFeatureAvailableForExtension(extension.ExtensionClassId))
-    //    {
-    //        return false;
-    //    }
-    //    _log.Warning($"Disabling extension: '{extension.ExtensionDisplayName}' because its feature is absent or unknown");
-    //    // Remove extension from list of enabled extensions to prevent Dev Home from re-querying for this extension
-    //    // for the rest of its process lifetime.
-    //    DisableExtension(extension.ExtensionUniqueId);
-    //    // Update the local settings so the next time the user launches Dev Home the extension will be disabled.
-    //    await _localSettingsService.SaveSettingAsync(extension.ExtensionUniqueId + "-ExtensionDisabled", true);
-    //    return true;
-    //} */
+            _disposedValue = true;
+        }
+    }
 }
 
 internal record struct IsExtensionResult(bool IsExtension, AppExtension? Extension)
