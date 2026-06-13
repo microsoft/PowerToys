@@ -72,7 +72,20 @@ namespace CentralizedKeyboardHook
         {
             if (it.idTimer == idTimer)
             {
-                it.action();
+                if (it.action())
+                {
+                    // The action requested Start Menu suppression. Sending a dummy
+                    // keyup matches what KeyboardHookProc does for regular hotkeys.
+                    INPUT dummyEvent[1] = {};
+                    dummyEvent[0].type = INPUT_KEYBOARD;
+                    dummyEvent[0].ki.wVk = 0xFF;
+                    dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                    SendInput(1, dummyEvent, sizeof(INPUT));
+                }
+                // The descriptor is one-shot per hold: clearing it avoids
+                // double-firing when the same module re-registers the action
+                // before the next press.
+                break;
             }
         }
 
@@ -223,19 +236,26 @@ namespace CentralizedKeyboardHook
                 }
             }
         }
+        ClearModulePressedKeyActions(moduleName);
+    }
+
+    void ClearModulePressedKeyActions(const std::wstring& moduleName) noexcept
+    {
+        std::unique_lock lock{ pressedKeyMutex };
+        auto it = pressedKeyDescriptors.begin();
+        while (it != pressedKeyDescriptors.end())
         {
-            std::unique_lock lock{ pressedKeyMutex };
-            auto it = pressedKeyDescriptors.begin();
-            while (it != pressedKeyDescriptors.end())
+            if (it->moduleName == moduleName)
             {
-                if (it->moduleName == moduleName)
+                if (runnerWindow)
                 {
-                    it = pressedKeyDescriptors.erase(it);
+                    KillTimer(runnerWindow, it->idTimer);
                 }
-                else
-                {
-                    ++it;
-                }
+                it = pressedKeyDescriptors.erase(it);
+            }
+            else
+            {
+                ++it;
             }
         }
     }
