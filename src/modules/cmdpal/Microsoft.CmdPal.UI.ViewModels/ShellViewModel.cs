@@ -437,28 +437,7 @@ public partial class ShellViewModel : ObservableObject,
             case CommandResultKind.GoHome:
                 {
                     // Go back to the main page, but keep it open
-                    if (onBeforeShowConfirmation is not null)
-                    {
-                        // Dock context: show the palette window at the correct
-                        // position, then perform a full reset to the root page
-                        // (the navigation stack may be empty if the palette was
-                        // previously hidden).
-                        try
-                        {
-                            onBeforeShowConfirmation.Invoke();
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreLogger.LogError(ex.ToString());
-                        }
-
-                        ResetToHome();
-                    }
-                    else
-                    {
-                        GoHome();
-                    }
-
+                    GoHome();
                     break;
                 }
 
