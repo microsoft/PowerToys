@@ -69,7 +69,7 @@ After registration verify:
 
 ```powershell
 $pkg = Get-AppxPackage -Name '*SparseApp*'
-$pkg.PackageFamilyName    # Microsoft.PowerToys.SparseApp_djwsxzxb4ksa8
+$pkg.PackageFamilyName    # Microsoft.PowerToys.SparseApp_<PublisherId>
 $pkg.PublisherId          # djwsxzxb4ksa8
 $pkg.IsDevelopmentMode    # True
 ```
@@ -88,7 +88,7 @@ Re-register after rebuilding AP, changing `src/PackageIdentity/AppxManifest.xml`
 | Problem | Cause | Fix |
 |---------|-------|-----|
 | `GetPackageFamilyName` returns `APPMODEL_ERROR_NO_PACKAGE` (15700) at runtime; LAF unlock returns `Unavailable` | Dev certificate not trusted (or sparse package not registered) | Re-run `BuildSparsePackage.ps1 -DevRegister` — auto-imports the cert into `TrustedPeople` and `Root`. |
-| `Microsoft.UI.Xaml.dll` crash with `0xC000027B` / `REGDB_E_CLASSNOTREG` on AP or Settings startup | `<Application>` `Executable` path in `src/PackageIdentity/AppxManifest.xml` does not resolve under the registered `ExternalLocation` (`<Config>\WinUI3Apps\`) | Confirm every `Executable` is relative to `WinUI3Apps\` (per #47177) and the file exists under the build output. |
+| `Microsoft.UI.Xaml.dll` crash with `0xC000027B` (class-not-registered) on AP or Settings startup | `<Application>` `Executable` path in `src/PackageIdentity/AppxManifest.xml` does not resolve under the registered `ExternalLocation` (`<Config>\WinUI3Apps\`) | Confirm every `Executable` is relative to `WinUI3Apps\` (per #47177) and the file exists under the build output. |
 | AP launches but never shows a window when triggered via hotkey | Runner's pipe-server wait timed out before AP's cold-start finished bootstrapping WinAppSDK + DI host | Already mitigated by the 15 s pipe timeout in `AdvancedPasteProcessManager.cpp`; warm-start launches connect in well under 1 s. |
 | `XamlParseException` / `ms-appx:///Microsoft.UI.Xaml/Themes/…` not found | WindowsAppSDK Foundation < 2.0.22; MRT can't resolve custom PRI name under sparse identity | Ensure `Microsoft.WindowsAppSDK.Foundation` >= 2.0.22 in `Directory.Packages.props`. |
 
@@ -104,7 +104,7 @@ PowerToys.AdvancedPaste.exe --check-phi-silica
 
 ### See also
 
-- [Phi Silica local testing & troubleshooting runbook](advancedpaste-phisilica-local-testing.md) — layer-by-layer diagnostics for Phi Silica availability
+- [Phi Silica local testing & troubleshooting guide](advancedpaste-phisilica-local-testing.md) — layer-by-layer diagnostics for Phi Silica availability
 - [`src/PackageIdentity/readme.md`](/src/PackageIdentity/readme.md) — full sparse package documentation
 - [microsoft/microsoft-ui-xaml#10856](https://github.com/microsoft/microsoft-ui-xaml/issues/10856) — original WinUI sparse-identity PRI bug
 - [microsoft/WindowsAppSDK#6376](https://github.com/microsoft/WindowsAppSDK/pull/6376) — MRT sparse PRI fix (Foundation >= 2.0.22)
