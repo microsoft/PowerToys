@@ -97,6 +97,50 @@ namespace RemappingLogicTests
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
         }
 
+        // When the remapped key-DOWN injection is blocked but the later key-UP injection
+        // would succeed, the handler must still let the ORIGINAL key-up through. The
+        // key-down was passed through to the app (key is physically DOWN), so swallowing
+        // the key-up would strand the physical key DOWN. This guards the asymmetric
+        // injection-failure stuck-key edge case, where key-down and key-up arrive as
+        // separate hook events.
+        TEST_METHOD (RemappedKey_ShouldReleaseOriginalKey_WhenKeyDownInjectionFailedButKeyUpSucceeds)
+        {
+            // Remap A to B
+            testState.AddSingleKeyRemap(0x41, (DWORD)0x42);
+
+            // Fail only KBM-injected key-DOWN events; allow injected key-ups (and the
+            // test's own driving input, which has dwExtraInfo == 0) through.
+            mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>& inputs) {
+                for (const auto& input : inputs)
+                {
+                    if (input.ki.dwExtraInfo != 0 && (input.ki.dwFlags & KEYEVENTF_KEYUP) == 0)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            std::vector<INPUT> keyDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+
+            // Send A keydown - injection of B fails, so A passes through and is now DOWN
+            mockedInputHandler.SendVirtualInput(keyDown);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+
+            std::vector<INPUT> keyUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A', .dwFlags = KEYEVENTF_KEYUP } },
+            };
+
+            // Send A keyup - even though injecting B's key-up would succeed, the original A
+            // key-up must pass through so the physical A key is released, not stranded down
+            mockedInputHandler.SendVirtualInput(keyUp);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x42));
+        }
+
         // Test if key is suppressed if a key is disabled by single key remap
         TEST_METHOD (RemappedKeyDisabled_ShouldNotChangeKeyState_OnKeyEvent)
         {

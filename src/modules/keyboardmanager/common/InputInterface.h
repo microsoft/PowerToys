@@ -10,7 +10,8 @@ namespace KeyboardManagerInput
     class InputInterface
     {
     public:
-        // Function to simulate input. Returns true if all events were injected successfully.
+        // Function to simulate input. Returns false only when nothing could be injected
+        // (the call was fully blocked); returns true on full or partial success.
         virtual bool SendVirtualInput(const std::vector<INPUT>& inputs) = 0;
 
         // Function to get the state of a particular key

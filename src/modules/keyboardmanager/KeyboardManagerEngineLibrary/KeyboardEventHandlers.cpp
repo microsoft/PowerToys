@@ -122,6 +122,21 @@ namespace KeyboardEventHandlers
                     key_count = std::get<Shortcut>(it->second).Size();
                 }
 
+                const DWORD sourceKey = data->lParam->vkCode;
+                const bool isKeyUp = (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP);
+
+                // If the matching key-down injection was blocked earlier, we passed the
+                // original key-down through to the foreground app to keep the key alive.
+                // The corresponding key-up must be passed through as well; otherwise the
+                // physical key is stranded DOWN (its down reached the app, but its up would
+                // be swallowed by the remap). Key-down and key-up arrive as separate hook
+                // events, so this is the cross-invocation counterpart of the key-down
+                // passthrough handled below.
+                if (isKeyUp && state.ConsumeSingleKeyRemapInjectionFailed(sourceKey))
+                {
+                    return 0;
+                }
+
                 std::vector<INPUT> keyEventList;
 
                 // Handle remaps to VK_WIN_BOTH
@@ -171,7 +186,22 @@ namespace KeyboardEventHandlers
 
                 if (!ii.SendVirtualInput(keyEventList))
                 {
+                    // Injection was blocked (e.g. by UIPI). Return 0 so the ORIGINAL key is
+                    // passed through instead of being swallowed, leaving no dead key. For a
+                    // key-down, remember that we passed it through so the matching key-up is
+                    // passed through too (handled above), preventing a key stranded DOWN.
+                    if (!isKeyUp)
+                    {
+                        state.SetSingleKeyRemapInjectionFailed(sourceKey, true);
+                    }
                     return 0;
+                }
+
+                // Injection succeeded; drop any stale passthrough marker for this key so its
+                // key-up follows the normal (suppressed) path.
+                if (!isKeyUp)
+                {
+                    state.SetSingleKeyRemapInjectionFailed(sourceKey, false);
                 }
 
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
