@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <!-- Look at Directory.Build.props in root for common stuff as well -->
+    <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+    <PropertyGroup>
+        <ProjectGuid>{A8D81CE0-7E24-4079-AD45-6BCE6747FE8B}</ProjectGuid>
+        <AssemblyName>PowerToys.MouseJump.HotKeys</AssemblyName>
+        <AssemblyTitle>PowerToys.MouseJump.HotKeys</AssemblyTitle>
+        <AssemblyDescription>PowerToys MouseJump.HotKeys</AssemblyDescription>
+        <OutputType>Library</OutputType>
+        <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+        <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MouseJump.Common\MouseJump.Common.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Windows.CsWin32">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+</Project>

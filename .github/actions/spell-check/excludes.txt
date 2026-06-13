@@ -116,7 +116,8 @@
 ^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherDiacriticsTests.cs$
 ^src/modules/colorPicker/ColorPickerUI/Shaders/GridShader\.cso$
 ^src/modules/launcher/Plugins/Microsoft\.PowerToys\.Run\.Plugin\.TimeDate/Properties/
-^src/modules/MouseUtils/MouseJumpUI/MainForm\.resx$
+^src/modules/MouseUtils/MouseJump.Kicker/KickerForm\.resx$
+^src/modules/MouseUtils/MouseJumpUI/UI/MainForm\.resx$
 ^src/modules/MouseWithoutBorders/App/.*/NativeMethods\.cs$
 ^src/modules/MouseWithoutBorders/App/Form/.*\.Designer\.cs$
 ^src/modules/MouseWithoutBorders/App/Form/.*\.resx$

@@ -3,10 +3,14 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Drawing;
 
-using MouseJump.Common.Models.Drawing;
-using MouseJump.Common.NativeMethods;
-using static MouseJump.Common.NativeMethods.Core;
+using MouseJump.Common.Interop;
+using MouseJump.Models.Drawing;
+
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
 
 namespace MouseJump.Common.Imaging;
 
@@ -28,12 +32,12 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
         var stopwatch = Stopwatch.StartNew();
         var (desktopHwnd, desktopHdc) = DesktopImageRegionCopyService.GetDesktopDeviceContext();
         var previewHdc = DesktopImageRegionCopyService.GetGraphicsDeviceContext(
-            targetGraphics, Gdi32.STRETCH_BLT_MODE.STRETCH_HALFTONE);
+            targetGraphics, STRETCH_BLT_MODE.STRETCH_HALFTONE);
         stopwatch.Stop();
 
         var source = sourceBounds.ToRectangle();
         var target = targetBounds.ToRectangle();
-        var result = Gdi32.StretchBlt(
+        var result = PInvoke.StretchBlt(
             previewHdc,
             target.X,
             target.Y,
@@ -44,15 +48,11 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
             source.Y,
             source.Width,
             source.Height,
-            Gdi32.ROP_CODE.SRCCOPY);
-        if (!result)
-        {
-            throw new InvalidOperationException(
-                $"{nameof(Gdi32.StretchBlt)} returned {result.Value}");
-        }
+            ROP_CODE.SRCCOPY);
+        ResultHandler.ThrowIfZero(result, getLastError: false, nameof(PInvoke.StretchBlt));
 
         // we need to release the graphics device context handle before anything
-        // else tries to use the Graphics object otherwise it'll give an error
+        // else tries to use the Graphics object - otherwise it'll give an error
         // from GDI saying "Object is currently in use elsewhere"
         DesktopImageRegionCopyService.FreeGraphicsDeviceContext(targetGraphics, ref previewHdc);
 
@@ -61,14 +61,9 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
 
     private static (HWND DesktopHwnd, HDC DesktopHdc) GetDesktopDeviceContext()
     {
-        var desktopHwnd = User32.GetDesktopWindow();
-        var desktopHdc = User32.GetWindowDC(desktopHwnd);
-        if (desktopHdc.IsNull)
-        {
-            throw new InvalidOperationException(
-                $"{nameof(User32.GetWindowDC)} returned null");
-        }
-
+        var desktopHwnd = PInvoke.GetDesktopWindow();
+        var desktopHdc = PInvoke.GetWindowDC(desktopHwnd);
+        ResultHandler.HandleResult(desktopHdc, !desktopHdc.IsNull, getLastError: false, nameof(PInvoke.GetWindowDC));
         return (desktopHwnd, desktopHdc);
     }
 
@@ -76,12 +71,8 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
     {
         if (!desktopHwnd.IsNull && !desktopHdc.IsNull)
         {
-            var result = User32.ReleaseDC(desktopHwnd, desktopHdc);
-            if (result == 0)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(User32.ReleaseDC)} returned {result}");
-            }
+            var result = PInvoke.ReleaseDC(desktopHwnd, desktopHdc);
+            ResultHandler.ThrowIfZero(result, getLastError: false, nameof(PInvoke.ReleaseDC));
         }
 
         desktopHwnd = HWND.Null;
@@ -92,17 +83,11 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
     /// Checks if the target device context handle exists, and creates a new one from the
     /// specified Graphics object if not.
     /// </summary>
-    private static HDC GetGraphicsDeviceContext(Graphics graphics, Gdi32.STRETCH_BLT_MODE mode)
+    private static HDC GetGraphicsDeviceContext(Graphics graphics, STRETCH_BLT_MODE mode)
     {
         var graphicsHdc = (HDC)graphics.GetHdc();
-
-        var result = Gdi32.SetStretchBltMode(graphicsHdc, mode);
-        if (result == 0)
-        {
-            throw new InvalidOperationException(
-                $"{nameof(Gdi32.SetStretchBltMode)} returned {result}");
-        }
-
+        var result = PInvoke.SetStretchBltMode(graphicsHdc, mode);
+        ResultHandler.ThrowIfZero(result, getLastError: false, nameof(PInvoke.SetStretchBltMode));
         return graphicsHdc;
     }
 
@@ -116,7 +101,7 @@ public sealed class DesktopImageRegionCopyService : IImageRegionCopyService
             return;
         }
 
-        graphics.ReleaseHdc(graphicsHdc.Value);
+        graphics.ReleaseHdc(graphicsHdc);
         graphicsHdc = HDC.Null;
     }
 }
