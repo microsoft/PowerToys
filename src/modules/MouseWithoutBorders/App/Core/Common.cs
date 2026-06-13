@@ -23,9 +23,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Exceptions;
 
-using Clipboard = MouseWithoutBorders.Core.Clipboard;
-using Thread = MouseWithoutBorders.Core.Thread;
-
 // Log is enough
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Common.#CheckClipboard()", Justification = "Dotnet port with style preservation")]
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.Common.#CheckForDesktopSwitchEvent(System.Boolean)", Justification = "Dotnet port with style preservation")]
@@ -81,26 +78,6 @@ namespace MouseWithoutBorders.Core;
 
 internal static class Common
 {
-    private static InputHook hook;
-    private static FrmMatrix matrixForm;
-    private static FrmInputCallback inputCallbackForm;
-    private static FrmAbout aboutForm;
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static Thread helper;
-    internal static int screenWidth;
-    internal static int screenHeight;
-#pragma warning restore SA1307
-    private static int lastX;
-    private static int lastY;
-
-    private static bool mainFormVisible = true;
-    private static bool runOnLogonDesktop;
-    private static bool runOnScrSaverDesktop;
-
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static int[] toggleIcons;
-    internal static int toggleIconsIndex;
-#pragma warning restore SA1307
     internal const int TOGGLE_ICONS_SIZE = 4;
     internal const int ICON_ONE = 0;
     internal const int ICON_ALL = 1;
@@ -108,21 +85,21 @@ internal static class Common
     internal const int ICON_BIG_CLIPBOARD = 3;
     internal const int ICON_ERROR = 4;
     internal const int JUST_GOT_BACK_FROM_SCREEN_SAVER = 9999;
-
     internal const int NETWORK_STREAM_BUF_SIZE = 1024 * 1024;
-    internal static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
-    private static Point lastPos;
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
-    internal static int switchCount;
-#pragma warning restore SA1307
-    private static long lastReconnectByHotKeyTime;
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
-    internal static int tcpPort;
-#pragma warning restore SA1307
-    private static bool secondOpenSocketTry;
-    private static string binaryName;
 
-    internal static Process CurrentProcess { get; set; }
+    internal static readonly EventWaitHandle EvSwitch = new(false, EventResetMode.AutoReset);
+
+    internal static Thread HelperThread
+    {
+        get;
+        set;
+    }
+
+    internal static Process CurrentProcess
+    {
+        get;
+        set;
+    }
 
     internal static bool HotkeyMatched(int vkCode, bool winDown, bool ctrlDown, bool altDown, bool shiftDown, HotkeySettings hotkey)
     {
@@ -131,133 +108,210 @@ internal static class Common
 
     internal static string BinaryName
     {
-        get => Common.binaryName;
-        set => Common.binaryName = value;
+        get;
+        set;
     }
 
     internal static bool SecondOpenSocketTry
     {
-        get => Common.secondOpenSocketTry;
-        set => Common.secondOpenSocketTry = value;
+        get;
+        set;
     }
 
     internal static long LastReconnectByHotKeyTime
     {
-        get => Common.lastReconnectByHotKeyTime;
-        set => Common.lastReconnectByHotKeyTime = value;
+        get;
+        set;
     }
 
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value 0
+    // value is only ever set via Interlocked methods, so only *appears* not be assigned to
+    private static int _switchCount;
+#pragma warning restore CS0649
+
     internal static int SwitchCount
+        => _switchCount;
+
+    internal static int IncrementSwitchCount()
     {
-        get => Common.switchCount;
-        set => Common.switchCount = value;
+        return Interlocked.Increment(ref _switchCount);
+    }
+
+    internal static int SetSwitchCount(int value)
+    {
+        return Interlocked.Exchange(ref _switchCount, value);
     }
 
     internal static Point LastPos
     {
-        get => Common.lastPos;
-        set => Common.lastPos = value;
+        get;
+        set;
+    }
+
+    private static void RefreshLastPos()
+    {
+        Point cursorPos = default;
+        _ = NativeMethods.GetCursorPos(ref cursorPos);
+        Common.LastPos = cursorPos;
     }
 
     internal static FrmAbout AboutForm
     {
-        get => Common.aboutForm;
-        set => Common.aboutForm = value;
+        get;
+        set;
     }
 
     internal static FrmInputCallback InputCallbackForm
     {
-        get => Common.inputCallbackForm;
-        set => Common.inputCallbackForm = value;
+        get;
+        set;
     }
 
-    internal static int PaintCount { get; set; }
+    internal static int PaintCount
+    {
+        get;
+        set;
+    }
 
     internal static bool RunOnScrSaverDesktop
     {
-        get => Common.runOnScrSaverDesktop;
-        set => Common.runOnScrSaverDesktop = value;
+        get;
+        set;
     }
 
     internal static bool RunOnLogonDesktop
     {
-        get => Common.runOnLogonDesktop;
-        set => Common.runOnLogonDesktop = value;
+        get;
+        set;
     }
 
-    internal static bool RunWithNoAdminRight { get; set; }
+    internal static bool RunWithNoAdminRight
+    {
+        get;
+        set;
+    }
 
     internal static int LastX
     {
-        get => Common.lastX;
-        set => Common.lastX = value;
+        get;
+        set;
     }
 
     internal static int LastY
     {
-        get => Common.lastY;
-        set => Common.lastY = value;
+        get;
+        set;
     }
 
-    internal static int[] ToggleIcons => Common.toggleIcons;
+    internal static int[] ToggleIcons
+    {
+        get;
+        set;
+    }
 
-    internal static int ScreenHeight => Common.screenHeight;
+    private static int _screenHeight;
 
-    internal static int ScreenWidth => Common.screenWidth;
+    internal static int ScreenHeight
+        => _screenHeight;
+
+    internal static int SetScreenHeight(int value)
+    {
+        return Interlocked.Exchange(ref _screenHeight, value);
+    }
+
+    private static int _screenWidth;
+
+    internal static int ScreenWidth
+    {
+        get;
+    }
+
+    internal static int SetScreenWidth(int value)
+    {
+        return Interlocked.Exchange(ref _screenWidth, value);
+    }
 
     internal static bool Is64bitOS
     {
-        get; set;
-
-        // set { Common.is64bitOS = value; }
+        get;
+        set;
     }
 
     internal static int ToggleIconsIndex
     {
-        // get { return Common.toggleIconsIndex; }
-        set => Common.toggleIconsIndex = value;
+        get;
+        set;
     }
 
     internal static InputHook Hook
     {
-        get => Common.hook;
-        set => Common.hook = value;
+        get;
+        set;
     }
 
-    internal static SocketStuff Sk { get; set; }
+    internal static SocketStuff Sk
+    {
+        get;
+        set;
+    }
 
-    internal static FrmScreen MainForm { get; set; }
+    internal static FrmScreen MainForm
+    {
+        get;
+        set;
+    }
 
-    internal static FrmMouseCursor MouseCursorForm { get; set; }
+    internal static FrmMouseCursor MouseCursorForm
+    {
+        get;
+        set;
+    }
 
     internal static FrmMatrix MatrixForm
     {
-        get => Common.matrixForm;
-        set => Common.matrixForm = value;
+        get;
+        set;
     }
 
     internal static ID DesMachineID
     {
-        get => MachineStuff.desMachineID;
+        get => MachineStuff.DesMachineID;
 
         set
         {
-            MachineStuff.desMachineID = value;
-            MachineStuff.DesMachineName = MachineStuff.NameFromID(MachineStuff.desMachineID);
+            MachineStuff.DesMachineID = value;
+            MachineStuff.DesMachineName = MachineStuff.NameFromID(MachineStuff.DesMachineID);
         }
     }
 
     internal static ID MachineID => (ID)Setting.Values.MachineId;
 
-    internal static string MachineName { get; set; }
+    internal static string MachineName
+    {
+        get;
+        set;
+    }
 
     internal static bool MainFormVisible
     {
-        get => Common.mainFormVisible;
-        set => Common.mainFormVisible = value;
+        get;
+        set;
     }
 
-    internal static Mutex SocketMutex { get; set; } // Synchronization between MouseWithoutBorders running in different desktops
+    /// <remarks>
+    /// Synchronization between MouseWithoutBorders running in different desktops
+    /// </remarks>
+    internal static Mutex SocketMutex
+    {
+        get;
+        set;
+    }
+
+    internal static int TcpPort
+    {
+        get;
+        set;
+    }
 
     // TODO: For telemetry only, to be removed.
     private static int socketMutexBalance;
@@ -621,7 +675,7 @@ internal static class Common
 
     internal static void ProcessByeByeMessage(DATA package)
     {
-        if (package.Src == MachineStuff.desMachineID)
+        if (package.Src == MachineStuff.DesMachineID)
         {
             MachineStuff.SwitchToMachine(MachineName.Trim());
         }
@@ -637,8 +691,8 @@ internal static class Common
     internal static void SetToggleIcon(int[] toggleIcons)
     {
         Logger.LogDebug($"{nameof(SetToggleIcon)}: {toggleIcons?.FirstOrDefault()}");
-        Common.toggleIcons = toggleIcons;
-        toggleIconsIndex = 0;
+        Common.ToggleIcons = toggleIcons;
+        Common.ToggleIconsIndex = 0;
     }
 
     internal static string CaptureScreen()
@@ -646,12 +700,12 @@ internal static class Common
         try
         {
             string fileName = GetMyStorageDir() + @"ScreenCaptureByMouseWithoutBorders.png";
-            int w = MachineStuff.desktopBounds.Right - MachineStuff.desktopBounds.Left;
-            int h = MachineStuff.desktopBounds.Bottom - MachineStuff.desktopBounds.Top;
+            int w = MachineStuff.DesktopBounds.Right - MachineStuff.DesktopBounds.Left;
+            int h = MachineStuff.DesktopBounds.Bottom - MachineStuff.DesktopBounds.Top;
             Bitmap bm = new(w, h);
             Graphics g = Graphics.FromImage(bm);
             Size s = new(w, h);
-            g.CopyFromScreen(MachineStuff.desktopBounds.Left, MachineStuff.desktopBounds.Top, 0, 0, s);
+            g.CopyFromScreen(MachineStuff.DesktopBounds.Left, MachineStuff.DesktopBounds.Top, 0, 0, s);
             bm.Save(fileName, ImageFormat.Png);
             bm.Dispose();
             return fileName;
@@ -913,7 +967,7 @@ internal static class Common
 
             try
             {
-                data.Id = Interlocked.Increment(ref Package.PackageID);
+                data.Id = Package.IncrementPackageID();
 
                 bool updateClientSockets = false;
 
@@ -1242,7 +1296,7 @@ internal static class Common
                     tmpSk.Close(byUser);
                 }
 
-                Sk = new SocketStuff(tcpPort, byUser);
+                Sk = new SocketStuff(Common.TcpPort, byUser);
             }
             catch (Exception e)
             {
@@ -1269,11 +1323,8 @@ internal static class Common
 
         Common.DoSomethingInTheInputCallbackThread(() =>
         {
-            if (Common.Hook != null)
-            {
-                Common.Hook.Stop();
-                Common.Hook = null;
-            }
+            Common.Hook?.Stop();
+            Common.Hook = null;
 
             if (byUser)
             {
@@ -1452,23 +1503,14 @@ internal static class Common
             }
         }
 
-        if (MainForm != null)
-        {
-            MainForm.Destroy();
-            MainForm = null;
-        }
+        Common.MainForm?.Destroy();
+        Common.MainForm = null;
 
-        if (MatrixForm != null)
-        {
-            MatrixForm.Close();
-            MatrixForm = null;
-        }
+        Common.MatrixForm?.Close();
+        Common.MatrixForm = null;
 
-        if (AboutForm != null)
-        {
-            AboutForm.Close();
-            AboutForm = null;
-        }
+        Common.AboutForm?.Close();
+        Common.AboutForm = null;
     }
 
     internal static void MoveMouseToCenter()
@@ -1485,10 +1527,10 @@ internal static class Common
             MachineStuff.PrimaryScreenBounds.Left + ((MachineStuff.PrimaryScreenBounds.Right - MachineStuff.PrimaryScreenBounds.Left) / 2),
             Setting.Values.HideMouse ? 4 : MachineStuff.PrimaryScreenBounds.Top + ((MachineStuff.PrimaryScreenBounds.Bottom - MachineStuff.PrimaryScreenBounds.Top) / 2));
 
-        if ((MachineStuff.desMachineID != MachineID && MachineStuff.desMachineID != ID.ALL) || byHideMouseMessage)
+        if ((MachineStuff.DesMachineID != MachineID && MachineStuff.DesMachineID != ID.ALL) || byHideMouseMessage)
         {
             _ = NativeMethods.SetCursorPos(Common.LastPos.X, Common.LastPos.Y);
-            _ = NativeMethods.GetCursorPos(ref Common.lastPos);
+            Common.RefreshLastPos();
             Logger.LogDebug($"+++++ HideMouseCursor, byHideMouseMessage = {byHideMouseMessage}");
         }
 

@@ -6,7 +6,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
 
 using MouseWithoutBorders.Class;
@@ -25,10 +24,6 @@ internal static class Event
 {
     private static readonly DATA KeybdPackage = new();
     private static readonly DATA MousePackage = new();
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case names
-    internal static ulong inputEventCount;
-    internal static ulong invalidPackageCount;
-#pragma warning restore SA1307
     internal static int MOVE_MOUSE_RELATIVE = 100000;
     internal static int XY_BY_PIXEL = 300000;
 
@@ -38,14 +33,14 @@ internal static class Event
 
     internal static ulong InvalidPackageCount
     {
-        get => Event.invalidPackageCount;
-        set => Event.invalidPackageCount = value;
+        get;
+        set;
     }
 
     internal static ulong InputEventCount
     {
-        get => Event.inputEventCount;
-        set => Event.inputEventCount = value;
+        get;
+        set;
     }
 
     internal static ulong RealInputEventCount
@@ -72,7 +67,7 @@ internal static class Event
 
             if (isEasyMouseEnabled && Common.Sk != null && (Common.DesMachineID == Common.MachineID || !Setting.Values.MoveMouseRelatively) && e.dwFlags == WM.WM_MOUSEMOVE)
             {
-                Point p = MachineStuff.MoveToMyNeighbourIfNeeded(e.X, e.Y, MachineStuff.desMachineID);
+                Point p = MachineStuff.MoveToMyNeighbourIfNeeded(e.X, e.Y, MachineStuff.DesMachineID);
 
                 // Check if easy mouse switches are disabled when an application is running in fullscreen mode,
                 // if they are, check that there is no application running in fullscreen mode before switching.
@@ -83,20 +78,20 @@ internal static class Event
                     Logger.LogDebug(string.Format(
                         CultureInfo.CurrentCulture,
                         "***** Host Machine: newDesMachineIdEx set = [{0}]. Mouse is now at ({1},{2})",
-                        MachineStuff.newDesMachineIdEx,
+                        MachineStuff.NewDesMachineIdEx,
                         e.X,
                         e.Y));
 
                     myLastX = e.X;
                     myLastY = e.Y;
 
-                    PrepareToSwitchToMachine(MachineStuff.newDesMachineIdEx, p);
+                    PrepareToSwitchToMachine(MachineStuff.NewDesMachineIdEx, p);
                 }
             }
 
-            if (MachineStuff.desMachineID != Common.MachineID && MachineStuff.SwitchLocation.Count <= 0)
+            if (MachineStuff.DesMachineID != Common.MachineID && MachineStuff.SwitchLocation.Count <= 0)
             {
-                MousePackage.Des = MachineStuff.desMachineID;
+                MousePackage.Des = MachineStuff.DesMachineID;
                 MousePackage.Type = PackageType.Mouse;
                 MousePackage.Md.dwFlags = e.dwFlags;
                 MousePackage.Md.WheelDelta = e.WheelDelta;
@@ -109,8 +104,8 @@ internal static class Event
                 }
                 else
                 {
-                    MousePackage.Md.X = (e.X - MachineStuff.primaryScreenBounds.Left) * 65535 / Common.screenWidth;
-                    MousePackage.Md.Y = (e.Y - MachineStuff.primaryScreenBounds.Top) * 65535 / Common.screenHeight;
+                    MousePackage.Md.X = (e.X - MachineStuff.PrimaryScreenBounds.Left) * 65535 / Common.ScreenWidth;
+                    MousePackage.Md.Y = (e.Y - MachineStuff.PrimaryScreenBounds.Top) * 65535 / Common.ScreenHeight;
                 }
 
                 Common.SkSend(MousePackage, null, false);
@@ -158,13 +153,13 @@ internal static class Event
     {
         Logger.LogDebug($"PrepareToSwitchToMachine: newDesMachineID = {newDesMachineID}, desMachineXY = {desMachineXY}");
 
-        if (((Common.GetTick() - MachineStuff.lastJump < 100) && (Common.GetTick() - MachineStuff.lastJump > 0)) || MachineStuff.desMachineID == ID.ALL)
+        if (((Common.GetTick() - MachineStuff.LastJump < 100) && (Common.GetTick() - MachineStuff.LastJump > 0)) || MachineStuff.DesMachineID == ID.ALL)
         {
             Logger.LogDebug("PrepareToSwitchToMachine: lastJump");
             return;
         }
 
-        MachineStuff.lastJump = Common.GetTick();
+        MachineStuff.LastJump = Common.GetTick();
 
         string newDesMachineName = MachineStuff.NameFromID(newDesMachineID);
 
@@ -177,7 +172,7 @@ internal static class Event
         }
         else
         {
-            MachineStuff.newDesMachineID = newDesMachineID;
+            MachineStuff.NewDesMachineID = newDesMachineID;
             MachineStuff.SwitchLocation.X = desMachineXY.X;
             MachineStuff.SwitchLocation.Y = desMachineXY.Y;
             MachineStuff.SwitchLocation.ResetCount();
@@ -204,33 +199,33 @@ internal static class Event
             }
 
             // Change des machine
-            if (MachineStuff.desMachineID != newDesMachineID)
+            if (MachineStuff.DesMachineID != newDesMachineID)
             {
                 Logger.LogDebug("MouseEvent: Switching to new machine:" + newDesMachineName);
 
                 // Ask current machine to hide the Mouse cursor
-                if (newDesMachineID != ID.ALL && MachineStuff.desMachineID != Common.MachineID)
+                if (newDesMachineID != ID.ALL && MachineStuff.DesMachineID != Common.MachineID)
                 {
-                    Common.SendPackage(MachineStuff.desMachineID, PackageType.HideMouse);
+                    Common.SendPackage(MachineStuff.DesMachineID, PackageType.HideMouse);
                 }
 
                 Common.DesMachineID = newDesMachineID;
 
-                if (MachineStuff.desMachineID == Common.MachineID)
+                if (MachineStuff.DesMachineID == Common.MachineID)
                 {
-                    if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
+                    if (Common.GetTick() - Clipboard.ClipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
                     {
-                        Clipboard.clipboardCopiedTime = 0;
+                        Clipboard.ClipboardCopiedTime = 0;
                         Clipboard.GetRemoteClipboard("PrepareToSwitchToMachine");
                     }
                 }
                 else
                 {
                     // Ask the new active machine to get clipboard data (if the data is too big)
-                    Common.SendPackage(MachineStuff.desMachineID, PackageType.MachineSwitched);
+                    Common.SendPackage(MachineStuff.DesMachineID, PackageType.MachineSwitched);
                 }
 
-                _ = Interlocked.Increment(ref Common.switchCount);
+                _ = Common.IncrementSwitchCount();
             }
         }
     }
@@ -242,7 +237,7 @@ internal static class Event
             _ = Task.Run(() =>
             {
                 Setting.Values.SwitchCount += Common.SwitchCount;
-                _ = Interlocked.Exchange(ref Common.switchCount, 0);
+                _ = Common.SetSwitchCount(0);
             });
         }
     }
@@ -252,15 +247,15 @@ internal static class Event
         try
         {
             Common.PaintCount = 0;
-            if (MachineStuff.desMachineID != MachineStuff.newDesMachineID)
+            if (MachineStuff.DesMachineID != MachineStuff.NewDesMachineID)
             {
                 Logger.LogDebug("KeybdEvent: Switching to new machine...");
-                Common.DesMachineID = MachineStuff.newDesMachineID;
+                Common.DesMachineID = MachineStuff.NewDesMachineID;
             }
 
-            if (MachineStuff.desMachineID != Common.MachineID)
+            if (MachineStuff.DesMachineID != Common.MachineID)
             {
-                KeybdPackage.Des = MachineStuff.desMachineID;
+                KeybdPackage.Des = MachineStuff.DesMachineID;
                 KeybdPackage.Type = PackageType.Keyboard;
                 KeybdPackage.Kd = e;
                 KeybdPackage.DateTime = Common.GetTick();

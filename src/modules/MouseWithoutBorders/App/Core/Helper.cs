@@ -8,9 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Security.Principal;
 using System.Windows.Forms;
 
 using Microsoft.Win32;
@@ -31,15 +29,28 @@ internal static class Helper
 {
     internal const string HELPER_FORM_TEXT = "Mouse without Borders Helper";
     internal const string HelperProcessName = "PowerToys.MouseWithoutBordersHelper";
-#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
-    internal static bool signalHelperToExit;
-    internal static bool signalWatchDogToExit;
-#pragma warning restore SA1307
-    internal static long WndProcCounter;
+
+    internal static bool SignalHelperToExit
+    {
+        get;
+        set;
+    }
+
+    internal static bool SignalWatchDogToExit
+    {
+        get;
+        set;
+    }
+
+    internal static long WndProcCounter
+    {
+        get;
+        set;
+    }
 
     private static void WatchDogThread()
     {
-        long oldCounter = WndProcCounter;
+        long oldCounter = Helper.WndProcCounter;
 
         do
         {
@@ -47,7 +58,7 @@ internal static class Helper
             {
                 Thread.Sleep(1000);
 
-                if (signalWatchDogToExit)
+                if (Helper.SignalWatchDogToExit)
                 {
                     break;
                 }
@@ -84,7 +95,7 @@ internal static class Helper
             {
                 _ = Common.EvSwitch.WaitOne(); // Switching to another machine?
 
-                if (signalHelperToExit)
+                if (Helper.SignalHelperToExit)
                 {
                     break;
                 }
@@ -128,7 +139,7 @@ internal static class Helper
             Logger.Log(e);
         }
 
-        signalHelperToExit = false;
+        Helper.SignalHelperToExit = false;
         Logger.LogDebug("^^^Helper Thread exiting...^^^");
     }
 
@@ -248,14 +259,14 @@ internal static class Helper
     {
         try
         {
-            if (Common.toggleIconsIndex < Common.TOGGLE_ICONS_SIZE)
+            if (Common.ToggleIconsIndex < Common.TOGGLE_ICONS_SIZE)
             {
-                Common.DoSomethingInUIThread(() => Common.MainForm.ChangeIcon(Common.toggleIcons[Common.toggleIconsIndex++]));
+                Common.DoSomethingInUIThread(() => Common.MainForm.ChangeIcon(Common.ToggleIcons[Common.ToggleIconsIndex++]));
             }
             else
             {
-                Common.toggleIconsIndex = 0;
-                Common.toggleIcons = null;
+                Common.ToggleIconsIndex = 0;
+                Common.ToggleIcons = null;
             }
         }
         catch (Exception e)

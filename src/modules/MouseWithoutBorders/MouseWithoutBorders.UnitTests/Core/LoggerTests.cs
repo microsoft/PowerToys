@@ -153,6 +153,7 @@ public static class LoggerTests
                     "lastStartServiceTime = ",
                     "InitialIV = ",
                     "--_budget = ",
+                    "--_initialCapacity = ",
                 };
                 for (var i = 0; i < lines.Length; i++)
                 {

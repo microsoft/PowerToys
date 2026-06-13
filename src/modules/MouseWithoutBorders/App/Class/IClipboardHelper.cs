@@ -3,21 +3,22 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections;
+#if MM_HELPER
 using System.Collections.Specialized;
+#endif
 using System.Diagnostics;
+#if MM_HELPER
 using System.Drawing;
-using System.IO;
+#endif
 using System.IO.Pipes;
-using System.Reflection;
+#if MM_HELPER
 using System.Runtime.InteropServices;
+#endif
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
-using Microsoft.VisualStudio.Threading;
 using MouseWithoutBorders.Core;
 using Newtonsoft.Json;
 using StreamJsonRpc;
@@ -26,10 +27,11 @@ using StreamJsonRpc;
 using MouseWithoutBorders.Class;
 #endif
 
+#if MM_HELPER
 using SystemClipboard = System.Windows.Forms.Clipboard;
+#endif
 #if !MM_HELPER
 using Clipboard = MouseWithoutBorders.Core.Clipboard;
-using Thread = MouseWithoutBorders.Core.Thread;
 #endif
 
 namespace MouseWithoutBorders
