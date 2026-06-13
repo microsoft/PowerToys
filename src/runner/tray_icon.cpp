@@ -563,6 +563,11 @@ void stop_tray_icon()
         SendMessage(tray_icon_hwnd, WM_CLOSE, 0, 0);
     }
 }
+
+bool is_session_ending()
+{
+    return g_session_ending;
+}
 void update_quick_access_hotkey(bool enabled, PowerToysSettings::HotkeyObject hotkey)
 {
     static PowerToysSettings::HotkeyObject current_hotkey;
