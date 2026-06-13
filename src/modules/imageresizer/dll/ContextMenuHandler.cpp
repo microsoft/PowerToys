@@ -5,6 +5,7 @@
 
 #include <Settings.h>
 #include <trace.h>
+#include <ImageResizerConstants.h>
 
 #include <common/themes/icon_helpers.h>
 #include <common/utils/process_path.h>
@@ -95,6 +96,15 @@ HRESULT CContextMenuHandler::QueryContextMenu(_In_ HMENU hmenu, UINT indexMenu, 
         free(pszPath);
         // Avoid crashes in the following code.
         return E_FAIL;
+    }
+
+    // Check if the extension is actually supported by Image Resizer
+    // This prevents showing the menu for file types like .psd that Windows
+    // perceives as images but Image Resizer cannot process
+    if (!ImageResizerConstants::IsSupportedImageExtension(pszExt))
+    {
+        free(pszPath);
+        return S_OK;
     }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
@@ -415,6 +425,16 @@ HRESULT __stdcall CContextMenuHandler::GetState(IShellItemArray* psiItemArray, B
         CoTaskMemFree(pszPath);
         // Avoid crashes in the following code.
         return E_FAIL;
+    }
+
+    // Check if the extension is actually supported by Image Resizer
+    // This prevents showing the menu for file types like .psd that Windows
+    // perceives as images but Image Resizer cannot process
+    if (!ImageResizerConstants::IsSupportedImageExtension(pszExt))
+    {
+        CoTaskMemFree(pszPath);
+        *pCmdState = ECS_HIDDEN;
+        return S_OK;
     }
 
     // TODO: Instead, detect whether there's a WIC codec installed that can handle this file
