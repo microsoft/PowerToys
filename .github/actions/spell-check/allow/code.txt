@@ -314,7 +314,6 @@ Laf
 languagemodel
 philm
 phisilica
-SCL
 TFM
 
 # YML
