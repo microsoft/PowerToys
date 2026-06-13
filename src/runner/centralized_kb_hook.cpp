@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "centralized_kb_hook.h"
+#include <set>
 #include <common/debug_control.h>
 #include <common/utils/winapi_error.h>
 #include <common/logger/logger.h>
@@ -40,6 +41,14 @@ namespace CentralizedKeyboardHook
     std::multiset<PressedKeyDescriptor> pressedKeyDescriptors;
     std::mutex pressedKeyMutex;
 
+    // Virtual key codes whose long-press timer fired and that requested
+    // Start Menu suppression. The dummy keystroke is injected when the
+    // matching key is finally released so the chord break is fresh when
+    // Windows processes the Win-up; injecting it at timer-fire time is
+    // ~press_time ms early and is sometimes "forgotten" by the shell.
+    std::set<DWORD> pendingChordBreaks;
+    std::mutex pendingChordBreakMutex;
+
     // keep track of last pressed key, to detect repeated keys and if there are more keys pressed.
     const DWORD VK_DISABLED = CommonSharedConstants::VK_DISABLED;
     DWORD vkCodePressed = VK_DISABLED;
@@ -74,13 +83,10 @@ namespace CentralizedKeyboardHook
             {
                 if (it.action())
                 {
-                    // The action requested Start Menu suppression. Sending a dummy
-                    // keyup matches what KeyboardHookProc does for regular hotkeys.
-                    INPUT dummyEvent[1] = {};
-                    dummyEvent[0].type = INPUT_KEYBOARD;
-                    dummyEvent[0].ki.wVk = 0xFF;
-                    dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                    SendInput(1, dummyEvent, sizeof(INPUT));
+                    // Defer the actual SendInput until the matching key is
+                    // released. See pendingChordBreaks comment above.
+                    std::unique_lock lock{ pendingChordBreakMutex };
+                    pendingChordBreaks.insert(it.virtualKey);
                 }
                 // The descriptor is one-shot per hold: clearing it avoids
                 // double-firing when the same module re-registers the action
@@ -140,13 +146,41 @@ namespace CentralizedKeyboardHook
             }
             if (wParam == WM_KEYUP || wParam == WM_SYSKEYUP)
             {
-                std::unique_lock lock{ pressedKeyMutex };
-                PressedKeyDescriptor dummy{ .virtualKey = keyPressInfo.vkCode };
-                auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
-                for (; it != last; ++it)
                 {
-                    KillTimer(runnerWindow, it->idTimer);
+                    std::unique_lock lock{ pressedKeyMutex };
+                    PressedKeyDescriptor dummy{ .virtualKey = keyPressInfo.vkCode };
+                    auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
+                    for (; it != last; ++it)
+                    {
+                        KillTimer(runnerWindow, it->idTimer);
+                    }
                 }
+
+                // If a long-press action fired earlier for this key and the
+                // module asked for Start Menu suppression, inject the dummy
+                // event NOW -- while this Win-up is still in-flight in the
+                // hook and before the shell sees it. This matches the v0.99
+                // ShortcutGuide trick of breaking the Win-only chord at the
+                // moment of release.
+                bool sendChordBreak = false;
+                {
+                    std::unique_lock lock{ pendingChordBreakMutex };
+                    auto it = pendingChordBreaks.find(keyPressInfo.vkCode);
+                    if (it != pendingChordBreaks.end())
+                    {
+                        pendingChordBreaks.erase(it);
+                        sendChordBreak = true;
+                    }
+                }
+                if (sendChordBreak)
+                {
+                    INPUT dummyEvent[1] = {};
+                    dummyEvent[0].type = INPUT_KEYBOARD;
+                    dummyEvent[0].ki.wVk = 0xFF;
+                    dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                    SendInput(1, dummyEvent, sizeof(INPUT));
+                }
+
                 vkCodePressed = 0x100;
             }
         }
