@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,9 +97,34 @@ namespace Peek.FilePreviewer.Previewers
                                 Marshal.ThrowExceptionForHR(hr);
 
                                 // Storing the factory in memory helps makes the handlers load faster
-                                factory = (IClassFactory)pFactory;
-                                factory.LockServer(true);
-                                HandlerFactories.AddOrUpdate(clsid, factory, (_, _) => factory);
+                                var newFactory = (IClassFactory)pFactory;
+                                newFactory.LockServer(true);
+
+                                // Two threads can both miss TryGetValue, both CoGetClassObject,
+                                // and both LockServer. Use GetOrAdd to commit a single winner,
+                                // then release the loser (LockServer(false) + FinalRelease) so
+                                // the cache and the local server stay paired.
+                                var cached = HandlerFactories.GetOrAdd(clsid, newFactory);
+                                if (!ReferenceEquals(cached, newFactory))
+                                {
+                                    try
+                                    {
+                                        newFactory.LockServer(false);
+                                    }
+                                    catch
+                                    {
+                                    }
+
+                                    try
+                                    {
+                                        Marshal.FinalReleaseComObject(newFactory);
+                                    }
+                                    catch
+                                    {
+                                    }
+                                }
+
+                                factory = cached;
                             }
 
                             try
@@ -111,8 +137,27 @@ namespace Peek.FilePreviewer.Previewers
                             {
                                 if (!retry)
                                 {
-                                    // Process is probably dead, attempt to get the factory again (once)
-                                    HandlerFactories.TryRemove(new(clsid, factory));
+                                    // Process is probably dead, attempt to get the factory again (once).
+                                    // Release our LockServer hold so the dead local server can be torn down.
+                                    if (HandlerFactories.TryRemove(new(clsid, factory)))
+                                    {
+                                        try
+                                        {
+                                            factory.LockServer(false);
+                                        }
+                                        catch
+                                        {
+                                        }
+
+                                        try
+                                        {
+                                            Marshal.FinalReleaseComObject(factory);
+                                        }
+                                        catch
+                                        {
+                                        }
+                                    }
+
                                     retry = true;
                                 }
                                 else
@@ -134,62 +179,97 @@ namespace Peek.FilePreviewer.Previewers
                 return;
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Initialize the preview handler with the selected file
-            bool success = await Task.Run(() =>
+            // Track ownership of the freshly-created COM object so that any
+            // failure on the path to assigning it to `Preview` (cancellation,
+            // missing IInitializeWith* interface, exception in Initialize)
+            // releases the RCW. Without this, `previewHandler` was leaked on
+            // every cancel/error path below.
+            bool ownsHandler = true;
+            try
             {
-                const uint STGM_READ = 0x00000000;
-                if (previewHandler is IInitializeWithStream initWithStream)
-                {
-                    fileStream = File.OpenRead(FileItem.Path);
-                    initWithStream.Initialize(new IStreamWrapper(fileStream), STGM_READ);
-                }
-                else if (previewHandler is IInitializeWithItem initWithItem)
-                {
-                    var hr = PInvoke_FilePreviewer.SHCreateItemFromParsingName(FileItem.Path, null, typeof(IShellItem).GUID, out var item);
-                    Marshal.ThrowExceptionForHR(hr);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                    initWithItem.Initialize((IShellItem)item, STGM_READ);
-                }
-                else if (previewHandler is IInitializeWithFile initWithFile)
+                // Initialize the preview handler with the selected file
+                bool success = await Task.Run(() =>
                 {
-                    unsafe
+                    const uint STGM_READ = 0x00000000;
+                    if (previewHandler is IInitializeWithStream initWithStream)
                     {
-                        fixed (char* pPath = FileItem.Path)
+                        fileStream = File.OpenRead(FileItem.Path);
+                        initWithStream.Initialize(new IStreamWrapper(fileStream), STGM_READ);
+                    }
+                    else if (previewHandler is IInitializeWithItem initWithItem)
+                    {
+                        var hr = PInvoke_FilePreviewer.SHCreateItemFromParsingName(FileItem.Path, null, typeof(IShellItem).GUID, out var item);
+                        Marshal.ThrowExceptionForHR(hr);
+
+                        initWithItem.Initialize((IShellItem)item, STGM_READ);
+                    }
+                    else if (previewHandler is IInitializeWithFile initWithFile)
+                    {
+                        unsafe
                         {
-                            initWithFile.Initialize(pPath, STGM_READ);
+                            fixed (char* pPath = FileItem.Path)
+                            {
+                                initWithFile.Initialize(pPath, STGM_READ);
+                            }
                         }
                     }
-                }
-                else
+                    else
+                    {
+                        // Handler is missing the required interfaces
+                        return false;
+                    }
+
+                    return true;
+                });
+
+                if (!success)
                 {
-                    // Handler is missing the required interfaces
-                    return false;
+                    State = PreviewState.Error;
+                    return;
                 }
 
-                return true;
-            });
+                cancellationToken.ThrowIfCancellationRequested();
 
-            if (!success)
-            {
-                State = PreviewState.Error;
-                return;
+                // Preview.SetWindow() needs to be set in the control
+                Preview = previewHandler;
+                ownsHandler = false;
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            // Preview.SetWindow() needs to be set in the control
-            Preview = previewHandler;
+            finally
+            {
+                if (ownsHandler)
+                {
+                    try
+                    {
+                        Marshal.FinalReleaseComObject(previewHandler);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
         }
 
         public void Clear()
         {
             if (Preview != null)
             {
+                // Split Unload() and FinalReleaseComObject() into separate try
+                // blocks: if Unload throws (the preview-handler host process
+                // crashed mid-tear-down) the RCW must still be released, otherwise
+                // we leak it and the cache+process can't be torn down cleanly on
+                // exit.
                 try
                 {
                     Preview.Unload();
+                }
+                catch
+                {
+                }
+
+                try
+                {
                     Marshal.FinalReleaseComObject(Preview);
                 }
                 catch
@@ -213,32 +293,34 @@ namespace Peek.FilePreviewer.Previewers
 
         public static void ReleaseHandlerFactories()
         {
-            // Snapshot and clear the dictionary up front so that a subsequent call
-            // or a concurrent LoadPreviewAsync can't pick up a stale RCW we are
-            // about to release. This also makes the method idempotent: a second
-            // call won't try to FinalRelease the same already-separated RCWs.
-            var factories = HandlerFactories.ToArray();
-            HandlerFactories.Clear();
-
-            foreach (var kvp in factories)
+            // Drain via TryRemove instead of ToArray + Clear. The previous
+            // pattern had a race window where a concurrent LoadPreviewAsync
+            // could AddOrUpdate between the snapshot and the Clear; that new
+            // entry would then be dropped without the matching LockServer(false)
+            // + FinalRelease, leaking a locked local-server factory.
+            foreach (var key in HandlerFactories.Keys.ToArray())
             {
-                // Mirror the LockServer(true) we did when caching, so the local
-                // server can shut down cleanly. Both calls are wrapped because the
-                // RCW may already be unreachable during process teardown.
-                try
+                if (HandlerFactories.TryRemove(key, out var factory))
                 {
-                    kvp.Value.LockServer(false);
-                }
-                catch
-                {
-                }
+                    // Mirror the LockServer(true) we did when caching, so the
+                    // local server can shut down cleanly. Both calls are wrapped
+                    // because the RCW may already be unreachable during process
+                    // teardown.
+                    try
+                    {
+                        factory.LockServer(false);
+                    }
+                    catch
+                    {
+                    }
 
-                try
-                {
-                    Marshal.FinalReleaseComObject(kvp.Value);
-                }
-                catch
-                {
+                    try
+                    {
+                        Marshal.FinalReleaseComObject(factory);
+                    }
+                    catch
+                    {
+                    }
                 }
             }
         }
