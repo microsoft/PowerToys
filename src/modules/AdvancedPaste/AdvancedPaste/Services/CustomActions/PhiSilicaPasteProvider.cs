@@ -43,7 +43,7 @@ public sealed class PhiSilicaPasteProvider : IPasteAIProvider
         {
             PhiSilicaLafHelper.TryUnlock();
             var readyState = PhiSilicaLanguageModel.GetReadyState();
-            return Task.FromResult(readyState != AIFeatureReadyState.NotSupportedOnCurrentSystem);
+            return Task.FromResult(readyState is not (AIFeatureReadyState.NotSupportedOnCurrentSystem or AIFeatureReadyState.DisabledByUser));
         }
         catch (Exception)
         {

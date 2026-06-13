@@ -139,6 +139,15 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (action is AdvancedPasteAdditionalAction additionalAction)
                 {
                     hotkeySettings.Add(additionalAction.Shortcut);
+
+                    // Mirror the runner's hotkey order: the coaching shortcut is registered as a
+                    // separate hotkey immediately after Fix Spelling and Grammar when it's active.
+                    if (ReferenceEquals(additionalAction, _additionalActions.FixSpellingAndGrammar)
+                        && additionalAction.CoachingEnabled
+                        && additionalAction.CoachingShortcut is { Code: not 0 })
+                    {
+                        hotkeySettings.Add(additionalAction.CoachingShortcut);
+                    }
                 }
             }
 
@@ -588,11 +597,25 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                           .Concat([PasteAsPlainTextShortcut, AdvancedPasteUIShortcut, PasteAsMarkdownShortcut, PasteAsJsonShortcut])
                           .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
 
-        public bool IsAdditionalActionConflictingCopyShortcut =>
-            _additionalActions.GetAllActions()
-                              .OfType<AdvancedPasteAdditionalAction>()
-                              .Select(additionalAction => additionalAction.Shortcut)
-                              .Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
+        public bool IsAdditionalActionConflictingCopyShortcut
+        {
+            get
+            {
+                var shortcuts = _additionalActions.GetAllActions()
+                                                  .OfType<AdvancedPasteAdditionalAction>()
+                                                  .Select(additionalAction => additionalAction.Shortcut)
+                                                  .ToList();
+
+                // The coaching shortcut is a separately-registered hotkey; include it when active.
+                var fixSpelling = _additionalActions.FixSpellingAndGrammar;
+                if (fixSpelling.CoachingEnabled && fixSpelling.CoachingShortcut is { Code: not 0 })
+                {
+                    shortcuts.Add(fixSpelling.CoachingShortcut);
+                }
+
+                return shortcuts.Any(hotkey => WarnHotkeys.Contains(hotkey.ToString()));
+            }
+        }
 
         private void NotifySettingsChanged()
         {
@@ -1103,7 +1126,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             SaveAndNotifySettings();
 
-            if (e.PropertyName == nameof(AdvancedPasteAdditionalAction.Shortcut))
+            if (e.PropertyName is nameof(AdvancedPasteAdditionalAction.Shortcut)
+                or nameof(AdvancedPasteAdditionalAction.CoachingShortcut)
+                or nameof(AdvancedPasteAdditionalAction.CoachingEnabled))
             {
                 OnPropertyChanged(nameof(IsAdditionalActionConflictingCopyShortcut));
             }

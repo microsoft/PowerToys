@@ -613,8 +613,16 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return "NotSupported";
             }
 
-            var output = process.StandardOutput.ReadToEnd().Trim();
-            process.WaitForExit(10_000);
+            // Read stdout asynchronously so a stalled child can't block us before the timeout elapses.
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+
+            if (!process.WaitForExit(10_000))
+            {
+                TryKillProcess(process);
+                return "NotSupported";
+            }
+
+            var output = outputTask.GetAwaiter().GetResult().Trim();
 
             return output switch
             {
@@ -654,9 +662,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return "NotSupported";
             }
 
-            // Model download can take a while; ReadToEnd blocks until the process closes stdout.
-            var output = process.StandardOutput.ReadToEnd().Trim();
-            process.WaitForExit(600_000);
+            // Read stdout asynchronously; model download can take a while, but a stalled child
+            // must not block us indefinitely, so cap the wait and kill the process on timeout.
+            var outputTask = process.StandardOutput.ReadToEndAsync();
+
+            if (!process.WaitForExit(600_000))
+            {
+                TryKillProcess(process);
+                return "Failed";
+            }
+
+            var output = outputTask.GetAwaiter().GetResult().Trim();
 
             return output switch
             {
@@ -664,6 +680,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 "Failed" => "Failed",
                 _ => "NotSupported",
             };
+        }
+
+        private static void TryKillProcess(Process process)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         private async void PhiSilicaPrepareButton_Click(object sender, RoutedEventArgs e)

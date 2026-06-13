@@ -73,6 +73,7 @@ namespace AdvancedPaste
                 switch (readyState)
                 {
                     case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
+                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
                         Console.Out.WriteLine("NotSupported");
                         return 2;
                     case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
