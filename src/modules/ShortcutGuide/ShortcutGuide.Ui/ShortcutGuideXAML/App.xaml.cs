@@ -45,6 +45,16 @@ namespace ShortcutGuide
                     MainWindow.SessionDurationMs,
                     MainWindow.CloseType));
                 TaskBarWindow.Close();
+
+                // WinUI3's dispatcher loop does not auto-exit when the last
+                // window closes (unlike WPF/WinForms). Without this explicit
+                // shutdown, Application.Start in Program.cs never returns and
+                // SG.exe keeps running after the window is gone, which makes
+                // the module's IsProcessActive() report the zombie as alive on
+                // the next hotkey press; the toggle path in OnHotkeyEx then
+                // terminates the zombie instead of showing a new window, so
+                // every other press appears to do nothing.
+                Microsoft.UI.Xaml.Application.Current.Exit();
             };
         }
 
