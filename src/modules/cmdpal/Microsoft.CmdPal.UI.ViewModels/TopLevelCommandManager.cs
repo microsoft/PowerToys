@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
@@ -260,6 +261,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     /// the root page is displayed so the UI is not blocked by extension startup.
     /// Commands appear progressively via <see cref="IExtensionService.OnProviderAdded"/>.
     /// </summary>
+    [RelayCommand]
     public async Task LoadExternalProvidersAsync()
     {
         IsLoading = true;

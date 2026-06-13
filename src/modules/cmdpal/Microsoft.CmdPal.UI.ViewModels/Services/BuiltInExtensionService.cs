@@ -70,11 +70,11 @@ public sealed class BuiltInExtensionService : IExtensionService
 
     public void EnableExtension(string extensionUniqueId)
     {
-        // TODO: persist enabled state in settings
+        // Nothing to do here. We're built-in extensions.
     }
 
     public void DisableExtension(string extensionUniqueId)
     {
-        // TODO: persist disabled state in settings
+        // Nothing to do here. We're built-in extensions.
     }
 }

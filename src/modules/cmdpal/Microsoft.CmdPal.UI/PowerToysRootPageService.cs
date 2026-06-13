@@ -46,7 +46,14 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PostLoadRootPageAsync()
     {
-        await _tlcManager.LoadExternalProvidersAsync();
+        // After loading built-ins, and starting navigation, kick off a thread to load external extensions.
+        _tlcManager.LoadExternalProvidersCommand.Execute(null);
+
+        await _tlcManager.LoadExternalProvidersCommand.ExecutionTask!;
+        if (_tlcManager.LoadExternalProvidersCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+        {
+            // TODO: Handle failure case
+        }
     }
 
     private void OnPerformTopLevelCommand(object? context)
