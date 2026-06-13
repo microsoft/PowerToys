@@ -10,7 +10,7 @@ private:
 
     // Source keys whose single-key remap key-down injection was blocked, so the original
     // key-down was passed through to the foreground app. The matching key-up must be
-    // passed through too, otherwise the physical key is stranded DOWN. Only accessed from
+    // passed through too; otherwise the physical key is stranded DOWN. Only accessed from
     // the (serialized) low-level keyboard hook thread.
     std::unordered_set<DWORD> singleKeyRemapInjectionFailedKeys;
 
