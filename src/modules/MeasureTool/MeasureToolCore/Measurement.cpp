@@ -57,7 +57,9 @@ namespace
     }
 }
 
+#ifndef UNIT_TEST
 winrt::hstring Measurement::abbreviations[4]{};
+#endif
 
 inline float Measurement::Width(const Unit units) const
 {
@@ -85,6 +87,10 @@ Measurement::Unit Measurement::GetUnitFromIndex(int index)
         return Measurement::Unit::Pixel;
     }
 }
+
+// Functions below require Windows App SDK (winrt::ResourceManager) and are
+// excluded from unit-test builds to avoid pulling in the heavy WinRT pch.
+#ifndef UNIT_TEST
 
 void Measurement::InitResources()
 {
@@ -235,3 +241,5 @@ void Measurement::PrintToStream(std::wostream& stream,
         stream << L" " << Measurement::GetUnitAbbreviation(units);
     }
 }
+
+#endif // !UNIT_TEST
