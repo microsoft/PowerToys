@@ -51,6 +51,57 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
+        private static readonly string[] LowMemoryModulePropertyNames =
+        {
+            nameof(LowMemoryTextExtractor),
+            nameof(LowMemoryColorPicker),
+            nameof(LowMemoryAdvancedPaste),
+            nameof(LowMemoryPeek),
+        };
+
+        private bool GetLowMemoryMode(ModuleType moduleType) => ModuleHelper.GetLowMemoryMode(GeneralSettingsConfig, moduleType);
+
+        private void SetLowMemoryModeFromModule(ModuleType moduleType, bool value, [CallerMemberName] string propertyName = null)
+        {
+            if (!ModuleHelper.SetLowMemoryMode(GeneralSettingsConfig, moduleType, value))
+            {
+                return;
+            }
+
+            RefreshLowMemoryModeSummary();
+            OnPropertyChanged(nameof(LowMemoryMode));
+            NotifyPropertyChanged(propertyName);
+        }
+
+        private void RefreshLowMemoryModeSummary()
+        {
+            GeneralSettingsConfig.LowMemoryMode = ModuleHelper.AnyLowMemoryModeEnabled(GeneralSettingsConfig);
+        }
+
+        private void NotifyLowMemoryModePropertiesChanged()
+        {
+            NotifyLowMemoryModeModulePropertiesChanged();
+            NotifyPropertyChanged(nameof(LowMemoryMode));
+        }
+
+        private void NotifyLowMemoryModeModulePropertiesChanged()
+        {
+            foreach (var propertyName in LowMemoryModulePropertyNames)
+            {
+                OnPropertyChanged(propertyName);
+            }
+        }
+
+        private string FormatUpdateCheckedDate(DateTime? dateTime)
+        {
+            if (ResourceLoader != null)
+            {
+                return FriendlyDateHelper.Format(dateTime, ResourceLoader);
+            }
+
+            return dateTime?.ToString(CultureInfo.CurrentCulture) ?? string.Empty;
+        }
+
         private UpdatingSettings UpdatingSettingsConfig { get; set; }
 
         public ButtonClickCommand CheckForUpdatesEventHandler { get; set; }
@@ -72,6 +123,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ButtonClickCommand RestartElevatedButtonEventHandler { get; set; }
 
         public ButtonClickCommand UpdateNowButtonEventHandler { get; set; }
+
+        public ButtonClickCommand EnableAllLowMemoryModeCommand { get; set; }
+
+        public ButtonClickCommand DisableAllLowMemoryModeCommand { get; set; }
 
         public Func<string, int> SendConfigMSG { get; }
 
@@ -105,6 +160,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectSettingBackupDirEventHandler = new ButtonClickCommand(SelectSettingBackupDir);
             RestoreConfigsEventHandler = new ButtonClickCommand(RestoreConfigsClick);
             RefreshBackupStatusEventHandler = new ButtonClickCommand(RefreshBackupStatusEventHandlerClick);
+            EnableAllLowMemoryModeCommand = new ButtonClickCommand(() => SetLowMemoryModeForAll(true));
+            DisableAllLowMemoryModeCommand = new ButtonClickCommand(() => SetLowMemoryModeForAll(false));
             HideBackupAndRestoreMessageAreaAction = hideBackupAndRestoreMessageAreaAction;
             DoBackupAndRestoreDryRun = doBackupAndRestoreDryRun;
             PickSingleFolderDialog = pickSingleFolderDialog;
@@ -174,6 +231,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _runElevated = GeneralSettingsConfig.RunElevated;
             _enableWarningsElevatedApps = GeneralSettingsConfig.EnableWarningsElevatedApps;
             _enableQuickAccess = GeneralSettingsConfig.EnableQuickAccess;
+            ModuleHelper.EnsureLowMemoryModuleSettings(GeneralSettingsConfig);
+            RefreshLowMemoryModeSummary();
             _quickAccessShortcut = GeneralSettingsConfig.QuickAccessShortcut;
             if (_quickAccessShortcut != null)
             {
@@ -188,7 +247,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _updatingState = UpdatingSettingsConfig.State;
             _newAvailableVersion = UpdatingSettingsConfig.NewVersion;
             _newAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
-            _updateCheckedDate = FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
+            _updateCheckedDate = FormatUpdateCheckedDate(UpdatingSettingsConfig.LastCheckedDateTime);
 
             _newUpdatesToastIsGpoDisabled = GPOWrapper.GetDisableNewUpdateToastValue() == GpoRuleConfigured.Enabled;
             _autoDownloadUpdatesIsGpoDisabled = GPOWrapper.GetDisableAutomaticUpdateDownloadValue() == GpoRuleConfigured.Enabled;
@@ -542,6 +601,29 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
         }
+
+        public bool LowMemoryMode
+        {
+            get => GeneralSettingsConfig.LowMemoryMode;
+            set => SetLowMemoryModeForAll(value);
+        }
+
+        public void SetLowMemoryModeForAll(bool value)
+        {
+            if (ModuleHelper.SetLowMemoryModeForAll(GeneralSettingsConfig, value))
+            {
+                RefreshLowMemoryModeSummary();
+                NotifyLowMemoryModePropertiesChanged();
+            }
+        }
+
+        public bool LowMemoryTextExtractor { get => GetLowMemoryMode(ModuleType.PowerOCR); set => SetLowMemoryModeFromModule(ModuleType.PowerOCR, value); }
+
+        public bool LowMemoryColorPicker { get => GetLowMemoryMode(ModuleType.ColorPicker); set => SetLowMemoryModeFromModule(ModuleType.ColorPicker, value); }
+
+        public bool LowMemoryAdvancedPaste { get => GetLowMemoryMode(ModuleType.AdvancedPaste); set => SetLowMemoryModeFromModule(ModuleType.AdvancedPaste, value); }
+
+        public bool LowMemoryPeek { get => GetLowMemoryMode(ModuleType.Peek); set => SetLowMemoryModeFromModule(ModuleType.Peek, value); }
 
         public HotkeySettings QuickAccessShortcut
         {
@@ -1383,7 +1465,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
                 else
                 {
-                    bool dateChanged = UpdateCheckedDate == FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
+                    bool dateChanged = UpdateCheckedDate == FormatUpdateCheckedDate(UpdatingSettingsConfig.LastCheckedDateTime);
                     bool fileDownloaded = string.IsNullOrEmpty(UpdatingSettingsConfig.DownloadedInstallerFilename);
                     IsNewVersionDownloading = !(dateChanged || fileDownloaded);
                 }
@@ -1391,7 +1473,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 PowerToysUpdatingState = UpdatingSettingsConfig.State;
                 PowerToysNewAvailableVersion = UpdatingSettingsConfig.NewVersion;
                 PowerToysNewAvailableVersionLink = UpdatingSettingsConfig.ReleasePageLink;
-                UpdateCheckedDate = FriendlyDateHelper.Format(UpdatingSettingsConfig.LastCheckedDateTime);
+                UpdateCheckedDate = FormatUpdateCheckedDate(UpdatingSettingsConfig.LastCheckedDateTime);
 
                 _isNoNetwork = PowerToysUpdatingState == UpdatingSettings.UpdatingState.NetworkError;
                 NotifyPropertyChanged(nameof(IsNoNetwork));
@@ -1535,6 +1617,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             _dispatcherQueue?.TryEnqueue(() =>
             {
+                ModuleHelper.EnsureLowMemoryModuleSettings(newSettings);
                 GeneralSettingsConfig = newSettings;
 
                 if (_enableQuickAccess != newSettings.EnableQuickAccess)
@@ -1542,6 +1625,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _enableQuickAccess = newSettings.EnableQuickAccess;
                     OnPropertyChanged(nameof(EnableQuickAccess));
                 }
+
+                RefreshLowMemoryModeSummary();
+                OnPropertyChanged(nameof(LowMemoryMode));
+                NotifyLowMemoryModeModulePropertiesChanged();
             });
         }
 
