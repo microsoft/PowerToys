@@ -766,7 +766,7 @@ public class DockMultiMonitorTests
 
         var result = MonitorConfigReconciler.Reconcile(configs, monitors);
 
-        // Phase 1.5 should detect GDI-style names and rewrite to stable IDs
+        // Legacy migration should detect GDI-style names and rewrite to stable IDs
         Assert.AreEqual(2, result.Count);
         Assert.AreEqual(PrimaryMonitor.StableId, result[0].MonitorDeviceId, "Primary should be migrated to stable ID");
         Assert.AreEqual(SecondaryMonitor.StableId, result[1].MonitorDeviceId, "Secondary should be migrated to stable ID");

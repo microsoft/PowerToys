@@ -30,11 +30,12 @@ public static class MonitorConfigReconciler
     /// <summary>
     /// Reconciles persisted monitor configs against the current set of connected monitors.
     /// <para>
-    /// <b>Phase 1</b>: Exact StableId matching — keep IsPrimary up-to-date.<br/>
-    /// <b>Phase 1.5</b>: Legacy migration — match configs with GDI-style IDs by GDI name, then rewrite to StableId.<br/>
-    /// <b>Phase 2</b>: Fuzzy matching — reassociate unmatched configs by IsPrimary flag.<br/>
-    /// <b>Phase 3</b>: Create default configs for monitors that have no matching config.<br/>
-    /// <b>Phase 4</b>: Retain disconnected monitor configs for future reconnection; prune entries not seen for 6+ months.
+    /// Steps:<br/>
+    /// 1. Exact StableId matching — keep IsPrimary up-to-date.<br/>
+    /// 2. Legacy migration — match configs with GDI-style IDs by GDI name, then rewrite to StableId.<br/>
+    /// 3. Fuzzy matching — reassociate unmatched configs by IsPrimary flag.<br/>
+    /// 4. Create default configs for monitors that have no matching config.<br/>
+    /// 5. Retain disconnected monitor configs for future reconnection; prune entries not seen for 6+ months.
     /// </para>
     /// </summary>
     public static ImmutableList<DockMonitorConfig> Reconcile(
@@ -73,7 +74,7 @@ public static class MonitorConfigReconciler
         var matchedConfigIndices = new HashSet<int>();
         var result = new List<DockMonitorConfig>(currentMonitors.Count);
 
-        // Phase 1: Exact match on StableId (configs already migrated to stable paths)
+        // Step 1: Exact match on StableId (configs already migrated to stable paths)
         for (var mi = 0; mi < currentMonitors.Count; mi++)
         {
             var monitor = currentMonitors[mi];
@@ -85,7 +86,7 @@ public static class MonitorConfigReconciler
             }
         }
 
-        // Phase 1.5: Legacy migration — match configs that still have GDI-style IDs
+        // Step 2: Legacy migration — match configs that still have GDI-style IDs
         // (e.g. "\\.\DISPLAY1") by matching against the monitor's GDI DeviceId,
         // then rewrite the MonitorDeviceId to the monitor's stable hardware path.
         for (var mi = 0; mi < currentMonitors.Count; mi++)
@@ -110,7 +111,7 @@ public static class MonitorConfigReconciler
             }
         }
 
-        // Phase 2: Fuzzy match — recover primary monitor config when its ID changed.
+        // Step 3: Fuzzy match — recover primary monitor config when its ID changed.
         // Windows can reassign device paths across driver updates or cable swaps.
         // When the primary monitor's StableId no longer matches any saved config,
         // we look for an unmatched config that was previously marked as primary and
@@ -145,7 +146,7 @@ public static class MonitorConfigReconciler
             }
         }
 
-        // Phase 3: Create defaults for new monitors with no matching config.
+        // Step 4: Create defaults for new monitors with no matching config.
         // Primary monitors inherit global bands (IsCustomized = false) for a seamless
         // upgrade path. Secondary monitors start disabled with empty band lists —
         // users opt-in via Settings when they want the dock on additional displays.
@@ -183,7 +184,7 @@ public static class MonitorConfigReconciler
             }
         }
 
-        // Phase 4: Retain disconnected monitor configs so settings survive reconnection.
+        // Step 5: Retain disconnected monitor configs so settings survive reconnection.
         // Prune entries not seen for longer than StaleThreshold (6 months).
         for (var ci = 0; ci < existingConfigs.Count; ci++)
         {
