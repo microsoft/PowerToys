@@ -299,4 +299,27 @@ public sealed class CharacterMappingsTests
             spokenLangs,
             "Spoken languages in DisplayOrder should be sorted alphabetically by their enum names.");
     }
+
+    /// <summary>
+    /// When multiple languages are selected, accented letters and diacritics must
+    /// appear before symbol/currency characters in the popup. This prevents e.g.
+    /// the Euro symbol from German overshadowing the accented é from Spanish.
+    /// </summary>
+    [TestMethod]
+    public void GetCharacters_LettersAppearBeforeSymbols()
+    {
+        // German has only "€" for VK_E, Spanish has "é".
+        // When both are selected, "é" must come before "€".
+        Language[] langs = [Language.DE, Language.SP];
+        var result = CharacterMappings.GetCharacters(LetterKey.VK_E, langs);
+
+        var euroIdx = Array.IndexOf(result, "€");
+        var eAccuteIdx = Array.IndexOf(result, "é");
+
+        Assert.IsTrue(eAccuteIdx >= 0, "Expected é to be present in results.");
+        Assert.IsTrue(euroIdx >= 0, "Expected € to be present in results.");
+        Assert.IsTrue(
+            eAccuteIdx < euroIdx,
+            $"Expected é (index {eAccuteIdx}) to appear before € (index {euroIdx}).");
+    }
 }

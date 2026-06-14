@@ -204,6 +204,7 @@ public static class CharacterMappings
         new(Language.DE, "German", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["ä"],
+            [LetterKey.VK_E] = ["€"],
             [LetterKey.VK_O] = ["ö"],
             [LetterKey.VK_S] = ["ß"],
             [LetterKey.VK_U] = ["ü"],
@@ -605,7 +606,7 @@ public static class CharacterMappings
         new(Language.SP, "Spanish", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["á"],
-            [LetterKey.VK_E] = ["é"],
+            [LetterKey.VK_E] = ["é", "€"],
             [LetterKey.VK_H] = ["ḥ"],
             [LetterKey.VK_I] = ["í"],
             [LetterKey.VK_L] = ["ḷ"],
@@ -785,6 +786,28 @@ public static class CharacterMappings
             }
         }
 
-        return [.. result.Distinct()];
+        // Stable-sort: letters and diacritics before symbols/currency.
+        // This prevents symbol-only entries (e.g. "€" from German) from
+        // appearing ahead of actual accented letters (e.g. "é" from Spanish)
+        // when languages are aggregated alphabetically.
+        return [.. result.Distinct().OrderBy(c => IsSymbolOrCurrency(c) ? 1 : 0)];
+    }
+
+    /// <summary>
+    /// Returns true if the first character of the string is a symbol or currency
+    /// character rather than a letter, mark, or digit.
+    /// </summary>
+    private static bool IsSymbolOrCurrency(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+        {
+            return false;
+        }
+
+        var category = char.GetUnicodeCategory(s[0]);
+        return category is System.Globalization.UnicodeCategory.CurrencySymbol
+            or System.Globalization.UnicodeCategory.MathSymbol
+            or System.Globalization.UnicodeCategory.OtherSymbol
+            or System.Globalization.UnicodeCategory.ModifierSymbol;
     }
 }
