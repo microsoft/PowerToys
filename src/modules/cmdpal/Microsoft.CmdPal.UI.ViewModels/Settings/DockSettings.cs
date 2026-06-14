@@ -35,7 +35,7 @@ public record DockSettings
 
     public bool AlwaysOnTop { get; set; } = true;
 
-    public bool AutoHide { get; set; } = false;
+    public bool AutoHide { get; set; }
 
     // <Theme settings>
     public DockBackdrop Backdrop { get; init; } = DockBackdrop.Acrylic;

@@ -247,6 +247,21 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _dockAutoHideConflict;
+
+    public bool Dock_AutoHideConflict
+    {
+        get => _dockAutoHideConflict;
+        private set
+        {
+            if (_dockAutoHideConflict != value)
+            {
+                _dockAutoHideConflict = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dock_AutoHideConflict)));
+            }
+        }
+    }
+
     public bool EnableDock
     {
         get => _settingsService.Settings.EnableDock;
@@ -337,6 +352,11 @@ public partial class SettingsViewModel : INotifyPropertyChanged
         {
             ApplyFallbackSort();
         }
+
+        WeakReferenceMessenger.Default.Register<DockAutoHideConflictMessage>(this, (r, m) =>
+        {
+            ((SettingsViewModel)r).Dock_AutoHideConflict = m.IsConflict;
+        });
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

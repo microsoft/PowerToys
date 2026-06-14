@@ -29,6 +29,8 @@ using WinRT;
 using WinRT.Interop;
 using WinUIEx;
 using MonitorInfo = Microsoft.CmdPal.UI.ViewModels.Models.MonitorInfo;
+using POINT = Microsoft.PowerToys.Settings.UI.Helpers.POINT;
+using RECT = Windows.Win32.Foundation.RECT;
 
 namespace Microsoft.CmdPal.UI.Dock;
 
@@ -61,6 +63,7 @@ public sealed partial class DockWindow : WindowEx,
         Pinned,
         AutoHide,
     }
+
 #pragma warning disable SA1306 // Field names should begin with lower-case letter
 #pragma warning disable SA1310 // Field names should not contain underscore
     private readonly uint WM_TASKBAR_RESTART;
@@ -95,8 +98,20 @@ public sealed partial class DockWindow : WindowEx,
     private RECT _revealedRect;
     private RECT _collapsedRect;
     private DispatcherQueueTimer? _collapseTimer;
-    private const int AutoHideCollapsedThicknessDips = 2;
-    private static readonly TimeSpan AutoHideCollapseDelay = TimeSpan.FromMilliseconds(250);
+    private DispatcherQueueTimer? _revealPollTimer;
+    private DispatcherQueueTimer? _slideTimer;
+    private RECT _slideFromRect;
+    private RECT _slideToRect;
+    private double _slideProgress;
+    private bool _slideIsRevealing;
+    private bool _paletteOpenedFromDock;
+    private const int AutoHideCollapsedThicknessDips = 0;
+    private const int RevealHitTestMarginPixels = 1;
+    private static readonly TimeSpan AutoHideCollapseDelay = TimeSpan.FromMilliseconds(400);
+    private static readonly TimeSpan RevealPollInterval = TimeSpan.FromMilliseconds(50);
+    private static readonly TimeSpan SlideRevealDuration = TimeSpan.FromMilliseconds(200);
+    private static readonly TimeSpan SlideCollapseDuration = TimeSpan.FromMilliseconds(150);
+    private static readonly TimeSpan SlideFrameInterval = TimeSpan.FromMilliseconds(16);
 
     /// <summary>
     /// The monitor this dock window is displayed on. Null means primary monitor (legacy behavior).
@@ -435,6 +450,7 @@ public sealed partial class DockWindow : WindowEx,
             _appBarMode = DockAppBarMode.AutoHide;
             _autoHideRegistrationSucceeded = true;
             UpdateAutoHideShellState();
+            WeakReferenceMessenger.Default.Send(new ViewModels.Messages.DockAutoHideConflictMessage(false));
         }
         else
         {
@@ -442,6 +458,7 @@ public sealed partial class DockWindow : WindowEx,
             if (_settings.AutoHide)
             {
                 Logger.LogWarning($"Dock auto-hide registration rejected on edge {EffectiveSide} for monitor {MonitorForLogs()}. Falling back to pinned mode.");
+                WeakReferenceMessenger.Default.Send(new ViewModels.Messages.DockAutoHideConflictMessage(true));
             }
         }
 
@@ -450,13 +467,19 @@ public sealed partial class DockWindow : WindowEx,
 
         if (_appBarMode == DockAppBarMode.AutoHide)
         {
-            CollapseAutoHideDock(immediate: true);
+            // Briefly show the dock at the new position so users can confirm
+            // the move, then schedule a collapse after the standard delay.
+            _isDockRevealed = true;
+            ApplyAutoHideRect(_revealedRect);
+            ScheduleCollapseAutoHideDock();
         }
     }
 
     private void DestroyAppBar(HWND hwnd)
     {
         StopCollapseTimer();
+        StopRevealPollTimer();
+        StopSlideAnimation();
 
         if (_appBarMode == DockAppBarMode.AutoHide && _autoHideRegistrationSucceeded)
         {
@@ -624,7 +647,7 @@ public sealed partial class DockWindow : WindowEx,
             return result != 0;
         }
 
-        var exResult = PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAR_EX, ref _appBarData);
+        var exResult = PInvoke.SHAppBarMessage(PInvoke.ABM_SETAUTOHIDEBAREX, ref _appBarData);
         return exResult != 0;
     }
 
@@ -685,7 +708,7 @@ public sealed partial class DockWindow : WindowEx,
     private RECT BuildCollapsedRect(RECT revealedRect, DockSide side, double scaleFactor)
     {
         var collapsedRect = revealedRect;
-        var thickness = Math.Max(1, (int)Math.Round(AutoHideCollapsedThicknessDips * scaleFactor));
+        var thickness = (int)Math.Round(AutoHideCollapsedThicknessDips * scaleFactor);
 
         switch (side)
         {
@@ -708,12 +731,23 @@ public sealed partial class DockWindow : WindowEx,
 
     private void ApplyAutoHideRect(RECT rect)
     {
+        var width = rect.right - rect.left;
+        var height = rect.bottom - rect.top;
+
+        if (width <= 0 || height <= 0)
+        {
+            // Window is fully collapsed — hide it
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            return;
+        }
+
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
         PInvoke.MoveWindow(
             _hwnd,
             rect.left,
             rect.top,
-            Math.Max(1, rect.right - rect.left),
-            Math.Max(1, rect.bottom - rect.top),
+            width,
+            height,
             true);
     }
 
@@ -725,14 +759,22 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         StopCollapseTimer();
+        StopRevealPollTimer();
         _isDockRevealed = true;
-        ApplyAutoHideRect(_revealedRect);
-        EnsureMouseLeaveTracking();
 
         if (immediate)
         {
+            StopSlideAnimation();
+            ApplyAutoHideRect(_revealedRect);
             UpdateTopmostState(bringToFront: true);
         }
+        else
+        {
+            StartSlideAnimation(_collapsedRect, _revealedRect, isRevealing: true);
+            UpdateTopmostState(bringToFront: true);
+        }
+
+        EnsureMouseLeaveTracking();
     }
 
     private void CollapseAutoHideDock(bool immediate = false)
@@ -749,7 +791,22 @@ public sealed partial class DockWindow : WindowEx,
 
         StopCollapseTimer();
         _isDockRevealed = false;
-        ApplyAutoHideRect(_collapsedRect);
+
+        if (immediate)
+        {
+            StopSlideAnimation();
+            ApplyAutoHideRect(_collapsedRect);
+        }
+        else
+        {
+            StartSlideAnimation(_revealedRect, _collapsedRect, isRevealing: false);
+        }
+
+        // Only start the reveal poll timer if no fullscreen app is blocking this monitor
+        if (!_isFullScreenAppOpen)
+        {
+            StartRevealPollTimer();
+        }
     }
 
     private bool CanCollapseAutoHideDock()
@@ -759,12 +816,28 @@ public sealed partial class DockWindow : WindowEx,
             return false;
         }
 
+        if (_paletteOpenedFromDock)
+        {
+            return false;
+        }
+
         if (!PInvoke.GetCursorPos(out var cursor))
         {
             return true;
         }
 
-        return !IsPointInRect(_revealedRect, cursor);
+        // Only block collapse if cursor is over our actual window (not just in the same screen area)
+        var cursorPoint = new POINT(cursor.X, cursor.Y);
+        if (IsPointInRect(_revealedRect, cursorPoint))
+        {
+            var windowUnderCursor = PInvoke.WindowFromPoint(new System.Drawing.Point(cursor.X, cursor.Y));
+            if (windowUnderCursor == _hwnd)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool IsPointInRect(RECT rect, POINT point)
@@ -803,6 +876,142 @@ public sealed partial class DockWindow : WindowEx,
         _collapseTimer?.Stop();
     }
 
+    private void StartRevealPollTimer()
+    {
+        _revealPollTimer ??= CreateRevealPollTimer();
+        _revealPollTimer.Start();
+    }
+
+    private void StopRevealPollTimer()
+    {
+        _revealPollTimer?.Stop();
+    }
+
+    private DispatcherQueueTimer CreateRevealPollTimer()
+    {
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = RevealPollInterval;
+        timer.IsRepeating = true;
+        timer.Tick += (_, _) => PollCursorForReveal();
+        return timer;
+    }
+
+    private void PollCursorForReveal()
+    {
+        if (_appBarMode != DockAppBarMode.AutoHide || _isDockRevealed)
+        {
+            StopRevealPollTimer();
+            return;
+        }
+
+        if (!PInvoke.GetCursorPos(out var cursor))
+        {
+            return;
+        }
+
+        if (IsCursorAtDockEdge(new POINT(cursor.X, cursor.Y)))
+        {
+            StopRevealPollTimer();
+            RevealAutoHideDock(immediate: false);
+        }
+    }
+
+    private bool IsCursorAtDockEdge(POINT cursor)
+    {
+        var monRect = GetMonitorBoundsRect();
+
+        // Constrain to the dock's actual span (horizontal or vertical extent of _revealedRect)
+        switch (EffectiveSide)
+        {
+            case DockSide.Top:
+                return cursor.Y <= monRect.top + RevealHitTestMarginPixels
+                    && cursor.X >= _revealedRect.left && cursor.X < _revealedRect.right;
+            case DockSide.Bottom:
+                return cursor.Y >= monRect.bottom - RevealHitTestMarginPixels
+                    && cursor.X >= _revealedRect.left && cursor.X < _revealedRect.right;
+            case DockSide.Left:
+                return cursor.X <= monRect.left + RevealHitTestMarginPixels
+                    && cursor.Y >= _revealedRect.top && cursor.Y < _revealedRect.bottom;
+            case DockSide.Right:
+                return cursor.X >= monRect.right - RevealHitTestMarginPixels
+                    && cursor.Y >= _revealedRect.top && cursor.Y < _revealedRect.bottom;
+            default:
+                return false;
+        }
+    }
+
+    private void StartSlideAnimation(RECT from, RECT to, bool isRevealing)
+    {
+        StopSlideAnimation();
+
+        _slideFromRect = from;
+        _slideToRect = to;
+        _slideProgress = 0.0;
+        _slideIsRevealing = isRevealing;
+
+        // Ensure window is visible at start of reveal animation
+        if (isRevealing)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+        }
+
+        _slideTimer ??= CreateSlideTimer();
+        _slideTimer.Start();
+    }
+
+    private void StopSlideAnimation()
+    {
+        _slideTimer?.Stop();
+    }
+
+    private DispatcherQueueTimer CreateSlideTimer()
+    {
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = SlideFrameInterval;
+        timer.IsRepeating = true;
+        timer.Tick += (_, _) => OnSlideTimerTick();
+        return timer;
+    }
+
+    private void OnSlideTimerTick()
+    {
+        var duration = _slideIsRevealing ? SlideRevealDuration : SlideCollapseDuration;
+        var step = SlideFrameInterval.TotalMilliseconds / duration.TotalMilliseconds;
+        _slideProgress = Math.Min(1.0, _slideProgress + step);
+
+        var easedProgress = _slideIsRevealing
+            ? EaseOutCubic(_slideProgress)
+            : EaseInCubic(_slideProgress);
+
+        var currentRect = LerpRect(_slideFromRect, _slideToRect, easedProgress);
+        ApplyAutoHideRect(currentRect);
+
+        if (_slideProgress >= 1.0)
+        {
+            StopSlideAnimation();
+
+            // Ensure final position is exact
+            ApplyAutoHideRect(_slideToRect);
+        }
+    }
+
+    private static double EaseOutCubic(double t) => 1.0 - Math.Pow(1.0 - t, 3);
+
+    private static double EaseInCubic(double t) => t * t * t;
+
+    private static RECT LerpRect(RECT a, RECT b, double t)
+    {
+        return new RECT
+        {
+            left = Lerp(a.left, b.left, t),
+            top = Lerp(a.top, b.top, t),
+            right = Lerp(a.right, b.right, t),
+            bottom = Lerp(a.bottom, b.bottom, t),
+        };
+    }
+
+    private static int Lerp(int a, int b, double t) => (int)Math.Round(a + ((b - a) * t));
+
     private void EnsureMouseLeaveTracking()
     {
         if (_trackingMouseLeave)
@@ -810,21 +1019,34 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        unsafe
+        var track = new NativeTrackMouseEvent
         {
-            var track = new TRACKMOUSEEVENT
-            {
-                cbSize = (uint)Marshal.SizeOf<TRACKMOUSEEVENT>(),
-                dwFlags = TRACKMOUSEEVENT_FLAGS.TME_LEAVE,
-                hwndTrack = _hwnd,
-            };
+            cbSize = (uint)Marshal.SizeOf<NativeTrackMouseEvent>(),
+            dwFlags = 0x00000002, // TME_LEAVE
+            hwndTrack = _hwnd,
+            dwHoverTime = 0,
+        };
 
-            if (PInvoke.TrackMouseEvent(track))
-            {
-                _trackingMouseLeave = true;
-            }
+        if (TrackMouseEventInterop(ref track))
+        {
+            _trackingMouseLeave = true;
         }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+#pragma warning disable SA1307 // Field names should begin with upper-case letter
+    private struct NativeTrackMouseEvent
+    {
+        public uint cbSize;
+        public uint dwFlags;
+        public HWND hwndTrack;
+        public uint dwHoverTime;
+    }
+#pragma warning restore SA1307 // Field names should begin with upper-case letter
+
+    [DllImport("user32.dll", EntryPoint = "TrackMouseEvent", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool TrackMouseEventInterop(ref NativeTrackMouseEvent lpEventTrack);
 
     private void HandleMouseMoveForAutoHide()
     {
@@ -833,9 +1055,11 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
+        // The poll timer handles reveal when the dock is collapsed/hidden.
+        // WM_MOUSEMOVE only arrives when the dock is visible (revealed),
+        // so we just reset the collapse timer to keep it open while active.
         if (!_isDockRevealed)
         {
-            RevealAutoHideDock();
             return;
         }
 
@@ -862,6 +1086,8 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
+        // When the dock loses activation, the palette (if opened from dock) is closing
+        _paletteOpenedFromDock = false;
         ScheduleCollapseAutoHideDock();
     }
 
@@ -1015,8 +1241,10 @@ public sealed partial class DockWindow : WindowEx,
             {
                 var pWindowPos = (WINDOWPOS*)lParam.Value;
 
-                // Check if the window is being hidden (minimized) or if flags suggest minimize/maximize
-                if ((pWindowPos->flags & SET_WINDOW_POS_FLAGS.SWP_HIDEWINDOW) != 0)
+                // Check if the window is being hidden (minimized) or if flags suggest minimize/maximize.
+                // Allow hiding when auto-hide is collapsing the dock intentionally.
+                if ((pWindowPos->flags & SET_WINDOW_POS_FLAGS.SWP_HIDEWINDOW) != 0
+                    && !(_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed))
                 {
                     // Prevent hiding the window (minimize)
                     pWindowPos->flags &= ~SET_WINDOW_POS_FLAGS.SWP_HIDEWINDOW;
@@ -1048,9 +1276,9 @@ public sealed partial class DockWindow : WindowEx,
         else if (msg == PInvoke.WM_SHOWWINDOW)
         {
             var isBeingShown = wParam.Value != 0;
-            if (!isBeingShown)
+            if (!isBeingShown && !(_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed))
             {
-                // Prevent hiding the window
+                // Prevent hiding the window (unless auto-hide is intentionally collapsing)
                 return new LRESULT(0);
             }
         }
@@ -1097,7 +1325,13 @@ public sealed partial class DockWindow : WindowEx,
                 _isFullScreenAppOpen = lParam != 0;
                 if (_isFullScreenAppOpen)
                 {
+                    StopRevealPollTimer();
                     CollapseAutoHideDock(immediate: true);
+                }
+                else if (_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed)
+                {
+                    // Fullscreen app exited — restart edge detection
+                    StartRevealPollTimer();
                 }
 
                 UpdateTopmostState();
@@ -1156,9 +1390,9 @@ public sealed partial class DockWindow : WindowEx,
 
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
         {
+            _paletteOpenedFromDock = true;
             RevealAutoHideDock(immediate: true);
             RequestShowPaletteOnUiThread(message.PosDips);
-            ScheduleCollapseAutoHideDock();
         });
     }
 
