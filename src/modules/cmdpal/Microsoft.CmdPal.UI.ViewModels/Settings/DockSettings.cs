@@ -15,17 +15,6 @@ namespace Microsoft.CmdPal.UI.ViewModels.Settings;
 /// Settings for the Dock. These are settings for _the whole dock_. Band-specific
 /// settings are in <see cref="DockBandSettings"/>. Per-monitor overrides are
 /// stored in <see cref="MonitorConfigs"/>.
-///
-/// <para><strong>Phase 1 UX Contract:</strong></para>
-/// <list type="bullet">
-///   <item><description><strong>Pinned mode</strong>: The dock is always-visible and reserves work area.
-///     Maximized windows will not overlap the dock.</description></item>
-///   <item><description><strong>Auto-hide mode (future)</strong>: When implemented, the dock will NOT
-///     reserve work area — maximized windows will extend beneath the hidden dock.</description></item>
-///   <item><description><strong>v1 scope</strong>: Global-only dock positioning. Per-monitor side overrides
-///     exist via <see cref="MonitorConfigs"/>, but per-monitor enable/disable and
-///     customized bands are future work.</description></item>
-/// </list>
 /// </summary>
 public record DockSettings
 {

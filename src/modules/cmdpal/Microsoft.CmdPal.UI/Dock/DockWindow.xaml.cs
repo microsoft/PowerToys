@@ -486,6 +486,13 @@ public sealed partial class DockWindow : WindowEx,
         StopRevealPollTimer();
         StopSlideAnimation();
 
+        // If the window was hidden via SW_HIDE (auto-hide collapsed state),
+        // make it visible again before transitioning to a new mode.
+        if (_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+        }
+
         if (_appBarMode == DockAppBarMode.AutoHide && _autoHideRegistrationSucceeded)
         {
             _ = TrySetAutoHideRegistration(register: false);
