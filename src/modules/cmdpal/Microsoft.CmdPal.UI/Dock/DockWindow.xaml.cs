@@ -91,8 +91,8 @@ public sealed partial class DockWindow : WindowEx,
     private DispatcherQueueTimer? _slideTimer;
     private RECT _slideFromRect;
     private RECT _slideToRect;
-    private double _slideProgress;
     private bool _slideIsRevealing;
+    private System.Diagnostics.Stopwatch? _slideStopwatch;
     private bool _paletteOpenedFromDock;
     private const int AutoHideCollapsedThicknessDips = 0;
     private const int RevealHitTestMarginPixels = 1;
@@ -100,7 +100,7 @@ public sealed partial class DockWindow : WindowEx,
     private static readonly TimeSpan RevealPollInterval = TimeSpan.FromMilliseconds(50);
     private static readonly TimeSpan SlideRevealDuration = TimeSpan.FromMilliseconds(200);
     private static readonly TimeSpan SlideCollapseDuration = TimeSpan.FromMilliseconds(150);
-    private static readonly TimeSpan SlideFrameInterval = TimeSpan.FromMilliseconds(16);
+    private static readonly TimeSpan SlideFrameInterval = TimeSpan.FromMilliseconds(8);
 
     /// <summary>
     /// The monitor this dock window is displayed on. Null means primary monitor (legacy behavior).
@@ -269,7 +269,6 @@ public sealed partial class DockWindow : WindowEx,
             {
                 if (_appBarMode == DockAppBarMode.AutoHide)
                 {
-                    UpdateAutoHideShellState();
                     UpdateWindowPosition();
                 }
 
@@ -439,7 +438,6 @@ public sealed partial class DockWindow : WindowEx,
         {
             _appBarMode = DockAppBarMode.AutoHide;
             _autoHideRegistrationSucceeded = true;
-            UpdateAutoHideShellState();
             WeakReferenceMessenger.Default.Send(new ViewModels.Messages.DockAutoHideConflictMessage(false));
         }
         else
@@ -675,18 +673,6 @@ public sealed partial class DockWindow : WindowEx,
         return exResult != 0;
     }
 
-    private void UpdateAutoHideShellState()
-    {
-        var state = (nint)PInvoke.ABS_AUTOHIDE;
-        if (_settings.AlwaysOnTop)
-        {
-            state |= (nint)PInvoke.ABS_ALWAYSONTOP;
-        }
-
-        _appBarData.lParam = new LPARAM(state);
-        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_SETSTATE, ref _appBarData);
-    }
-
     private string MonitorForLogs()
     {
         return _targetMonitor?.StableId ?? "primary";
@@ -773,6 +759,26 @@ public sealed partial class DockWindow : WindowEx,
             width,
             height,
             true);
+    }
+
+    /// <summary>
+    /// Positions the window without forcing a synchronous repaint.
+    /// Used during animation frames for smoother sliding.
+    /// </summary>
+    private void ApplyAutoHideRectNoRepaint(RECT rect)
+    {
+        var width = rect.right - rect.left;
+        var height = rect.bottom - rect.top;
+
+        if (width <= 0 || height <= 0)
+        {
+            PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
+            return;
+        }
+
+        PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
+        const SET_WINDOW_POS_FLAGS flags = SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOCOPYBITS;
+        PInvoke.SetWindowPos(_hwnd, HWND.Null, rect.left, rect.top, width, height, flags);
     }
 
     private void RevealAutoHideDock(bool immediate = false)
@@ -976,7 +982,6 @@ public sealed partial class DockWindow : WindowEx,
 
         _slideFromRect = from;
         _slideToRect = to;
-        _slideProgress = 0.0;
         _slideIsRevealing = isRevealing;
 
         // Ensure window is visible at start of reveal animation
@@ -985,6 +990,7 @@ public sealed partial class DockWindow : WindowEx,
             PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_SHOWNOACTIVATE);
         }
 
+        _slideStopwatch = System.Diagnostics.Stopwatch.StartNew();
         _slideTimer ??= CreateSlideTimer();
         _slideTimer.Start();
     }
@@ -992,6 +998,7 @@ public sealed partial class DockWindow : WindowEx,
     private void StopSlideAnimation()
     {
         _slideTimer?.Stop();
+        _slideStopwatch?.Stop();
     }
 
     private DispatcherQueueTimer CreateSlideTimer()
@@ -1005,23 +1012,33 @@ public sealed partial class DockWindow : WindowEx,
 
     private void OnSlideTimerTick()
     {
+        if (_slideStopwatch is null)
+        {
+            StopSlideAnimation();
+            return;
+        }
+
         var duration = _slideIsRevealing ? SlideRevealDuration : SlideCollapseDuration;
-        var step = SlideFrameInterval.TotalMilliseconds / duration.TotalMilliseconds;
-        _slideProgress = Math.Min(1.0, _slideProgress + step);
+        var elapsed = _slideStopwatch.Elapsed.TotalMilliseconds;
+        var progress = Math.Min(1.0, elapsed / duration.TotalMilliseconds);
 
         var easedProgress = _slideIsRevealing
-            ? EaseOutCubic(_slideProgress)
-            : EaseInCubic(_slideProgress);
+            ? EaseOutCubic(progress)
+            : EaseInCubic(progress);
 
         var currentRect = LerpRect(_slideFromRect, _slideToRect, easedProgress);
-        ApplyAutoHideRect(currentRect);
 
-        if (_slideProgress >= 1.0)
+        if (progress >= 1.0)
         {
             StopSlideAnimation();
 
-            // Ensure final position is exact
+            // Final frame: apply exact position with full repaint
             ApplyAutoHideRect(_slideToRect);
+        }
+        else
+        {
+            // Intermediate frames: move without synchronous repaint for smoothness
+            ApplyAutoHideRectNoRepaint(currentRect);
         }
     }
 
