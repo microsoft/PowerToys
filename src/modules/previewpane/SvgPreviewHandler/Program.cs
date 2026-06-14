@@ -23,6 +23,14 @@ namespace Microsoft.PowerToys.PreviewHandler.Svg
         [STAThread]
         public static void Main(string[] args)
         {
+            try
+            {
+                System.IO.Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+            }
+            catch
+            {
+            }
+
             ApplicationConfiguration.Initialize();
             if (args != null)
             {
