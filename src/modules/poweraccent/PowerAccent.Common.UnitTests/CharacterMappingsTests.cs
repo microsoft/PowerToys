@@ -314,12 +314,12 @@ public sealed class CharacterMappingsTests
         var result = CharacterMappings.GetCharacters(LetterKey.VK_E, langs);
 
         var euroIdx = Array.IndexOf(result, "€");
-        var eAccuteIdx = Array.IndexOf(result, "é");
+        var eAcuteIdx = Array.IndexOf(result, "é");
 
-        Assert.IsTrue(eAccuteIdx >= 0, "Expected é to be present in results.");
+        Assert.IsTrue(eAcuteIdx >= 0, "Expected é to be present in results.");
         Assert.IsTrue(euroIdx >= 0, "Expected € to be present in results.");
         Assert.IsTrue(
-            eAccuteIdx < euroIdx,
-            $"Expected é (index {eAccuteIdx}) to appear before € (index {euroIdx}).");
+            eAcuteIdx < euroIdx,
+            $"Expected é (index {eAcuteIdx}) to appear before € (index {euroIdx}).");
     }
 }
