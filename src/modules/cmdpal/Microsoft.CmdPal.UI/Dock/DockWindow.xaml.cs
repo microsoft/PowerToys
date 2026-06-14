@@ -107,7 +107,7 @@ public sealed partial class DockWindow : WindowEx,
     private bool _paletteOpenedFromDock;
     private const int AutoHideCollapsedThicknessDips = 0;
     private const int RevealHitTestMarginPixels = 1;
-    private static readonly TimeSpan AutoHideCollapseDelay = TimeSpan.FromMilliseconds(400);
+    private static readonly TimeSpan AutoHideCollapseDelay = TimeSpan.FromMilliseconds(250);
     private static readonly TimeSpan RevealPollInterval = TimeSpan.FromMilliseconds(50);
     private static readonly TimeSpan SlideRevealDuration = TimeSpan.FromMilliseconds(200);
     private static readonly TimeSpan SlideCollapseDuration = TimeSpan.FromMilliseconds(150);
@@ -445,7 +445,9 @@ public sealed partial class DockWindow : WindowEx,
         _appBarMode = DockAppBarMode.None;
         _autoHideRegistrationSucceeded = false;
 
-        if (GetDesiredAppBarMode() == DockAppBarMode.AutoHide && TryRegisterAutoHideAppBar())
+        if (GetDesiredAppBarMode() == DockAppBarMode.AutoHide
+            && !IsTaskbarAutoHideOnSameEdge(EffectiveSide)
+            && TryRegisterAutoHideAppBar())
         {
             _appBarMode = DockAppBarMode.AutoHide;
             _autoHideRegistrationSucceeded = true;
@@ -457,7 +459,10 @@ public sealed partial class DockWindow : WindowEx,
             _appBarMode = DockAppBarMode.Pinned;
             if (_settings.AutoHide)
             {
-                Logger.LogWarning($"Dock auto-hide registration rejected on edge {EffectiveSide} for monitor {MonitorForLogs()}. Falling back to pinned mode.");
+                var reason = IsTaskbarAutoHideOnSameEdge(EffectiveSide)
+                    ? "taskbar auto-hide conflict"
+                    : "registration rejected";
+                Logger.LogWarning($"Dock auto-hide unavailable ({reason}) on edge {EffectiveSide} for monitor {MonitorForLogs()}. Falling back to pinned mode.");
                 WeakReferenceMessenger.Default.Send(new ViewModels.Messages.DockAutoHideConflictMessage(true));
             }
         }
@@ -630,6 +635,30 @@ public sealed partial class DockWindow : WindowEx,
         return _settings.AutoHide ? DockAppBarMode.AutoHide : DockAppBarMode.Pinned;
     }
 
+    /// <summary>
+    /// Checks whether the Windows taskbar is set to auto-hide on the same
+    /// edge as the dock. When true, the dock should not use auto-hide mode
+    /// to avoid competing for the same screen-edge reveal zone.
+    /// </summary>
+    private bool IsTaskbarAutoHideOnSameEdge(DockSide side)
+    {
+        var stateAbd = new APPBARDATA { cbSize = (uint)Marshal.SizeOf<APPBARDATA>() };
+        var state = PInvoke.SHAppBarMessage(PInvoke.ABM_GETSTATE, ref stateAbd);
+        if ((state & PInvoke.ABS_AUTOHIDE) == 0)
+        {
+            return false;
+        }
+
+        // Taskbar is auto-hiding — check which edge
+        var posAbd = new APPBARDATA { cbSize = (uint)Marshal.SizeOf<APPBARDATA>() };
+        _ = PInvoke.SHAppBarMessage(PInvoke.ABM_GETTASKBARPOS, ref posAbd);
+
+        var taskbarEdge = posAbd.uEdge;
+        var dockEdge = DockSettingsToViews.GetAppBarEdge(side);
+
+        return taskbarEdge == dockEdge;
+    }
+
     private bool TryRegisterAutoHideAppBar()
     {
         return TrySetAutoHideRegistration(register: true);
@@ -786,6 +815,9 @@ public sealed partial class DockWindow : WindowEx,
 
         if (!immediate && !CanCollapseAutoHideDock())
         {
+            // Cursor is still over the dock or a blocking condition exists.
+            // Reschedule so we retry when conditions change.
+            ScheduleCollapseAutoHideDock();
             return;
         }
 
@@ -1220,8 +1252,36 @@ public sealed partial class DockWindow : WindowEx,
             {
                 Logger.LogDebug($"WM_SETTINGCHANGE(SPI_SETWORKAREA)");
 
-                // Use debounced call to throttle rapid successive calls
-                DispatcherQueue.TryEnqueue(() => UpdateWindowPosition());
+                // Work area changed — taskbar may have toggled auto-hide or moved.
+                // Re-evaluate whether our auto-hide mode is still valid.
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_isDisposed)
+                    {
+                        return;
+                    }
+
+                    var desiredMode = GetDesiredAppBarMode();
+                    var taskbarConflict = desiredMode == DockAppBarMode.AutoHide
+                        && IsTaskbarAutoHideOnSameEdge(EffectiveSide);
+
+                    if (taskbarConflict && _appBarMode == DockAppBarMode.AutoHide)
+                    {
+                        // Taskbar started auto-hiding on our edge — switch to pinned
+                        DestroyAppBar(_hwnd);
+                        CreateAppBar(_hwnd);
+                    }
+                    else if (!taskbarConflict && _appBarMode == DockAppBarMode.Pinned && desiredMode == DockAppBarMode.AutoHide)
+                    {
+                        // Taskbar stopped auto-hiding on our edge — try auto-hide again
+                        DestroyAppBar(_hwnd);
+                        CreateAppBar(_hwnd);
+                    }
+                    else
+                    {
+                        UpdateWindowPosition();
+                    }
+                });
             }
         }
         else if (msg == PInvoke.WM_DISPLAYCHANGE)

@@ -486,7 +486,7 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Auto-hide unavailable</value>
   </data>
   <data name="DockBehavior_AutoHideConflict_InfoBar.Message" xml:space="preserve">
-    <value>Another application already has an auto-hide bar registered on this edge. The dock is using pinned mode instead.</value>
+    <value>The taskbar or another application is using auto-hide on this edge. The dock is using pinned mode instead.</value>
   </data>
   <data name="BackButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Back</value>
