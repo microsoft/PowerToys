@@ -831,7 +831,11 @@ public sealed partial class DockWindow : WindowEx,
         if (IsPointInRect(_revealedRect, cursorPoint))
         {
             var windowUnderCursor = PInvoke.WindowFromPoint(new System.Drawing.Point(cursor.X, cursor.Y));
-            if (windowUnderCursor == _hwnd)
+
+            // WindowFromPoint may return a child control (button, panel, etc.)
+            // inside the dock. Walk up to the top-level window to compare.
+            var rootWindow = PInvoke.GetAncestor(windowUnderCursor, GET_ANCESTOR_FLAGS.GA_ROOT);
+            if (rootWindow == _hwnd)
             {
                 return false;
             }
@@ -918,22 +922,21 @@ public sealed partial class DockWindow : WindowEx,
 
     private bool IsCursorAtDockEdge(POINT cursor)
     {
-        var monRect = GetMonitorBoundsRect();
-
-        // Constrain to the dock's actual span (horizontal or vertical extent of _revealedRect)
+        // Use the revealed rect's edge position for detection — this already
+        // accounts for work area offsets (e.g., dock positioned above taskbar).
         switch (EffectiveSide)
         {
             case DockSide.Top:
-                return cursor.Y <= monRect.top + RevealHitTestMarginPixels
+                return cursor.Y <= _revealedRect.top + RevealHitTestMarginPixels
                     && cursor.X >= _revealedRect.left && cursor.X < _revealedRect.right;
             case DockSide.Bottom:
-                return cursor.Y >= monRect.bottom - RevealHitTestMarginPixels
+                return cursor.Y >= _revealedRect.bottom - RevealHitTestMarginPixels
                     && cursor.X >= _revealedRect.left && cursor.X < _revealedRect.right;
             case DockSide.Left:
-                return cursor.X <= monRect.left + RevealHitTestMarginPixels
+                return cursor.X <= _revealedRect.left + RevealHitTestMarginPixels
                     && cursor.Y >= _revealedRect.top && cursor.Y < _revealedRect.bottom;
             case DockSide.Right:
-                return cursor.X >= monRect.right - RevealHitTestMarginPixels
+                return cursor.X >= _revealedRect.right - RevealHitTestMarginPixels
                     && cursor.Y >= _revealedRect.top && cursor.Y < _revealedRect.bottom;
             default:
                 return false;
@@ -1097,7 +1100,9 @@ public sealed partial class DockWindow : WindowEx,
         var horizontalHeightDips = DockSettingsToViews.HeightForSize(size);
         var verticalWidthDips = DockSettingsToViews.WidthForSize(size);
 
-        // Use monitor-specific bounds when available; fall back to primary screen metrics
+        // Use monitor-specific bounds when available; fall back to primary screen metrics.
+        // In auto-hide mode, use work area on the dock's edge so the dock
+        // positions inward of the taskbar (if the taskbar is on the same edge).
         int monLeft, monTop, monRight, monBottom;
         if (_targetMonitor is not null)
         {
@@ -1105,6 +1110,27 @@ public sealed partial class DockWindow : WindowEx,
             monTop = _targetMonitor.Bounds.Top;
             monRight = _targetMonitor.Bounds.Right;
             monBottom = _targetMonitor.Bounds.Bottom;
+
+            if (_appBarMode == DockAppBarMode.AutoHide || GetDesiredAppBarMode() == DockAppBarMode.AutoHide)
+            {
+                // Use work area edge only on the side where the dock is positioned.
+                // This keeps the dock inward of the taskbar on the shared edge.
+                switch (side)
+                {
+                    case DockSide.Top:
+                        monTop = _targetMonitor.WorkArea.Top;
+                        break;
+                    case DockSide.Bottom:
+                        monBottom = _targetMonitor.WorkArea.Bottom;
+                        break;
+                    case DockSide.Left:
+                        monLeft = _targetMonitor.WorkArea.Left;
+                        break;
+                    case DockSide.Right:
+                        monRight = _targetMonitor.WorkArea.Right;
+                        break;
+                }
+            }
         }
         else
         {
@@ -1112,6 +1138,33 @@ public sealed partial class DockWindow : WindowEx,
             monTop = 0;
             monRight = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
             monBottom = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
+
+            if (_appBarMode == DockAppBarMode.AutoHide || GetDesiredAppBarMode() == DockAppBarMode.AutoHide)
+            {
+                // For primary monitor without MonitorInfo, use the system work area
+                unsafe
+                {
+                    RECT workArea = default;
+                    if (PInvoke.SystemParametersInfo(SYSTEM_PARAMETERS_INFO_ACTION.SPI_GETWORKAREA, 0, &workArea, 0))
+                    {
+                        switch (side)
+                        {
+                            case DockSide.Top:
+                                monTop = workArea.top;
+                                break;
+                            case DockSide.Bottom:
+                                monBottom = workArea.bottom;
+                                break;
+                            case DockSide.Left:
+                                monLeft = workArea.left;
+                                break;
+                            case DockSide.Right:
+                                monRight = workArea.right;
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
         if (side == DockSide.Top)

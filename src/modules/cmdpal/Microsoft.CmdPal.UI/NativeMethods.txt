@@ -6,6 +6,8 @@ SetForegroundWindow
 GetWindowRect
 GetCursorPos
 WindowFromPoint
+GetAncestor
+GET_ANCESTOR_FLAGS
 SetWindowPos
 HWND_TOPMOST
 HWND_BOTTOM
@@ -90,6 +92,7 @@ SYSTEM_METRICS_INDEX
 GetDpiForWindow
 SHQueryUserNotificationState
 SYSTEM_PARAMETERS_INFO_ACTION
+SystemParametersInfo
 WINDOWPOS
 WM_MOUSEMOVE
 WM_MOUSELEAVE
