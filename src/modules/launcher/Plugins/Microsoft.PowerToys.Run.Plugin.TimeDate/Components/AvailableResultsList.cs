@@ -65,6 +65,30 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
 
             if (isKeywordSearch || !TimeDateSettings.Instance.OnlyDateTimeNowGlobal)
             {
+                // Friendly (relative) date/time results.
+                // The "now" reference is always the system clock so that supplying a timestamp via the input
+                // parser (for example `friendly date::u1700000000`) describes that instant relative to today.
+                // Helpers return null when the delta is outside the supported window; those entries get
+                // filtered out by the final `Where(x => !string.IsNullOrEmpty(x.Value))` pass.
+                DateTime friendlyReferenceNow = DateTime.Now;
+                results.AddRange(new[]
+                {
+                    new AvailableResult()
+                    {
+                        Value = TimeAndDateHelper.GetFriendlyDate(dateTimeNow, friendlyReferenceNow, CultureInfo.CurrentCulture) ?? string.Empty,
+                        Label = Resources.Microsoft_plugin_timedate_FriendlyDate,
+                        AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagFriendly,
+                        IconType = ResultIconType.Date,
+                    },
+                    new AvailableResult()
+                    {
+                        Value = TimeAndDateHelper.GetFriendlyDateTime(dateTimeNow, friendlyReferenceNow, CultureInfo.CurrentCulture) ?? string.Empty,
+                        Label = Resources.Microsoft_plugin_timedate_FriendlyDateTime,
+                        AlternativeSearchTag = Resources.Microsoft_plugin_timedate_SearchTagFriendly,
+                        IconType = ResultIconType.DateTime,
+                    },
+                });
+
                 // We use long instead of int for unix time stamp because int is too small after 03:14:07 UTC 2038-01-19
                 long unixTimestamp = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeSeconds();
                 long unixTimestampMilliseconds = ((DateTimeOffset)dateTimeNowUtc).ToUnixTimeMilliseconds();

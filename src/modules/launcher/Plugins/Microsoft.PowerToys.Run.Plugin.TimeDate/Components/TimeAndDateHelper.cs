@@ -373,6 +373,90 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         }
 
         /// <summary>
+        /// Returns a human-readable relative date label (e.g. "Today", "Yesterday", "in 3 days").
+        /// </summary>
+        /// <param name="target">The date to describe.</param>
+        /// <param name="now">Reference "now" value used to compute the relative offset. Tests pass a fixed value; callers in production pass <see cref="DateTime.Now"/>.</param>
+        /// <param name="culture">Culture used for formatting the integer day count.</param>
+        /// <returns>Localized label, or <c>null</c> if the delta exceeds the supported range (more than 7 calendar days in either direction).</returns>
+        internal static string GetFriendlyDate(DateTime target, DateTime now, CultureInfo culture)
+        {
+            // Compare calendar days, not 24-hour deltas: 1am vs yesterday 11pm must read "Yesterday", not "Today".
+            int dayDelta = (target.Date - now.Date).Days;
+
+            switch (dayDelta)
+            {
+                case 0:
+                    return Resources.Microsoft_plugin_timedate_FriendlyToday;
+                case -1:
+                    return Resources.Microsoft_plugin_timedate_FriendlyYesterday;
+                case 1:
+                    return Resources.Microsoft_plugin_timedate_FriendlyTomorrow;
+            }
+
+            if (dayDelta >= -7 && dayDelta <= -2)
+            {
+                CompositeFormat fmt = CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_FriendlyDaysAgo);
+                return string.Format(culture, fmt, -dayDelta);
+            }
+
+            if (dayDelta >= 2 && dayDelta <= 7)
+            {
+                CompositeFormat fmt = CompositeFormat.Parse(Resources.Microsoft_plugin_timedate_FriendlyInDays);
+                return string.Format(culture, fmt, dayDelta);
+            }
+
+            // Outside the supported window: omit the result rather than producing "in 14000 days".
+            return null;
+        }
+
+        /// <summary>
+        /// Returns a human-readable relative date/time label (e.g. "just now", "5 minutes ago", "in 2 hours").
+        /// </summary>
+        /// <param name="target">The instant to describe.</param>
+        /// <param name="now">Reference "now" value used to compute the relative offset.</param>
+        /// <param name="culture">Culture used for formatting the integer counts.</param>
+        /// <returns>Localized label, or <c>null</c> if the delta is 24 hours or larger (defer to <see cref="GetFriendlyDate"/> in that case).</returns>
+        internal static string GetFriendlyDateTime(DateTime target, DateTime now, CultureInfo culture)
+        {
+            TimeSpan delta = target - now;
+            double absSeconds = Math.Abs(delta.TotalSeconds);
+
+            if (absSeconds < 30)
+            {
+                return Resources.Microsoft_plugin_timedate_FriendlyJustNow;
+            }
+
+            double absMinutes = Math.Abs(delta.TotalMinutes);
+            if (absMinutes < 60)
+            {
+                int minutes = (int)Math.Round(absMinutes);
+                if (minutes == 0)
+                {
+                    // Rounding 30s..59s down would land us back at "just now"; clamp instead.
+                    minutes = 1;
+                }
+
+                string key = delta.TotalSeconds < 0
+                    ? Resources.Microsoft_plugin_timedate_FriendlyMinutesAgo
+                    : Resources.Microsoft_plugin_timedate_FriendlyInMinutes;
+                return string.Format(culture, CompositeFormat.Parse(key), minutes);
+            }
+
+            double absHours = Math.Abs(delta.TotalHours);
+            if (absHours < 24)
+            {
+                int hours = Math.Max(1, (int)Math.Round(absHours));
+                string key = delta.TotalSeconds < 0
+                    ? Resources.Microsoft_plugin_timedate_FriendlyHoursAgo
+                    : Resources.Microsoft_plugin_timedate_FriendlyInHours;
+                return string.Format(culture, CompositeFormat.Parse(key), hours);
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Returns a CalendarWeekRule enum value based on the plugin setting.
         /// </summary>
         internal static CalendarWeekRule GetCalendarWeekRule(int pluginSetting)

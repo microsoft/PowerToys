@@ -166,6 +166,117 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(result, week);
         }
 
+        // Fixed reference "now" used by all friendly-format tests. Picking a midday weekday avoids
+        // accidentally crossing a midnight boundary when adjusting by hours, and avoids landing on a
+        // month/year boundary that would mask off-by-one mistakes elsewhere.
+        private static readonly DateTime FriendlyReferenceNow = new DateTime(2026, 06, 15, 12, 00, 00);
+
+        [DataTestMethod]
+        [DataRow(0, "Today")]
+        [DataRow(-1, "Yesterday")]
+        [DataRow(1, "Tomorrow")]
+        [DataRow(-2, "2 days ago")]
+        [DataRow(-7, "7 days ago")]
+        [DataRow(2, "in 2 days")]
+        [DataRow(7, "in 7 days")]
+        public void GetFriendlyDate_WithinSupportedWindow_ReturnsLocalizedLabel(int dayDelta, string expected)
+        {
+            // Arrange
+            DateTime target = FriendlyReferenceNow.AddDays(dayDelta);
+
+            // Act
+            string result = TimeAndDateHelper.GetFriendlyDate(target, FriendlyReferenceNow, CultureInfo.CurrentCulture);
+
+            // Assert
+            Assert.AreEqual(expected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow(-8)]
+        [DataRow(-30)]
+        [DataRow(8)]
+        [DataRow(365)]
+        public void GetFriendlyDate_OutsideSupportedWindow_ReturnsNull(int dayDelta)
+        {
+            // Arrange
+            DateTime target = FriendlyReferenceNow.AddDays(dayDelta);
+
+            // Act
+            string result = TimeAndDateHelper.GetFriendlyDate(target, FriendlyReferenceNow, CultureInfo.CurrentCulture);
+
+            // Assert
+            Assert.IsNull(result);
+        }
+
+        [TestMethod]
+        public void GetFriendlyDate_TargetBeforeMidnight_ComparesByCalendarDay()
+        {
+            // Reference "now" at 00:30 today; target at 23:00 yesterday. 22.5h delta but one calendar day apart.
+            DateTime now = new DateTime(2026, 06, 15, 00, 30, 00);
+            DateTime target = new DateTime(2026, 06, 14, 23, 00, 00);
+
+            string result = TimeAndDateHelper.GetFriendlyDate(target, now, CultureInfo.CurrentCulture);
+
+            Assert.AreEqual("Yesterday", result);
+        }
+
+        [DataTestMethod]
+        [DataRow(0, "just now")]
+        [DataRow(-15, "just now")] // within 30s threshold
+        [DataRow(29, "just now")]
+        public void GetFriendlyDateTime_WithinJustNowThreshold_ReturnsJustNow(int secondsDelta, string expected)
+        {
+            DateTime target = FriendlyReferenceNow.AddSeconds(secondsDelta);
+
+            string result = TimeAndDateHelper.GetFriendlyDateTime(target, FriendlyReferenceNow, CultureInfo.CurrentCulture);
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow(-30, "1 minutes ago")] // boundary: 30s rounds up to 1 minute past
+        [DataRow(-300, "5 minutes ago")]
+        [DataRow(-3540, "59 minutes ago")]
+        [DataRow(300, "in 5 minutes")]
+        [DataRow(60, "in 1 minutes")]
+        public void GetFriendlyDateTime_WithinHour_ReturnsMinutesLabel(int secondsDelta, string expected)
+        {
+            DateTime target = FriendlyReferenceNow.AddSeconds(secondsDelta);
+
+            string result = TimeAndDateHelper.GetFriendlyDateTime(target, FriendlyReferenceNow, CultureInfo.CurrentCulture);
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow(-1, "1 hours ago")]
+        [DataRow(-3, "3 hours ago")]
+        [DataRow(-23, "23 hours ago")]
+        [DataRow(2, "in 2 hours")]
+        [DataRow(23, "in 23 hours")]
+        public void GetFriendlyDateTime_WithinDay_ReturnsHoursLabel(int hoursDelta, string expected)
+        {
+            DateTime target = FriendlyReferenceNow.AddHours(hoursDelta);
+
+            string result = TimeAndDateHelper.GetFriendlyDateTime(target, FriendlyReferenceNow, CultureInfo.CurrentCulture);
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow(-24)]
+        [DataRow(-48)]
+        [DataRow(24)]
+        [DataRow(720)]
+        public void GetFriendlyDateTime_AtOrBeyondDay_ReturnsNull(int hoursDelta)
+        {
+            DateTime target = FriendlyReferenceNow.AddHours(hoursDelta);
+
+            string result = TimeAndDateHelper.GetFriendlyDateTime(target, FriendlyReferenceNow, CultureInfo.CurrentCulture);
+
+            Assert.IsNull(result);
+        }
+
         [TestCleanup]
         public void CleanUp()
         {
