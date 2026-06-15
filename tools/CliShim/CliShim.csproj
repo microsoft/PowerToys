@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Shared settings (analyzers, RepoRoot, Platforms, versioning) come from the root Directory.Build.props. -->
+  <!-- Common.SelfContained.props maps $(Platform) -> RuntimeIdentifier (win-x64 / win-arm64), which Native AOT requires. -->
+  <Import Project="..\..\src\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Plain net10.0: this shim only uses BCL types (Process/Environment/Console), so it needs no Windows/WinRT projection. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PowerToys.CliShim</RootNamespace>
+    <AssemblyName>PowerToys.CliShim</AssemblyName>
+    <Platforms>x64;ARM64</Platforms>
+    <Nullable>enable</Nullable>
+
+    <!-- Native AOT: a tiny, dependency-free single exe (no .NET runtime shipped alongside). -->
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <StackTraceSupport>false</StackTraceSupport>
+    <OptimizationPreference>Size</OptimizationPreference>
+
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+</Project>

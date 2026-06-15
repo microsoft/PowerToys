@@ -64,6 +64,10 @@
             "FancyZonesCLI.exe",
             "FancyZonesCLI.dll",
 
+            "cli\\fancyzones.exe",
+            "cli\\imageresizer.exe",
+            "cli\\filelocksmith.exe",
+
             "PowerToys.GcodePreviewHandler.dll",
             "PowerToys.GcodePreviewHandler.exe",
             "PowerToys.GcodePreviewHandlerCpp.dll",

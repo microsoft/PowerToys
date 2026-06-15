@@ -454,6 +454,25 @@ jobs:
         msbuildArchitecture: x64
         maximumCpuCount: true
 
+  # CLI shims: publish ONE Native AOT binary, then copy it to one exe per command name.
+  # Staged into <BuildPlatform>\<BuildConfiguration>\cli so the files exist BEFORE the
+  # signing step (which signs them via ESRPSigning_core.json) and the installer harvest.
+  - pwsh: |-
+      $cliPlatform = '$(BuildPlatform)'
+      if ($cliPlatform -eq 'arm64') { $cliPlatform = 'ARM64' }   # project config is x64;ARM64
+      $cliShimRid = "win-$($cliPlatform.ToLower())"
+      $cliShimProj = "$(Build.SourcesDirectory)\tools\CliShim\CliShim.csproj"
+      $cliStagingDir = "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)\cli"
+      Write-Host "[CLI-SHIM] Publishing Native AOT shim ($cliShimRid)..."
+      dotnet publish $cliShimProj -c $(BuildConfiguration) -r $cliShimRid -p:Platform=$cliPlatform -o $cliStagingDir --nologo
+      if ($LASTEXITCODE -ne 0) { Write-Error "CLI shim publish failed with exit code $LASTEXITCODE"; exit 1 }
+      $cliShimExe = Join-Path $cliStagingDir 'PowerToys.CliShim.exe'
+      foreach ($cliName in @('fancyzones', 'imageresizer', 'filelocksmith')) {
+          Copy-Item $cliShimExe (Join-Path $cliStagingDir "$cliName.exe") -Force
+      }
+      Write-Host "[CLI-SHIM] Staged fancyzones/imageresizer/filelocksmith into $cliStagingDir"
+    displayName: Publish CLI shims (Native AOT)
+
   ### HACK: On ARM64 builds, building an app with Windows App SDK copies the x64 WebView2 dll instead of the ARM64 one. This task makes sure the right dll is used.
   - task: CopyFiles@2
     displayName: HACK Copy core WebView2 ARM64 dll to output directory
