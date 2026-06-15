@@ -441,14 +441,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
     {
         foreach (var extensionWrapper in wrappers)
         {
-            var extensionUniqueId = extensionWrapper.ExtensionUniqueId;
-            var isExtensionDisabled = false;
-
             _installedExtensions.Add(extensionWrapper);
-            if (!isExtensionDisabled)
-            {
-                _enabledExtensions.Add(extensionWrapper);
-            }
         }
     }
 
