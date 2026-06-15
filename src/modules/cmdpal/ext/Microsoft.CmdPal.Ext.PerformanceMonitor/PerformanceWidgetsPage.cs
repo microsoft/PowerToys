@@ -33,6 +33,7 @@ internal enum PerformanceMetricKind
     Network,
     Gpu,
     Battery,
+    Temperature,
 }
 
 /// <summary>
@@ -61,6 +62,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         PerformanceMetricKind.Network => Icons.NetworkIcon,
         PerformanceMetricKind.Gpu => Icons.GpuIcon,
         PerformanceMetricKind.Battery => _batteryPage?.CurrentIcon ?? Icons.BatteryIcon,
+        PerformanceMetricKind.Temperature => Icons.TemperatureIcon,
         _ => Icons.PerformanceMonitorIcon,
     };
 
@@ -82,6 +84,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private readonly SystemBatteryUsageWidgetPage? _batteryPage;
     private readonly ListItem? _batteryItem;
+
+    private readonly SystemTemperatureWidgetPage? _temperaturePage;
+    private readonly ListItem? _temperatureItem;
 
     // For bands, we want two bands, one for up and one for down
     private ListItem? _networkUpItem;
@@ -180,6 +185,21 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             }
         }
 
+        if (IncludesMetric(PerformanceMetricKind.Temperature))
+        {
+            _temperaturePage = new SystemTemperatureWidgetPage();
+            _temperatureItem = new ListItem(_temperaturePage)
+            {
+                Title = _temperaturePage.GetItemTitle(isBandPage),
+                Icon = Icons.TemperatureIcon,
+            };
+
+            _temperaturePage.Updated += (s, e) =>
+            {
+                _temperatureItem.Title = _temperaturePage.GetItemTitle(isBandPage);
+            };
+        }
+
         if (_isBandPage)
         {
             // add subtitles to them all
@@ -207,6 +227,11 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             {
                 _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
             }
+
+            if (_temperatureItem is not null)
+            {
+                _temperatureItem.Subtitle = Resources.GetResource("Temperature_Usage_Subtitle");
+            }
         }
     }
 
@@ -217,6 +242,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _networkPage?.PushActivate();
         _gpuPage?.PushActivate();
         _batteryPage?.PushActivate();
+        _temperaturePage?.PushActivate();
     }
 
     protected override void Unloaded()
@@ -226,6 +252,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _networkPage?.PopActivate();
         _gpuPage?.PopActivate();
         _batteryPage?.PopActivate();
+        _temperaturePage?.PopActivate();
     }
 
     public override IListItem[] GetItems()
@@ -240,6 +267,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 PerformanceMetricKind.Network => new IListItem[] { _networkItem! },
                 PerformanceMetricKind.Gpu => new IListItem[] { _gpuItem! },
                 PerformanceMetricKind.Battery => new IListItem[] { _batteryItem! },
+                PerformanceMetricKind.Temperature => new IListItem[] { _temperatureItem! },
                 _ => Array.Empty<IListItem>(),
             };
         }
@@ -247,9 +275,14 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         if (!_isBandPage)
         {
             // TODO add details
-            return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem! };
+            var items = new System.Collections.Generic.List<IListItem> { _cpuItem!, _memoryItem!, _networkItem!, _gpuItem! };
+            if (_batteryItem is not null)
+            {
+                items.Add(_batteryItem);
+            }
+
+            items.Add(_temperatureItem!);
+            return items.ToArray();
         }
         else
         {
@@ -270,8 +303,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             };
 
             return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem! };
+                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem!, _batteryItem!, _temperatureItem! }
+                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem!, _temperatureItem! };
         }
     }
 
@@ -282,6 +315,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _networkPage?.Dispose();
         _gpuPage?.Dispose();
         _batteryPage?.Dispose();
+        _temperaturePage?.Dispose();
     }
 
     private bool IncludesMetric(PerformanceMetricKind metric)
@@ -298,6 +332,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             PerformanceMetricKind.Network => "network",
             PerformanceMetricKind.Gpu => "gpu",
             PerformanceMetricKind.Battery => "battery",
+            PerformanceMetricKind.Temperature => "temperature",
             _ => "unknown",
         };
     }
@@ -1247,6 +1282,98 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             CultureInfo.CurrentCulture,
             Resources.GetResource("Battery_Time_Remaining_Minutes_Format"),
             minutes);
+    }
+
+    internal override void PushActivate()
+    {
+        base.PushActivate();
+        if (IsActive)
+        {
+            _dataManager.Start();
+        }
+    }
+
+    internal override void PopActivate()
+    {
+        base.PopActivate();
+        if (!IsActive)
+        {
+            _dataManager.Stop();
+        }
+    }
+
+    public void Dispose()
+    {
+        _dataManager.Dispose();
+    }
+}
+
+internal sealed partial class SystemTemperatureWidgetPage : WidgetPage, IDisposable
+{
+    public override string Id => "com.microsoft.cmdpal.temperature_widget";
+
+    public override string Title => Resources.GetResource("Temperature_Usage_Title");
+
+    public override IconInfo Icon => Icons.TemperatureIcon;
+
+    private readonly DataManager _dataManager;
+
+    public SystemTemperatureWidgetPage()
+    {
+        _dataManager = new(DataType.Temperature, () => UpdateWidget());
+    }
+
+    protected override void LoadContentData()
+    {
+        try
+        {
+            ContentData.Clear();
+
+            var stats = _dataManager.GetTemperatureStats();
+
+            if (!stats.IsAvailable || stats.CpuTemperatureCelsius < 0)
+            {
+                ContentData["cpuTemperature"] = Resources.GetResource("Temperature_Usage_Unknown");
+                ContentData["temperatureSource"] = Resources.GetResource("Temperature_Usage_Unavailable");
+                return;
+            }
+
+            ContentData["cpuTemperature"] = $"{stats.CpuTemperatureCelsius:F1} °C";
+            ContentData["temperatureSource"] = Resources.GetResource("Temperature_Source_Acpi");
+        }
+        catch (Exception e)
+        {
+            ContentData.Clear();
+            ContentData["errorMessage"] = e.Message;
+        }
+    }
+
+    protected override string GetTemplatePath(WidgetPageState page)
+    {
+        return page switch
+        {
+            WidgetPageState.Content => @"DevHome\Templates\SystemTemperatureTemplate.json",
+            WidgetPageState.Loading => @"DevHome\Templates\SystemTemperatureTemplate.json",
+            _ => throw new NotImplementedException(),
+        };
+    }
+
+    public string GetItemTitle(bool isBandPage)
+    {
+        if (!ContentData.TryGetValue("cpuTemperature", out var temp)
+            || temp == Resources.GetResource("Temperature_Usage_Unknown"))
+        {
+            return isBandPage
+                ? Resources.GetResource("Temperature_Usage_Unknown")
+                : Resources.GetResource("Temperature_Usage_Unknown_Label");
+        }
+
+        return isBandPage
+            ? temp
+            : string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                Resources.GetResource("Temperature_Usage_Label"),
+                temp);
     }
 
     internal override void PushActivate()

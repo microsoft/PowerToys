@@ -37,4 +37,6 @@ public enum DataType
     /// Battery related data.
     /// </summary>
     Battery,
+
+    Temperature,
 }

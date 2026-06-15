@@ -346,4 +346,32 @@
   <data name="Network_Speed_Unit_BinaryBytesPerSec" xml:space="preserve">
     <value>Binary bytes per second (KiB/s, MiB/s, GiB/s)</value>
   </data>
+  <data name="Temperature_Usage_Subtitle" xml:space="preserve">
+    <value>Temp</value>
+  </data>
+  <data name="Temperature_Usage_Title" xml:space="preserve">
+    <value>CPU Temperature</value>
+  </data>
+  <data name="Temperature_Usage_Label" xml:space="preserve">
+    <value>CPU Temp: {0}</value>
+    <comment>{0} is the temperature string, e.g. "72 °C"</comment>
+  </data>
+  <data name="Temperature_Usage_Unknown" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="Temperature_Usage_Unknown_Label" xml:space="preserve">
+    <value>CPU Temp: N/A</value>
+  </data>
+  <data name="Temperature_Usage_Unavailable" xml:space="preserve">
+    <value>Not available</value>
+  </data>
+  <data name="Temperature_Source_Acpi" xml:space="preserve">
+    <value>ACPI</value>
+  </data>
+  <data name="Temperature_Widget_Template.CpuTemperature" xml:space="preserve">
+    <value>CPU temperature</value>
+  </data>
+  <data name="Temperature_Widget_Template.Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
 </root>
