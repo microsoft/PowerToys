@@ -52,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public string TemplateId { get; set; }
 
         [JsonPropertyName("templateParameters")]
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Dictionary<string, string> TemplateParameters { get; set; }
 
         private enum KeyboardManagerEditorType

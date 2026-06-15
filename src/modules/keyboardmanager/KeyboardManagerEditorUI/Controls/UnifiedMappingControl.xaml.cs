@@ -280,8 +280,10 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (sender is MenuFlyoutItem item && item.Tag is string templateId)
             {
-                SetActionTag("RunTemplate");
+                // Select the template first so the action-type switch validates against the picked
+                // command (not the previously-selected one), avoiding a transient stale Save state.
                 TemplatePicker?.SelectCommand(templateId);
+                SetActionTag("RunTemplate");
                 UpdateActionButtonContent("RunTemplate", item.Text);
             }
         }
@@ -1341,6 +1343,10 @@ namespace KeyboardManagerEditorUI.Controls
 
             // Reset template picker
             TemplatePicker?.Reset();
+
+            // Clear the cached missing-template fallback command so it can't leak into the next open.
+            _templateFallbackProgramPath = string.Empty;
+            _templateFallbackProgramArgs = string.Empty;
 
             HideValidationMessage();
         }

@@ -99,8 +99,10 @@ namespace KeyboardManagerEditorUI.Interop
                         templateParametersJson,
                         CommandTemplateJsonContext.Default.DictionaryStringString);
                 }
-                catch (JsonException)
+                catch (Exception)
                 {
+                    // Malformed on-disk metadata must never break config load — the two template
+                    // strings are already freed above; swallow so the caller still frees the rest.
                     parameters = null;
                 }
             }

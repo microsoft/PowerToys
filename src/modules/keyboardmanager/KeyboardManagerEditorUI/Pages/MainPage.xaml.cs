@@ -718,6 +718,10 @@ namespace KeyboardManagerEditorUI.Pages
 
             string originalKeysString = string.Join(";", triggerKeys.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 
+            // Preserve the run-options that were loaded onto the control when editing an existing
+            // template mapping so re-saving does not silently reset them to defaults.
+            var templateParameters = UnifiedMappingControl.GetCurrentTemplateParameterValues();
+
             var shortcutKeyMapping = new ShortcutKeyMapping
             {
                 OperationType = ShortcutOperationType.RunProgram,
@@ -725,9 +729,13 @@ namespace KeyboardManagerEditorUI.Pages
                 TargetKeys = originalKeysString,
                 ProgramPath = programPath,
                 ProgramArgs = UnifiedMappingControl.GetResolvedTemplateArgs() ?? string.Empty,
+                StartInDirectory = UnifiedMappingControl.GetStartInDirectory(),
+                IfRunningAction = UnifiedMappingControl.GetIfRunningAction(),
+                Visibility = UnifiedMappingControl.GetVisibility(),
+                Elevation = UnifiedMappingControl.GetElevationLevel(),
                 TargetApp = UnifiedMappingControl.GetIsAppSpecific() ? UnifiedMappingControl.GetAppName() : string.Empty,
                 TemplateId = UnifiedMappingControl.GetCurrentTemplateId(),
-                TemplateParameters = UnifiedMappingControl.GetCurrentTemplateParameterValues(),
+                TemplateParameters = templateParameters.Count > 0 ? templateParameters : null,
             };
 
             bool saved = _mappingService!.AddShortcutMapping(shortcutKeyMapping);

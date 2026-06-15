@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Linq;
 using System.Text.Json;
 
 namespace KeyboardManagerEditorUI.Templates
@@ -22,18 +21,6 @@ namespace KeyboardManagerEditorUI.Templates
         private CommandTemplateCatalog(PowerToysCliCatalog data)
         {
             Data = data;
-        }
-
-        public CommandTemplate? TryFind(string? templateId)
-        {
-            if (string.IsNullOrEmpty(templateId))
-            {
-                return null;
-            }
-
-            return Data.Modules
-                .SelectMany(m => m.Commands)
-                .FirstOrDefault(c => c.Id == templateId);
         }
 
         private static CommandTemplateCatalog Load()

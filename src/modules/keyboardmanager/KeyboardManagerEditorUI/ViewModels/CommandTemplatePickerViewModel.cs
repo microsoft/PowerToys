@@ -114,6 +114,7 @@ namespace KeyboardManagerEditorUI.ViewModels
             {
                 SelectionDescription = string.Empty;
                 ResolvedCommandLine = string.Empty;
+                OnPropertyChanged(nameof(IsAllValid));
                 return;
             }
 
@@ -140,6 +141,10 @@ namespace KeyboardManagerEditorUI.ViewModels
             }
 
             RecomputePreview();
+
+            // Notify so the host re-evaluates Save-button enablement on template selection — not only
+            // on later parameter edits (the load/edit path does not raise SelectionChanged itself).
+            OnPropertyChanged(nameof(IsAllValid));
         }
 
         private void DetachParameterListeners()

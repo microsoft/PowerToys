@@ -20,8 +20,10 @@ namespace KeyboardManagerEditorUI.Templates
         private static readonly string[] Candidates =
         {
             @"%LOCALAPPDATA%\PowerToys\PowerToys.exe",
+
+            // The editor is always a 64-bit process (x64/ARM64; no x86 build), so %ProgramFiles%
+            // already resolves to the native 64-bit Program Files where a machine-wide install lives.
             @"%ProgramFiles%\PowerToys\PowerToys.exe",
-            @"%ProgramW6432%\PowerToys\PowerToys.exe",
         };
 
         /// <summary>
