@@ -435,3 +435,7 @@ WIDGETBOARD
 
 # URIs
 actioncenter
+
+# Performance / hardware terms
+acpi
+PDH
