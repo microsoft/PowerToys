@@ -465,7 +465,7 @@
                                 Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                         </tkcontrols:SettingsCard>
 
-                        <!-- Discovered Python Scripts -->
+                        <!-- Discovered Python Scripts (read-only) -->
                         <tkcontrols:SettingsExpander
                             x:Name="PythonScriptListExpander"
                             x:Uid="AdvancedPaste_PythonScriptList"
@@ -485,22 +485,22 @@
                                     <tkcontrols:SettingsCard
                                         Margin="0,0,0,2"
                                         Header="{x:Bind DisplayName, Mode=OneWay}"
-                                        Description="{x:Bind ScriptPath, Mode=OneWay}"
+                                        Description="{x:Bind Description, Mode=OneWay}"
                                         IsActionIconVisible="False">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <ToggleSwitch
-                                                IsOn="{x:Bind IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Toggled="ScriptEnabledToggle_Toggled"
-                                                OffContent=""
-                                                OnContent="" />
+                                        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                                            <TextBlock
+                                                Text="{x:Bind ConversionSummary, Mode=OneWay}"
+                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                VerticalAlignment="Center" />
                                             <Button
-                                                Content="&#xE70F;"
+                                                Content="&#xE8A7;"
                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                                Click="EditPythonScript_Click"
+                                                Click="OpenPythonScript_Click"
                                                 Style="{StaticResource SubtleButtonStyle}"
                                                 Tag="{x:Bind}">
                                                 <ToolTipService.ToolTip>
-                                                    <TextBlock Text="Edit script settings" />
+                                                    <TextBlock Text="Open script in editor" />
                                                 </ToolTipService.ToolTip>
                                             </Button>
                                         </StackPanel>
@@ -547,40 +547,6 @@
             </StackPanel>
         </ContentDialog>
 
-        <!--  Python Script Edit Dialog  -->
-        <ContentDialog
-            x:Name="PythonScriptEditDialog"
-            Title="Edit script settings"
-            CloseButtonText="Cancel"
-            PrimaryButtonText="Apply changes"
-            PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
-            <ContentDialog.Resources>
-                <x:Double x:Key="ContentDialogMaxWidth">600</x:Double>
-            </ContentDialog.Resources>
-            <StackPanel Spacing="14" MinWidth="400">
-                <TextBlock
-                    x:Name="ScriptEditFilePath"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    IsTextSelectionEnabled="True" />
-                <TextBox
-                    x:Name="ScriptEditName"
-                    Header="Name"
-                    Width="380"
-                    HorizontalAlignment="Left"
-                    PlaceholderText="Script filename" />
-                <TextBox
-                    x:Name="ScriptEditDescription"
-                    Header="Description"
-                    Width="380"
-                    HorizontalAlignment="Left" />
-                <ToggleSwitch
-                    x:Name="ScriptEditEnabled"
-                    Header="Enabled"
-                    OnContent="Active"
-                    OffContent="Disabled" />
-            </StackPanel>
-        </ContentDialog>
         <ContentDialog
             x:Name="PasteAIProviderConfigurationDialog"
             x:Uid="AdvancedPaste_EndpointDialog"

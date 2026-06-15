@@ -440,10 +440,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var enabled = true;
             var requires = string.Empty;
             var hasExplicitRequires = false;
+            var inputType = string.Empty;
+            var outputType = string.Empty;
 
             using var reader = new System.IO.StreamReader(filePath, System.Text.Encoding.UTF8);
             int lineCount = 0;
-            while (lineCount < 50)
+            while (lineCount < 100)
             {
                 var line = reader.ReadLine();
                 if (line is null)
@@ -453,6 +455,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                 lineCount++;
                 var trimmed = line.Trim();
+
+                // Detect the function definition to extract input/output types
+                if (trimmed.StartsWith("def advanced_paste_from_", StringComparison.Ordinal))
+                {
+                    var match = System.Text.RegularExpressions.Regex.Match(
+                        trimmed,
+                        @"^def advanced_paste_from_(text|html|image|audio|video|files)_to_(text|html|image|audio|video|file|files)\s*\(");
+                    if (match.Success)
+                    {
+                        inputType = match.Groups[1].Value;
+                        outputType = match.Groups[2].Value;
+                    }
+
+                    continue;
+                }
+
                 if (!trimmed.StartsWith('#'))
                 {
                     continue;
@@ -502,6 +520,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 IsEnabled = enabled,
                 Requires = requires,
                 RequiresAutoDetect = !hasExplicitRequires,
+                InputType = inputType,
+                OutputType = outputType,
                 IsShown = saved?.IsShown ?? true,
                 Shortcut = saved?.Shortcut ?? new HotkeySettings(),
             };
@@ -518,222 +538,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             value = line[(idx + tag.Length)..].Trim();
             return value.Length > 0;
-        }
-
-        private static bool ContainsTag(string line, string tag)
-        {
-            return line.Contains(tag, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Writes changed metadata back to each script's header and saves settings.
-        /// </summary>
-        public void ApplyPythonScriptChanges()
-        {
-            foreach (var action in PythonScriptActions)
-            {
-                try
-                {
-                    WriteScriptHeader(action);
-                }
-                catch
-                {
-                    // Skip files that can't be written
-                }
-            }
-
-            // Save the actions to settings
-            var pythonSettings = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
-            pythonSettings.Value = [.. PythonScriptActions.Select(a => (AdvancedPastePythonScriptAction)a.Clone())];
-            SaveAndNotifySettings();
-
-            RefreshPythonScripts();
-        }
-
-        /// <summary>
-        /// Applies changes for a single script action. Writes the header to file and saves settings.
-        /// Throws IOException if the file is locked.
-        /// </summary>
-        public void ApplySingleScriptChange(AdvancedPastePythonScriptAction action)
-        {
-            WriteScriptHeader(action);
-
-            var pythonSettings = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
-            pythonSettings.Value = [.. PythonScriptActions.Select(a => (AdvancedPastePythonScriptAction)a.Clone())];
-            SaveAndNotifySettings();
-        }
-
-        /// <summary>
-        /// Generates the full header text for a script action, for manual copy/paste fallback.
-        /// </summary>
-        public static string GenerateHeaderText(AdvancedPastePythonScriptAction action)
-        {
-            var sb = new System.Text.StringBuilder();
-            if (!string.IsNullOrWhiteSpace(action.Name))
-            {
-                sb.AppendLine(string.Concat("# @advancedpaste:name   ", action.Name));
-            }
-
-            if (!string.IsNullOrWhiteSpace(action.Description))
-            {
-                sb.AppendLine(string.Concat("# @advancedpaste:desc   ", action.Description));
-            }
-
-            if (!action.IsEnabled)
-            {
-                sb.AppendLine("# @advancedpaste:disabled");
-            }
-
-            return sb.ToString().TrimEnd();
-        }
-
-        private static void WriteScriptHeader(AdvancedPastePythonScriptAction action)
-        {
-            if (!System.IO.File.Exists(action.ScriptPath))
-            {
-                return;
-            }
-
-            var lines = System.IO.File.ReadAllLines(action.ScriptPath, System.Text.Encoding.UTF8).ToList();
-
-            var tagUpdates = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["@advancedpaste:name"] = action.Name,
-                ["@advancedpaste:desc"] = action.Description,
-            };
-
-            // @advancedpaste:disabled is a presence-based tag: add when disabled, remove when enabled.
-            var tagsToRemove = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            if (action.IsEnabled)
-            {
-                tagsToRemove.Add("@advancedpaste:disabled");
-            }
-            else
-            {
-                tagUpdates["@advancedpaste:disabled"] = string.Empty;
-            }
-
-            // Tags with empty values should be removed entirely (name, desc)
-            foreach (var (tag, val) in tagUpdates)
-            {
-                if (tag != "@advancedpaste:disabled" && string.IsNullOrWhiteSpace(val))
-                {
-                    tagsToRemove.Add(tag);
-                }
-            }
-
-            var updatedTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            int lastTagLine = -1;
-
-            // Collect indices of duplicate tag lines and requires lines to remove
-            var linesToRemove = new HashSet<int>();
-
-            for (int i = 0; i < Math.Min(lines.Count, 50); i++)
-            {
-                var trimmed = lines[i].Trim();
-                if (!trimmed.StartsWith('#'))
-                {
-                    continue;
-                }
-
-                // Handle requires tag separately (may need full removal in auto mode)
-                if (ContainsTag(trimmed, "@advancedpaste:requires"))
-                {
-                    lastTagLine = i;
-
-                    if (action.RequiresAutoDetect)
-                    {
-                        // Auto-detect mode: remove all requires lines
-                        linesToRemove.Add(i);
-                    }
-                    else if (!updatedTags.Contains("@advancedpaste:requires"))
-                    {
-                        // Manual mode: update first occurrence
-                        if (tagUpdates.ContainsKey("@advancedpaste:requires"))
-                        {
-                            lines[i] = $"# @advancedpaste:requires   {action.Requires}";
-                            updatedTags.Add("@advancedpaste:requires");
-                        }
-                    }
-                    else
-                    {
-                        // Duplicate requires line: remove
-                        linesToRemove.Add(i);
-                    }
-
-                    continue;
-                }
-
-                foreach (var (tag, newValue) in tagUpdates)
-                {
-                    if (ContainsTag(trimmed, tag))
-                    {
-                        if (tagsToRemove.Contains(tag))
-                        {
-                            // Empty value: remove the line entirely
-                            linesToRemove.Add(i);
-                            updatedTags.Add(tag);
-                        }
-                        else if (!updatedTags.Contains(tag))
-                        {
-                            // First occurrence: update in place
-                            lines[i] = string.IsNullOrEmpty(newValue) ? $"# {tag}" : $"# {tag}   {newValue}";
-                            updatedTags.Add(tag);
-                            lastTagLine = i;
-                        }
-                        else
-                        {
-                            // Duplicate: mark for removal
-                            linesToRemove.Add(i);
-                        }
-
-                        break;
-                    }
-                }
-
-                // Remove lines for tags that are only in tagsToRemove (not in tagUpdates)
-                foreach (var removeTag in tagsToRemove)
-                {
-                    if (!tagUpdates.ContainsKey(removeTag) && ContainsTag(trimmed, removeTag))
-                    {
-                        linesToRemove.Add(i);
-                        break;
-                    }
-                }
-
-                if (trimmed.Contains("@advancedpaste:"))
-                {
-                    lastTagLine = i;
-                }
-            }
-
-            // Remove duplicate/unwanted lines in reverse order to preserve indices
-            foreach (var idx in linesToRemove.OrderByDescending(x => x))
-            {
-                lines.RemoveAt(idx);
-            }
-
-            // Recalculate insertion point after removals
-            var removedBeforeLastTag = linesToRemove.Count(idx => idx <= lastTagLine);
-            var insertionPoint = lastTagLine >= 0 ? lastTagLine + 1 - removedBeforeLastTag : 0;
-
-            var newLines = new List<string>();
-            foreach (var (tag, newValue) in tagUpdates)
-            {
-                if (!updatedTags.Contains(tag) && !tagsToRemove.Contains(tag))
-                {
-                    newLines.Add(string.IsNullOrEmpty(newValue) ? $"# {tag}" : $"# {tag}   {newValue}");
-                }
-            }
-
-            if (newLines.Count > 0)
-            {
-                insertionPoint = Math.Min(insertionPoint, lines.Count);
-                lines.InsertRange(insertionPoint, newLines);
-            }
-
-            System.IO.File.WriteAllLines(action.ScriptPath, lines, new System.Text.UTF8Encoding(false));
         }
 
         public static IEnumerable<AIServiceTypeMetadata> AvailableProviders => AIServiceTypeRegistry.GetAvailableServiceTypes();

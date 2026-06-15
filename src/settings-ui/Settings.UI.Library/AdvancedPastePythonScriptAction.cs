@@ -22,6 +22,8 @@ public sealed class AdvancedPastePythonScriptAction : Observable, IAdvancedPaste
     private string _requires = string.Empty;
     private bool _requiresAutoDetect = true;
     private HotkeySettings _shortcut = new();
+    private string _inputType = string.Empty;
+    private string _outputType = string.Empty;
 
     [JsonPropertyName("scriptPath")]
     public string ScriptPath
@@ -143,6 +145,37 @@ public sealed class AdvancedPastePythonScriptAction : Observable, IAdvancedPaste
         }
     }
 
+    /// <summary>
+    /// The input type declared in the function name (e.g. "text", "image", "audio").
+    /// Read-only display property populated during script discovery.
+    /// </summary>
+    [JsonIgnore]
+    public string InputType
+    {
+        get => _inputType;
+        set => Set(ref _inputType, value ?? string.Empty);
+    }
+
+    /// <summary>
+    /// The output type declared in the function name (e.g. "text", "image", "file").
+    /// Read-only display property populated during script discovery.
+    /// </summary>
+    [JsonIgnore]
+    public string OutputType
+    {
+        get => _outputType;
+        set => Set(ref _outputType, value ?? string.Empty);
+    }
+
+    /// <summary>
+    /// Human-readable conversion summary, e.g. "text → image".
+    /// </summary>
+    [JsonIgnore]
+    public string ConversionSummary =>
+        !string.IsNullOrEmpty(_inputType) && !string.IsNullOrEmpty(_outputType)
+            ? $"{_inputType} → {_outputType}"
+            : string.Empty;
+
     [JsonIgnore]
     public IEnumerable<IAdvancedPasteAction> SubActions => [];
 
@@ -257,6 +290,8 @@ public sealed class AdvancedPastePythonScriptAction : Observable, IAdvancedPaste
             Formats = Formats,
             Requires = Requires,
             RequiresAutoDetect = RequiresAutoDetect,
+            InputType = InputType,
+            OutputType = OutputType,
             Shortcut = Shortcut != null ? new HotkeySettings(Shortcut.Win, Shortcut.Ctrl, Shortcut.Alt, Shortcut.Shift, Shortcut.Code) : null,
         };
     }

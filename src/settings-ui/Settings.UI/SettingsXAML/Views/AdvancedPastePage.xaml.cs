@@ -21,7 +21,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -317,122 +316,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             RefreshScriptsButton.Content = "Refresh scripts";
         }
 
-        private async void EditPythonScript_Click(object sender, RoutedEventArgs e)
+        private void OpenPythonScript_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement { Tag: AdvancedPastePythonScriptAction action })
             {
                 return;
             }
 
-            // Snapshot initial values to detect changes
-            var initialName = action.Name;
-            var initialDesc = action.Description;
-            var initialEnabled = action.IsEnabled;
-
-            // Populate dialog fields from the action
-            ScriptEditFilePath.Text = action.ScriptPath;
-            ScriptEditName.Text = action.Name;
-            ScriptEditName.PlaceholderText = System.IO.Path.GetFileNameWithoutExtension(action.ScriptPath);
-            ScriptEditDescription.Text = action.Description;
-            ScriptEditEnabled.IsOn = action.IsEnabled;
-
-            // Change detection: disable Apply button when nothing has changed
-            PythonScriptEditDialog.IsPrimaryButtonEnabled = false;
-
-            void CheckForChanges(object s, object args)
+            if (System.IO.File.Exists(action.ScriptPath))
             {
-                bool hasChanges =
-                    ScriptEditName.Text != initialName ||
-                    ScriptEditDescription.Text != initialDesc ||
-                    ScriptEditEnabled.IsOn != initialEnabled;
-                PythonScriptEditDialog.IsPrimaryButtonEnabled = hasChanges;
-            }
-
-            void OnTextChanged(object s, TextChangedEventArgs args) => CheckForChanges(s, args);
-            void OnToggled(object s, RoutedEventArgs args) => CheckForChanges(s, args);
-
-            ScriptEditName.TextChanged += OnTextChanged;
-            ScriptEditDescription.TextChanged += OnTextChanged;
-            ScriptEditEnabled.Toggled += OnToggled;
-
-            try
-            {
-                PythonScriptEditDialog.XamlRoot = Content.XamlRoot;
-                var result = await PythonScriptEditDialog.ShowAsync();
-
-                if (result == ContentDialogResult.Primary)
+                var startInfo = new System.Diagnostics.ProcessStartInfo(action.ScriptPath)
                 {
-                    // Write dialog values back to the action
-                    action.Name = ScriptEditName.Text;
-                    action.Description = ScriptEditDescription.Text;
-                    action.IsEnabled = ScriptEditEnabled.IsOn;
-
-                    await ApplySingleActionAsync(action);
-                }
-            }
-            finally
-            {
-                ScriptEditName.TextChanged -= OnTextChanged;
-                ScriptEditDescription.TextChanged -= OnTextChanged;
-                ScriptEditEnabled.Toggled -= OnToggled;
-            }
-        }
-
-        private async void ScriptEnabledToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (sender is ToggleSwitch toggle && toggle.DataContext is AdvancedPastePythonScriptAction action)
-            {
-                action.IsEnabled = toggle.IsOn;
-                await ApplySingleActionAsync(action);
-            }
-        }
-
-        private async Task ApplySingleActionAsync(AdvancedPastePythonScriptAction action)
-        {
-            try
-            {
-                ViewModel?.ApplySingleScriptChange(action);
-            }
-            catch (System.IO.IOException)
-            {
-                var headerText = ViewModels.AdvancedPasteViewModel.GenerateHeaderText(action);
-                var errorDialog = new ContentDialog
-                {
-                    XamlRoot = Content.XamlRoot,
-                    Title = "Unable to write to file",
-                    PrimaryButtonText = "Copy header",
-                    CloseButtonText = "OK",
-                    PrimaryButtonStyle = (Style)Application.Current.Resources["AccentButtonStyle"],
-                    Content = new StackPanel
-                    {
-                        Spacing = 12,
-                        Children =
-                        {
-                            new TextBlock
-                            {
-                                Text = $"The file is locked by another process and cannot be updated:\n{action.ScriptPath}\n\nCopy the header below and paste it at the top of the file manually:",
-                                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
-                            },
-                            new TextBox
-                            {
-                                Text = headerText,
-                                IsReadOnly = true,
-                                AcceptsReturn = true,
-                                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
-                                FontFamily = new FontFamily("Consolas"),
-                                MaxHeight = 200,
-                            },
-                        },
-                    },
+                    UseShellExecute = true,
                 };
-
-                var dialogResult = await errorDialog.ShowAsync();
-                if (dialogResult == ContentDialogResult.Primary)
-                {
-                    var dataPackage = new DataPackage();
-                    dataPackage.SetText(headerText);
-                    Clipboard.SetContent(dataPackage);
-                }
+                System.Diagnostics.Process.Start(startInfo);
             }
         }
 

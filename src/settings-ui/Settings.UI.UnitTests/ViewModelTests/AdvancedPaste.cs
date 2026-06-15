@@ -17,7 +17,7 @@ namespace ViewModelTests
     public class AdvancedPaste
     {
         [TestMethod]
-        public void WriteScriptHeader_OverwritesExistingBlankDescriptionTag()
+        public void CreateActionFromScript_ExtractsConversionTypes()
         {
             var scriptPath = Path.Combine(Path.GetTempPath(), $"AdvancedPaste-{Guid.NewGuid():N}.py");
 
@@ -26,38 +26,26 @@ namespace ViewModelTests
                 File.WriteAllLines(
                     scriptPath,
                     [
-                        "# @advancedpaste:name   reverse text",
-                        "# @advancedpaste:formats   text",
-                        "# @advancedpaste:platform   windows",
-                        "# @advancedpaste:desc   ",
-                        "# @advancedpaste:enabled   true",
-                        "print('hello')",
+                        "# @advancedpaste:name   transcribe audio",
+                        "# @advancedpaste:desc   Transcribes audio to text",
+                        string.Empty,
+                        "def advanced_paste_from_audio_to_text(audio_path):",
+                        "    return 'transcribed'",
                     ]);
 
-                var action = new AdvancedPastePythonScriptAction
-                {
-                    ScriptPath = scriptPath,
-                    Name = "reverse text",
-                    Description = "Updated description",
-                    Platform = "windows",
-                    Formats = "text",
-                    IsEnabled = true,
-                    RequiresAutoDetect = true,
-                };
+                var createActionFromScript = typeof(AdvancedPasteViewModel)
+                    .GetMethod("CreateActionFromScript", BindingFlags.NonPublic | BindingFlags.Static);
 
-                var writeScriptHeader = typeof(AdvancedPasteViewModel)
-                    .GetMethod("WriteScriptHeader", BindingFlags.NonPublic | BindingFlags.Static);
+                Assert.IsNotNull(createActionFromScript);
 
-                Assert.IsNotNull(writeScriptHeader);
+                var action = (AdvancedPastePythonScriptAction)createActionFromScript.Invoke(
+                    null, [scriptPath, new System.Collections.Generic.List<AdvancedPastePythonScriptAction>()]);
 
-                writeScriptHeader.Invoke(null, [action]);
-
-                var descLines = File.ReadAllLines(scriptPath)
-                    .Where(line => line.Contains("@advancedpaste:desc", StringComparison.OrdinalIgnoreCase))
-                    .ToArray();
-
-                Assert.AreEqual(1, descLines.Length);
-                Assert.AreEqual("# @advancedpaste:desc   Updated description", descLines[0]);
+                Assert.AreEqual("transcribe audio", action.Name);
+                Assert.AreEqual("Transcribes audio to text", action.Description);
+                Assert.AreEqual("audio", action.InputType);
+                Assert.AreEqual("text", action.OutputType);
+                Assert.AreEqual("audio → text", action.ConversionSummary);
             }
             finally
             {

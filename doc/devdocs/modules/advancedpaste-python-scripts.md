@@ -227,6 +227,18 @@ The following settings are available under **Settings → Advanced Paste → Pyt
 | WSL distribution | Which WSL distro to use (e.g. `Ubuntu`). Leave blank for the default distribution. | *(default)* |
 | Scripts folder | Folder to scan for `.py` scripts. | `%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts` |
 
+### Scripts list
+
+The Settings page shows a read-only list of discovered scripts. For each script you can see:
+
+- **Name** — from `@advancedpaste:name` tag, or the filename if not set.
+- **Description** — from `@advancedpaste:desc` tag.
+- **Conversion** — the input → output types detected from the function name (e.g. "text → image").
+
+The list is **not editable** from Settings. To change a script's name, description, enabled state,
+or any other metadata, open the script file directly (click the "Open in editor" button) and edit
+the `# @advancedpaste:...` header tags. After saving, click **Refresh** in Settings to reload.
+
 ### WSL mode
 
 When **Use WSL** is enabled:
