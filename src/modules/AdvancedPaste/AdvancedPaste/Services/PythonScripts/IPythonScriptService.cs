@@ -16,9 +16,10 @@ public interface IPythonScriptService
 {
     /// <summary>
     /// V2 unified execution: C# reads the clipboard, pipes data as JSON to the runner,
-    /// and receives a DataPackage from JSON stdout. Works identically on Windows and WSL.
+    /// and receives a DataPackage from JSON stdout. Works on both Windows and WSL
+    /// depending on the specified platform.
     /// </summary>
-    Task<DataPackage> ExecuteScriptAsync(string scriptPath, DataPackageView clipboardData, ClipboardFormat detectedFormat, CancellationToken cancellationToken, IProgress<double> progress);
+    Task<DataPackage> ExecuteScriptAsync(string scriptPath, string platform, DataPackageView clipboardData, ClipboardFormat detectedFormat, CancellationToken cancellationToken, IProgress<double> progress);
 
     /// <summary>
     /// Legacy Windows mode: the script directly manipulates the clipboard. C# waits for the process to exit.

@@ -61,6 +61,10 @@ namespace AdvancedPaste.Settings
 
         public string PythonExecutablePath { get; private set; }
 
+        public bool PythonUseWsl { get; private set; }
+
+        public string PythonWslDistribution { get; private set; } = string.Empty;
+
         public int PythonScriptTimeoutSeconds { get; private set; } = 30;
 
         public IReadOnlyDictionary<string, string> TrustedScriptHashes { get; private set; } = new Dictionary<string, string>();
@@ -76,6 +80,8 @@ namespace AdvancedPaste.Settings
             PasteAIConfiguration = new PasteAIConfiguration();
             PythonScriptsFolder = GetDefaultScriptsFolder();
             PythonExecutablePath = string.Empty;
+            PythonUseWsl = false;
+            PythonWslDistribution = string.Empty;
             PythonScriptTimeoutSeconds = 30;
             _additionalActions = [];
             _customActions = [];
@@ -166,6 +172,8 @@ namespace AdvancedPaste.Settings
                                     ? GetDefaultScriptsFolder()
                                     : pythonScripts.ScriptsFolder;
                                 PythonExecutablePath = pythonScripts.PythonExecutablePath ?? string.Empty;
+                                PythonUseWsl = pythonScripts.UseWsl;
+                                PythonWslDistribution = pythonScripts.WslDistribution ?? string.Empty;
                                 PythonScriptTimeoutSeconds = pythonScripts.TimeoutSeconds > 0 ? pythonScripts.TimeoutSeconds : 30;
                                 TrustedScriptHashes = new Dictionary<string, string>(
                                     pythonScripts.TrustedScriptHashes ?? new Dictionary<string, string>(),

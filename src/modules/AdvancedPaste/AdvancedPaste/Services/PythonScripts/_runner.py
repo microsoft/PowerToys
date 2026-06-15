@@ -6,22 +6,24 @@
 Advanced Paste – Script Runner (V3 Named Function Interface)
 
 This runner is shipped with PowerToys and is NOT user-editable.
-It loads a user script, discovers ap_from_* functions by name convention,
-calls the one matching the current clipboard format, and normalizes the
-return value into JSON on stdout.
+It loads a user script, discovers the single advanced_paste_from_<input>_to_<output>
+function by name convention, calls it with the current clipboard data, and formats
+the return value into JSON on stdout.
 
-Supported function names (declare what clipboard input the function handles):
-  - advanced_paste_from_text(text: str)
-  - advanced_paste_from_html(html: str)
-  - advanced_paste_from_image(image_path: str)
-  - advanced_paste_from_files(file_paths: list)
+Each script must define exactly one function matching the pattern:
+  def advanced_paste_from_<input>_to_<output>(<param>)
 
-Output is inferred from the return value:
-  - str              → text (or html if starts with '<' and contains html tags)
-  - pathlib.Path     → image (if .png/.jpg/.jpeg/.bmp/.gif/.webp) or file
-  - list of paths    → files
-  - dict             → explicit: {"type": "text|html|image|file|files", "value": "..."}
-  - None             → no-op (empty text)
+Supported input types:
+  - text, html, image, files
+
+Required output types (declared via _to_ suffix):
+  - text, html, image, file, files
+
+Examples:
+  - advanced_paste_from_text_to_text(text: str)    → output is text
+  - advanced_paste_from_text_to_image(text: str)   → output is image
+  - advanced_paste_from_image_to_text(image_path)  → output is text
+  - advanced_paste_from_files_to_text(file_paths)  → output is text
 
 Protocol:
   - Input:  JSON on stdin (clipboard data from C#)
@@ -36,11 +38,49 @@ import re
 import sys
 from pathlib import Path
 
-# Image file extensions recognized as image output.
-_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tiff", ".ico"}
 
-# Pattern matching advanced_paste_from_* function names.
-_AP_FUNCTION_PATTERN = re.compile(r"^advanced_paste_from_(text|html|image|files)$")
+def _apply_output_hint(result, hint: str) -> dict:
+    """
+    Force the output to the type specified by the _to_ suffix in the function name.
+    Converts the return value to match the hinted type.
+    """
+    if result is None:
+        if hint == "text":
+            return {"result_type": "text", "text": ""}
+        elif hint == "html":
+            return {"result_type": "html", "html": ""}
+        elif hint == "image":
+            return {"result_type": "image", "image_path": ""}
+        elif hint in ("file", "files"):
+            return {"result_type": hint, "file_paths": []}
+
+    if hint == "text":
+        return {"result_type": "text", "text": str(result) if not isinstance(result, str) else result}
+    elif hint == "html":
+        return {"result_type": "html", "html": str(result) if not isinstance(result, str) else result}
+    elif hint == "image":
+        path = str(result)
+        return {"result_type": "image", "image_path": path}
+    elif hint == "file":
+        if isinstance(result, (list, tuple)):
+            paths = [str(p) for p in result]
+        else:
+            paths = [str(result)]
+        return {"result_type": "file", "file_paths": paths}
+    elif hint == "files":
+        if isinstance(result, (list, tuple)):
+            paths = [str(p) for p in result]
+        else:
+            paths = [str(result)]
+        return {"result_type": "files", "file_paths": paths}
+
+    # Fallback (shouldn't happen with valid hints)
+    return {"result_type": "text", "text": str(result)}
+
+# Pattern matching advanced_paste_from_<input>_to_<output> function names.
+_AP_FUNCTION_PATTERN = re.compile(
+    r"^advanced_paste_from_(text|html|image|files)_to_(text|html|image|file|files)$"
+)
 
 
 def _load_user_module(script_path: str):
@@ -57,83 +97,50 @@ def _load_user_module(script_path: str):
     return module
 
 
-def _discover_ap_functions(module) -> dict:
+def _discover_ap_function(module) -> tuple:
     """
-    Discover all advanced_paste_from_* functions in the module.
-    Returns a dict mapping input_type → function.
+    Discover the single advanced_paste_from_<input>_to_<output> function in the module.
+    Returns a tuple (input_type, output_type, function) or None if not found.
+    Exits with error if multiple functions are defined.
     """
-    functions = {}
+    matches = []
     for name in dir(module):
         match = _AP_FUNCTION_PATTERN.match(name)
         if match:
             fn = getattr(module, name)
             if callable(fn):
                 input_type = match.group(1)
-                functions[input_type] = fn
-    return functions
+                output_type = match.group(2)
+                matches.append((input_type, output_type, fn))
+
+    if len(matches) == 0:
+        return None
+    if len(matches) > 1:
+        names = [f"advanced_paste_from_{m[0]}_to_{m[1]}" for m in matches]
+        print(
+            f"Error: script defines multiple advanced_paste_from_*_to_* functions "
+            f"({', '.join(names)}). Only one is allowed per script.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    return matches[0]
 
 
-def _infer_output(result) -> dict:
+def _format_output(result, output_type: str) -> dict:
     """
-    Infer the output type from the return value.
-
-    Rules:
-      - None             → empty text
-      - str              → text
-      - Path(.png/etc)   → image
-      - Path(other)      → file
-      - list/tuple       → files
-      - dict with "type" → explicit (escape hatch)
-      - dict without     → infer from keys
+    Format the return value according to the declared output type from the function name.
+    The output_type comes from the _to_ suffix and is always provided.
     """
     if result is None:
+        if output_type in ("file", "files"):
+            return {"result_type": output_type, "file_paths": []}
+        elif output_type == "image":
+            return {"result_type": "image", "image_path": ""}
+        elif output_type == "html":
+            return {"result_type": "html", "html": ""}
         return {"result_type": "text", "text": ""}
 
-    # Explicit dict escape hatch: {"type": "html", "value": "<b>hi</b>"}
-    if isinstance(result, dict):
-        if "type" in result:
-            rtype = result["type"]
-            value = result.get("value", "")
-            if rtype == "text":
-                return {"result_type": "text", "text": str(value)}
-            elif rtype == "html":
-                return {"result_type": "html", "html": str(value)}
-            elif rtype == "image":
-                return {"result_type": "image", "image_path": str(value)}
-            elif rtype == "file":
-                return {"result_type": "file", "file_paths": [str(value)]}
-            elif rtype == "files":
-                paths = [str(p) for p in value] if isinstance(value, (list, tuple)) else [str(value)]
-                return {"result_type": "files", "file_paths": paths}
-        # Dict without explicit "type" key: infer from known keys
-        if "html" in result:
-            return {"result_type": "html", **result}
-        if "image_path" in result:
-            return {"result_type": "image", **result}
-        if "file_paths" in result:
-            return {"result_type": "files", **result}
-        if "text" in result:
-            return {"result_type": "text", **result}
-        return {"result_type": "text", "text": str(result)}
-
-    # String → text
-    if isinstance(result, str):
-        return {"result_type": "text", "text": result}
-
-    # Path → image or file based on extension
-    if isinstance(result, Path):
-        ext = result.suffix.lower()
-        if ext in _IMAGE_EXTENSIONS:
-            return {"result_type": "image", "image_path": str(result)}
-        return {"result_type": "file", "file_paths": [str(result)]}
-
-    # List/tuple → files
-    if isinstance(result, (list, tuple)):
-        paths = [str(p) for p in result]
-        return {"result_type": "files", "file_paths": paths}
-
-    # Fallback: convert to string
-    return {"result_type": "text", "text": str(result)}
+    return _apply_output_hint(result, output_type)
 
 
 # ---------------------------------------------------------------------------
@@ -161,21 +168,21 @@ def main():
     # Load the user script.
     module = _load_user_module(script_path)
 
-    # Discover advanced_paste_from_* functions.
-    ap_functions = _discover_ap_functions(module)
+    # Discover the single advanced_paste_from_* function.
+    ap_result = _discover_ap_function(module)
 
-    if not ap_functions:
+    if ap_result is None:
         print(
-            f"Error: script '{os.path.basename(script_path)}' does not define any "
-            f"advanced_paste_from_* functions.\n"
-            f"Please add: def advanced_paste_from_text(text): return text.upper()",
+            f"Error: script '{os.path.basename(script_path)}' does not define an "
+            f"advanced_paste_from_<input>_to_<output> function.\n"
+            f"Example: def advanced_paste_from_text_to_text(text): return text.upper()",
             file=sys.stderr,
         )
         sys.exit(1)
 
-    # Determine current clipboard format.
-    # The format field is an array of available formats (e.g. ["text", "image"]).
-    # Pick the first format that has both a matching function AND available data.
+    input_type, output_type, fn = ap_result
+
+    # Determine the input data key for this function's input type.
     input_map = {
         "text": "text",
         "html": "html",
@@ -183,67 +190,38 @@ def main():
         "files": "file_paths",
     }
 
+    key = input_map.get(input_type, input_type)
+    input_value = data.get(key)
+
+    # Expose work_dir as environment variable so scripts can write output files
+    # to a location accessible from both WSL and Windows (under /mnt/c/...).
+    work_dir = data.get("work_dir", "")
+    if work_dir:
+        os.environ["ADVANCED_PASTE_WORK_DIR"] = work_dir
+
+    # Check if the clipboard has matching data for this script's input type.
     formats = data.get("format", ["text"])
     if isinstance(formats, str):
         formats = [formats]
 
-    current_format = None
-    fn = None
-    input_value = None
-
-    for fmt in formats:
-        if fmt in ap_functions:
-            key = input_map.get(fmt, fmt)
-            value = data.get(key)
-            if value:
-                current_format = fmt
-                fn = ap_functions[fmt]
-                input_value = value
-                break
-
-    if fn is None:
-        # Fallback: try any format that has a matching function, prefer one with data
-        for fmt in formats:
-            if fmt in ap_functions:
-                key = input_map.get(fmt, fmt)
-                value = data.get(key)
-                if value:
-                    current_format = fmt
-                    fn = ap_functions[fmt]
-                    input_value = value
-                    break
-
-    if fn is None:
-        # Last resort: pick any matching function even without data
-        for fmt in formats:
-            if fmt in ap_functions:
-                current_format = fmt
-                fn = ap_functions[fmt]
-                key = input_map.get(fmt, fmt)
-                input_value = data.get(key, "")
-                break
-
-    if fn is None:
-        available = ", ".join(f"advanced_paste_from_{k}" for k in sorted(ap_functions.keys()))
-        fmt_list = ", ".join(formats)
+    if input_type not in formats:
         print(
-            f"Error: no matching function for clipboard formats [{fmt_list}].\n"
-            f"Available functions: {available}",
+            f"Error: script expects '{input_type}' input but clipboard has [{', '.join(formats)}].",
             file=sys.stderr,
         )
         sys.exit(1)
 
     if not input_value:
         print(
-            f"Error: no data available for format '{current_format}' "
-            f"(expected '{input_map.get(current_format, current_format)}' in input payload).",
+            f"Error: no data available for format '{input_type}' "
+            f"(expected '{key}' in input payload).",
             file=sys.stderr,
         )
         sys.exit(1)
 
     # Call the function.
     result = fn(input_value)
-    output = _infer_output(result)
+    output = _format_output(result, output_type)
 
     # Output JSON result.
     json.dump(output, sys.stdout, ensure_ascii=False)

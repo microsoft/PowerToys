@@ -63,6 +63,10 @@ internal sealed class IntegrationTestUserSettings : IUserSettings
 
     public string PythonExecutablePath => string.Empty;
 
+    public bool PythonUseWsl => false;
+
+    public string PythonWslDistribution => string.Empty;
+
     public int PythonScriptTimeoutSeconds => 30;
 
     public bool IsPythonScriptsEnabled => true;

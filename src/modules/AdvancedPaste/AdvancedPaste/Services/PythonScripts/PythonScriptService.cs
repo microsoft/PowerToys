@@ -44,9 +44,25 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
     /// <summary>
     /// V2 unified execution: C# reads the clipboard, serializes it as JSON, invokes the
     /// runner which calls the user's convert() function, and parses the JSON result.
-    /// Works identically on both Windows (native Python) and WSL.
+    /// Works on both Windows (native Python) and WSL depending on platform.
     /// </summary>
     public async Task<DataPackage> ExecuteScriptAsync(
+        string scriptPath,
+        string platform,
+        DataPackageView clipboardData,
+        ClipboardFormat detectedFormat,
+        CancellationToken cancellationToken,
+        IProgress<double> progress)
+    {
+        if (string.Equals(platform, PlatformLinux, StringComparison.OrdinalIgnoreCase))
+        {
+            return await ExecuteScriptViaWslAsync(scriptPath, clipboardData, detectedFormat, cancellationToken, progress);
+        }
+
+        return await ExecuteScriptOnWindowsAsync(scriptPath, clipboardData, detectedFormat, cancellationToken, progress);
+    }
+
+    private async Task<DataPackage> ExecuteScriptOnWindowsAsync(
         string scriptPath,
         DataPackageView clipboardData,
         ClipboardFormat detectedFormat,
@@ -140,6 +156,119 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         finally
         {
             // Delayed cleanup so the target application can finish using output files.
+            _ = Task.Run(
+                async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(30), CancellationToken.None);
+                    TryDeleteTempDir(workDir);
+                },
+                CancellationToken.None);
+        }
+    }
+
+    /// <summary>
+    /// V2 execution via WSL: invokes the runner inside WSL using wsl.exe bash.
+    /// Paths are converted to /mnt/... format; output paths are converted back.
+    /// </summary>
+    private async Task<DataPackage> ExecuteScriptViaWslAsync(
+        string scriptPath,
+        DataPackageView clipboardData,
+        ClipboardFormat detectedFormat,
+        CancellationToken cancellationToken,
+        IProgress<double> progress)
+    {
+        ThrowIfNotExists(scriptPath);
+
+        if (!IsWslAvailable())
+        {
+            throw new PasteActionException(
+                ResourceLoaderInstance.ResourceLoader.GetString("WslNotAvailable"),
+                new InvalidOperationException("WSL is not available."));
+        }
+
+        var runnerPath = GetRunnerPath();
+        if (!File.Exists(runnerPath))
+        {
+            throw new PasteActionException(
+                "Advanced Paste runner script not found. Please reinstall PowerToys.",
+                new FileNotFoundException("_runner.py not found.", runnerPath));
+        }
+
+        var workDir = CreateTempWorkDir();
+
+        try
+        {
+            var inputPayload = await BuildWslInputPayloadAsync(clipboardData, detectedFormat, workDir, cancellationToken);
+            var inputJson = JsonSerializer.Serialize(inputPayload);
+
+            // Write payload to file (UTF-8, no BOM) to avoid WSL stdin pipe BOM issues.
+            var inputFilePath = Path.Combine(workDir, "ap_input.json");
+            await File.WriteAllTextAsync(inputFilePath, inputJson, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), cancellationToken);
+
+            var wslRunnerPath = ToWslPath(runnerPath);
+            var wslScriptPath = ToWslPath(scriptPath);
+            var wslInputPath = ToWslPath(inputFilePath);
+
+            // Single-quote paths for bash; escape any embedded single quotes.
+            var quotedRunner = "'" + wslRunnerPath.Replace("'", "'\\''") + "'";
+            var quotedScript = "'" + wslScriptPath.Replace("'", "'\\''") + "'";
+            var quotedInput = "'" + wslInputPath.Replace("'", "'\\''") + "'";
+
+            // Use the runner with the script, feeding input JSON via shell redirect.
+            // -l (login shell) ensures PATH includes user-installed tools (pip, conda, etc.).
+            var bashCmd = $"python3 -X utf8 {quotedRunner} {quotedScript} < {quotedInput}";
+            var wslArgs = BuildWslArgs($"bash -l -c \"{bashCmd.Replace("\"", "\\\"")}\"");
+            var psi = new ProcessStartInfo("wsl.exe", wslArgs)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
+            };
+
+            using var process = Process.Start(psi)
+                ?? throw new PasteActionException(
+                    ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptFailed"),
+                    new InvalidOperationException("Failed to start WSL process."));
+
+            int timeoutMs = _userSettings.PythonScriptTimeoutSeconds * 1000;
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCts.CancelAfter(timeoutMs);
+
+            string stdout;
+            string stderr;
+
+            try
+            {
+                var stdoutTask = process.StandardOutput.ReadToEndAsync(timeoutCts.Token);
+                var stderrTask = process.StandardError.ReadToEndAsync(timeoutCts.Token);
+                await process.WaitForExitAsync(timeoutCts.Token);
+                stdout = await stdoutTask;
+                stderr = await stderrTask;
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                process.Kill(entireProcessTree: true);
+                throw new PasteActionException(
+                    string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        ResourceLoaderInstance.ResourceLoader.GetString("PythonScriptTimeout"),
+                        _userSettings.PythonScriptTimeoutSeconds),
+                    new TimeoutException());
+            }
+
+            if (process.ExitCode != 0)
+            {
+                var (summary, details) = ParsePythonError(stderr);
+                throw new PasteActionException(summary, new InvalidOperationException($"WSL script exited with code {process.ExitCode}."), aiServiceMessage: details);
+            }
+
+            return await ParseWslOutputAsync(stdout, workDir, cancellationToken);
+        }
+        finally
+        {
             _ = Task.Run(
                 async () =>
                 {
@@ -455,7 +584,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             // -l (login shell) sources /etc/profile and ~/.profile so that tools installed
             // via apt, conda, nvm, etc. are available in PATH just like in a normal terminal.
             var bashCmd = $"python3 -X utf8 {quotedScript} < {quotedInput}";
-            var psi = new ProcessStartInfo("wsl.exe", $"bash -l -c \"{bashCmd.Replace("\"", "\\\"")}\"")
+            var wslArgs = BuildWslArgs($"bash -l -c \"{bashCmd.Replace("\"", "\\\"")}\"");
+            var psi = new ProcessStartInfo("wsl.exe", wslArgs)
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -517,9 +647,10 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         }
     }
 
-    // Regex to detect named function interface: def advanced_paste_from_text/html/image/files(...)
+    // Regex to detect named function interface: def advanced_paste_from_<input>_to_<output>(...)
+    // Each script must define exactly one such function.
     private static readonly Regex ApFunctionRegex = new(
-        @"^def\s+advanced_paste_from_(text|html|image|files)\s*\(",
+        @"^def\s+advanced_paste_from_(text|html|image|files)_to_(text|html|image|file|files)\s*\(",
         RegexOptions.Compiled);
 
     public PythonScriptMetadata ReadMetadata(string scriptPath)
@@ -536,7 +667,10 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         var allLines = new List<string>();
         var isEnabled = true;
         bool hasExplicitFormats = false;
+        bool hasExplicitPlatform = false;
         ClipboardFormat apDetectedFormats = ClipboardFormat.None;
+        int apFunctionCount = 0;
+        string outputTypeHint = null;
 
         try
         {
@@ -555,11 +689,13 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 allLines.Add(line);
                 var trimmed = line.Trim();
 
-                // Detect V3 named function interface: def advanced_paste_from_text/html/image/files(...)
+                // Detect function: def advanced_paste_from_<input>_to_<output>(...)
                 var apMatch = ApFunctionRegex.Match(trimmed);
                 if (apMatch.Success)
                 {
+                    apFunctionCount++;
                     apDetectedFormats |= ApInputTypeToFormat(apMatch.Groups[1].Value);
+                    outputTypeHint = apMatch.Groups[2].Value;
                 }
 
                 if (!trimmed.StartsWith('#'))
@@ -585,6 +721,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 if (tag != null)
                 {
                     platform = tag.ToLowerInvariant();
+                    hasExplicitPlatform = true;
                     continue;
                 }
 
@@ -628,7 +765,9 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 var apMatchRemaining = ApFunctionRegex.Match(trimmedRemaining);
                 if (apMatchRemaining.Success)
                 {
+                    apFunctionCount++;
                     apDetectedFormats |= ApInputTypeToFormat(apMatchRemaining.Groups[1].Value);
+                    outputTypeHint = apMatchRemaining.Groups[2].Value;
                 }
             }
         }
@@ -637,9 +776,15 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             Logger.LogError($"Failed to read metadata from {scriptPath}", ex);
         }
 
-        // Only include scripts that define at least one advanced_paste_from_* function.
+        // Only include scripts that define exactly one advanced_paste_from_* function.
         if (apDetectedFormats == ClipboardFormat.None)
         {
+            return null;
+        }
+
+        if (apFunctionCount > 1)
+        {
+            Logger.LogWarning($"Script '{scriptPath}' defines {apFunctionCount} advanced_paste_from_* functions; only one is allowed. Skipping.");
             return null;
         }
 
@@ -649,12 +794,15 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             supportedFormats = apDetectedFormats;
         }
 
-        // advanced_paste_from_* scripts always use the unified runner.
-        platform = PlatformWindows;
+        // Determine platform based on user setting (UseWsl) unless script explicitly declares one.
+        if (!hasExplicitPlatform)
+        {
+            platform = _userSettings.PythonUseWsl ? PlatformLinux : PlatformWindows;
+        }
 
         var mergedRequirements = MergeWithAutoDetectedImports(allLines, explicitRequirements);
 
-        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, isEnabled, mergedRequirements, IsV2: true);
+        return new PythonScriptMetadata(scriptPath, name, description, supportedFormats, platform, version, isEnabled, mergedRequirements, IsV2: true, OutputTypeHint: outputTypeHint);
     }
 
     /// <summary>
@@ -1031,9 +1179,10 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         return process.ExitCode == 0;
     }
 
-    private static async Task<bool> IsInstalledInWslAsync(string importName, CancellationToken cancellationToken)
+    private async Task<bool> IsInstalledInWslAsync(string importName, CancellationToken cancellationToken)
     {
-        var psi = new ProcessStartInfo("wsl.exe", $"bash -l -c \"python3 -c 'import {importName}'\"")
+        var wslArgs = BuildWslArgs($"bash -l -c \"python3 -c 'import {importName}'\"");
+        var psi = new ProcessStartInfo("wsl.exe", wslArgs)
         {
             UseShellExecute = false,
             CreateNoWindow = true,
@@ -1127,7 +1276,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         foreach (var extraArgs in (string[])[string.Empty, "--break-system-packages"])
         {
             var installCmd = $"pip3 install {packages} {extraArgs}".TrimEnd();
-            var psi = new ProcessStartInfo("wsl.exe", $"bash -l -c \"{installCmd.Replace("\"", "\\\"")}\"")
+            var wslArgs = BuildWslArgs($"bash -l -c \"{installCmd.Replace("\"", "\\\"")}\"");
+            var psi = new ProcessStartInfo("wsl.exe", wslArgs)
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -1450,6 +1600,20 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
     {
         var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.System);
         return File.Exists(Path.Combine(systemRoot, "wsl.exe"));
+    }
+
+    /// <summary>
+    /// Builds wsl.exe command-line arguments, prepending "-d &lt;distro&gt;" if a WSL distribution is configured.
+    /// </summary>
+    private string BuildWslArgs(string command)
+    {
+        var distro = _userSettings.PythonWslDistribution;
+        if (!string.IsNullOrWhiteSpace(distro))
+        {
+            return $"-d {distro} -- {command}";
+        }
+
+        return $"-- {command}";
     }
 
     internal static string ToWslPath(string windowsPath)

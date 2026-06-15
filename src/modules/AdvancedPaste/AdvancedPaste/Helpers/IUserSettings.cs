@@ -35,6 +35,10 @@ namespace AdvancedPaste.Settings
 
         public string PythonExecutablePath { get; }
 
+        public bool PythonUseWsl { get; }
+
+        public string PythonWslDistribution { get; }
+
         public int PythonScriptTimeoutSeconds { get; }
 
         public IReadOnlyDictionary<string, string> TrustedScriptHashes { get; }

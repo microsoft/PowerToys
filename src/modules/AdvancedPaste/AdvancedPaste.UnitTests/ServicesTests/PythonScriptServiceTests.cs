@@ -4,9 +4,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
+using AdvancedPaste.Helpers;
 using AdvancedPaste.Services.PythonScripts;
+using AdvancedPaste.UnitTests.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AdvancedPaste.UnitTests.ServicesTests;
@@ -14,6 +17,14 @@ namespace AdvancedPaste.UnitTests.ServicesTests;
 [TestClass]
 public sealed class PythonScriptServiceTests
 {
+    private PythonScriptService _service;
+
+    [TestInitialize]
+    public void Setup()
+    {
+        _service = new PythonScriptService(new IntegrationTestUserSettings());
+    }
+
     [TestMethod]
     public void MergeWithAutoDetectedImports_DetectsSimpleImports()
     {
@@ -377,90 +388,125 @@ public sealed class PythonScriptServiceTests
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_TextOnly()
+    public void ReadMetadata_FunctionNameDeterminesFormat_Text()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("text");
-        Assert.AreEqual(Models.ClipboardFormat.Text, formats);
+        // The new interface uses function names like advanced_paste_from_text_to_text(...)
+        // to determine supported formats, not parameter signatures.
+        var scriptPath = CreateTempScript("def advanced_paste_from_text_to_text(text):\n    return text.upper()\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Text, metadata.SupportedFormats);
+        Assert.AreEqual("text", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_TextWithTypeHint()
+    public void ReadMetadata_FunctionNameDeterminesFormat_Html()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("text: str");
-        Assert.AreEqual(Models.ClipboardFormat.Text, formats);
+        var scriptPath = CreateTempScript("def advanced_paste_from_html_to_text(html: str) -> str:\n    return html\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Html, metadata.SupportedFormats);
+        Assert.AreEqual("text", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_TextWithDefault()
+    public void ReadMetadata_FunctionNameDeterminesFormat_Image()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("text=None");
-        Assert.AreEqual(Models.ClipboardFormat.Text, formats);
+        var scriptPath = CreateTempScript("def advanced_paste_from_image_to_text(image_path):\n    return 'desc'\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Image, metadata.SupportedFormats);
+        Assert.AreEqual("text", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_MultipleFormats()
+    public void ReadMetadata_FunctionNameDeterminesFormat_Files()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("text, html, work_dir");
-        Assert.IsTrue(formats.HasFlag(Models.ClipboardFormat.Text));
-        Assert.IsTrue(formats.HasFlag(Models.ClipboardFormat.Html));
-        Assert.IsFalse(formats.HasFlag(Models.ClipboardFormat.Image));
+        var scriptPath = CreateTempScript("def advanced_paste_from_files_to_text(file_paths):\n    return ''\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.File, metadata.SupportedFormats);
+        Assert.AreEqual("text", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_ImagePath()
+    public void ReadMetadata_OutputTypeHint_Image()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("image_path, work_dir");
-        Assert.AreEqual(Models.ClipboardFormat.Image, formats);
+        var scriptPath = CreateTempScript("def advanced_paste_from_text_to_image(text):\n    return '/path/img.png'\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual("image", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_ImageAlias()
+    public void ReadMetadata_OutputTypeHint_File()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("image, work_dir");
-        Assert.AreEqual(Models.ClipboardFormat.Image, formats);
+        var scriptPath = CreateTempScript("def advanced_paste_from_text_to_file(text):\n    return '/path/out.txt'\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual("file", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_FilePaths()
+    public void ReadMetadata_OutputTypeHint_Files()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("file_paths");
-        Assert.AreEqual(Models.ClipboardFormat.File, formats);
+        var scriptPath = CreateTempScript("def advanced_paste_from_files_to_files(file_paths):\n    return file_paths\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual("files", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_FilesAlias()
+    public void ReadMetadata_RejectsMultipleFunctions()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("files");
-        Assert.AreEqual(Models.ClipboardFormat.File, formats);
+        var scriptPath = CreateTempScript(
+            "def advanced_paste_from_text_to_text(text):\n    return text\n\n" +
+            "def advanced_paste_from_html_to_text(html):\n    return html\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNull(metadata);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_Kwargs_ReturnsAll()
+    public void ReadMetadata_RejectsNoFunction()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("text=None, **kwargs");
-        var allFormats = Models.ClipboardFormat.Text | Models.ClipboardFormat.Html |
-                         Models.ClipboardFormat.Image | Models.ClipboardFormat.Audio |
-                         Models.ClipboardFormat.Video | Models.ClipboardFormat.File;
-        Assert.AreEqual(allFormats, formats);
+        var scriptPath = CreateTempScript("def some_other_function(text):\n    return text\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNull(metadata);
+        File.Delete(scriptPath);
     }
 
     [TestMethod]
-    public void InferFormatsFromSignature_OnlyWorkDir_ReturnsAll()
+    public void ReadMetadata_RejectsOldFormatWithoutTo()
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("work_dir");
-        var allFormats = Models.ClipboardFormat.Text | Models.ClipboardFormat.Html |
-                         Models.ClipboardFormat.Image | Models.ClipboardFormat.Audio |
-                         Models.ClipboardFormat.Video | Models.ClipboardFormat.File;
-        Assert.AreEqual(allFormats, formats);
+        // Old format (advanced_paste_from_text without _to_) should be rejected.
+        var scriptPath = CreateTempScript("def advanced_paste_from_text(text):\n    return text\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNull(metadata);
+        File.Delete(scriptPath);
     }
 
-    [TestMethod]
-    public void InferFormatsFromSignature_ComplexSignature()
+    private static string CreateTempScript(string content)
     {
-        var formats = PythonScriptService.InferFormatsFromSignature("file_paths=None, html=None, text=None, **kwargs");
-        var allFormats = Models.ClipboardFormat.Text | Models.ClipboardFormat.Html |
-                         Models.ClipboardFormat.Image | Models.ClipboardFormat.Audio |
-                         Models.ClipboardFormat.Video | Models.ClipboardFormat.File;
-        Assert.AreEqual(allFormats, formats);
+        var path = Path.Combine(Path.GetTempPath(), $"test_script_{Guid.NewGuid():N}.py");
+        File.WriteAllText(path, content);
+        return path;
     }
 }

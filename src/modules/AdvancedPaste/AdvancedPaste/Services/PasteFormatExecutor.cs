@@ -96,10 +96,10 @@ public sealed class PasteFormatExecutor(
 
         var detectedFormat = await clipboardData.GetAvailableFormatsAsync();
 
-        // V2 interface: script defines convert() — use unified runner on any platform.
+        // V2 interface: script defines advanced_paste_from_*_to_*() — use unified runner.
         if (metadata.IsV2)
         {
-            return await _pythonScriptService.ExecuteScriptAsync(scriptPath, clipboardData, detectedFormat, cancellationToken, progress);
+            return await _pythonScriptService.ExecuteScriptAsync(scriptPath, metadata.Platform, clipboardData, detectedFormat, cancellationToken, progress);
         }
 
         // Legacy paths for backward compatibility.

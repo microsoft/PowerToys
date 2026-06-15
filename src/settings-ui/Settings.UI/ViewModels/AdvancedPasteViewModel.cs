@@ -330,6 +330,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool PythonUseWsl
+        {
+            get => _advancedPasteSettings.Properties.PythonScripts?.UseWsl ?? false;
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                if (scripts.UseWsl != value)
+                {
+                    scripts.UseWsl = value;
+                    OnPropertyChanged(nameof(PythonUseWsl));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
+        public string WslDistribution
+        {
+            get => _advancedPasteSettings.Properties.PythonScripts?.WslDistribution ?? string.Empty;
+            set
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
+                if (!string.Equals(scripts.WslDistribution, value, StringComparison.Ordinal))
+                {
+                    scripts.WslDistribution = value ?? string.Empty;
+                    OnPropertyChanged(nameof(WslDistribution));
+                    SaveAndNotifySettings();
+                }
+            }
+        }
+
         public string ScriptsFolder
         {
             get => _advancedPasteSettings.Properties.PythonScripts?.ScriptsFolder ?? string.Empty;

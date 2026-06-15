@@ -18,6 +18,12 @@ public sealed class AdvancedPastePythonScriptSettings
     [JsonPropertyName("pythonExecutablePath")]
     public string PythonExecutablePath { get; set; } = string.Empty;
 
+    [JsonPropertyName("useWsl")]
+    public bool UseWsl { get; set; }
+
+    [JsonPropertyName("wslDistribution")]
+    public string WslDistribution { get; set; } = string.Empty;
+
     [JsonPropertyName("timeoutSeconds")]
     public int TimeoutSeconds { get; set; } = 30;
 
