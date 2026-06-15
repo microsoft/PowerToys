@@ -355,18 +355,17 @@
         <ScrollViewer Grid.Row="3">
             <Grid RowSpacing="4">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="{x:Bind ViewModel.StandardPasteFormats.Count, Mode=OneWay, Converter={StaticResource standardPasteFormatsToHeightConverter}}" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.CustomActionPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" MinHeight="{x:Bind ViewModel.PythonScriptPasteFormats.Count, Mode=OneWay, Converter={StaticResource customActionsToMinHeightConverter}}" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <ListView
                     x:Name="PasteOptionsListView"
                     Grid.Row="0"
-                    VerticalAlignment="Bottom"
                     IsItemClickEnabled="True"
                     ItemClick="PasteFormat_ItemClick"
                     ItemContainerTransitions="{x:Null}"
