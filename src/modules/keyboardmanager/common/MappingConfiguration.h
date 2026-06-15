@@ -10,6 +10,7 @@ using SingleKeyRemapTable = std::unordered_map<DWORD, KeyShortcutTextUnion>;
 using SingleKeyToTextRemapTable = SingleKeyRemapTable;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
+using AppSpecificSingleKeyRemapTable = std::map<std::wstring, SingleKeyRemapTable>;
 
 class MappingConfiguration
 {
@@ -34,6 +35,9 @@ public:
     // Function to clear the App specific shortcut remapping table
     void ClearAppSpecificShortcuts();
 
+    // Function to clear the App specific single key remapping table
+    void ClearAppSpecificSingleKeyRemaps();
+
     // Function to add a new single key to key remapping
     bool AddSingleKeyRemap(const DWORD& originalKey, const KeyShortcutTextUnion& newRemapKey);
 
@@ -45,6 +49,9 @@ public:
 
     // Function to add a new App specific level shortcut remapping
     bool AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutTextUnion& newSC);
+
+    // Function to add a new app specific single key remapping
+    bool AddAppSpecificSingleKeyRemap(const std::wstring& app, const DWORD& originalKey, const KeyShortcutTextUnion& newRemapKey);
 
     // The map members and their mutexes are left as public since the maps are used extensively in dllmain.cpp.
     // Maps which store the remappings for each of the features. The bool fields should be initialized to false. They are used to check the current state of the shortcut (i.e is that particular shortcut currently pressed down or not).
@@ -66,6 +73,9 @@ public:
     AppSpecificShortcutRemapTable appSpecificShortcutReMap;
     std::map<std::wstring, std::vector<Shortcut>> appSpecificShortcutReMapSortedKeys;
 
+    // Stores the app-specific single key remappings. Maps application name to the single key remap table
+    AppSpecificSingleKeyRemapTable appSpecificSingleKeyReMap;
+
     // Stores the current configuration name.
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
@@ -74,4 +84,5 @@ private:
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);
     bool LoadAppSpecificShortcutRemaps(const json::JsonObject& remapShortcutsData);
+    bool LoadAppSpecificSingleKeyRemaps(const json::JsonObject& jsonData);
 };

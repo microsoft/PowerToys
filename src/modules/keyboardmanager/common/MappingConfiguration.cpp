@@ -37,6 +37,12 @@ void MappingConfiguration::ClearAppSpecificShortcuts()
     appSpecificShortcutReMapSortedKeys.clear();
 }
 
+// Function to clear the App specific single key remapping table
+void MappingConfiguration::ClearAppSpecificSingleKeyRemaps()
+{
+    appSpecificSingleKeyReMap.clear();
+}
+
 // Function to add a new OS level shortcut remapping
 bool MappingConfiguration::AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC)
 {
@@ -117,6 +123,26 @@ bool MappingConfiguration::AddAppSpecificShortcut(const std::wstring& app, const
     appSpecificShortcutReMap[process_name][originalSC] = RemapShortcut(newSC);
     appSpecificShortcutReMapSortedKeys[process_name].push_back(originalSC);
     Helpers::SortShortcutVectorBasedOnSize(appSpecificShortcutReMapSortedKeys[process_name]);
+    return true;
+}
+
+// Function to add a new app specific single key remapping
+bool MappingConfiguration::AddAppSpecificSingleKeyRemap(const std::wstring& app, const DWORD& originalKey, const KeyShortcutTextUnion& newRemapKey)
+{
+    std::wstring process_name;
+    process_name.resize(app.length());
+    std::transform(app.begin(), app.end(), process_name.begin(), towlower);
+
+    auto appIt = appSpecificSingleKeyReMap.find(process_name);
+    if (appIt != appSpecificSingleKeyReMap.end())
+    {
+        if (appIt->second.find(originalKey) != appIt->second.end())
+        {
+            return false;
+        }
+    }
+
+    appSpecificSingleKeyReMap[process_name][originalKey] = newRemapKey;
     return true;
 }
 
@@ -304,6 +330,52 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
     return result;
 }
 
+bool MappingConfiguration::LoadAppSpecificSingleKeyRemaps(const json::JsonObject& jsonData)
+{
+    bool result = true;
+
+    try
+    {
+        auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+        if (!remapKeysData)
+        {
+            return result;
+        }
+
+        auto appSpecificRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::AppSpecificRemapKeysSettingName);
+        for (const auto& it : appSpecificRemapKeys)
+        {
+            try
+            {
+                auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
+                auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                auto targetApp = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TargetAppSettingName);
+
+                if (std::wstring(newRemapKey).find(L";") != std::string::npos)
+                {
+                    AddAppSpecificSingleKeyRemap(targetApp.c_str(), std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
+                }
+                else
+                {
+                    AddAppSpecificSingleKeyRemap(targetApp.c_str(), std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                }
+            }
+            catch (...)
+            {
+                Logger::error(L"Improper Key Data JSON for app-specific single key remap. Try the next remap.");
+                result = false;
+            }
+        }
+    }
+    catch (...)
+    {
+        Logger::error(L"Improper JSON format for app-specific single key remaps. Skip to next remap type");
+        result = false;
+    }
+
+    return result;
+}
+
 bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName)
 {
     bool result = true;
@@ -430,6 +502,8 @@ bool MappingConfiguration::LoadSettings()
         }
 
         bool result = LoadSingleKeyRemaps(*configFile);
+        ClearAppSpecificSingleKeyRemaps();
+        result = LoadAppSpecificSingleKeyRemaps(*configFile) && result;
         ClearOSLevelShortcuts();
         ClearAppSpecificShortcuts();
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsSettingName) && result;
@@ -459,6 +533,8 @@ bool MappingConfiguration::SaveSettingsToFile()
 
     json::JsonArray inProcessRemapKeysArray;
     json::JsonArray inProcessRemapKeysToTextArray;
+
+    json::JsonArray appSpecificRemapKeysArray;
 
     json::JsonArray appSpecificRemapShortcutsArray;
     json::JsonArray appSpecificRemapShortcutsToTextArray;
@@ -630,7 +706,29 @@ bool MappingConfiguration::SaveSettingsToFile()
     remapShortcutsToText.SetNamedValue(KeyboardManagerConstants::GlobalRemapShortcutsSettingName, globalRemapShortcutsToTextArray);
     remapShortcutsToText.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, appSpecificRemapShortcutsToTextArray);
 
+    for (const auto& itApp : appSpecificSingleKeyReMap)
+    {
+        for (const auto& itKeys : itApp.second)
+        {
+            json::JsonObject keys;
+            keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(itKeys.first))));
+
+            if (itKeys.second.index() == 0)
+            {
+                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(itKeys.second))));
+            }
+            else
+            {
+                keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(itKeys.second).ToHstringVK()));
+            }
+
+            keys.SetNamedValue(KeyboardManagerConstants::TargetAppSettingName, json::value(itApp.first));
+            appSpecificRemapKeysArray.Append(keys);
+        }
+    }
+
     remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
+    remapKeys.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapKeysSettingName, appSpecificRemapKeysArray);
     remapKeysToText.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysToTextArray);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysToTextSettingName, remapKeysToText);

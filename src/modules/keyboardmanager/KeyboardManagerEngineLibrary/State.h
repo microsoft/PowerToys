@@ -11,6 +11,9 @@ public:
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
 
+    // Function to get the iterator of an app-specific single key remap given the source key and app name. Returns nullopt if it isn't remapped
+    std::optional<SingleKeyRemapTable::iterator> GetAppSpecificSingleKeyRemap(const DWORD& originalKey, const std::wstring& appName);
+
     // Function to get a unicode string remap given the source key. Returns nullopt if it isn't remapped
     std::optional<std::wstring> GetSingleKeyToTextRemapEvent(const DWORD originalKey) const;
 

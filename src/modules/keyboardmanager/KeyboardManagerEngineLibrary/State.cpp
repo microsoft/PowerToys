@@ -14,6 +14,22 @@ std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWOR
     return std::nullopt;
 }
 
+// Function to get the iterator of an app-specific single key remap given the source key and app name. Returns nullopt if it isn't remapped
+std::optional<SingleKeyRemapTable::iterator> State::GetAppSpecificSingleKeyRemap(const DWORD& originalKey, const std::wstring& appName)
+{
+    auto appIt = appSpecificSingleKeyReMap.find(appName);
+    if (appIt != appSpecificSingleKeyReMap.end())
+    {
+        auto it = appIt->second.find(originalKey);
+        if (it != appIt->second.end())
+        {
+            return it;
+        }
+    }
+
+    return std::nullopt;
+}
+
 std::optional<std::wstring> State::GetSingleKeyToTextRemapEvent(const DWORD originalKey) const
 {
     if (auto it = singleKeyToTextReMap.find(originalKey); it != end(singleKeyToTextReMap))

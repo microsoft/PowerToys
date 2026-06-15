@@ -95,6 +95,124 @@ namespace KeyboardEventHandlers
         if (!GeneratedByKBM(data))
         {
             UpdateNumpadWithShift(data, state);
+
+            // Check app-specific single key remaps first (per-app mapping has priority over global)
+            std::wstring process_name;
+            process_name.resize(MAX_PATH);
+            ii.GetForegroundProcess(process_name);
+            process_name.erase(std::find(process_name.begin(), process_name.end(), L'\0'), process_name.end());
+
+            if (!process_name.empty())
+            {
+                std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
+
+                auto appRemapping = state.GetAppSpecificSingleKeyRemap(data->lParam->vkCode, process_name);
+                if (!appRemapping)
+                {
+                    size_t extensionIndex = process_name.find_last_of(L".");
+                    if (extensionIndex != std::wstring::npos)
+                    {
+                        appRemapping = state.GetAppSpecificSingleKeyRemap(data->lParam->vkCode, process_name.substr(0, extensionIndex));
+                    }
+                }
+
+                if (appRemapping)
+                {
+                    auto it = appRemapping.value();
+                    // Handle remap using the same logic as the global path below
+                    // For simplicity, we reuse the result as if it came from the global table
+                    const bool remapToKey = it->second.index() == 0;
+
+                    if (remapToKey)
+                    {
+                        if (std::get<DWORD>(it->second) == CommonSharedConstants::VK_DISABLED)
+                        {
+                            return 1;
+                        }
+                    }
+
+                    int key_count;
+                    if (remapToKey)
+                    {
+                        key_count = 1;
+                    }
+                    else
+                    {
+                        key_count = std::get<Shortcut>(it->second).Size();
+                    }
+
+                    std::vector<INPUT> keyEventList;
+                    DWORD target;
+                    if (remapToKey)
+                    {
+                        target = Helpers::FilterArtificialKeys(std::get<DWORD>(it->second));
+                    }
+                    else
+                    {
+                        target = Helpers::FilterArtificialKeys(std::get<Shortcut>(it->second).GetActionKey());
+                    }
+
+                    if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                    {
+                        ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first, target);
+                    }
+
+                    if (remapToKey)
+                    {
+                        if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                        {
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(target), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        }
+                        else
+                        {
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(target), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        }
+                    }
+                    else
+                    {
+                        Shortcut targetShortcut = std::get<Shortcut>(it->second);
+                        if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+                        {
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        }
+                        else
+                        {
+                            Helpers::SetModifierKeyEvents(targetShortcut, Modifiers(), keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+                        }
+                    }
+
+                    ii.SendVirtualInput(keyEventList);
+
+                    if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+                    {
+                        if (remapToKey)
+                        {
+                            ResetIfModifierKeyForLowerLevelKeyHandlers(ii, target, it->first);
+                        }
+                        else
+                        {
+                            std::vector<DWORD> shortcutKeys = std::get<Shortcut>(it->second).GetKeyCodes();
+                            for (auto& itSk : shortcutKeys)
+                            {
+                                ResetIfModifierKeyForLowerLevelKeyHandlers(ii, itSk, it->first);
+                            }
+                        }
+
+                        static int dayWeLastSentKeyToKeyTelemetryOn = -1;
+                        auto currentDay = std::chrono::duration_cast<std::chrono::days>(std::chrono::system_clock::now().time_since_epoch()).count();
+                        if (dayWeLastSentKeyToKeyTelemetryOn != currentDay)
+                        {
+                            Trace::DailyKeyToKeyRemapInvoked();
+                            dayWeLastSentKeyToKeyTelemetryOn = currentDay;
+                        }
+                    }
+
+                    return 1;
+                }
+            }
+
             const auto remapping = state.GetSingleKeyRemap(data->lParam->vkCode);
             if (remapping)
             {
