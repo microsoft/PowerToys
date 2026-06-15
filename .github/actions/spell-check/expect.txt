@@ -1396,6 +1396,7 @@ POWERRENAMECONTEXTMENU
 powerrenameinput
 POWERRENAMETEST
 POWERTOYNAME
+powertoyscli
 powertoyssetup
 powertoysusersetup
 Powrprof
@@ -1556,6 +1557,7 @@ RESIZETOFIT
 resmimetype
 RESOURCEID
 RESTORETOMAXIMIZED
+retargets
 RETURNONLYFSDIRS
 Revalidates
 RGBQUAD

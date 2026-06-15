@@ -28,7 +28,7 @@ namespace KeyboardManagerEditorUI.Templates
 
         /// <summary>
         /// Returns an executable path that exists on disk. If <paramref name="executable"/> already
-        /// resolves to an existing file it is returned unchanged. For a non-existent
+        /// resolves to an existing file it is returned unchanged. For a nonexistent
         /// <c>PowerToys.exe</c> path, known install locations are probed. If none exist the original
         /// value is returned (the engine will surface a "program not found" error at trigger time).
         /// </summary>
