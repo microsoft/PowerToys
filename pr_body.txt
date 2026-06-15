@@ -1,0 +1,18 @@
+## Summary
+
+Fixes the installer getting stuck at "Closing PowerToys application" in Windows Sandbox (or any clean environment).
+
+## Changes
+
+### terminate_powertoys.cmd
+- Added tasklist pre-check: exits immediately if PowerToys.exe is not running
+- Added ping delay between retry attempts for proper back-off
+- Added force-kill fallback (taskkill /F) after all graceful close attempts fail
+- Changed goto:quit to exit /b 0 for explicit exit code propagation
+
+### PowerToys.wxs
+- Added DetectCondition to TerminatePowerToys ExePackage so it is skipped entirely on fresh install (when no PowerToys version is detected). This prevents the bootstrapper from ever launching the .cmd file in environments like Windows Sandbox.
+
+## Testing
+- Fresh install: ExePackage skipped -> install proceeds directly to WebView2 + MSI
+- Upgrade: ExePackage runs -> script pre-checks for running PowerToys.exe -> only enters kill loop if it exists

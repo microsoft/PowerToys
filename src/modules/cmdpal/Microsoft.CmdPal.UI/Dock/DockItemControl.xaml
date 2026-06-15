@@ -116,7 +116,7 @@
                                             VerticalAlignment="Center"
                                             FontFamily="Segoe UI"
                                             FontSize="10"
-                                            Foreground="{ThemeResource TextFillColorTertiary}"
+                                            Foreground="{ThemeResource TextFillColorSecondary}"
                                             Text="{TemplateBinding Subtitle}"
                                             TextAlignment="Left"
                                             TextTrimming="CharacterEllipsis"
