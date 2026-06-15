@@ -528,26 +528,26 @@ namespace RemappingUITests
         {
             MappingConfiguration testShortcuts;
 
-            bool addedShortTrigger = testShortcuts.AddTextReplacement(L">>", L"\u2192");
-            bool addedLongTrigger = testShortcuts.AddTextReplacement(L"otw", L"On the way!");
+            bool addedShortTrigger = testShortcuts.AddTextReplacement(L"sun", L"moon");
+            bool addedLongTrigger = testShortcuts.AddTextReplacement(L"planet", L"galaxy");
 
             Assert::AreEqual(true, addedShortTrigger);
             Assert::AreEqual(true, addedLongTrigger);
-            Assert::AreEqual(std::wstring(L"\u2192"), testShortcuts.textReplacements[L">>"]);
-            Assert::AreEqual(std::wstring(L"On the way!"), testShortcuts.textReplacements[L"otw"]);
-            Assert::AreEqual(static_cast<size_t>(3), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(std::wstring(L"moon"), testShortcuts.textReplacements[L"sun"]);
+            Assert::AreEqual(std::wstring(L"galaxy"), testShortcuts.textReplacements[L"planet"]);
+            Assert::AreEqual(static_cast<size_t>(6), testShortcuts.maxTextReplacementTriggerLength);
         }
 
         TEST_METHOD (AddTextReplacement_ShouldRejectEmptyOrDuplicateReplacement)
         {
             MappingConfiguration testShortcuts;
 
-            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"otw", L"On the way!"));
-            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"otw", L"Other text"));
-            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"", L"On the way!"));
-            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"brb", L""));
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"hello", L"world"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"hello", L"target"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"", L"world"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"greeting", L""));
             Assert::AreEqual(static_cast<size_t>(1), testShortcuts.textReplacements.size());
-            Assert::AreEqual(static_cast<size_t>(3), testShortcuts.maxTextReplacementTriggerLength);
+            Assert::AreEqual(static_cast<size_t>(5), testShortcuts.maxTextReplacementTriggerLength);
         }
     };
 }
