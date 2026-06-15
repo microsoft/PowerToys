@@ -291,8 +291,6 @@ public partial class App : Application, IDisposable
 
     public void Dispose()
     {
-        Logger.LogInfo(report);
-
         (Services as IDisposable)?.Dispose();
         _globalErrorHandler.Dispose();
         EtwTrace.Dispose();
