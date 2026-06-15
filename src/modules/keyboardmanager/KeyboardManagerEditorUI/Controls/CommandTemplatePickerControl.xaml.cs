@@ -19,11 +19,29 @@ namespace KeyboardManagerEditorUI.Controls
         {
             InitializeComponent();
             ViewModel = new CommandTemplatePickerViewModel();
+
+            // Re-raise SelectionChanged when parameter validity could have changed so the host
+            // (UnifiedMappingControl/MainPage) re-evaluates Save-button enablement, not just on
+            // the initial template pick.
+            ViewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CommandTemplatePickerViewModel.IsAllValid))
+                {
+                    SelectionChanged?.Invoke(this, EventArgs.Empty);
+                }
+            };
         }
 
         public CommandTemplatePickerViewModel ViewModel { get; }
 
         public event EventHandler? SelectionChanged;
+
+        /// <summary>
+        /// Gets a value indicating whether a template is selected and all its required
+        /// parameters have values. Drives Save-button enablement for the RunTemplate action.
+        /// </summary>
+        public bool IsTemplateInputValid =>
+            ViewModel.SelectedTemplate is not null && ViewModel.IsAllValid;
 
         public event EventHandler? MissingTemplateKeepRequested;
 

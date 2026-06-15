@@ -167,6 +167,8 @@ namespace KeyboardManagerEditorUI.Interop
         public IntPtr ProgramPath;
         public IntPtr ProgramArgs;
         public IntPtr UriToOpen;
+        public IntPtr TemplateId;
+        public IntPtr TemplateParametersJson;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

@@ -50,11 +50,20 @@ namespace KeyboardManagerEditorUI.Templates
                 ?? throw new InvalidOperationException(
                     $"Failed to deserialize '{ResourceName}' — JsonSerializer returned null.");
 
-            if (data.SchemaVersion != SupportedSchemaVersion)
+            if (data.SchemaVersion < 1)
             {
                 throw new InvalidOperationException(
-                    $"Unsupported powertoyscli.json schemaVersion={data.SchemaVersion}; " +
-                    $"expected {SupportedSchemaVersion}.");
+                    $"Invalid powertoyscli.json schemaVersion={data.SchemaVersion}; " +
+                    $"expected >= 1.");
+            }
+
+            if (data.SchemaVersion > SupportedSchemaVersion)
+            {
+                // Newer catalogs are read best-effort: unknown additive fields are ignored by
+                // the deserializer, so a forward-compatible bump must not break older binaries.
+                ManagedCommon.Logger.LogWarning(
+                    $"powertoyscli.json schemaVersion={data.SchemaVersion} is newer than " +
+                    $"supported {SupportedSchemaVersion}; reading best-effort.");
             }
 
             if (data.Modules.Count == 0)

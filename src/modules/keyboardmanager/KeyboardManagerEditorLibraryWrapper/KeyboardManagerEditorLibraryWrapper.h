@@ -33,6 +33,8 @@ struct ShortcutMapping
     wchar_t* programPath;
     wchar_t* programArgs;
     wchar_t* uriToOpen;
+    wchar_t* templateId;
+    wchar_t* templateParametersJson;
 };
 
 extern "C"

@@ -259,20 +259,25 @@ bool MappingConfiguration::LoadAppSpecificShortcutRemaps(const json::JsonObject&
                     tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
                     // Optional template metadata (preserved through round-trip; safe to omit on legacy entries).
-                    if (it.GetObjectW().HasKey(KeyboardManagerConstants::TemplateIdSettingName))
+                    auto entryObj = it.GetObjectW();
+                    if (entryObj.HasKey(KeyboardManagerConstants::TemplateIdSettingName))
                     {
-                        tempShortcut.templateId = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TemplateIdSettingName, L"");
+                        tempShortcut.templateId = entryObj.GetNamedString(KeyboardManagerConstants::TemplateIdSettingName, L"");
                     }
-                    if (it.GetObjectW().HasKey(KeyboardManagerConstants::TemplateParametersSettingName))
+                    if (entryObj.HasKey(KeyboardManagerConstants::TemplateParametersSettingName))
                     {
-                        auto paramsObj = it.GetObjectW().GetNamedObject(KeyboardManagerConstants::TemplateParametersSettingName);
-                        for (auto const& kv : paramsObj)
+                        // Type-check before reading: malformed (non-object) metadata must not discard the whole mapping.
+                        auto paramsValue = entryObj.GetNamedValue(KeyboardManagerConstants::TemplateParametersSettingName);
+                        if (paramsValue.ValueType() == json::JsonValueType::Object)
                         {
-                            if (kv.Value().ValueType() == json::JsonValueType::String)
+                            for (auto const& kv : paramsValue.GetObjectW())
                             {
-                                tempShortcut.templateParameters.emplace(
-                                    std::wstring(kv.Key()),
-                                    std::wstring(kv.Value().GetString()));
+                                if (kv.Value().ValueType() == json::JsonValueType::String)
+                                {
+                                    tempShortcut.templateParameters.emplace(
+                                        std::wstring(kv.Key()),
+                                        std::wstring(kv.Value().GetString()));
+                                }
                             }
                         }
                     }
@@ -373,20 +378,25 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
                             tempShortcut.startWindowType = static_cast<Shortcut::StartWindowType>(runProgramStartWindowType);
 
                             // Optional template metadata (preserved through round-trip; safe to omit on legacy entries).
-                            if (it.GetObjectW().HasKey(KeyboardManagerConstants::TemplateIdSettingName))
+                            auto entryObj = it.GetObjectW();
+                            if (entryObj.HasKey(KeyboardManagerConstants::TemplateIdSettingName))
                             {
-                                tempShortcut.templateId = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TemplateIdSettingName, L"");
+                                tempShortcut.templateId = entryObj.GetNamedString(KeyboardManagerConstants::TemplateIdSettingName, L"");
                             }
-                            if (it.GetObjectW().HasKey(KeyboardManagerConstants::TemplateParametersSettingName))
+                            if (entryObj.HasKey(KeyboardManagerConstants::TemplateParametersSettingName))
                             {
-                                auto paramsObj = it.GetObjectW().GetNamedObject(KeyboardManagerConstants::TemplateParametersSettingName);
-                                for (auto const& kv : paramsObj)
+                                // Type-check before reading: malformed (non-object) metadata must not discard the whole mapping.
+                                auto paramsValue = entryObj.GetNamedValue(KeyboardManagerConstants::TemplateParametersSettingName);
+                                if (paramsValue.ValueType() == json::JsonValueType::Object)
                                 {
-                                    if (kv.Value().ValueType() == json::JsonValueType::String)
+                                    for (auto const& kv : paramsValue.GetObjectW())
                                     {
-                                        tempShortcut.templateParameters.emplace(
-                                            std::wstring(kv.Key()),
-                                            std::wstring(kv.Value().GetString()));
+                                        if (kv.Value().ValueType() == json::JsonValueType::String)
+                                        {
+                                            tempShortcut.templateParameters.emplace(
+                                                std::wstring(kv.Key()),
+                                                std::wstring(kv.Value().GetString()));
+                                        }
                                     }
                                 }
                             }

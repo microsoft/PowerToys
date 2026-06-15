@@ -280,7 +280,9 @@ namespace KeyboardManagerEditorUI.Pages
             if (!string.IsNullOrEmpty(templateId))
             {
                 // Restore as RunTemplate: the picker handles missing-template degradation internally.
-                UnifiedMappingControl.SetRunTemplate(templateId, templateParameters);
+                // Pass the resolved command so "Keep as plain command" can preserve it if the
+                // stored templateId is no longer present in the catalog.
+                UnifiedMappingControl.SetRunTemplate(templateId, templateParameters, programShortcut.AppToRun, programShortcut.Args);
             }
             else
             {
@@ -709,6 +711,10 @@ namespace KeyboardManagerEditorUI.Pages
                 // No template selected or unresolvable — validation should have caught this.
                 return false;
             }
+
+            // Retarget the template's default per-user path to a machine-wide install when needed,
+            // so the saved mapping launches regardless of how PowerToys was installed.
+            programPath = Templates.PowerToysInstallResolver.ResolveExecutable(programPath);
 
             string originalKeysString = string.Join(";", triggerKeys.Select(k => _mappingService!.GetKeyCodeFromName(k).ToString(CultureInfo.InvariantCulture)));
 

@@ -43,6 +43,38 @@ extern "C"
         return buffer;
     }
 
+    // Serializes template parameters to a JSON object string for marshaling back to the editor.
+    // Returns an empty string when there are no parameters.
+    std::wstring SerializeTemplateParameters(const std::map<std::wstring, std::wstring>& params)
+    {
+        if (params.empty())
+        {
+            return L"";
+        }
+
+        json::JsonObject paramsObj;
+        for (auto const& [k, v] : params)
+        {
+            paramsObj.SetNamedValue(k, json::JsonValue::CreateStringValue(v));
+        }
+
+        return paramsObj.Stringify().c_str();
+    }
+
+    // Populates the template metadata fields on a marshaled mapping. Always sets both pointers
+    // (the editor frees every field), using empty strings for non-template / non-RunProgram entries.
+    void SetTemplateMetadata(ShortcutMapping* mapping, const Shortcut& targetShortcut)
+    {
+        mapping->templateId = AllocateAndCopyString(targetShortcut.templateId);
+        mapping->templateParametersJson = AllocateAndCopyString(SerializeTemplateParameters(targetShortcut.templateParameters));
+    }
+
+    void SetEmptyTemplateMetadata(ShortcutMapping* mapping)
+    {
+        mapping->templateId = AllocateAndCopyString(L"");
+        mapping->templateParametersJson = AllocateAndCopyString(L"");
+    }
+
     int GetSingleKeyRemapCount(void* config)
     {
         auto mapping = static_cast<MappingConfiguration*>(config);
@@ -384,6 +416,17 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             mapping->uriToOpen = AllocateAndCopyString(L"");
         }
 
+        // Carry template metadata back to the editor so a template mapping re-opens as RunTemplate.
+        // Only RunProgram shortcuts ever carry it; every other entry gets empty (but allocated) fields.
+        if (targetShortcutUnion.index() == 1)
+        {
+            SetTemplateMetadata(mapping, std::get<Shortcut>(targetShortcutUnion));
+        }
+        else
+        {
+            SetEmptyTemplateMetadata(mapping);
+        }
+
         return true;
     }
 
@@ -483,6 +526,17 @@ bool GetShortcutRemapByType(void* config, int operationType, int index, Shortcut
             mapping->programPath = AllocateAndCopyString(L"");
             mapping->programArgs = AllocateAndCopyString(L"");
             mapping->uriToOpen = AllocateAndCopyString(L"");
+        }
+
+        // Carry template metadata back to the editor so a template mapping re-opens as RunTemplate.
+        // Only RunProgram shortcuts ever carry it; every other entry gets empty (but allocated) fields.
+        if (targetShortcutUnion.index() == 1)
+        {
+            SetTemplateMetadata(mapping, std::get<Shortcut>(targetShortcutUnion));
+        }
+        else
+        {
+            SetEmptyTemplateMetadata(mapping);
         }
 
         return true;
