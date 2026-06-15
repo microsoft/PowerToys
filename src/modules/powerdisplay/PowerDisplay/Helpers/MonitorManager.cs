@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -133,10 +132,9 @@ namespace PowerDisplay.Helpers
         {
             var inventory = DisplayConfigInventory.GetAllMonitorDisplayInfo();
 
-            // Filter blacklisted monitors out of the inventory before any controller
-            // is dispatched. Matching uses MonitorIdentity.EdidIdFromMonitorId on each
-            // entry's DevicePath, so blocked monitors are not opened, probed, or queried
-            // — the whole point of the blacklist over the per-monitor IsHidden flag.
+            // Filter blacklisted monitors before any controller runs, so blocked displays are
+            // never opened, probed, or queried (unlike the per-monitor IsHidden flag). Matching
+            // is by MonitorIdentity.EdidIdFromMonitorId on each entry's DevicePath.
             var beforeCount = inventory.Count;
             var filteredInventory = new Dictionary<string, MonitorDisplayInfo>(
                 inventory.Count, StringComparer.OrdinalIgnoreCase);
@@ -169,9 +167,7 @@ namespace PowerDisplay.Helpers
 
             var allDisplays = inventory.Values.ToList();
 
-            // Phase 1: WMI discovery over the full inventory. A display the WMI brightness
-            // provider exposes is, by definition, a WMI-controllable internal panel —
-            // regardless of the OutputTechnology the active GPU reports for it.
+            // Phase 1: WMI over the full inventory — whatever it claims is an internal panel.
             var wmiMonitors = _wmiController != null
                 ? (await SafeDiscoverAsync(_wmiController, allDisplays, cancellationToken)).ToList()
                 : new List<Monitor>();
@@ -179,11 +175,9 @@ namespace PowerDisplay.Helpers
             var wmiClaimedIds = new HashSet<string>(
                 wmiMonitors.Select(m => m.Id), StringComparer.OrdinalIgnoreCase);
 
-            // Phase 2: every display WMI did not claim is treated as external and sent to
-            // DDC/CI. Accepted trade-off: a monitor that exposes both WMI brightness and
-            // DDC/CI is controlled via WMI only and will not get DDC-only features
-            // (contrast/volume/input/etc.). Partition once — FromDevicePath is computed a
-            // single time per display.
+            // Phase 2: everything WMI did not claim goes to DDC/CI. Accepted trade-off — a
+            // monitor exposing both is controlled via WMI only and won't get DDC-only features
+            // (contrast/volume/input). Partition once so FromDevicePath runs a single time each.
             var byRoute = allDisplays.ToLookup(
                 d => wmiClaimedIds.Contains(MonitorIdentity.FromDevicePath(d.DevicePath)));
             IReadOnlyList<MonitorDisplayInfo> wmiTargets = byRoute[true].ToList();
@@ -213,22 +207,16 @@ namespace PowerDisplay.Helpers
 
             foreach (var info in wmiTargets.Concat(ddcTargets).OrderBy(i => i.MonitorNumber))
             {
-                var techValue = info.OutputTechnology >= 0x80000000u
-                    ? "0x" + info.OutputTechnology.ToString("X", CultureInfo.InvariantCulture)
-                    : info.OutputTechnology.ToString(CultureInfo.InvariantCulture);
                 var route = wmiPaths.Contains(info.DevicePath) ? "WMI (internal)" : "DDC/CI (external)";
 
-                // Log EdidId (manufacturer+product code from EDID) up front, before any
-                // DDC/CI capability fetch runs. QueryDisplayConfig reads OS-cached EDID and
-                // cannot BSOD, so this line is guaranteed on disk before the crash-prone
-                // DDC fetch starts — recovered logs identify every attached model
-                // (and same-model duplicates) for crash correlation.
+                // EdidId (manufacturer+product code) is logged here, before the BSOD-prone DDC
+                // capability fetch, so recovered logs identify every attached model (and
+                // same-model duplicates) for crash correlation.
                 var edidId = MonitorIdentity.EdidIdFromMonitorId(info.DevicePath);
                 var edidIdField = string.IsNullOrEmpty(edidId) ? "?" : edidId;
 
                 Logger.LogInfo(
-                    $"  [Path {info.MonitorNumber}] EdidId={edidIdField} {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
-                    $"OutputTechnology={techValue} → {route}");
+                    $"  [Path {info.MonitorNumber}] EdidId={edidIdField} {info.GdiDeviceName} / \"{info.FriendlyName}\" → {route}");
             }
 
             Logger.LogInfo($"[DisplayClassification] Summary: {wmiTargets.Count} WMI, {ddcTargets.Count} DDC/CI");

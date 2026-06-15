@@ -171,19 +171,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return Enumerable.Empty<Monitor>();
             }
 
-            // Wrap the parallel discovery in a CrashDetectionScope. The scope writes
-            // discovery.lock on Begin and deletes it on Dispose. If the process is killed
-            // during capabilities I/O (BSOD, FailFast, TerminateProcess), Dispose never runs
-            // and the lock survives — next PowerDisplay.exe startup notices it via CrashRecovery.
-            //
-            // Scope scope note: the original three-phase design wrapped only Phase 2 (cap-string
-            // fetch). Main's per-handle pipeline interleaves Phase 1 (GDI/MultiMon enumeration)
-            // and Phase 3 (VCP init) with the fetch, so we wrap the whole Task.WhenAll. Phase 1
-            // GDI calls return null on failure (don't throw) and Phase 3 has its own catch-all
-            // in BuildMonitorFromPhysical, so false-positive quarantine from those paths is not
-            // observed in practice. Single Begin/Dispose per discovery is also required because
-            // CrashDetectionScope uses FileMode.CreateNew + FileShare.None and cannot be nested
-            // across the concurrent per-handle pipelines.
+            // Wrap the whole parallel discovery in a CrashDetectionScope: it writes discovery.lock
+            // on Begin and deletes it on Dispose, so if the process is killed during capabilities
+            // I/O (BSOD, FailFast, TerminateProcess) the surviving lock is picked up by
+            // CrashRecovery on the next startup. A single Begin/Dispose wraps the entire
+            // Task.WhenAll because CrashDetectionScope uses FileMode.CreateNew + FileShare.None
+            // and cannot be nested across the per-handle pipelines.
             IReadOnlyList<Monitor>[] results;
             CrashDetectionScope? scope;
             try

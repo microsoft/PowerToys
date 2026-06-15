@@ -192,18 +192,15 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Discover the monitors the WMI brightness provider exposes, pairing each against
-        /// the supplied active-display inventory. A display is WMI-controllable — and is
-        /// therefore treated as an internal panel by <see cref="MonitorManager"/> — precisely
-        /// when it appears in <c>WmiMonitorBrightness</c>, independent of the OutputTechnology
-        /// the active GPU reports. This is what lets a built-in panel driven by the discrete
-        /// GPU (which Windows reports as DisplayPort-External) still be found. See issue #48587.
-        /// The monitor Name is left blank here; the ViewModel layer fills in a localized
-        /// "Built-in Display" string so it can be translated for the user's UI language.
+        /// Discover the panels the WMI brightness provider exposes, pairing each against the
+        /// active-display inventory. A display present in <c>WmiMonitorBrightness</c> is treated
+        /// as an internal panel by <see cref="MonitorManager"/>, regardless of the OutputTechnology
+        /// the active GPU reports — this is what lets a built-in panel driven by the discrete GPU
+        /// (reported as DisplayPort-External) still be found. See issue #48587.
         /// </summary>
         /// <param name="targets">The full active-display inventory from QueryDisplayConfig.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>List of WMI-managed monitors (those present in both WMI and the inventory).</returns>
+        /// <returns>WMI-managed monitors (those present in both WMI and the inventory).</returns>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
             IReadOnlyList<MonitorDisplayInfo> targets,
             CancellationToken cancellationToken = default)
@@ -219,11 +216,9 @@ namespace PowerDisplay.Common.Drivers.WMI
                 {
                 var monitors = new List<Monitor>();
 
-                // Build Monitor.Id -> MonitorDisplayInfo over the full inventory. The Id is the
-                // canonical device path (FromDevicePath); a WMI InstanceName reduces to the same
-                // Id via FromInstanceName, so pairing is a single exact lookup that also
-                // disambiguates dual-internal-panel devices (Yoga Book 9i, Zenbook Duo) without
-                // needing any disambiguation pass.
+                // Key the inventory by canonical Monitor.Id (FromDevicePath). A WMI InstanceName
+                // reduces to the same Id via FromInstanceName, so pairing is a single exact lookup
+                // that also disambiguates dual-internal-panel devices without a separate pass.
                 var byId = targets
                     .Select(t => (Id: MonitorIdentity.FromDevicePath(t.DevicePath), Info: t))
                     .Where(p => !string.IsNullOrEmpty(p.Id))
@@ -238,9 +233,8 @@ namespace PowerDisplay.Common.Drivers.WMI
                     var brightnessQuery = $"SELECT InstanceName, CurrentBrightness FROM {BrightnessQueryClass}";
                     var brightnessResults = connection.CreateQuery(brightnessQuery).ToList();
 
-                    // Create monitor objects for each supported brightness instance.
-                    // Check cancellation per iteration since WMI work inside Task.Run
-                    // doesn't respond to the token after the loop starts.
+                    // Check cancellation per iteration: WMI work inside Task.Run doesn't
+                    // respond to the token once the loop has started.
                     foreach (var obj in brightnessResults)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -250,10 +244,9 @@ namespace PowerDisplay.Common.Drivers.WMI
                             var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
                             var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
 
-                            // Reduce the WMI InstanceName to the same canonical Monitor.Id the
-                            // inventory uses and pair on it. A miss means this WMI instance is not
-                            // an active display in the current configuration (e.g. a disconnected
-                            // panel still cached by the provider) — skip it.
+                            // Pair on the canonical Monitor.Id. A miss means this WMI instance is
+                            // not an active display (e.g. a disconnected panel still cached by the
+                            // provider) — skip it.
                             var lookupId = MonitorIdentity.FromInstanceName(instanceName);
                             if (string.IsNullOrEmpty(lookupId) || !byId.TryGetValue(lookupId, out var displayInfo))
                             {
@@ -263,13 +256,11 @@ namespace PowerDisplay.Common.Drivers.WMI
                                 continue;
                             }
 
-                            // Take the persisted Id from the matched inventory entry's DevicePath,
-                            // not the reconstructed lookupId: this keeps a WMI panel's Id
-                            // byte-identical to the DDC route and to prior releases (both derive
-                            // the Id from the DevicePath), so brightness and per-monitor settings
-                            // keyed by Monitor.Id survive across upgrades even if the WMI
-                            // InstanceName and the DevicePath differ in casing. FromInstanceName is
-                            // only the case-insensitive lookup key.
+                            // Derive the Id from the matched entry's DevicePath, not the
+                            // reconstructed lookupId, so a WMI panel's Id stays byte-identical to
+                            // the DDC route and keeps brightness/per-monitor settings stable even
+                            // when the InstanceName and DevicePath differ in casing. FromInstanceName
+                            // is only the lookup key.
                             // Name is left blank: MonitorViewModel injects a localized
                             // "Built-in Display" string for internal displays.
                             var monitor = new Monitor
