@@ -277,6 +277,34 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.IsNull(result);
         }
 
+        [DataTestMethod]
+        [DataRow(-3570, "1 hours ago")]      // 59m30s ago: rounds to 60 min, promotes to 1h
+        [DataRow(-3599, "1 hours ago")]      // 59m59s ago
+        [DataRow(3570, "in 1 hours")]
+        [DataRow(3599, "in 1 hours")]
+        public void GetFriendlyDateTime_MinuteBoundaryRollsToHours(int secondsDelta, string expected)
+        {
+            DateTime target = FriendlyReferenceNow.AddSeconds(secondsDelta);
+
+            string result = TimeAndDateHelper.GetFriendlyDateTime(target, FriendlyReferenceNow, CultureInfo.CurrentCulture);
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [DataTestMethod]
+        [DataRow(-23.5)]   // rounds to 24 hours, defer to friendly date
+        [DataRow(-23.99)]
+        [DataRow(23.5)]
+        [DataRow(23.99)]
+        public void GetFriendlyDateTime_HourBoundaryReturnsNull(double hoursDelta)
+        {
+            DateTime target = FriendlyReferenceNow.AddHours(hoursDelta);
+
+            string result = TimeAndDateHelper.GetFriendlyDateTime(target, FriendlyReferenceNow, CultureInfo.CurrentCulture);
+
+            Assert.IsNull(result);
+        }
+
         [TestCleanup]
         public void CleanUp()
         {

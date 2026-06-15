@@ -421,38 +421,45 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         {
             TimeSpan delta = target - now;
             double absSeconds = Math.Abs(delta.TotalSeconds);
+            bool isPast = delta.TotalSeconds < 0;
 
             if (absSeconds < 30)
             {
                 return Resources.Microsoft_plugin_timedate_FriendlyJustNow;
             }
 
-            double absMinutes = Math.Abs(delta.TotalMinutes);
-            if (absMinutes < 60)
+            // Rounded counts can land on a bucket boundary (e.g. 59m45s rounds to 60 min). When that
+            // happens we promote to the next bucket rather than emit "60 minutes ago" or "in 24 hours".
+            int roundedMinutes = (int)Math.Round(Math.Abs(delta.TotalMinutes));
+            if (roundedMinutes == 0)
             {
-                int minutes = (int)Math.Round(absMinutes);
-                if (minutes == 0)
-                {
-                    // Rounding 30s..59s down would land us back at "just now"; clamp instead.
-                    minutes = 1;
-                }
+                // 30s..59s rounds down to 0 minutes; clamp to 1 instead of falling back to "just now".
+                roundedMinutes = 1;
+            }
 
-                string key = delta.TotalSeconds < 0
+            if (roundedMinutes < 60)
+            {
+                string key = isPast
                     ? Resources.Microsoft_plugin_timedate_FriendlyMinutesAgo
                     : Resources.Microsoft_plugin_timedate_FriendlyInMinutes;
-                return string.Format(culture, CompositeFormat.Parse(key), minutes);
+                return string.Format(culture, CompositeFormat.Parse(key), roundedMinutes);
             }
 
-            double absHours = Math.Abs(delta.TotalHours);
-            if (absHours < 24)
+            int roundedHours = (int)Math.Round(Math.Abs(delta.TotalHours));
+            if (roundedHours < 1)
             {
-                int hours = Math.Max(1, (int)Math.Round(absHours));
-                string key = delta.TotalSeconds < 0
+                roundedHours = 1;
+            }
+
+            if (roundedHours < 24)
+            {
+                string key = isPast
                     ? Resources.Microsoft_plugin_timedate_FriendlyHoursAgo
                     : Resources.Microsoft_plugin_timedate_FriendlyInHours;
-                return string.Format(culture, CompositeFormat.Parse(key), hours);
+                return string.Format(culture, CompositeFormat.Parse(key), roundedHours);
             }
 
+            // 23h30m+ rounds to 24h, which belongs in the date bucket; defer to GetFriendlyDate.
             return null;
         }
 
