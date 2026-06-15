@@ -226,8 +226,8 @@ CLIPSIBLINGS
 closesocket
 clp
 CLSCTX
-CLSIDs
 clsids
+CLSIDs
 Clusion
 cmder
 CMDNOTFOUNDMODULEINTERFACE
@@ -373,8 +373,8 @@ DEFERERASE
 DEFPUSHBUTTON
 deinitialization
 DELA
-DELD
 deld
+DELD
 DELETEDKEYIMAGE
 DELETESCANS
 DEMOTYPE
@@ -398,8 +398,8 @@ devmgmt
 DEVMODE
 DEVMODEW
 DEVNODES
-devpal
 devpackages
+devpal
 DEVTYP
 dfx
 DIALOGEX
@@ -547,8 +547,8 @@ fesf
 FFFF
 fffffffzzz
 FFh
-Figma
 figma
+Figma
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -738,6 +738,7 @@ hrgn
 HROW
 hsb
 HSCROLL
+HSHELL
 hsi
 HTCLIENT
 hthumbnail
@@ -1354,8 +1355,8 @@ pguid
 phbm
 phbmp
 phicon
-Photoshop
 photoshop
+Photoshop
 phwnd
 pici
 pidl
@@ -1583,6 +1584,7 @@ rstringalpha
 rstringdigit
 rtb
 RTLREADING
+RUDEAPPACTIVATED
 runas
 rundll
 rungameid
@@ -1651,6 +1653,7 @@ SETWORKAREA
 SFBS
 sfgao
 SFGAOF
+sfi
 SHACF
 SHANDLE
 sharepoint
@@ -1665,8 +1668,10 @@ SHELLDLL
 shellex
 SHELLEXECUTEINFO
 SHELLEXECUTEINFOW
+SHELLHOOK
 SHELLICONSIZE
 SHFILEINFO
+SHFILEINFOW
 SHFILEOPSTRUCT
 SHGDN
 SHGDNF
@@ -1998,8 +2003,8 @@ vcamp
 vcgtq
 VCINSTALLDIR
 vcp
-Vcpkg
 vcpkg
+Vcpkg
 vcpname
 VCRT
 vcruntime
@@ -2079,13 +2084,17 @@ wikipedia
 winapi
 winappsdk
 windir
+WINDOWACTIVATED
 WINDOWCREATED
+WINDOWDESTROYED
 windowedge
 WINDOWINFO
 WINDOWNAME
 WINDOWPLACEMENT
 WINDOWPOSCHANGED
 WINDOWPOSCHANGING
+WINDOWREPLACED
+WINDOWREPLACING
 WINDOWSAPPRUNTIME
 WINDOWSBUILDNUMBER
 windowsml
