@@ -1,0 +1,44 @@
+{
+  "name": "@microsoft/cmdpal-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for building Command Palette extensions",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:prod": "tsc --declaration",
+    "prepublishOnly": "npm run build:prod",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "command-palette",
+    "powertoys",
+    "extension",
+    "jsonrpc"
+  ],
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "dependencies": {
+    "vscode-jsonrpc": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/**/*.mjs",
+    "README.md"
+  ]
+}

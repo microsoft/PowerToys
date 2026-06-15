@@ -1,0 +1,21 @@
+{
+  "name": "@cmdpal/sample-js-extension",
+  "version": "0.1.0",
+  "description": "Sample JavaScript extension for Command Palette demonstrating the JSONRPC SDK",
+  "main": "dist/index.js",
+  "cmdpal": {
+    "main": "dist/index.js",
+    "displayName": "Sample JS Extension",
+    "minVersion": "0.100.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@microsoft/cmdpal-sdk": "file:../../ts-sdk"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}

@@ -36,6 +36,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     private const string SourceTypeWinGet = "winget";
     private const string SourceTypeStore = "msstore";
+    private const string SourceTypeNpm = "npm";
     private const string SourceTypeUrl = "url";
     private const string SourceTypeGitHub = "github";
     private const string SourceTypeWebsite = "website";
@@ -129,6 +130,10 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool HasStoreSource => HasSource(SourceTypeStore);
 
+    public bool HasNpmSource => HasSource(SourceTypeNpm);
+
+    public string? NpmPackageId => GetSource(SourceTypeNpm)?.Id;
+
     public bool HasUrlSource => _installSourcesByType.ContainsKey(SourceTypeUrl) && InstallUrl is not null;
 
     public bool HasHomepage => _homepageHttpUri is not null;
@@ -166,7 +171,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public bool ShowUnknownSourceIndicator => HasUnknownSource || !HasKnownSourceIndicator;
 
-    public bool HasActionableSourceDetails => HasStoreSource || HasWinGetSource || HasHomepage || HasUrlSource;
+    public bool HasActionableSourceDetails => HasStoreSource || HasWinGetSource || HasNpmSource || HasHomepage || HasUrlSource;
 
     public bool ShowNoSourceDetails => !HasActionableSourceDetails;
 

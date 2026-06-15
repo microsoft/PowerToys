@@ -125,6 +125,49 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         isValid = true;
     }
 
+    /// <summary>
+    /// Creates a wrapper for a JavaScript extension where the <see cref="ICommandProvider"/>
+    /// is obtained directly (not through <see cref="IExtensionWrapper.GetExtensionObject"/>).
+    /// </summary>
+    /// <param name="extension">The JS extension wrapper managing the node process.</param>
+    /// <param name="provider">The command provider proxy obtained via JSON-RPC.</param>
+    /// <param name="mainThread">The UI thread scheduler.</param>
+    public CommandProviderWrapper(IExtensionWrapper extension, ICommandProvider provider, TaskScheduler mainThread)
+    {
+        _taskScheduler = mainThread;
+        TopLevelPageContext = new(this, _taskScheduler);
+
+        Extension = extension;
+        ExtensionHost = new CommandPaletteHost(extension);
+        _commandProvider = new(provider);
+
+        try
+        {
+            var model = _commandProvider.Unsafe!;
+
+            model.InitializeWithHost(ExtensionHost);
+            model.ItemsChanged += CommandProvider_ItemsChanged;
+
+            isValid = true;
+
+            Id = provider.Id;
+            DisplayName = provider.DisplayName;
+            Icon = new(provider.Icon);
+            Icon.InitializeProperties();
+            Settings = new(provider.Settings, this, _taskScheduler);
+
+            Logger.LogDebug($"Initialized JS extension command provider {Extension.PackageFamilyName}:{Extension.ExtensionUniqueId}");
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("Failed to initialize CommandProvider for JS extension.");
+            Logger.LogError($"Extension was {Extension!.PackageFamilyName}");
+            Logger.LogError(e.ToString());
+        }
+
+        isValid = true;
+    }
+
     private ProviderSettings GetProviderSettings(SettingsModel settings)
     {
         if (!settings.ProviderSettings.TryGetValue(ProviderId, out var ps))

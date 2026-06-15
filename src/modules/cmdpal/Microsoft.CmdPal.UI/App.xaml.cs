@@ -267,6 +267,7 @@ public partial class App : Application, IDisposable
         // Load IExtensionServices here
         services.AddSingleton<IExtensionService, BuiltInExtensionService>();
         services.AddSingleton<IExtensionService, WinRTExtensionService>();
+        services.AddSingleton<IExtensionService, JavaScriptExtensionService>();
 
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
