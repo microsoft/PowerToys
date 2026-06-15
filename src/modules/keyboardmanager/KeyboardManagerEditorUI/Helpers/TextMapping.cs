@@ -14,6 +14,8 @@ namespace KeyboardManagerEditorUI.Helpers
     {
         public List<string> Shortcut { get; set; } = new List<string>();
 
+        public string TriggerText { get; set; } = string.Empty;
+
         public string Text { get; set; } = string.Empty;
 
         public bool IsAllApps { get; set; } = true;

@@ -31,6 +31,9 @@ namespace KeyboardManagerConstants
     // Name of the property use to store shortcut to run-program remaps.
     inline const std::wstring RemapShortcutsToRunProgramSettingName = L"remapShortcutsToRunProgram";
 
+    // Name of the property use to store typed text replacements.
+    inline const std::wstring TextReplacementsSettingName = L"textReplacements";
+
     // Name of the property use to store global shortcut remaps array.
     inline const std::wstring GlobalRemapShortcutsSettingName = L"global";
 
@@ -39,6 +42,9 @@ namespace KeyboardManagerConstants
 
     // Name of the property use to store original keys.
     inline const std::wstring OriginalKeysSettingName = L"originalKeys";
+
+    // Name of the property use to store typed text replacement triggers.
+    inline const std::wstring TriggerTextSettingName = L"trigger";
 
     // Name of the property use to store new remap keys.
     inline const std::wstring NewRemapKeysSettingName = L"newRemapKeys";

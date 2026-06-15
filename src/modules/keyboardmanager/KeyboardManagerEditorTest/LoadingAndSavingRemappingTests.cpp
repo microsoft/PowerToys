@@ -523,5 +523,31 @@ namespace RemappingUITests
             Assert::AreEqual(true, areOSLevelTablesEqual);
             Assert::AreEqual(true, areAppSpecificTablesEqual);
         }
+
+        TEST_METHOD (AddTextReplacement_ShouldStoreReplacementAndUpdateMaxTriggerLength)
+        {
+            MappingConfiguration testShortcuts;
+
+            bool addedShortTrigger = testShortcuts.AddTextReplacement(L">>", L"\u2192");
+            bool addedLongTrigger = testShortcuts.AddTextReplacement(L"otw", L"On the way!");
+
+            Assert::AreEqual(true, addedShortTrigger);
+            Assert::AreEqual(true, addedLongTrigger);
+            Assert::AreEqual(std::wstring(L"\u2192"), testShortcuts.textReplacements[L">>"]);
+            Assert::AreEqual(std::wstring(L"On the way!"), testShortcuts.textReplacements[L"otw"]);
+            Assert::AreEqual(static_cast<size_t>(3), testShortcuts.maxTextReplacementTriggerLength);
+        }
+
+        TEST_METHOD (AddTextReplacement_ShouldRejectEmptyOrDuplicateReplacement)
+        {
+            MappingConfiguration testShortcuts;
+
+            Assert::AreEqual(true, testShortcuts.AddTextReplacement(L"otw", L"On the way!"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"otw", L"Other text"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"", L"On the way!"));
+            Assert::AreEqual(false, testShortcuts.AddTextReplacement(L"brb", L""));
+            Assert::AreEqual(static_cast<size_t>(1), testShortcuts.textReplacements.size());
+            Assert::AreEqual(static_cast<size_t>(3), testShortcuts.maxTextReplacementTriggerLength);
+        }
     };
 }

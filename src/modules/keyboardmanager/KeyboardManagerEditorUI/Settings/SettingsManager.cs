@@ -126,6 +126,19 @@ namespace KeyboardManagerEditorUI.Settings
                 AddShortcutMapping(settings, shortcutMapping);
             }
 
+            // Process typed text replacements
+            foreach (var mapping in _mappingService!.GetTextReplacementMappings())
+            {
+                var shortcutMapping = new ShortcutKeyMapping
+                {
+                    OperationType = ShortcutOperationType.RemapText,
+                    TriggerText = mapping.Trigger,
+                    TargetKeys = mapping.TargetText,
+                    TargetText = mapping.TargetText,
+                };
+                AddShortcutMapping(settings, shortcutMapping);
+            }
+
             return settings;
         }
 
@@ -183,6 +196,28 @@ namespace KeyboardManagerEditorUI.Settings
                 }
             }
 
+            var textReplacementMappings = service.GetTextReplacementMappings();
+
+            // Process typed text replacements
+            foreach (var mapping in textReplacementMappings)
+            {
+                var shortcutMapping = new ShortcutKeyMapping
+                {
+                    OperationType = ShortcutOperationType.RemapText,
+                    TriggerText = mapping.Trigger,
+                    TargetKeys = mapping.TargetText,
+                    TargetText = mapping.TargetText,
+                };
+
+                if (!EditorSettings.ShortcutSettingsDictionary.Values.Any(s =>
+                    s.Shortcut.TriggerText == shortcutMapping.TriggerText &&
+                    s.Shortcut.TargetText == shortcutMapping.TargetText))
+                {
+                    AddShortcutMapping(EditorSettings, shortcutMapping);
+                    shortcutSettingsChanged = true;
+                }
+            }
+
             // Mark inactive mappings
             var singleKeyMappings = service.GetSingleKeyMappings();
             var keyToTextMappings = service.GetKeyToTextMappings();
@@ -193,6 +228,7 @@ namespace KeyboardManagerEditorUI.Settings
                 bool foundInService = IsMappingActiveInService(
                     shortcutSettings,
                     keyToTextMappings,
+                    textReplacementMappings,
                     singleKeyMappings,
                     shortcutKeyMappings);
 
@@ -262,6 +298,7 @@ namespace KeyboardManagerEditorUI.Settings
         {
             return EditorSettings.ShortcutSettingsDictionary.Values.Any(s =>
                 s.Shortcut.OperationType == mapping.OperationType &&
+                s.Shortcut.TriggerText == mapping.TriggerText &&
                 s.Shortcut.OriginalKeys == mapping.OriginalKeys &&
                 s.Shortcut.TargetKeys == mapping.TargetKeys);
         }
@@ -269,9 +306,17 @@ namespace KeyboardManagerEditorUI.Settings
         private static bool IsMappingActiveInService(
             ShortcutSettings shortcutSettings,
             List<KeyToTextMapping> keyToTextMappings,
+            List<TextReplacement> textReplacementMappings,
             List<KeyMapping> singleKeyMappings,
             List<ShortcutKeyMapping> shortcutKeyMappings)
         {
+            if (!string.IsNullOrEmpty(shortcutSettings.Shortcut.TriggerText))
+            {
+                return textReplacementMappings.Any(m =>
+                    m.Trigger == shortcutSettings.Shortcut.TriggerText &&
+                    m.TargetText == shortcutSettings.Shortcut.TargetText);
+            }
+
             if (string.IsNullOrEmpty(shortcutSettings.Shortcut.OriginalKeys))
             {
                 return false;

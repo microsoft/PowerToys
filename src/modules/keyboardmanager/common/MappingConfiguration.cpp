@@ -30,6 +30,12 @@ void MappingConfiguration::ClearSingleKeyToTextRemaps()
     singleKeyToTextReMap.clear();
 }
 
+void MappingConfiguration::ClearTextReplacements()
+{
+    textReplacements.clear();
+    maxTextReplacementTriggerLength = 0;
+}
+
 // Function to clear the App specific shortcut remapping table
 void MappingConfiguration::ClearAppSpecificShortcuts()
 {
@@ -88,6 +94,22 @@ bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, cons
         singleKeyToTextReMap[originalKey] = text;
         return true;
     }
+}
+
+bool MappingConfiguration::AddTextReplacement(const std::wstring& trigger, const std::wstring& text)
+{
+    if (trigger.empty() || text.empty())
+    {
+        return false;
+    }
+
+    if (const auto [_, inserted] = textReplacements.emplace(trigger, text); inserted)
+    {
+        maxTextReplacementTriggerLength = (std::max)(maxTextReplacementTriggerLength, trigger.length());
+        return true;
+    }
+
+    return false;
 }
 
 // Function to add a new App specific shortcut remapping
@@ -208,6 +230,45 @@ bool MappingConfiguration::LoadSingleKeyToTextRemaps(const json::JsonObject& jso
     catch (...)
     {
         Logger::error(L"Improper JSON format for single key to text remaps. Skip to next remap type");
+        result = false;
+    }
+
+    return result;
+}
+
+bool MappingConfiguration::LoadTextReplacements(const json::JsonObject& jsonData)
+{
+    bool result = true;
+
+    try
+    {
+        auto textReplacementsData = jsonData.GetNamedObject(KeyboardManagerConstants::TextReplacementsSettingName);
+        ClearTextReplacements();
+
+        if (!textReplacementsData)
+        {
+            return result;
+        }
+
+        auto inProcessTextReplacements = textReplacementsData.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName);
+        for (const auto& it : inProcessTextReplacements)
+        {
+            try
+            {
+                auto trigger = it.GetObjectW().GetNamedString(KeyboardManagerConstants::TriggerTextSettingName);
+                auto newText = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewTextSettingName);
+                AddTextReplacement(trigger.c_str(), newText.c_str());
+            }
+            catch (...)
+            {
+                Logger::error(L"Improper text replacement JSON. Try the next replacement.");
+                result = false;
+            }
+        }
+    }
+    catch (...)
+    {
+        Logger::error(L"Improper JSON format for text replacements. Skip to next remap type");
         result = false;
     }
 
@@ -435,6 +496,7 @@ bool MappingConfiguration::LoadSettings()
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsSettingName) && result;
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
         result = LoadSingleKeyToTextRemaps(*configFile) && result;
+        result = LoadTextReplacements(*configFile) && result;
 
         return result;
     }
@@ -456,9 +518,11 @@ bool MappingConfiguration::SaveSettingsToFile()
 
     json::JsonObject remapKeys;
     json::JsonObject remapKeysToText;
+    json::JsonObject textReplacementsJson;
 
     json::JsonArray inProcessRemapKeysArray;
     json::JsonArray inProcessRemapKeysToTextArray;
+    json::JsonArray inProcessTextReplacementsArray;
 
     json::JsonArray appSpecificRemapShortcutsArray;
     json::JsonArray appSpecificRemapShortcutsToTextArray;
@@ -492,6 +556,14 @@ bool MappingConfiguration::SaveSettingsToFile()
         keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(code))));
         keys.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(std::get<std::wstring>(text)));
         inProcessRemapKeysToTextArray.Append(keys);
+    }
+
+    for (const auto& [trigger, text] : textReplacements)
+    {
+        json::JsonObject replacement;
+        replacement.SetNamedValue(KeyboardManagerConstants::TriggerTextSettingName, json::value(trigger));
+        replacement.SetNamedValue(KeyboardManagerConstants::NewTextSettingName, json::value(text));
+        inProcessTextReplacementsArray.Append(replacement);
     }
 
     for (const auto& it : osLevelShortcutReMap)
@@ -632,8 +704,10 @@ bool MappingConfiguration::SaveSettingsToFile()
 
     remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
     remapKeysToText.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysToTextArray);
+    textReplacementsJson.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessTextReplacementsArray);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysToTextSettingName, remapKeysToText);
+    configJson.SetNamedValue(KeyboardManagerConstants::TextReplacementsSettingName, textReplacementsJson);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsToTextSettingName, remapShortcutsToText);
 
