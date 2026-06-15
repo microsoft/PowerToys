@@ -374,12 +374,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private async Task StartExtensionsAndGetCommands(IEnumerable<IExtensionWrapper> extensions, CancellationToken ct)
     {
         var timer = Stopwatch.StartNew();
-        var benchmarkSession = QueryBenchmark.Instance.StartSession(string.Empty, "ExtensionLoad");
 
         // Start all extensions in parallel
         var startResults = await Task.WhenAll(extensions.Select(TryStartExtensionAsync)).ConfigureAwait(false);
-
-        benchmarkSession.RecordMilestone("AllExtensionsStarted");
 
         var startedWrappers = new List<CommandProviderWrapper>();
         foreach (var r in startResults)
@@ -390,7 +387,6 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             }
             else if (r.IsTimedOut)
             {
-                benchmarkSession.RecordExtensionTime($"Start(TimedOut):{r.Extension.PackageFullName}", r.Stopwatch.Elapsed.TotalMilliseconds);
                 _ = StartExtensionWhenReadyAsync(r.Extension, r.PendingStartTask, r.Stopwatch, ct);
             }
         }
@@ -398,10 +394,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         // Register started extensions and load their commands
         var loadSummary = await RegisterAndLoadCommandsAsync(startedWrappers, ct).ConfigureAwait(false);
 
-        benchmarkSession.RecordMilestone("CommandsLoaded");
-
         timer.Stop();
-        benchmarkSession.Complete();
         Logger.LogInfo($"Loaded {loadSummary.CommandCount} command(s) and {loadSummary.DockBandCount} band(s) from {startedWrappers.Count} extension(s) in {timer.ElapsedMilliseconds} ms");
     }
 

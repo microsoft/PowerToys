@@ -609,7 +609,6 @@ public sealed partial class MainListPage : DynamicListPage,
     private void UpdateSearchTextCore(string oldSearch, string newSearch, bool isUserInput)
     {
         var stopwatch = Stopwatch.StartNew();
-        var benchmarkSession = QueryBenchmark.Instance.StartSession(newSearch, isUserInput ? "UserInput" : "Programmatic");
 
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
@@ -708,9 +707,6 @@ public sealed partial class MainListPage : DynamicListPage,
                 _scoredFallbackItems = cached.ScoredFallbackItems;
                 _fallbackItems = cached.FallbackItems;
                 _filteredItemsIncludesApps = cached.IncludesApps;
-
-                benchmarkSession.RecordMilestone("CacheHit");
-                benchmarkSession.Complete();
 
                 RequestRefresh(fullRefresh: true, interval: TimeSpan.Zero);
                 stopwatch.Stop();
@@ -812,8 +808,6 @@ public sealed partial class MainListPage : DynamicListPage,
 
             var searchQuery = _fuzzyMatcherProvider.Current.PrecomputeQuery(SearchText);
 
-            benchmarkSession.RecordMilestone("PreFilterSetup");
-
             // Produce a list of everything that matches the current filter.
             _filteredItems = InternalListHelpers.FilterListWithScores(newFilteredItems, searchQuery, _scoringFunction);
 
@@ -840,7 +834,6 @@ public sealed partial class MainListPage : DynamicListPage,
             // Produce a list of filtered apps with the appropriate limit
             if (newApps.Any())
             {
-                benchmarkSession.RecordMilestone("FilterCommands");
                 _filteredApps = InternalListHelpers.FilterListWithScores(newApps, searchQuery, _scoringFunction);
 
                 if (token.IsCancellationRequested)
@@ -879,8 +872,6 @@ public sealed partial class MainListPage : DynamicListPage,
             Logger.LogDebug($"Render items with '{newSearch}' in {listPageUpdatedTimestamp}ms /d {listPageUpdatedTimestamp - filterDoneTimestamp}ms");
 #endif
 
-            benchmarkSession.RecordMilestone("FilterComplete");
-            benchmarkSession.Complete();
             stopwatch.Stop();
         }
     }

@@ -87,9 +87,6 @@ internal sealed class Program
 
         PowerToysTelemetry.Log.WriteEvent(new CmdPalProcessStarted());
 
-        // Enable latency benchmarking for diagnostics
-        Microsoft.CmdPal.Common.Helpers.QueryBenchmark.Instance.IsEnabled = true;
-
         WinRT.ComWrappersSupport.InitializeComWrappers();
         var isRedirect = DecideRedirection();
         if (!isRedirect)
