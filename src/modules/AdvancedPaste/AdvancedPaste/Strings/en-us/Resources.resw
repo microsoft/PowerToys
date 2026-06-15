@@ -212,10 +212,10 @@
     <value>Delete</value>
   </data>
   <data name="CustomFormatTextBox.PlaceholderText" xml:space="preserve">
-    <value>Describe what format you want..</value>
+    <value>Search or describe what format you want..</value>
   </data>
   <data name="InputTxtBoxTooltip.Text" xml:space="preserve">
-    <value>Describe what format you want..</value>
+    <value>Search or describe what format you want..</value>
   </data>
   <data name="LearnMoreLink.Text" xml:space="preserve">
     <value>Privacy</value>

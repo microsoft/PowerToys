@@ -143,11 +143,7 @@ namespace AdvancedPaste
         internal void FinishLoading(bool success)
         {
             MainPage.CustomFormatTextBox.IsLoading(false);
-
-            if (success)
-            {
-                VisualStateManager.GoToState(MainPage.CustomFormatTextBox, "DefaultState", true);
-            }
+            VisualStateManager.GoToState(MainPage.CustomFormatTextBox, "DefaultState", true);
         }
     }
 }
