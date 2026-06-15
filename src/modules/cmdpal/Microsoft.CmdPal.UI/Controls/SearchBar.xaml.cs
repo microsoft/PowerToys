@@ -39,6 +39,7 @@ public sealed partial class SearchBar : UserControl,
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private bool _isBackspaceHeld;
+    private bool _preserveQueryOnGoHome;
 
     // Inline text suggestions
     // In 0.4-0.5 we would replace the text of the search box with the TextToSuggest
@@ -168,6 +169,7 @@ public sealed partial class SearchBar : UserControl,
             switch (Settings.EscapeKeyBehaviorSetting)
             {
                 case EscapeKeyBehavior.AlwaysGoBack:
+                    _preserveQueryOnGoHome = !string.IsNullOrEmpty(FilterBox.Text);
                     WeakReferenceMessenger.Default.Send<NavigateBackMessage>(new());
                     break;
 
@@ -491,6 +493,12 @@ public sealed partial class SearchBar : UserControl,
 
     public void Receive(GoHomeMessage message)
     {
+        if (_preserveQueryOnGoHome)
+        {
+            _preserveQueryOnGoHome = false;
+            return;
+        }
+
         if (!Settings.KeepPreviousQuery)
         {
             ClearSearch();
