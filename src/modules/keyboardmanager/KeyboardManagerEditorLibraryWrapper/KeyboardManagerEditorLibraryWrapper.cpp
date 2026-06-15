@@ -43,30 +43,27 @@ extern "C"
         return buffer;
     }
 
-    // Serializes template parameters to a JSON object string for marshaling back to the editor.
-    // Returns an empty string when there are no parameters.
-    std::wstring SerializeTemplateParameters(const std::map<std::wstring, std::wstring>& params)
+    // Populates the template metadata fields on a marshaled mapping. Always sets both pointers
+    // (the editor frees every field), using empty strings for non-template / non-RunProgram entries.
+    // Note: kept void-returning so it is valid inside the surrounding extern "C" block (a C-linkage
+    // function may not return a C++ type such as std::wstring).
+    void SetTemplateMetadata(ShortcutMapping* mapping, const Shortcut& targetShortcut)
     {
-        if (params.empty())
+        mapping->templateId = AllocateAndCopyString(targetShortcut.templateId);
+
+        if (targetShortcut.templateParameters.empty())
         {
-            return L"";
+            mapping->templateParametersJson = AllocateAndCopyString(L"");
+            return;
         }
 
         json::JsonObject paramsObj;
-        for (auto const& [k, v] : params)
+        for (auto const& [k, v] : targetShortcut.templateParameters)
         {
             paramsObj.SetNamedValue(k, json::JsonValue::CreateStringValue(v));
         }
 
-        return paramsObj.Stringify().c_str();
-    }
-
-    // Populates the template metadata fields on a marshaled mapping. Always sets both pointers
-    // (the editor frees every field), using empty strings for non-template / non-RunProgram entries.
-    void SetTemplateMetadata(ShortcutMapping* mapping, const Shortcut& targetShortcut)
-    {
-        mapping->templateId = AllocateAndCopyString(targetShortcut.templateId);
-        mapping->templateParametersJson = AllocateAndCopyString(SerializeTemplateParameters(targetShortcut.templateParameters));
+        mapping->templateParametersJson = AllocateAndCopyString(paramsObj.Stringify().c_str());
     }
 
     void SetEmptyTemplateMetadata(ShortcutMapping* mapping)
