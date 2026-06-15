@@ -760,8 +760,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Set power state for this monitor.
-    /// Note: Setting any state other than "On" will turn off the display.
+    /// Set the monitor's power state via VCP 0xD6: On (0x01) wakes the display,
+    /// Standby/Suspend/Off put it to sleep.
     /// </summary>
     public async Task SetPowerStateAsync(int powerState)
     {
@@ -788,18 +788,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[{Id}] Exception setting power state: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Command to set power state
-    /// </summary>
-    [RelayCommand]
-    private async Task SetPowerState(int? state)
-    {
-        if (state.HasValue)
-        {
-            await SetPowerStateAsync(state.Value);
         }
     }
 
@@ -959,11 +947,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             return;
         }
 
-        if (item.Value == PowerStateItem.PowerStateOn)
-        {
-            return;
-        }
-
+        // Send the selected state straight to the hardware. Selecting On (0x01) wakes a
+        // sleeping monitor: DDC/CI stays reachable in Standby/Suspend/Off(DPM), so the
+        // write turns the panel back on (Off(Hard)/0x05 may still need a physical wake).
         await SetPowerStateAsync(item.Value);
     }
 
