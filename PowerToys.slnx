@@ -1061,6 +1061,10 @@
     <Project Path="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" Id="568c4c30-2e3c-4c2c-a691-007362073765" />
     <Project Path="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" Id="2c3f7770-4e57-46b7-8dc1-7428a383d0db" />
   </Folder>
+  <Folder Name="/modules/Dock/">
+    <Project Path="src/modules/dock/Dock/Dock.vcxproj" Id="e1f6c9b2-3a5f-5b7c-0d9e-2f3a4b5c6d7e" />
+    <Project Path="src/modules/dock/DockModuleInterface/DockModuleInterface.vcxproj" Id="d0c5b8a1-2e4f-4a6b-9c8e-1f2d3a4b5c6d" />
+  </Folder>
   <Folder Name="/settings-ui/">
     <Project Path="src/settings-ui/QuickAccess.UI/PowerToys.QuickAccess.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
@@ -1134,6 +1138,8 @@
     <BuildDependency Project="src/modules/previewpane/PdfPreviewHandler/PdfPreviewHandler.csproj" />
     <BuildDependency Project="src/modules/previewpane/powerpreview/powerpreview.vcxproj" />
     <BuildDependency Project="src/modules/previewpane/SvgPreviewHandler/SvgPreviewHandler.csproj" />
+    <BuildDependency Project="src/modules/dock/DockModuleInterface/DockModuleInterface.vcxproj" />
+    <BuildDependency Project="src/modules/dock/Dock/Dock.vcxproj" />
     <BuildDependency Project="src/PackageIdentity/PackageIdentity.vcxproj" />
   </Project>
   <Project Path="src/Update/PowerToys.Update.vcxproj" Id="44ce9ae1-4390-42c5-bacc-0fd6b40aa203" />
