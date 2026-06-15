@@ -382,25 +382,11 @@ try {
         RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
         RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
 
-        # CLI shims: publish ONE Native AOT binary, then copy it to one exe per command
-        # name. They are staged into <Platform>\<Configuration>\cli for the installer to
-        # harvest. AOT linking relies on the VC toolchain already set up by the installer
-        # build environment (the same Developer prompt the C++ projects require).
-        $cliPlatform = if ($Platform -eq 'arm64') { 'ARM64' } else { $Platform }   # project config is x64;ARM64
-        $cliShimRid = "win-$($cliPlatform.ToLower())"
-        $cliShimProj = Join-Path $repoRoot 'tools\CliShim\CliShim.csproj'
-        $cliStagingDir = Join-Path $buildOutputPath 'cli'
-        Write-Host "[CLI-SHIM] Publishing Native AOT shim ($cliShimRid)..."
-        dotnet publish $cliShimProj -c $Configuration -r $cliShimRid -p:Platform=$cliPlatform -o $cliStagingDir --nologo
-        if ($LASTEXITCODE -ne 0) {
-            Write-Error "CLI shim publish failed with exit code $LASTEXITCODE"
-            exit 1
-        }
-        $cliShimExe = Join-Path $cliStagingDir 'PowerToys.CliShim.exe'
-        foreach ($cliName in @('fancyzones', 'imageresizer', 'filelocksmith')) {
-            Copy-Item $cliShimExe (Join-Path $cliStagingDir "$cliName.exe") -Force
-        }
-        Write-Host "[CLI-SHIM] Staged fancyzones/imageresizer/filelocksmith into $cliStagingDir"
+        # CLI shims: publish ONE Native AOT binary and stage one exe per command name into
+        # <Platform>\<Configuration>\cli for the installer to harvest. The shared script owns
+        # the single-source-of-truth command list and the drift validation; AOT linking relies
+        # on the VC toolchain already set up by the installer build environment.
+        & (Join-Path $repoRoot 'tools\build\publish-cli-shims.ps1') -Platform $Platform -Configuration $Configuration -OutDir (Join-Path $buildOutputPath 'cli')
     }
 
     # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe

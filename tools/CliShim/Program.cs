@@ -17,9 +17,22 @@ namespace PowerToys.CliShim;
 /// </summary>
 internal static class Program
 {
+    // The exit code cmd.exe returns for "command not found". Used only when the shim is
+    // invoked under a name that is not in the Targets table (for example a renamed copy).
+    private const int ExitCommandNotMapped = 9009;
+
+    // A distinct code for "the command is known, but its target could not be launched"
+    // (missing target, Process.Start failure). Keeping this separate from 9009 lets a
+    // calling script tell a typo'd/unmapped command from a broken install.
+    private const int ExitLaunchFailed = 1;
+
     // Command name (the shim's own file name without extension) -> target CLI path,
     // relative to the shim's own directory. The shims are installed in "<install>\cli\",
     // so the targets sit one level up (install root) or under the WinUI3Apps subfolder.
+    //
+    // This dictionary is the single source of truth for the command names: tools/build/
+    // publish-cli-shims.ps1 parses the keys below to decide which exe copies to stage, and
+    // validates that CliShims.wxs and ESRPSigning_core.json reference exactly the same set.
     private static readonly Dictionary<string, string> Targets = new(StringComparer.OrdinalIgnoreCase)
     {
         ["fancyzones"] = @"..\FancyZonesCLI.exe",
@@ -41,7 +54,7 @@ internal static class Program
         {
             Console.Error.WriteLine($"cli-shim: no PowerToys CLI is mapped to the command '{commandName}'.");
             Console.Error.WriteLine($"cli-shim: known commands: {string.Join(", ", Targets.Keys)}.");
-            return 9009; // The exit code cmd.exe returns for "command not found".
+            return ExitCommandNotMapped;
         }
 
         string targetPath = Path.GetFullPath(Path.Combine(shimDirectory, relativeTarget));
@@ -49,13 +62,13 @@ internal static class Program
         if (!File.Exists(targetPath))
         {
             Console.Error.WriteLine($"cli-shim: target not found: \"{targetPath}\".");
-            return 9009;
+            return ExitLaunchFailed;
         }
 
         // Forward the user's arguments byte-for-byte. Environment.CommandLine is the raw
         // command line (the managed equivalent of GetCommandLineW); stripping argv[0]
         // preserves the user's exact quoting, which re-quoting parsed args would corrupt.
-        string forwardedArguments = StripArgumentZero(Environment.CommandLine);
+        string forwardedArguments = CommandLine.StripArgumentZero(Environment.CommandLine);
 
         ProcessStartInfo startInfo = new()
         {
@@ -70,7 +83,7 @@ internal static class Program
             if (child is null)
             {
                 Console.Error.WriteLine($"cli-shim: failed to start \"{targetPath}\".");
-                return 9009;
+                return ExitLaunchFailed;
             }
 
             child.WaitForExit();
@@ -79,48 +92,7 @@ internal static class Program
         catch (Exception ex)
         {
             Console.Error.WriteLine($"cli-shim: failed to launch \"{targetPath}\": {ex.Message}");
-            return 9009;
+            return ExitLaunchFailed;
         }
-    }
-
-    /// <summary>
-    /// Returns the command line with its first token (argv[0]) removed, following the C
-    /// runtime rule for the program name: when it starts with a quote it ends at the next
-    /// quote, otherwise it ends at the first whitespace. Whitespace before the first real
-    /// argument is then trimmed.
-    /// </summary>
-    /// <param name="commandLine">The raw process command line.</param>
-    /// <returns>The remaining arguments, verbatim.</returns>
-    private static string StripArgumentZero(string commandLine)
-    {
-        int index = 0;
-
-        if (index < commandLine.Length && commandLine[index] == '"')
-        {
-            index++;
-            while (index < commandLine.Length && commandLine[index] != '"')
-            {
-                index++;
-            }
-
-            if (index < commandLine.Length)
-            {
-                index++; // Consume the closing quote.
-            }
-        }
-        else
-        {
-            while (index < commandLine.Length && commandLine[index] != ' ' && commandLine[index] != '\t')
-            {
-                index++;
-            }
-        }
-
-        while (index < commandLine.Length && (commandLine[index] == ' ' || commandLine[index] == '\t'))
-        {
-            index++;
-        }
-
-        return commandLine[index..];
     }
 }

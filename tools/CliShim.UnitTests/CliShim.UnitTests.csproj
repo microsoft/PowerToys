@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Plain net10.0: the code under test (CommandLine) uses only BCL string handling. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PowerToys.CliShim.UnitTests</RootNamespace>
+    <AssemblyName>PowerToys.CliShim.UnitTests</AssemblyName>
+    <Platforms>x64;ARM64</Platforms>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Link the parser source directly (instead of a ProjectReference to the AOT exe) so the
+         tests run on the normal runtime, free of RID/AOT/Platform entanglement. -->
+    <Compile Include="..\CliShim\CommandLine.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+</Project>

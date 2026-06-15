@@ -1,7 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Shared settings (analyzers, RepoRoot, Platforms, versioning) come from the root Directory.Build.props. -->
-  <!-- Common.SelfContained.props maps $(Platform) -> RuntimeIdentifier (win-x64 / win-arm64), which Native AOT requires. -->
-  <Import Project="..\..\src\Common.SelfContained.props" />
+  <!--
+    No Common.SelfContained.props import: that sets SelfContained=true, which would make a
+    plain (non-publish) solution build copy the whole .NET runtime (~77 MB) into bin\ for an
+    artifact nothing consumes. Native AOT only needs a RuntimeIdentifier, which the publish
+    step supplies via "-r win-<arch>" (and PublishAot implies self-contained on publish).
+  -->
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,6 +21,8 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     <StackTraceSupport>false</StackTraceSupport>
     <OptimizationPreference>Size</OptimizationPreference>
+    <!-- Don't emit the native sidecar .pdb; it is never harvested/signed and only clutters the staging dir. -->
+    <NativeDebugSymbols>false</NativeDebugSymbols>
 
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
