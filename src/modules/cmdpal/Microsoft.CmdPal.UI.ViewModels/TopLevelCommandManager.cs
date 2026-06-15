@@ -400,13 +400,18 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     private async Task<RegisterAndLoadSummary> RegisterAndLoadCommandsAsync(ICollection<CommandProviderWrapper> wrappers, CancellationToken ct)
     {
+        List<CommandProviderWrapper> wrappersToAdd;
         lock (_commandProvidersLock)
         {
-            _extensionCommandProviders.AddRange(wrappers);
+            var existingIds = new HashSet<string>(_extensionCommandProviders
+                .Where(p => p.IsExtension)
+                .Select(p => p.Extension!.ExtensionUniqueId), StringComparer.Ordinal);
+            wrappersToAdd = [.. wrappers.Where(w => !w.IsExtension || !existingIds.Contains(w.Extension!.ExtensionUniqueId))];
+            _extensionCommandProviders.AddRange(wrappersToAdd);
         }
 
-        // Load the commands from the providers in parallel
-        var loadResults = await Task.WhenAll(wrappers.Select(w => TryLoadCommandsAsync(w, ct))).ConfigureAwait(false);
+        // Load the commands from the new providers in parallel
+        var loadResults = await Task.WhenAll(wrappersToAdd.Select(w => TryLoadCommandsAsync(w, ct))).ConfigureAwait(false);
 
         var totalCommands = 0;
         var totalDockBands = 0;
@@ -608,6 +613,17 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         _ = Task.Run(
             async () =>
             {
+                var removedIds = new HashSet<string>(extensions.Select(e => e.ExtensionUniqueId), StringComparer.Ordinal);
+
+                // Remove the CommandProviderWrapper from our tracked extension providers
+                // so it no longer appears in the settings page.
+                List<CommandProviderWrapper> removedProviders = [];
+                lock (_commandProvidersLock)
+                {
+                    removedProviders = [.. _extensionCommandProviders.Where(p => p.Extension is not null && removedIds.Contains(p.Extension.ExtensionUniqueId))];
+                    _extensionCommandProviders.RemoveAll(p => removedProviders.Contains(p));
+                }
+
                 // Then find all the top-level commands that belonged to that extension
                 List<TopLevelViewModel> commandsToRemove = [];
                 List<TopLevelViewModel> bandsToRemove = [];

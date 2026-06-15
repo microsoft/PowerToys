@@ -217,8 +217,15 @@ public partial class ExtensionService : IExtensionService, IDisposable
 
     private static void UpdateExtensionsListsFromWrappers(List<ExtensionWrapper> wrappers)
     {
+        var existingIds = new HashSet<string>(_installedExtensions.Select(e => e.ExtensionUniqueId), StringComparer.Ordinal);
+
         foreach (var extensionWrapper in wrappers)
         {
+            if (!existingIds.Add(extensionWrapper.ExtensionUniqueId))
+            {
+                continue;
+            }
+
             // var localSettingsService = Application.Current.GetService<ILocalSettingsService>();
             var extensionUniqueId = extensionWrapper.ExtensionUniqueId;
             var isExtensionDisabled = false; // await localSettingsService.ReadSettingAsync<bool>(extensionUniqueId + "-ExtensionDisabled");
@@ -282,8 +289,14 @@ public partial class ExtensionService : IExtensionService, IDisposable
         _installedExtensions.Clear();
         _enabledExtensions.Clear();
 
+        var seenIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var extensionWrapper in refreshedWrappers)
         {
+            if (!seenIds.Add(extensionWrapper.ExtensionUniqueId))
+            {
+                continue;
+            }
+
             _installedExtensions.Add(extensionWrapper);
 
             var wasPreviouslyInstalled = previouslyInstalledExtensionIds.Contains(extensionWrapper.ExtensionUniqueId);
