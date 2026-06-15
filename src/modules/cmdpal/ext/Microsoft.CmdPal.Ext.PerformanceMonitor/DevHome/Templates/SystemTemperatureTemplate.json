@@ -1,0 +1,68 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "$when": "${errorMessage != null}",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "${errorMessage}",
+          "wrap": true,
+          "size": "small"
+        }
+      ],
+      "style": "warning"
+    },
+    {
+      "type": "Container",
+      "$when": "${errorMessage == null}",
+      "items": [
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Temperature_Widget_Template/CpuTemperature%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${cpuTemperature}",
+                  "type": "TextBlock",
+                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"extraLarge\")}",
+                  "weight": "bolder"
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "text": "%Temperature_Widget_Template/Source%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true,
+                  "horizontalAlignment": "right"
+                },
+                {
+                  "text": "${temperatureSource}",
+                  "type": "TextBlock",
+                  "size": "${if($host.widgetSize == \"small\", \"small\", \"medium\")}",
+                  "weight": "bolder",
+                  "horizontalAlignment": "right",
+                  "wrap": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

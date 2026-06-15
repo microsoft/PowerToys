@@ -77,6 +77,14 @@ internal sealed partial class DataManager : IDisposable
         }
     }
 
+    private void GetTemperatureData()
+    {
+        lock (_systemData.TemperatureStats)
+        {
+            _systemData.TemperatureStats.GetData();
+        }
+    }
+
     private void UpdateTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
         var firstUpdateBlockSuffix = GetFirstUpdateBlockSuffix();
@@ -127,6 +135,12 @@ internal sealed partial class DataManager : IDisposable
                         GetBatteryData();
                         break;
                     }
+
+                case DataType.Temperature:
+                    {
+                        GetTemperatureData();
+                        break;
+                    }
             }
 
             if (isTracked)
@@ -163,6 +177,7 @@ internal sealed partial class DataManager : IDisposable
             DataType.Network => "Network.FirstUpdate",
             DataType.Disk => "Disk.FirstUpdate",
             DataType.Battery => "Battery.FirstUpdate",
+            DataType.Temperature => "Temperature.FirstUpdate",
             _ => null,
         };
     }
@@ -212,6 +227,14 @@ internal sealed partial class DataManager : IDisposable
         lock (_systemData.BatteryStats)
         {
             return _systemData.BatteryStats;
+        }
+    }
+
+    internal TemperatureStats GetTemperatureStats()
+    {
+        lock (_systemData.TemperatureStats)
+        {
+            return _systemData.TemperatureStats;
         }
     }
 

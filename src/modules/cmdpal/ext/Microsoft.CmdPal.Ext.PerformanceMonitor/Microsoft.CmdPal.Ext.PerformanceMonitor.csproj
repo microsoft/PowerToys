@@ -59,6 +59,9 @@
     <None Update="DevHome\Templates\SystemBatteryTemplate.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="DevHome\Templates\SystemTemperatureTemplate.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Update="Assets\**\*.*">
