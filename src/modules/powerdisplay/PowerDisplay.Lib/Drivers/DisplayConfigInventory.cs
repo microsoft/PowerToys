@@ -14,9 +14,8 @@ namespace PowerDisplay.Common.Drivers
     /// <summary>
     /// Win32 DisplayConfig API wrapper that enumerates all active display paths
     /// (QueryDisplayConfig + DisplayConfigGetDeviceInfo) and produces a neutral
-    /// <see cref="MonitorDisplayInfo"/> inventory used by Phase 0 classification.
-    /// This layer is independent of DDC/CI and WMI — both downstream controllers
-    /// consume its output via <see cref="DisplayClassifier"/>.
+    /// <see cref="MonitorDisplayInfo"/> inventory. This layer is independent of DDC/CI and
+    /// WMI; <see cref="MonitorManager"/> routes the inventory to both downstream controllers.
     /// </summary>
     public static class DisplayConfigInventory
     {
@@ -86,7 +85,6 @@ namespace PowerDisplay.Common.Drivers
                         TargetId = path.TargetInfo.Id,
                         MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
                         OutputTechnology = outputTechnology,
-                        IsInternal = DisplayClassifier.IsInternal(outputTechnology),
                     };
                 }
             }

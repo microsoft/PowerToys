@@ -149,9 +149,9 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// Discovers external DDC/CI-managed monitors. Each enumerated hMonitor runs its own
         /// async pipeline (filter → physical-handle retrieval → caps fetch + VCP init); all
         /// pipelines run concurrently via Task.WhenAll. Caller (MonitorManager) supplies the
-        /// pre-filtered external-target list from Phase 0.
+        /// displays it did not route to WMI — i.e. everything WmiMonitorBrightness did not expose.
         /// </summary>
-        /// <param name="targets">External-only display targets (pre-filtered by MonitorManager Phase 0).</param>
+        /// <param name="targets">Displays MonitorManager did not claim via WMI (not exposed by WmiMonitorBrightness).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>List of DDC/CI-managed external monitors.</returns>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
@@ -669,8 +669,8 @@ namespace PowerDisplay.Common.Drivers.DDC
 
                 if (!targetsByGdi.TryGetValue(gdiName, out var matchingInfos))
                 {
-                    // GDI name not in the external targets list — either a Phase 0 internal
-                    // panel or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the
+                    // GDI name not in the DDC target list — either a panel already claimed by
+                    // WMI or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the
                     // expensive GetPhysicalMonitorsFromHMONITOR call.
                     Logger.LogDebug($"DDC skipping {gdiName}: not in external targets list");
                     return Array.Empty<Monitor>();

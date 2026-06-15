@@ -8,9 +8,8 @@ namespace PowerDisplay.Common.Drivers
 {
     /// <summary>
     /// Monitor display information structure produced by QueryDisplayConfig.
-    /// Used by MonitorManager Phase 0 classification and by both controllers
-    /// during discovery. Immutable value type — populated once by
-    /// <see cref="DisplayConfigInventory"/> and read-only thereafter.
+    /// Used by MonitorManager during discovery and by both controllers. Immutable value
+    /// type — populated once by <see cref="DisplayConfigInventory"/> and read-only thereafter.
     /// </summary>
     public readonly record struct MonitorDisplayInfo
     {
@@ -48,11 +47,5 @@ namespace PowerDisplay.Common.Drivers
         /// by QueryDisplayConfig. Preserved for diagnostic logging.
         /// </summary>
         public uint OutputTechnology { get; init; }
-
-        /// <summary>
-        /// Gets a value indicating whether this display is classified as internal (built-in).
-        /// Computed from OutputTechnology by DisplayClassifier.IsInternal during Phase 0.
-        /// </summary>
-        public bool IsInternal { get; init; }
     }
 }
