@@ -35,6 +35,8 @@ advanced_paste_from_<input>_to_<output>(<param>)
 | `text` | `str` — clipboard text | Clipboard has text |
 | `html` | `str` — clipboard HTML | Clipboard has HTML |
 | `image` | `str` — path to temp image file | Clipboard has an image |
+| `audio` | `str` — path to audio file | Clipboard has an audio file |
+| `video` | `str` — path to video file | Clipboard has a video file |
 | `files` | `list[str]` — file paths | Clipboard has files |
 
 **Output types** (what the function produces — declared via `_to_` suffix):
@@ -44,6 +46,8 @@ advanced_paste_from_<input>_to_<output>(<param>)
 | `text` | Sets clipboard to text |
 | `html` | Sets clipboard to HTML |
 | `image` | Sets clipboard to image |
+| `audio` | Sets clipboard to audio file |
+| `video` | Sets clipboard to video file |
 | `file` | Sets clipboard to a file |
 | `files` | Sets clipboard to multiple files |
 

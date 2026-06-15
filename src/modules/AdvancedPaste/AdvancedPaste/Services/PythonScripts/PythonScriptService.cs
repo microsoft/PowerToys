@@ -364,6 +364,20 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             }
 
             obj["file_paths"] = filePathArray;
+
+            // For single-file audio/video, also set dedicated path fields for convenience.
+            if (storageItems.Count == 1 && storageItems[0] is StorageFile singleFile)
+            {
+                if (detectedFormat.HasFlag(ClipboardFormat.Audio))
+                {
+                    obj["audio_path"] = singleFile.Path;
+                }
+
+                if (detectedFormat.HasFlag(ClipboardFormat.Video))
+                {
+                    obj["video_path"] = singleFile.Path;
+                }
+            }
         }
 
         return obj;
@@ -459,6 +473,26 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
                 if (!string.IsNullOrEmpty(imagePath))
                 {
                     var file = await StorageFile.GetFileFromPathAsync(imagePath);
+                    dataPackage.SetStorageItems([file]);
+                }
+
+                break;
+
+            case "audio":
+                var audioPath = outputObj["audio_path"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(audioPath))
+                {
+                    var file = await StorageFile.GetFileFromPathAsync(audioPath);
+                    dataPackage.SetStorageItems([file]);
+                }
+
+                break;
+
+            case "video":
+                var videoPath = outputObj["video_path"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(videoPath))
+                {
+                    var file = await StorageFile.GetFileFromPathAsync(videoPath);
                     dataPackage.SetStorageItems([file]);
                 }
 
@@ -650,7 +684,7 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
     // Regex to detect named function interface: def advanced_paste_from_<input>_to_<output>(...)
     // Each script must define exactly one such function.
     private static readonly Regex ApFunctionRegex = new(
-        @"^def\s+advanced_paste_from_(text|html|image|files)_to_(text|html|image|file|files)\s*\(",
+        @"^def\s+advanced_paste_from_(text|html|image|audio|video|files)_to_(text|html|image|audio|video|file|files)\s*\(",
         RegexOptions.Compiled);
 
     public PythonScriptMetadata ReadMetadata(string scriptPath)
@@ -813,6 +847,8 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
         "text" => ClipboardFormat.Text,
         "html" => ClipboardFormat.Html,
         "image" => ClipboardFormat.Image,
+        "audio" => ClipboardFormat.Audio,
+        "video" => ClipboardFormat.Video,
         "files" => ClipboardFormat.File,
         _ => ClipboardFormat.None,
     };
@@ -1695,6 +1731,20 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
             }
 
             obj["file_paths"] = filePathArray;
+
+            // For single-file audio/video, also set dedicated path fields for convenience.
+            if (storageItems.Count == 1 && storageItems[0] is StorageFile singleFile)
+            {
+                if (detectedFormat.HasFlag(ClipboardFormat.Audio))
+                {
+                    obj["audio_path"] = ToWslPath(singleFile.Path);
+                }
+
+                if (detectedFormat.HasFlag(ClipboardFormat.Video))
+                {
+                    obj["video_path"] = ToWslPath(singleFile.Path);
+                }
+            }
         }
 
         return obj;
@@ -1811,6 +1861,38 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
                     var file = await StorageFile.GetFileFromPathAsync(winImagePath);
                     dataPackage.SetStorageItems([file]);
+                }
+
+                break;
+
+            case "audio":
+                var audioPath = outputObj["audio_path"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(audioPath))
+                {
+                    if (!TryToWindowsPath(audioPath, out var winAudioPath))
+                    {
+                        Logger.LogError($"WSL script returned a non-/mnt/ audio path: {audioPath}. Output the audio to work_dir instead.");
+                        break;
+                    }
+
+                    var audioFile = await StorageFile.GetFileFromPathAsync(winAudioPath);
+                    dataPackage.SetStorageItems([audioFile]);
+                }
+
+                break;
+
+            case "video":
+                var videoPath = outputObj["video_path"]?.GetValue<string>();
+                if (!string.IsNullOrEmpty(videoPath))
+                {
+                    if (!TryToWindowsPath(videoPath, out var winVideoPath))
+                    {
+                        Logger.LogError($"WSL script returned a non-/mnt/ video path: {videoPath}. Output the video to work_dir instead.");
+                        break;
+                    }
+
+                    var videoFile = await StorageFile.GetFileFromPathAsync(winVideoPath);
+                    dataPackage.SetStorageItems([videoFile]);
                 }
 
                 break;

@@ -51,6 +51,10 @@ def _apply_output_hint(result, hint: str) -> dict:
             return {"result_type": "html", "html": ""}
         elif hint == "image":
             return {"result_type": "image", "image_path": ""}
+        elif hint == "audio":
+            return {"result_type": "audio", "audio_path": ""}
+        elif hint == "video":
+            return {"result_type": "video", "video_path": ""}
         elif hint in ("file", "files"):
             return {"result_type": hint, "file_paths": []}
 
@@ -61,6 +65,12 @@ def _apply_output_hint(result, hint: str) -> dict:
     elif hint == "image":
         path = str(result)
         return {"result_type": "image", "image_path": path}
+    elif hint == "audio":
+        path = str(result)
+        return {"result_type": "audio", "audio_path": path}
+    elif hint == "video":
+        path = str(result)
+        return {"result_type": "video", "video_path": path}
     elif hint == "file":
         if isinstance(result, (list, tuple)):
             paths = [str(p) for p in result]
@@ -79,7 +89,7 @@ def _apply_output_hint(result, hint: str) -> dict:
 
 # Pattern matching advanced_paste_from_<input>_to_<output> function names.
 _AP_FUNCTION_PATTERN = re.compile(
-    r"^advanced_paste_from_(text|html|image|files)_to_(text|html|image|file|files)$"
+    r"^advanced_paste_from_(text|html|image|audio|video|files)_to_(text|html|image|audio|video|file|files)$"
 )
 
 
@@ -136,6 +146,10 @@ def _format_output(result, output_type: str) -> dict:
             return {"result_type": output_type, "file_paths": []}
         elif output_type == "image":
             return {"result_type": "image", "image_path": ""}
+        elif output_type == "audio":
+            return {"result_type": "audio", "audio_path": ""}
+        elif output_type == "video":
+            return {"result_type": "video", "video_path": ""}
         elif output_type == "html":
             return {"result_type": "html", "html": ""}
         return {"result_type": "text", "text": ""}
@@ -187,6 +201,8 @@ def main():
         "text": "text",
         "html": "html",
         "image": "image_path",
+        "audio": "audio_path",
+        "video": "video_path",
         "files": "file_paths",
     }
 

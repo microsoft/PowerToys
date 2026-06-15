@@ -503,6 +503,54 @@ public sealed class PythonScriptServiceTests
         File.Delete(scriptPath);
     }
 
+    [TestMethod]
+    public void ReadMetadata_FunctionNameDeterminesFormat_Audio()
+    {
+        var scriptPath = CreateTempScript("def advanced_paste_from_audio_to_text(audio_path):\n    return 'transcribed'\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Audio, metadata.SupportedFormats);
+        Assert.AreEqual("text", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
+    }
+
+    [TestMethod]
+    public void ReadMetadata_FunctionNameDeterminesFormat_Video()
+    {
+        var scriptPath = CreateTempScript("def advanced_paste_from_video_to_text(video_path):\n    return 'description'\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Video, metadata.SupportedFormats);
+        Assert.AreEqual("text", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
+    }
+
+    [TestMethod]
+    public void ReadMetadata_OutputTypeHint_Audio()
+    {
+        var scriptPath = CreateTempScript("def advanced_paste_from_text_to_audio(text):\n    return '/path/out.mp3'\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Text, metadata.SupportedFormats);
+        Assert.AreEqual("audio", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
+    }
+
+    [TestMethod]
+    public void ReadMetadata_OutputTypeHint_Video()
+    {
+        var scriptPath = CreateTempScript("def advanced_paste_from_text_to_video(text):\n    return '/path/out.mp4'\n");
+        var metadata = _service.ReadMetadata(scriptPath);
+
+        Assert.IsNotNull(metadata);
+        Assert.AreEqual(Models.ClipboardFormat.Text, metadata.SupportedFormats);
+        Assert.AreEqual("video", metadata.OutputTypeHint);
+        File.Delete(scriptPath);
+    }
+
     private static string CreateTempScript(string content)
     {
         var path = Path.Combine(Path.GetTempPath(), $"test_script_{Guid.NewGuid():N}.py");
