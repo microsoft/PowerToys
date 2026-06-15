@@ -27,9 +27,8 @@ public:
         winrt::GraphicsCaptureItem const& item,
         RECT const& cropRect,
         uint32_t frameRate,
-        bool captureAudio,
-        bool captureSystemAudio,
-        bool micMonoMix,
+        std::unique_ptr<AudioSampleGenerator> audioGenerator,
+        winrt::Windows::Foundation::IAsyncAction audioInitAction,
         winrt::Streams::IRandomAccessStream const& stream);
     ~VideoRecordingSession();
 
@@ -217,9 +216,8 @@ private:
         winrt::Capture::GraphicsCaptureItem const& item,
         RECT const cropRect,
         uint32_t frameRate,
-        bool captureAudio,
-        bool captureSystemAudio,
-        bool micMonoMix,
+        std::unique_ptr<AudioSampleGenerator> audioGenerator,
+        winrt::Windows::Foundation::IAsyncAction audioInitAction,
         winrt::Streams::IRandomAccessStream const& stream);
     void CloseInternal();
 
@@ -279,5 +277,9 @@ private:
     LARGE_INTEGER m_qpcFreq{};
     LARGE_INTEGER m_qpcRecordingStart{};    // QPC at first sample
     int64_t m_startSystemRelativeTime = 0; // SystemRelativeTime of first frame
+    int64_t m_adjustedStartSRT = 0;        // QPC-based current SRT set in OnStarting
     bool m_hasQpcOrigin = false;
+
+    // Audio initialization started in the constructor, awaited in StartAsync.
+    winrt::Windows::Foundation::IAsyncAction m_audioInitAction{ nullptr };
 };

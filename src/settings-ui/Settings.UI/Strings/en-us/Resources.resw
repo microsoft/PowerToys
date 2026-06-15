@@ -4810,6 +4810,9 @@ The break timer font matches the text font.</value>
   <data name="ZoomIt_Record_CaptureAudio.Content" xml:space="preserve">
     <value>Capture audio input</value>
   </data>
+  <data name="ZoomIt_Record_NoiseCancellation.Content" xml:space="preserve">
+    <value>Noise cancellation</value>
+  </data>
   <data name="ZoomIt_Record_MicMonoMix.Content" xml:space="preserve">
     <value>Mono</value>
   </data>
@@ -4875,6 +4878,30 @@ The break timer font matches the text font.</value>
   </data>
   <data name="ZoomIt_Record_WebcamShape_Circle.Content" xml:space="preserve">
     <value>Circle</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackground.Header" xml:space="preserve">
+    <value>Background</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackground_None.Content" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackground_Blur.Content" xml:space="preserve">
+    <value>Blur</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackground_Image.Content" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBrightness.Header" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackgroundImage.Header" xml:space="preserve">
+    <value>Background image file</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackgroundImage_BrowseButton.Content" xml:space="preserve">
+    <value>Browse</value>
+  </data>
+  <data name="ZoomIt_Record_WebcamBackgroundImage_Picker_Dialog_Title" xml:space="preserve">
+    <value>Specify webcam background image...</value>
   </data>
   <data name="ZoomIt_Record_AspectRatio.Content" xml:space="preserve">
     <value>Lock region selection to 16:9 aspect ratio</value>
@@ -5264,6 +5291,15 @@ The break timer font matches the text font.</value>
   </data>
   <data name="LightSwitch_PowerDisplayDisabledWarningBar.Message" xml:space="preserve">
     <value />
+  </data>
+  <data name="PowerDisplay_Monitor_Diagnostics.Header" xml:space="preserve">
+    <value>Monitor diagnostics</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Diagnostics.Description" xml:space="preserve">
+    <value>Copy monitor details, detected capabilities, and VCP codes to the clipboard for troubleshooting.</value>
+  </data>
+  <data name="PowerDisplay_Monitor_Diagnostics_CopyText.Text" xml:space="preserve">
+    <value>Copy diagnostics</value>
   </data>
   <data name="LightSwitch_ApplyMonitorSettingsExpander.Header" xml:space="preserve">
     <value>Apply monitor settings to</value>

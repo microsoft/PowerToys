@@ -108,6 +108,7 @@ public partial class MainViewModel
 
         try
         {
+            CancelPendingLinkedBrightnessCommit();
             IsScanning = true;
 
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
@@ -133,6 +134,8 @@ public partial class MainViewModel
 
     private void UpdateMonitorList(IReadOnlyList<Monitor> monitors, bool isInitialLoad)
     {
+        CancelPendingLinkedBrightnessCommit();
+
         // Dispose old ViewModels to unsubscribe PropertyChanged handlers
         foreach (var vm in Monitors)
         {
@@ -160,6 +163,8 @@ public partial class MainViewModel
 
         OnPropertyChanged(nameof(HasMonitors));
         OnPropertyChanged(nameof(ShowNoMonitorsMessage));
+        OnPropertyChanged(nameof(ShowLinkLevelsToggle));
+        RecomputeLinkedBrightnessAvailability();
 
         // Save monitor information to settings
         SaveMonitorsToSettings();
