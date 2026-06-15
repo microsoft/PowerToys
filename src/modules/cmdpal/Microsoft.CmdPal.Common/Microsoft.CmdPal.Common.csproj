@@ -80,4 +80,4 @@
   <ItemGroup>
     <Folder Include="Logging\" />
   </ItemGroup>
-src/modules/cmdpal/Microsoft.CmdPal.Common/Microsoft.CmdPal.Common.csproj</Project>
+</Project>
