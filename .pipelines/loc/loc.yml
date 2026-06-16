@@ -5,8 +5,8 @@ schedules:
     displayName: "Nightly Localization Build"
     branches:
       include:
-        - main
-    always: false # only run if there's code changes!
+        - 
+    always: true # only run if there's code changes!
 
 pool:
   vmImage: windows-latest
