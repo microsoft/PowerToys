@@ -72,16 +72,20 @@ namespace AdvancedPaste
 
                 switch (readyState)
                 {
-                    case Microsoft.Windows.AI.AIFeatureReadyState.NotSupportedOnCurrentSystem:
-                    case Microsoft.Windows.AI.AIFeatureReadyState.DisabledByUser:
-                        Console.Out.WriteLine("NotSupported");
-                        return 2;
+                    case Microsoft.Windows.AI.AIFeatureReadyState.Ready:
+                        Console.Out.WriteLine("Available");
+                        return 0;
                     case Microsoft.Windows.AI.AIFeatureReadyState.NotReady:
                         Console.Out.WriteLine("NotReady");
                         return 1;
                     default:
-                        Console.Out.WriteLine("Available");
-                        return 0;
+                        // NotSupportedOnCurrentSystem, DisabledByUser, CapabilityMissing,
+                        // NotCompatibleWithSystemHardware, OSUpdateNeeded, or any future state:
+                        // the model isn't usable and "Download model" (EnsureReadyAsync) won't fix it.
+                        // CapabilityMissing in particular means the systemAIModels capability isn't
+                        // authorized for the app, so EnsureReadyAsync throws E_ACCESSDENIED (0x80070005).
+                        Console.Out.WriteLine("NotSupported");
+                        return 2;
                 }
             }
             catch (Exception ex)

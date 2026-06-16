@@ -744,6 +744,16 @@
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     TextAlignment="Center"
                                     TextWrapping="Wrap" />
+                                <TextBlock
+                                    x:Name="PhiSilicaNotAvailableDetails"
+                                    HorizontalAlignment="Center"
+                                    FontFamily="Consolas"
+                                    FontSize="11"
+                                    Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                    IsTextSelectionEnabled="True"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap"
+                                    Visibility="Collapsed" />
                                 <Button
                                     x:Name="PhiSilicaPrepareButton"
                                     x:Uid="AdvancedPaste_PhiSilicaPrepareButton"

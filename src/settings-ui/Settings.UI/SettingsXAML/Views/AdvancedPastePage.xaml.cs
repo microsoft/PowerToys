@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private const string SimpleAISystemPrompt = "You are tasked with reformatting user's clipboard data. Use the user's instructions, and the content of their clipboard below to edit their clipboard content as they have requested it. Do not output anything else besides the reformatted clipboard content.";
         private static readonly string AdvancedAISystemPromptNormalized = AdvancedAISystemPrompt.Trim();
         private static readonly string SimpleAISystemPromptNormalized = SimpleAISystemPrompt.Trim();
+        private static readonly char[] NewLineSeparators = ['\r', '\n'];
 
         private AdvancedPasteViewModel ViewModel { get; set; }
 
@@ -464,22 +465,24 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // Settings doesn't have package identity, so it can't call
                 // LanguageModel.GetReadyState() directly. Instead, probe via AdvancedPaste
                 // which runs with its own package identity. See microsoft-ui-xaml#10856.
-                var result = await Task.Run(() => CheckPhiSilicaViaAdvancedPaste());
+                var (status, diagnostics) = await Task.Run(() => CheckPhiSilicaViaAdvancedPaste());
 
-                if (result == "NotSupported")
+                if (status == "NotSupported")
                 {
                     _isPhiSilicaAvailable = false;
                     ShowPhiSilicaNotAvailableState(
                         resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Title"),
-                        resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Description"));
+                        resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Description"),
+                        details: diagnostics);
                 }
-                else if (result == "NotReady")
+                else if (status == "NotReady")
                 {
                     _isPhiSilicaAvailable = false;
                     ShowPhiSilicaNotAvailableState(
                         resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Title"),
                         resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Description"),
-                        showPrepareButton: true);
+                        showPrepareButton: true,
+                        details: diagnostics);
                 }
                 else
                 {
@@ -547,7 +550,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void ShowPhiSilicaNotAvailableState(string title, string description, bool showPrepareButton = false)
+        private void ShowPhiSilicaNotAvailableState(string title, string description, bool showPrepareButton = false, string details = null)
         {
             if (PhiSilicaLoadingPanel is not null)
             {
@@ -578,14 +581,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             {
                 PhiSilicaPrepareButton.Visibility = showPrepareButton ? Visibility.Visible : Visibility.Collapsed;
             }
+
+            // Surface the AdvancedPaste diagnostics (LAF status, ready state, HRESULT) so the user
+            // can see why the model isn't ready / why a download attempt failed, instead of nothing.
+            if (PhiSilicaNotAvailableDetails is not null)
+            {
+                PhiSilicaNotAvailableDetails.Text = details ?? string.Empty;
+                PhiSilicaNotAvailableDetails.Visibility = string.IsNullOrWhiteSpace(details) ? Visibility.Collapsed : Visibility.Visible;
+            }
         }
 
         /// <summary>
         /// Checks Phi Silica availability by launching AdvancedPaste.exe with --check-phi-silica.
         /// AdvancedPaste has sparse package identity and can call the Windows AI APIs directly.
-        /// Returns "Available", "NotReady", or "NotSupported".
+        /// Returns the status ("Available", "NotReady", or "NotSupported") plus any diagnostic lines
+        /// AdvancedPaste wrote to stderr (LAF unlock status, ready state).
         /// </summary>
-        private static string CheckPhiSilicaViaAdvancedPaste()
+        private static (string Status, string Diagnostics) CheckPhiSilicaViaAdvancedPaste()
         {
             var settingsDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
@@ -595,7 +607,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             if (!File.Exists(advancedPastePath))
             {
-                return "NotSupported";
+                return ("NotSupported", string.Empty);
             }
 
             var startInfo = new ProcessStartInfo
@@ -603,6 +615,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 FileName = advancedPastePath,
                 Arguments = "--check-phi-silica",
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
@@ -610,41 +623,46 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             using var process = Process.Start(startInfo);
             if (process == null)
             {
-                return "NotSupported";
+                return ("NotSupported", string.Empty);
             }
 
-            // Read stdout asynchronously so a stalled child can't block us before the timeout elapses.
+            // Read stdout/stderr asynchronously so a stalled child can't block us before the timeout elapses.
             var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
 
             if (!process.WaitForExit(10_000))
             {
                 TryKillProcess(process);
-                return "NotSupported";
+                return ("NotSupported", string.Empty);
             }
 
             var output = outputTask.GetAwaiter().GetResult().Trim();
+            var diagnostics = ExtractPhiSilicaDiagnostics(errorTask.GetAwaiter().GetResult());
 
-            return output switch
+            var status = output switch
             {
                 "Available" => "Available",
                 "NotReady" => "NotReady",
                 _ => "NotSupported",
             };
+
+            return (status, diagnostics);
         }
 
         /// <summary>
         /// Triggers Phi Silica model preparation (download) by launching AdvancedPaste.exe with
         /// --prepare-phi-silica. AdvancedPaste has sparse package identity and can call EnsureReadyAsync.
-        /// Returns "Ready", "Failed", or "NotSupported".
+        /// Returns the status ("Ready", "Failed", or "NotSupported") plus any diagnostic lines
+        /// AdvancedPaste wrote to stderr (ready state and, on failure, the EnsureReadyAsync HRESULT).
         /// </summary>
-        private static string PreparePhiSilicaViaAdvancedPaste()
+        private static (string Status, string Diagnostics) PreparePhiSilicaViaAdvancedPaste()
         {
             var settingsDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var advancedPastePath = Path.Combine(settingsDir, "PowerToys.AdvancedPaste.exe");
 
             if (!File.Exists(advancedPastePath))
             {
-                return "NotSupported";
+                return ("NotSupported", string.Empty);
             }
 
             var startInfo = new ProcessStartInfo
@@ -652,6 +670,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 FileName = advancedPastePath,
                 Arguments = "--prepare-phi-silica",
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
@@ -659,27 +678,31 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             using var process = Process.Start(startInfo);
             if (process == null)
             {
-                return "NotSupported";
+                return ("NotSupported", string.Empty);
             }
 
-            // Read stdout asynchronously; model download can take a while, but a stalled child
+            // Read stdout/stderr asynchronously; model download can take a while, but a stalled child
             // must not block us indefinitely, so cap the wait and kill the process on timeout.
             var outputTask = process.StandardOutput.ReadToEndAsync();
+            var errorTask = process.StandardError.ReadToEndAsync();
 
             if (!process.WaitForExit(600_000))
             {
                 TryKillProcess(process);
-                return "Failed";
+                return ("Failed", string.Empty);
             }
 
             var output = outputTask.GetAwaiter().GetResult().Trim();
+            var diagnostics = ExtractPhiSilicaDiagnostics(errorTask.GetAwaiter().GetResult());
 
-            return output switch
+            var status = output switch
             {
                 "Ready" => "Ready",
                 "Failed" => "Failed",
                 _ => "NotSupported",
             };
+
+            return (status, diagnostics);
         }
 
         private static void TryKillProcess(Process process)
@@ -693,6 +716,28 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
+        // AdvancedPaste writes structured Phi Silica diagnostics to stderr, one per line prefixed with
+        // "[phi-silica] " (LAF unlock status, ready state, and on failure the EnsureReadyAsync HRESULT
+        // and message). Pull those lines out so the configurator can show the real error/HRESULT.
+        private static string ExtractPhiSilicaDiagnostics(string standardError)
+        {
+            if (string.IsNullOrWhiteSpace(standardError))
+            {
+                return string.Empty;
+            }
+
+            const string prefix = "[phi-silica] ";
+            var lines = standardError
+                .Split(NewLineSeparators, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Trim())
+                .Where(line => line.StartsWith(prefix, StringComparison.Ordinal))
+                .Select(line => line.Substring(prefix.Length))
+                .Distinct()
+                .ToArray();
+
+            return string.Join(Environment.NewLine, lines);
+        }
+
         private async void PhiSilicaPrepareButton_Click(object sender, RoutedEventArgs e)
         {
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
@@ -704,17 +749,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 PasteAIProviderConfigurationDialog.IsPrimaryButtonEnabled = false;
             }
 
-            string prepareResult;
+            (string Status, string Diagnostics) prepareResult;
             try
             {
                 prepareResult = await Task.Run(() => PreparePhiSilicaViaAdvancedPaste());
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                prepareResult = "Failed";
+                prepareResult = ("Failed", ex.Message);
             }
 
-            if (prepareResult == "Ready")
+            if (prepareResult.Status == "Ready")
             {
                 // Model is now ready; re-probe so the UI flips to the available state and Save enables.
                 await UpdatePhiSilicaUIAsync();
@@ -723,18 +768,20 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
             _isPhiSilicaAvailable = false;
 
-            if (prepareResult == "NotSupported")
+            if (prepareResult.Status == "NotSupported")
             {
                 ShowPhiSilicaNotAvailableState(
                     resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Title"),
-                    resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Description"));
+                    resourceLoader.GetString("AdvancedPaste_PhiSilicaNotAvailable_Description"),
+                    details: prepareResult.Diagnostics);
             }
             else
             {
                 ShowPhiSilicaNotAvailableState(
                     resourceLoader.GetString("AdvancedPaste_PhiSilicaNotReady_Title"),
                     resourceLoader.GetString("AdvancedPaste_PhiSilicaPrepareFailed_Description"),
-                    showPrepareButton: true);
+                    showPrepareButton: true,
+                    details: prepareResult.Diagnostics);
             }
 
             if (PasteAIProviderConfigurationDialog is not null)
