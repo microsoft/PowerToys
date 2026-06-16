@@ -3,46 +3,87 @@
     x:Class="WorkspacesLauncherUI.StatusWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:WorkspacesLauncherUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Workspaces"
     mc:Ignorable="d">
 
-    <Grid Margin="16" RowSpacing="12">
+    <Grid Margin="4">
+        <Grid.Resources>
+            <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
+            <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
+        </Grid.Resources>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <!--  App list will be added in Milestone 2  -->
-        <TextBlock
-            Grid.Row="0"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Text="Launching workspace..." />
+        <ScrollViewer Grid.ColumnSpan="2">
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding AppsListed, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding Name, Mode=OneWay}" />
+                                <ProgressRing
+                                    Grid.Column="2"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    IsActive="True"
+                                    Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BoolToVis}}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    Width="20"
+                                    Height="20"
+                                    Margin="10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    FontSize="20"
+                                    Foreground="{Binding StateColor}"
+                                    Text="{Binding StateGlyph}"
+                                    Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
 
-        <Grid Grid.Row="1" ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <Button
+            x:Name="CancelButton"
+            x:Uid="CancelButton"
+            Grid.Row="1"
+            Margin="4"
+            HorizontalAlignment="Stretch"
+            Click="CancelButton_Click" />
 
-            <Button
-                x:Name="CancelButton"
-                Grid.Column="0"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.Name="Cancel launch"
-                Click="CancelButton_Click"
-                Content="Cancel" />
-
-            <Button
-                x:Name="DismissButton"
-                Grid.Column="1"
-                HorizontalAlignment="Stretch"
-                AutomationProperties.Name="Dismiss"
-                Click="DismissButton_Click"
-                Content="Dismiss"
-                Style="{StaticResource AccentButtonStyle}" />
-        </Grid>
+        <Button
+            x:Name="DismissButton"
+            x:Uid="DismissButton"
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="4"
+            HorizontalAlignment="Stretch"
+            Click="DismissButton_Click"
+            Style="{StaticResource AccentButtonStyle}" />
     </Grid>
 </Window>
