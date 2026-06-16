@@ -3,8 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
-using System.Windows;
+using Microsoft.UI.Xaml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesLauncherUI.Converters;
 
@@ -24,7 +23,7 @@ namespace WorkspacesLauncherUI.UnitTests
         [TestCategory("Converter")]
         public void Converter_WhenLoadingTrue_HidesStatusGlyph()
         {
-            var result = _converter.Convert(true, typeof(Visibility), null, CultureInfo.InvariantCulture);
+            var result = _converter.Convert(true, typeof(Visibility), null, "en-US");
             Assert.AreEqual(Visibility.Collapsed, result);
         }
 
@@ -32,7 +31,7 @@ namespace WorkspacesLauncherUI.UnitTests
         [TestCategory("Converter")]
         public void Converter_WhenLoadingFalse_ShowsStatusGlyph()
         {
-            var result = _converter.Convert(false, typeof(Visibility), null, CultureInfo.InvariantCulture);
+            var result = _converter.Convert(false, typeof(Visibility), null, "en-US");
             Assert.AreEqual(Visibility.Visible, result);
         }
 
@@ -41,7 +40,7 @@ namespace WorkspacesLauncherUI.UnitTests
         [ExpectedException(typeof(NotImplementedException))]
         public void Converter_ReverseConversion_IsNotSupported()
         {
-            _converter.ConvertBack(Visibility.Visible, typeof(bool), null, CultureInfo.InvariantCulture);
+            _converter.ConvertBack(Visibility.Visible, typeof(bool), null, "en-US");
         }
 
         [TestMethod]
@@ -56,9 +55,9 @@ namespace WorkspacesLauncherUI.UnitTests
         [TestCategory("Converter")]
         public void Converter_MultipleCultures_BehaviorIsCultureInvariant()
         {
-            var result1 = _converter.Convert(true, typeof(Visibility), null, new CultureInfo("en-US"));
-            var result2 = _converter.Convert(true, typeof(Visibility), null, new CultureInfo("ja-JP"));
-            var result3 = _converter.Convert(true, typeof(Visibility), null, new CultureInfo("de-DE"));
+            var result1 = _converter.Convert(true, typeof(Visibility), null, "en-US");
+            var result2 = _converter.Convert(true, typeof(Visibility), null, "ja-JP");
+            var result3 = _converter.Convert(true, typeof(Visibility), null, "de-DE");
 
             Assert.AreEqual(Visibility.Collapsed, result1);
             Assert.AreEqual(Visibility.Collapsed, result2);

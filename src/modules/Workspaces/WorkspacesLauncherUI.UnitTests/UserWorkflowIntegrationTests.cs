@@ -80,8 +80,8 @@ namespace WorkspacesLauncherUI.UnitTests
 
             Assert.IsFalse(vm.AppsListed[1].Loading);
             Assert.AreEqual("\U0000EF2C", vm.AppsListed[1].StateGlyph);
-            var redBrush = vm.AppsListed[1].StateColor as System.Windows.Media.SolidColorBrush;
-            Assert.AreEqual(254, redBrush.Color.R);
+            var color = vm.AppsListed[1].StateColorValue;
+            Assert.AreEqual(254, color.R);
 
             Assert.AreEqual("\U0000F78C", vm.AppsListed[2].StateGlyph);
         }

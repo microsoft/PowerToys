@@ -85,13 +85,13 @@ namespace WorkspacesLauncherUI.UnitTests
         public void StatusColor_WhenSuccessful_IsGreenRgb0_128_0()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.LaunchedAndMoved };
-            var brush = app.StateColor as System.Windows.Media.SolidColorBrush;
+            var color = app.StateColorValue;
 
-            Assert.IsNotNull(brush);
-            Assert.AreEqual(0, brush.Color.R, "Green color R component");
-            Assert.AreEqual(128, brush.Color.G, "Green color G component");
-            Assert.AreEqual(0, brush.Color.B, "Green color B component");
-            Assert.AreEqual(255, brush.Color.A, "Green color A component");
+            Assert.AreNotEqual(default(Windows.UI.Color), color);
+            Assert.AreEqual(0, color.R, "Green color R component");
+            Assert.AreEqual(128, color.G, "Green color G component");
+            Assert.AreEqual(0, color.B, "Green color B component");
+            Assert.AreEqual(255, color.A, "Green color A component");
         }
 
         [TestMethod]
@@ -99,12 +99,12 @@ namespace WorkspacesLauncherUI.UnitTests
         public void StatusColor_WhenFailed_IsRedRgb254_0_0()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.Failed };
-            var brush = app.StateColor as System.Windows.Media.SolidColorBrush;
+            var color = app.StateColorValue;
 
-            Assert.IsNotNull(brush);
-            Assert.AreEqual(254, brush.Color.R, "Red color R component");
-            Assert.AreEqual(0, brush.Color.G, "Red color G component");
-            Assert.AreEqual(0, brush.Color.B, "Red color B component");
+            Assert.AreNotEqual(default(Windows.UI.Color), color);
+            Assert.AreEqual(254, color.R, "Red color R component");
+            Assert.AreEqual(0, color.G, "Red color G component");
+            Assert.AreEqual(0, color.B, "Red color B component");
         }
 
         [TestMethod]
@@ -112,10 +112,10 @@ namespace WorkspacesLauncherUI.UnitTests
         public void StatusColor_WhenCanceled_IsRedRgb254_0_0()
         {
             var app = new AppLaunching { LaunchState = LaunchingState.Canceled };
-            var brush = app.StateColor as System.Windows.Media.SolidColorBrush;
+            var color = app.StateColorValue;
 
-            Assert.IsNotNull(brush);
-            Assert.AreEqual(254, brush.Color.R, "Canceled should fall through to red");
+            Assert.AreNotEqual(default(Windows.UI.Color), color);
+            Assert.AreEqual(254, color.R, "Canceled should fall through to red");
         }
 
         [TestMethod]
@@ -160,9 +160,9 @@ namespace WorkspacesLauncherUI.UnitTests
             app.LaunchState = LaunchingState.LaunchedAndMoved;
             Assert.IsFalse(app.Loading);
             Assert.AreEqual("\U0000F78C", app.StateGlyph);
-            var brush = app.StateColor as System.Windows.Media.SolidColorBrush;
-            Assert.AreEqual(0, brush.Color.R);
-            Assert.AreEqual(128, brush.Color.G);
+            var color = app.StateColorValue;
+            Assert.AreEqual(0, color.R);
+            Assert.AreEqual(128, color.G);
         }
 
         [TestMethod]
@@ -175,9 +175,9 @@ namespace WorkspacesLauncherUI.UnitTests
             app.LaunchState = LaunchingState.Failed;
             Assert.IsFalse(app.Loading);
             Assert.AreEqual("\U0000EF2C", app.StateGlyph);
-            var brush = app.StateColor as System.Windows.Media.SolidColorBrush;
-            Assert.AreEqual(254, brush.Color.R);
-            Assert.AreEqual(0, brush.Color.G);
+            var color = app.StateColorValue;
+            Assert.AreEqual(254, color.R);
+            Assert.AreEqual(0, color.G);
         }
     }
 }

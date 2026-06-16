@@ -51,11 +51,16 @@ namespace WorkspacesLauncherUI.Models
 
         public Brush StateColor
         {
+            get => new SolidColorBrush(StateColorValue);
+        }
+
+        public Windows.UI.Color StateColorValue
+        {
             get => LaunchState switch
             {
-                LaunchingState.LaunchedAndMoved => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 128, 0)),
-                LaunchingState.Failed => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 254, 0, 0)),
-                _ => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 254, 0, 0)),
+                LaunchingState.LaunchedAndMoved => Windows.UI.Color.FromArgb(255, 0, 128, 0),
+                LaunchingState.Failed => Windows.UI.Color.FromArgb(255, 254, 0, 0),
+                _ => Windows.UI.Color.FromArgb(255, 254, 0, 0),
             };
         }
 

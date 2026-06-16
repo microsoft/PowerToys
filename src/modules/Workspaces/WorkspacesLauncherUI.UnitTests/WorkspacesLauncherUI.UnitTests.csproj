@@ -11,16 +11,21 @@
     <RootNamespace>WorkspacesLauncherUI.UnitTests</RootNamespace>
     <AssemblyName>PowerToys.WorkspacesLauncherUI.Tests</AssemblyName>
     <OutputType>Exe</OutputType>
+    <UseWinUI>true</UseWinUI>
+    <Platforms>x64;ARM64</Platforms>
+    <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
-    <ProjectReference Include="..\WorkspacesLauncherUI\WorkspacesLauncherUI.csproj" />
+    <ProjectReference Include="..\WorkspacesLauncherUI.WinUI\WorkspacesLauncherUI.WinUI.csproj" />
   </ItemGroup>
 
 </Project>
