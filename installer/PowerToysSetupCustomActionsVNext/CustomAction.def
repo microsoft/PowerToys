@@ -38,3 +38,4 @@ EXPORTS
 	UninstallPackageIdentityMSIXCA
 	CreateWinAppSDKHardlinksCA
 	DeleteWinAppSDKHardlinksCA
+	ForceRemoveOldVersionCA

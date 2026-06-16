@@ -43,6 +43,7 @@ const DWORD USERNAME_LEN = UNLEN + 1;                // User Name + '\0'
 
 static const wchar_t *POWERTOYS_EXE_COMPONENT = L"{A2C66D91-3485-4D00-B04D-91844E6B345B}";
 static const wchar_t *POWERTOYS_UPGRADE_CODE = L"{42B84BF7-5FBF-473B-9C8B-049DC16F7708}";
+static const wchar_t *POWERTOYS_UPGRADE_CODE_USER = L"{D8B559DB-4C98-487A-A33F-50A8EEE42726}";
 
 constexpr inline const wchar_t *DataDiagnosticsRegKey = L"Software\\Classes\\PowerToys";
 constexpr inline const wchar_t *DataDiagnosticsRegValueName = L"AllowDataDiagnostics";
@@ -1337,6 +1338,89 @@ UINT __stdcall DetectPrevInstallPathCA(MSIHANDLE hInstall)
     catch (...)
     {
     }
+    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
+    return WcaFinalize(er);
+}
+
+UINT __stdcall ForceRemoveOldVersionCA(MSIHANDLE hInstall)
+{
+    HRESULT hr = S_OK;
+    UINT er = ERROR_SUCCESS;
+    hr = WcaInitialize(hInstall, "ForceRemoveOldVersionCA");
+
+    try
+    {
+        LPWSTR currentScope = nullptr;
+        hr = WcaGetProperty(L"InstallScope", &currentScope);
+        if (FAILED(hr))
+        {
+            return WcaFinalize(ERROR_SUCCESS);
+        }
+
+        // Get the current product code to skip it during uninstall enumeration
+        wchar_t currentProductCode[39] = {};
+        DWORD currentProductCodeSize = ARRAYSIZE(currentProductCode);
+        if (MsiGetPropertyW(hInstall, L"ProductCode", currentProductCode, &currentProductCodeSize) != ERROR_SUCCESS)
+        {
+            currentProductCode[0] = L'\0';
+        }
+
+        const wchar_t* upgradeCode = (std::wstring(currentScope) == L"perUser")
+            ? POWERTOYS_UPGRADE_CODE_USER
+            : POWERTOYS_UPGRADE_CODE;
+
+        wchar_t productCode[39] = {};
+        DWORD index = 0;
+        while (MsiEnumRelatedProductsW(upgradeCode, 0, index++, productCode) == ERROR_SUCCESS)
+        {
+            if (MsiQueryProductStateW(productCode) != INSTALLSTATE_DEFAULT)
+            {
+                continue;
+            }
+
+            // Skip the current product during uninstall to avoid re-entrancy
+            if (currentProductCode[0] != L'\0' && wcscmp(productCode, currentProductCode) == 0)
+            {
+                continue;
+            }
+
+            DWORD pathSize = 0;
+            if (MsiGetProductInfoW(productCode, INSTALLPROPERTY_LOCALPACKAGE, nullptr, &pathSize) != ERROR_SUCCESS)
+            {
+                continue;
+            }
+
+            std::wstring localPackage(++pathSize, L'\0');
+            if (MsiGetProductInfoW(productCode, INSTALLPROPERTY_LOCALPACKAGE, localPackage.data(), &pathSize) != ERROR_SUCCESS)
+            {
+                continue;
+            }
+
+            if (!std::filesystem::exists(localPackage.c_str()))
+            {
+                Logger::info(L"PowerToys MSI source missing for product {}. Force-removing...", productCode);
+
+                UINT result = MsiConfigureProductExW(productCode, INSTALLLEVEL_DEFAULT, INSTALLSTATE_ABSENT, L"MSIFASTINSTALL=7 REMOVE=ALL");
+                if (result == ERROR_SUCCESS)
+                {
+                    Logger::info(L"Successfully force-removed old PowerToys product {}", productCode);
+                }
+                else
+                {
+                    Logger::warn(L"Failed to force-remove old PowerToys product {}. Error: {}", productCode, result);
+                }
+            }
+        }
+    }
+    catch (const std::exception& e)
+    {
+        Logger::error("ForceRemoveOldVersionCA exception: {}", e.what());
+    }
+    catch (...)
+    {
+        Logger::error("ForceRemoveOldVersionCA unknown exception");
+    }
+
     er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
