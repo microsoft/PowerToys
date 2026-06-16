@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 
+using ManagedCommon;
 using Microsoft.UI.Dispatching;
 
 namespace Peek.UI.Native
@@ -19,9 +20,17 @@ namespace Peek.UI.Native
                 var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
                 while (true)
                 {
-                    if (eventHandle.WaitOne())
+                    try
                     {
-                        dispatcherQueue.TryEnqueue(() => callback());
+                        if (eventHandle.WaitOne())
+                        {
+                            dispatcherQueue.TryEnqueue(() => callback());
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError($"NativeEventWaiter error for {eventName}: {ex.Message}");
+                        break;
                     }
                 }
             });
