@@ -46,6 +46,8 @@ Mouse Button Lock builds as part of the PowerToys solution. The runtime is a nat
 - Native module only (after a NuGet restore): `msbuild src/modules/MouseUtils/MouseButtonLock/MouseButtonLock.vcxproj /p:Platform=x64 /p:Configuration=Release`.
 - Debugging: the hook runs inside the runner, so start or attach the debugger to `PowerToys.exe` and set breakpoints in `dllmain.cpp`. Enable the module from the Mouse Utilities settings page, then exercise the lock with a real right or middle button hold. Keep the hook callback non-blocking: a slow callback risks `LowLevelHooksTimeout` eviction by Windows.
 
+Build status: the module is build-verified. A local x64 Release build compiles `version`/`logger`/`SettingsAPI` and the module, and links `PowerToys.MouseButtonLock.dll` (exporting `powertoy_create`) with clean C++ code analysis.
+
 ## Open items / not yet wired
 
 Done: GPO is fully wired end to end (`gpo.h` constant + getter, GPOWrapper `idl`/`h`/`cpp`, both `ModuleGpoHelper`s, and the ADMX/ADML templates in `src/gpo/assets/`); ESRP signing lists `PowerToys.MouseButtonLock.dll`; and the spell-check dictionary has the new tokens. The in-process DLL is harvested into the installer by the existing `$(Platform)\Release\*.dll` glob (like the other MouseUtils DLLs), so no per-module `.wxs` is needed.
@@ -57,4 +59,4 @@ Still open, and intentionally deferred until the approach is agreed on the propo
 - Fuzzing coverage (PowerToys requires fuzzing for user-input modules).
 - Game compatibility validation: `WH_MOUSE_LL` may not observe or suppress input in titles using Raw Input or exclusive DirectInput.
 - Release the lock on session lock / fast-user-switch (`WTSRegisterSessionNotification` -> `ReleaseAllLocked`). The standalone reference app did this; in the module a button locked when the session locks stays logically held until the next physical tap. Minor and self-healing, tracked as a parity follow-up.
-- A full x64 Release build of `PowerToys.slnx` to confirm the module compiles, links, loads in the runner, and that the DLL lands in the harvested Release root.
+- A full x64 Release build of the entire `PowerToys.slnx` on a fully provisioned machine, and a runtime check that the runner loads the module and the lock works end to end. (The module itself already compiles and links cleanly; what remains is the whole-solution build plus manual runtime validation.)
