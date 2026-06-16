@@ -446,24 +446,23 @@
                             </StackPanel>
                         </tkcontrols:SettingsCard>
 
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_UseWsl_SettingsCard"
-                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}">
-                            <tkcontrols:SettingsCard.HeaderIcon>
+                        <tkcontrols:SettingsExpander x:Uid="AdvancedPaste_UseWsl_SettingsCard"
+                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}"
+                            IsExpanded="{x:Bind ViewModel.PythonUseWsl, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander.HeaderIcon>
                                 <FontIcon Glyph="&#xEC7A;" />
-                            </tkcontrols:SettingsCard.HeaderIcon>
+                            </tkcontrols:SettingsExpander.HeaderIcon>
                             <ToggleSwitch IsOn="{x:Bind ViewModel.PythonUseWsl, Mode=TwoWay}" />
-                        </tkcontrols:SettingsCard>
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_WslDistribution_SettingsCard"
-                            IsEnabled="{x:Bind ViewModel.PythonUseWsl, Mode=OneWay}">
-                            <tkcontrols:SettingsCard.HeaderIcon>
-                                <FontIcon Glyph="&#xEC7A;" />
-                            </tkcontrols:SettingsCard.HeaderIcon>
-                            <TextBox
-                                x:Uid="AdvancedPaste_WslDistribution_TextBox"
-                                MinWidth="200"
-                                HorizontalAlignment="Stretch"
-                                Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-                        </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsExpander.Items>
+                                <tkcontrols:SettingsCard x:Uid="AdvancedPaste_WslDistribution_SettingsCard">
+                                    <TextBox
+                                        x:Uid="AdvancedPaste_WslDistribution_TextBox"
+                                        MinWidth="200"
+                                        HorizontalAlignment="Stretch"
+                                        Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                                </tkcontrols:SettingsCard>
+                            </tkcontrols:SettingsExpander.Items>
+                        </tkcontrols:SettingsExpander>
 
                         <!-- Discovered Python Scripts (read-only) -->
                         <tkcontrols:SettingsExpander
