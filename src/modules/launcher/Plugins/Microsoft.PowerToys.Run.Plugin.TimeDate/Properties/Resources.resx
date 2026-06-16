@@ -197,29 +197,45 @@
     <value>{0} days ago</value>
     <comment>Relative date in the past. {0} is replaced with an integer count of days (always greater than 1).</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_FriendlyHourAgo" xml:space="preserve">
+    <value>1 hour ago</value>
+    <comment>Singular form of "{0} hours ago" for when the count is exactly 1.</comment>
+  </data>
   <data name="Microsoft_plugin_timedate_FriendlyHoursAgo" xml:space="preserve">
     <value>{0} hours ago</value>
-    <comment>Relative time in the past. {0} is replaced with an integer count of hours (1 or more).</comment>
+    <comment>Relative time in the past. {0} is replaced with an integer count of hours (2 or more).</comment>
   </data>
   <data name="Microsoft_plugin_timedate_FriendlyInDays" xml:space="preserve">
     <value>in {0} days</value>
     <comment>Relative date in the future. {0} is replaced with an integer count of days (always greater than 1).</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_FriendlyInHour" xml:space="preserve">
+    <value>in 1 hour</value>
+    <comment>Singular form of "in {0} hours" for when the count is exactly 1.</comment>
+  </data>
   <data name="Microsoft_plugin_timedate_FriendlyInHours" xml:space="preserve">
     <value>in {0} hours</value>
-    <comment>Relative time in the future. {0} is replaced with an integer count of hours (1 or more).</comment>
+    <comment>Relative time in the future. {0} is replaced with an integer count of hours (2 or more).</comment>
+  </data>
+  <data name="Microsoft_plugin_timedate_FriendlyInMinute" xml:space="preserve">
+    <value>in 1 minute</value>
+    <comment>Singular form of "in {0} minutes" for when the count is exactly 1.</comment>
   </data>
   <data name="Microsoft_plugin_timedate_FriendlyInMinutes" xml:space="preserve">
     <value>in {0} minutes</value>
-    <comment>Relative time in the future. {0} is replaced with an integer count of minutes (1 or more).</comment>
+    <comment>Relative time in the future. {0} is replaced with an integer count of minutes (2 or more).</comment>
   </data>
   <data name="Microsoft_plugin_timedate_FriendlyJustNow" xml:space="preserve">
     <value>just now</value>
     <comment>Shown when the target time is within ~30 seconds of the current time, in either direction.</comment>
   </data>
+  <data name="Microsoft_plugin_timedate_FriendlyMinuteAgo" xml:space="preserve">
+    <value>1 minute ago</value>
+    <comment>Singular form of "{0} minutes ago" for when the count is exactly 1.</comment>
+  </data>
   <data name="Microsoft_plugin_timedate_FriendlyMinutesAgo" xml:space="preserve">
     <value>{0} minutes ago</value>
-    <comment>Relative time in the past. {0} is replaced with an integer count of minutes (1 or more).</comment>
+    <comment>Relative time in the past. {0} is replaced with an integer count of minutes (2 or more).</comment>
   </data>
   <data name="Microsoft_plugin_timedate_FriendlyToday" xml:space="preserve">
     <value>Today</value>

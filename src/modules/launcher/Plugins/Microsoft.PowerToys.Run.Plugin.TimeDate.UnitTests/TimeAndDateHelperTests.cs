@@ -234,11 +234,14 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(-30, "1 minutes ago")] // boundary: 30s rounds up to 1 minute past
+        [DataRow(-30, "1 minute ago")] // boundary: 30s rounds up to 1 minute past
+        [DataRow(-60, "1 minute ago")]
+        [DataRow(-120, "2 minutes ago")]
         [DataRow(-300, "5 minutes ago")]
         [DataRow(-3540, "59 minutes ago")]
+        [DataRow(60, "in 1 minute")]
+        [DataRow(120, "in 2 minutes")]
         [DataRow(300, "in 5 minutes")]
-        [DataRow(60, "in 1 minutes")]
         public void GetFriendlyDateTime_WithinHour_ReturnsMinutesLabel(int secondsDelta, string expected)
         {
             DateTime target = FriendlyReferenceNow.AddSeconds(secondsDelta);
@@ -249,9 +252,11 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(-1, "1 hours ago")]
+        [DataRow(-1, "1 hour ago")]
+        [DataRow(-2, "2 hours ago")]
         [DataRow(-3, "3 hours ago")]
         [DataRow(-23, "23 hours ago")]
+        [DataRow(1, "in 1 hour")]
         [DataRow(2, "in 2 hours")]
         [DataRow(23, "in 23 hours")]
         public void GetFriendlyDateTime_WithinDay_ReturnsHoursLabel(int hoursDelta, string expected)
@@ -278,10 +283,10 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
         }
 
         [DataTestMethod]
-        [DataRow(-3570, "1 hours ago")]      // 59m30s ago: rounds to 60 min, promotes to 1h
-        [DataRow(-3599, "1 hours ago")]      // 59m59s ago
-        [DataRow(3570, "in 1 hours")]
-        [DataRow(3599, "in 1 hours")]
+        [DataRow(-3570, "1 hour ago")]      // 59m30s ago: rounds to 60 min, promotes to 1h
+        [DataRow(-3599, "1 hour ago")]      // 59m59s ago
+        [DataRow(3570, "in 1 hour")]
+        [DataRow(3599, "in 1 hour")]
         public void GetFriendlyDateTime_MinuteBoundaryRollsToHours(int secondsDelta, string expected)
         {
             DateTime target = FriendlyReferenceNow.AddSeconds(secondsDelta);

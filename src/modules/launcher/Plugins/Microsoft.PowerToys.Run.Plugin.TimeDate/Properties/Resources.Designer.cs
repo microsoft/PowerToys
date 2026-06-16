@@ -277,6 +277,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to 1 hour ago.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_FriendlyHourAgo {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_FriendlyHourAgo", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to {0} hours ago.
         /// </summary>
         internal static string Microsoft_plugin_timedate_FriendlyHoursAgo {
@@ -295,11 +304,29 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to in 1 hour.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_FriendlyInHour {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_FriendlyInHour", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to in {0} hours.
         /// </summary>
         internal static string Microsoft_plugin_timedate_FriendlyInHours {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_FriendlyInHours", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to in 1 minute.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_FriendlyInMinute {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_FriendlyInMinute", resourceCulture);
             }
         }
 
@@ -318,6 +345,15 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Properties {
         internal static string Microsoft_plugin_timedate_FriendlyJustNow {
             get {
                 return ResourceManager.GetString("Microsoft_plugin_timedate_FriendlyJustNow", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to 1 minute ago.
+        /// </summary>
+        internal static string Microsoft_plugin_timedate_FriendlyMinuteAgo {
+            get {
+                return ResourceManager.GetString("Microsoft_plugin_timedate_FriendlyMinuteAgo", resourceCulture);
             }
         }
 
