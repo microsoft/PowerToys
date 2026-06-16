@@ -19,6 +19,7 @@ This is a native C++ in-process module, like the other Mouse Utilities (Find My 
 - `dllmain.cpp` implements `PowertoyModuleIface`. `enable()` spins up a dedicated thread that installs `WH_MOUSE_LL` and runs a message pump (low-level hook callbacks are delivered to the installing thread). `disable()` signals a terminate event, joins the thread, and releases any locked button.
 - The hook callback runs a small per-button state machine. It suppresses the matching button-up (`WM_RBUTTONUP` / `WM_MBUTTONUP`) by returning `1`, and injects the synthetic release (`MOUSEEVENTF_RIGHTUP` / `MOUSEEVENTF_MIDDLEUP`) via `SendInput`.
 - Self-injection tag: every injected event sets `dwExtraInfo = 0x57494E4D` (`'WINM'`). The hook ignores events carrying this tag so it never recurses on its own synthetic input.
+- The decision logic lives in `MouseButtonLockCore.h` as a Win32-free `Engine` (the clock is passed in and synthetic-up injection is behind an `IButtonUpInjector` interface), so `dllmain.cpp` is a thin Win32 adapter and the state machine is unit tested by `MouseButtonLock.UnitTests` (`EngineTests.cpp`).
 
 ## Settings
 
@@ -50,12 +51,11 @@ Build status: the module is build-verified. A local x64 Release build compiles `
 
 ## Open items / not yet wired
 
-Done: GPO is fully wired end to end (`gpo.h` constant + getter, GPOWrapper `idl`/`h`/`cpp`, both `ModuleGpoHelper`s, and the ADMX/ADML templates in `src/gpo/assets/`); ESRP signing lists `PowerToys.MouseButtonLock.dll`; and the spell-check dictionary has the new tokens. The in-process DLL is harvested into the installer by the existing `$(Platform)\Release\*.dll` glob (like the other MouseUtils DLLs), so no per-module `.wxs` is needed.
+Done: GPO is fully wired end to end (`gpo.h` constant + getter, GPOWrapper `idl`/`h`/`cpp`, both `ModuleGpoHelper`s, and the ADMX/ADML templates in `src/gpo/assets/`); ESRP signing lists `PowerToys.MouseButtonLock.dll`; and the spell-check dictionary has the new tokens. The in-process DLL is harvested into the installer by the existing `$(Platform)\Release\*.dll` glob (like the other MouseUtils DLLs), so no per-module `.wxs` is needed. A 36x36 settings/dashboard icon (`MouseButtonLock.png`) and a C++ unit-test project (`MouseButtonLock.UnitTests`, 15 tests over the state machine) are in place; the test runs in CI via the solution's `Build;Test` target, so no pipeline edit is needed.
 
 Still open, and intentionally deferred until the approach is agreed on the proposal issue (microsoft/PowerToys#48302):
 
-- A dashboard/settings icon asset (`src/settings-ui/Settings.UI/Assets/Settings/Icons/MouseButtonLock.png`, 32px, matching the sibling Mouse* icons). Referenced by the settings card and the dashboard tile; renders blank until added.
-- ETW telemetry beyond the enable/disable event, and unit tests for the per-button state machine.
+- ETW telemetry beyond the enable/disable event.
 - Fuzzing coverage (PowerToys requires fuzzing for user-input modules).
 - Game compatibility validation: `WH_MOUSE_LL` may not observe or suppress input in titles using Raw Input or exclusive DirectInput.
 - Release the lock on session lock / fast-user-switch (`WTSRegisterSessionNotification` -> `ReleaseAllLocked`). The standalone reference app did this; in the module a button locked when the session locks stays logically held until the next physical tap. Minor and self-healing, tracked as a parity follow-up.

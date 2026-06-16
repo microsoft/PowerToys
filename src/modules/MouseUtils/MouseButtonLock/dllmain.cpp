@@ -9,6 +9,7 @@
 #include <common/logger/logger.h>
 #include "trace.h"
 #include "resource.h"
+#include "MouseButtonLockCore.h"
 
 #include <atomic>
 #include <thread>
@@ -22,8 +23,8 @@
 // apps only ever see the injected up).
 //
 // The hook lives on a dedicated thread with its own message pump, matching the other Mouse
-// Utilities (see CursorWrap). The button-state machine is ported from the standalone
-// windows-right-click-lock reference app and generalized to cover both RMB and MMB.
+// Utilities (see CursorWrap). The button-state machine itself lives in MouseButtonLockCore.h
+// (Win32-free and unit tested); this file is the thin Win32 adapter around it.
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
@@ -70,12 +71,31 @@ namespace
     constexpr int MIN_HOLD_DURATION_MS = 50;
     constexpr int MAX_HOLD_DURATION_MS = 60000;
     constexpr int MAX_MOVE_CANCEL_PIXELS = 10000;
+
+    // Production injector: a tagged SendInput. Lives behind the engine's IButtonUpInjector so the
+    // state machine can be unit tested without Win32.
+    class WinInjector : public mousebuttonlock::IButtonUpInjector
+    {
+    public:
+        bool InjectUp(mousebuttonlock::MouseButton button) override
+        {
+            const DWORD flag = button == mousebuttonlock::MouseButton::Right ? MOUSEEVENTF_RIGHTUP : MOUSEEVENTF_MIDDLEUP;
+            INPUT input{};
+            input.type = INPUT_MOUSE;
+            input.mi.dwFlags = flag;
+            input.mi.dwExtraInfo = INJECTION_TAG;
+            if (SendInput(1, &input, sizeof(INPUT)) == 1)
+            {
+                return true;
+            }
+            Logger::warn(L"Failed to inject synthetic button-up; the OS may keep the button held until the next physical click.");
+            return false;
+        }
+    };
 }
 
 // The PowerToy name that will be shown in the settings.
 const static wchar_t* MODULE_NAME = L"MouseButtonLock";
-// Add a description that will be shown in the module settings page.
-const static wchar_t* MODULE_DESC = L"Hold the right or middle mouse button to lock it, like ClickLock";
 
 // Forward declaration so the static hook proc can reach the singleton instance.
 class MouseButtonLock;
@@ -88,19 +108,6 @@ static std::atomic<MouseButtonLock*> g_instance{ nullptr };
 class MouseButtonLock : public PowertoyModuleIface
 {
 private:
-    // Per-button lock state. The transient fields are owned by the hook thread; only
-    // `locked` is touched from other threads (set_config / disable), hence the atomic.
-    struct ButtonLockState
-    {
-        DWORD upFlag = 0; // MOUSEEVENTF_RIGHTUP / MOUSEEVENTF_MIDDLEUP
-        bool physicalDown = false;
-        bool moveCancelled = false;
-        bool swallowNextRealUp = false;
-        ULONGLONG downTick = 0;
-        POINT downPos{};
-        std::atomic<bool> locked{ false };
-    };
-
     // The PowerToy enabled state (the whole module, driven by the runner). Atomic because the
     // runner's telemetry thread can call is_enabled() while enable()/disable() write it.
     std::atomic<bool> m_enabled{ false };
@@ -112,8 +119,10 @@ private:
     std::atomic<int> m_holdDurationMs{ DEFAULT_HOLD_DURATION_MS };
     std::atomic<int> m_moveCancelPixels{ DEFAULT_MOVE_CANCEL_PIXELS };
 
-    ButtonLockState m_right;
-    ButtonLockState m_middle;
+    // The state machine. m_injector must be declared before m_engine (the engine binds a reference
+    // to it in its constructor).
+    WinInjector m_injector;
+    mousebuttonlock::Engine m_engine{ m_injector };
 
     // Hook thread + lifecycle.
     HHOOK m_mouseHook = nullptr;
@@ -123,19 +132,10 @@ private:
 
     void init_settings();
     void parse_settings(PowerToysSettings::PowerToyValues& settings);
+    mousebuttonlock::Settings SettingsSnapshot() const;
 
     void HookThreadMain();
     bool HandleMouseMessage(WPARAM wParam, const MSLLHOOKSTRUCT* data);
-    bool HandleButtonDown(ButtonLockState& st, const std::atomic<bool>& enabled, const MSLLHOOKSTRUCT* data);
-    bool HandleButtonUp(ButtonLockState& st, const std::atomic<bool>& enabled);
-    void HandleMove(const MSLLHOOKSTRUCT* data);
-    static void CheckMoveCancel(ButtonLockState& st, ULONGLONG now, int holdMs, int pixels, POINT pt);
-
-    static bool InjectButtonUp(DWORD upFlag);
-    static void ReleaseButton(ButtonLockState& st);
-    static void ResetButtonTransient(ButtonLockState& st);
-    void ReleaseAllLocked();
-    void EnforceEnabledState();
 
     static LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam);
 
@@ -143,8 +143,6 @@ public:
     MouseButtonLock()
     {
         LoggerHelpers::init_logger(MODULE_NAME, L"ModuleInterface", LogSettings::mouseButtonLockLoggerName);
-        m_right.upFlag = MOUSEEVENTF_RIGHTUP;
-        m_middle.upFlag = MOUSEEVENTF_MIDDLEUP;
         init_settings();
         g_instance.store(this);
     }
@@ -194,7 +192,7 @@ public:
             parse_settings(values);
 
             // If a button's lock was just turned off while it was logically held, release it now.
-            EnforceEnabledState();
+            m_engine.EnforceEnabled(SettingsSnapshot());
         }
         catch (...)
         {
@@ -216,11 +214,9 @@ public:
 
         // Clear any stale per-button hold state left over from a previous enable session. A button
         // physically held across a disable/enable cycle never delivers its UP to us (the hook is
-        // uninstalled in between), so without this a stale downTick would make the next release lock
-        // spuriously, and a stale swallowNextRealUp would swallow a later legitimate click. Safe to
-        // touch these fields here: the hook thread is not running yet.
-        ResetButtonTransient(m_right);
-        ResetButtonTransient(m_middle);
+        // uninstalled in between), so without this a stale hold could lock spuriously or swallow a
+        // later click. Safe to touch this state here: the hook thread is not running yet.
+        m_engine.ResetTransient();
 
         m_terminateEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
         if (m_terminateEvent == nullptr)
@@ -345,6 +341,17 @@ void MouseButtonLock::parse_settings(PowerToysSettings::PowerToyValues& settings
     readInt(JSON_KEY_MOVE_CANCEL_PIXELS, m_moveCancelPixels, 0, MAX_MOVE_CANCEL_PIXELS);
 }
 
+mousebuttonlock::Settings MouseButtonLock::SettingsSnapshot() const
+{
+    mousebuttonlock::Settings s;
+    s.rmbEnabled = m_rmbLockEnabled.load();
+    s.mmbEnabled = m_mmbLockEnabled.load();
+    s.moveCancelEnabled = m_moveCancelEnabled.load();
+    s.holdDurationMs = m_holdDurationMs.load();
+    s.moveCancelPixels = m_moveCancelPixels.load();
+    return s;
+}
+
 void MouseButtonLock::HookThreadMain()
 {
     // WH_MOUSE_LL callbacks are delivered to the thread that installed the hook, so this
@@ -388,7 +395,7 @@ void MouseButtonLock::HookThreadMain()
     }
 
     // Crash/shutdown safety: never leave a button stranded in the locked state.
-    ReleaseAllLocked();
+    m_engine.ReleaseAll();
 }
 
 LRESULT CALLBACK MouseButtonLock::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -414,179 +421,25 @@ bool MouseButtonLock::HandleMouseMessage(WPARAM wParam, const MSLLHOOKSTRUCT* da
         return false;
     }
 
+    const mousebuttonlock::Settings snapshot = SettingsSnapshot();
+    const uint64_t tick = GetTickCount64();
+    const mousebuttonlock::PointL pt{ data->pt.x, data->pt.y };
+
     switch (wParam)
     {
     case WM_RBUTTONDOWN:
-        return HandleButtonDown(m_right, m_rmbLockEnabled, data);
+        return m_engine.OnButtonDown(mousebuttonlock::MouseButton::Right, tick, pt, snapshot);
     case WM_RBUTTONUP:
-        return HandleButtonUp(m_right, m_rmbLockEnabled);
+        return m_engine.OnButtonUp(mousebuttonlock::MouseButton::Right, tick, snapshot);
     case WM_MBUTTONDOWN:
-        return HandleButtonDown(m_middle, m_mmbLockEnabled, data);
+        return m_engine.OnButtonDown(mousebuttonlock::MouseButton::Middle, tick, pt, snapshot);
     case WM_MBUTTONUP:
-        return HandleButtonUp(m_middle, m_mmbLockEnabled);
+        return m_engine.OnButtonUp(mousebuttonlock::MouseButton::Middle, tick, snapshot);
     case WM_MOUSEMOVE:
-        HandleMove(data);
+        m_engine.OnMove(tick, pt, snapshot);
         return false;
     default:
         return false;
-    }
-}
-
-bool MouseButtonLock::HandleButtonDown(ButtonLockState& st, const std::atomic<bool>& enabled, const MSLLHOOKSTRUCT* data)
-{
-    // Tap-to-release. exchange() claims the lock atomically so a concurrent set_config/disable
-    // release can't double-act. If we claimed it, try to inject the synthetic UP.
-    if (st.locked.exchange(false))
-    {
-        if (InjectButtonUp(st.upFlag))
-        {
-            st.swallowNextRealUp = true;
-            return true; // Suppress the physical DOWN; its paired UP will be swallowed.
-        }
-        // Injection failed (e.g. UIPI to an elevated foreground window): we've already dropped the
-        // lock, so let the physical events through and let the OS resolve the button via the real UP.
-        return false;
-    }
-
-    if (!enabled.load())
-    {
-        return false;
-    }
-
-    // Begin a fresh hold.
-    st.physicalDown = true;
-    st.moveCancelled = false;
-    st.downTick = GetTickCount64();
-    st.downPos = data->pt;
-    return false; // Never suppress the DOWN.
-}
-
-bool MouseButtonLock::HandleButtonUp(ButtonLockState& st, const std::atomic<bool>& enabled)
-{
-    if (st.swallowNextRealUp)
-    {
-        st.swallowNextRealUp = false;
-        return true; // Swallow the physical UP paired with a release tap.
-    }
-
-    if (!st.physicalDown)
-    {
-        return false;
-    }
-    st.physicalDown = false;
-
-    if (!enabled.load())
-    {
-        return false;
-    }
-
-    int holdMs = m_holdDurationMs.load();
-    if (holdMs < 0)
-    {
-        holdMs = 0;
-    }
-
-    const ULONGLONG elapsed = GetTickCount64() - st.downTick;
-    if (!st.moveCancelled && elapsed >= static_cast<ULONGLONG>(holdMs))
-    {
-        // Held past the threshold: suppress the UP so the OS keeps believing the button is held.
-        st.locked.store(true);
-        return true;
-    }
-
-    return false; // Released before the threshold: regular click.
-}
-
-void MouseButtonLock::HandleMove(const MSLLHOOKSTRUCT* data)
-{
-    if (!m_moveCancelEnabled.load())
-    {
-        return;
-    }
-
-    const ULONGLONG now = GetTickCount64();
-    int holdMs = m_holdDurationMs.load();
-    if (holdMs < 0)
-    {
-        holdMs = 0;
-    }
-    int pixels = m_moveCancelPixels.load();
-    if (pixels < 0)
-    {
-        pixels = 0;
-    }
-
-    CheckMoveCancel(m_right, now, holdMs, pixels, data->pt);
-    CheckMoveCancel(m_middle, now, holdMs, pixels, data->pt);
-}
-
-void MouseButtonLock::CheckMoveCancel(ButtonLockState& st, ULONGLONG now, int holdMs, int pixels, POINT pt)
-{
-    // Only relevant during the arming window: button physically held, not yet locked,
-    // not already cancelled. Once the threshold has elapsed the lock is armed and motion
-    // no longer prevents it (so a held-button camera drag still locks).
-    if (!st.physicalDown || st.locked.load() || st.moveCancelled)
-    {
-        return;
-    }
-    if (now - st.downTick >= static_cast<ULONGLONG>(holdMs))
-    {
-        return;
-    }
-
-    const long long dx = static_cast<long long>(pt.x) - st.downPos.x;
-    const long long dy = static_cast<long long>(pt.y) - st.downPos.y;
-    if (dx * dx + dy * dy > static_cast<long long>(pixels) * pixels)
-    {
-        st.moveCancelled = true;
-    }
-}
-
-bool MouseButtonLock::InjectButtonUp(DWORD upFlag)
-{
-    INPUT input{};
-    input.type = INPUT_MOUSE;
-    input.mi.dwFlags = upFlag;
-    input.mi.dwExtraInfo = INJECTION_TAG;
-    return SendInput(1, &input, sizeof(INPUT)) == 1;
-}
-
-void MouseButtonLock::ReleaseButton(ButtonLockState& st)
-{
-    // exchange() claims the lock atomically, so among the racing releasers (disable, set_config,
-    // and the hook's own tap-to-release) exactly one injects the synthetic up.
-    if (st.locked.exchange(false))
-    {
-        if (!InjectButtonUp(st.upFlag))
-        {
-            Logger::warn(L"Failed to inject synthetic button-up while releasing a locked button; the OS may keep seeing it as held until the next physical click.");
-        }
-    }
-}
-
-void MouseButtonLock::ReleaseAllLocked()
-{
-    ReleaseButton(m_right);
-    ReleaseButton(m_middle);
-}
-
-void MouseButtonLock::ResetButtonTransient(ButtonLockState& st)
-{
-    st.physicalDown = false;
-    st.moveCancelled = false;
-    st.swallowNextRealUp = false;
-    st.downTick = 0;
-}
-
-void MouseButtonLock::EnforceEnabledState()
-{
-    if (!m_rmbLockEnabled.load())
-    {
-        ReleaseButton(m_right);
-    }
-    if (!m_mmbLockEnabled.load())
-    {
-        ReleaseButton(m_middle);
     }
 }
 
