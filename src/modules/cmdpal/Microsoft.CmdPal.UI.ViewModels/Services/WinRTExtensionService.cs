@@ -25,7 +25,6 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
     private static readonly TimeSpan BackgroundStartTimeout = TimeSpan.FromSeconds(60);
 
     private static readonly PackageCatalog _catalog = PackageCatalog.OpenForCurrentUser();
-    private static readonly Lock _lock = new();
     private readonly SemaphoreSlim _getInstalledExtensionsLock = new(1, 1);
     private readonly TaskScheduler _taskScheduler;
     private readonly ICommandProviderCache _commandProviderCache;
@@ -157,10 +156,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
     {
         if (args.IsComplete)
         {
-            lock (_lock)
-            {
-                InstallPackageUnderLock(args.Package);
-            }
+            _ = HandlePackageInstalledAsync(args.Package);
         }
     }
 
@@ -168,10 +164,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
     {
         if (args.IsComplete)
         {
-            lock (_lock)
-            {
-                UninstallPackageUnderLock(args.Package);
-            }
+            _ = HandlePackageUninstalledAsync(args.Package);
         }
     }
 
@@ -179,107 +172,112 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
     {
         if (args.IsComplete)
         {
-            lock (_lock)
-            {
-                UninstallPackageUnderLock(args.TargetPackage);
-                InstallPackageUnderLock(args.TargetPackage);
-            }
+            _ = HandlePackageUpdatedAsync(args.TargetPackage);
         }
     }
 
-    private void InstallPackageUnderLock(Package package)
+    private async Task HandlePackageInstalledAsync(Package package)
     {
-        var isCmdPalExtensionResult = Task.Run(() =>
+        var result = await IsValidCmdPalExtension(package);
+        if (!result.IsExtension || result.Extension is null)
         {
-            return IsValidCmdPalExtension(package);
-        }).Result;
-        var isExtension = isCmdPalExtensionResult.IsExtension;
-        var extension = isCmdPalExtensionResult.Extension;
-        if (isExtension && extension is not null)
-        {
-            CommandPaletteHost.Instance.DebugLog($"Installed new extension app {extension.DisplayName}");
-
-            Task.Run(async () =>
-            {
-                await _getInstalledExtensionsLock.WaitAsync();
-                try
-                {
-                    var wrappers = await CreateWrappersForExtension(extension);
-
-                    UpdateExtensionsListsFromWrappers(wrappers);
-
-                    // Start extensions and notify via OnProviderAdded
-                    var startedProviders = new List<CommandProviderWrapper>();
-                    foreach (var wrapper in wrappers)
-                    {
-                        try
-                        {
-                            await wrapper.StartExtensionAsync().ConfigureAwait(false);
-                            startedProviders.Add(new CommandProviderWrapper(wrapper, _taskScheduler, _commandProviderCache));
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.LogError($"Failed to start newly installed extension {wrapper.ExtensionUniqueId}: {ex}");
-                        }
-                    }
-
-                    if (startedProviders.Count > 0)
-                    {
-                        OnProviderAdded?.Invoke(this, startedProviders);
-                    }
-                }
-                finally
-                {
-                    _getInstalledExtensionsLock.Release();
-                }
-            });
+            return;
         }
+
+        CommandPaletteHost.Instance.DebugLog($"Installed new extension app {result.Extension.DisplayName}");
+
+        List<ExtensionWrapper> wrappers;
+        await _getInstalledExtensionsLock.WaitAsync();
+        try
+        {
+            wrappers = await CreateWrappersForExtension(result.Extension);
+            UpdateExtensionsListsFromWrappers(wrappers);
+        }
+        finally
+        {
+            _getInstalledExtensionsLock.Release();
+        }
+
+        // Start extensions outside the lock — CoCreateInstance can be slow (OOP activation)
+        await StartAndNotifyNewExtensionsAsync(wrappers, CancellationToken.None);
     }
 
-    private void UninstallPackageUnderLock(Package package)
+    private async Task HandlePackageUninstalledAsync(Package package)
     {
-        List<IExtensionWrapper> removedExtensions = [];
-        foreach (var extension in _installedExtensions)
+        List<IExtensionWrapper> removedExtensions;
+        await _getInstalledExtensionsLock.WaitAsync();
+        try
         {
-            if (extension.PackageFullName == package.Id.FullName)
+            removedExtensions = _installedExtensions
+                .Where(ext => ext.PackageFullName == package.Id.FullName)
+                .ToList();
+
+            if (removedExtensions.Count == 0)
             {
-                CommandPaletteHost.Instance.DebugLog($"Uninstalled extension app {extension.PackageDisplayName}");
-                removedExtensions.Add(extension);
+                return;
             }
+
+            foreach (var ext in removedExtensions)
+            {
+                CommandPaletteHost.Instance.DebugLog($"Uninstalled extension app {ext.PackageDisplayName}");
+            }
+
+            _installedExtensions.RemoveAll(i => removedExtensions.Contains(i));
+            _enabledExtensions.RemoveAll(i => removedExtensions.Contains(i));
+        }
+        finally
+        {
+            _getInstalledExtensionsLock.Release();
         }
 
-        Task.Run(async () =>
+        // Build placeholder wrappers for removal notification outside the lock.
+        // The TopLevelCommandManager matches by Extension reference, so we need to pass
+        // something that carries the IExtensionWrapper identity.
+        var removedProviders = new List<CommandProviderWrapper>();
+        foreach (var ext in removedExtensions)
         {
-            await _getInstalledExtensionsLock.WaitAsync();
             try
             {
-                _installedExtensions.RemoveAll(i => removedExtensions.Contains(i));
-                _enabledExtensions.RemoveAll(i => removedExtensions.Contains(i));
-
-                // Build placeholder wrappers for removal notification.
-                // The TopLevelCommandManager matches by Extension reference, so we need to pass
-                // something that carries the IExtensionWrapper identity.
-                var removedProviders = new List<CommandProviderWrapper>();
-                foreach (var ext in removedExtensions)
-                {
-                    try
-                    {
-                        removedProviders.Add(new CommandProviderWrapper(ext, _taskScheduler, _commandProviderCache));
-                    }
-                    catch
-                    {
-                        // Extension may not be in a runnable state if it was uninstalled;
-                        // we still need to signal removal
-                    }
-                }
-
-                OnProviderRemoved?.Invoke(this, removedProviders);
+                removedProviders.Add(new CommandProviderWrapper(ext, _taskScheduler, _commandProviderCache));
             }
-            finally
+            catch
             {
-                _getInstalledExtensionsLock.Release();
+                // Extension may not be in a runnable state if it was uninstalled;
+                // we still need to signal removal
             }
-        });
+        }
+
+        OnProviderRemoved?.Invoke(this, removedProviders);
+    }
+
+    private async Task HandlePackageUpdatedAsync(Package package)
+    {
+        await HandlePackageUninstalledAsync(package);
+        await HandlePackageInstalledAsync(package);
+    }
+
+    private async Task StartAndNotifyNewExtensionsAsync(List<ExtensionWrapper> wrappers, CancellationToken ct)
+    {
+        var startResults = await Task.WhenAll(
+            wrappers.Select(w => TryStartExtensionAsync(w, ct))).ConfigureAwait(false);
+
+        var startedProviders = new List<CommandProviderWrapper>();
+        foreach (var r in startResults)
+        {
+            if (r.IsStarted)
+            {
+                startedProviders.Add(r.Wrapper);
+            }
+            else if (r.IsTimedOut)
+            {
+                _ = StartExtensionWhenReadyAsync(r.Extension, r.PendingStartTask, r.Stopwatch, ct);
+            }
+        }
+
+        if (startedProviders.Count > 0)
+        {
+            OnProviderAdded?.Invoke(this, startedProviders);
+        }
     }
 
     public async Task<IEnumerable<IExtensionWrapper>> GetInstalledExtensionsAsync(bool includeDisabledExtensions = false)
@@ -442,6 +440,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
         foreach (var extensionWrapper in wrappers)
         {
             _installedExtensions.Add(extensionWrapper);
+            _enabledExtensions.Add(extensionWrapper);
         }
     }
 
