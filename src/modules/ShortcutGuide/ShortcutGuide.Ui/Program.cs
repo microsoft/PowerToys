@@ -28,6 +28,7 @@ namespace ShortcutGuide
         {
             ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
+            LogForegroundCapture(ForegroundWindowHandle);
 
             // The module interface passes: <powertoys_pid> [telemetry]
             if (args.Length >= 2 && args[1] == "telemetry")
@@ -154,6 +155,48 @@ namespace ShortcutGuide
             catch (Exception ex)
             {
                 Logger.LogError("Failed to send settings telemetry.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Logs the foreground window captured at startup so we can see in
+        /// the SG log which app was foreground at the moment SG.exe began
+        /// running. The dictionary populated from this HWND drives the order
+        /// of nav items, so a wrong/empty capture surfaces as the wrong app
+        /// being auto-selected.
+        /// </summary>
+        private static void LogForegroundCapture(nint hwnd)
+        {
+            try
+            {
+                if (hwnd == nint.Zero)
+                {
+                    Logger.LogInfo("Foreground capture: HWND=0 (no foreground window).");
+                    return;
+                }
+
+                if (NativeMethods.GetWindowThreadProcessId(hwnd, out uint processId) == 0)
+                {
+                    Logger.LogInfo($"Foreground capture: HWND=0x{hwnd:X}; GetWindowThreadProcessId failed.");
+                    return;
+                }
+
+                string moduleName;
+                try
+                {
+                    using var proc = Process.GetProcessById((int)processId);
+                    moduleName = proc.MainModule?.ModuleName ?? "(null)";
+                }
+                catch (Exception ex)
+                {
+                    moduleName = $"(failed: {ex.GetType().Name})";
+                }
+
+                Logger.LogInfo($"Foreground capture: HWND=0x{hwnd:X}, PID={processId}, Module={moduleName}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to log foreground capture.", ex);
             }
         }
     }

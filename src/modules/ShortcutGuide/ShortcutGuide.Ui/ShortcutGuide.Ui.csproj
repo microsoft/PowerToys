@@ -32,7 +32,9 @@
     <None Remove="ShortcutGuideXAML\CustomNavigationViewStyle.xaml" />
     <None Remove="ShortcutGuideXAML\Pages\ShortcutsPage.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarIndicator.xaml" />
-    <None Remove="ShortcutGuideXAML\TaskbarWindow.xaml" />
+    <None Remove="ShortcutGuideXAML\OverlayWindow.xaml" />
+    <None Remove="ShortcutGuideXAML\Controls\MainPaneControl.xaml" />
+    <None Remove="ShortcutGuideXAML\Controls\TaskbarPaneControl.xaml" />
     <None Include="Assets\ShortcutGuide\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -110,7 +112,17 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="ShortcutGuideXAML\TaskbarWindow.xaml">
+    <Page Update="ShortcutGuideXAML\OverlayWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ShortcutGuideXAML\Controls\MainPaneControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="ShortcutGuideXAML\Controls\TaskbarPaneControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

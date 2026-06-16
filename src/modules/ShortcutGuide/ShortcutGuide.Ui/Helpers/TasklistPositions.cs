@@ -19,7 +19,7 @@ namespace ShortcutGuide.Helpers
         /// <returns>An array of the taskbar buttons.</returns>
         public static TasklistButton[] GetButtons()
         {
-            var monitor = NativeMethods.MonitorFromWindow(WindowNative.GetWindowHandle(App.MainWindow), 0);
+            var monitor = NativeMethods.MonitorFromWindow(WindowNative.GetWindowHandle(App.OverlayWindow), 0);
             nint ptr = NativeMethods.GetTasklistButtons(monitor, out int size);
             if (ptr == nint.Zero)
             {

@@ -9,7 +9,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Xaml;
 using ShortcutGuide.Models;
-using ShortcutGuide.ShortcutGuideXAML;
 using ShortcutGuide.Telemetry;
 
 namespace ShortcutGuide
@@ -22,9 +21,12 @@ namespace ShortcutGuide
 
         internal static ShortcutGuideProperties ShortcutGuideProperties { get; private set; } = null!;
 
-        internal static MainWindow MainWindow { get; private set; } = null!;
-
-        internal static TaskbarWindow TaskBarWindow { get; private set; } = null!;
+        /// <summary>
+        /// The single transparent host that replaces the previous MainWindow +
+        /// TaskbarWindow pair. The two surfaces are now XAML pseudo-windows
+        /// inside this one window.
+        /// </summary>
+        internal static OverlayWindow OverlayWindow { get; private set; } = null!;
 
         internal static string CurrentAppName { get; set; } = string.Empty;
 
@@ -36,15 +38,20 @@ namespace ShortcutGuide
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             this.LoadData();
-            MainWindow = new MainWindow();
-            TaskBarWindow = new TaskbarWindow();
-            MainWindow.Activate();
-            MainWindow.Closed += (_, _) =>
+            OverlayWindow = new OverlayWindow();
+            OverlayWindow.Activate();
+            OverlayWindow.Closed += (_, _) =>
             {
                 PowerToysTelemetry.Log.WriteEvent(new ShortcutGuideSessionEvent(
-                    MainWindow.SessionDurationMs,
-                    MainWindow.CloseType));
-                TaskBarWindow.Close();
+                    OverlayWindow.SessionDurationMs,
+                    OverlayWindow.CloseType));
+
+                // WinUI3's dispatcher loop does not terminate when the last
+                // window closes; without Exit() the SG.exe process stays
+                // alive, holds the AppInstance single-instance lock, and
+                // blocks the next launch (the well-known "every other
+                // long-press works" bug).
+                Current.Exit();
             };
         }
 

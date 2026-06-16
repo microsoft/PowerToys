@@ -1,0 +1,539 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Common.UI;
+using CommunityToolkit.WinUI.Animations;
+using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.UI.Composition;
+using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using ShortcutGuide.Controls;
+using ShortcutGuide.Helpers;
+using Windows.Foundation;
+using Windows.System;
+using WinRT.Interop;
+using WinUIEx;
+using WinUIEx.Messaging;
+
+namespace ShortcutGuide
+{
+    /// <summary>
+    /// Single transparent host that replaces both the previous
+    /// <c>MainWindow</c> and <c>TaskbarWindow</c>. It covers the work area
+    /// of the cursor's monitor and renders the two surfaces as pseudo-windows
+    /// (<see cref="MainPaneControl"/> + <see cref="TaskbarPaneControl"/>)
+    /// inside its XAML tree, so they can be coordinated by a single
+    /// dispatcher, activate together, and (later) share an animation
+    /// timeline.
+    /// </summary>
+    public sealed partial class OverlayWindow : WindowEx
+    {
+        // DWM attributes used to disable the Win11 1-pixel system border and
+        // forced corner rounding. Without these the OS draws a faint stroke
+        // (and a small drop-shadow) around the transparent overlay, which
+        // looks like a phantom rectangle on top of the desktop.
+        private const uint DwmwaColorNone = 0xFFFFFFFE;
+        private const int DwmwaWindowCornerPreference = 33;
+        private const int DwmwaBorderColor = 34;
+        private const int DwmwcpDoNotRound = 1;
+
+        private readonly Stopwatch _sessionStopwatch = Stopwatch.StartNew();
+        private string _closeType = "Unknown";
+        private bool _isClosing;
+
+        // Set true around AppWindow.MoveAndResize() so the WndProc swallows
+        // WM_DPICHANGED. Without this, WinUIEx re-scales the rect we just
+        // wrote by (newDpi / oldDpi), producing a 1.5x/0.66x window on
+        // cross-monitor moves between mixed-DPI displays.
+        private bool _suppressDpiChange;
+
+        internal long SessionDurationMs => _sessionStopwatch.ElapsedMilliseconds;
+
+        internal string CloseType => _closeType;
+
+        internal MainPaneControl MainPaneControl => this.MainPane;
+
+        internal TaskbarPaneControl TaskbarPaneControl => this.TaskbarPane;
+
+        public OverlayWindow()
+        {
+            this.InitializeComponent();
+
+            // TransparentTintBackdrop cannot be referenced from XAML in the
+            // current Windows App SDK schema; set it here instead.
+            this.SystemBackdrop = new TransparentTintBackdrop();
+
+            this.Title = ResourceLoaderInstance.ResourceLoader.GetString("Title");
+            this.ExtendsContentIntoTitleBar = true;
+            this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
+
+            // Install the message hook BEFORE the first MoveAndResize so the
+            // WM_DPICHANGED suppression is in place from the very first
+            // cross-monitor move. Otherwise the constructor's initial
+            // RepositionToCursorMonitor() lets the default WndProc auto-
+            // resize the window by (newDpi/oldDpi) and we get a 1.5×
+            // overlay on the laptop screen. Also disable
+            // WM_NCLBUTTONDBLCLK so the OS doesn't try to maximize when
+            // the user double-clicks anywhere in the (collapsed) caption
+            // area. Matches the original MainWindow behavior.
+            WindowMessageMonitor msgMonitor = new(this);
+            msgMonitor.WindowMessageReceived += (_, e) =>
+            {
+                const int WM_NCLBUTTONDBLCLK = 0x00A3;
+                const int WM_DPICHANGED = 0x02E0;
+                if (e.Message.MessageId == WM_NCLBUTTONDBLCLK)
+                {
+                    e.Result = 0;
+                    e.Handled = true;
+                    return;
+                }
+
+                if (e.Message.MessageId == WM_DPICHANGED && _suppressDpiChange)
+                {
+                    // We've already written the correctly-scaled physical
+                    // rect for the target monitor — let WinUI update its
+                    // RasterizationScale, but DO NOT let the default
+                    // WndProc resize the window to its suggested rect
+                    // (which is the OLD size scaled by newDpi/oldDpi and
+                    // is what produced the doubled overlay).
+                    e.Result = 0;
+                    e.Handled = true;
+                }
+            };
+
+            StripNativeChrome();
+
+            // Pre-size and position BEFORE Activate so the first frame the
+            // user sees is already at the correct work-area size on the
+            // cursor's monitor. Doing this in OnActivated produces a single
+            // wrong-sized flash that "snaps" to the right size when focus
+            // changes (because a later layout pass picks up the correct
+            // AppWindow.Size).
+            RepositionToCursorMonitor();
+            ApplyMainPaneAlignment();
+
+#if !DEBUG
+            this.SetIsAlwaysOnTop(true);
+            this.SetIsShownInSwitchers(false);
+#endif
+
+            this.Activated += OnActivated;
+
+            // Esc closes the overlay regardless of which pseudo-window has
+            // keyboard focus (handled at the Window.Content root because the
+            // event bubbles up from whichever inner element has focus).
+            if (this.Content is UIElement contentRoot)
+            {
+                contentRoot.KeyUp += OnContentKeyUp;
+            }
+
+            ApplyThemeFromSettings();
+
+            // Reposition when the window's presenter changes (e.g. from a
+            // PresenterKind switch). Matches the original MainWindow behavior.
+            this.AppWindow.Changed += (_, args) =>
+            {
+                if (!args.DidPresenterChange)
+                {
+                    return;
+                }
+
+                RepositionToCursorMonitor();
+            };
+
+            this.MainPane.SelectedAppTaskbarVisibilityChanged += OnMainPaneTaskbarVisibilityChanged;
+            this.MainPane.InitializationFailed += OnMainPaneInitializationFailed;
+            this.MainPane.CloseRequested += (_, _) =>
+            {
+                _closeType = "CloseButton";
+                CloseAnimated();
+            };
+
+            // Reveal the main pane after the window has loaded so the
+            // Implicit.ShowAnimations play on first appearance.
+            this.OverlayRoot.Loaded += (_, _) =>
+            {
+                this.MainPane.Visibility = Visibility.Visible;
+            };
+        }
+
+        /// <summary>
+        /// Strips the native window frame (WS_CAPTION/WS_THICKFRAME), the
+        /// extended edge styles (WS_EX_WINDOWEDGE/CLIENTEDGE/DLGMODALFRAME)
+        /// and disables the Win11 DWM 1-px system border + forced corner
+        /// rounding. Also marks the window as a tool window
+        /// (WS_EX_TOOLWINDOW) so the OS doesn't draw the default toplevel
+        /// chrome that produces the faint white outline on transparent
+        /// surfaces. Idempotent and safe to call again after the window has
+        /// been moved across monitors — a cross-monitor DPI change can reset
+        /// some of these attributes.
+        /// </summary>
+        private void StripNativeChrome()
+        {
+            nint hwnd = WindowNative.GetWindowHandle(this);
+            HwndExtensions.ToggleWindowStyle(hwnd, false, WindowStyle.TiledWindow);
+
+            // Extended styles: drop the 3-D-ish window edges Windows draws for
+            // ordinary top-level windows and switch the window into the
+            // "tool window" category. WS_EX_TOOLWINDOW also suppresses the
+            // small caption Windows would otherwise reserve, which removes
+            // the last visible 1-px line around a transparent overlay.
+            int exStyle = NativeMethods.GetWindowLongW(hwnd, NativeMethods.GWL_EXSTYLE);
+            int newExStyle = (exStyle
+                & ~NativeMethods.WS_EX_WINDOWEDGE
+                & ~NativeMethods.WS_EX_CLIENTEDGE
+                & ~NativeMethods.WS_EX_DLGMODALFRAME)
+                | NativeMethods.WS_EX_TOOLWINDOW;
+            if (newExStyle != exStyle)
+            {
+                _ = NativeMethods.SetWindowLongW(hwnd, NativeMethods.GWL_EXSTYLE, newExStyle);
+            }
+
+            // SWP_FRAMECHANGED forces DWM to re-evaluate the frame after
+            // style changes and after DwmExtendFrameIntoClientArea below.
+            const uint SWP_NOMOVE = 0x0002;
+            const uint SWP_NOSIZE = 0x0001;
+            const uint SWP_NOZORDER = 0x0004;
+            const uint SWP_NOACTIVATE = 0x0010;
+            const uint SWP_FRAMECHANGED = 0x0020;
+
+            uint borderColor = DwmwaColorNone;
+            _ = DwmSetWindowAttribute(hwnd, DwmwaBorderColor, ref borderColor, sizeof(uint));
+
+            int cornerPref = DwmwcpDoNotRound;
+            _ = DwmSetWindowAttribute(hwnd, DwmwaWindowCornerPreference, ref cornerPref, sizeof(int));
+
+            // Disable non-client rendering entirely so the DWM doesn't draw
+            // ANY frame/border chrome (not even a 1-px line).
+            int ncrpDisabled = 2; // DWMNCRP_DISABLED
+            _ = DwmSetWindowAttribute(hwnd, 2 /* DWMWA_NCRENDERING_POLICY */, ref ncrpDisabled, sizeof(int));
+
+            // Extend the frame into the entire client area. With a transparent
+            // backdrop this eliminates the last possible seam between the
+            // non-client and client regions that the DWM might draw.
+            var margins = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+            _ = DwmExtendFrameIntoClientArea(hwnd, ref margins);
+
+            _ = NativeMethods.SetWindowPos(
+                hwnd,
+                IntPtr.Zero,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+        }
+
+        private void ApplyThemeFromSettings()
+        {
+            switch (App.ShortcutGuideProperties.Theme.Value)
+            {
+                case "dark":
+                    if (this.Content is FrameworkElement darkRoot)
+                    {
+                        darkRoot.RequestedTheme = ElementTheme.Dark;
+                    }
+
+                    break;
+                case "light":
+                    if (this.Content is FrameworkElement lightRoot)
+                    {
+                        lightRoot.RequestedTheme = ElementTheme.Light;
+                    }
+
+                    break;
+                case "system":
+                    // Default — follow the system theme.
+                    break;
+                default:
+                    Logger.LogError("Invalid theme value in settings: " + App.ShortcutGuideProperties.Theme.Value);
+                    break;
+            }
+        }
+
+        private void OnActivated(object sender, WindowActivatedEventArgs e)
+        {
+            if (e.WindowActivationState == WindowActivationState.Deactivated)
+            {
+#if !DEBUG
+                _closeType = "Deactivated";
+                CloseAnimated();
+#endif
+                return;
+            }
+        }
+
+        private void OnContentKeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Escape)
+            {
+                _closeType = "Escape";
+                CloseAnimated();
+            }
+        }
+
+        /// <summary>
+        /// Closes the overlay when the user clicks outside the pseudo-windows
+        /// (i.e. anywhere in the transparent area). Clicks on
+        /// <see cref="MainPaneControl"/> or <see cref="TaskbarPaneControl"/>
+        /// are ignored — we detect them by walking the visual tree from
+        /// <see cref="RoutedEventArgs.OriginalSource"/>.
+        /// </summary>
+        private void OverlayRoot_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.OriginalSource is DependencyObject src && IsInsidePseudoWindow(src))
+            {
+                return;
+            }
+
+            _closeType = "ClickOutside";
+            CloseAnimated();
+        }
+
+        private bool IsInsidePseudoWindow(DependencyObject src)
+        {
+            DependencyObject? current = src;
+            while (current is not null)
+            {
+                if (ReferenceEquals(current, this.MainPane) || ReferenceEquals(current, this.TaskbarPane))
+                {
+                    return true;
+                }
+
+                current = VisualTreeHelper.GetParent(current);
+            }
+
+            return false;
+        }
+
+        private void OnMainPaneTaskbarVisibilityChanged(object? sender, bool shouldShow)
+        {
+            if (!shouldShow)
+            {
+                this.TaskbarPane.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            UpdateTaskbarPaneLayout();
+        }
+
+        private void OnMainPaneInitializationFailed(object? sender, EventArgs e)
+        {
+            _closeType = "InitializationFailed";
+            this.DispatcherQueue.TryEnqueue(() => this.Close());
+        }
+
+        /// <summary>
+        /// Triggers hide animations on both pseudo-windows, waits for the
+        /// longest animation to finish, then closes the window. Multiple
+        /// calls are coalesced via <see cref="_isClosing"/>.
+        /// </summary>
+        private void CloseAnimated()
+        {
+            if (_isClosing)
+            {
+                return;
+            }
+
+            _isClosing = true;
+
+            // Collapse both pseudo-windows so their Implicit.HideAnimations
+            // play the exit transitions.
+            this.MainPane.Visibility = Visibility.Collapsed;
+            this.TaskbarPane.Visibility = Visibility.Collapsed;
+
+            // Wait slightly longer than the 200ms hide animations before
+            // closing the window so the user sees the full exit transition.
+            var timer = this.DispatcherQueue.CreateTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(217);
+            timer.IsRepeating = false;
+            timer.Tick += (_, _) =>
+            {
+                timer.Stop();
+                this.Close();
+            };
+            timer.Start();
+        }
+
+        /// <summary>
+        /// Recomputes the taskbar pane's indicator children and applies the
+        /// resulting layout to the Canvas-positioned pseudo-window.
+        /// </summary>
+        private void UpdateTaskbarPaneLayout()
+        {
+            var hwnd = WindowNative.GetWindowHandle(this);
+            float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
+            Rect workArea = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
+
+            var layout = this.TaskbarPane.UpdateTasklistButtons(
+                overlayPhysicalOriginX: this.AppWindow.Position.X,
+                overlayPhysicalOriginY: this.AppWindow.Position.Y,
+                dpi: dpi,
+                workAreaBottomPhysical: workArea.Bottom);
+
+            if (layout is null)
+            {
+                this.TaskbarPane.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            this.TaskbarPane.Width = layout.Value.Width;
+            this.TaskbarPane.Height = layout.Value.Height;
+            Canvas.SetLeft(this.TaskbarPane, layout.Value.Left);
+            Canvas.SetTop(this.TaskbarPane, layout.Value.Top);
+            this.TaskbarPane.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Sizes and positions the overlay to cover the work area of the
+        /// monitor that currently contains the cursor. Looks the monitor up
+        /// directly from the cursor position so the work-area rect doesn't
+        /// depend on a previous asynchronous <see cref="AppWindow.Move"/>
+        /// having actually committed yet.
+        /// </summary>
+        private void RepositionToCursorMonitor()
+        {
+            if (!NativeMethods.GetCursorPos(out NativeMethods.POINT cursor))
+            {
+                return;
+            }
+
+            IntPtr hmon = NativeMethods.MonitorFromPoint(
+                cursor,
+                (int)NativeMethods.MonitorFromWindowDwFlags.MONITOR_DEFAULTTONEAREST);
+            if (hmon == IntPtr.Zero)
+            {
+                return;
+            }
+
+            var mi = new NativeMethods.MONITORINFO
+            {
+                CbSize = (uint)Marshal.SizeOf<NativeMethods.MONITORINFO>(),
+            };
+            if (!NativeMethods.GetMonitorInfoW(hmon, ref mi))
+            {
+                return;
+            }
+
+            // rcWork is in physical pixels (virtual-screen coordinates).
+            // AppWindow.MoveAndResize takes physical pixels too — no DPI math
+            // required. Using AppWindow directly avoids the WinUIEx
+            // WindowEx.MoveAndResize extension whose x/y are physical but
+            // whose w/h are DIPs (and get DPI-scaled internally).
+            var rect = new Windows.Graphics.RectInt32(
+                mi.RcWork.Left,
+                mi.RcWork.Top,
+                mi.RcWork.Right - mi.RcWork.Left,
+                mi.RcWork.Bottom - mi.RcWork.Top);
+
+            // Cross-monitor moves trigger WM_DPICHANGED which causes WinUIEx
+            // to auto-rescale the window by (newDpi/oldDpi) ON TOP of the
+            // physical rect we just provided — making the overlay 1.5×
+            // (or 0.66×) the work area on mixed-DPI multi-monitor setups.
+            // CmdPal's MoveAndResizeDpiAware pattern: zero out MinWidth/
+            // MinHeight (WinUIEx uses current DPI to recompute them in
+            // physical px), set _suppressDpiChange so the WndProc swallows
+            // WM_DPICHANGED, then MoveAndResize.
+            var origMinWidth = this.MinWidth;
+            var origMinHeight = this.MinHeight;
+            _suppressDpiChange = true;
+            try
+            {
+                this.MinWidth = 0;
+                this.MinHeight = 0;
+                this.AppWindow.MoveAndResize(rect);
+            }
+            finally
+            {
+                this.MinWidth = origMinWidth;
+                this.MinHeight = origMinHeight;
+                _suppressDpiChange = false;
+            }
+
+            // Cross-monitor moves can trigger WM_DPICHANGED, and Windows may
+            // reset some of our DWM attributes (border color, corner pref)
+            // during that transition. Re-apply them defensively so the
+            // overlay never reveals an OS-drawn 1-px stroke or rounded
+            // shadow.
+            StripNativeChrome();
+
+            // The taskbar pane is anchored against the bottom of the work area,
+            // so any move/resize needs a fresh layout pass.
+            if (this.TaskbarPane.Visibility == Visibility.Visible)
+            {
+                UpdateTaskbarPaneLayout();
+            }
+        }
+
+        /// <summary>
+        /// Applies the left/right alignment from the user setting to the
+        /// main pseudo-window.
+        /// </summary>
+        private void ApplyMainPaneAlignment()
+        {
+            var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
+            bool isRight = windowPosition == ShortcutGuideWindowPosition.Right;
+
+            this.MainPane.HorizontalAlignment = isRight
+                ? HorizontalAlignment.Right
+                : HorizontalAlignment.Left;
+
+            // Slide direction matches the pane's edge: left-aligned slides
+            // from the left, right-aligned slides from the right — same as
+            // Windows 11 Widgets (left) and Action Center (right).
+            string slideFrom = isRight ? "20,0,0" : "-20,0,0";
+
+            var showAnimations = new ImplicitAnimationSet();
+            showAnimations.Add(new OpacityAnimation { From = 0, To = 1.0, Duration = TimeSpan.FromMilliseconds(367) });
+            showAnimations.Add(new TranslationAnimation
+            {
+                From = slideFrom,
+                To = "0,0,0",
+                Duration = TimeSpan.FromMilliseconds(367),
+                EasingType = EasingType.Cubic,
+                EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut,
+            });
+            Implicit.SetShowAnimations(this.MainPane, showAnimations);
+
+            var hideAnimations = new ImplicitAnimationSet();
+            hideAnimations.Add(new OpacityAnimation { From = 1.0, To = 0, Duration = TimeSpan.FromMilliseconds(200) });
+            hideAnimations.Add(new TranslationAnimation
+            {
+                From = "0,0,0",
+                To = slideFrom,
+                Duration = TimeSpan.FromMilliseconds(200),
+                EasingType = EasingType.Cubic,
+                EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
+            });
+            Implicit.SetHideAnimations(this.MainPane, hideAnimations);
+        }
+
+        [LibraryImport("dwmapi.dll")]
+        private static partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, ref uint pvAttribute, int cbAttribute);
+
+        [LibraryImport("dwmapi.dll")]
+        private static partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
+
+        [LibraryImport("dwmapi.dll")]
+        private static partial int DwmExtendFrameIntoClientArea(nint hwnd, ref MARGINS pMarInset);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MARGINS
+        {
+            public int Left;
+            public int Right;
+            public int Top;
+            public int Bottom;
+        }
+    }
+}

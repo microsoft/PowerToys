@@ -11,7 +11,12 @@ namespace ShortcutGuide;
 internal static partial class NativeMethods
 {
     internal const int GWL_STYLE = -16;
+    internal const int GWL_EXSTYLE = -20;
     internal const int WS_CAPTION = 0x00C00000;
+    internal const int WS_EX_TOOLWINDOW = 0x00000080;
+    internal const int WS_EX_WINDOWEDGE = 0x00000100;
+    internal const int WS_EX_CLIENTEDGE = 0x00000200;
+    internal const int WS_EX_DLGMODALFRAME = 0x00000001;
 
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -28,6 +33,13 @@ internal static partial class NativeMethods
 
     [LibraryImport("User32.dll")]
     internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);
+
+    [LibraryImport("User32.dll")]
+    internal static partial IntPtr MonitorFromPoint(POINT pt, int dwFlags);
+
+    [LibraryImport("User32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool GetMonitorInfoW(IntPtr hMonitor, ref MONITORINFO lpmi);
 
     [LibraryImport("Shcore.dll")]
     internal static partial long GetDpiForMonitor(IntPtr hmonitor, int dpiType, ref int dpiX, ref int dpiY);
@@ -101,6 +113,15 @@ internal static partial class NativeMethods
         {
             return new PointInt32(point.X, point.Y);
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MONITORINFO
+    {
+        public uint CbSize;
+        public RECT RcMonitor;
+        public RECT RcWork;
+        public uint DwFlags;
     }
 
     public enum MonitorFromWindowDwFlags
