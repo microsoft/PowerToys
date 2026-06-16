@@ -534,8 +534,8 @@ void MouseButtonLock::CheckMoveCancel(ButtonLockState& st, ULONGLONG now, int ho
         return;
     }
 
-    const long long dx = pt.x - st.downPos.x;
-    const long long dy = pt.y - st.downPos.y;
+    const long long dx = static_cast<long long>(pt.x) - st.downPos.x;
+    const long long dy = static_cast<long long>(pt.y) - st.downPos.y;
     if (dx * dx + dy * dy > static_cast<long long>(pixels) * pixels)
     {
         st.moveCancelled = true;

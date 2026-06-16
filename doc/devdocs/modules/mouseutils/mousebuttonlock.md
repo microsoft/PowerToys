@@ -38,6 +38,14 @@ The module on/off state lives in `EnabledModules.MouseButtonLock` in the global 
 
 A logically-locked button whose up was suppressed leaves the OS believing the button is held. The module injects a synthetic up for every locked button on `disable()` and on graceful hook-thread shutdown, so toggling the module off or exiting PowerToys releases cleanly. A hard `TerminateProcess` of the runner mid-lock is the residual risk (same class of risk as the standalone reference app); see the open items below.
 
+## Building and debugging
+
+Mouse Button Lock builds as part of the PowerToys solution. The runtime is a native C++ DLL (`PowerToys.MouseButtonLock.dll`); the settings live in the shared C# Settings UI.
+
+- Full build: open `PowerToys.slnx` in Visual Studio 2022 (Desktop C++, WinUI, and .NET desktop workloads) and build `x64`/`Release` (or `Debug`). The module DLL is emitted to `<repo>\x64\<Config>\PowerToys.MouseButtonLock.dll`, which is where the runner loads it from (`knownModules` in `src/runner/main.cpp`).
+- Native module only (after a NuGet restore): `msbuild src/modules/MouseUtils/MouseButtonLock/MouseButtonLock.vcxproj /p:Platform=x64 /p:Configuration=Release`.
+- Debugging: the hook runs inside the runner, so start or attach the debugger to `PowerToys.exe` and set breakpoints in `dllmain.cpp`. Enable the module from the Mouse Utilities settings page, then exercise the lock with a real right or middle button hold. Keep the hook callback non-blocking: a slow callback risks `LowLevelHooksTimeout` eviction by Windows.
+
 ## Open items / not yet wired
 
 Done: GPO is fully wired end to end (`gpo.h` constant + getter, GPOWrapper `idl`/`h`/`cpp`, both `ModuleGpoHelper`s, and the ADMX/ADML templates in `src/gpo/assets/`); ESRP signing lists `PowerToys.MouseButtonLock.dll`; and the spell-check dictionary has the new tokens. The in-process DLL is harvested into the installer by the existing `$(Platform)\Release\*.dll` glob (like the other MouseUtils DLLs), so no per-module `.wxs` is needed.
