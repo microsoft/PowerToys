@@ -63,6 +63,13 @@ namespace
     // Default values mirror the C# MouseButtonLockProperties defaults.
     constexpr int DEFAULT_HOLD_DURATION_MS = 300;
     constexpr int DEFAULT_MOVE_CANCEL_PIXELS = 5;
+
+    // Accepted ranges when reading from settings.json. The Settings UI already constrains these,
+    // but a hand-edited file could carry out-of-range or non-finite values, so clamp on read.
+    // A hold of 0 would latch every ordinary click; a huge hold would make locking unreachable.
+    constexpr int MIN_HOLD_DURATION_MS = 50;
+    constexpr int MAX_HOLD_DURATION_MS = 60000;
+    constexpr int MAX_MOVE_CANCEL_PIXELS = 10000;
 }
 
 // The PowerToy name that will be shown in the settings.
@@ -72,7 +79,10 @@ const static wchar_t* MODULE_DESC = L"Hold the right or middle mouse button to l
 
 // Forward declaration so the static hook proc can reach the singleton instance.
 class MouseButtonLock;
-static MouseButtonLock* g_instance = nullptr;
+// Atomic because the static hook proc (on the hook thread) reads it while the ctor/destroy
+// (on the runner thread) write it. destroy() still unhooks and joins the hook thread before
+// clearing this and deleting the object, so a non-null load in the proc stays valid.
+static std::atomic<MouseButtonLock*> g_instance{ nullptr };
 
 // Implement the PowerToy Module Interface and all the required methods.
 class MouseButtonLock : public PowertoyModuleIface
@@ -91,8 +101,9 @@ private:
         std::atomic<bool> locked{ false };
     };
 
-    // The PowerToy enabled state (the whole module, driven by the runner).
-    bool m_enabled = false;
+    // The PowerToy enabled state (the whole module, driven by the runner). Atomic because the
+    // runner's telemetry thread can call is_enabled() while enable()/disable() write it.
+    std::atomic<bool> m_enabled{ false };
 
     // Settings. Read on the hook thread, written by set_config on the runner thread, so atomic.
     std::atomic<bool> m_rmbLockEnabled{ true };
@@ -135,14 +146,14 @@ public:
         m_right.upFlag = MOUSEEVENTF_RIGHTUP;
         m_middle.upFlag = MOUSEEVENTF_MIDDLEUP;
         init_settings();
-        g_instance = this;
+        g_instance.store(this);
     }
 
     virtual void destroy() override
     {
         // Ensure the hook thread is torn down and any locked button released before deletion.
         disable();
-        g_instance = nullptr;
+        g_instance.store(nullptr);
         delete this;
     }
 
@@ -185,8 +196,10 @@ public:
             // If a button's lock was just turned off while it was logically held, release it now.
             EnforceEnabledState();
         }
-        catch (std::exception&)
+        catch (...)
         {
+            // catch(...) because the JSON accessors throw winrt::hresult_error, which does not
+            // derive from std::exception; a malformed payload must not escape and abort apply.
             Logger::error("Invalid json when trying to parse MouseButtonLock settings json.");
         }
     }
@@ -210,6 +223,12 @@ public:
         ResetButtonTransient(m_middle);
 
         m_terminateEvent = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+        if (m_terminateEvent == nullptr)
+        {
+            // Without the terminate event the hook thread's wait would spin at 100% CPU; don't start it.
+            Logger::error(L"Failed to create MouseButtonLock terminate event, error: {}. Hook not started.", GetLastError());
+            return;
+        }
         m_listening = true;
         m_hookThread = std::thread([this]() { HookThreadMain(); });
     }
@@ -259,8 +278,10 @@ void MouseButtonLock::init_settings()
             PowerToysSettings::PowerToyValues::load_from_settings_file(MouseButtonLock::get_key());
         parse_settings(settings);
     }
-    catch (std::exception&)
+    catch (...)
     {
+        // catch(...) so winrt::hresult_error from the JSON accessors can't escape the constructor;
+        // keep the defaults on any parse error.
         Logger::error("Invalid json when trying to load the MouseButtonLock settings json from file.");
     }
 }
@@ -291,18 +312,25 @@ void MouseButtonLock::parse_settings(PowerToysSettings::PowerToyValues& settings
         }
     };
 
-    auto readInt = [&](const wchar_t* key, std::atomic<int>& target, int minValue) {
+    auto readInt = [&](const wchar_t* key, std::atomic<int>& target, int minValue, int maxValue) {
         if (!properties.HasKey(key))
         {
             return;
         }
         try
         {
-            int value = static_cast<int>(properties.GetNamedObject(key).GetNamedNumber(JSON_KEY_VALUE));
-            if (value >= minValue)
+            // GetNamedNumber yields a double; clamp into range BEFORE the cast so an out-of-range
+            // or non-finite value can't produce an undefined double-to-int conversion.
+            double raw = properties.GetNamedObject(key).GetNamedNumber(JSON_KEY_VALUE);
+            if (raw < minValue)
             {
-                target.store(value);
+                raw = minValue;
             }
+            else if (raw > maxValue)
+            {
+                raw = maxValue;
+            }
+            target.store(static_cast<int>(raw));
         }
         catch (...)
         {
@@ -313,8 +341,8 @@ void MouseButtonLock::parse_settings(PowerToysSettings::PowerToyValues& settings
     readBool(JSON_KEY_RMB_LOCK_ENABLED, m_rmbLockEnabled);
     readBool(JSON_KEY_MMB_LOCK_ENABLED, m_mmbLockEnabled);
     readBool(JSON_KEY_MOVE_CANCEL_ENABLED, m_moveCancelEnabled);
-    readInt(JSON_KEY_HOLD_DURATION_MS, m_holdDurationMs, 0);
-    readInt(JSON_KEY_MOVE_CANCEL_PIXELS, m_moveCancelPixels, 0);
+    readInt(JSON_KEY_HOLD_DURATION_MS, m_holdDurationMs, MIN_HOLD_DURATION_MS, MAX_HOLD_DURATION_MS);
+    readInt(JSON_KEY_MOVE_CANCEL_PIXELS, m_moveCancelPixels, 0, MAX_MOVE_CANCEL_PIXELS);
 }
 
 void MouseButtonLock::HookThreadMain()
@@ -338,6 +366,13 @@ void MouseButtonLock::HookThreadMain()
         {
             break;
         }
+        if (res == WAIT_FAILED)
+        {
+            // Defensive: shouldn't happen now that the terminate event is validated before start.
+            // Bail rather than spin if the wait ever fails.
+            Logger::error(L"MouseButtonLock wait failed, error: {}. Stopping hook thread.", GetLastError());
+            break;
+        }
 
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
@@ -358,10 +393,12 @@ void MouseButtonLock::HookThreadMain()
 
 LRESULT CALLBACK MouseButtonLock::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if (nCode == HC_ACTION && g_instance)
+    // Load the singleton once into a local; see the g_instance declaration for why this is safe.
+    MouseButtonLock* instance = g_instance.load();
+    if (nCode == HC_ACTION && instance)
     {
         auto* data = reinterpret_cast<MSLLHOOKSTRUCT*>(lParam);
-        if (g_instance->HandleMouseMessage(wParam, data))
+        if (instance->HandleMouseMessage(wParam, data))
         {
             return 1; // Suppress: downstream apps never see this event.
         }
@@ -397,17 +434,17 @@ bool MouseButtonLock::HandleMouseMessage(WPARAM wParam, const MSLLHOOKSTRUCT* da
 
 bool MouseButtonLock::HandleButtonDown(ButtonLockState& st, const std::atomic<bool>& enabled, const MSLLHOOKSTRUCT* data)
 {
-    if (st.locked.load())
+    // Tap-to-release. exchange() claims the lock atomically so a concurrent set_config/disable
+    // release can't double-act. If we claimed it, try to inject the synthetic UP.
+    if (st.locked.exchange(false))
     {
-        // Tap-to-release: try to send the synthetic UP first. Only suppress the physical DOWN
-        // and arm the UP-swallow flag if the OS accepted our release. If SendInput fails, let the
-        // physical events through so the OS has a chance to correct its belief about the button.
         if (InjectButtonUp(st.upFlag))
         {
-            st.locked.store(false);
             st.swallowNextRealUp = true;
-            return true;
+            return true; // Suppress the physical DOWN; its paired UP will be swallowed.
         }
+        // Injection failed (e.g. UIPI to an elevated foreground window): we've already dropped the
+        // lock, so let the physical events through and let the OS resolve the button via the real UP.
         return false;
     }
 
@@ -516,10 +553,14 @@ bool MouseButtonLock::InjectButtonUp(DWORD upFlag)
 
 void MouseButtonLock::ReleaseButton(ButtonLockState& st)
 {
-    // exchange() ensures only one caller injects the release if disable() and the hook race.
+    // exchange() claims the lock atomically, so among the racing releasers (disable, set_config,
+    // and the hook's own tap-to-release) exactly one injects the synthetic up.
     if (st.locked.exchange(false))
     {
-        InjectButtonUp(st.upFlag);
+        if (!InjectButtonUp(st.upFlag))
+        {
+            Logger::warn(L"Failed to inject synthetic button-up while releasing a locked button; the OS may keep seeing it as held until the next physical click.");
+        }
     }
 }
 

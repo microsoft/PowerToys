@@ -48,4 +48,5 @@ Still open, and intentionally deferred until the approach is agreed on the propo
 - ETW telemetry beyond the enable/disable event, and unit tests for the per-button state machine.
 - Fuzzing coverage (PowerToys requires fuzzing for user-input modules).
 - Game compatibility validation: `WH_MOUSE_LL` may not observe or suppress input in titles using Raw Input or exclusive DirectInput.
+- Release the lock on session lock / fast-user-switch (`WTSRegisterSessionNotification` -> `ReleaseAllLocked`). The standalone reference app did this; in the module a button locked when the session locks stays logically held until the next physical tap. Minor and self-healing, tracked as a parity follow-up.
 - A full x64 Release build of `PowerToys.slnx` to confirm the module compiles, links, loads in the runner, and that the DLL lands in the harvested Release root.

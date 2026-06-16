@@ -133,6 +133,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ArgumentNullException.ThrowIfNull(mouseButtonLockSettingsRepository);
 
             MouseButtonLockSettingsConfig = mouseButtonLockSettingsRepository.SettingsConfig;
+
+            // Null-safe in case a hand-edited settings.json carries explicit nulls: repair the
+            // property objects to their defaults so both the reads below and the property setters
+            // are safe (mirrors the null-handling the CursorWrap block above uses).
+            MouseButtonLockSettingsConfig.Properties.RmbLockEnabled ??= new BoolProperty(true);
+            MouseButtonLockSettingsConfig.Properties.MmbLockEnabled ??= new BoolProperty(false);
+            MouseButtonLockSettingsConfig.Properties.HoldDurationMs ??= new IntProperty(300);
+            MouseButtonLockSettingsConfig.Properties.MoveCancelEnabled ??= new BoolProperty(true);
+            MouseButtonLockSettingsConfig.Properties.MoveCancelPixels ??= new IntProperty(5);
+
             _mouseButtonLockRmbEnabled = MouseButtonLockSettingsConfig.Properties.RmbLockEnabled.Value;
             _mouseButtonLockMmbEnabled = MouseButtonLockSettingsConfig.Properties.MmbLockEnabled.Value;
             _mouseButtonLockHoldDurationMs = MouseButtonLockSettingsConfig.Properties.HoldDurationMs.Value;
