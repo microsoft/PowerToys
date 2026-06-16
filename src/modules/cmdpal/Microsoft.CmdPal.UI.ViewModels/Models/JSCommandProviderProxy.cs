@@ -25,6 +25,7 @@ public sealed class JSCommandProviderProxy : ICommandProvider, IDisposable
     private readonly IconInfo _defaultIcon;
     private readonly Lock _eventLock = new();
     private readonly Dictionary<(string Message, int State), StatusMessage> _shownStatusMessages = new();
+    private readonly Dictionary<string, JSFallbackCommandItemAdapter> _fallbackAdapters = new();
     private IExtensionHost? _host;
     private bool _isDisposed;
     private ICommandSettings? _settingsCache;
@@ -284,13 +285,21 @@ public sealed class JSCommandProviderProxy : ICommandProvider, IDisposable
                 commandId = commandIdProp.GetString() ?? string.Empty;
             }
 
-            var propertyName = string.Empty;
-            if (paramsElement.TryGetProperty("propertyName", out var propertyNameProp))
+            // Update fallback adapter properties if applicable
+            if (!string.IsNullOrEmpty(commandId) && _fallbackAdapters.TryGetValue(commandId, out var fallbackAdapter))
             {
-                propertyName = propertyNameProp.GetString() ?? string.Empty;
+                if (paramsElement.TryGetProperty("properties", out var propsProp) && propsProp.ValueKind == JsonValueKind.Object)
+                {
+                    if (propsProp.TryGetProperty("displayTitle", out var displayTitleProp) && displayTitleProp.ValueKind == JsonValueKind.String)
+                    {
+                        fallbackAdapter.UpdateDisplayTitle(displayTitleProp.GetString() ?? string.Empty);
+                    }
+                }
+
+                fallbackAdapter.RaisePropChanged("DisplayTitle");
             }
 
-            Logger.LogDebug($"[{DisplayName}] command/propChanged: commandId={commandId}, property={propertyName}");
+            Logger.LogDebug($"[{DisplayName}] command/propChanged: commandId={commandId}");
         }
         catch (Exception ex)
         {
@@ -547,7 +556,14 @@ public sealed class JSCommandProviderProxy : ICommandProvider, IDisposable
         var items = new List<IFallbackCommandItem>();
         foreach (var element in result.Value.EnumerateArray())
         {
-            items.Add(new JSFallbackCommandItemAdapter(element, _rpcConnection));
+            var adapter = new JSFallbackCommandItemAdapter(element, _rpcConnection);
+            items.Add(adapter);
+
+            var id = adapter.Id;
+            if (!string.IsNullOrEmpty(id))
+            {
+                _fallbackAdapters[id] = adapter;
+            }
         }
 
         return items.ToArray();

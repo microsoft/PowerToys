@@ -43,7 +43,7 @@ internal static class JSCommandResultAdapter
         {
             if (kind == CommandResultKind.GoToPage)
             {
-                return ParseGoToPage(argsProp);
+                return ParseGoToPage(argsProp, connection);
             }
 
             if (kind == CommandResultKind.ShowToast)
@@ -116,6 +116,16 @@ internal static class JSCommandResultAdapter
             return new JSTreeContentAdapter(element, pageId, connection);
         }
 
+        if (type == "plainText")
+        {
+            return new JSPlainTextContentAdapter(element);
+        }
+
+        if (type == "image")
+        {
+            return new JSImageContentAdapter(element);
+        }
+
         return new JSMarkdownContentAdapter(element);
     }
 
@@ -169,7 +179,7 @@ internal static class JSCommandResultAdapter
         return default;
     }
 
-    private static ICommandResult ParseGoToPage(JsonElement args)
+    private static ICommandResult ParseGoToPage(JsonElement args, JsonRpcConnection? connection)
     {
         var pageId = string.Empty;
         if ((args.TryGetProperty("PageId", out var pageIdProp) || args.TryGetProperty("pageId", out pageIdProp)) &&
@@ -181,10 +191,55 @@ internal static class JSCommandResultAdapter
         var navMode = NavigationMode.Push;
         if (args.TryGetProperty("Mode", out var navModeProp) || args.TryGetProperty("mode", out navModeProp) || args.TryGetProperty("navigationMode", out navModeProp))
         {
-            navMode = (NavigationMode)navModeProp.GetInt32();
+            if (navModeProp.ValueKind == JsonValueKind.Number)
+            {
+                navMode = (NavigationMode)navModeProp.GetInt32();
+            }
+            else if (navModeProp.ValueKind == JsonValueKind.String)
+            {
+                var modeStr = navModeProp.GetString()?.ToLowerInvariant();
+                navMode = modeStr switch
+                {
+                    "push" => NavigationMode.Push,
+                    "goback" or "goBack" => NavigationMode.GoBack,
+                    "gohome" or "goHome" => NavigationMode.GoHome,
+                    _ => NavigationMode.Push,
+                };
+            }
         }
 
-        return CommandResult.GoToPage(new GoToPageArgs { PageId = pageId, NavigationMode = navMode });
+        // Resolve the page via JSONRPC if we have a connection and a pageId
+        IPage? resolvedPage = null;
+        if (connection != null && !string.IsNullOrEmpty(pageId))
+        {
+            try
+            {
+                var response = connection.SendRequestAsync(
+                    "provider/getCommand",
+                    new JsonObject { ["commandId"] = pageId },
+                    CancellationToken.None).GetAwaiter().GetResult();
+
+                if (response.Error == null && response.Result.HasValue)
+                {
+                    var command = JSCommandFactory.CreateCommandFromJson(response.Result.Value, connection);
+                    if (command is IPage page)
+                    {
+                        resolvedPage = page;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to resolve page '{pageId}': {ex.Message}");
+            }
+        }
+
+        return new JSGoToPageCommandResult
+        {
+            Kind = CommandResultKind.GoToPage,
+            Args = new GoToPageArgs { PageId = pageId, NavigationMode = navMode },
+            Page = resolvedPage,
+        };
     }
 
     private static ICommandResult ParseShowToast(JsonElement args)
@@ -239,6 +294,20 @@ internal static class JSCommandResultAdapter
             IsPrimaryCommandCritical = isCritical,
         });
     }
+}
+
+/// <summary>
+/// Custom ICommandResult for GoToPage that carries a pre-resolved IPage reference.
+/// This allows UnsafeHandleCommandResult to navigate directly to the page
+/// without needing access to the JsonRpcConnection.
+/// </summary>
+internal sealed class JSGoToPageCommandResult : ICommandResult
+{
+    public CommandResultKind Kind { get; init; }
+
+    public ICommandResultArgs? Args { get; init; }
+
+    public IPage? Page { get; init; }
 }
 
 /// <summary>
@@ -597,5 +666,128 @@ internal sealed class JSContextItemAdapter : IContextItem
     public JSContextItemAdapter(JsonElement data)
     {
         _data = data;
+    }
+}
+
+/// <summary>
+/// Adapts JSON plain text content data to IPlainTextContent interface.
+/// </summary>
+internal sealed class JSPlainTextContentAdapter : IPlainTextContent
+{
+    private readonly JsonElement _data;
+
+    public JSPlainTextContentAdapter(JsonElement data)
+    {
+        _data = data;
+    }
+
+    public string Text
+    {
+        get
+        {
+            if (_data.ValueKind == JsonValueKind.Object &&
+                _data.TryGetProperty("text", out var prop) && prop.ValueKind == JsonValueKind.String)
+            {
+                return prop.GetString() ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+    }
+
+    public FontFamily FontFamily
+    {
+        get
+        {
+            if (_data.ValueKind == JsonValueKind.Object &&
+                _data.TryGetProperty("fontFamily", out var prop) && prop.ValueKind == JsonValueKind.String)
+            {
+                var value = prop.GetString();
+                return value == "monospace" ? FontFamily.Monospace : FontFamily.UserInterface;
+            }
+
+            return FontFamily.UserInterface;
+        }
+    }
+
+    public bool WrapWords
+    {
+        get
+        {
+            if (_data.ValueKind == JsonValueKind.Object &&
+                _data.TryGetProperty("wrapWords", out var prop))
+            {
+                return prop.ValueKind == JsonValueKind.True;
+            }
+
+            return true;
+        }
+    }
+
+    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
+    {
+        add { }
+        remove { }
+    }
+}
+
+/// <summary>
+/// Adapts JSON image content data to IImageContent interface.
+/// </summary>
+internal sealed class JSImageContentAdapter : IImageContent
+{
+    private readonly JsonElement _data;
+
+    public JSImageContentAdapter(JsonElement data)
+    {
+        _data = data;
+    }
+
+    public IIconInfo Image
+    {
+        get
+        {
+            if (_data.ValueKind == JsonValueKind.Object &&
+                _data.TryGetProperty("image", out var imageProp))
+            {
+                return JSIconInfoAdapter.FromJson(imageProp);
+            }
+
+            return new IconInfo(string.Empty);
+        }
+    }
+
+    public int MaxWidth
+    {
+        get
+        {
+            if (_data.ValueKind == JsonValueKind.Object &&
+                _data.TryGetProperty("maxWidth", out var prop) && prop.ValueKind == JsonValueKind.Number)
+            {
+                return prop.GetInt32();
+            }
+
+            return -1; // Unlimited
+        }
+    }
+
+    public int MaxHeight
+    {
+        get
+        {
+            if (_data.ValueKind == JsonValueKind.Object &&
+                _data.TryGetProperty("maxHeight", out var prop) && prop.ValueKind == JsonValueKind.Number)
+            {
+                return prop.GetInt32();
+            }
+
+            return -1; // Unlimited
+        }
+    }
+
+    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
+    {
+        add { }
+        remove { }
     }
 }

@@ -491,6 +491,34 @@ public partial class ShellViewModel : ObservableObject,
 
                     break;
                 }
+
+            case CommandResultKind.GoToPage:
+                {
+                    if (result is JSGoToPageCommandResult jsGoToPage && jsGoToPage.Page != null)
+                    {
+                        // Handle NavigationMode before navigating to the target page
+                        if (jsGoToPage.Args is IGoToPageArgs goToPageArgs)
+                        {
+                            switch (goToPageArgs.NavigationMode)
+                            {
+                                case NavigationMode.GoBack:
+                                    GoBack();
+                                    break;
+                                case NavigationMode.GoHome:
+                                    GoHome(withAnimation: false, focusSearch: false);
+                                    break;
+                                case NavigationMode.Push:
+                                default:
+                                    break;
+                            }
+                        }
+
+                        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(
+                            new(new ExtensionObject<ICommand>(jsGoToPage.Page)));
+                    }
+
+                    break;
+                }
         }
     }
 

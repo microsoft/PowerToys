@@ -113,9 +113,9 @@ internal sealed class JSCommandAdapter : ICommand, IInvokableCommand
         return new IconInfo(string.Empty);
     }
 
-    private static ICommandResult ParseCommandResult(JsonElement? result)
+    private ICommandResult ParseCommandResult(JsonElement? result)
     {
-        return JSCommandResultAdapter.ParseCommandResult(result);
+        return JSCommandResultAdapter.ParseCommandResult(result, _connection);
     }
 }
 
@@ -264,6 +264,7 @@ internal sealed class JSFallbackCommandItemAdapter : IFallbackCommandItem, IFall
     private readonly Lock _eventLock = new();
     private ICommand? _command;
     private JSFallbackHandler? _fallbackHandler;
+    private string? _displayTitleOverride;
     private event TypedEventHandler<object, IPropChangedEventArgs>? _propChanged;
 
     public JSFallbackCommandItemAdapter(JsonElement data, JsonRpcConnection connection)
@@ -301,9 +302,14 @@ internal sealed class JSFallbackCommandItemAdapter : IFallbackCommandItem, IFall
 
     public string Subtitle => GetStringProperty("description") ?? GetStringProperty("subtitle") ?? string.Empty;
 
-    public string DisplayTitle => GetStringProperty("displayTitle") ?? Title;
+    public string DisplayTitle => _displayTitleOverride ?? GetStringProperty("displayTitle") ?? Title;
 
     public string Id => GetStringProperty("id") ?? string.Empty;
+
+    public void UpdateDisplayTitle(string newTitle)
+    {
+        _displayTitleOverride = newTitle;
+    }
 
     public IFallbackHandler FallbackHandler
     {

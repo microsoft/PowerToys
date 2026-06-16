@@ -8,6 +8,7 @@ exports.startJsonRpcServer = startJsonRpcServer;
 const ExtensionHost_1 = require("./ExtensionHost");
 let provider = null;
 let commandCache = new Map();
+let fallbackCommandCache = new Map();
 function sendMessage(message) {
     const json = JSON.stringify(message);
     const contentBytes = Buffer.from(json, 'utf-8');
@@ -26,6 +27,80 @@ function sendError(id, code, message) {
 function sendNotification(method, params) {
     sendMessage({ jsonrpc: '2.0', method, params });
 }
+function patchPageNotifications(pageId, page) {
+    if (page && typeof page === 'object' && 'notifyItemsChanged' in page) {
+        page.notifyItemsChanged = () => {
+            sendNotification('listPage/itemsChanged', { pageId });
+        };
+    }
+}
+function cacheCommand(command, cacheId) {
+    commandCache.set(command.id, command);
+    if (cacheId && cacheId !== command.id) {
+        commandCache.set(cacheId, command);
+    }
+    patchPageNotifications(command.id, command);
+}
+async function getCachedCommand(commandId) {
+    const cached = commandCache.get(commandId);
+    if (cached) {
+        return cached;
+    }
+    const command = await Promise.resolve(provider?.getCommand?.(commandId) ?? null);
+    if (command) {
+        cacheCommand(command, commandId);
+    }
+    return command;
+}
+function serializeContextItems(items) {
+    if (!items || items.length === 0) {
+        return undefined;
+    }
+    return items.map((ctx) => {
+        const ctxResult = {
+            command: serializeCommand(ctx.command),
+            title: ctx.title,
+        };
+        if (ctx.subtitle)
+            ctxResult.subtitle = ctx.subtitle;
+        if (ctx.icon)
+            ctxResult.icon = ctx.icon;
+        if (ctx.isCritical)
+            ctxResult.isCritical = ctx.isCritical;
+        if (ctx.requestedShortcut)
+            ctxResult.requestedShortcut = ctx.requestedShortcut;
+        return ctxResult;
+    });
+}
+async function serializeContent(content) {
+    switch (content.type) {
+        case 'markdown':
+            return { type: 'markdown', body: content.body };
+        case 'plainText': {
+            const pt = content;
+            return { type: 'plainText', text: pt.text, fontFamily: pt.fontFamily, wrapWords: pt.wrapWords };
+        }
+        case 'image': {
+            const img = content;
+            return { type: 'image', image: img.image, maxWidth: img.maxWidth, maxHeight: img.maxHeight };
+        }
+        case 'form': {
+            const form = content;
+            return { type: 'form', templateJson: form.templateJson, dataJson: form.dataJson, stateJson: form.stateJson };
+        }
+        case 'tree': {
+            const tree = content;
+            const children = await Promise.resolve(tree.getChildren());
+            return {
+                type: 'tree',
+                rootContent: await serializeContent(tree.rootContent),
+                children: await Promise.all(children.map((child) => serializeContent(child))),
+            };
+        }
+        default:
+            return content;
+    }
+}
 async function handleRequest(request) {
     const { id, method, params } = request;
     const p = params;
@@ -42,6 +117,11 @@ async function handleRequest(request) {
                     return;
                 }
                 const commands = await Promise.resolve(provider.topLevelCommands());
+                for (const item of commands) {
+                    if (item.command) {
+                        cacheCommand(item.command);
+                    }
+                }
                 sendResponse(id, serializeCommandItems(commands));
                 break;
             }
@@ -51,6 +131,12 @@ async function handleRequest(request) {
                     return;
                 }
                 const fallbacks = await Promise.resolve(provider.fallbackCommands?.() ?? null);
+                if (fallbacks) {
+                    for (const item of fallbacks) {
+                        cacheCommand(item.command);
+                        fallbackCommandCache.set(item.command.id, item);
+                    }
+                }
                 sendResponse(id, fallbacks ? serializeCommandItems(fallbacks) : null);
                 break;
             }
@@ -62,7 +148,7 @@ async function handleRequest(request) {
                 const commandId = p?.commandId ?? '';
                 const command = await Promise.resolve(provider.getCommand?.(commandId) ?? null);
                 if (command) {
-                    commandCache.set(commandId, command);
+                    cacheCommand(command, commandId);
                     sendResponse(id, serializeCommand(command));
                 }
                 else {
@@ -76,12 +162,15 @@ async function handleRequest(request) {
                     return;
                 }
                 const settings = provider.settings ?? null;
+                if (settings?.settingsPage) {
+                    cacheCommand(settings.settingsPage);
+                }
                 sendResponse(id, settings ? { id: settings.settingsPage?.id ?? '' } : null);
                 break;
             }
             case 'command/invoke': {
                 const cmdId = p?.commandId ?? '';
-                const cmd = commandCache.get(cmdId) ?? await Promise.resolve(provider?.getCommand?.(cmdId) ?? null);
+                const cmd = await getCachedCommand(cmdId);
                 if (cmd && 'invoke' in cmd && typeof cmd.invoke === 'function') {
                     const result = await Promise.resolve(cmd.invoke(null));
                     sendResponse(id, serializeCommandResult(result));
@@ -93,7 +182,7 @@ async function handleRequest(request) {
             }
             case 'listPage/getItems': {
                 const pageId = p?.pageId ?? '';
-                const page = commandCache.get(pageId) ?? await Promise.resolve(provider?.getCommand?.(pageId) ?? null);
+                const page = await getCachedCommand(pageId);
                 if (page && 'getItems' in page && typeof page.getItems === 'function') {
                     const items = await Promise.resolve(page.getItems());
                     sendResponse(id, { items: serializeListItems(items) });
@@ -106,22 +195,45 @@ async function handleRequest(request) {
             case 'listPage/setSearchText': {
                 const pageId = p?.pageId ?? '';
                 const searchText = p?.searchText ?? '';
-                const page = commandCache.get(pageId) ?? provider?.getCommand?.(pageId);
+                const page = await getCachedCommand(pageId);
                 if (page && 'setSearchText' in page && typeof page.setSearchText === 'function') {
-                    page.setSearchText(searchText);
+                    await Promise.resolve(page.setSearchText(searchText));
+                }
+                sendResponse(id, null);
+                break;
+            }
+            case 'listPage/setFilter': {
+                const pageId = p?.pageId ?? '';
+                const filterId = p?.filterId ?? '';
+                const page = await getCachedCommand(pageId);
+                if (page && 'setFilter' in page && typeof page.setFilter === 'function') {
+                    await Promise.resolve(page.setFilter(filterId));
+                }
+                sendResponse(id, null);
+                break;
+            }
+            case 'fallback/updateQuery': {
+                const commandId = p?.commandId ?? '';
+                const query = p?.query ?? '';
+                const item = fallbackCommandCache.get(commandId);
+                if (item?.fallbackHandler && typeof item.fallbackHandler.updateQuery === 'function') {
+                    await Promise.resolve(item.fallbackHandler.updateQuery(query));
+                    // Notify the host that the fallback item's properties changed
+                    sendNotification('command/propChanged', { commandId, properties: { displayTitle: item.displayTitle ?? item.title } });
                 }
                 sendResponse(id, null);
                 break;
             }
             case 'contentPage/getContent': {
                 const pageId = p?.pageId ?? '';
-                const page = commandCache.get(pageId) ?? provider?.getCommand?.(pageId);
+                const page = await getCachedCommand(pageId);
                 if (page && 'getContent' in page && typeof page.getContent === 'function') {
-                    const content = page.getContent();
-                    sendResponse(id, { content });
+                    const rawContent = await Promise.resolve(page.getContent());
+                    const serialized = await Promise.all(rawContent.map((item) => serializeContent(item)));
+                    sendResponse(id, serialized);
                 }
                 else {
-                    sendResponse(id, { content: [] });
+                    sendResponse(id, []);
                 }
                 break;
             }
@@ -129,9 +241,19 @@ async function handleRequest(request) {
                 const pageId = p?.pageId ?? '';
                 const inputs = p?.inputs ?? '';
                 const data = p?.data ?? '';
-                const page = commandCache.get(pageId) ?? provider?.getCommand?.(pageId);
-                if (page && 'submitForm' in page && typeof page.submitForm === 'function') {
-                    const result = page.submitForm(inputs, data);
+                const page = await getCachedCommand(pageId);
+                if (page && 'getContent' in page && typeof page.getContent === 'function') {
+                    const content = await Promise.resolve(page.getContent());
+                    const form = content.find((item) => item.type === 'form' && typeof item.submitForm === 'function');
+                    if (!form) {
+                        sendError(id, -32601, `Form content not found for page: ${pageId}`);
+                        break;
+                    }
+                    const result = await Promise.resolve(form.submitForm(inputs, data));
+                    sendResponse(id, serializeCommandResult(result));
+                }
+                else if (page && 'submitForm' in page && typeof page.submitForm === 'function') {
+                    const result = await Promise.resolve(page.submitForm(inputs, data));
                     sendResponse(id, serializeCommandResult(result));
                 }
                 else {
@@ -141,9 +263,9 @@ async function handleRequest(request) {
             }
             case 'listPage/loadMore': {
                 const pageId = p?.pageId ?? '';
-                const page = commandCache.get(pageId) ?? provider?.getCommand?.(pageId);
+                const page = await getCachedCommand(pageId);
                 if (page && 'loadMore' in page && typeof page.loadMore === 'function') {
-                    page.loadMore();
+                    await Promise.resolve(page.loadMore());
                 }
                 sendResponse(id, null);
                 break;
@@ -157,16 +279,29 @@ async function handleRequest(request) {
         sendError(id, -32603, message);
     }
 }
-function handleNotification(notification) {
-    const { method } = notification;
+async function handleNotification(notification) {
+    const { method, params } = notification;
+    const p = params;
+    if (method === 'fallback/updateQuery') {
+        const commandId = p?.commandId ?? '';
+        const query = p?.query ?? '';
+        const item = fallbackCommandCache.get(commandId);
+        if (item?.fallbackHandler && typeof item.fallbackHandler.updateQuery === 'function') {
+            await Promise.resolve(item.fallbackHandler.updateQuery(query));
+            // Notify the host that the fallback item's properties changed
+            sendNotification('command/propChanged', { commandId, properties: { displayTitle: item.displayTitle ?? item.title } });
+        }
+        return;
+    }
     if (method === 'dispose') {
-        // Clean up and exit
         provider = null;
         commandCache.clear();
+        fallbackCommandCache.clear();
         process.exit(0);
     }
 }
 function serializeCommand(command) {
+    cacheCommand(command);
     const result = {
         id: command.id,
         name: command.name,
@@ -184,27 +319,49 @@ function serializeCommand(command) {
             result._type = 'listPage';
         }
         // Copy page properties
+        if ('isLoading' in command)
+            result.isLoading = command.isLoading;
+        if ('accentColor' in command)
+            result.accentColor = command.accentColor;
         if ('placeholderText' in command)
             result.placeholderText = command.placeholderText;
         if ('showDetails' in command)
             result.showDetails = command.showDetails;
         if ('title' in command)
             result.title = command.title;
-        if ('gridProperties' in command)
-            result.gridProperties = command.gridProperties;
+        if ('gridProperties' in command) {
+            const gp = command.gridProperties;
+            if (gp) {
+                // C# expects 'layout' property, but TS GridProperties uses 'type'
+                result.gridProperties = { ...gp, layout: gp.layout ?? gp.type };
+            }
+        }
         if ('filters' in command)
             result.filters = command.filters;
+        if ('hasMoreItems' in command)
+            result.hasMoreItems = command.hasMoreItems;
+        if ('emptyContent' in command)
+            result.emptyContent = command.emptyContent;
     }
     else if ('getContent' in command && typeof command.getContent === 'function') {
         result._type = 'contentPage';
         if ('title' in command)
             result.title = command.title;
+        if ('isLoading' in command)
+            result.isLoading = command.isLoading;
+        if ('accentColor' in command)
+            result.accentColor = command.accentColor;
+        if ('details' in command)
+            result.details = command.details;
+        if ('commands' in command)
+            result.commands = serializeContextItems(command.commands);
     }
     return result;
 }
 function serializeCommandItems(items) {
     return items.map((item) => {
         const result = {
+            id: item.command.id,
             title: item.title,
             displayName: item.title,
             subtitle: item.subtitle,
@@ -212,27 +369,71 @@ function serializeCommandItems(items) {
         };
         if (item.icon) {
             result.icon = item.icon;
+        }
+        if ('displayTitle' in item && item.displayTitle) {
+            result.displayTitle = item.displayTitle;
+        }
+        if (item.moreCommands && item.moreCommands.length > 0) {
+            result.moreCommands = serializeContextItems(item.moreCommands);
         }
         return result;
     });
 }
 function serializeListItems(items) {
     return items.map((item) => {
+        // Check if this is a separator
+        if ('_isSeparator' in item && item._isSeparator) {
+            return { _isSeparator: true, title: item.title, section: item.section };
+        }
         const result = {
             title: item.title,
             displayName: item.title,
             subtitle: item.subtitle,
             section: item.section,
             tags: item.tags,
-            details: item.details,
             textToSuggest: item.textToSuggest,
             command: item.command ? serializeCommand(item.command) : undefined,
         };
         if (item.icon) {
             result.icon = item.icon;
         }
+        if (item.details) {
+            result.details = serializeDetails(item.details);
+        }
+        if (item.moreCommands && item.moreCommands.length > 0) {
+            result.moreCommands = serializeContextItems(item.moreCommands);
+        }
         return result;
     });
+}
+function serializeDetails(details) {
+    if (!details || typeof details !== 'object')
+        return details;
+    const d = details;
+    const result = { ...d };
+    // Serialize metadata commands (DetailsCommands contain ICommand[] that need proper serialization)
+    if (Array.isArray(d.metadata)) {
+        result.metadata = d.metadata.map((element) => {
+            const el = { ...element };
+            if (el.data && typeof el.data === 'object') {
+                const data = el.data;
+                // Serialize commands within DetailsCommands
+                if (Array.isArray(data.commands)) {
+                    el.data = {
+                        ...data,
+                        commands: data.commands.map((cmd) => {
+                            if (cmd && typeof cmd === 'object' && 'id' in cmd) {
+                                return serializeCommand(cmd);
+                            }
+                            return cmd;
+                        }),
+                    };
+                }
+            }
+            return el;
+        });
+    }
+    return result;
 }
 function serializeCommandResult(result) {
     if (!result)
@@ -240,11 +441,11 @@ function serializeCommandResult(result) {
     const kindMap = {
         dismiss: 0,
         goHome: 1,
-        hide: 2,
-        goToPage: 3,
-        showToast: 4,
-        keepOpen: 5,
-        goBack: 6,
+        goBack: 2,
+        hide: 3,
+        keepOpen: 4,
+        goToPage: 5,
+        showToast: 6,
         confirm: 7,
     };
     const kind = typeof result.kind === 'string' ? (kindMap[result.kind] ?? 0) : 0;
@@ -281,12 +482,23 @@ function startJsonRpcServer(providerFactory) {
     const maybePromise = providerFactory();
     const initProvider = async (p) => {
         provider = p;
+        fallbackCommandCache.clear();
         // Cache the provider's pages from topLevelCommands
         const commands = await Promise.resolve(provider.topLevelCommands());
         for (const item of commands) {
             if (item.command) {
-                commandCache.set(item.command.id, item.command);
+                cacheCommand(item.command);
             }
+        }
+        const fallbacks = await Promise.resolve(provider.fallbackCommands?.() ?? null);
+        if (fallbacks) {
+            for (const item of fallbacks) {
+                cacheCommand(item.command);
+                fallbackCommandCache.set(item.command.id, item);
+            }
+        }
+        if (provider.settings?.settingsPage) {
+            cacheCommand(provider.settings.settingsPage);
         }
     };
     // The processing queue ensures requests are serialized AND that initProvider
@@ -330,7 +542,7 @@ function startJsonRpcServer(providerFactory) {
                     processingQueue = processingQueue.then(() => handleRequest(message));
                 }
                 else {
-                    handleNotification(message);
+                    processingQueue = processingQueue.then(() => handleNotification(message));
                 }
             }
             catch {

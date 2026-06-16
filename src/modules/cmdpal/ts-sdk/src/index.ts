@@ -43,10 +43,18 @@ export type {
   StatusMessage,
   ActivationContext,
   ICommand,
+  IInvokableCommand,
   ICommandItem,
   IListItem,
+  IFallbackCommandItem,
+  IFallbackHandler,
   ICommandProvider,
   ICommandSettings,
+  IPage,
+  IListPage,
+  IDynamicListPage,
+  IContentPage,
+  IExtensionHost,
 } from './types';
 
 export {
@@ -67,6 +75,10 @@ export { ContentPageBase } from './base/ContentPageBase';
 export { InvokableCommandBase } from './base/InvokableCommandBase';
 export { CommandItemBase } from './base/CommandItemBase';
 export { ListItemBase } from './base/ListItemBase';
+export { FallbackCommandItemBase } from './base/FallbackCommandItemBase';
+export { Separator } from './base/Separator';
+export { NoOpCommand, OpenUrlCommand, CopyTextCommand, ConfirmableCommand } from './base/commands';
+export { Settings, ToggleSetting, TextSetting, ChoiceSetSetting } from './base/Settings';
 
 // Runtime
 export { ExtensionHost } from './runtime/ExtensionHost';

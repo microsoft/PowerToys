@@ -215,7 +215,22 @@ internal sealed class JSListPageProxy : IListPage
         var items = new List<IListItem>();
         foreach (var element in arrayElement.EnumerateArray())
         {
-            items.Add(new JSListItemAdapter(element, _connection));
+            if (element.ValueKind == JsonValueKind.Object &&
+                element.TryGetProperty("_isSeparator", out var sepProp) &&
+                sepProp.ValueKind == JsonValueKind.True)
+            {
+                var title = string.Empty;
+                if (element.TryGetProperty("title", out var titleProp) && titleProp.ValueKind == JsonValueKind.String)
+                {
+                    title = titleProp.GetString() ?? string.Empty;
+                }
+
+                items.Add(new JSSeparatorAdapter(title));
+            }
+            else
+            {
+                items.Add(new JSListItemAdapter(element, _connection));
+            }
         }
 
         return items.ToArray();
@@ -442,12 +457,12 @@ internal sealed class JSListItemAdapter : IListItem
 #pragma warning disable CA1507
         if (_data.TryGetProperty("Details", out var detailsProp) && detailsProp.ValueKind == JsonValueKind.Object)
         {
-            return new JSDetailsAdapter(detailsProp);
+            return new JSDetailsAdapter(detailsProp, _connection);
         }
 
         if (_data.TryGetProperty("details", out detailsProp) && detailsProp.ValueKind == JsonValueKind.Object)
         {
-            return new JSDetailsAdapter(detailsProp);
+            return new JSDetailsAdapter(detailsProp, _connection);
         }
 #pragma warning restore CA1507
 
@@ -725,10 +740,12 @@ internal sealed class JSTagAdapter : ITag
 internal sealed class JSDetailsAdapter : IDetails
 {
     private readonly JsonElement _data;
+    private readonly JsonRpcConnection? _connection;
 
-    public JSDetailsAdapter(JsonElement data)
+    public JSDetailsAdapter(JsonElement data, JsonRpcConnection? connection = null)
     {
         _data = data;
+        _connection = connection;
     }
 
     private bool HasData => _data.ValueKind == JsonValueKind.Object;
@@ -817,20 +834,81 @@ internal sealed class JSDetailsAdapter : IDetails
         return elements.ToArray();
     }
 
-    private static IDetailsData? ParseDetailsData(JsonElement dataElement)
+    private IDetailsData? ParseDetailsData(JsonElement dataElement)
     {
         if (dataElement.ValueKind != JsonValueKind.Object)
         {
             return null;
         }
 
+        // Determine type from the "type" discriminator if present
 #pragma warning disable CA1507
-        if (dataElement.TryGetProperty("Tags", out var tagsProp) || dataElement.TryGetProperty("tags", out tagsProp))
+        if (dataElement.TryGetProperty("type", out var typeProp) && typeProp.ValueKind == JsonValueKind.String)
         {
-            if (tagsProp.ValueKind == JsonValueKind.Array)
+            var type = typeProp.GetString();
+            switch (type)
+            {
+                case "separator":
+                    return new DetailsSeparator();
+
+                case "link":
+                    var link = new DetailsLink();
+                    if (dataElement.TryGetProperty("link", out var linkProp) && linkProp.ValueKind == JsonValueKind.String)
+                    {
+                        var linkStr = linkProp.GetString();
+                        if (!string.IsNullOrEmpty(linkStr) && Uri.TryCreate(linkStr, UriKind.Absolute, out var uri))
+                        {
+                            link.Link = uri;
+                        }
+                    }
+
+                    if (dataElement.TryGetProperty("text", out var textProp) && textProp.ValueKind == JsonValueKind.String)
+                    {
+                        link.Text = textProp.GetString() ?? string.Empty;
+                    }
+
+                    return link;
+
+                case "tags":
+                    if (dataElement.TryGetProperty("tags", out var tagsArrayProp) && tagsArrayProp.ValueKind == JsonValueKind.Array)
+                    {
+                        var tags = new List<ITag>();
+                        foreach (var tagEl in tagsArrayProp.EnumerateArray())
+                        {
+                            tags.Add(new JSTagAdapter(tagEl));
+                        }
+
+                        return new DetailsTags { Tags = tags.ToArray() };
+                    }
+
+                    return null;
+
+                case "commands":
+                    if (_connection != null && dataElement.TryGetProperty("commands", out var cmdsProp) && cmdsProp.ValueKind == JsonValueKind.Array)
+                    {
+                        var commands = new List<ICommand>();
+                        foreach (var cmdEl in cmdsProp.EnumerateArray())
+                        {
+                            if (cmdEl.ValueKind == JsonValueKind.Object)
+                            {
+                                commands.Add(JSCommandFactory.CreateCommandFromJson(cmdEl, _connection));
+                            }
+                        }
+
+                        return new DetailsCommands { Commands = commands.ToArray() };
+                    }
+
+                    return null;
+            }
+        }
+
+        // Fallback: detect by presence of known properties
+        if (dataElement.TryGetProperty("Tags", out var tagsProp2) || dataElement.TryGetProperty("tags", out tagsProp2))
+        {
+            if (tagsProp2.ValueKind == JsonValueKind.Array)
             {
                 var tags = new List<ITag>();
-                foreach (var tagEl in tagsProp.EnumerateArray())
+                foreach (var tagEl in tagsProp2.EnumerateArray())
                 {
                     tags.Add(new JSTagAdapter(tagEl));
                 }
@@ -1035,5 +1113,63 @@ internal static class JSGridPropertiesFactory
             "gallery" => new JSGalleryGridLayoutAdapter(showTitle, showSubtitle),
             _ => null,
         };
+    }
+}
+
+/// <summary>
+/// Adapts a separator marker from a JSONRPC extension to ISeparatorContextItem.
+/// This allows the UI to render a proper visual separator between list items.
+/// </summary>
+internal sealed class JSSeparatorAdapter : IListItem, ISeparatorContextItem
+{
+    private readonly string _title;
+
+    public JSSeparatorAdapter(string title)
+    {
+        _title = title;
+    }
+
+    public IDetails? Details => null;
+
+    public string? Section => null;
+
+    public ICommand Command => new JSNoOpCommand();
+
+    public IContextItem[] MoreCommands => [];
+
+    public IIconInfo Icon => new IconInfo(string.Empty);
+
+    public string Title => _title;
+
+    public string Subtitle => string.Empty;
+
+    public ITag[] Tags => [];
+
+    public string TextToSuggest => string.Empty;
+
+    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
+    {
+        add { }
+        remove { }
+    }
+}
+
+internal sealed class JSNoOpCommand : ICommand
+{
+    public string Id => $"separator-{Guid.NewGuid():N}";
+
+    public string Name => string.Empty;
+
+    public IIconInfo Icon => new IconInfo(string.Empty);
+
+    public ICommandResult Invoke()
+    {
+        return CommandResult.Dismiss();
+    }
+
+    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
+    {
+        add { }
+        remove { }
     }
 }
