@@ -218,14 +218,30 @@ displays a user-friendly summary in the UI:
 
 ## Settings
 
-The following settings are available under **Settings → Advanced Paste → Python scripts**:
+The Python scripts feature uses a **mode selector** (dropdown) with three options:
+
+| Mode | Description |
+|------|-------------|
+| **Disabled** | Python scripts are not active. |
+| **Windows** | Scripts run using a native Windows Python interpreter. |
+| **WSL** | Scripts run inside Windows Subsystem for Linux. |
+
+Each mode maintains its own independent settings (scripts folder, interpreter path, etc.),
+so switching between Windows and WSL does not lose your previous configuration.
+
+### Windows mode settings
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| Python interpreter | Path to the Python executable (Windows mode). Leave blank for auto-detection. | *(auto-detect)* |
-| Use WSL | Run scripts in Windows Subsystem for Linux instead of native Windows Python. | Off |
-| WSL distribution | Which WSL distro to use (e.g. `Ubuntu`). Leave blank for the default distribution. | *(default)* |
 | Scripts folder | Folder to scan for `.py` scripts. | `%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts` |
+| Python interpreter | Path to the Python executable. Leave blank for auto-detection. | *(auto-detect)* |
+
+### WSL mode settings
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Scripts folder | Folder to scan for `.py` scripts (Windows path — auto-translated to `/mnt/...`). | `%LOCALAPPDATA%\Microsoft\PowerToys\AdvancedPaste\Scripts` |
+| WSL distribution | Which WSL distro to use (e.g. `Ubuntu`). Leave blank for the default distribution. | *(default)* |
 
 ### Scripts list
 
@@ -239,9 +255,9 @@ The list is **not editable** from Settings. To change a script's name, descripti
 or any other metadata, open the script file directly (click the "Open in editor" button) and edit
 the `# @advancedpaste:...` header tags. After saving, click **Refresh** in Settings to reload.
 
-### WSL mode
+### WSL mode details
 
-When **Use WSL** is enabled:
+When **WSL** mode is selected:
 
 - Scripts are executed via `wsl.exe bash -l -c "python3 ..."` using the configured distribution.
 - The scripts folder remains on the Windows filesystem; paths are automatically translated
@@ -252,7 +268,7 @@ When **Use WSL** is enabled:
   variable to a temp directory under `/mnt/c/...` — use it instead of `tempfile.gettempdir()`
   when producing file output for cross-platform compatibility.
 
-> **Tip:** If you have Python installed only in WSL (not on Windows), enable WSL mode
+> **Tip:** If you have Python installed only in WSL (not on Windows), select WSL mode
 > to use your existing WSL Python environment with all its packages.
 
 ## Tips

@@ -167,13 +167,31 @@ namespace AdvancedPaste.Settings
                                 _customActions.AddRange(properties.CustomActions.Value.Where(customAction => customAction.IsShown && customAction.IsValid));
 
                                 var pythonScripts = properties.PythonScripts ?? new AdvancedPastePythonScriptSettings();
-                                IsPythonScriptsEnabled = pythonScripts.IsEnabled;
-                                PythonScriptsFolder = string.IsNullOrWhiteSpace(pythonScripts.ScriptsFolder)
-                                    ? GetDefaultScriptsFolder()
-                                    : pythonScripts.ScriptsFolder;
-                                PythonExecutablePath = pythonScripts.PythonExecutablePath ?? string.Empty;
-                                PythonUseWsl = pythonScripts.UseWsl;
-                                PythonWslDistribution = pythonScripts.WslDistribution ?? string.Empty;
+                                pythonScripts.MigrateLegacyIfNeeded();
+
+                                var mode = pythonScripts.Mode ?? "disabled";
+                                IsPythonScriptsEnabled = !string.Equals(mode, "disabled", StringComparison.OrdinalIgnoreCase);
+                                PythonUseWsl = string.Equals(mode, "wsl", StringComparison.OrdinalIgnoreCase);
+
+                                if (PythonUseWsl)
+                                {
+                                    var wslSettings = pythonScripts.WslSettings ?? new PythonScriptWslSettings();
+                                    PythonScriptsFolder = string.IsNullOrWhiteSpace(wslSettings.ScriptsFolder)
+                                        ? GetDefaultScriptsFolder()
+                                        : wslSettings.ScriptsFolder;
+                                    PythonExecutablePath = string.Empty;
+                                    PythonWslDistribution = wslSettings.Distribution ?? string.Empty;
+                                }
+                                else
+                                {
+                                    var winSettings = pythonScripts.WindowsSettings ?? new PythonScriptWindowsSettings();
+                                    PythonScriptsFolder = string.IsNullOrWhiteSpace(winSettings.ScriptsFolder)
+                                        ? GetDefaultScriptsFolder()
+                                        : winSettings.ScriptsFolder;
+                                    PythonExecutablePath = winSettings.PythonExecutablePath ?? string.Empty;
+                                    PythonWslDistribution = string.Empty;
+                                }
+
                                 PythonScriptTimeoutSeconds = pythonScripts.TimeoutSeconds > 0 ? pythonScripts.TimeoutSeconds : 30;
                                 TrustedScriptHashes = new Dictionary<string, string>(
                                     pythonScripts.TrustedScriptHashes ?? new Dictionary<string, string>(),

@@ -298,48 +298,74 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get
             {
                 var scripts = _advancedPasteSettings.Properties.PythonScripts;
-                return scripts?.IsEnabled ?? false;
+                return scripts != null && !string.Equals(scripts.Mode, "disabled", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        /// <summary>
+        /// ComboBox index: 0 = Disabled, 1 = Windows, 2 = WSL.
+        /// </summary>
+        public int PythonScriptsModeIndex
+        {
+            get
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts;
+                var mode = scripts?.Mode ?? "disabled";
+                return mode switch
+                {
+                    "windows" => 1,
+                    "wsl" => 2,
+                    _ => 0,
+                };
             }
 
             set
             {
                 var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
-                if (scripts.IsEnabled != value)
+                var newMode = value switch
                 {
-                    scripts.IsEnabled = value;
+                    1 => "windows",
+                    2 => "wsl",
+                    _ => "disabled",
+                };
+
+                if (!string.Equals(scripts.Mode, newMode, StringComparison.Ordinal))
+                {
+                    scripts.Mode = newMode;
+                    OnPropertyChanged(nameof(PythonScriptsModeIndex));
                     OnPropertyChanged(nameof(IsPythonScriptsEnabled));
+                    OnPropertyChanged(nameof(IsWindowsMode));
+                    OnPropertyChanged(nameof(IsWslMode));
+                    OnPropertyChanged(nameof(ScriptsFolder));
+                    OnPropertyChanged(nameof(PythonExecutablePath));
+                    OnPropertyChanged(nameof(WslDistribution));
                     SaveAndNotifySettings();
+
+                    if (_scriptsDiscovered)
+                    {
+                        RefreshPythonScripts();
+                    }
                 }
             }
         }
+
+        public bool IsWindowsMode => PythonScriptsModeIndex == 1;
+
+        public bool IsWslMode => PythonScriptsModeIndex == 2;
 
         public bool ScriptsDiscovered => _scriptsDiscovered;
 
         public string PythonExecutablePath
         {
-            get => _advancedPasteSettings.Properties.PythonScripts?.PythonExecutablePath ?? string.Empty;
+            get => _advancedPasteSettings.Properties.PythonScripts?.WindowsSettings?.PythonExecutablePath ?? string.Empty;
             set
             {
                 var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
-                if (!string.Equals(scripts.PythonExecutablePath, value, StringComparison.OrdinalIgnoreCase))
+                scripts.WindowsSettings ??= new PythonScriptWindowsSettings();
+                if (!string.Equals(scripts.WindowsSettings.PythonExecutablePath, value, StringComparison.OrdinalIgnoreCase))
                 {
-                    scripts.PythonExecutablePath = value ?? string.Empty;
+                    scripts.WindowsSettings.PythonExecutablePath = value ?? string.Empty;
                     OnPropertyChanged(nameof(PythonExecutablePath));
-                    SaveAndNotifySettings();
-                }
-            }
-        }
-
-        public bool PythonUseWsl
-        {
-            get => _advancedPasteSettings.Properties.PythonScripts?.UseWsl ?? false;
-            set
-            {
-                var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
-                if (scripts.UseWsl != value)
-                {
-                    scripts.UseWsl = value;
-                    OnPropertyChanged(nameof(PythonUseWsl));
                     SaveAndNotifySettings();
                 }
             }
@@ -347,13 +373,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string WslDistribution
         {
-            get => _advancedPasteSettings.Properties.PythonScripts?.WslDistribution ?? string.Empty;
+            get => _advancedPasteSettings.Properties.PythonScripts?.WslSettings?.Distribution ?? string.Empty;
             set
             {
                 var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
-                if (!string.Equals(scripts.WslDistribution, value, StringComparison.Ordinal))
+                scripts.WslSettings ??= new PythonScriptWslSettings();
+                if (!string.Equals(scripts.WslSettings.Distribution, value, StringComparison.Ordinal))
                 {
-                    scripts.WslDistribution = value ?? string.Empty;
+                    scripts.WslSettings.Distribution = value ?? string.Empty;
                     OnPropertyChanged(nameof(WslDistribution));
                     SaveAndNotifySettings();
                 }
@@ -362,19 +389,50 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public string ScriptsFolder
         {
-            get => _advancedPasteSettings.Properties.PythonScripts?.ScriptsFolder ?? string.Empty;
+            get
+            {
+                var scripts = _advancedPasteSettings.Properties.PythonScripts;
+                if (scripts == null)
+                {
+                    return string.Empty;
+                }
+
+                return string.Equals(scripts.Mode, "wsl", StringComparison.OrdinalIgnoreCase)
+                    ? scripts.WslSettings?.ScriptsFolder ?? string.Empty
+                    : scripts.WindowsSettings?.ScriptsFolder ?? string.Empty;
+            }
+
             set
             {
                 var scripts = _advancedPasteSettings.Properties.PythonScripts ??= new AdvancedPastePythonScriptSettings();
-                if (!string.Equals(scripts.ScriptsFolder, value, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(scripts.Mode, "wsl", StringComparison.OrdinalIgnoreCase))
                 {
-                    scripts.ScriptsFolder = value ?? string.Empty;
-                    OnPropertyChanged(nameof(ScriptsFolder));
-                    SaveAndNotifySettings();
-
-                    if (_scriptsDiscovered)
+                    scripts.WslSettings ??= new PythonScriptWslSettings();
+                    if (!string.Equals(scripts.WslSettings.ScriptsFolder, value, StringComparison.OrdinalIgnoreCase))
                     {
-                        RefreshPythonScripts();
+                        scripts.WslSettings.ScriptsFolder = value ?? string.Empty;
+                        OnPropertyChanged(nameof(ScriptsFolder));
+                        SaveAndNotifySettings();
+
+                        if (_scriptsDiscovered)
+                        {
+                            RefreshPythonScripts();
+                        }
+                    }
+                }
+                else
+                {
+                    scripts.WindowsSettings ??= new PythonScriptWindowsSettings();
+                    if (!string.Equals(scripts.WindowsSettings.ScriptsFolder, value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        scripts.WindowsSettings.ScriptsFolder = value ?? string.Empty;
+                        OnPropertyChanged(nameof(ScriptsFolder));
+                        SaveAndNotifySettings();
+
+                        if (_scriptsDiscovered)
+                        {
+                            RefreshPythonScripts();
+                        }
                     }
                 }
             }

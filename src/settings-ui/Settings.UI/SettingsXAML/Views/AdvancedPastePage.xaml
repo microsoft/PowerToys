@@ -396,7 +396,11 @@
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE943;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=TwoWay}" />
+                            <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PythonScriptsModeIndex, Mode=TwoWay}">
+                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_Mode_Disabled" Content="Disabled" />
+                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_Mode_Windows" Content="Windows" />
+                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_Mode_WSL" Content="WSL" />
+                            </ComboBox>
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard"
                             IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}">
@@ -425,8 +429,10 @@
                                     ToolTipService.ToolTip="Open folder" />
                             </StackPanel>
                         </tkcontrols:SettingsCard>
+
+                        <!-- Windows-mode settings -->
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonExecutablePath_SettingsCard"
-                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}">
+                            Visibility="{x:Bind ViewModel.IsWindowsMode, Mode=OneWay}">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE943;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
@@ -446,23 +452,18 @@
                             </StackPanel>
                         </tkcontrols:SettingsCard>
 
-                        <tkcontrols:SettingsExpander x:Uid="AdvancedPaste_UseWsl_SettingsCard"
-                            IsEnabled="{x:Bind ViewModel.IsPythonScriptsEnabled, Mode=OneWay}"
-                            IsExpanded="{x:Bind ViewModel.PythonUseWsl, Mode=OneWay}">
-                            <tkcontrols:SettingsExpander.HeaderIcon>
+                        <!-- WSL-mode settings -->
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_WslDistribution_SettingsCard"
+                            Visibility="{x:Bind ViewModel.IsWslMode, Mode=OneWay}">
+                            <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xEC7A;" />
-                            </tkcontrols:SettingsExpander.HeaderIcon>
-                            <ToggleSwitch IsOn="{x:Bind ViewModel.PythonUseWsl, Mode=TwoWay}" />
-                            <tkcontrols:SettingsExpander.Items>
-                                <tkcontrols:SettingsCard x:Uid="AdvancedPaste_WslDistribution_SettingsCard">
-                                    <TextBox
-                                        x:Uid="AdvancedPaste_WslDistribution_TextBox"
-                                        MinWidth="200"
-                                        HorizontalAlignment="Stretch"
-                                        Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
-                                </tkcontrols:SettingsCard>
-                            </tkcontrols:SettingsExpander.Items>
-                        </tkcontrols:SettingsExpander>
+                            </tkcontrols:SettingsCard.HeaderIcon>
+                            <TextBox
+                                x:Uid="AdvancedPaste_WslDistribution_TextBox"
+                                MinWidth="200"
+                                HorizontalAlignment="Stretch"
+                                Text="{x:Bind ViewModel.WslDistribution, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                        </tkcontrols:SettingsCard>
 
                         <!-- Discovered Python Scripts (read-only) -->
                         <tkcontrols:SettingsExpander
