@@ -1149,13 +1149,10 @@ VideoRecordingSession::VideoRecordingSession(
     // Store frame interval for timeout-based frame production when webcam is active.
     m_frameIntervalTicks = ( frameRate > 0 ) ? ( 10'000'000LL / frameRate ) : 333'333LL;
 
-    if (m_audioGenerator)
-    {
-        // Always set up audio profile for loopback capture (stereo AAC)
-        auto audioProps = m_audioGenerator->GetEncodingProperties();
-        m_encodingProfile.Audio(winrt::AudioEncodingProperties::CreateAac(
-            audioProps.SampleRate(), audioProps.ChannelCount(), 192000));
-    }
+    // NOTE: Audio encoding profile (m_encodingProfile.Audio) is set in
+    // StartAsync() after the audio graph is fully initialized, not here.
+    // Calling GetEncodingProperties() before InitializeAsync completes
+    // would crash because m_audioOutputNode is still null.
 
     // Describe our input: uncompressed BGRA8 buffers
     auto properties = winrt::VideoEncodingProperties::CreateUncompressed(
@@ -1233,7 +1230,16 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
                 co_await m_audioGenerator->InitializeAsync();
             }
             RecDiag( L"StartAsync: audio initialized\n" );
-            m_streamSource = winrt::MediaStreamSource(m_videoDescriptor, winrt::AudioStreamDescriptor(m_audioGenerator->GetEncodingProperties()));
+
+            // Set up the audio encoding profile now that the audio graph is
+            // fully initialized.  GetEncodingProperties() requires
+            // m_audioOutputNode to be valid, which is only guaranteed after
+            // InitializeAsync completes.
+            auto audioProps = m_audioGenerator->GetEncodingProperties();
+            m_encodingProfile.Audio(winrt::AudioEncodingProperties::CreateAac(
+                audioProps.SampleRate(), audioProps.ChannelCount(), 192000));
+
+            m_streamSource = winrt::MediaStreamSource(m_videoDescriptor, winrt::AudioStreamDescriptor(audioProps));
         }
         else {
 
