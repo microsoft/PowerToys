@@ -8,7 +8,7 @@
 [Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Mouse%20Utilities%22)<br>
 [Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Mouse+Utilities%22)
 
-Mouse Utilities is a collection of tools designed to enhance mouse and cursor functionality on Windows. The module contains four sub-utilities that provide different mouse-related features.
+Mouse Utilities is a collection of tools designed to enhance mouse and cursor functionality on Windows. The module contains several sub-utilities that provide different mouse-related features.
 
 ## Overview
 
@@ -18,10 +18,11 @@ Mouse Utilities includes the following sub-modules:
 - **[Mouse Highlighter](mousehighlighter.md)**: Visualizes mouse clicks with customizable highlights
 - **[Mouse Jump](mousejump.md)**: Allows quick cursor movement to specific screen locations
 - **[Mouse Pointer Crosshairs](mousepointer.md)**: Displays crosshair lines that follow the mouse cursor
+- **[Mouse Button Lock](mousebuttonlock.md)**: A ClickLock equivalent for the right and middle mouse buttons - hold the button to lock it down, tap to release
 
 ## Architecture
 
-Most of the sub-modules (Find My Mouse, Mouse Highlighter, and Mouse Pointer Crosshairs) run within the PowerToys Runner process as separate threads. Mouse Jump is more complex and runs as a separate process that communicates with the Runner via events.
+Most of the sub-modules (Find My Mouse, Mouse Highlighter, Mouse Pointer Crosshairs, and Mouse Button Lock) run within the PowerToys Runner process as separate threads. Mouse Jump is more complex and runs as a separate process that communicates with the Runner via events.
 
 ### Code Structure
 
@@ -39,6 +40,7 @@ Most of the sub-modules (Find My Mouse, Mouse Highlighter, and Mouse Pointer Cro
 - [MouseJump](/src/modules/MouseUtils/MouseJump)
 - [MouseJumpUI](/src/modules/MouseUtils/MouseJumpUI)
 - [MouseJump.Common](/src/modules/MouseUtils/MouseJump.Common)
+- [MouseButtonLock](/src/modules/MouseUtils/MouseButtonLock)
 
 ## Community Contributors
 

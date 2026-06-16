@@ -51,6 +51,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ColorPickerSettingsVersion1))]
     [JsonSerializable(typeof(CropAndLockSettings))]
     [JsonSerializable(typeof(CursorWrapSettings))]
+    [JsonSerializable(typeof(MouseButtonLockSettings))]
     [JsonSerializable(typeof(EnvironmentVariablesSettings))]
     [JsonSerializable(typeof(FancyZonesSettings))]
     [JsonSerializable(typeof(FileLocksmithSettings))]
@@ -87,6 +88,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ColorPickerPropertiesVersion1))]
     [JsonSerializable(typeof(CropAndLockProperties))]
     [JsonSerializable(typeof(CursorWrapProperties))]
+    [JsonSerializable(typeof(MouseButtonLockProperties))]
     [JsonSerializable(typeof(EnvironmentVariablesProperties))]
     [JsonSerializable(typeof(FileLocksmithProperties))]
     [JsonSerializable(typeof(FileLocksmithLocalProperties))]
@@ -163,6 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     // IPC Send Message Wrapper Classes (Snd*)
     [JsonSerializable(typeof(SndAwakeSettings))]
     [JsonSerializable(typeof(SndCursorWrapSettings))]
+    [JsonSerializable(typeof(SndMouseButtonLockSettings))]
     [JsonSerializable(typeof(SndFindMyMouseSettings))]
     [JsonSerializable(typeof(SndLightSwitchSettings))]
     [JsonSerializable(typeof(SndMouseHighlighterSettings))]
@@ -176,6 +179,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     // IPC Message Generic Wrapper Types (SndModuleSettings<T>)
     [JsonSerializable(typeof(SndModuleSettings<SndAwakeSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndCursorWrapSettings>))]
+    [JsonSerializable(typeof(SndModuleSettings<SndMouseButtonLockSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndFindMyMouseSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndLightSwitchSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndMouseHighlighterSettings>))]

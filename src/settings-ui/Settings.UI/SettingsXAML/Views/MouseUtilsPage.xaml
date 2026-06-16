@@ -69,6 +69,61 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="MouseUtils_MouseButtonLock" AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsMouseButtonLockEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableMouseButtonLock"
+                            x:Uid="MouseUtils_Enable_MouseButtonLock"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseButtonLock.png}"
+                            IsEnabled="{x:Bind ViewModel.IsMouseButtonLockEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsMouseButtonLockEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsMouseButtonLockSettingsExpander"
+                        x:Uid="MouseUtils_MouseButtonLock_Options"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        IsEnabled="{x:Bind ViewModel.IsMouseButtonLockEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_MouseButtonLock_RmbLock" IsChecked="{x:Bind ViewModel.MouseButtonLockRmbEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_MouseButtonLock_MmbLock" IsChecked="{x:Bind ViewModel.MouseButtonLockMmbEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsMouseButtonLockHoldDuration" x:Uid="MouseUtils_MouseButtonLock_HoldDuration">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_MouseButtonLockHoldDurationId"
+                                    LargeChange="100"
+                                    Maximum="2000"
+                                    Minimum="50"
+                                    SmallChange="50"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.MouseButtonLockHoldDurationMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox x:Uid="MouseUtils_MouseButtonLock_MoveCancel" IsChecked="{x:Bind ViewModel.MouseButtonLockMoveCancelEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMouseButtonLockMoveCancelPixels"
+                                x:Uid="MouseUtils_MouseButtonLock_MoveCancelPixels"
+                                IsEnabled="{x:Bind ViewModel.MouseButtonLockMoveCancelEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_MouseButtonLockMoveCancelPixelsId"
+                                    LargeChange="5"
+                                    Maximum="100"
+                                    Minimum="0"
+                                    SmallChange="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ViewModel.MouseButtonLockMoveCancelPixels, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse" AutomationProperties.AutomationId="MouseUtils_FindMyMouseTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard
