@@ -601,11 +601,11 @@ opera.exe</value>
   <data name="AdvancedPaste_PythonScripts_GroupSettings.Header" xml:space="preserve">
     <value>Python scripts</value>
   </data>
-  <data name="AdvancedPaste_PythonScripts_EnableCard.Header" xml:space="preserve">
-    <value>Enable Python scripts</value>
+  <data name="AdvancedPaste_PythonScripts_RuntimeCard.Header" xml:space="preserve">
+    <value>Python runtime</value>
   </data>
-  <data name="AdvancedPaste_PythonScripts_EnableCard.Description" xml:space="preserve">
-    <value>Run custom Python scripts from the Advanced Paste menu</value>
+  <data name="AdvancedPaste_PythonScripts_RuntimeCard.Description" xml:space="preserve">
+    <value>Choose how to run custom Python scripts from the Advanced Paste menu</value>
   </data>
   <data name="AdvancedPaste_ScriptsFolder_SettingsCard.Header" xml:space="preserve">
     <value>Scripts folder</value>

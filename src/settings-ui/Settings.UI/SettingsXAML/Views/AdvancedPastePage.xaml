@@ -392,14 +392,14 @@
                     </controls:SettingsGroup>
 
                     <controls:SettingsGroup x:Uid="AdvancedPaste_PythonScripts_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonScripts_EnableCard">
+                        <tkcontrols:SettingsCard x:Uid="AdvancedPaste_PythonScripts_RuntimeCard">
                             <tkcontrols:SettingsCard.HeaderIcon>
                                 <FontIcon Glyph="&#xE943;" />
                             </tkcontrols:SettingsCard.HeaderIcon>
                             <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.PythonScriptsModeIndex, Mode=TwoWay}">
-                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_Mode_Disabled" Content="Disabled" />
-                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_Mode_Windows" Content="Windows" />
-                                <ComboBoxItem x:Uid="AdvancedPaste_PythonScripts_Mode_WSL" Content="WSL" />
+                                <ComboBoxItem Content="Off" />
+                                <ComboBoxItem Content="Windows Python" />
+                                <ComboBoxItem Content="WSL Python" />
                             </ComboBox>
                         </tkcontrols:SettingsCard>
                         <tkcontrols:SettingsCard x:Uid="AdvancedPaste_ScriptsFolder_SettingsCard"
