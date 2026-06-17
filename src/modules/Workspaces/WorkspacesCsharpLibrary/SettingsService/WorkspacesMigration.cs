@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation
-// Licensed under the MIT license.
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
 
 using System.IO;
 
 namespace WorkspacesCsharpLibrary.SettingsService;
 
 /// <summary>
-/// One-shot migration hook called by the runner on startup.  Reads the
-/// legacy %LocalAppData% file (if any), hands it to the service which
-/// atomically writes it into the new protected location and drops a
-/// .migrated sentinel.  Subsequent calls short-circuit on the sentinel
-/// without round-tripping through the service.
+/// One-shot legacy migration, called by the runner on startup (idempotent).
+/// The service has no "migrate" concept (Design-v6-Final.md §10): migration is
+/// simply "read the legacy %LocalAppData% file once and PutBlob it through the
+/// service".  A sentinel under %LocalAppData% short-circuits subsequent calls.
 /// </summary>
 public static class WorkspacesMigration
 {
@@ -26,38 +26,90 @@ public static class WorkspacesMigration
 
     public static Outcome Run()
     {
-        if (File.Exists(SettingsPaths.MigrationSentinel()))
+        var sentinel = SettingsPaths.MigrationSentinel();
+        if (File.Exists(sentinel))
         {
             return Outcome.AlreadyMigrated;
+        }
+
+        // If the service already holds a blob for this user, another runner
+        // invocation migrated it; drop the sentinel and stop.
+        var probe = PTSettingsClient.GetBlob(out var existing);
+        if (probe == PTSettingsClient.Result.Ok && existing.Length > 0)
+        {
+            TryWriteSentinel(sentinel);
+            return Outcome.AlreadyMigrated;
+        }
+
+        if (probe == PTSettingsClient.Result.Unavailable)
+        {
+            return Outcome.SkippedServiceUnavailable;
+        }
+
+        // probe is NotFound (no blob yet) or a transient error — proceed only
+        // when we positively know there is nothing yet.
+        if (probe != PTSettingsClient.Result.NotFound)
+        {
+            return Outcome.SkippedServerRejected;
         }
 
         var legacy = SettingsPaths.LegacyWorkspacesFile();
         if (!File.Exists(legacy))
         {
-            // Tell the service "I have no legacy data" so it can drop the
-            // sentinel and we never reach this branch again.
-            var rc = WorkspacesSvcClient.MigrateFromLegacy("{\"workspaces\":[]}");
-            return rc == WorkspacesSvcClient.Result.Ok
-                ? Outcome.NothingToMigrate
-                : Outcome.SkippedServiceUnavailable;
+            TryWriteSentinel(sentinel);
+            return Outcome.NothingToMigrate;
         }
 
-        string content;
+        byte[] bytes;
         try
         {
-            content = File.ReadAllText(legacy);
+            bytes = File.ReadAllBytes(legacy);
         }
-        catch
+        catch (IOException)
+        {
+            return Outcome.SkippedLegacyUnreadable;
+        }
+        catch (System.UnauthorizedAccessException)
         {
             return Outcome.SkippedLegacyUnreadable;
         }
 
-        var result = WorkspacesSvcClient.MigrateFromLegacy(content);
-        return result switch
+        var put = PTSettingsClient.PutBlob(bytes);
+        switch (put)
         {
-            WorkspacesSvcClient.Result.Ok => Outcome.Migrated,
-            WorkspacesSvcClient.Result.ServiceUnavailable => Outcome.SkippedServiceUnavailable,
-            _ => Outcome.SkippedServerRejected,
-        };
+            case PTSettingsClient.Result.Ok:
+                // Keep the legacy file as a backup for one release; the service
+                // blob is the authority going forward.
+                TryWriteSentinel(sentinel);
+                return Outcome.Migrated;
+
+            case PTSettingsClient.Result.Unavailable:
+                return Outcome.SkippedServiceUnavailable;
+
+            default:
+                return Outcome.SkippedServerRejected;
+        }
+    }
+
+    private static void TryWriteSentinel(string sentinel)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(sentinel);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            File.WriteAllText(sentinel, System.DateTime.UtcNow.ToString("o"));
+        }
+        catch (IOException)
+        {
+            // Best-effort: if we can't write the sentinel we simply re-probe
+            // next time, which is cheap and idempotent.
+        }
+        catch (System.UnauthorizedAccessException)
+        {
+        }
     }
 }

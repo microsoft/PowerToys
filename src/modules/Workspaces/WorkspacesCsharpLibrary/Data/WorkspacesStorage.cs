@@ -14,26 +14,72 @@ using WorkspacesCsharpLibrary.SettingsService;
 namespace WorkspacesCsharpLibrary.Data;
 
 /// <summary>
-/// Lightweight reader for persisted workspaces.
+/// Reader/writer for persisted workspaces.  All access goes through the
+/// PTSettingsSvc service (Design-v6-Final.md §10): the service stores opaque
+/// bytes, this class owns the JSON shape, defensive parsing and the
+/// no-service last-resort fallback to the legacy %LocalAppData% file.
 /// </summary>
 public static class WorkspacesStorage
 {
     public static IReadOnlyList<ProjectWrapper> Load()
     {
-        var filePath = GetDefaultFilePath();
-        if (!File.Exists(filePath))
+        var rc = PTSettingsClient.GetBlob(out var blob);
+        switch (rc)
         {
-            return [];
+            case PTSettingsClient.Result.Ok:
+                return ParseDefensive(blob);
+
+            case PTSettingsClient.Result.NotFound:
+                // Service is up but this user has no blob yet (first run /
+                // pre-migration).  Not an error.
+                return Array.Empty<ProjectWrapper>();
+
+            case PTSettingsClient.Result.Unavailable:
+                // No service installed (no-admin install / declined elevation).
+                // Last resort: read the legacy file directly (Design §10/§11).
+                return ParseDefensive(ReadLegacyBytes());
+
+            default:
+                // AuthRejected / Protocol / IoError → fail safe to empty.
+                return Array.Empty<ProjectWrapper>();
+        }
+    }
+
+    /// <summary>
+    /// Persists the workspaces through the service.  Returns true on success.
+    /// Falls back to a direct legacy-file write only when no service exists.
+    /// </summary>
+    public static bool Save(IReadOnlyList<ProjectWrapper> workspaces)
+    {
+        byte[] bytes = Serialise(workspaces);
+
+        var rc = PTSettingsClient.PutBlob(bytes);
+        switch (rc)
+        {
+            case PTSettingsClient.Result.Ok:
+                return true;
+
+            case PTSettingsClient.Result.Unavailable:
+                return WriteLegacyBytes(bytes);
+
+            default:
+                return false;
+        }
+    }
+
+    private static IReadOnlyList<ProjectWrapper> ParseDefensive(byte[] bytes)
+    {
+        if (bytes == null || bytes.Length == 0)
+        {
+            return Array.Empty<ProjectWrapper>();
         }
 
         try
         {
-            var json = File.ReadAllText(filePath);
-            var data = JsonSerializer.Deserialize(json, WorkspacesStorageJsonContext.Default.WorkspacesFile);
-
+            var data = JsonSerializer.Deserialize(bytes, WorkspacesStorageJsonContext.Default.WorkspacesFile);
             if (data?.Workspaces == null)
             {
-                return [];
+                return Array.Empty<ProjectWrapper>();
             }
 
             return data.Workspaces
@@ -52,18 +98,77 @@ public static class WorkspacesStorage
                 .ToList()
                 .AsReadOnly();
         }
-        catch
+        catch (JsonException)
+        {
+            return Array.Empty<ProjectWrapper>();
+        }
+        catch (NotSupportedException)
         {
             return Array.Empty<ProjectWrapper>();
         }
     }
 
-    public static string GetDefaultFilePath()
+    private static byte[] Serialise(IReadOnlyList<ProjectWrapper> workspaces)
     {
-        // v6: the read path is the service-managed per-user file.  The user
-        // can read it directly (DACL grants R+X); writes must go through
-        // WorkspacesSvcClient.PutSettings.
-        return SettingsPaths.CurrentUserWorkspacesFile();
+        var file = new WorkspacesFile
+        {
+            Workspaces = (workspaces ?? new List<ProjectWrapper>())
+                .Select(ws => new WorkspaceProject
+                {
+                    Id = ws.Id,
+                    Name = ws.Name,
+                    Applications = ws.Applications ?? new List<ApplicationWrapper>(),
+                    MonitorConfiguration = ws.MonitorConfiguration ?? new List<MonitorConfigurationWrapper>(),
+                    CreationTime = ws.CreationTime,
+                    LastLaunchedTime = ws.LastLaunchedTime,
+                    IsShortcutNeeded = ws.IsShortcutNeeded,
+                    MoveExistingWindows = ws.MoveExistingWindows,
+                })
+                .ToList(),
+        };
+
+        return JsonSerializer.SerializeToUtf8Bytes(file, WorkspacesStorageJsonContext.Default.WorkspacesFile);
+    }
+
+    private static byte[] ReadLegacyBytes()
+    {
+        try
+        {
+            var legacy = SettingsPaths.LegacyWorkspacesFile();
+            return File.Exists(legacy) ? File.ReadAllBytes(legacy) : Array.Empty<byte>();
+        }
+        catch (IOException)
+        {
+            return Array.Empty<byte>();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Array.Empty<byte>();
+        }
+    }
+
+    private static bool WriteLegacyBytes(byte[] bytes)
+    {
+        try
+        {
+            var legacy = SettingsPaths.LegacyWorkspacesFile();
+            var dir = Path.GetDirectoryName(legacy);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            File.WriteAllBytes(legacy, bytes);
+            return true;
+        }
+        catch (IOException)
+        {
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     internal sealed class WorkspacesFile
