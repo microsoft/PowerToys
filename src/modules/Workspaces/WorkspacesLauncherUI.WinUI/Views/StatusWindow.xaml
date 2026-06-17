@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="WorkspacesLauncherUI.StatusWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -28,12 +28,8 @@
             Grid.ColumnSpan="2"
             AutomationProperties.Name="Application launch status list"
             TabIndex="0">
-            <StackPanel
-                AutomationProperties.AccessibilityView="Content"
-                AutomationProperties.LiveSetting="Polite">
-                <ItemsControl
-                    AutomationProperties.Name="Applications"
-                    ItemsSource="{Binding AppsListed, Mode=OneWay}">
+            <StackPanel AutomationProperties.AccessibilityView="Content" AutomationProperties.LiveSetting="Polite">
+                <ItemsControl AutomationProperties.Name="Applications" ItemsSource="{Binding AppsListed, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Grid
