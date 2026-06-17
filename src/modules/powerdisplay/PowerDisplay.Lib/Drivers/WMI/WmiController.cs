@@ -12,6 +12,7 @@ using ManagedCommon;
 using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Models;
 using WmiLight;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
@@ -222,7 +223,7 @@ namespace PowerDisplay.Common.Drivers.WMI
                 var byId = targets
                     .Select(t => (Id: MonitorIdentity.FromDevicePath(t.DevicePath), Info: t))
                     .Where(p => !string.IsNullOrEmpty(p.Id))
-                    .ToDictionary(p => p.Id, p => p.Info, StringComparer.OrdinalIgnoreCase);
+                    .ToDictionary(p => p.Id, p => p.Info, MonitorIdComparer.Instance);
 
                 try
                 {
@@ -257,10 +258,12 @@ namespace PowerDisplay.Common.Drivers.WMI
                             }
 
                             // Derive the Id from the matched entry's DevicePath, not the
-                            // reconstructed lookupId, so a WMI panel's Id stays byte-identical to
-                            // the DDC route and keeps brightness/per-monitor settings stable even
-                            // when the InstanceName and DevicePath differ in casing. FromInstanceName
-                            // is only the lookup key.
+                            // reconstructed lookupId. The persisted Monitor.Id ALWAYS comes from this
+                            // single source (FromDevicePath), so a WMI panel's Id stays byte-identical
+                            // to the DDC route and to prior releases. FromInstanceName is only the
+                            // lookup key; every Id comparison/key elsewhere goes through MonitorIdComparer
+                            // (case-insensitive), so an InstanceName/DevicePath casing difference can
+                            // never orphan per-monitor settings.
                             // Name is left blank: MonitorViewModel injects a localized
                             // "Built-in Display" string for internal displays.
                             var monitor = new Monitor

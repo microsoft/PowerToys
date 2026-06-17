@@ -14,6 +14,7 @@ using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.NativeDelegates;
 using static PowerDisplay.Common.Drivers.PInvoke;
@@ -205,7 +206,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             }
 
             var monitors = results.SelectMany(r => r).ToList();
-            var newHandleMap = new Dictionary<string, IntPtr>();
+            var newHandleMap = new Dictionary<string, IntPtr>(MonitorIdComparer.Instance);
             foreach (var m in monitors)
             {
                 newHandleMap[m.Id] = m.Handle;

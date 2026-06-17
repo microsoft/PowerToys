@@ -15,6 +15,7 @@ using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Helpers
@@ -26,7 +27,7 @@ namespace PowerDisplay.Helpers
     public partial class MonitorManager : IDisposable
     {
         private readonly List<Monitor> _monitors = new();
-        private readonly Dictionary<string, Monitor> _monitorLookup = new();
+        private readonly Dictionary<string, Monitor> _monitorLookup = new(MonitorIdComparer.Instance);
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
 
@@ -173,7 +174,7 @@ namespace PowerDisplay.Helpers
                 : new List<Monitor>();
 
             var wmiClaimedIds = new HashSet<string>(
-                wmiMonitors.Select(m => m.Id), StringComparer.OrdinalIgnoreCase);
+                wmiMonitors.Select(m => m.Id), MonitorIdComparer.Instance);
 
             // Phase 2: everything WMI did not claim goes to DDC/CI. Accepted trade-off — a
             // monitor exposing both is controlled via WMI only and won't get DDC-only features
