@@ -112,40 +112,12 @@ jobs:
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
     displayName: Download and install WinAppDriver
 
-  # winappcli (winapp.exe) powers the Microsoft.PowerToys.UITest.Next harness. It is not baked
-  # into the agent image yet, so install it per run via winget. Drop this step once the CLI is
-  # pre-staged on the image.
+  # winappcli (winapp.exe) powers the Microsoft.PowerToys.UITest.Next harness and isn't baked
+  # into the agent image yet. winget / App Installer isn't available on these agents, so download
+  # the pinned standalone CLI from its GitHub release. Drop this step once the CLI is pre-staged.
   - pwsh: |-
-      Write-Host "Installing winappcli (winapp.exe) via winget for the UI test harness..."
-
-      # winget ships as an App Execution Alias; resolve it explicitly in case the alias is not on
-      # PATH for the agent's service account.
-      $winget = (Get-Command winget.exe -ErrorAction SilentlyContinue).Source
-      if (-not $winget) {
-          $winget = Get-ChildItem "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller_*__8wekyb3d8bbwe\winget.exe" -ErrorAction SilentlyContinue |
-              Sort-Object FullName -Descending | Select-Object -First 1 -ExpandProperty FullName
-      }
-      if (-not $winget) {
-          Write-Host "##[error]winget (App Installer) was not found on this agent."
-          exit 1
-      }
-
-      & $winget install --id Microsoft.winappcli --exact --silent --accept-source-agreements --accept-package-agreements --disable-interactivity
-      Write-Host "winget exit code: $LASTEXITCODE"
-
-      # Source of truth: the harness resolves winapp.exe at this path (or via PATH / WINAPP_CLI_PATH).
-      $winapp = Join-Path $env:LOCALAPPDATA 'Microsoft\WindowsApps\winapp.exe'
-      if (-not (Test-Path $winapp)) {
-          $winapp = (Get-Command winapp.exe -ErrorAction SilentlyContinue).Source
-      }
-      if (-not $winapp -or -not (Test-Path $winapp)) {
-          Write-Host "##[error]winapp.exe not found after winget install; the winappcli UI tests cannot run."
-          exit 1
-      }
-
-      Write-Host "winappcli installed at: $winapp"
-      & $winapp --version
-    displayName: Install winappcli (winapp.exe)
+      & '$(build.sourcesdirectory)\.pipelines\InstallWinAppCli.ps1' -Platform '$(BuildPlatform)'
+    displayName: Download and install winappcli (winapp.exe)
 
   - ${{ if ne(parameters.buildSource, 'buildNow') }}:
     - task: DownloadPipelineArtifact@2
