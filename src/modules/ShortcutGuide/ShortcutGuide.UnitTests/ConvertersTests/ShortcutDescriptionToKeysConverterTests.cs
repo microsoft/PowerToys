@@ -16,26 +16,19 @@ public sealed class ShortcutDescriptionToKeysConverterTests
         => new ShortcutDescriptionToKeysConverter().GetKeysList(description);
 
     [TestMethod]
-    public void GetKeysList_SingleDigitKey_RendersLiteralDigit()
+    [DataRow("<0>")]
+    [DataRow("<1>")]
+    [DataRow("<8>")]
+    [DataRow("<9>")]
+    public void GetKeysList_LiteralDigitKey_IsPassedThroughVerbatim(string key)
     {
-        // Ctrl+9 ("switch to last tab"). Regression test for digits being treated as
-        // virtual-key codes (VK 9 is Tab, VK 1 is the left mouse button, VK 0 is undefined),
-        // which made single-digit shortcuts render as blank/incorrect glyphs.
-        var result = Convert(new ShortcutDescription(ctrl: true, shift: false, alt: false, win: false, keys: ["9"]));
+        // A literal digit key (e.g. Ctrl+9 "switch to last tab") is authored with the
+        // <N> convention so it is not parsed as a virtual-key code (VK 9 is Tab, VK 1 is
+        // the left mouse button, VK 0 is undefined). The converter forwards the token
+        // unchanged; KeyVisual strips the angle brackets when rendering.
+        var result = Convert(new ShortcutDescription(ctrl: true, shift: false, alt: false, win: false, keys: [key]));
 
-        CollectionAssert.AreEqual(new object[] { "Ctrl", "9" }, result);
-    }
-
-    [TestMethod]
-    [DataRow("0")]
-    [DataRow("1")]
-    [DataRow("8")]
-    [DataRow("9")]
-    public void GetKeysList_EachDigit_RendersTheSameDigitCharacter(string digit)
-    {
-        var result = Convert(new ShortcutDescription(ctrl: false, shift: false, alt: false, win: false, keys: [digit]));
-
-        CollectionAssert.AreEqual(new object[] { digit }, result);
+        CollectionAssert.AreEqual(new object[] { "Ctrl", key }, result);
     }
 
     [TestMethod]

@@ -53,7 +53,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 9
+            - <9>
       - Name: Reopen last closed tab
         Shortcut:
         - Win: false
@@ -262,7 +262,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 0
+            - <0>
       - Name: Toggle two-pane view
         Shortcut:
         - Win: false

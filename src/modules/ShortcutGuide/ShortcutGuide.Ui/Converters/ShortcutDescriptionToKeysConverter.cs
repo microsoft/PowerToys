@@ -68,12 +68,6 @@ namespace ShortcutGuide.Converters
                         case 39: // The Right Arrow key or button.
                             shortcutList.Add(keyCode);
                             break;
-                        case >= 0 and <= 9:
-                            // A single digit in a manifest (e.g. "9") is the literal digit key, not a
-                            // virtual-key code. Treating it as a VK code is wrong (VK 9 is Tab, VK 1 is
-                            // the left mouse button, VK 0 is undefined), so render the character as-is.
-                            shortcutList.Add(key);
-                            break;
                         default:
                             shortcutList.Add(Microsoft.PowerToys.Settings.UI.Library.Utilities.Helper.GetKeyName((uint)keyCode));
                             break;

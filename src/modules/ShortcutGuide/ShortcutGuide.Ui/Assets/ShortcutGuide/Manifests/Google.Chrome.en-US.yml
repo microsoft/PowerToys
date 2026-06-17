@@ -63,7 +63,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - '1 - 8'
+            - 1
       - Name: Jump to rightmost tab
         Shortcut:
         - Win: false
