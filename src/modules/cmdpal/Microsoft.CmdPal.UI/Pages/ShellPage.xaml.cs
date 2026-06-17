@@ -448,8 +448,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     if (isPage)
                     {
                         // If we're here, then the bound command was a page
-                        // of some kind. Let's pop the stack, show the window, and navigate to it.
-                        GoHome(false);
+                        // of some kind. Reset to root (clearing any transient dock state),
+                        // show the window, and navigate to it.
+                        ViewModel.ResetToHome();
 
                         WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(message.Hwnd));
                     }

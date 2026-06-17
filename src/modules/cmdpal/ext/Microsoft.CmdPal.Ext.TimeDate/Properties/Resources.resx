@@ -444,4 +444,12 @@
     <value>Copy date</value>
     <comment>Name of a command to copy the current date to the clipboard</comment>
   </data>
+  <data name="timedate_show_notification_center_command_name" xml:space="preserve">
+    <value>Open notification center</value>
+    <comment>Name of a command to open the Windows notification center (Action Center)</comment>
+  </data>
+  <data name="timedate_notification_center_band_title" xml:space="preserve">
+    <value>Notification center</value>
+    <comment>Title for the notification center dock band</comment>
+  </data>
 </root>

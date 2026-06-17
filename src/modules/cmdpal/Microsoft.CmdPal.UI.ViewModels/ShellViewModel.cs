@@ -500,6 +500,18 @@ public partial class ShellViewModel : ObservableObject,
         WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
     }
 
+    /// <summary>
+    /// Resets navigation to the root page, clearing any transient state.
+    /// Use when entering from a hotkey while the palette may already be
+    /// showing a transient dock page.
+    /// </summary>
+    public void ResetToHome()
+    {
+        _currentlyTransient = false;
+        _rootPageService.GoHome();
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+    }
+
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
         WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));

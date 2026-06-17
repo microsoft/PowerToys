@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "powertoys",
+  "description": "Native dependencies for PowerToys consumed via vcpkg manifest mode.",
+  "homepage": "https://github.com/microsoft/PowerToys",
+  "license": "MIT",
+  "dependencies": [
+    "spdlog"
+  ],
+  "builtin-baseline": "56bb2411609227288b70117ead2c47585ba07713"
+}

@@ -250,17 +250,14 @@ namespace PowerDisplay
         private void OnUIRefreshRequested(object? sender, EventArgs e)
         {
             // Adjust window size when UI configuration changes (feature visibility toggles)
-            DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
+            QueueWindowSizeAdjustment();
         }
 
         private void OnMonitorsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // Adjust window size when monitors collection changes (event-driven!)
             // The UI binding will update first, then we adjust size
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                AdjustWindowSizeToContent();
-            });
+            QueueWindowSizeAdjustment();
         }
 
         private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -268,14 +265,26 @@ namespace PowerDisplay
             // Adjust window size when relevant properties change (event-driven!)
             if (e.PropertyName == nameof(_viewModel.IsScanning) ||
                 e.PropertyName == nameof(_viewModel.HasMonitors) ||
-                e.PropertyName == nameof(_viewModel.ShowNoMonitorsMessage))
+                e.PropertyName == nameof(_viewModel.ShowNoMonitorsMessage) ||
+                e.PropertyName == nameof(_viewModel.LinkedLevelsActive) ||
+                e.PropertyName == nameof(_viewModel.IndividualDisplaysExpanded) ||
+                e.PropertyName == nameof(_viewModel.ShowIndividualDisplays) ||
+                e.PropertyName == nameof(_viewModel.ShowLinkLevelsToggle) ||
+                e.PropertyName == nameof(_viewModel.LinkedMonitorsCount) ||
+                e.PropertyName == nameof(_viewModel.LinkedMonitorsCountText) ||
+                e.PropertyName == nameof(_viewModel.ExcludedMonitorsCount) ||
+                e.PropertyName == nameof(_viewModel.ExcludedMonitorsCountText) ||
+                e.PropertyName == nameof(_viewModel.HasExcludedMonitors) ||
+                e.PropertyName == nameof(_viewModel.IsLinkedBrightnessAvailable))
             {
-                // Use Low priority to ensure UI bindings update first
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                {
-                    AdjustWindowSizeToContent();
-                });
+                QueueWindowSizeAdjustment();
             }
+        }
+
+        private void QueueWindowSizeAdjustment()
+        {
+            // Use Low priority to ensure x:Bind visibility/layout updates land before measuring.
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
         }
 
         private void OnRefreshClick(object sender, RoutedEventArgs e)
@@ -368,16 +377,28 @@ namespace PowerDisplay
                     return;
                 }
 
+                var maxHeightDip = GetAdaptiveWindowMaxHeightDip();
+                if (MainScrollViewer != null)
+                {
+                    MainScrollViewer.MaxHeight = double.PositiveInfinity;
+                }
+
                 // Force layout update and measure content height
                 RootGrid.UpdateLayout();
                 MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidthDip, double.PositiveInfinity));
                 var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
-                var maxHeightDip = GetAdaptiveWindowMaxHeightDip();
 
                 // Apply min/max height limits and reposition using DIP values.
                 // Min height ensures window is visible even if content hasn't loaded yet
-                var finalHeightDip = Math.Min(contentHeight, maxHeightDip);
+                var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, maxHeightDip));
                 Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, maxHeightDip={maxHeightDip}, finalHeightDip={finalHeightDip}");
+
+                if (MainScrollViewer != null)
+                {
+                    var statusBarHeight = StatusBar?.ActualHeight > 0 ? StatusBar.ActualHeight : 48;
+                    MainScrollViewer.MaxHeight = Math.Max(0, maxHeightDip - statusBarHeight);
+                    RootGrid.UpdateLayout();
+                }
 
                 // FlyoutWindowHelper handles cross-monitor DPI internally via a 1×1 teleport
                 // before the final move, so no WM_DPICHANGED suppression is required here.

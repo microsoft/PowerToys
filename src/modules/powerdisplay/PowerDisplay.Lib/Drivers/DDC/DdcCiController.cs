@@ -483,8 +483,15 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             if (TryGetVcpFeature(handle, VcpCodeBrightness, monitor.Id, out uint current, out uint max))
             {
-                monitor.BrightnessVcpMax = (int)max;
                 var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
+                if (!brightnessInfo.IsValid)
+                {
+                    Logger.LogWarning(
+                        $"DDC: [{monitor.Id}] Ignoring invalid brightness range current={current}, max={max}");
+                    return;
+                }
+
+                monitor.BrightnessVcpMax = (int)max;
                 monitor.CurrentBrightness = brightnessInfo.ToPercentage();
             }
         }

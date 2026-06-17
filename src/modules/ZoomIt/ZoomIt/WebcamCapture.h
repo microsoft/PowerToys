@@ -18,10 +18,36 @@
 #include <mfreadwrite.h>
 #include <atomic>
 #include <condition_variable>
+#include <memory>
+#include "BackgroundBlur.h"
 #include <mutex>
 #include <thread>
 #include <vector>
 #include <winrt/base.h>
+
+class BackgroundBlur;
+
+// Must match CompositeConstants cbuffer layout in WebcamComposite.hlsl.
+struct GpuCompositeConstants
+{
+    float CropOffsetX, CropOffsetY;     // Camera crop UV offset
+    float CropScaleX, CropScaleY;       // Camera crop UV scale
+    float Gamma;                        // Gamma correction exponent
+    float CornerRadius;                 // Corner radius in output pixels
+    float OutputW, OutputH;             // Output dimensions
+    UINT  ShapeType;                    // 0=Square, 1=RoundedRect, 2=RoundedSquare, 3=Circle
+    UINT  HasMask;                      // 1 if mask texture valid
+    float Pad[2];
+};
+
+// Must match BlurConstants cbuffer layout in BoxBlurCS.hlsl.
+struct GpuBlurConstants
+{
+    UINT  Direction;    // 0 = horizontal, 1 = vertical
+    INT   Radius;       // Box blur radius in pixels
+    UINT  Width;        // Image width
+    UINT  Height;       // Image height
+};
 
 class WebcamCapture
 {
@@ -44,7 +70,10 @@ public:
         Position position,
         Size size,
         Shape shape,
-        bool fullScreenRecording = false );
+        bool fullScreenRecording = false,
+        WebcamBackgroundMode backgroundMode = WebcamBackgroundMode::None,
+        const wchar_t* backgroundImagePath = nullptr,
+        int brightness = 50 );
     ~WebcamCapture();
 
     // Start/stop the capture thread.
@@ -106,6 +135,19 @@ private:
     bool InitSourceReader();
     RECT ComputeDestRect() const;
     void ComputeOverlayDimensions();
+    bool InitGpuComposite();
+    bool GpuComposite( const UINT32* cameraPixels, UINT camW, UINT camH,
+                       const UINT32* blurPixels, UINT blurW, UINT blurH,
+                       const float* mask, UINT maskW, UINT maskH,
+                       UINT outW, UINT outH,
+                       UINT srcCropX, UINT srcCropY, UINT srcCropW, UINT srcCropH,
+                       float gamma, Shape shape, float cornerRadius,
+                       ID3D11ShaderResourceView* preBlurSRV = nullptr );
+
+    // GPU box blur: runs 4 compute-shader dispatches (H→V→H→V) on the
+    // processing-resolution frame.  The result stays GPU-resident in
+    // m_blurPingPong[0] for direct use by GpuComposite.
+    bool GpuBoxBlur( const UINT32* pixels, UINT width, UINT height, int radius );
 
     winrt::com_ptr<ID3D11Device>        m_d3dDevice;
     winrt::com_ptr<ID3D11DeviceContext> m_d3dContext;
@@ -135,12 +177,18 @@ private:
     // Reusable frame buffer for the capture thread (avoids per-frame alloc).
     std::vector<BYTE>                   m_framePixels;
     std::vector<BYTE>                   m_scaledPixels;
+    std::vector<BYTE>                   m_upscalePixels;
 
     UINT                                m_overlayW = 0;
     UINT                                m_overlayH = 0;
     UINT                                m_camWidth = 0;
     UINT                                m_camHeight = 0;
     RECT                                m_destRect = {};
+
+    // Brightness correction (user-controlled, fixed gamma LUT).
+    int                                 m_brightness = 50;     // 0=dark, 50=neutral, 100=bright
+    std::array<uint8_t, 256>            m_gammaLUT = {};        // current LUT
+    double                              m_lutGamma = 1.0;      // gamma used for m_gammaLUT
 
     // Output dimensions (recording output after crop+scale).
     UINT                                m_outputWidth = 0;
@@ -163,8 +211,57 @@ private:
     std::condition_variable             m_readyCV;
     bool                                m_firstFrameCaptured = false;
 
+    // Background processing.
+    WebcamBackgroundMode                m_backgroundMode = WebcamBackgroundMode::None;
+    std::wstring                        m_backgroundImagePath;
+    std::unique_ptr<BackgroundBlur>     m_backgroundBlur;
+
     // Debug counters for CompositeOnto logging.
     int                                 m_compositeCount = 0;
     int                                 m_lockFailCount = 0;
     int                                 m_uploadCount = 0;
+
+    // ── GPU composite pipeline ──────────────────────────────
+    // Separate D3D device for capture thread (avoids contention
+    // with the recording session's device/context).
+    winrt::com_ptr<ID3D11Device>            m_gpuDevice;
+    winrt::com_ptr<ID3D11DeviceContext>      m_gpuContext;
+    winrt::com_ptr<ID3D11VertexShader>       m_compositeVS;
+    winrt::com_ptr<ID3D11PixelShader>        m_compositePS;
+    winrt::com_ptr<ID3D11Buffer>             m_compositeCB;
+    winrt::com_ptr<ID3D11SamplerState>       m_bilinearSampler;
+    winrt::com_ptr<ID3D11RasterizerState>    m_gpuRasterState;
+    winrt::com_ptr<ID3D11BlendState>         m_gpuBlendState;
+
+    // Input textures + SRVs (recreated when dimensions change).
+    winrt::com_ptr<ID3D11Texture2D>          m_gpuCameraTex;
+    winrt::com_ptr<ID3D11ShaderResourceView> m_gpuCameraSRV;
+    UINT                                     m_gpuCameraW = 0, m_gpuCameraH = 0;
+
+    winrt::com_ptr<ID3D11Texture2D>          m_gpuBlurTex;
+    winrt::com_ptr<ID3D11ShaderResourceView> m_gpuBlurSRV;
+    UINT                                     m_gpuBlurW = 0, m_gpuBlurH = 0;
+
+    winrt::com_ptr<ID3D11Texture2D>          m_gpuMaskTex;
+    winrt::com_ptr<ID3D11ShaderResourceView> m_gpuMaskSRV;
+    UINT                                     m_gpuMaskW = 0, m_gpuMaskH = 0;
+
+    // Render target + staging for readback.
+    winrt::com_ptr<ID3D11Texture2D>          m_gpuRenderTarget;
+    winrt::com_ptr<ID3D11RenderTargetView>   m_gpuRTV;
+    winrt::com_ptr<ID3D11Texture2D>          m_gpuStaging;
+    UINT                                     m_gpuRTW = 0, m_gpuRTH = 0;
+
+    bool                                     m_gpuCompositeReady = false;
+
+    // ── GPU box-blur compute pipeline ───────────────────────
+    winrt::com_ptr<ID3D11ComputeShader>      m_blurCS;
+    winrt::com_ptr<ID3D11Buffer>             m_blurCB;
+
+    // Ping-pong textures with SRV + UAV for blur passes.
+    winrt::com_ptr<ID3D11Texture2D>          m_blurPingPong[2];
+    winrt::com_ptr<ID3D11ShaderResourceView> m_blurPingSRV[2];
+    winrt::com_ptr<ID3D11UnorderedAccessView> m_blurPingUAV[2];
+    UINT                                     m_blurPPW = 0, m_blurPPH = 0;
+    bool                                     m_gpuBlurReady = false;
 };

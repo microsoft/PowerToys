@@ -26,7 +26,6 @@
     <Content Remove="Assets\CopilotKey.png" />
     <Content Remove="Assets\ShortcutGuide\HeroImage.png" />
     <Content Remove="Assets\ShortcutGuide\ShortcutGuide.ico" />
-    <Content Remove="Assets\ShortcutGuide\Manifests\*.yml" />
   </ItemGroup>
 
   <ItemGroup>
