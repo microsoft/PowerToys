@@ -35,6 +35,48 @@ Stored at `%LOCALAPPDATA%\Microsoft\PowerToys\MouseButtonLock\settings.json`. Pr
 
 The module on/off state lives in `EnabledModules.MouseButtonLock` in the global settings, not in the per-module properties. The settings UI is a section on the shared Mouse Utilities page (`MouseUtilsPage.xaml` / `MouseUtilsViewModel.cs`). There is no activation hotkey: activation is the physical hold.
 
+## Settings UI
+
+Mouse Button Lock is a section on the shared **Settings > Mouse utilities** page (`MouseUtilsPage.xaml`, bound to `MouseUtilsViewModel`). The enable toggle is its own card; everything else lives in a "Buttons and behavior" expander that is greyed out until the module is on, and "Move cancel distance" is greyed out unless "Cancel locking..." is checked.
+
+```text
+Settings  >  Mouse utilities
+
++------------------------------------------------------------------------+
+|   [icon]   Mouse Button Lock                                ( On  =O ) |
++------------------------------------------------------------------------+
+
++------------------------------------------------------------------------+
+|   [v]   Buttons and behavior                                           |
+|         Choose which buttons lock and tune the hold-to-lock behavior.  |
++------------------------------------------------------------------------+
+|   [x]   Lock the right mouse button                                    |
+|   [ ]   Lock the middle mouse button                                   |
+|                                                                        |
+|   Hold duration (ms)                                     [   300  ^v ] |
+|      How long to hold a button before it locks                         |
+|                                                                        |
+|   [x]   Cancel locking if the cursor moves while holding               |
+|                                                                        |
+|   Move cancel distance (pixels)                          [     5  ^v ] |
+|      Movement beyond this distance during the hold is treated as a     |
+|      drag and will not lock.                                           |
++------------------------------------------------------------------------+
+```
+
+Legend: `[icon]` module icon, `( On =O )` toggle switch, `[v]` expanded section, `[x]`/`[ ]` checked/unchecked checkbox, `[ 300 ^v ]` number box with spinner. The inner controls show the shipping defaults; the master toggle is drawn On (its default is off) so the expander is not greyed out.
+
+| Control | Type (UI range) | Setting key | ViewModel property | Default |
+| --- | --- | --- | --- | --- |
+| Mouse Button Lock | toggle | `EnabledModules.MouseButtonLock` | `IsMouseButtonLockEnabled` | off |
+| Lock the right mouse button | checkbox | `rmb_lock_enabled` | `MouseButtonLockRmbEnabled` | on |
+| Lock the middle mouse button | checkbox | `mmb_lock_enabled` | `MouseButtonLockMmbEnabled` | off |
+| Hold duration (ms) | number box (50-2000, step 50) | `hold_duration_ms` | `MouseButtonLockHoldDurationMs` | 300 |
+| Cancel locking if the cursor moves while holding | checkbox | `move_cancel_enabled` | `MouseButtonLockMoveCancelEnabled` | on |
+| Move cancel distance (pixels) | number box (0-100, step 1) | `move_cancel_pixels` | `MouseButtonLockMoveCancelPixels` | 5 |
+
+The UI caps hold duration at 2000 ms; the C++ `parse_settings` clamps a hand-edited file more loosely (50-60000 ms). The group is GPO-aware: when policy forces the module on or off, the enable toggle is disabled and a `GPOInfoControl` warning shows (`IsMouseButtonLockEnabledGpoConfigured`). For UI tests, the Settings group exposes `AutomationProperties.AutomationId="MouseUtils_MouseButtonLockTestId"`, and the two number boxes carry `MouseUtils_MouseButtonLockHoldDurationId` and `MouseUtils_MouseButtonLockMoveCancelPixelsId`.
+
 ## Safety
 
 A logically-locked button whose up was suppressed leaves the OS believing the button is held. The module injects a synthetic up for every locked button on `disable()` and on graceful hook-thread shutdown, so toggling the module off or exiting PowerToys releases cleanly. A hard `TerminateProcess` of the runner mid-lock is the residual risk (same class of risk as the standalone reference app); see the open items below.
