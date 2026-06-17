@@ -69,6 +69,15 @@
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
+      <!--
+        PowerToys Settings Service (PTSettingsSvc) — per-machine only.
+        A per-user MSI is non-elevated and cannot register a service; per-user
+        hardening uses a one-time-elevation path (Design §11 / §15 #5 d), a
+        follow-up.  Guarded so per-user builds omit the service entirely.
+      -->
+      <?if $(var.PerUser) != "true" ?>
+      <ComponentGroupRef Id="PTSettingsServiceComponentGroup" />
+      <?endif?>
       <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>
 
