@@ -292,6 +292,7 @@ export interface IExtensionHost {
   log(message: string, state?: MessageState): void;
   showStatus(message: string, state?: MessageState, progress?: ProgressState): void;
   hideStatus(messageId: string): void;
+  copyToClipboard(text: string): void;
 }
 
 // === Command Provider ===

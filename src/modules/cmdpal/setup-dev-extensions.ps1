@@ -5,7 +5,7 @@
 # What it does:
 # 1. Builds the TypeScript SDK (ts-sdk)
 # 2. Builds the sample JS extension
-# 3. Installs the sample extension (with cmdpal.json) into the JSExtensions directory
+# 3. Installs the sample extension into the JSExtensions directory
 
 param(
     [string]$Configuration = "Debug",
@@ -43,8 +43,7 @@ Write-Host "=== Step 3: Installing Sample Extension ===" -ForegroundColor Cyan
 # Create the extensions directory structure
 New-Item -ItemType Directory -Path $sampleInstallDir -Force | Out-Null
 
-# Copy the built sample extension (dist/, node_modules/, cmdpal.json, package.json)
-Copy-Item -Path "$sampleExtDir\cmdpal.json" -Destination $sampleInstallDir -Force
+# Copy the built sample extension (dist/, node_modules/, package.json)
 Copy-Item -Path "$sampleExtDir\package.json" -Destination $sampleInstallDir -Force
 if (Test-Path "$sampleExtDir\dist") {
     Copy-Item -Path "$sampleExtDir\dist" -Destination $sampleInstallDir -Recurse -Force

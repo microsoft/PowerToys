@@ -7,6 +7,7 @@
 #pragma warning disable SA1300 // Element should begin with upper-case letter (private event backing fields)
 #pragma warning disable SA1516 // Elements should be separated by blank line
 
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using ManagedCommon;
@@ -507,9 +508,51 @@ internal sealed class JSIconInfoAdapter : IIconInfo
                     return null;
                 }
 
-                // TODO: Convert base64 to IRandomAccessStreamReference if needed
-                return null;
+                try
+                {
+                    byte[] bytes;
+                    if (_base64Data.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        bytes = DecodeDataUri(_base64Data);
+                    }
+                    else
+                    {
+                        bytes = Convert.FromBase64String(_base64Data);
+                    }
+
+                    var stream = new InMemoryRandomAccessStream();
+                    stream.WriteAsync(bytes.AsBuffer()).GetResults();
+                    stream.Seek(0);
+                    return RandomAccessStreamReference.CreateFromStream(stream);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Failed to decode icon data: {ex.Message}");
+                    return null;
+                }
             }
+        }
+
+        private static byte[] DecodeDataUri(string dataUri)
+        {
+            // data:[<mediatype>][;base64],<data>
+            var commaIndex = dataUri.IndexOf(',', StringComparison.Ordinal);
+            if (commaIndex < 0)
+            {
+                throw new FormatException("Invalid data URI: no comma separator");
+            }
+
+            var header = dataUri[..commaIndex];
+            var data = dataUri[(commaIndex + 1)..];
+
+            if (header.Contains(";base64", StringComparison.OrdinalIgnoreCase))
+            {
+                return Convert.FromBase64String(data);
+            }
+
+            // URL-encoded data (e.g., SVG)
+            var decoded = Uri.UnescapeDataString(data);
+            return System.Text.Encoding.UTF8.GetBytes(decoded);
         }
     }
 }

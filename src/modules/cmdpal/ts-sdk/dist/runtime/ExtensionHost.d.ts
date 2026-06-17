@@ -1,7 +1,7 @@
 import type { IExtensionHost, MessageState, ProgressState } from '../types';
 /**
  * Provides access to the Command Palette host from within an extension.
- * Use this to send log messages, show/hide status indicators, etc.
+ * Use this to send log messages, show/hide status indicators, copy text, etc.
  *
  * @example
  * ```typescript
@@ -9,6 +9,7 @@ import type { IExtensionHost, MessageState, ProgressState } from '../types';
  *
  * ExtensionHost.log('Extension loaded successfully');
  * ExtensionHost.showStatus('Loading data...', 'info', { isIndeterminate: true });
+ * ExtensionHost.copyToClipboard('Hello, world!');
  * ```
  */
 export declare class ExtensionHost {
@@ -31,6 +32,10 @@ export declare class ExtensionHost {
      * Hides a previously shown status message.
      */
     static hideStatus(messageId: string): void;
+    /**
+     * Copies text to the system clipboard via the host.
+     */
+    static copyToClipboard(text: string): void;
     /**
      * Gets whether the host has been initialized.
      */

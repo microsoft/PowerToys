@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 import type { IInvokableCommand, CommandResult, IconInfo } from '../types'
+import { ExtensionHost } from '../runtime/ExtensionHost'
 
 /**
  * A command that does nothing when invoked — returns KeepOpen.
@@ -64,11 +65,8 @@ export class CopyTextCommand implements IInvokableCommand {
   }
 
   invoke(): CommandResult {
+    ExtensionHost.copyToClipboard(this.text)
     return { kind: 'showToast', args: { message: this.toastMessage } }
-  }
-
-  getText(): string {
-    return this.text
   }
 }
 

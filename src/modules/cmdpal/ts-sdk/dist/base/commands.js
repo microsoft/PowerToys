@@ -4,6 +4,7 @@
 // See the LICENSE file in the project root for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConfirmableCommand = exports.CopyTextCommand = exports.OpenUrlCommand = exports.NoOpCommand = void 0;
+const ExtensionHost_1 = require("../runtime/ExtensionHost");
 /**
  * A command that does nothing when invoked — returns KeepOpen.
  */
@@ -57,10 +58,8 @@ class CopyTextCommand {
         this.toastMessage = toastMessage ?? 'Copied to clipboard';
     }
     invoke() {
+        ExtensionHost_1.ExtensionHost.copyToClipboard(this.text);
         return { kind: 'showToast', args: { message: this.toastMessage } };
-    }
-    getText() {
-        return this.text;
     }
 }
 exports.CopyTextCommand = CopyTextCommand;

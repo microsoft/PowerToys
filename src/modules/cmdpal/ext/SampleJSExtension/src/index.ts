@@ -58,7 +58,6 @@ import {
   type IPage,
   type IconData,
   type IconInfo,
-  type ImageContent,
   type KeyChord,
   type MarkdownContent,
   type MessageState,
@@ -71,6 +70,9 @@ import {
   type ToastArgs,
   type TreeContent,
   type FormContent,
+  type ImageContent,
+  iconFromUrl,
+  iconFromGlyph,
 } from '@microsoft/cmdpal-sdk';
 
 const EXTENSION_ID = 'sample-js-extension';
@@ -110,15 +112,16 @@ function optionalColor(color: Color): OptionalColor {
   return { hasValue: true, color };
 }
 
-function svgIcon(label: string, background: string, foreground: string = '#FFFFFF'): IconInfo {
-  const svg = encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><rect width="160" height="160" rx="24" fill="${background}"/><text x="80" y="98" text-anchor="middle" font-family="Segoe UI,Arial" font-size="40" fill="${foreground}">${label}</text></svg>`
-  );
+// Colored grid icons using emoji characters rendered by the glyph pipeline
+const gridIcons: Record<string, string> = {
+  IMG: '\uE91B',   // Photo
+  TREE: '\uE8FD',  // OrgChart / hierarchy
+  MIX: '\uE81E',   // Page (document with mixed content)
+  GRID: '\uE80A',  // GridView
+};
 
-  return {
-    light: { data: `data:image/svg+xml;utf8,${svg}` },
-    dark: { data: `data:image/svg+xml;utf8,${svg}` },
-  };
+function gridIcon(label: string): IconInfo {
+  return icon(gridIcons[label] ?? '\uE8A5');
 }
 
 function makeTag(
@@ -532,25 +535,25 @@ class GridGalleryPage extends ListPageBase implements IListPage {
         command: this.imagePage,
         title: 'Image content',
         subtitle: 'Open the image showcase page',
-        icon: svgIcon('IMG', '#0F6CBD'),
+        icon: gridIcon('IMG'),
       }),
       new ListItemBase({
         command: this.treePage,
         title: 'Tree content',
         subtitle: 'Nested content threads',
-        icon: svgIcon('TREE', '#107C10'),
+        icon: gridIcon('TREE'),
       }),
       new ListItemBase({
         command: this.multiPage,
         title: 'Mixed content',
         subtitle: 'Markdown + form + image',
-        icon: svgIcon('MIX', '#881798'),
+        icon: gridIcon('MIX'),
       }),
       new ListItemBase({
         command: this.imagePage,
         title: 'Medium grid compatible',
         subtitle: 'Gallery pages can also use medium layout',
-        icon: svgIcon('GRID', '#D83B01'),
+        icon: gridIcon('GRID'),
       }),
     ];
   }
@@ -740,15 +743,49 @@ class ImageContentPage extends ContentPageBase implements IContentPage {
   readonly title = 'Image Content Page';
   readonly icon = icon('\uE91B');
 
-  getContent(): Content[] {
-    const imageContent: ImageContent = {
+  private _cachedIcon: IconInfo | null = null;
+  private _loading = false;
+
+  private async ensureImageLoaded(): Promise<IconInfo> {
+    if (this._cachedIcon) return this._cachedIcon;
+    if (!this._loading) {
+      this._loading = true;
+      try {
+        this._cachedIcon = await iconFromUrl(
+          'https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PT_hero_image.png'
+        );
+      } catch {
+        // Fallback to glyph if fetch fails
+        this._cachedIcon = icon('\uE91B');
+      }
+      this._loading = false;
+    }
+    return this._cachedIcon ?? icon('\uE91B');
+  }
+
+  async getContent(): Promise<Content[]> {
+    const imageIcon = await this.ensureImageLoaded();
+
+    const fullSize: ImageContent = {
       type: 'image',
-      image: icon('\uE91B'),
-      maxWidth: 320,
-      maxHeight: 220,
+      image: imageIcon,
+      maxWidth: 600,
+      maxHeight: 400,
     };
 
-    return [imageContent];
+    const constrained: ImageContent = {
+      type: 'image',
+      image: imageIcon,
+      maxWidth: 200,
+      maxHeight: 200,
+    };
+
+    return [
+      { type: 'markdown', body: '## Full-size image' } as MarkdownContent,
+      fullSize,
+      { type: 'markdown', body: '## Constrained image (200×200)' } as MarkdownContent,
+      constrained,
+    ];
   }
 }
 
@@ -875,11 +912,9 @@ class MultiContentPage extends ContentPageBase implements IContentPage {
       text: 'This block sits between the markdown header and the image to show mixed content ordering.',
     };
 
-    const image: ImageContent = {
-      type: 'image',
-      image: svgIcon('MIX', '#881798'),
-      maxWidth: 220,
-      maxHeight: 180,
+    const image: MarkdownContent = {
+      type: 'markdown',
+      body: '![Mixed content image](https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PT_hero_image.png)',
     };
 
     const form: FormContent = {
@@ -1048,7 +1083,7 @@ class SampleJSProvider extends CommandProviderBase implements ICommandProvider {
     )
   );
   private readonly detailsListPage = this.registry.register(
-    new DetailsListPage(this.openRepoCommand, this.copyRepoCommand, this.showToastCommand, this.hideCommand, svgIcon('PT', '#0F6CBD'))
+    new DetailsListPage(this.openRepoCommand, this.copyRepoCommand, this.showToastCommand, this.hideCommand, icon('\uE8A5'))
   );
   private readonly gridGalleryPage = this.registry.register(new GridGalleryPage(this.imagePage, this.treePage, this.multiContentPage));
   private readonly filteredListPage = this.registry.register(

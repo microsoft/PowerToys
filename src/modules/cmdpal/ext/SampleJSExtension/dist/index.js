@@ -37,12 +37,15 @@ function rgba(r, g, b, a = 255) {
 function optionalColor(color) {
     return { hasValue: true, color };
 }
-function svgIcon(label, background, foreground = '#FFFFFF') {
-    const svg = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160"><rect width="160" height="160" rx="24" fill="${background}"/><text x="80" y="98" text-anchor="middle" font-family="Segoe UI,Arial" font-size="40" fill="${foreground}">${label}</text></svg>`);
-    return {
-        light: { data: `data:image/svg+xml;utf8,${svg}` },
-        dark: { data: `data:image/svg+xml;utf8,${svg}` },
-    };
+// Colored grid icons using emoji characters rendered by the glyph pipeline
+const gridIcons = {
+    IMG: '\uE91B', // Photo
+    TREE: '\uE8FD', // OrgChart / hierarchy
+    MIX: '\uE81E', // Page (document with mixed content)
+    GRID: '\uE80A', // GridView
+};
+function gridIcon(label) {
+    return icon(gridIcons[label] ?? '\uE8A5');
 }
 function makeTag(text, foreground, background, glyph, toolTip) {
     return {
@@ -407,25 +410,25 @@ class GridGalleryPage extends cmdpal_sdk_1.ListPageBase {
                 command: this.imagePage,
                 title: 'Image content',
                 subtitle: 'Open the image showcase page',
-                icon: svgIcon('IMG', '#0F6CBD'),
+                icon: gridIcon('IMG'),
             }),
             new cmdpal_sdk_1.ListItemBase({
                 command: this.treePage,
                 title: 'Tree content',
                 subtitle: 'Nested content threads',
-                icon: svgIcon('TREE', '#107C10'),
+                icon: gridIcon('TREE'),
             }),
             new cmdpal_sdk_1.ListItemBase({
                 command: this.multiPage,
                 title: 'Mixed content',
                 subtitle: 'Markdown + form + image',
-                icon: svgIcon('MIX', '#881798'),
+                icon: gridIcon('MIX'),
             }),
             new cmdpal_sdk_1.ListItemBase({
                 command: this.imagePage,
                 title: 'Medium grid compatible',
                 subtitle: 'Gallery pages can also use medium layout',
-                icon: svgIcon('GRID', '#D83B01'),
+                icon: gridIcon('GRID'),
             }),
         ];
     }
@@ -582,14 +585,44 @@ class ImageContentPage extends cmdpal_sdk_1.ContentPageBase {
     name = 'Image';
     title = 'Image Content Page';
     icon = icon('\uE91B');
-    getContent() {
-        const imageContent = {
+    _cachedIcon = null;
+    _loading = false;
+    async ensureImageLoaded() {
+        if (this._cachedIcon)
+            return this._cachedIcon;
+        if (!this._loading) {
+            this._loading = true;
+            try {
+                this._cachedIcon = await (0, cmdpal_sdk_1.iconFromUrl)('https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PT_hero_image.png');
+            }
+            catch {
+                // Fallback to glyph if fetch fails
+                this._cachedIcon = icon('\uE91B');
+            }
+            this._loading = false;
+        }
+        return this._cachedIcon ?? icon('\uE91B');
+    }
+    async getContent() {
+        const imageIcon = await this.ensureImageLoaded();
+        const fullSize = {
             type: 'image',
-            image: icon('\uE91B'),
-            maxWidth: 320,
-            maxHeight: 220,
+            image: imageIcon,
+            maxWidth: 600,
+            maxHeight: 400,
         };
-        return [imageContent];
+        const constrained = {
+            type: 'image',
+            image: imageIcon,
+            maxWidth: 200,
+            maxHeight: 200,
+        };
+        return [
+            { type: 'markdown', body: '## Full-size image' },
+            fullSize,
+            { type: 'markdown', body: '## Constrained image (200×200)' },
+            constrained,
+        ];
     }
 }
 function makeTreeNode(body, children) {
@@ -703,10 +736,8 @@ class MultiContentPage extends cmdpal_sdk_1.ContentPageBase {
             text: 'This block sits between the markdown header and the image to show mixed content ordering.',
         };
         const image = {
-            type: 'image',
-            image: svgIcon('MIX', '#881798'),
-            maxWidth: 220,
-            maxHeight: 180,
+            type: 'markdown',
+            body: '![Mixed content image](https://raw.githubusercontent.com/microsoft/PowerToys/main/doc/images/overview/PT_hero_image.png)',
         };
         const form = {
             type: 'form',
@@ -825,7 +856,7 @@ class SampleJSProvider extends cmdpal_sdk_1.CommandProviderBase {
         contextAction(this.copyRepoCommand, 'Copy link', '\uE8C8', 'Copy the repository URL', shortcut(2, 67, 46)),
         contextAction(this.openRepoCommand, 'Open repository', '\uE8A7', 'View the PowerToys repo'),
     ], this.noOpCommand, this.markdownPage, this.goHomeCommand));
-    detailsListPage = this.registry.register(new DetailsListPage(this.openRepoCommand, this.copyRepoCommand, this.showToastCommand, this.hideCommand, svgIcon('PT', '#0F6CBD')));
+    detailsListPage = this.registry.register(new DetailsListPage(this.openRepoCommand, this.copyRepoCommand, this.showToastCommand, this.hideCommand, icon('\uE8A5')));
     gridGalleryPage = this.registry.register(new GridGalleryPage(this.imagePage, this.treePage, this.multiContentPage));
     filteredListPage = this.registry.register(new FilteredListPage([
         contextAction(this.showToastCommand, 'Toast', '\uE7F4', 'Run the toast demo'),

@@ -109,7 +109,7 @@ public sealed class JSExtensionWrapper : IExtensionWrapper, IDisposable
         {
             try
             {
-                var manifestPath = Path.Combine(_manifestDirectory, "cmdpal.json");
+                var manifestPath = Path.Combine(_manifestDirectory, "package.json");
                 if (File.Exists(manifestPath))
                 {
                     return File.GetCreationTimeUtc(manifestPath);

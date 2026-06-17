@@ -20,4 +20,5 @@ export { Settings, ToggleSetting, TextSetting, ChoiceSetSetting } from './base/S
 export { ExtensionHost } from './runtime/ExtensionHost';
 export { activate } from './runtime/activate';
 export { startJsonRpcServer, sendNotification } from './runtime/stdio-server';
+export { iconFromBase64, iconFromGlyph, iconFromFile, iconFromUrl } from './helpers';
 //# sourceMappingURL=index.d.ts.map

@@ -38,6 +38,9 @@ export function createExtensionHostBridge(
     hideStatus(messageId: string): void {
       sendNotification('host/hideStatus', { extensionId, messageId });
     },
+    copyToClipboard(text: string): void {
+      sendNotification('host/copyText', { text });
+    },
   };
 
   // Also initialize the static ExtensionHost for convenience

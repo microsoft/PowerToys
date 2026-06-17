@@ -3,7 +3,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendNotification = exports.startJsonRpcServer = exports.activate = exports.ExtensionHost = exports.ChoiceSetSetting = exports.TextSetting = exports.ToggleSetting = exports.Settings = exports.ConfirmableCommand = exports.CopyTextCommand = exports.OpenUrlCommand = exports.NoOpCommand = exports.Separator = exports.FallbackCommandItemBase = exports.ListItemBase = exports.CommandItemBase = exports.InvokableCommandBase = exports.ContentPageBase = exports.DynamicListPageBase = exports.ListPageBase = exports.CommandProviderBase = void 0;
+exports.iconFromUrl = exports.iconFromFile = exports.iconFromGlyph = exports.iconFromBase64 = exports.sendNotification = exports.startJsonRpcServer = exports.activate = exports.ExtensionHost = exports.ChoiceSetSetting = exports.TextSetting = exports.ToggleSetting = exports.Settings = exports.ConfirmableCommand = exports.CopyTextCommand = exports.OpenUrlCommand = exports.NoOpCommand = exports.Separator = exports.FallbackCommandItemBase = exports.ListItemBase = exports.CommandItemBase = exports.InvokableCommandBase = exports.ContentPageBase = exports.DynamicListPageBase = exports.ListPageBase = exports.CommandProviderBase = void 0;
 // Base classes
 var CommandProviderBase_1 = require("./base/CommandProviderBase");
 Object.defineProperty(exports, "CommandProviderBase", { enumerable: true, get: function () { return CommandProviderBase_1.CommandProviderBase; } });
@@ -41,4 +41,10 @@ Object.defineProperty(exports, "activate", { enumerable: true, get: function () 
 var stdio_server_1 = require("./runtime/stdio-server");
 Object.defineProperty(exports, "startJsonRpcServer", { enumerable: true, get: function () { return stdio_server_1.startJsonRpcServer; } });
 Object.defineProperty(exports, "sendNotification", { enumerable: true, get: function () { return stdio_server_1.sendNotification; } });
+// Icon helpers
+var helpers_1 = require("./helpers");
+Object.defineProperty(exports, "iconFromBase64", { enumerable: true, get: function () { return helpers_1.iconFromBase64; } });
+Object.defineProperty(exports, "iconFromGlyph", { enumerable: true, get: function () { return helpers_1.iconFromGlyph; } });
+Object.defineProperty(exports, "iconFromFile", { enumerable: true, get: function () { return helpers_1.iconFromFile; } });
+Object.defineProperty(exports, "iconFromUrl", { enumerable: true, get: function () { return helpers_1.iconFromUrl; } });
 //# sourceMappingURL=index.js.map

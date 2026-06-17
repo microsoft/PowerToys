@@ -10,77 +10,66 @@ using System.Text.Json.Serialization;
 namespace Microsoft.CmdPal.UI.ViewModels.Models;
 
 /// <summary>
-/// Represents the manifest file (cmdpal.json) for a JavaScript/TypeScript extension.
+/// Represents the resolved extension manifest, built from a package.json file
+/// that contains a "cmdpal" section (similar to VS Code's contributes field).
 /// </summary>
 public sealed record JSExtensionManifest
 {
     /// <summary>
-    /// Gets the internal identifier for the extension (required).
+    /// Gets the internal identifier for the extension (from package.json "name", required).
     /// </summary>
-    [JsonPropertyName("name")]
     public string? Name { get; init; }
 
     /// <summary>
-    /// Gets the display name shown to users.
+    /// Gets the display name shown to users (from cmdpal.displayName).
     /// </summary>
-    [JsonPropertyName("displayName")]
     public string? DisplayName { get; init; }
 
     /// <summary>
-    /// Gets the version string (e.g., "1.0.0").
+    /// Gets the version string (from package.json "version").
     /// </summary>
-    [JsonPropertyName("version")]
     public string? Version { get; init; }
 
     /// <summary>
-    /// Gets the description of the extension.
+    /// Gets the description of the extension (from package.json "description").
     /// </summary>
-    [JsonPropertyName("description")]
     public string? Description { get; init; }
 
     /// <summary>
-    /// Gets the relative path to the icon file.
+    /// Gets the icon glyph or relative path (from cmdpal.icon).
     /// </summary>
-    [JsonPropertyName("icon")]
     public string? Icon { get; init; }
 
     /// <summary>
-    /// Gets the entry point script path (required).
+    /// Gets the entry point script path (cmdpal.main overrides package.json "main", required).
     /// </summary>
-    [JsonPropertyName("main")]
     public string? Main { get; init; }
 
     /// <summary>
-    /// Gets the publisher or author name.
+    /// Gets the publisher or author name (from cmdpal.publisher).
     /// </summary>
-    [JsonPropertyName("publisher")]
     public string? Publisher { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether debug mode is enabled for this extension.
     /// When true, the Node.js process is started with --inspect to allow debugger attachment.
     /// </summary>
-    [JsonPropertyName("debug")]
     public bool Debug { get; init; }
 
     /// <summary>
     /// Gets the port number for the Node.js inspector when debug mode is enabled.
     /// If not specified, a default port starting at 9229 is assigned automatically.
     /// </summary>
-    [JsonPropertyName("debugPort")]
     public int? DebugPort { get; init; }
 
     /// <summary>
-    /// Gets the engine requirements (e.g., Node.js version).
+    /// Gets the engine requirements (from package.json "engines").
     /// </summary>
-    [JsonPropertyName("engines")]
     public JSExtensionEngines? Engines { get; init; }
 
     /// <summary>
-    /// Gets the capabilities exposed by the extension.
-    /// Capabilities are a simple list of strings (e.g., ["commands", "listPages", "contentPages"]).
+    /// Gets the capabilities exposed by the extension (from cmdpal.capabilities).
     /// </summary>
-    [JsonPropertyName("capabilities")]
     public string[]? Capabilities { get; init; }
 
     /// <summary>
@@ -93,30 +82,57 @@ public sealed record JSExtensionManifest
     }
 
     /// <summary>
-    /// Loads and deserializes a manifest file from the specified path.
+    /// Loads an extension manifest from a package.json file that contains a "cmdpal" section.
     /// </summary>
-    /// <param name="manifestPath">The full path to the cmdpal.json file.</param>
-    /// <returns>The deserialized manifest if successful and valid; otherwise, null.</returns>
-    public static async Task<JSExtensionManifest?> LoadFromFileAsync(string manifestPath)
+    /// <param name="packageJsonPath">The full path to the package.json file.</param>
+    /// <returns>The resolved manifest if successful and valid; otherwise, null.</returns>
+    public static async Task<JSExtensionManifest?> LoadFromFileAsync(string packageJsonPath)
     {
-        if (string.IsNullOrWhiteSpace(manifestPath))
+        if (string.IsNullOrWhiteSpace(packageJsonPath))
         {
             return null;
         }
 
-        if (!File.Exists(manifestPath))
+        if (!File.Exists(packageJsonPath))
         {
             return null;
         }
 
         try
         {
-            using var stream = File.OpenRead(manifestPath);
-            var manifest = await JsonSerializer.DeserializeAsync(
+            using var stream = File.OpenRead(packageJsonPath);
+            var packageJson = await JsonSerializer.DeserializeAsync(
                 stream,
-                JSExtensionManifestJsonContext.Default.JSExtensionManifest);
+                JSExtensionManifestJsonContext.Default.JSPackageJson);
 
-            if (manifest is null || !manifest.IsValid())
+            if (packageJson?.CmdPal is null)
+            {
+                return null;
+            }
+
+            var cmdpal = packageJson.CmdPal;
+
+            // cmdpal.main overrides top-level main
+            var entryPoint = !string.IsNullOrWhiteSpace(cmdpal.Main)
+                ? cmdpal.Main
+                : packageJson.Main;
+
+            var manifest = new JSExtensionManifest
+            {
+                Name = packageJson.Name,
+                DisplayName = cmdpal.DisplayName,
+                Version = packageJson.Version,
+                Description = packageJson.Description,
+                Icon = cmdpal.Icon,
+                Main = entryPoint,
+                Publisher = cmdpal.Publisher,
+                Debug = cmdpal.Debug,
+                DebugPort = cmdpal.DebugPort,
+                Engines = packageJson.Engines,
+                Capabilities = cmdpal.Capabilities,
+            };
+
+            if (!manifest.IsValid())
             {
                 return null;
             }
@@ -128,6 +144,57 @@ public sealed record JSExtensionManifest
             return null;
         }
     }
+}
+
+/// <summary>
+/// Represents the top-level package.json structure for extension discovery.
+/// </summary>
+public sealed record JSPackageJson
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; init; }
+
+    [JsonPropertyName("version")]
+    public string? Version { get; init; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; init; }
+
+    [JsonPropertyName("main")]
+    public string? Main { get; init; }
+
+    [JsonPropertyName("engines")]
+    public JSExtensionEngines? Engines { get; init; }
+
+    [JsonPropertyName("cmdpal")]
+    public JSCmdPalSection? CmdPal { get; init; }
+}
+
+/// <summary>
+/// Represents the "cmdpal" section within package.json containing CmdPal-specific metadata.
+/// </summary>
+public sealed record JSCmdPalSection
+{
+    [JsonPropertyName("displayName")]
+    public string? DisplayName { get; init; }
+
+    [JsonPropertyName("icon")]
+    public string? Icon { get; init; }
+
+    [JsonPropertyName("main")]
+    public string? Main { get; init; }
+
+    [JsonPropertyName("publisher")]
+    public string? Publisher { get; init; }
+
+    [JsonPropertyName("debug")]
+    public bool Debug { get; init; }
+
+    [JsonPropertyName("debugPort")]
+    public int? DebugPort { get; init; }
+
+    [JsonPropertyName("capabilities")]
+    public string[]? Capabilities { get; init; }
 }
 
 /// <summary>
@@ -143,8 +210,10 @@ public sealed record JSExtensionEngines
 }
 
 /// <summary>
-/// JSON serialization context for JSExtensionManifest and related types.
+/// JSON serialization context for extension manifest types.
 /// </summary>
+[JsonSerializable(typeof(JSPackageJson))]
+[JsonSerializable(typeof(JSCmdPalSection))]
 [JsonSerializable(typeof(JSExtensionManifest))]
 [JsonSerializable(typeof(JSExtensionEngines))]
 [JsonSerializable(typeof(string[]))]

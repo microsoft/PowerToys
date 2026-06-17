@@ -556,6 +556,9 @@ export function startJsonRpcServer(
     hideStatus(messageId: string): void {
       sendNotification('host/hideStatus', { message: { Message: messageId, State: 2 } });
     },
+    copyToClipboard(text: string): void {
+      sendNotification('host/copyText', { text });
+    },
   };
   ExtensionHost.initialize(host);
 

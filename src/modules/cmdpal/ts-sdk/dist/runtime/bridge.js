@@ -36,6 +36,9 @@ function createExtensionHostBridge(sendNotification, extensionId) {
         hideStatus(messageId) {
             sendNotification('host/hideStatus', { extensionId, messageId });
         },
+        copyToClipboard(text) {
+            sendNotification('host/copyText', { text });
+        },
     };
     // Also initialize the static ExtensionHost for convenience
     ExtensionHost_1.ExtensionHost.initialize(host);

@@ -32,7 +32,6 @@ export declare class CopyTextCommand implements IInvokableCommand {
     private readonly toastMessage;
     constructor(text: string, name?: string, toastMessage?: string);
     invoke(): CommandResult;
-    getText(): string;
 }
 /**
  * A command that wraps another command with a confirmation dialog.

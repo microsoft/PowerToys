@@ -476,6 +476,9 @@ function startJsonRpcServer(providerFactory) {
         hideStatus(messageId) {
             sendNotification('host/hideStatus', { message: { Message: messageId, State: 2 } });
         },
+        copyToClipboard(text) {
+            sendNotification('host/copyText', { text });
+        },
     };
     ExtensionHost_1.ExtensionHost.initialize(host);
     // Create provider (may be async)

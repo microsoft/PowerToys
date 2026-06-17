@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ExtensionHost = void 0;
 /**
  * Provides access to the Command Palette host from within an extension.
- * Use this to send log messages, show/hide status indicators, etc.
+ * Use this to send log messages, show/hide status indicators, copy text, etc.
  *
  * @example
  * ```typescript
@@ -14,6 +14,7 @@ exports.ExtensionHost = void 0;
  *
  * ExtensionHost.log('Extension loaded successfully');
  * ExtensionHost.showStatus('Loading data...', 'info', { isIndeterminate: true });
+ * ExtensionHost.copyToClipboard('Hello, world!');
  * ```
  */
 class ExtensionHost {
@@ -43,6 +44,12 @@ class ExtensionHost {
      */
     static hideStatus(messageId) {
         ExtensionHost._instance?.hideStatus(messageId);
+    }
+    /**
+     * Copies text to the system clipboard via the host.
+     */
+    static copyToClipboard(text) {
+        ExtensionHost._instance?.copyToClipboard(text);
     }
     /**
      * Gets whether the host has been initialized.

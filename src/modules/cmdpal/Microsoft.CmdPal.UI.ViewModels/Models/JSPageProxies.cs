@@ -1119,8 +1119,9 @@ internal static class JSGridPropertiesFactory
 /// <summary>
 /// Adapts a separator marker from a JSONRPC extension to ISeparatorContextItem.
 /// This allows the UI to render a proper visual separator between list items.
+/// Mirrors the C# Separator class: Command is null, Title == Section.
 /// </summary>
-internal sealed class JSSeparatorAdapter : IListItem, ISeparatorContextItem
+internal sealed class JSSeparatorAdapter : IListItem, ISeparatorContextItem, ISeparatorFilterItem
 {
     private readonly string _title;
 
@@ -1131,41 +1132,21 @@ internal sealed class JSSeparatorAdapter : IListItem, ISeparatorContextItem
 
     public IDetails? Details => null;
 
-    public string? Section => null;
+    public string? Section => _title;
 
-    public ICommand Command => new JSNoOpCommand();
+    public ICommand? Command => null;
 
-    public IContextItem[] MoreCommands => [];
+    public IContextItem[]? MoreCommands => null;
 
-    public IIconInfo Icon => new IconInfo(string.Empty);
+    public IIconInfo? Icon => null;
 
     public string Title => _title;
 
-    public string Subtitle => string.Empty;
+    public string? Subtitle => null;
 
-    public ITag[] Tags => [];
+    public ITag[]? Tags => null;
 
-    public string TextToSuggest => string.Empty;
-
-    public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
-    {
-        add { }
-        remove { }
-    }
-}
-
-internal sealed class JSNoOpCommand : ICommand
-{
-    public string Id => $"separator-{Guid.NewGuid():N}";
-
-    public string Name => string.Empty;
-
-    public IIconInfo Icon => new IconInfo(string.Empty);
-
-    public ICommandResult Invoke()
-    {
-        return CommandResult.Dismiss();
-    }
+    public string? TextToSuggest => null;
 
     public event TypedEventHandler<object, IPropChangedEventArgs>? PropChanged
     {

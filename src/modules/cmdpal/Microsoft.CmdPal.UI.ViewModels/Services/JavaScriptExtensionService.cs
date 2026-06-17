@@ -124,7 +124,7 @@ public sealed class JavaScriptExtensionService : IExtensionService, IDisposable
             var subdirs = Directory.GetDirectories(ExtensionsPath);
             foreach (var subdir in subdirs)
             {
-                var manifestPath = Path.Combine(subdir, "cmdpal.json");
+                var manifestPath = Path.Combine(subdir, "package.json");
                 if (!File.Exists(manifestPath))
                 {
                     continue;
@@ -219,7 +219,7 @@ public sealed class JavaScriptExtensionService : IExtensionService, IDisposable
 
     private async Task<CommandProviderWrapper?> LoadExtensionFromDirectoryAsync(string extensionDirectory, CancellationToken ct)
     {
-        var manifestPath = Path.Combine(extensionDirectory, "cmdpal.json");
+        var manifestPath = Path.Combine(extensionDirectory, "package.json");
         if (!File.Exists(manifestPath))
         {
             return null;

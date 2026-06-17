@@ -252,6 +252,7 @@ public sealed class JSCommandProviderProxy : ICommandProvider, IDisposable
         _rpcConnection.RegisterNotificationHandler("host/logMessage", HandleLogMessageNotification);
         _rpcConnection.RegisterNotificationHandler("host/showStatus", HandleShowStatusNotification);
         _rpcConnection.RegisterNotificationHandler("host/hideStatus", HandleHideStatusNotification);
+        _rpcConnection.RegisterNotificationHandler("host/copyText", HandleCopyTextNotification);
     }
 
     private void HandleItemsChangedNotification(JsonElement paramsElement)
@@ -527,6 +528,22 @@ public sealed class JSCommandProviderProxy : ICommandProvider, IDisposable
         catch (Exception ex)
         {
             Logger.LogWarning($"Error handling hideStatus notification: {ex.Message}");
+        }
+    }
+
+    private void HandleCopyTextNotification(JsonElement paramsElement)
+    {
+        try
+        {
+            if (paramsElement.TryGetProperty("text", out var textProp) && textProp.ValueKind == JsonValueKind.String)
+            {
+                var text = textProp.GetString() ?? string.Empty;
+                ClipboardHelper.SetText(text);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Error handling copyText notification: {ex.Message}");
         }
     }
 

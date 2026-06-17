@@ -110,7 +110,6 @@
                         Visibility="{x:Bind IsText, Mode=OneWay}" />
                     <HyperlinkButton
                         Padding="0"
-                        Command="{x:Bind NavigateCommand, Mode=OneWay}"
                         NavigateUri="{x:Bind Link, Mode=OneWay}"
                         UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}"
                         Visibility="{x:Bind IsLink, Mode=OneWay}">
