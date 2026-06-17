@@ -18,8 +18,7 @@ namespace WorkspacesLauncherUI.ViewModels
     {
         public ObservableCollection<AppLaunching> AppsListed { get; set; } = new ObservableCollection<AppLaunching>();
 
-        private int _launcherProcessId;
-        private PwaHelper _pwaHelper;
+        private readonly PwaHelper _pwaHelper;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -49,7 +48,6 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private void HandleAppLaunchingState(AppLaunchData.AppLaunchDataWrapper appLaunchData)
         {
-            _launcherProcessId = appLaunchData.LauncherProcessID;
             List<AppLaunching> appLaunchingList = new List<AppLaunching>();
             foreach (var app in appLaunchData.AppLaunchInfos.AppLaunchInfoList)
             {

@@ -1,6 +1,6 @@
 # WorkspacesLauncherUI Unit Tests
 
-Pre-migration baseline tests for the Workspaces Launcher UI. These validate that the data layer, ViewModel, and display logic remain functionally identical after the WPF → WinUI 3 migration.
+Unit tests for the Workspaces Launcher UI (WinUI 3). These validate the data layer, ViewModel, and display logic that drives the workspace launch progress window.
 
 ## Prerequisites
 
@@ -83,10 +83,9 @@ Report saved to `TestResults/TestResults.trx`.
 
 ## When to Run
 
-- **Before migration changes**: Establish baseline (all 129 should pass)
-- **After each migration PR**: Verify no regressions
 - **After IPC contract changes**: Deserialization + Serialization categories
 - **After UI state changes**: Model + ViewModel categories
+- **After dependency updates**: All tests to verify no regressions
 
 ## Adding New Tests
 
@@ -99,9 +98,8 @@ Example:
 public void ReceiveIpcMessage_NewFieldAdded_DeserializesWithoutBreakingExistingFields()
 ```
 
-## Note on WPF Dependencies
+## Note on Color Assertions
 
-Some tests (e.g., `LaunchStatusDisplayLogicTests`) reference `System.Windows.Media.SolidColorBrush`. After the WinUI migration:
-- Update these to use `Microsoft.UI` equivalents
-- The test *logic* (color values, glyph strings) should remain identical
-- Only the brush/color type assertions need updating
+Color tests use `AppLaunching.StateColorValue` (returns `Windows.UI.Color`) instead of
+`StateColor` (returns `SolidColorBrush`) because WinUI brush creation requires a UI thread.
+The `StateColorValue` property exposes the same ARGB values for headless test validation.

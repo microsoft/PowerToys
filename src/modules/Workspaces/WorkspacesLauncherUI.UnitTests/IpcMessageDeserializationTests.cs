@@ -13,8 +13,8 @@ namespace WorkspacesLauncherUI.UnitTests
 {
     /// <summary>
     /// Tests for JSON deserialization of IPC messages received from the C++ launcher engine.
-    /// These messages drive the entire Launcher UI state. Ensuring correct deserialization
-    /// is critical for migration parity.
+    /// These messages drive the entire Launcher UI state and must remain stable
+    /// across any future UI or data layer changes.
     /// </summary>
     [TestClass]
     public class IpcMessageDeserializationTests

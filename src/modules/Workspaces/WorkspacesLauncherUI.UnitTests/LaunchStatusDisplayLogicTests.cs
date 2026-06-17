@@ -11,7 +11,6 @@ namespace WorkspacesLauncherUI.UnitTests
     /// <summary>
     /// Tests for the AppLaunching model which drives UI display:
     /// loading indicator, state glyph, and state color.
-    /// These are critical for visual parity after migration.
     /// </summary>
     [TestClass]
     public class LaunchStatusDisplayLogicTests

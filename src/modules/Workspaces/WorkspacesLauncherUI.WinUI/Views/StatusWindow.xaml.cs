@@ -16,7 +16,7 @@ namespace WorkspacesLauncherUI
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA1001:Types that own disposable fields should be disposable", Justification = "WinUI Window does not support IDisposable; ViewModel is disposed on window close.")]
     public sealed partial class StatusWindow : Window
     {
-        private MainViewModel _viewModel;
+        private readonly MainViewModel _viewModel;
 
         public StatusWindow()
         {
@@ -37,7 +37,14 @@ namespace WorkspacesLauncherUI
             appWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
 
             // Set title from resources
-            this.Title = ResourceLoaderInstance.ResourceLoader.GetString("LauncherWindowTitle");
+            try
+            {
+                this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("LauncherWindowTitle") ?? "Workspaces";
+            }
+            catch
+            {
+                this.Title = "Workspaces";
+            }
 
             if (appWindow.Presenter is OverlappedPresenter presenter)
             {
