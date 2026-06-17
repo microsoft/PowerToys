@@ -3,8 +3,16 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- OneFuzz does not currently support testing with .NET 9.
        As a temporary workaround, create a .NET 8 project and use file links 
-       to include the code that needs testing. -->
-  <PropertyGroup>
+       to include the code that needs testing.
+
+       Set /p:DisableFuzzTests=true to temporarily opt the fuzz projects out of
+       the .NET 8 target framework. When disabled they keep the net10 target
+       inherited from Common.Dotnet.CsWinRT.props (imported just before this file),
+       so a solution-wide restore no longer needs the .NET 8 targeting/host packs
+       (Microsoft.*.App.*.8.0.x). Intended only for validating unrelated changes
+       such as UI tests. Do NOT merge with fuzz tests disabled - OneFuzz ingestion
+       requires the .NET 8 output. -->
+  <PropertyGroup Condition="'$(DisableFuzzTests)' != 'true'">
     <TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
   </PropertyGroup>
 

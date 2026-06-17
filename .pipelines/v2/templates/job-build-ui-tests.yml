@@ -72,7 +72,10 @@ jobs:
     displayName: Restore solution-level NuGet packages
     inputs:
       solution: PowerToys.slnx
-      msbuildArguments: '/t:restore /p:RestorePackagesConfig=true'
+      # DisableFuzzTests keeps the *.FuzzTests projects on net10 for this UI-tests-only
+      # job, so the restore does not require the .NET 8 (8.0.x) targeting/host packs.
+      # The main build job still builds the fuzz projects on net8 for OneFuzz.
+      msbuildArguments: '/t:restore /p:RestorePackagesConfig=true /p:DisableFuzzTests=true'
       platform: $(BuildPlatform)
       configuration: $(BuildConfiguration)
 
