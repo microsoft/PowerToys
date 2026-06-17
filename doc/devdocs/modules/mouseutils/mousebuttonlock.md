@@ -49,14 +49,48 @@ Mouse Button Lock builds as part of the PowerToys solution. The runtime is a nat
 
 Build status: the module is build-verified. A local x64 Release build compiles `version`/`logger`/`SettingsAPI` and the module, and links `PowerToys.MouseButtonLock.dll` (exporting `powertoy_create`) with clean C++ code analysis.
 
+## Runtime verification
+
+The unit tests cover the Win32-free `Engine`. The Win32 glue in `dllmain.cpp` (hook install, the message pump, suppression by returning `1`, the tagged `SendInput` injection, and the injection-tag self-filter) is exercised end to end by a small standalone harness:
+
+- The harness `LoadLibrary`s the built `PowerToys.MouseButtonLock.dll`, calls the exported `powertoy_create()` and `enable()` to install the real `WH_MOUSE_LL` hook on the module's own thread, then synthesizes gestures with untagged `SendInput`. Untagged injected input is indistinguishable from physical input to the hook (the hook filters only its own events, by `dwExtraInfo == 0x57494E4D`), so this drives the production code path rather than a stub.
+- It observes `GetAsyncKeyState(VK_RBUTTON)`, which reads held only while the OS believes the button is down. That is a direct proxy for "the suppressed up actually took effect".
+- Scenarios, all passing (3 runs, 5/5): baseline up; a quick tap below the threshold does not lock; a hold past the threshold then release locks (up suppressed, button stays held); a release tap clears the lock; a drag past the dead-zone cancels the lock. Clicks are contained to a transient top-most scratch window under the cursor, and the harness force-releases the button and disables the module on exit.
+
+Source and build script currently live in the gitignored build output at `x64\Release\` (`mbl_harness.cpp`, `build_harness.cmd`). Rebuild with `build_harness.cmd`; run `x64\Release\mbl_harness.exe` from that folder so it finds the DLL. The harness is ephemeral there (a clean of `x64\` wipes it). To keep it, promote it to a tracked `tools\` project per the [tools convention](../../tools/readme.md) (PowerToys keeps standalone debug/test apps under `tools\`, built into `{install}\tools`), with a short page under `doc\devdocs\tools\` and an entry in that readme.
+
+What the harness does not cover, and still needs the manual pass below: real mouse hardware (vs `SendInput`, which the hook treats identically but is not literally the same), the runner actually loading the DLL via `knownModules`, the C# Settings UI plumbing, and behavior inside real apps (context menu staying open, drag-select continuing).
+
+## Fuzzing
+
+PowerToys requires fuzzing for user-input modules (`AGENTS.md`: "New modules handling file I/O or user input must implement fuzzing tests"). `MouseButtonLock.FuzzTests` (folder `src/modules/MouseUtils/MouseButtonLock.FuzzingTest/`) is a C++ libFuzzer target over the Win32-free `Engine`, modeled on the repo's one existing C++ fuzz project (`PowerRename.FuzzingTest`).
+
+- Target: `MouseButtonLock.FuzzingTest.cpp` decodes the fuzzer's bytes into a sequence of engine events (button down/up, cursor move, settings changes, and the lifecycle calls `EnforceEnabled` / `ReleaseAll` / `ResetTransient` / `IsLocked`) with adversarial ticks, coordinates, and settings, driving `mousebuttonlock::Engine` with a recording stand-in for the `SendInput` injector. The engine is header-only and Win32-free, so the target needs no project reference and touches no OS state.
+- Registration: listed in `PowerToys.slnx` under `/modules/MouseUtils/Tests/` (ARM64 build disabled, which OneFuzz does not support) and emitted to `x64\Release\tests\MouseButtonLock.FuzzTests\`, so the OneFuzz pipeline's existing `**/tests/*.FuzzTests/**` glob (`.pipelines/v2/templates/job-fuzz.yml`) picks it up with no pipeline edit. `OneFuzzConfig.json` uses the repo's v3 schema (the shape `PowerRename` uses, not the older `fuzzers[]` example in `fuzzingtesting.md`); the `adoTemplate` `AssignedTo` / notification fields carry the repo defaults and must be set by whoever owns the OneFuzz submission.
+- Local run: the ASan toolchain is available via the "C++ AddressSanitizer" VS component. `build_mbl_fuzzer.cmd` (in the gitignored `x64\Release\`) compiles the target with `/fsanitize=address /fsanitize=fuzzer` directly through cl.exe (bypassing the repo's vcpkg-gated msbuild) and copies the ASan runtime DLL beside it. A 26-second run executed 815,727 inputs with zero crashes and no ASan findings.
+- Hardening it surfaced: `Engine::CheckMoveCancel` computed the squared cursor displacement as `long long` (`dx*dx + dy*dy`), which can overflow signed 64-bit for extreme coordinates. Production coordinates are screen-bounded so it never triggered, but the comparison is now done in `double` to stay defined across the full coordinate range the fuzzer drives. All 15 unit tests still pass after the change.
+- Possible second target (not yet added): the settings-JSON path (`parse_settings` in `dllmain.cpp`). It needs the WinRT JSON parser and SettingsAPI wired in, so it is heavier than the header-only engine target, which already covers the core user-input state machine.
+
 ## Open items / not yet wired
 
 Done: GPO is fully wired end to end (`gpo.h` constant + getter, GPOWrapper `idl`/`h`/`cpp`, both `ModuleGpoHelper`s, and the ADMX/ADML templates in `src/gpo/assets/`); ESRP signing lists `PowerToys.MouseButtonLock.dll`; and the spell-check dictionary has the new tokens. The in-process DLL is harvested into the installer by the existing `$(Platform)\Release\*.dll` glob (like the other MouseUtils DLLs), so no per-module `.wxs` is needed. A 36x36 settings/dashboard icon (`MouseButtonLock.png`) and a C++ unit-test project (`MouseButtonLock.UnitTests`, 15 tests over the state machine) are in place; the test runs in CI via the solution's `Build;Test` target, so no pipeline edit is needed.
 
-Still open, and intentionally deferred until the approach is agreed on the proposal issue (microsoft/PowerToys#48302):
+Still open, roughly by priority. Items 1-3 and 7 were found by auditing the module against the dev docs and the conventions of the sibling MouseUtils modules; none are runtime blockers, but 1-3 are parity/registration gaps a reviewer will expect closed.
 
-- ETW telemetry beyond the enable/disable event.
-- Fuzzing coverage (PowerToys requires fuzzing for user-input modules).
-- Game compatibility validation: `WH_MOUSE_LL` may not observe or suppress input in titles using Raw Input or exclusive DirectInput.
-- Release the lock on session lock / fast-user-switch (`WTSRegisterSessionNotification` -> `ReleaseAllLocked`). The standalone reference app did this; in the module a button locked when the session locks stays logically held until the next physical tap. Minor and self-healing, tracked as a parity follow-up.
-- A full x64 Release build of the entire `PowerToys.slnx` on a fully provisioned machine, and a runtime check that the runner loads the module and the lock works end to end. (The module itself already compiles and links cleanly; what remains is the whole-solution build plus manual runtime validation.)
+1. **Telemetry registration in `DATA_AND_PRIVACY.md` (should-fix).** The module fires the TraceLogging event `Microsoft.PowerToys.MouseButtonLock_EnableMouseButtonLock` on enable/disable (`trace.cpp`, fired from `dllmain.cpp`), but `DATA_AND_PRIVACY.md` has no Mouse Button Lock section, unlike every sibling MouseUtils module. Add a section mirroring the Cursor Wrap entry. No ETW manifest change is needed: modules share the `Microsoft.PowerToys` provider, so this doc is the only cross-module telemetry registry.
+
+2. **Command Palette parity (should-fix).** Every sibling MouseUtils module is toggleable from the Command Palette via `MouseUtilsModuleCommandProvider` + a `Toggle<Module>Command` + `Resources.resx` strings; Mouse Button Lock has no CmdPal presence at all (`src/modules/cmdpal/...` has zero references to it). Add `ToggleMouseButtonLockCommand.cs`, an `IsKeyEnabled("MouseButtonLock")` branch in `MouseUtilsModuleCommandProvider.BuildCommands()`, and `MouseUtils_MouseButtonLock_Title` / `_Subtitle` resources, mirroring `ToggleCursorWrapCommand`. Not a runner load blocker.
+
+3. **UI test parity (should-fix).** The shared `src/modules/MouseUtils/MouseUtils.UITests/` project covers every other in-process MouseUtils module but has no `MouseButtonLockTests.cs`, and the `RestartScopeExe(...)` module list in `FindMyMouseTests.cs` omits MouseButtonLock. Add a Settings-UI UI test (toggle rmb/mmb, hold duration, move-cancel fields) and include the module in the restart scope. The engine itself is already covered by `MouseButtonLock.UnitTests`.
+
+4. **Full-solution build + manual runtime validation.** Build the whole solution and confirm the runner loads the module and the lock works in real apps. Per `AGENTS.md`: first `tools\build\build-essentials.cmd` (NuGet restore), then `tools\build\build.ps1 -Platform x64 -Configuration Release` (or just `runner` + `Settings.UI` for a faster launchable app). Exit code 0 is success; on failure read `build.Release.x64.errors.log`. Then run `x64\Release\PowerToys.exe`, enable Mouse Button Lock on the Mouse utilities page, and feel: RMB hold keeps a context menu open; toggling the module off mid-lock releases cleanly; enable `mmb_lock_enabled` and verify the middle button independently. The hook path is already runtime-verified (see Runtime verification); this adds the runner + Settings UI + real-app layer.
+
+5. **Game compatibility validation.** `WH_MOUSE_LL` may not observe or suppress input in titles using Raw Input or exclusive DirectInput. Needs a real-game pass; neither the harness nor the LL hook can prove this.
+
+6. **Release the lock on session lock / fast-user-switch** (`WTSRegisterSessionNotification` -> `ReleaseAll`). The standalone reference app did this; in the module a button locked when the session locks stays logically held until the next physical tap. Minor and self-healing.
+
+7. **`trace.cpp` include style (minor nit).** `trace.cpp` uses a deep relative `#include "../../../../common/Telemetry/TraceBase.h"`; `trace.h` and the sibling MouseUtils modules use the angle-bracket `<common/Telemetry/TraceBase.h>` form, which the project's include dirs already resolve. Inherited from CursorWrap, the module this was copied from. Compiles either way.
+
+8. **ETW telemetry** beyond the enable/disable event.
+
+Cross-checks against the `AGENTS.md` validation checklist: no third-party dependencies were added (no `NOTICE.md` change needed); the settings schema is mirrored on both sides (C# `MouseButtonLockProperties` and C++ `parse_settings`); the engine and doc working-tree edits (the `CheckMoveCancel` hardening and this doc) should be committed before review so the shipped code matches what the tests validated; keep the PR atomic and link the proposal issue microsoft/PowerToys#48302.

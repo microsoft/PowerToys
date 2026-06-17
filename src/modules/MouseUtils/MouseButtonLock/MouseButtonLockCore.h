@@ -202,9 +202,15 @@ namespace mousebuttonlock
             {
                 return;
             }
-            const long long dx = static_cast<long long>(pt.x) - st.downPos.x;
-            const long long dy = static_cast<long long>(pt.y) - st.downPos.y;
-            if (dx * dx + dy * dy > static_cast<long long>(pixels) * pixels)
+            // Compare squared distance in double. pt coordinates are 32-bit, so a raw long long
+            // product (dx*dx + dy*dy) can overflow signed 64-bit for extreme inputs. In production
+            // the cursor is screen-bounded so this never triggers, but the engine must stay defined
+            // for any input, and the fuzz target drives the full coordinate range. double holds these
+            // magnitudes without overflow; precision is far finer than a pixel dead-zone needs.
+            const double dx = static_cast<double>(pt.x) - static_cast<double>(st.downPos.x);
+            const double dy = static_cast<double>(pt.y) - static_cast<double>(st.downPos.y);
+            const double threshold = static_cast<double>(pixels) * static_cast<double>(pixels);
+            if (dx * dx + dy * dy > threshold)
             {
                 st.moveCancelled = true;
             }

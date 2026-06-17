@@ -537,6 +537,9 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseButtonLock.UnitTests/MouseButtonLock.UnitTests.vcxproj" Id="15f55815-dffc-4eb7-99e4-b6754a52a5c7" />
+    <Project Path="src/modules/MouseUtils/MouseButtonLock.FuzzingTest/MouseButtonLock.FuzzingTest.vcxproj" Id="c3b77613-9c8c-4c23-9a55-73def4921125">
+      <Build Solution="*|ARM64" Project="false" />
+    </Project>
   </Folder>
   <Folder Name="/modules/keyboardmanager/Tests/">
     <Project Path="src/modules/keyboardmanager/KeyboardManagerEditorTest/KeyboardManagerEditorTest.vcxproj" Id="62173d9a-6724-4c00-a1c8-fb646480a9ec" />
