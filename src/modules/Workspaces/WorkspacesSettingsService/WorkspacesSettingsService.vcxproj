@@ -55,13 +55,14 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Advapi32.lib;Shell32.lib;Pathcch.lib;Ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Advapi32.lib;Shell32.lib;Pathcch.lib;Ole32.lib;Wintrust.lib;Crypt32.lib;Version.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="WorkspacesSettingsService.cpp" />
     <ClCompile Include="PipeServer.cpp" />
     <ClCompile Include="CallerAuth.cpp" />
+    <ClCompile Include="CallerVerify.cpp" />
     <ClCompile Include="Bindings.cpp" />
     <ClCompile Include="FileGuard.cpp" />
     <ClCompile Include="Paths.cpp" />
@@ -69,6 +70,7 @@
   <ItemGroup>
     <ClInclude Include="PipeServer.h" />
     <ClInclude Include="CallerAuth.h" />
+    <ClInclude Include="CallerVerify.h" />
     <ClInclude Include="Bindings.h" />
     <ClInclude Include="FileGuard.h" />
     <ClInclude Include="Paths.h" />

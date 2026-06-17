@@ -4,6 +4,7 @@
 #include "CallerAuth.h"
 #include "Bindings.h"
 #include "Paths.h"
+#include "CallerVerify.h"
 
 #include <windows.h>
 #include <sddl.h>
@@ -194,13 +195,26 @@ namespace PTSettingsSvc
         std::wstring canonical = CanonicalizePath(exePath);
         outIdentity.imagePath = canonical;
 
-        // 4) Path-under-InstallFolder check.
+        // 4) Caller-image trust anchor.  This is ONE pipeline with a branch
+        //    selected by the install-folder DACL (Design-v6-Final.md §7):
+        //
+        //      * If the caller's image resolves under an admin-only-writable
+        //        install folder  -> trust the PATH anchor (per-machine).
+        //      * Otherwise the path cannot be trusted (per-user install in a
+        //        user-writable %LocalAppData% folder, or a relocated/custom
+        //        path) -> fall back to the BINARY-IDENTITY anchor: the image
+        //        must be Microsoft-signed AND its version must equal the
+        //        service's own version (§15 #5 option d).
+        //
+        //    Per-machine naturally takes the path branch; per-user naturally
+        //    takes the signature+version branch.  No separate "which install
+        //    am I" detection is needed.
         std::wstring installFolder = GetPowerToysInstallFolder();
         // Prototype dev override — lets the smoke test demonstrate the
-        // happy path without requiring a real MSI install + HKLM write.
-        // Production builds rely on the MSI-written
-        // HKLM\SOFTWARE\Classes\PowerToys\InstallFolder value.  This
-        // override should be removed (or #ifdef _DEBUG'd) before merge.
+        // per-machine path happy path without a real MSI install + HKLM write.
+        // Production relies on the MSI-written
+        // HKLM\SOFTWARE\Classes\PowerToys\InstallFolder value.  Remove (or
+        // #ifdef _DEBUG) before merge.
         if (installFolder.empty())
         {
             wchar_t dev[MAX_PATH] = {};
@@ -209,21 +223,37 @@ namespace PTSettingsSvc
                 installFolder = dev;
             }
         }
-        if (installFolder.empty() || !IsUnderDir(canonical, installFolder))
+
+        const bool pathTrusted =
+            !installFolder.empty() &&
+            IsUnderDir(canonical, installFolder) &&
+            IsFolderAdminOnlyWritable(installFolder);
+
+        bool accepted;
+        if (pathTrusted)
+        {
+            // Per-machine: the admin-only install path already guarantees the
+            // image's integrity, freshness and immutability.  Cheapest anchor.
+            accepted = true;
+        }
+        else
+        {
+            // Per-user fallback: signature pinned to Microsoft AND version equal
+            // to the service's own.  The signature is what makes the version
+            // trustworthy; version comparison alone would be forgeable.
+            const unsigned long long serviceVersion = GetServiceOwnVersion();
+            accepted =
+                serviceVersion != 0 &&
+                VerifyMicrosoftSignature(canonical) &&
+                GetBinaryVersion(canonical) == serviceVersion;
+        }
+
+        if (!accepted)
         {
             return E_ACCESSDENIED;
         }
 
-        // 5) Install-folder DACL-hardness check.  Rejects custom MSI install
-        //    paths under a user-writable parent (where same-user malware
-        //    could otherwise drop an allow-listed exe name and pass the
-        //    path+name check).  See Design-v6-Final.md §8.
-        if (!IsFolderAdminOnlyWritable(installFolder))
-        {
-            return E_ACCESSDENIED;
-        }
-
-        // 6) Caller binding lookup (basename allow-list + namespace selection).
+        // 5) Caller binding lookup (basename allow-list + namespace selection).
         std::wstring basename = BaseName(canonical);
         const CallerBinding* binding = FindBindingByExeBasename(basename);
         if (!binding)
