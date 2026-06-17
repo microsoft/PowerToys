@@ -71,8 +71,8 @@ public class MonitorIdentityTests
         // reported by QueryDisplayConfig as DisplayPort-External, yet WmiMonitorBrightness
         // still exposes it. The InstanceName and DevicePath captured in that state must reduce
         // to the same Monitor.Id so WMI can claim the panel and brightness control keeps working.
-        var instanceName = @"DISPLAY\BOE0D79\5&1eca36b7&0&UID4352_0";
-        var devicePath = @"\\?\DISPLAY#BOE0D79#5&1eca36b7&0&UID4352#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
+        var instanceName = @"DISPLAY\BOE0D79\5&1abcdef7&0&UID4352_0";
+        var devicePath = @"\\?\DISPLAY#BOE0D79#5&1abcdef7&0&UID4352#{e6f07b5f-ee97-4a90-b076-33f57bf4eaa7}";
 
         Assert.AreEqual(
             MonitorIdentity.FromDevicePath(devicePath),

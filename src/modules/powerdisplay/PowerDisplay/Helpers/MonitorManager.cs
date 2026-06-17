@@ -125,7 +125,7 @@ namespace PowerDisplay.Helpers
         /// Discover monitors by capability, not by nominal output technology. WMI runs first
         /// over the full QueryDisplayConfig inventory; every display it claims is a
         /// WMI-controllable internal panel. Whatever WMI does not claim is then sent to DDC/CI.
-        /// This avoids misrouting a built-in panel that the active (discrete) GPU reports as
+        /// This avoids incorrectly routing a built-in panel that the active (discrete) GPU reports as
         /// DisplayPort-External — the root cause of issue #48587.
         /// </summary>
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
