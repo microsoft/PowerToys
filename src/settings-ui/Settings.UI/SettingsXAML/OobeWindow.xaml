@@ -45,9 +45,13 @@
             Loaded="NavigationView_Loaded"
             OpenPaneLength="296"
             SelectionChanged="NavigationView_SelectionChanged">
+            <NavigationView.Resources>
+                <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
+                <SolidColorBrush x:Key="NavigationViewContentGridBorderBrush" Color="Transparent" />
+            </NavigationView.Resources>
             <NavigationView.MenuItems>
                 <NavigationViewItem
-                    x:Uid="Shell_General"
+                    x:Uid="Shell_Welcome"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerToys.png}"
                     Tag="Overview" />
                 <NavigationViewItem

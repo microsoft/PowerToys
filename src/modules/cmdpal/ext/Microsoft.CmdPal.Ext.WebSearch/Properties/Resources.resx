@@ -164,7 +164,7 @@
     <value>Search the web in {0}</value>
   </data>
   <data name="plugin_open_url" xml:space="preserve">
-    <value>Open "{0}"</value>
+    <value>Open {0}</value>
   </data>
   <data name="plugin_open_url_in_browser" xml:space="preserve">
     <value>Open url in {0}</value>
@@ -179,7 +179,7 @@
     <value>Settings</value>
   </data>
   <data name="web_search_fallback_subtitle" xml:space="preserve">
-    <value>Search for "{0}"</value>
+    <value>Search for {0}</value>
   </data>
   <data name="open_url_fallback_title" xml:space="preserve">
     <value>Open URL</value>

@@ -107,7 +107,7 @@
 ^src/common/sysinternals/Eula/
 ^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherComparisonTests.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CommandPalette\.Extensions\.Toolkit\.UnitTests/FuzzyMatcherDiacriticsTests.cs$
-^doc/devdocs/modules/cmdpal/initial-sdk-spec/list-elements-mock-002\.pdn$
+^src/modules/cmdpal/doc/initial-sdk-spec/list-elements-mock-002\.pdn$
 ^src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage\.cs$
 ^src/modules/cmdpal/Microsoft\.CmdPal\.UI/Settings/InternalPage\.SampleData\.cs$
 ^src/modules/cmdpal/Tests/Microsoft\.CmdPal\.Common\.UnitTests/.*\.TestData\.cs$
@@ -135,6 +135,8 @@
 ^src/modules/previewpane/SvgPreviewHandler/SvgHTMLPreviewGenerator\.cs$
 ^src/modules/previewpane/UnitTests-MarkdownPreviewHandler/HelperFiles/MarkdownWithHTMLImageTag\.txt$
 ^src/modules/registrypreview/RegistryPreviewUILib/Controls/HexBox/.*$
+^src/modules/ZoomIt/ZoomIt/rnnoise/
+^src/modules/ZoomIt/ZoomIt/selfie_segmentation\.onnx$
 ^src/modules/ZoomIt/ZoomIt/ZoomIt\.idc$
 ^src/Monaco/
 ^tools/project_template/ModuleTemplate/resource\.h$
@@ -143,3 +145,4 @@ ignore$
 src/modules/cmdpal/ext/SamplePagesExtension/Pages/SampleMarkdownImagesPage.cs
 ^src/modules/powerrename/unittests/testdata/avif_test\.avif$
 ^src/modules/powerrename/unittests/testdata/heif_test\.heic$
+^deps/spdlog-msvc-fix/

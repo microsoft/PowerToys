@@ -212,6 +212,11 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
     internal string CreateGPUImageUrl(int gpuChartIndex)
     {
+        if (_stats.Count <= gpuChartIndex)
+        {
+            return string.Empty;
+        }
+
         return ChartHelper.CreateImageUrl(_stats[gpuChartIndex].GpuChartValues, ChartHelper.ChartType.GPU);
     }
 

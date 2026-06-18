@@ -1587,7 +1587,6 @@ SOFTWARE.
 - NLog.Extensions.Logging
 - NLog.Schema
 - OpenAI
-- Polly.Core
 - ReverseMarkdown
 - ScipBe.Common.Office.OneNote
 - SharpCompress
@@ -1601,5 +1600,5 @@ SOFTWARE.
 - UTF.Unknown
 - WinUIEx
 - WmiLight
-- WPF-UI
 - WyHash
+- YamlDotNet

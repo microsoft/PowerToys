@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using ImageResizer.Helpers;
 using ImageResizer.ViewModels;
 using ImageResizer.Views;
 using ManagedCommon;
@@ -43,6 +44,8 @@ namespace ImageResizer
             SetTitleBar(titleBar);
             this.SetIcon("Assets/ImageResizer/ImageResizer.ico");
 
+            Title = ResourceLoaderInstance.GetString("ImageResizer");
+
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
 
             // Keep the window hidden until content is loaded and measured.
@@ -69,6 +72,12 @@ namespace ImageResizer
 
         private void UpdateCurrentPage()
         {
+            // Unsubscribe before every page transition. Without this, the handler
+            // remains active on the detached InputPage. Because WinUI 3 LayoutUpdated
+            // is a global compositor event, the stale handler would fire on every
+            // subsequent layout pass and invoke SizeToContent() in an invalid context.
+            UnsubscribeSelectedSizeHandler();
+
             var page = ViewModel.CurrentPage;
             if (page == null)
             {
@@ -99,6 +108,15 @@ namespace ImageResizer
             }
         }
 
+        private void UnsubscribeSelectedSizeHandler()
+        {
+            if (_selectedSizeChangedHandler != null && _currentInputViewModel?.Settings != null)
+            {
+                _currentInputViewModel.Settings.PropertyChanged -= _selectedSizeChangedHandler;
+                _selectedSizeChangedHandler = null;
+            }
+        }
+
         /// <summary>
         /// After the element completes layout, size the window to fit and show it.
         /// </summary>
@@ -116,12 +134,6 @@ namespace ImageResizer
 
         private void AdjustWindowForInputPage(InputViewModel inputVM, InputPage inputPage)
         {
-            // Unsubscribe previous handler to prevent memory leak
-            if (_selectedSizeChangedHandler != null && _currentInputViewModel?.Settings != null)
-            {
-                _currentInputViewModel.Settings.PropertyChanged -= _selectedSizeChangedHandler;
-            }
-
             _currentInputViewModel = inputVM;
 
             // Create and store handler reference for future cleanup
@@ -190,6 +202,11 @@ namespace ImageResizer
         /// </summary>
         private void SizeToContent()
         {
+            if (AppWindow == null)
+            {
+                return;
+            }
+
             var pageContentRoot = GetCurrentPageContentRoot();
             if (pageContentRoot == null)
             {
@@ -253,6 +270,11 @@ namespace ImageResizer
 
         private void ApplyWindowSizeForClientContent(double desiredClientHeight)
         {
+            if (AppWindow == null)
+            {
+                return;
+            }
+
             var scale = this.GetDpiForWindow() / 96.0;
             var frameHeight = Math.Max(0, AppWindow.Size.Height - AppWindow.ClientSize.Height) / scale;
             var outerHeight = desiredClientHeight + frameHeight;

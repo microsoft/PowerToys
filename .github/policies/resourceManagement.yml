@@ -163,7 +163,7 @@ configuration:
             association: Collaborator
       then:
       - addReply:
-          reply: Hi! We've identified this issue as a duplicate of another one that already exists on this Issue Tracker. This specific instance is being closed in favor of tracking the concern over on the referenced thread. Thanks for your report!
+          reply: We've identified this issue as a duplicate of an existing one and are closing this thread so discussion stays in one place.<br/><br/>Please see the comment above for the link to the original tracking issue, and feel free to subscribe there for updates.
       - closeIssue
       - removeLabel:
           label: Needs-Triage
@@ -266,16 +266,5 @@ configuration:
       - addReply:
           reply: Hi! Your last comment indicates to our system, that you might want to contribute to this feature/fix this bug. Thank you! Please make us aware on our ["Would you like to contribute to PowerToys?" thread](https://github.com/microsoft/PowerToys/issues/28769), as we don't see all the comments. <br /><br />_I'm a bot (beep!) so please excuse any mistakes I may make_
       description:
-    - if:
-      - payloadType: Issues
-      - isAction:
-          action: Opened
-      - bodyContains:
-          pattern: 'Area\(s\) with issue\?\s*\nWorkspaces'
-          isRegex: True
-      then:
-      - addLabel:
-          label: Product-Workspaces
-      description: 
 onFailure: 
 onSuccess: 

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 
 using Windows.Win32;
 using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.UI.HiDpi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -51,36 +52,36 @@ internal static class WindowsFunctions
                 Thread.Sleep(1); // Some apps, like Terminal, need a little wait to process the sent backspace or they'll ignore it.
             }
 
-            foreach (char c in s)
+            if (s.Length > 0)
             {
-                // Letter
-                var inputsInsert = new INPUT[]
+                var inputsInsert = new INPUT[s.Length * 2];
+                for (int i = 0; i < s.Length; i++)
                 {
-                    new INPUT
+                    inputsInsert[i * 2] = new INPUT
                     {
                         type = INPUT_TYPE.INPUT_KEYBOARD,
                         Anonymous = new INPUT._Anonymous_e__Union
                         {
                             ki = new KEYBDINPUT
                             {
-                                wScan = c,
+                                wScan = s[i],
                                 dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_UNICODE,
                             },
                         },
-                    },
-                    new INPUT
+                    };
+                    inputsInsert[(i * 2) + 1] = new INPUT
                     {
                         type = INPUT_TYPE.INPUT_KEYBOARD,
                         Anonymous = new INPUT._Anonymous_e__Union
                         {
                             ki = new KEYBDINPUT
                             {
-                                wScan = c,
+                                wScan = s[i],
                                 dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_UNICODE | KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
                             },
                         },
-                    },
-                };
+                    };
+                }
 
                 _ = PInvoke.SendInput(inputsInsert, Marshal.SizeOf<INPUT>());
             }
@@ -98,7 +99,13 @@ internal static class WindowsFunctions
         monitorInfo.cbSize = (uint)Marshal.SizeOf(monitorInfo);
         PInvoke.GetMonitorInfo(res, ref monitorInfo);
 
-        double dpi = PInvoke.GetDpiForWindow(guiInfo.hwndActive) / 96d;
+        uint dpiRaw = 96; // Safe default
+        if (PInvoke.GetDpiForMonitor(res, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI, out uint dpiX, out _) == 0)
+        {
+            dpiRaw = dpiX;
+        }
+
+        double dpi = dpiRaw / 96d;
         var location = new Point(monitorInfo.rcWork.left, monitorInfo.rcWork.top);
         return (location, monitorInfo.rcWork.Size, dpi);
     }
@@ -111,7 +118,7 @@ internal static class WindowsFunctions
 
     public static bool IsShiftState()
     {
-        var shift = PInvoke.GetKeyState((int)VIRTUAL_KEY.VK_SHIFT);
+        var shift = PInvoke.GetAsyncKeyState((int)VIRTUAL_KEY.VK_SHIFT);
         return shift < 0;
     }
 }
