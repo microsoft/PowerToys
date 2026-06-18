@@ -8,103 +8,111 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:toolkit="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:primitives="using:CommunityToolkit.WinUI.UI.Controls.Primitives"
     mc:Ignorable="d">
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" MinWidth="150" MaxWidth="320" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="220" MinWidth="150" MaxWidth="320" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <!--  Left pane: table tree  -->
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
-            <!--  Left pane: table tree  -->
+            <TextBlock 
+                Grid.Row="0"
+                Text="{x:Bind TableCount, Mode=OneWay}" 
+                FontWeight="SemiBold" 
+                Margin="16,12,16,8" 
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
             <TreeView
                 x:Name="TableTreeView"
-                Grid.Column="0"
+                Grid.Row="1"
                 ItemInvoked="TableTreeView_ItemInvoked">
                 <TreeView.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Content}" TextTrimming="CharacterEllipsis">
-                            <ToolTipService.ToolTip>
-                                <ToolTip Content="{Binding Content}" />
-                            </ToolTipService.ToolTip>
-                        </TextBlock>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="{Binding Content.Glyph}" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="{Binding Content.Name}" TextTrimming="CharacterEllipsis">
+                                <ToolTipService.ToolTip>
+                                    <ToolTip Content="{Binding Content.Name}" />
+                                </ToolTipService.ToolTip>
+                            </TextBlock>
+                        </StackPanel>
                     </DataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
-
-            <!--  Divider  -->
-            <Border
-                Grid.Column="1"
-                Width="1"
-                Background="{ThemeResource CardStrokeColorDefaultBrush}" />
-
-            <!--  Right pane  -->
-            <Grid Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <!--  Record count header  -->
-                <Border
-                    x:Name="RecordCountHeader"
-                    Grid.Row="0"
-                    Padding="12,6"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="0,0,0,1"
-                    Visibility="Collapsed">
-                    <TextBlock x:Name="RecordCountText" />
-                </Border>
-
-                <!--  Data grid  -->
-                <toolkit:DataGrid
-                    x:Name="TableDataGrid"
-                    Grid.Row="1"
-                    AreRowDetailsFrozen="True"
-                    AutoGenerateColumns="False"
-                    CanDrag="False"
-                    ColumnWidth="Auto"
-                    GridLinesVisibility="All"
-                    HeadersVisibility="Column"
-                    IsReadOnly="True"
-                    MinColumnWidth="80"
-                    RowDetailsVisibilityMode="Collapsed"
-                    SelectionMode="Extended"
-                    SizeChanged="TableDataGrid_SizeChanged"
-                    Visibility="Collapsed" />
-
-                <!--  Placeholder when no table is selected  -->
-                <TextBlock
-                    x:Name="NoSelectionText"
-                    x:Uid="SQLite_NoTableSelected"
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-            </Grid>
         </Grid>
 
-        <!--  Footer  -->
+        <!--  Divider  -->
         <Border
-            Grid.Row="1"
-            Margin="16"
-            HorizontalAlignment="Center"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="8">
-            <TextBlock
-                Padding="16,8,16,8"
-                IsTextSelectionEnabled="True"
-                Text="{x:Bind TableCount, Mode=OneWay}" />
-        </Border>
+            Grid.Column="1"
+            Width="1"
+            Background="{ThemeResource CardStrokeColorDefaultBrush}" />
+
+        <!--  Right pane  -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  Record count header  -->
+            <Border
+                x:Name="RecordCountHeader"
+                Grid.Row="0"
+                Padding="12,6"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="0,0,0,1"
+                Visibility="Collapsed">
+                <TextBlock x:Name="RecordCountText" />
+            </Border>
+
+            <!--  Data grid  -->
+            <toolkit:DataGrid
+                x:Name="TableDataGrid"
+                Grid.Row="1"
+                AreRowDetailsFrozen="True"
+                AutoGenerateColumns="False"
+                Background="Transparent"
+                RowBackground="Transparent"
+                AlternatingRowBackground="Transparent"
+                CanDrag="False"
+                ColumnWidth="Auto"
+                GridLinesVisibility="Horizontal"
+                HeadersVisibility="Column"
+                IsReadOnly="True"
+                MinColumnWidth="80"
+                RowDetailsVisibilityMode="Collapsed"
+                SelectionMode="Extended"
+                SizeChanged="TableDataGrid_SizeChanged"
+                Visibility="Collapsed">
+                <toolkit:DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="primitives:DataGridColumnHeader">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                    </Style>
+                </toolkit:DataGrid.ColumnHeaderStyle>
+            </toolkit:DataGrid>
+
+            <!--  Placeholder when no table is selected  -->
+            <StackPanel
+                x:Name="NoSelectionText"
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Spacing="16">
+                <FontIcon Glyph="&#xE14E;" FontSize="48" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Uid="SQLite_NoTableSelected" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

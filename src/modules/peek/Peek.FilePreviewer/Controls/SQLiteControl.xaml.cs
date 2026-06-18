@@ -103,10 +103,16 @@ namespace Peek.FilePreviewer.Controls
 
         private void AddTableNode(SQLiteTableInfo table)
         {
-            var tableNode = new TreeViewNode { Content = table };
+            var tableNode = new TreeViewNode
+            {
+                Content = new SQLiteTreeNode { Name = table.Name, Glyph = "\uE14E", Table = table, },
+            };
             foreach (var col in table.Columns)
             {
-                tableNode.Children.Add(new TreeViewNode { Content = col.DisplayText });
+                tableNode.Children.Add(new TreeViewNode
+                {
+                    Content = new SQLiteTreeNode { Name = col.DisplayText, Glyph = "\uE1C3", },
+                });
             }
 
             TableTreeView.RootNodes.Add(tableNode);
@@ -114,7 +120,7 @@ namespace Peek.FilePreviewer.Controls
 
         private void TableTreeView_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
         {
-            if (args.InvokedItem is TreeViewNode { Content: SQLiteTableInfo table })
+            if (args.InvokedItem is TreeViewNode { Content: SQLiteTreeNode { Table: SQLiteTableInfo table } })
             {
                 ShowTableData(table);
             }
@@ -129,7 +135,7 @@ namespace Peek.FilePreviewer.Controls
                 TableDataGrid.Columns.Add(new DataGridTextColumn
                 {
                     Header = col.Name,
-                    Binding = new Binding { Path = new PropertyPath($"[{col.Name}]") },
+                    Binding = new Binding { Path = new PropertyPath($"[{col.BindingKey}]") },
                     IsReadOnly = true,
                 });
             }
@@ -140,10 +146,16 @@ namespace Peek.FilePreviewer.Controls
             // so ActualWidth values are valid when we decide whether to stretch the last column.
             TableDataGrid.DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, AdjustLastColumnWidth);
 
-            RecordCountText.Text = string.Format(
-                CultureInfo.CurrentCulture,
-                ResourceLoaderInstance.ResourceLoader.GetString("SQLite_Row_Count"),
-                table.RowCount);
+            RecordCountText.Text = table.RowCount > table.Rows.Count
+                ? string.Format(
+                    CultureInfo.CurrentCulture,
+                    ResourceLoaderInstance.ResourceLoader.GetString("SQLite_Row_Count_Truncated"),
+                    table.Rows.Count,
+                    table.RowCount)
+                : string.Format(
+                    CultureInfo.CurrentCulture,
+                    ResourceLoaderInstance.ResourceLoader.GetString("SQLite_Row_Count"),
+                    table.RowCount);
 
             RecordCountHeader.Visibility = Visibility.Visible;
             TableDataGrid.Visibility = Visibility.Visible;
@@ -162,7 +174,7 @@ namespace Peek.FilePreviewer.Controls
                 return;
             }
 
-            var lastCol = TableDataGrid.Columns[TableDataGrid.Columns.Count - 1];
+            var lastCol = TableDataGrid.Columns[^1];
 
             // Capture the last column's natural auto-width the first time it is measured.
             // Once the column is Star-stretched we keep using the stored value so that
@@ -183,14 +195,9 @@ namespace Peek.FilePreviewer.Controls
                 otherColumnsWidth += TableDataGrid.Columns[i].ActualWidth;
             }
 
-            if (otherColumnsWidth + _lastColumnAutoWidth < TableDataGrid.ActualWidth)
-            {
-                lastCol.Width = new DataGridLength(1, DataGridLengthUnitType.Star);
-            }
-            else
-            {
-                lastCol.Width = new DataGridLength(1, DataGridLengthUnitType.Auto);
-            }
+            lastCol.Width = otherColumnsWidth + _lastColumnAutoWidth < TableDataGrid.ActualWidth
+                ? new DataGridLength(1, DataGridLengthUnitType.Star)
+                : new DataGridLength(1, DataGridLengthUnitType.Auto);
         }
 
         private void ClearDataView()
@@ -201,6 +208,15 @@ namespace Peek.FilePreviewer.Controls
             RecordCountHeader.Visibility = Visibility.Collapsed;
             TableDataGrid.Visibility = Visibility.Collapsed;
             NoSelectionText.Visibility = Visibility.Visible;
+        }
+
+        public sealed class SQLiteTreeNode
+        {
+            public string Name { get; set; } = string.Empty;
+
+            public string Glyph { get; set; } = string.Empty;
+
+            public SQLiteTableInfo? Table { get; set; }
         }
     }
 }

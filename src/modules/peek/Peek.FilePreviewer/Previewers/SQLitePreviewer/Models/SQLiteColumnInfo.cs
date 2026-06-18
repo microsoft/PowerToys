@@ -16,6 +16,12 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer.Models
 
         public bool IsNotNull { get; set; }
 
+        /// <summary>
+        /// Sanitized key used for WinUI binding paths and row dictionary keys.
+        /// Computed after all columns are loaded to handle potential collisions.
+        /// </summary>
+        public string BindingKey { get; set; } = string.Empty;
+
         public string DisplayText
         {
             get
