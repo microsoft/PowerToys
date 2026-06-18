@@ -99,6 +99,12 @@ void DarkMode::ApplyToMenu(HMENU menu)
         return;
     }
 
+    Initialize();
+    if (!pSetPreferredAppMode)
+    {
+        return;
+    }
+
     MENUINFO mi = { sizeof(mi) };
     mi.fMask = MIM_BACKGROUND | MIM_APPLYTOSUBMENUS;
 
