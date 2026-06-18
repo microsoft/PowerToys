@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Globalization;
+using System.IO;
 using System.Text;
+using ManagedCommon;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
@@ -64,44 +66,16 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
     public ICommandResult Invoke(object sender)
     {
         var bookmarkAddress = ReplacePlaceholders(_bookmarkData.Bookmark);
-        var classification = _bookmarkResolver.ClassifyOrUnknown(bookmarkAddress);
-
-        // If the classification points to a filesystem path that doesn't exist, fall back to the nearest existing parent directory.
-        var classificationToLaunch = classification;
-
+        var success = false;
         try
         {
-            if (!string.IsNullOrWhiteSpace(classification.Target)
-                && !Directory.Exists(classification.Target)
-                && !File.Exists(classification.Target))
-            {
-                // Walk up to nearest existing parent directory
-                var parent = Path.GetDirectoryName(classification.Target);
-                while (!string.IsNullOrWhiteSpace(parent) && !Directory.Exists(parent))
-                {
-                    parent = Path.GetDirectoryName(parent);
-                }
-
-                if (!string.IsNullOrWhiteSpace(parent) && Directory.Exists(parent))
-                {
-                    classificationToLaunch = new Classification(
-                        CommandKind.Directory,
-                        classification.Input,
-                        parent,
-                        string.Empty,
-                        LaunchMethod.ExplorerOpen,
-                        parent,
-                        classification.IsPlaceholder);
-                }
-            }
+            var classification = _bookmarkResolver.ClassifyOrUnknown(bookmarkAddress);
+            success = LaunchWithFilesystemFallback(classification);
         }
         catch (Exception ex)
         {
-            // Be defensive; log and continue with the original classification
-            Logger.LogError($"Failed to compute fallback parent for bookmark '{bookmarkAddress}'", ex);
+            Logger.LogError($"Failed to launch bookmark '{bookmarkAddress}'", ex);
         }
-
-        var success = CommandLauncher.Launch(classificationToLaunch);
 
         return success
             ? CommandResult.Dismiss()
@@ -112,6 +86,98 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
                     : string.Format(CultureInfo.CurrentCulture, FailedToOpenMessageFormat, bookmarkAddress),
                 Result = CommandResult.KeepOpen(),
             });
+    }
+
+    private static bool LaunchWithFilesystemFallback(Classification classification)
+    {
+        if (TryLaunch(classification))
+        {
+            return true;
+        }
+
+        if (!IsFilesystemFallbackCandidate(classification))
+        {
+            return false;
+        }
+
+        if (!TryGetNearestExistingParentDirectory(classification, out var parentDirectory))
+        {
+            return false;
+        }
+
+        var fallbackClassification = classification with
+        {
+            Kind = CommandKind.Directory,
+            Target = parentDirectory,
+            Arguments = string.Empty,
+            Launch = LaunchMethod.ExplorerOpen,
+            WorkingDirectory = parentDirectory,
+            FileSystemTarget = parentDirectory,
+        };
+
+        return TryLaunch(fallbackClassification);
+    }
+
+    private static bool TryLaunch(Classification classification)
+    {
+        try
+        {
+            return CommandLauncher.Launch(classification);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to launch bookmark target '{classification.Target}'", ex);
+            return false;
+        }
+    }
+
+    private static bool IsFilesystemFallbackCandidate(Classification classification) =>
+        classification.Kind switch
+        {
+            CommandKind.Directory => true,
+            CommandKind.FileDocument => true,
+            CommandKind.Shortcut => true,
+            CommandKind.InternetShortcut => true,
+            CommandKind.VirtualShellItem => !string.IsNullOrWhiteSpace(classification.FileSystemTarget),
+            _ => false,
+        };
+
+    private static bool TryGetNearestExistingParentDirectory(Classification classification, out string parentDirectory)
+    {
+        parentDirectory = string.Empty;
+
+        try
+        {
+            var pathToProbe = string.IsNullOrWhiteSpace(classification.FileSystemTarget) ? classification.Target : classification.FileSystemTarget;
+            if (string.IsNullOrWhiteSpace(pathToProbe))
+            {
+                return false;
+            }
+
+            var current = pathToProbe.Trim();
+            if (Directory.Exists(current))
+            {
+                parentDirectory = current;
+                return true;
+            }
+
+            current = current.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            while (!string.IsNullOrWhiteSpace(current))
+            {
+                current = Path.GetDirectoryName(current);
+                if (!string.IsNullOrWhiteSpace(current) && Directory.Exists(current))
+                {
+                    parentDirectory = current;
+                    return true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to resolve fallback folder for '{classification.Target}'", ex);
+        }
+
+        return false;
     }
 
     private string ReplacePlaceholders(string input)
