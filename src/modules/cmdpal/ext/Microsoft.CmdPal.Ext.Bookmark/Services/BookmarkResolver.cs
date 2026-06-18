@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -133,12 +134,12 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             (longestUnquotedHead, tailAfterLongestUnquotedHead) = CommandLineHelper.SplitHeadAndArgs(input);
         }
 
-        var (headPath, tailArgs) = ExpandToBestExistingPath(longestUnquotedHead, tailAfterLongestUnquotedHead, isPlaceholder, placeholderParser);
+        var (headPath, tailArgs, usedParentDirectoryFallback) = ExpandToBestExistingPath(longestUnquotedHead, tailAfterLongestUnquotedHead, isPlaceholder, placeholderParser);
         if (headPath is not null)
         {
             var args = tailArgs ?? string.Empty;
 
-            if (Directory.Exists(headPath))
+            if (usedParentDirectoryFallback || Directory.Exists(headPath))
             {
                 result = new Classification(
                     CommandKind.Directory,
@@ -214,6 +215,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         // At this point 'head' is our best intended command token.
         var (firstHead, tail) = SplitHeadAndArgs(input);
         CommandLineHelper.ExpandPathToPhysicalFile(firstHead, true, out var head);
+        head = NormalizePathForWindows(head);
 
         // 3.1) UWP/AppX via AppsFolder/AUMID or pkgfamily!app
         //      Since the AUMID can be actually anything, we either take a full shell:AppsFolder\AUMID
@@ -325,16 +327,16 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
     // whitespace boundaries. Prefers files to directories; for same kind,
     // prefers the longer path.
     // Returns (head, tail) or (null, null) if nothing found.
-    private static (string? Head, string? Tail) ExpandToBestExistingPath(string head, string tail, bool containsPlaceholders, IPlaceholderParser placeholderParser)
+    private static (string? Head, string? Tail, bool UsedParentDirectoryFallback) ExpandToBestExistingPath(string head, string tail, bool containsPlaceholders, IPlaceholderParser placeholderParser)
     {
         try
         {
             // This goes greedy from the longest head down to shortest; exactly opposite of what
             // CreateProcess rules are for the first token. But here we operate with a slightly different goal.
-            var (greedyHead, greedyTail) = GreedyFind(head, containsPlaceholders, placeholderParser);
+            var (greedyHead, greedyTail, usedParentDirectoryFallback) = GreedyFind(head, containsPlaceholders, placeholderParser);
 
             // put tails back together:
-            return (Head: greedyHead, string.Join(" ", greedyTail, tail).Trim());
+            return (Head: greedyHead, string.Join(" ", greedyTail, tail).Trim(), usedParentDirectoryFallback);
         }
         catch (Exception ex)
         {
@@ -343,8 +345,11 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         }
     }
 
-    private static (string? Head, string? Tail) GreedyFind(string input, bool containsPlaceholders, IPlaceholderParser placeholderParser)
+    private static (string? Head, string? Tail, bool UsedParentDirectoryFallback) GreedyFind(string input, bool containsPlaceholders, IPlaceholderParser placeholderParser)
     {
+        string? parentFallbackHead = null;
+        string? parentFallbackTail = null;
+
         // Be greedy: try to find the longest existing path prefix
         for (var i = input.Length; i >= 0; i--)
         {
@@ -365,21 +370,25 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 continue; // Skip this candidate, try a shorter one
             }
 
-            try
+            if (TryResolvePathCandidate(candidate, out var resolvedCandidate, out var usedParentDirectoryFallback))
             {
-                if (CommandLineHelper.ExpandPathToPhysicalFile(candidate, true, out var full))
+                var tail = i < input.Length ? input[i..].TrimStart() : string.Empty;
+                if (!usedParentDirectoryFallback)
                 {
-                    var tail = i < input.Length ? input[i..].TrimStart() : string.Empty;
-                    return (full, tail);
+                    return (resolvedCandidate, tail, false);
                 }
-            }
-            catch
-            {
-                // Ignore malformed paths; keep scanning
+
+                if (parentFallbackHead is null)
+                {
+                    parentFallbackHead = resolvedCandidate;
+                    parentFallbackTail = tail;
+                }
             }
         }
 
-        return (null, null);
+        return parentFallbackHead is not null
+            ? (parentFallbackHead, parentFallbackTail, true)
+            : (null, null, false);
     }
 
     // Attempts to guess if any placeholders in the candidate string are likely not part of a filesystem path.
@@ -523,6 +532,176 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         }
 
         return ShellHelpers.TryResolveExecutableAsShell(head, out resolvedFile);
+    }
+
+    private static bool TryResolvePathCandidate(string candidate, out string resolvedPath, out bool usedParentDirectoryFallback)
+    {
+        resolvedPath = string.Empty;
+        usedParentDirectoryFallback = false;
+
+        var normalizedCandidate = NormalizePathForWindows(candidate);
+
+        if (TryResolvePathCandidateCore(normalizedCandidate, out resolvedPath, out usedParentDirectoryFallback))
+        {
+            return true;
+        }
+
+        if (TryPercentDecodePathCandidate(normalizedCandidate, out var decodedCandidate)
+            && !decodedCandidate.Equals(normalizedCandidate, StringComparison.Ordinal)
+            && TryResolvePathCandidateCore(decodedCandidate, out resolvedPath, out usedParentDirectoryFallback))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryResolvePathCandidateCore(string candidate, out string resolvedPath, out bool usedParentDirectoryFallback)
+    {
+        resolvedPath = string.Empty;
+        usedParentDirectoryFallback = false;
+
+        try
+        {
+            var normalizedCandidate = NormalizePathForWindows(candidate);
+            if (CommandLineHelper.ExpandPathToPhysicalFile(normalizedCandidate, true, out var expanded))
+            {
+                var normalizedExpanded = NormalizePathForWindows(expanded);
+                if (File.Exists(normalizedExpanded) || Directory.Exists(normalizedExpanded))
+                {
+                    resolvedPath = normalizedExpanded;
+                    return true;
+                }
+            }
+            else
+            {
+                expanded = NormalizePathForWindows(expanded);
+            }
+
+            if (!LooksPathy(expanded))
+            {
+                return false;
+            }
+
+            if (TryGetNearestExistingParentDirectory(expanded, out var nearestParent))
+            {
+                resolvedPath = nearestParent;
+                usedParentDirectoryFallback = true;
+                return true;
+            }
+        }
+        catch
+        {
+            // Ignore malformed paths; keep scanning.
+        }
+
+        return false;
+    }
+
+    private static bool TryPercentDecodePathCandidate(string input, out string decoded)
+    {
+        decoded = input;
+        if (!ContainsPercentEncodingSequence(input))
+        {
+            return false;
+        }
+
+        try
+        {
+            decoded = NormalizePathForWindows(Uri.UnescapeDataString(input));
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool ContainsPercentEncodingSequence(string input)
+    {
+        for (var i = 0; i + 2 < input.Length; i++)
+        {
+            if (input[i] == '%'
+                && IsHexDigit(input[i + 1])
+                && IsHexDigit(input[i + 2]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsHexDigit(char c) =>
+        (c >= '0' && c <= '9')
+        || (c >= 'a' && c <= 'f')
+        || (c >= 'A' && c <= 'F');
+
+    private static bool TryGetNearestExistingParentDirectory(string path, out string parentDirectory)
+    {
+        parentDirectory = string.Empty;
+
+        try
+        {
+            var current = NormalizePathForWindows(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            while (!string.IsNullOrWhiteSpace(current))
+            {
+                if (Directory.Exists(current))
+                {
+                    parentDirectory = NormalizePathForWindows(Path.GetFullPath(current));
+                    return true;
+                }
+
+                var next = Path.GetDirectoryName(current);
+                if (string.IsNullOrEmpty(next) || next.Equals(current, StringComparison.Ordinal))
+                {
+                    break;
+                }
+
+                current = next;
+            }
+        }
+        catch
+        {
+            // ignored
+        }
+
+        return false;
+    }
+
+    private static string NormalizePathForWindows(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return path;
+        }
+
+        var normalized = path.Normalize(NormalizationForm.FormC);
+        if (!OperatingSystem.IsWindows())
+        {
+            return normalized;
+        }
+
+        const string longPathPrefix = @"\\?\";
+        const string longUncPrefix = @"\\?\UNC\";
+        const string ntObjectPrefix = @"\??\";
+
+        if (normalized.StartsWith(longUncPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return @"\\" + normalized[longUncPrefix.Length..];
+        }
+
+        if (normalized.StartsWith(longPathPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return normalized[longPathPrefix.Length..];
+        }
+
+        if (normalized.StartsWith(ntObjectPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return normalized[ntObjectPrefix.Length..];
+        }
+
+        return normalized;
     }
 
     private static string? TryProbe(string? dir, string name)
