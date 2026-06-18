@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\WorkspacesEditor.Tests\</OutputPath>
+    <RootNamespace>WorkspacesEditor.UnitTests</RootNamespace>
+    <AssemblyName>PowerToys.WorkspacesEditor.Tests</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Platforms>x64;ARM64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
+    <ProjectReference Include="..\WorkspacesEditor\WorkspacesEditor.csproj" />
+  </ItemGroup>
+
+</Project>
