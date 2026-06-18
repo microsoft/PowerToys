@@ -30,6 +30,12 @@ public class UITestBase : IDisposable
     /// </summary>
     private static readonly Lazy<bool> CliAvailable = new(WinappCli.IsAvailable);
 
+    // Class-scoped reuse (opt-in via ReuseScopeAcrossTests): the launcher that owns the shared scope
+    // and the test class it belongs to. UI tests never run in parallel, so one slot is enough; the
+    // inherited ClassCleanup stops it once the owning class finishes.
+    private static SessionHelper? keepAliveHelper;
+    private static Type? keepAliveOwner;
+
     private readonly PowerToysModule scope;
     private readonly WindowSize windowSize;
     private readonly string[]? enableModules;
@@ -40,6 +46,7 @@ public class UITestBase : IDisposable
     private ScreenRecording? screenRecording;
     private string? screenshotDirectory;
     private string? recordingDirectory;
+    private bool artifactsCaptured;
     private bool disposed;
 
     public required TestContext TestContext { get; set; }
@@ -58,6 +65,14 @@ public class UITestBase : IDisposable
         "PowerToys.Settings",
         "PowerToys.FancyZonesEditor",
     };
+
+    /// <summary>
+    /// When a derived class overrides this to <c>true</c>, the module is launched once for the whole
+    /// class and the <b>same window is reused across every test method</b> (no per-test relaunch or
+    /// desktop hygiene). The framework still captures failure media per test and stops the scope once
+    /// the class finishes. Default <c>false</c> — each test gets an isolated launch + teardown.
+    /// </summary>
+    protected virtual bool ReuseScopeAcrossTests => false;
 
     /// <param name="scope">Module whose window the test drives.</param>
     /// <param name="size">Optional fixed window size applied once the window appears.</param>
@@ -84,33 +99,61 @@ public class UITestBase : IDisposable
             Assert.Fail(WinappCli.InstallHint);
         }
 
-        // Pipeline only: pin the display to a known resolution so coordinate-sensitive tests are
-        // deterministic, and snapshot the monitor topology for post-mortem diagnostics.
-        if (isInPipeline)
+        try
         {
-            DisplayHelper.NormalizeResolution(1920, 1080);
-            DisplayHelper.LogMonitors(TestContext);
+            // Reuse the already-open window from a previous test in this class when the class opted
+            // into a shared scope and it's still alive — skip the hygiene that would minimize/kill it.
+            var reuse = ReuseScopeAcrossTests
+                && keepAliveOwner == GetType()
+                && SessionHelper.IsRunning(scope);
+
+            if (!reuse)
+            {
+                // Pin the display to a known resolution so coordinate-sensitive tests are
+                // deterministic, and snapshot the monitor topology for post-mortem diagnostics.
+                if (isInPipeline)
+                {
+                    DisplayHelper.NormalizeResolution(1920, 1080);
+                    DisplayHelper.LogMonitors(TestContext);
+                }
+
+                PreTestHygiene();
+
+                // Seed a deterministic module on/off baseline before the runner reads settings.json.
+                if (enableModules is not null)
+                {
+                    SettingsConfigHelper.ConfigureGlobalModuleSettings(enableModules);
+                }
+            }
+
+            // Start the 1s screenshot timer + FFmpeg recording before the UI work so the artifacts
+            // cover the whole test.
+            if (isInPipeline)
+            {
+                StartPipelineCapture();
+            }
+
+            sessionHelper = new SessionHelper(scope);
+            Session = sessionHelper.Init();  // launches when needed; reuses a running instance otherwise
+
+            ApplyWindowSize();
+
+            // Remember the launcher so the inherited ClassCleanup can stop the shared scope at the
+            // end of the class.
+            if (ReuseScopeAcrossTests && !reuse)
+            {
+                keepAliveHelper = sessionHelper;
+                keepAliveOwner = GetType();
+            }
         }
-
-        PreTestHygiene();
-
-        // Pipeline only: start the 1s screenshot timer + FFmpeg recording before the UI launches so
-        // the artifacts cover the whole test.
-        if (isInPipeline)
+        catch
         {
-            StartPipelineCapture();
+            // MSTest does NOT run [TestCleanup] when [TestInitialize] throws, so capture the failure
+            // media here (e.g. the window never appeared) before propagating — otherwise an init
+            // failure would attach no diagnostics at all.
+            CaptureFailureArtifacts();
+            throw;
         }
-
-        // Seed a deterministic module on/off baseline before the runner reads settings.json.
-        if (enableModules is not null)
-        {
-            SettingsConfigHelper.ConfigureGlobalModuleSettings(enableModules);
-        }
-
-        sessionHelper = new SessionHelper(scope);
-        Session = sessionHelper.Init();
-
-        ApplyWindowSize();
     }
 
     [TestCleanup]
@@ -119,19 +162,82 @@ public class UITestBase : IDisposable
         var failed = TestContext.CurrentTestOutcome is
             UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown;
 
-        // Stop the pipeline capture before grabbing failure artifacts so the recording is flushed.
-        if (isInPipeline)
+        if (failed)
         {
+            CaptureFailureArtifacts();
+        }
+        else if (isInPipeline)
+        {
+            // Passing test: stop the capture and discard the (now uninteresting) recording.
             StopPipelineCapture();
+            CleanupRecordingDirectory();
         }
 
-        // Capture the failure screenshot while the window is still alive (before any teardown).
+        // Tear the scope down only when each test owns its launch. With a class-shared scope the
+        // window must survive for the next test; the inherited ClassCleanup stops it at class end.
+        if (!ReuseScopeAcrossTests)
+        {
+            try
+            {
+                sessionHelper?.StopIfStarted();
+            }
+            catch
+            {
+            }
+        }
+
+        Dispose();
+    }
+
+    /// <summary>
+    /// Stop a class-shared scope (see <see cref="ReuseScopeAcrossTests"/>) once the owning class's
+    /// tests finish. Runs after every derived class via inheritance; a no-op for classes that never
+    /// kept a scope alive.
+    /// </summary>
+    [ClassCleanup(InheritanceBehavior.BeforeEachDerivedClass)]
+    public static void StopSharedScope()
+    {
         try
         {
-            if (failed)
+            keepAliveHelper?.StopIfStarted();
+        }
+        catch
+        {
+        }
+
+        keepAliveHelper = null;
+        keepAliveOwner = null;
+    }
+
+    /// <summary>
+    /// Collect every diagnostic for a failed test and attach it: a window-independent desktop
+    /// screenshot always, plus (in pipeline mode) the 1s screenshot trail, the screen recording, and
+    /// the PowerToys log files. Idempotent and fully tolerant — runs from both the <see cref="TestInit"/>
+    /// failure path (where <c>[TestCleanup]</c> won't fire) and <see cref="TestCleanup"/>.
+    /// </summary>
+    private void CaptureFailureArtifacts()
+    {
+        if (artifactsCaptured)
+        {
+            return;
+        }
+
+        artifactsCaptured = true;
+
+        if (isInPipeline)
+        {
+            try
             {
-                CaptureFailureScreenshot();
+                StopPipelineCapture();
             }
+            catch
+            {
+            }
+        }
+
+        try
+        {
+            CaptureFailureScreenshot();
         }
         catch
         {
@@ -141,52 +247,50 @@ public class UITestBase : IDisposable
         {
             try
             {
-                if (failed)
-                {
-                    AddScreenshotsToTestResults();
-                    AddRecordingsToTestResults();
-                    AddLogFilesToTestResults();
-                }
-                else
-                {
-                    CleanupRecordingDirectory();
-                }
+                AddScreenshotsToTestResults();
+                AddRecordingsToTestResults();
+                AddLogFilesToTestResults();
             }
             catch
             {
             }
         }
-
-        // Only tear down the scope process(es) this test actually launched.
-        try
-        {
-            sessionHelper?.StopIfStarted();
-        }
-        catch
-        {
-        }
-
-        Dispose();
     }
 
     /// <summary>
-    /// On failure, grab a full-screen PNG (<c>--capture-screen</c> so popups / overlays are
-    /// included) and attach it to the test result. Best-effort — never throws.
+    /// Attach a failure screenshot. The primary capture is a window-independent GDI grab of the
+    /// desktop, so it works even when the test's window was already closed (e.g. by the test's own
+    /// <c>finally</c>) or never appeared (an init failure) — unlike winappcli's <c>--capture-screen</c>,
+    /// which requires a live target window. When the session window is still live, a winapp
+    /// window/overlay shot is added too. Best-effort.
     /// </summary>
     private void CaptureFailureScreenshot()
     {
-        if (Session is null)
+        var dir = TestContext.TestRunResultsDirectory ?? TestContext.TestResultsDirectory ?? Path.GetTempPath();
+        Directory.CreateDirectory(dir);
+        var baseName = $"{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}";
+
+        // Reliable, window-independent desktop grab.
+        var desktopShot = Path.Combine(dir, $"{baseName}.png");
+        if (ScreenCapture.TryCaptureDesktop(desktopShot) && File.Exists(desktopShot))
         {
-            return;
+            TestContext.AddResultFile(desktopShot);
         }
 
-        var dir = TestContext.TestRunResultsDirectory ?? Path.GetTempPath();
-        Directory.CreateDirectory(dir);
-        var file = Path.Combine(dir, $"{TestContext.TestName}_{DateTime.Now:yyyyMMdd_HHmmss}.png");
-
-        if (Session.TryScreenshot(file, captureScreen: true) && File.Exists(file))
+        // Bonus detail: the winapp window/overlay shot, only when the session window is still alive.
+        if (Session is not null && Session.WindowHandle != 0)
         {
-            TestContext.AddResultFile(file);
+            var windowShot = Path.Combine(dir, $"{baseName}_window.png");
+            try
+            {
+                if (Session.TryScreenshot(windowShot, captureScreen: true) && File.Exists(windowShot))
+                {
+                    TestContext.AddResultFile(windowShot);
+                }
+            }
+            catch
+            {
+            }
         }
     }
 

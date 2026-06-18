@@ -12,7 +12,12 @@ namespace Microsoft.PowerToys.UITest.Next;
 public static class EnvironmentConfig
 {
     private static readonly Lazy<bool> InPipeline = new(() =>
-        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform")));
+        !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("platform"))
+
+        // TF_BUILD is set to "True" on every Azure DevOps agent and can't be disabled — the
+        // canonical "running in a pipeline" signal. The test job exposes "platform" only as a
+        // template parameter (not an env var), so rely on TF_BUILD to enable CI diagnostics.
+        || string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase));
 
     private static readonly Lazy<bool> UseInstaller = new(() =>
     {

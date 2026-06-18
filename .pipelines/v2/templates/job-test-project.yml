@@ -221,6 +221,11 @@ jobs:
         exit 1
       }
     displayName: "Run UI Tests"
+    # Expose 'platform' as an environment variable so the harness's EnvironmentConfig.IsInPipeline
+    # is true and it captures failure media (screenshots / recording / logs). The legacy VSTest task
+    # set `env: { platform: $(TestPlatform) }`; the MTP migration to this pwsh step dropped it.
+    env:
+      platform: $(TestPlatform)
 
   - task: PublishTestResults@2
     displayName: "Publish UI Test Results"

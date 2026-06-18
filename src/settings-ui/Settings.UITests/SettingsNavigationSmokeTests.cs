@@ -19,11 +19,11 @@ namespace Microsoft.Settings.UITests;
 /// surface (Find/Click/By/Element) works across all module tests.
 /// </para>
 /// <para>
-/// Settings is launched directly (not via <c>PowerToys.exe</c>) so this test exercises just
-/// the shell navigation path and doesn't depend on the runner's tray/elevation/module startup.
-/// One <c>[TestMethod]</c> per nav item via <c>[DynamicData]</c> gives a discrete pass/fail
-/// per item in Test Explorer / pipeline reports \u2014 if <c>FancyZonesNavItem</c> regresses, the
-/// report names it.
+/// Inherits <see cref="UITestBase"/> with <see cref="UITestBase.ReuseScopeAcrossTests"/> on, so a
+/// single Settings window is reused across every nav-item case (one launch per class, not per test)
+/// while still getting the framework's unified failure-media capture for free — no test-local
+/// screenshot code. One method per nav item via <c>[DynamicData]</c> gives a discrete pass/fail per
+/// item in Test Explorer / pipeline reports — if <c>FancyZonesNavItem</c> regresses, the report names it.
 /// </para>
 /// <para>
 /// Selectors are AutomationIds straight from
@@ -37,7 +37,7 @@ namespace Microsoft.Settings.UITests;
 /// </para>
 /// </remarks>
 [TestClass]
-public sealed class SettingsNavigationSmokeTests
+public sealed class SettingsNavigationSmokeTests : UITestBase
 {
     // (ParentGroupSlug | null, NavItemSlug). Mirrors the live hierarchy in ShellPage.xaml.
     // Footer items (OOBE/WhatIsNew/Feedback/Close) are intentionally excluded \u2014 those use
@@ -93,51 +93,14 @@ public sealed class SettingsNavigationSmokeTests
     private const string ScopeProcessName = "PowerToys.Settings";
     private const PowerToysModule Scope = PowerToysModule.PowerToysSettings;
 
-    // Parent groups are only expanded on first encounter — mirrors the PR's _expandedGroups set.
-    private static readonly HashSet<string> ExpandedGroups = new(StringComparer.Ordinal);
-
-    private static Session? session;
-
-    // True when ClassInit had to launch Settings itself. ClassCleanup uses this to decide
-    // whether to close the window on the way out — if the user already had Settings open
-    // before the run, we leave their state alone.
-    private static bool launchedByUs;
-
-    public TestContext TestContext { get; set; } = null!;
-
-    [ClassInitialize]
-    public static void ClassInit(TestContext _)
+    public SettingsNavigationSmokeTests()
+        : base(Scope)
     {
-        Assert.IsTrue(WinappCli.IsAvailable(), WinappCli.InstallHint);
-
-        // SessionHelper handles exe location, single-instance handoff, ShellExecute launch
-        // semantics, and UIA-window readiness — identical flow to the per-test UITestBase path.
-        launchedByUs = SessionHelper.EnsureRunning(Scope, TimeSpan.FromSeconds(30));
-
-        // Process-scope session: every CLI call re-resolves -a so window-replacement during
-        // navigation (page swaps, PopupHost siblings) is handled transparently.
-        session = Session.FromProcess(SessionHelper.GetProcessName(Scope), Scope, timeoutMS: 20_000);
-
-        // Confirm the shell finished loading by waiting for an item that's always present.
-        Assert.IsTrue(
-            session!.Find<NavigationViewItem>(By.AccessibilityId("DashboardNavItem"), timeoutMS: 15_000) is not null,
-            "Settings shell did not present DashboardNavItem within 15s.");
     }
 
-    [ClassCleanup]
-    public static void ClassTeardown()
-    {
-        if (launchedByUs)
-        {
-            var processName = SessionHelper.GetProcessName(Scope);
-            WindowControl.TryCloseByApp(processName);
-            WindowControl.TryKillProcess(processName);
-        }
-
-        session = null;
-        launchedByUs = false;
-        ExpandedGroups.Clear();
-    }
+    // Reuse one Settings window across all nav-item cases (no per-test relaunch); the framework
+    // still captures failure media per test and stops Settings once the class finishes.
+    protected override bool ReuseScopeAcrossTests => true;
 
     public static IEnumerable<object[]> NavigationCases()
     {
@@ -160,24 +123,25 @@ public sealed class SettingsNavigationSmokeTests
     [DynamicData(nameof(NavigationCases), DynamicDataDisplayName = nameof(GetNavCaseDisplayName))]
     public void NavigationItem_NavigatesWithoutCrashing(string parentGroupSlug, string navItemSlug)
     {
-        Assert.IsNotNull(session, "Session was not initialized in ClassInit.");
-
-        if (!string.IsNullOrEmpty(parentGroupSlug) && ExpandedGroups.Add(parentGroupSlug))
+        // The Settings window is shared across the class, so a parent group may already be expanded
+        // from a previous case. Only expand it when the child isn't already in the tree — clicking
+        // an already-expanded group would collapse it.
+        if (!string.IsNullOrEmpty(parentGroupSlug) && !Session.Has(By.AccessibilityId(navItemSlug), 500))
         {
-            session!.Find<NavigationViewItem>(By.AccessibilityId(parentGroupSlug)).Click();
+            Find<NavigationViewItem>(By.AccessibilityId(parentGroupSlug)).Click();
         }
 
-        // Child item is only in the visual tree once its parent is expanded; the harness's
-        // Find polls for up to timeoutMS so the expand animation doesn't race us.
-        session!.Find<NavigationViewItem>(By.AccessibilityId(navItemSlug), timeoutMS: 5_000).Click();
+        // Child item is only in the visual tree once its parent is expanded; Find polls for up to
+        // timeoutMS so the expand animation doesn't race us.
+        Find<NavigationViewItem>(By.AccessibilityId(navItemSlug), timeoutMS: 5_000).Click();
 
         // Brief settle so any unhandled exception in the page constructor or navigation handler
         // has time to land in RoFailFast.
         Thread.Sleep(250);
 
-        // Check by process name, not by launcher PID. Settings is single-instance: the EXE we
-        // started in ClassInit often exits cleanly after handing off to an existing instance,
-        // so the actual window may be owned by a different PID than the one we launched.
+        // Check by process name, not by launcher PID. Settings is single-instance: the EXE the
+        // framework started often exits cleanly after handing off to an existing instance, so the
+        // actual window may be owned by a different PID than the one we launched.
         Assert.IsTrue(
             SessionHelper.IsRunning(Scope),
             $"No {ScopeProcessName} process remains after invoking '{navItemSlug}'. " +

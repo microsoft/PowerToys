@@ -75,6 +75,25 @@ internal static class ScreenCapture
         }
     }
 
+    /// <summary>
+    /// Capture the full (primary) desktop to <paramref name="filePath"/> as a PNG. Pure GDI, so
+    /// unlike winappcli's <c>--capture-screen</c> (which needs a live target window) this works even
+    /// when the test window was already closed or never appeared — the reliable failure-screenshot
+    /// path. Returns false on any failure.
+    /// </summary>
+    public static bool TryCaptureDesktop(string filePath)
+    {
+        try
+        {
+            CaptureScreenWithMouse(filePath);
+            return File.Exists(filePath);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static void CaptureScreenshot(string directory)
     {
         var filePath = Path.Combine(directory, $"screenshot_{DateTime.Now:yyyyMMdd_HHmmssfff}.png");
