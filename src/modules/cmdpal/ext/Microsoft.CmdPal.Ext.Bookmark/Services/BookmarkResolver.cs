@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -669,40 +668,8 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return false;
     }
 
-    private static string NormalizePathForWindows(string path)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            return path;
-        }
-
-        var normalized = path.Normalize(NormalizationForm.FormC);
-        if (!OperatingSystem.IsWindows())
-        {
-            return normalized;
-        }
-
-        const string longPathPrefix = @"\\?\";
-        const string longUncPrefix = @"\\?\UNC\";
-        const string ntObjectPrefix = @"\??\";
-
-        if (normalized.StartsWith(longUncPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            return @"\\" + normalized[longUncPrefix.Length..];
-        }
-
-        if (normalized.StartsWith(longPathPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            return normalized[longPathPrefix.Length..];
-        }
-
-        if (normalized.StartsWith(ntObjectPrefix, StringComparison.OrdinalIgnoreCase))
-        {
-            return normalized[ntObjectPrefix.Length..];
-        }
-
-        return normalized;
-    }
+    private static string NormalizePathForWindows(string path) =>
+        PathNormalization.NormalizePathForWindows(path);
 
     private static string? TryProbe(string? dir, string name)
     {
