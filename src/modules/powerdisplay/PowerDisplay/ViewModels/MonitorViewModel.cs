@@ -50,6 +50,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowBrightnessSlider))]
     public partial bool ShowBrightness { get; set; }
 
     [ObservableProperty]
@@ -85,7 +86,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(Brightness));
         }
 
-        // Apply to hardware
         await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
     }
 
@@ -180,7 +180,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// <param name="propertyName">Name of the property being set (for logging and state persistence)</param>
     /// <param name="value">Value to apply</param>
     /// <param name="setAsyncFunc">Async function to call on MonitorManager</param>
-    private async Task ApplyPropertyToHardwareAsync(
+    private async Task<bool> ApplyPropertyToHardwareAsync(
         string propertyName,
         int value,
         Func<string, int, CancellationToken, Task<MonitorOperationResult>> setAsyncFunc)
@@ -192,6 +192,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             if (result.IsSuccess)
             {
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, propertyName, value);
+                return true;
             }
             else
             {
@@ -202,6 +203,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             Logger.LogError($"[{Id}] Exception setting {propertyName.ToLowerInvariant()}: {ex.Message}");
         }
+
+        return false;
     }
 
     // Property to access IsInteractionEnabled from parent ViewModel
@@ -298,6 +301,64 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public bool SupportsContrast => _monitor.SupportsContrast;
 
     public bool SupportsBrightness => _monitor.SupportsBrightness;
+
+    /// <summary>
+    /// Gets a value indicating whether this monitor's brightness is currently driven by linked
+    /// mode rather than its own slider. True when the parent has link mode on, this monitor
+    /// supports brightness, and the user has not excluded it. When true the per-card brightness
+    /// row shows a disabled linked-mode hint — the "All Displays" master slider broadcasts the
+    /// value instead.
+    /// </summary>
+    public bool IsBrightnessLinked => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness && !IsExcludedFromSync;
+
+    /// <summary>
+    /// Gets a value indicating whether the per-card brightness slider accepts input. Disabled both
+    /// while the app is busy (<see cref="IsInteractionEnabled"/>) and while link mode owns this
+    /// monitor's brightness (<see cref="IsBrightnessLinked"/>). Excluded monitors keep an active
+    /// slider, so this is true for them whenever interaction is enabled.
+    /// </summary>
+    public bool IsBrightnessSliderEnabled => IsInteractionEnabled && !IsBrightnessLinked;
+
+    public bool ShowBrightnessSlider => ShowBrightness && !IsBrightnessLinked;
+
+    public bool ShowIncludedInSyncIcon => !IsExcludedFromSync;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this monitor is excluded from linked brightness.
+    /// Backed by the parent's shared exclusion set (keyed by <see cref="Id"/>), so the state
+    /// survives monitor-list rebuilds and is persisted to settings.json. An excluded monitor keeps
+    /// its own independent brightness slider while link mode is on.
+    /// </summary>
+    public bool IsExcludedFromSync
+    {
+        get => _mainViewModel?.IsMonitorExcludedFromSync(Id) ?? false;
+        set
+        {
+            if (IsExcludedFromSync != value)
+            {
+                _mainViewModel?.SetMonitorExcludedFromSync(Id, value);
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsBrightnessLinked));
+                OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+                OnPropertyChanged(nameof(ShowBrightnessSlider));
+                OnPropertyChanged(nameof(ShowIncludedInSyncIcon));
+                OnPropertyChanged(nameof(SyncToggleToolTip));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the per-card exclude toggle is shown. Only relevant while
+    /// link mode is on and the monitor supports brightness — otherwise exclusion has no effect.
+    /// </summary>
+    public bool ShowExcludeButton => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness;
+
+    /// <summary>
+    /// Gets the tooltip for the per-card linked-brightness toggle. The action reverses with the
+    /// current exclusion state: linked monitors can be excluded, excluded monitors can be included.
+    /// </summary>
+    public string SyncToggleToolTip => ResourceLoaderInstance.ResourceLoader.GetString(
+        IsExcludedFromSync ? "IncludeInSyncToggleToolTip" : "ExcludeFromSyncToggleToolTip");
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports volume control via VCP 0x62
@@ -423,6 +484,24 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
                 OnPropertyChanged();
                 ScheduleCommit(ref _brightnessCommitTimer, () => SetBrightnessAsync(_brightness));
             }
+        }
+    }
+
+    /// <summary>
+    /// Update the brightness backing field and notify the UI without scheduling a per-VM commit
+    /// or hardware write. Used by <c>MainViewModel.LinkedBrightness</c> to keep each linked
+    /// monitor's stored brightness aligned with the master value, so it is correct if the
+    /// monitor is later excluded or link mode is disabled. The master broadcast is the single
+    /// source of hardware writes while link mode is on, so this path must not schedule its own
+    /// debounced commit.
+    /// </summary>
+    public void UpdateBrightnessDisplay(int value)
+    {
+        value = Math.Clamp(value, 0, 100);
+        if (_brightness != value)
+        {
+            _brightness = value;
+            OnPropertyChanged(nameof(Brightness));
         }
     }
 
@@ -681,8 +760,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Set power state for this monitor.
-    /// Note: Setting any state other than "On" will turn off the display.
+    /// Set the monitor's power state via VCP 0xD6: On (0x01) wakes the display,
+    /// Standby/Suspend/Off put it to sleep.
     /// </summary>
     public async Task SetPowerStateAsync(int powerState)
     {
@@ -709,18 +788,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[{Id}] Exception setting power state: {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    /// Command to set power state
-    /// </summary>
-    [RelayCommand]
-    private async Task SetPowerState(int? state)
-    {
-        if (state.HasValue)
-        {
-            await SetPowerStateAsync(state.Value);
         }
     }
 
@@ -784,11 +851,20 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         if (e.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
         {
             OnPropertyChanged(nameof(IsInteractionEnabled));
+            OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
         }
         else if (e.PropertyName == nameof(MainViewModel.HasMonitors))
         {
             // Monitor count changed, update display name to show/hide number suffix
             OnPropertyChanged(nameof(DisplayName));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.LinkedLevelsActive))
+        {
+            // Link mode toggled — refresh the linked hint, exclude button, and slider state.
+            OnPropertyChanged(nameof(IsBrightnessLinked));
+            OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+            OnPropertyChanged(nameof(ShowBrightnessSlider));
+            OnPropertyChanged(nameof(ShowExcludeButton));
         }
     }
 
@@ -814,16 +890,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     // reads the latest field at fire-time so intermediate values are coalesced.
     private void ScheduleCommit(ref DispatcherQueueTimer? timer, Func<Task> commit)
     {
-        if (timer == null)
-        {
-            timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-            timer.IsRepeating = false;
-            timer.Interval = TimeSpan.FromMilliseconds(AppConstants.UI.SliderCommitDebounceMs);
-            timer.Tick += (_, _) => _ = commit();
-        }
-
-        timer.Stop();
-        timer.Start();
+        SliderCommitScheduler.Schedule(ref timer, DispatcherQueue.GetForCurrentThread(), commit);
     }
 
     // Rotation button handlers — one per orientation to avoid Tag string parsing
@@ -880,11 +947,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             return;
         }
 
-        if (item.Value == PowerStateItem.PowerStateOn)
-        {
-            return;
-        }
-
+        // Send the selected state straight to the hardware. Selecting On (0x01) wakes a
+        // sleeping monitor: DDC/CI stays reachable in Standby/Suspend/Off(DPM), so the
+        // write turns the panel back on (Off(Hard)/0x05 may still need a physical wake).
         await SetPowerStateAsync(item.Value);
     }
 

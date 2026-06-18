@@ -21,6 +21,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     private readonly FallbackTimeDateItem _fallbackTimeDateItem = new(_settingsManager);
 
     private readonly WrappedDockItem _bandItem;
+    private readonly WrappedDockItem _notificationCenterBandItem;
 
     // Keep a reference to the band so we can dispose it when the provider is disposed.
     private NowDockBand? _nowDockBand;
@@ -79,6 +80,15 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         };
 
         _bandItem = wrappedBand;
+
+        var notificationCenterBand = new NotificationCenterDockBand();
+        _notificationCenterBandItem = new WrappedDockItem(
+            [notificationCenterBand],
+            "com.microsoft.cmdpal.timedate.notificationCenterBand",
+            Resources.timedate_notification_center_band_title)
+        {
+            Icon = Icons.NotificationCenterIcon,
+        };
     }
 
     private string GetTranslatedPluginDescription()
@@ -96,7 +106,7 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
     public override ICommandItem[] GetDockBands()
     {
-        return [_bandItem];
+        return [_bandItem, _notificationCenterBandItem];
     }
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
@@ -119,3 +129,22 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     }
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 }
+
+#pragma warning disable SA1402 // File may only contain a single type
+
+internal sealed partial class NotificationCenterDockBand : ListItem
+{
+    public NotificationCenterDockBand()
+    {
+        Icon = Icons.NotificationCenterIcon; // Notification bell
+        Title = Resources.timedate_notification_center_band_title;
+        Command = new OpenUrlCommand("ms-actioncenter:")
+        {
+            Id = "com.microsoft.cmdpal.timedate.notificationCenterBand",
+            Name = Resources.timedate_show_notification_center_command_name,
+            Result = CommandResult.Dismiss(),
+        };
+    }
+}
+
+#pragma warning restore SA1402 // File may only contain a single type
