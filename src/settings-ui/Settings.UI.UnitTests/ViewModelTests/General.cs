@@ -349,7 +349,7 @@ namespace ViewModelTests
             Assert.IsTrue(modules.FancyZones);
             Assert.IsTrue(modules.ImageResizer);
             Assert.IsTrue(modules.PowerPreview);
-            Assert.IsTrue(modules.ShortcutGuide);
+            Assert.IsFalse(modules.ShortcutGuide);
             Assert.IsTrue(modules.PowerRename);
             Assert.IsFalse(modules.PowerLauncher);
             Assert.IsTrue(modules.ColorPicker);

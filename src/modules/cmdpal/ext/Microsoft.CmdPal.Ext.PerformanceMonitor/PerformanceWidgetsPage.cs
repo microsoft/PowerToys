@@ -270,8 +270,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             };
 
             return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkDownItem!, _networkUpItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkDownItem!, _networkUpItem!, _gpuItem! };
+                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem!, _batteryItem! }
+                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem! };
         }
     }
 

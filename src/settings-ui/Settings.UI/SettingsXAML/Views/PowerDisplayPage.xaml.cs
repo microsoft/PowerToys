@@ -35,9 +35,9 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             Loaded += (s, e) => ViewModel.OnPageLoaded();
         }
 
-        private async Task<bool> ShowDangerousFeatureDialogAsync(string resourceKeyPrefix)
+        private async Task<bool> ShowDangerousFeatureDialogAsync(PowerDisplayWarningKind kind)
         {
-            var dialog = new DangerousFeatureWarningDialog(resourceKeyPrefix) { XamlRoot = XamlRoot };
+            var dialog = new PowerDisplayWarningDialog(kind) { XamlRoot = XamlRoot };
             return await dialog.ShowAsync() == ContentDialogResult.Primary;
         }
 
@@ -53,6 +53,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var vcpText = monitor.GetVcpCodesAsText();
                 var dataPackage = new DataPackage();
                 dataPackage.SetText(vcpText);
+                Clipboard.SetContent(dataPackage);
+            }
+        }
+
+        private void CopyMonitorDiagnostics_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is MonitorInfo monitor)
+            {
+                var diagnosticsText = monitor.GetDiagnosticsAsText();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetText(diagnosticsText);
                 Clipboard.SetContent(dataPackage);
             }
         }
@@ -228,7 +240,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 cb.IsChecked == true,
                 monitor.EnableColorTemperature,
                 v => monitor.EnableColorTemperature = v,
-                "PowerDisplay_ColorTemperature");
+                PowerDisplayWarningKind.ColorTemperature);
         }
 
         private async void EnablePowerState_Click(object sender, RoutedEventArgs e)
@@ -243,7 +255,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 cb.IsChecked == true,
                 monitor.EnablePowerState,
                 v => monitor.EnablePowerState = v,
-                "PowerDisplay_PowerState");
+                PowerDisplayWarningKind.PowerState);
         }
 
         private async void EnableInputSource_Click(object sender, RoutedEventArgs e)
@@ -258,7 +270,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 cb.IsChecked == true,
                 monitor.EnableInputSource,
                 v => monitor.EnableInputSource = v,
-                "PowerDisplay_InputSource");
+                PowerDisplayWarningKind.InputSource);
         }
 
         // Per-monitor CheckBoxes use OneWay binding + Click (Click only fires for real user
@@ -270,7 +282,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             bool desiredValue,
             bool currentValue,
             Action<bool> commit,
-            string resourceKeyPrefix)
+            PowerDisplayWarningKind kind)
         {
             if (desiredValue == currentValue)
             {
@@ -283,7 +295,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 return true;
             }
 
-            if (await ShowDangerousFeatureDialogAsync(resourceKeyPrefix))
+            if (await ShowDangerousFeatureDialogAsync(kind))
             {
                 commit(true);
                 return true;
