@@ -25,6 +25,13 @@
     <RunVSTest>false</RunVSTest>
   </PropertyGroup>
 
+  <!-- Stage the built test app under <Platform>\<Configuration>\tests\ so the UI-tests build
+       pipeline (CopyFiles glob **/<plat>/<config>/tests/**) picks it up, matching the other
+       *.UITests projects. Without this it builds to bin\ and is never staged into the artifact. -->
+  <PropertyGroup>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\Settings.UITests\</OutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="MSTest" />
   </ItemGroup>

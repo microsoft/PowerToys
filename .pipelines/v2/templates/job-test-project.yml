@@ -106,7 +106,7 @@ jobs:
   - template: steps-ensure-dotnet-version.yml
     parameters:
       sdk: true
-      version: '9.0'
+      version: '10.0'
 
   - pwsh: |-
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
@@ -156,7 +156,77 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
-  - script: |
-      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\FancyZones.UITests\FancyZones.UITests.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
-      dotnet test $(Build.SourcesDirectory)\src\modules\fancyzones\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj --no-build -c $(BuildConfiguration) -p:Platform=$(BuildPlatform)
+  - pwsh: |
+      $ErrorActionPreference = 'Stop'
+      $artifactRoot = "$(Pipeline.Workspace)\$(TestArtifactsName)"
+      if (-not (Test-Path $artifactRoot)) {
+        Write-Host "##vso[task.logissue type=error]UI test artifact not found: $artifactRoot"
+        exit 1
+      }
+
+      # uiTestModules is a template parameter; flatten it to a delimited string for the script.
+      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      $modules = @()
+      if (-not [string]::IsNullOrWhiteSpace($modulesRaw)) {
+        $modules = $modulesRaw -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+      }
+
+      # Each UI test project is a Microsoft.Testing.Platform app; its entry assembly is paired
+      # with a *.runtimeconfig.json. Recurse under the staged 'tests' folders (tolerates TFM/RID subfolders).
+      $entries = Get-ChildItem -Path $artifactRoot -Filter '*.runtimeconfig.json' -File -Recurse -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -like '*UITests*' -and $_.FullName -match '\\tests\\' }
+      if ($modules.Count -gt 0) {
+        $entries = $entries | Where-Object { $n = $_.Name; ($modules | Where-Object { $n -like "*$_*" }).Count -gt 0 }
+      }
+
+      # Run each test assembly once (a project reference can copy a runner into a sibling's output).
+      $entries = $entries | Sort-Object FullName | Group-Object Name | ForEach-Object { $_.Group[0] }
+
+      if (-not $entries) {
+        Write-Host "##vso[task.logissue type=error]No UI test runners matched (modules: '$modulesRaw') under $artifactRoot"
+        exit 1
+      }
+
+      $resultsDir = "$(Common.TestResultsDirectory)"
+      New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
+
+      $failed = 0
+      foreach ($rc in ($entries | Sort-Object FullName -Unique)) {
+        $base = $rc.Name -replace '\.runtimeconfig\.json$', ''
+        $dir = $rc.DirectoryName
+        $exe = Join-Path $dir "$base.exe"
+        $dll = Join-Path $dir "$base.dll"
+        Write-Host "##[group]Run UI tests: $base"
+        Push-Location $dir
+        try {
+          if (Test-Path $exe) {
+            & $exe --report-trx --results-directory $resultsDir
+          } elseif (Test-Path $dll) {
+            & dotnet $dll --report-trx --results-directory $resultsDir
+          } else {
+            Write-Warning "No runner (exe/dll) found for $base in $dir"
+          }
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "UI tests reported failures for $base (exit $LASTEXITCODE)"
+            $failed++
+          }
+        } finally {
+          Pop-Location
+          Write-Host "##[endgroup]"
+        }
+      }
+
+      if ($failed -gt 0) {
+        Write-Host "##vso[task.logissue type=error]$failed UI test project(s) reported failures."
+        exit 1
+      }
     displayName: "Run UI Tests"
+
+  - task: PublishTestResults@2
+    displayName: "Publish UI Test Results"
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: '$(Common.TestResultsDirectory)/**/*.trx'
+      mergeTestResults: true
+      failTaskOnFailedTests: false
