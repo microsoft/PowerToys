@@ -66,7 +66,42 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
         var bookmarkAddress = ReplacePlaceholders(_bookmarkData.Bookmark);
         var classification = _bookmarkResolver.ClassifyOrUnknown(bookmarkAddress);
 
-        var success = CommandLauncher.Launch(classification);
+        // If the classification points to a filesystem path that doesn't exist, fall back to the nearest existing parent directory.
+        var classificationToLaunch = classification;
+
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(classification.Target)
+                && !Directory.Exists(classification.Target)
+                && !File.Exists(classification.Target))
+            {
+                // Walk up to nearest existing parent directory
+                var parent = Path.GetDirectoryName(classification.Target);
+                while (!string.IsNullOrWhiteSpace(parent) && !Directory.Exists(parent))
+                {
+                    parent = Path.GetDirectoryName(parent);
+                }
+
+                if (!string.IsNullOrWhiteSpace(parent) && Directory.Exists(parent))
+                {
+                    classificationToLaunch = new Classification(
+                        CommandKind.Directory,
+                        classification.Input,
+                        parent,
+                        string.Empty,
+                        LaunchMethod.ExplorerOpen,
+                        parent,
+                        classification.IsPlaceholder);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Be defensive; log and continue with the original classification
+            Logger.LogError($"Failed to compute fallback parent for bookmark '{bookmarkAddress}'", ex);
+        }
+
+        var success = CommandLauncher.Launch(classificationToLaunch);
 
         return success
             ? CommandResult.Dismiss()

@@ -4,7 +4,10 @@
 
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Bookmarks.Commands;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
+using Microsoft.CmdPal.Ext.Bookmarks.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
@@ -128,5 +131,72 @@ public class BookmarksCommandProviderTests
 
         var addCommand = commands.FirstOrDefault(c => c.Title.Contains("Add bookmark"));
         Assert.IsNotNull(addCommand);
+    }
+
+    [TestMethod]
+    [Timeout(5000)]
+    public async Task ProviderPassesResolverClassificationToLauncher_Unchanged()
+    {
+        // Arrange
+        var bookmarkAddress = @"C:\Données\été\résumé.txt";
+        var bookmark = new BookmarkData("Accented bookmark", bookmarkAddress);
+        var mockBookmarkManager = new MockBookmarkManager(bookmark);
+        var expectedClassification = new Classification(
+            CommandKind.FileDocument,
+            bookmarkAddress,
+            bookmarkAddress,
+            string.Empty,
+            LaunchMethod.ShellExecute,
+            @"C:\Données\été",
+            false);
+        var resolver = new TestBookmarkResolver(expectedClassification);
+        var provider = new BookmarksCommandProvider(mockBookmarkManager, resolver);
+
+        var commands = provider.TopLevelCommands();
+        var bookmarkItem = commands.OfType<Pages.BookmarkListItem>().Single();
+        await bookmarkItem.IsInitialized;
+        var launchCommand = bookmarkItem.Command as LaunchBookmarkCommand;
+        Assert.IsNotNull(launchCommand);
+
+        Classification? capturedClassification = null;
+        CommandLauncher.TestLaunchOverride = classification =>
+        {
+            capturedClassification = classification;
+            return true;
+        };
+
+        try
+        {
+            _ = launchCommand.Invoke(this);
+        }
+        finally
+        {
+            CommandLauncher.TestLaunchOverride = null;
+        }
+
+        // Assert
+        Assert.AreEqual(bookmarkAddress, resolver.LastClassifyInput);
+        Assert.AreSame(expectedClassification, capturedClassification);
+    }
+
+    private sealed class TestBookmarkResolver : IBookmarkResolver
+    {
+        private readonly Classification _classification;
+
+        internal string? LastClassifyInput { get; private set; }
+
+        internal TestBookmarkResolver(Classification classification)
+        {
+            _classification = classification;
+        }
+
+        public Task<(bool Success, Classification Result)> TryClassifyAsync(string input, System.Threading.CancellationToken cancellationToken = default)
+            => Task.FromResult((true, _classification));
+
+        public Classification ClassifyOrUnknown(string input)
+        {
+            LastClassifyInput = input;
+            return _classification;
+        }
     }
 }

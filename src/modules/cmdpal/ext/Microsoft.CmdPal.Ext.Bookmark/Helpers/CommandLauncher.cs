@@ -10,6 +10,10 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
 internal static class CommandLauncher
 {
+    // Test hook used by unit tests to intercept launches and avoid starting external processes.
+    // When non-null, this delegate will be invoked and its return value used as the launch result.
+    internal static System.Func<Classification, bool>? TestLaunchOverride;
+
     /// <summary>
     ///     Launches the classified item.
     /// </summary>
@@ -17,8 +21,14 @@ internal static class CommandLauncher
     /// <param name="runAsAdmin">Optional: force elevation if possible.</param>
     public static bool Launch(Classification classification, bool runAsAdmin = false)
     {
-        switch (classification.Launch)
-        {
+            // Test override short-circuit for unit tests to prevent external process launches.
+            if (TestLaunchOverride is not null)
+            {
+                return TestLaunchOverride(classification);
+            }
+
+            switch (classification.Launch)
+            {
             case LaunchMethod.ExplorerOpen:
                 // Folders and shell: URIs are best handled by explorer.exe
                 // You can notice the difference with Recycle Bin for example:

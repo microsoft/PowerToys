@@ -20,7 +20,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     private const int LoadStateLoading = 1;
     private const int LoadStateLoaded = 2;
 
-    private readonly IPlaceholderParser _placeholderParser = new PlaceholderParser();
+    private readonly IPlaceholderParser _placeholderParser;
     private readonly IBookmarksManager _bookmarksManager;
     private readonly IBookmarkResolver _commandResolver;
     private readonly IBookmarkIconLocator _iconLocator = new IconLocator();
@@ -46,14 +46,15 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         return new BookmarksCommandProvider(new BookmarksManager(new FileBookmarkDataSource(StateJsonPath())));
     }
 
-    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager)
+    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager, IBookmarkResolver? commandResolver = null, IPlaceholderParser? placeholderParser = null)
     {
         ArgumentNullException.ThrowIfNull(bookmarksManager);
+        _placeholderParser = placeholderParser ?? new PlaceholderParser();
         _bookmarksManager = bookmarksManager;
         _bookmarksManager.BookmarkAdded += OnBookmarkAdded;
         _bookmarksManager.BookmarkRemoved += OnBookmarkRemoved;
 
-        _commandResolver = new BookmarkResolver(_placeholderParser);
+        _commandResolver = commandResolver ?? new BookmarkResolver(_placeholderParser);
 
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
