@@ -44,10 +44,12 @@ public enum PowerToysModule
 /// Resolves executable paths, process names, and window titles for a <see cref="PowerToysModule"/>.
 /// </summary>
 /// <remarks>
-/// Path resolution order: an explicit <c>POWERTOYS_INSTALL_DIR</c> override, then the installed
-/// build (Program Files / LocalAppData), then the repo's dev-build output
-/// (<c>&lt;root&gt;\&lt;plat&gt;\&lt;cfg&gt;</c>). Setting <c>useInstallerForTest</c> forces the installed
-/// layout. This lets the same tests run against an installed PowerToys (CI) or a local dev build.
+/// Path resolution order: an explicit <c>POWERTOYS_INSTALL_DIR</c> override; then, when
+/// <c>useInstallerForTest</c> is set, the installed build (Program Files / LocalAppData); otherwise
+/// the build under test — located by walking up from the test assembly to the build-output root that
+/// holds the exe (locally <c>&lt;root&gt;\&lt;plat&gt;\&lt;cfg&gt;</c>, in CI the downloaded build artifact) —
+/// and finally the installed path as a last resort. This lets the same tests run against an installed
+/// PowerToys or a dev / CI-artifact build without any environment configuration.
 /// </remarks>
 internal static class ModulePaths
 {
@@ -75,6 +77,7 @@ internal static class ModulePaths
     {
         var meta = Meta[module];
 
+        // 1. Explicit override wins (CI can point at any layout).
         var overrideDir = Environment.GetEnvironmentVariable("POWERTOYS_INSTALL_DIR");
         if (!string.IsNullOrEmpty(overrideDir))
         {
@@ -87,21 +90,21 @@ internal static class ModulePaths
 
         var installed = Compose(InstalledRoot.Value, meta);
 
+        // 2. Installer mode forces the installed layout.
         if (EnvironmentConfig.UseInstallerForTest)
         {
             return installed;
         }
 
-        if (File.Exists(installed))
-        {
-            return installed;
-        }
-
+        // 3. Dev / CI-artifact mode: the build output that holds the exe is an ancestor of the test
+        //    assembly. Prefer it so tests drive the build under test, not a stray machine install.
         if (TryComposeDevBuild(meta, out var dev))
         {
             return dev;
         }
 
+        // 4. Last resort: an installed build if present (returns the installed path either way so a
+        //    launch failure names a concrete location).
         return installed;
     }
 
@@ -124,21 +127,41 @@ internal static class ModulePaths
     private static bool TryComposeDevBuild(ModuleMeta meta, out string path)
     {
         path = string.Empty;
-        var root = RepoRoot.Value;
-        if (string.IsNullOrEmpty(root))
+
+        // The build-output root that holds PowerToys.exe (and module subdirs like WinUI3Apps) is an
+        // ancestor of the test assembly's bin folder — both locally
+        // (<root>\<plat>\<cfg>\tests\<proj>\<tfm>\) and in CI (the downloaded build artifact, which
+        // can nest <plat>\<cfg> more than once). Walk up and return the first ancestor that actually
+        // contains the requested exe. Mirrors the legacy harness's "<assembly>\..\..\..\<exe>"
+        // convention without hard-coding the depth.
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
         {
-            return false;
+            var candidate = Compose(dir.FullName, meta);
+            if (File.Exists(candidate))
+            {
+                path = candidate;
+                return true;
+            }
+
+            dir = dir.Parent;
         }
 
-        foreach (var platform in new[] { "x64", "ARM64" })
+        // Fallback: repo root + conventional <plat>\<cfg> output, for the rare case the assembly
+        // isn't located under the build tree.
+        var root = RepoRoot.Value;
+        if (!string.IsNullOrEmpty(root))
         {
-            foreach (var config in new[] { "Debug", "Release" })
+            foreach (var platform in new[] { "x64", "ARM64" })
             {
-                var candidate = Compose(Path.Combine(root, platform, config), meta);
-                if (File.Exists(candidate))
+                foreach (var config in new[] { "Debug", "Release" })
                 {
-                    path = candidate;
-                    return true;
+                    var candidate = Compose(Path.Combine(root, platform, config), meta);
+                    if (File.Exists(candidate))
+                    {
+                        path = candidate;
+                        return true;
+                    }
                 }
             }
         }
