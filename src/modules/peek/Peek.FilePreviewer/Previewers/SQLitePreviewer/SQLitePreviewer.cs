@@ -17,6 +17,7 @@ using Peek.Common.Helpers;
 using Peek.Common.Models;
 using Peek.FilePreviewer.Models;
 using Peek.FilePreviewer.Previewers.Interfaces;
+using Peek.FilePreviewer.Previewers.SQLitePreviewer.Helpers;
 using Peek.FilePreviewer.Previewers.SQLitePreviewer.Models;
 using Windows.Foundation;
 
@@ -90,7 +91,7 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
 
                 using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText = $"PRAGMA table_info([{tableName}]);";
+                    cmd.CommandText = $"PRAGMA table_info({SQLiteHelpers.QuoteIdentifier(tableName)});";
                     using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
                     while (await reader.ReadAsync(cancellationToken))
                     {
@@ -104,22 +105,25 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
                     }
                 }
 
+                SQLiteHelpers.AssignBindingKeys(tableInfo.Columns);
+
                 using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText = $"SELECT COUNT(*) FROM [{tableName}];";
+                    cmd.CommandText = $"SELECT COUNT(*) FROM {SQLiteHelpers.QuoteIdentifier(tableName)};";
                     tableInfo.RowCount = (long)(await cmd.ExecuteScalarAsync(cancellationToken) ?? 0L);
                 }
 
                 using (var cmd = connection.CreateCommand())
                 {
-                    cmd.CommandText = $"SELECT * FROM [{tableName}] LIMIT 200;";
+                    cmd.CommandText = $"SELECT * FROM {SQLiteHelpers.QuoteIdentifier(tableName)} LIMIT 200;";
                     using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
                     while (await reader.ReadAsync(cancellationToken))
                     {
                         var row = new Dictionary<string, string?>(reader.FieldCount, StringComparer.Ordinal);
                         for (int i = 0; i < reader.FieldCount; i++)
                         {
-                            row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i)?.ToString();
+                            var col = tableInfo.Columns[i];
+                            row[col.BindingKey] = reader.IsDBNull(i) ? null : reader.GetValue(i)?.ToString();
                         }
 
                         tableInfo.Rows.Add(row);

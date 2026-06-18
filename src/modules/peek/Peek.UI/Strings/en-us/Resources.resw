@@ -398,6 +398,10 @@
     <value>Records: {0}</value>
     <comment>{0} is the number of rows in the selected SQLite table</comment>
   </data>
+  <data name="SQLite_Row_Count_Truncated" xml:space="preserve">
+    <value>Records: {0} of {1}</value>
+    <comment>{0} is the number of rows shown (limited), {1} is the total row count</comment>
+  </data>
   <data name="SQLite_NoTableSelected.Text" xml:space="preserve">
     <value>Select a table to view its data</value>
     <comment>Placeholder shown in the SQLite previewer when no table is selected</comment>
