@@ -105,10 +105,10 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
                     }
                 }
 
-                SQLiteHelpers.AssignBindingKeys(tableInfo.Columns);
-
                 using (var cmd = connection.CreateCommand())
                 {
+                SQLiteHelpers.AssignBindingKeys(tableInfo.Columns);
+
                     cmd.CommandText = $"SELECT COUNT(*) FROM {SQLiteHelpers.QuoteIdentifier(tableName)};";
                     tableInfo.RowCount = (long)(await cmd.ExecuteScalarAsync(cancellationToken) ?? 0L);
                 }
