@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -20,6 +21,8 @@ using PowerDisplay.Configuration;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using Windows.System;
+using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
+using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.ViewModels;
@@ -37,11 +40,17 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private int _contrast;
     private int _volume;
 
-    [ObservableProperty]
-    public partial bool IsAvailable { get; set; }
+    // Debounce timers — each user-driven setter restarts the matching timer so a drag
+    // or held arrow key collapses into a single DDC/CI write once the user stops moving.
+    // External / programmatic apply paths (SetBrightnessAsync etc.) bypass the setters
+    // and therefore never schedule a debounced commit.
+    private DispatcherQueueTimer? _brightnessCommitTimer;
+    private DispatcherQueueTimer? _contrastCommitTimer;
+    private DispatcherQueueTimer? _volumeCommitTimer;
 
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowBrightnessSlider))]
     public partial bool ShowBrightness { get; set; }
 
     [ObservableProperty]
@@ -68,7 +77,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// <param name="brightness">Brightness value (0-100)</param>
     public async Task SetBrightnessAsync(int brightness)
     {
-        brightness = Math.Clamp(brightness, MinBrightness, MaxBrightness);
+        brightness = Math.Clamp(brightness, 0, 100);
 
         // Update UI state immediately
         if (_brightness != brightness)
@@ -77,7 +86,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(Brightness));
         }
 
-        // Apply to hardware
         await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
     }
 
@@ -86,13 +94,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetContrastAsync(int contrast)
     {
-        contrast = Math.Clamp(contrast, MinContrast, MaxContrast);
+        contrast = Math.Clamp(contrast, 0, 100);
 
         if (_contrast != contrast)
         {
             _contrast = contrast;
             OnPropertyChanged(nameof(Contrast));
-            OnPropertyChanged(nameof(ContrastPercent));
         }
 
         await ApplyPropertyToHardwareAsync(nameof(Contrast), contrast, _monitorManager.SetContrastAsync);
@@ -103,7 +110,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// </summary>
     public async Task SetVolumeAsync(int volume)
     {
-        volume = Math.Clamp(volume, MinVolume, MaxVolume);
+        volume = Math.Clamp(volume, 0, 100);
 
         if (_volume != volume)
         {
@@ -173,7 +180,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// <param name="propertyName">Name of the property being set (for logging and state persistence)</param>
     /// <param name="value">Value to apply</param>
     /// <param name="setAsyncFunc">Async function to call on MonitorManager</param>
-    private async Task ApplyPropertyToHardwareAsync(
+    private async Task<bool> ApplyPropertyToHardwareAsync(
         string propertyName,
         int value,
         Func<string, int, CancellationToken, Task<MonitorOperationResult>> setAsyncFunc)
@@ -185,6 +192,7 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             if (result.IsSuccess)
             {
                 _mainViewModel?.SaveMonitorSettingDirect(_monitor.Id, propertyName, value);
+                return true;
             }
             else
             {
@@ -195,6 +203,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             Logger.LogError($"[{Id}] Exception setting {propertyName.ToLowerInvariant()}: {ex.Message}");
         }
+
+        return false;
     }
 
     // Property to access IsInteractionEnabled from parent ViewModel
@@ -233,7 +243,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         _brightness = monitor.CurrentBrightness;
         _contrast = monitor.CurrentContrast;
         _volume = monitor.CurrentVolume;
-        IsAvailable = monitor.IsAvailable;
     }
 
     public string Id => _monitor.Id;
@@ -283,19 +292,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         ? AppConstants.UI.InternalMonitorGlyph // Laptop icon for WMI
         : AppConstants.UI.ExternalMonitorGlyph; // External monitor icon for DDC/CI and others
 
-    // Monitor property ranges
-    public int MinBrightness => _monitor.MinBrightness;
-
-    public int MaxBrightness => _monitor.MaxBrightness;
-
-    public int MinContrast => _monitor.MinContrast;
-
-    public int MaxContrast => _monitor.MaxContrast;
-
-    public int MinVolume => _monitor.MinVolume;
-
-    public int MaxVolume => _monitor.MaxVolume;
-
     // Advanced control display logic
     public bool HasAdvancedControls => ShowContrast || ShowVolume;
 
@@ -305,6 +301,64 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     public bool SupportsContrast => _monitor.SupportsContrast;
 
     public bool SupportsBrightness => _monitor.SupportsBrightness;
+
+    /// <summary>
+    /// Gets a value indicating whether this monitor's brightness is currently driven by linked
+    /// mode rather than its own slider. True when the parent has link mode on, this monitor
+    /// supports brightness, and the user has not excluded it. When true the per-card brightness
+    /// row shows a disabled linked-mode hint — the "All Displays" master slider broadcasts the
+    /// value instead.
+    /// </summary>
+    public bool IsBrightnessLinked => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness && !IsExcludedFromSync;
+
+    /// <summary>
+    /// Gets a value indicating whether the per-card brightness slider accepts input. Disabled both
+    /// while the app is busy (<see cref="IsInteractionEnabled"/>) and while link mode owns this
+    /// monitor's brightness (<see cref="IsBrightnessLinked"/>). Excluded monitors keep an active
+    /// slider, so this is true for them whenever interaction is enabled.
+    /// </summary>
+    public bool IsBrightnessSliderEnabled => IsInteractionEnabled && !IsBrightnessLinked;
+
+    public bool ShowBrightnessSlider => ShowBrightness && !IsBrightnessLinked;
+
+    public bool ShowIncludedInSyncIcon => !IsExcludedFromSync;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this monitor is excluded from linked brightness.
+    /// Backed by the parent's shared exclusion set (keyed by <see cref="Id"/>), so the state
+    /// survives monitor-list rebuilds and is persisted to settings.json. An excluded monitor keeps
+    /// its own independent brightness slider while link mode is on.
+    /// </summary>
+    public bool IsExcludedFromSync
+    {
+        get => _mainViewModel?.IsMonitorExcludedFromSync(Id) ?? false;
+        set
+        {
+            if (IsExcludedFromSync != value)
+            {
+                _mainViewModel?.SetMonitorExcludedFromSync(Id, value);
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsBrightnessLinked));
+                OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+                OnPropertyChanged(nameof(ShowBrightnessSlider));
+                OnPropertyChanged(nameof(ShowIncludedInSyncIcon));
+                OnPropertyChanged(nameof(SyncToggleToolTip));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether the per-card exclude toggle is shown. Only relevant while
+    /// link mode is on and the monitor supports brightness — otherwise exclusion has no effect.
+    /// </summary>
+    public bool ShowExcludeButton => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness;
+
+    /// <summary>
+    /// Gets the tooltip for the per-card linked-brightness toggle. The action reverses with the
+    /// current exclusion state: linked monitors can be excluded, excluded monitors can be included.
+    /// </summary>
+    public string SyncToggleToolTip => ResourceLoaderInstance.ResourceLoader.GetString(
+        IsExcludedFromSync ? "IncludeInSyncToggleToolTip" : "ExcludeFromSyncToggleToolTip");
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports volume control via VCP 0x62
@@ -426,8 +480,28 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_brightness != value)
             {
-                _ = SetBrightnessAsync(value);
+                _brightness = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _brightnessCommitTimer, () => SetBrightnessAsync(_brightness));
             }
+        }
+    }
+
+    /// <summary>
+    /// Update the brightness backing field and notify the UI without scheduling a per-VM commit
+    /// or hardware write. Used by <c>MainViewModel.LinkedBrightness</c> to keep each linked
+    /// monitor's stored brightness aligned with the master value, so it is correct if the
+    /// monitor is later excluded or link mode is disabled. The master broadcast is the single
+    /// source of hardware writes while link mode is on, so this path must not schedule its own
+    /// debounced commit.
+    /// </summary>
+    public void UpdateBrightnessDisplay(int value)
+    {
+        value = Math.Clamp(value, 0, 100);
+        if (_brightness != value)
+        {
+            _brightness = value;
+            OnPropertyChanged(nameof(Brightness));
         }
     }
 
@@ -686,8 +760,8 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>
-    /// Set power state for this monitor.
-    /// Note: Setting any state other than "On" will turn off the display.
+    /// Set the monitor's power state via VCP 0xD6: On (0x01) wakes the display,
+    /// Standby/Suspend/Off put it to sleep.
     /// </summary>
     public async Task SetPowerStateAsync(int powerState)
     {
@@ -717,18 +791,6 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         }
     }
 
-    /// <summary>
-    /// Command to set power state
-    /// </summary>
-    [RelayCommand]
-    private async Task SetPowerState(int? state)
-    {
-        if (state.HasValue)
-        {
-            await SetPowerStateAsync(state.Value);
-        }
-    }
-
     public int Contrast
     {
         get => _contrast;
@@ -736,7 +798,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_contrast != value)
             {
-                _ = SetContrastAsync(value);
+                _contrast = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _contrastCommitTimer, () => SetContrastAsync(_contrast));
             }
         }
     }
@@ -748,7 +812,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             if (_volume != value)
             {
-                _ = SetVolumeAsync(value);
+                _volume = value;
+                OnPropertyChanged();
+                ScheduleCommit(ref _volumeCommitTimer, () => SetVolumeAsync(_volume));
             }
         }
     }
@@ -780,48 +846,25 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         }
     }
 
-    public int ContrastPercent
-    {
-        get => MapToPercent(_contrast, MinContrast, MaxContrast);
-        set
-        {
-            var actualValue = MapFromPercent(value, MinContrast, MaxContrast);
-            Contrast = actualValue;
-        }
-    }
-
-    // Mapping functions for percentage conversion
-    private int MapToPercent(int value, int min, int max)
-    {
-        if (max <= min)
-        {
-            return 0;
-        }
-
-        return (int)Math.Round((value - min) * 100.0 / (max - min));
-    }
-
-    private int MapFromPercent(int percent, int min, int max)
-    {
-        if (max <= min)
-        {
-            return min;
-        }
-
-        percent = Math.Clamp(percent, 0, 100);
-        return min + (int)Math.Round(percent * (max - min) / 100.0);
-    }
-
     private void OnMainViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
         {
             OnPropertyChanged(nameof(IsInteractionEnabled));
+            OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
         }
         else if (e.PropertyName == nameof(MainViewModel.HasMonitors))
         {
             // Monitor count changed, update display name to show/hide number suffix
             OnPropertyChanged(nameof(DisplayName));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.LinkedLevelsActive))
+        {
+            // Link mode toggled — refresh the linked hint, exclude button, and slider state.
+            OnPropertyChanged(nameof(IsBrightnessLinked));
+            OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
+            OnPropertyChanged(nameof(ShowBrightnessSlider));
+            OnPropertyChanged(nameof(ShowExcludeButton));
         }
     }
 
@@ -841,58 +884,14 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         }
     }
 
-    // Slider commit handlers — fire hardware update only on pointer release or arrow key up
-    public void HandleBrightnessPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    // Slider commit handlers — debounced via ScheduleCommit. The setters store the
+    // value, raise PropertyChanged, and (re)start a per-metric DispatcherQueueTimer
+    // that fires the hardware write once the user stops moving. The commit closure
+    // reads the latest field at fire-time so intermediate values are coalesced.
+    private void ScheduleCommit(ref DispatcherQueueTimer? timer, Func<Task> commit)
     {
-        if (sender is Slider slider)
-        {
-            Brightness = (int)slider.Value;
-        }
+        SliderCommitScheduler.Schedule(ref timer, DispatcherQueue.GetForCurrentThread(), commit);
     }
-
-    public void HandleBrightnessKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            Brightness = (int)slider.Value;
-        }
-    }
-
-    public void HandleContrastPointerCaptureLost(object sender, PointerRoutedEventArgs e)
-    {
-        if (sender is Slider slider)
-        {
-            ContrastPercent = (int)slider.Value;
-        }
-    }
-
-    public void HandleContrastKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            ContrastPercent = (int)slider.Value;
-        }
-    }
-
-    public void HandleVolumePointerCaptureLost(object sender, PointerRoutedEventArgs e)
-    {
-        if (sender is Slider slider)
-        {
-            Volume = (int)slider.Value;
-        }
-    }
-
-    public void HandleVolumeKeyUp(object sender, KeyRoutedEventArgs e)
-    {
-        if (IsArrowKey(e.Key) && sender is Slider slider)
-        {
-            Volume = (int)slider.Value;
-        }
-    }
-
-    private static bool IsArrowKey(VirtualKey key) =>
-        key == VirtualKey.Left || key == VirtualKey.Right ||
-        key == VirtualKey.Up || key == VirtualKey.Down;
 
     // Rotation button handlers — one per orientation to avoid Tag string parsing
     public async void HandleRotation0Click(object sender, RoutedEventArgs e) => await CommitRotationClickAsync(0);
@@ -948,16 +947,21 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             return;
         }
 
-        if (item.Value == PowerStateItem.PowerStateOn)
-        {
-            return;
-        }
-
+        // Send the selected state straight to the hardware. Selecting On (0x01) wakes a
+        // sleeping monitor: DDC/CI stays reachable in Standby/Suspend/Off(DPM), so the
+        // write turns the panel back on (Off(Hard)/0x05 may still need a physical wake).
         await SetPowerStateAsync(item.Value);
     }
 
     public void Dispose()
     {
+        // Drop any pending debounced commits — if we're being disposed the monitor is
+        // gone (unplug/refresh) or the app is shutting down, so a hardware write would
+        // race a half-torn-down MonitorManager.
+        _brightnessCommitTimer?.Stop();
+        _contrastCommitTimer?.Stop();
+        _volumeCommitTimer?.Stop();
+
         // Unsubscribe from MainViewModel events
         if (_mainViewModel != null)
         {

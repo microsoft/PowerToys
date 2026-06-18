@@ -39,7 +39,8 @@
   <PropertyGroup>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <PreferredToolArchitecture Condition="'$(PROCESSOR_ARCHITECTURE)' == 'ARM64' or '$(PROCESSOR_ARCHITEW6432)' == 'ARM64'">arm64</PreferredToolArchitecture>
-    <VcpkgEnabled>false</VcpkgEnabled>
+    <!-- vcpkg.targets is imported via Cpp.Build.targets after Microsoft.Cpp.targets. -->
+    <ForceImportAfterCppTargets>$(MSBuildThisFileDirectory)Cpp.Build.targets</ForceImportAfterCppTargets>
     <ReplaceWildcardsInProjectItems>true</ReplaceWildcardsInProjectItems>
     <ExternalIncludePath>$(MSBuildThisFileDirectory)deps;$(MSBuildThisFileDirectory)packages;$(ExternalIncludePath)</ExternalIncludePath>
     <!-- Enable control flow guard for C++ projects that don't consume any C++ files -->
@@ -120,6 +121,48 @@
     <DesktopCompatible>true</DesktopCompatible>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
+
+  <!--
+    vcpkg integration. Set globally and loaded before Microsoft.Cpp.props (via
+    ForceImportBeforeCppProps) so that vcpkg.props' ClCompile hook is in place
+    before the C++ targets run. VcpkgRoot is resolved via the same three-tier
+    fallback used by microsoft/terminal (env var → VS-shipped → deps/vcpkg).
+  -->
+  <PropertyGroup Label="vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifestEnabled>true</VcpkgManifestEnabled>
+    <VcpkgManifestRoot>$(MSBuildThisFileDirectory)</VcpkgManifestRoot>
+    <VcpkgOSTarget>windows</VcpkgOSTarget>
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+    <!--
+      Force VcpkgConfiguration to follow $(Configuration). Without this,
+      vcpkg.props infers VcpkgConfiguration from $(UseDebugLibraries), which
+      Microsoft.Cpp.Default.props has already defaulted to 'false' by the
+      time vcpkg.props is imported here (the PowerToys-wide Debug override
+      below runs LATER). That would silently link the Release-built spdlog
+      into Debug consumers and trigger LNK2038 (MT/MTd, _ITERATOR_DEBUG_LEVEL).
+    -->
+    <VcpkgConfiguration>$(Configuration)</VcpkgConfiguration>
+    <!-- vcpkg validates triplets case-sensitively; PowerToys uses ARM64 capital-case. -->
+    <VcpkgPlatformTarget Condition="'$(Platform)' == 'ARM64'">arm64</VcpkgPlatformTarget>
+    <VcpkgApplocalDeps>false</VcpkgApplocalDeps>
+    <VcpkgInstalledDir>$(MSBuildThisFileDirectory)vcpkg_installed\$(Platform)\</VcpkgInstalledDir>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == ''">$(VCPKG_ROOT)</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' and '$(VsInstallRoot)' != ''">$(VsInstallRoot)\VC\vcpkg</VcpkgRoot>
+    <VcpkgRoot Condition="'$(VcpkgRoot)' == '' or !Exists('$(VcpkgRoot)\vcpkg.exe')">$(MSBuildThisFileDirectory)deps\vcpkg</VcpkgRoot>
+    <CAExcludePath>$(CAExcludePath);$(VcpkgInstalledDir)</CAExcludePath>
+    <VCPkgLocalAppDataDisabled>true</VCPkgLocalAppDataDisabled>
+  </PropertyGroup>
+  <!-- Fail fast with an actionable message instead of opaque C1083 spdlog/spdlog.h errors. -->
+  <Target Name="PowerToysEnsureVcpkgAvailable"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and '$(VcpkgEnabled)' == 'true' and !Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props')">
+    <Error Text="PowerToys requires the 'vcpkg' Visual Studio component, but it was not found.%0A%0AOpen the Visual Studio Installer, click Modify on your VS install, search for 'vcpkg', enable 'C++ vcpkg package manager', and click Modify. (Visual Studio will also prompt you to install missing .vsconfig components when you open PowerToys.slnx.)%0A%0AIf you have vcpkg installed elsewhere, set the VCPKG_ROOT environment variable to its root before building.%0A%0ASearched: '$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props'" />
+  </Target>
+  <Import Project="$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props"
+          Condition="'$(MSBuildProjectExtension)' == '.vcxproj' and Exists('$(VcpkgRoot)\scripts\buildsystems\msbuild\vcpkg.props')" />
+
 
   <!-- Debug/Release props -->
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">

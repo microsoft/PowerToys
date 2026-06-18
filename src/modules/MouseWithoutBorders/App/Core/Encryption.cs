@@ -196,11 +196,6 @@ internal static class Encryption
         return (uint)((hashValue[0] << 23) + (hashValue[1] << 16) + (hashValue[^1] << 8) + hashValue[2]);
     }
 
-    internal static string GetDebugInfo(string st)
-    {
-        return string.IsNullOrEmpty(st) ? st : ((byte)(Common.GetBytesU(st).Sum(value => value) % 256)).ToString(CultureInfo.InvariantCulture);
-    }
-
     internal static string CreateDefaultKey()
     {
         return CreateRandomKey();

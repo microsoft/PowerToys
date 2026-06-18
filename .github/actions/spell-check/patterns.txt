@@ -18,6 +18,13 @@ MIcrosoftEdgeLauncherCsharp
 # marker for ignoring a comment to the end of the line
 // #no-spell-check.*$
 
+# JavaScript regex literals that start with \b can be reported as "b..." words.
+# Example: /\bclass\s+.../
+^\s*/\\[b].{3,}?/[gim]*\s*(?:\)(?:;|$)|,$)
+
+# GitHub API header token used in code (not natural language).
+\bx-ratelimit-reset\b
+
 # Gaelic
 Gàidhlig
 
@@ -305,3 +312,9 @@ ms-windows-store://\S+
 
 # ANSI color codes
 (?:\\(?:u00|x)1[Bb]|\\03[1-7]|\x1b|\\u\{1[Bb]\})\[\d+(?:;\d+)*m
+
+# Special licenses text from RNNoise (BSD-style disclaimer: ``AS IS'')
+``AS IS''
+
+# Old school moniker for macOS from RNNoise
+MacOS

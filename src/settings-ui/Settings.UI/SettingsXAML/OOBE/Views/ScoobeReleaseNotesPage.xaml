@@ -31,7 +31,7 @@
     <!--  Main layout container  -->
     <Grid>
         <ScrollViewer HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid MaxWidth="960">
+            <Grid Style="{StaticResource PageStyle}">
                 <Grid Margin="0,0,0,24">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />

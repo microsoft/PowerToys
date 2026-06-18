@@ -160,7 +160,7 @@ namespace WorkspacesEditor.ViewModels
         {
             foreach (Project project in Workspaces)
             {
-                project.Initialize(App.ThemeManager.GetCurrentTheme());
+                project.Initialize(App.GetCurrentTheme());
             }
 
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
@@ -188,7 +188,7 @@ namespace WorkspacesEditor.ViewModels
             editedProject.Applications = projectToSave.Applications.Where(x => x.IsIncluded).ToList();
 
             editedProject.OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs("AppsCountString"));
-            editedProject.Initialize(App.ThemeManager.GetCurrentTheme());
+            editedProject.Initialize(App.GetCurrentTheme());
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             ApplyShortcut(editedProject);
         }
@@ -216,7 +216,7 @@ namespace WorkspacesEditor.ViewModels
             var shortcutAddress = GetDesktopShortcutAddress(project);
             var shortcutIconFilename = GetShortcutStoreAddress(project);
 
-            Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.ThemeManager.GetCurrentTheme());
+            Bitmap icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), App.GetCurrentTheme());
             WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
 
             try
@@ -270,7 +270,7 @@ namespace WorkspacesEditor.ViewModels
                     project.EditorWindowTitle = Properties.Resources.EditWorkspace;
                     editPage.DataContext = project;
                     CheckShortcutPresence(project);
-                    project.Initialize(App.ThemeManager.GetCurrentTheme());
+                    project.Initialize(App.GetCurrentTheme());
                 }
                 else
                 {
@@ -283,7 +283,7 @@ namespace WorkspacesEditor.ViewModels
         {
             CheckShortcutPresence(projectBeforeLaunch);
             editPage.DataContext = projectBeforeLaunch;
-            projectBeforeLaunch.Initialize(App.ThemeManager.GetCurrentTheme());
+            projectBeforeLaunch.Initialize(App.GetCurrentTheme());
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
@@ -323,7 +323,7 @@ namespace WorkspacesEditor.ViewModels
             }
 
             selectedProject.EditorWindowTitle = isNewlyCreated ? Properties.Resources.CreateWorkspace : Properties.Resources.EditWorkspace;
-            selectedProject.Initialize(App.ThemeManager.GetCurrentTheme());
+            selectedProject.Initialize(App.GetCurrentTheme());
 
             CheckShortcutPresence(selectedProject);
 
@@ -342,7 +342,7 @@ namespace WorkspacesEditor.ViewModels
         public void AddNewProject(Project project)
         {
             project.Applications.RemoveAll(app => !app.IsIncluded);
-            project.Initialize(App.ThemeManager.GetCurrentTheme());
+            project.Initialize(App.GetCurrentTheme());
             Workspaces.Add(project);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             TempProjectData.DeleteTempFile();

@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Numerics;
 using System.Text.RegularExpressions;
 
 using Mages.Core;
@@ -53,9 +54,11 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
             // mages has quirky log representation
             // mage has log == ln vs log10
-            input = input.
-                        Replace("log(", "log10(", true, CultureInfo.CurrentCulture).
-                        Replace("ln(", "log(", true, CultureInfo.CurrentCulture);
+            // Use regex replacements so optional whitespace between the function name and
+            // '(' is handled correctly - "log (100)" must map to log10 just like "log(100)"
+            // does. The negative lookahead prevents "log10" / "log2" from being touched.
+            input = LogRegex().Replace(input, "log10(");
+            input = LnRegex().Replace(input, "log(");
 
             input = CalculateHelper.FixHumanMultiplicationExpressions(input);
 
@@ -122,10 +125,24 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return Properties.Resources.wox_plugin_calculator_double_array_returned;
             }
 
+            if (result is Complex)
+            {
+                return Properties.Resources.wox_plugin_calculator_complex_number_returned;
+            }
+
             return result;
         }
 
-        [GeneratedRegex("\\/\\s*0(?!(?:[,\\.0-9]|[box]0*[1-9a-f]))", RegexOptions.IgnoreCase, "en-US")]
+        [GeneratedRegex("\\/\\s*0(?!(?:[,\\.0-9]|[box]0*[1-9a-f]))", RegexOptions.IgnoreCase)]
         private static partial Regex DivisionByZeroRegex();
+
+        // Case-insensitive match for "log" not followed by a digit, then optional whitespace,
+        // then '('. The negative lookahead protects "log2" and "log10". A new log variant
+        // like "logb" must be handled explicitly.
+        [GeneratedRegex("log(?![0-9])\\s*\\(", RegexOptions.IgnoreCase)]
+        private static partial Regex LogRegex();
+
+        [GeneratedRegex("ln\\s*\\(", RegexOptions.IgnoreCase)]
+        private static partial Regex LnRegex();
     }
 }

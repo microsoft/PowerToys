@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -65,10 +67,10 @@ namespace PowerDisplay.Common.Services
 
         /// <summary>
         /// Update monitor parameter and schedule debounced save to disk.
-        /// Uses Monitor.Id as the stable key (e.g., "DDC_GSM5C6D_1", "WMI_BOE0900_2").
+        /// Uses Monitor.Id as the stable key (new DevicePath-based Id, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).
         /// Debounced-save strategy reduces disk I/O by batching rapid updates (e.g., during slider drag).
         /// </summary>
-        /// <param name="monitorId">The monitor's unique Id (e.g., "DDC_GSM5C6D_1").</param>
+        /// <param name="monitorId">The monitor's unique Id (new DevicePath-based format, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).</param>
         /// <param name="property">The property name to update (Brightness, ColorTemperature, Contrast, or Volume).</param>
         /// <param name="value">The new value.</param>
         public void UpdateMonitorParameter(string monitorId, string property, int value)
@@ -126,7 +128,7 @@ namespace PowerDisplay.Common.Services
         /// <summary>
         /// Get saved parameters for a monitor using Monitor.Id.
         /// </summary>
-        /// <param name="monitorId">The monitor's unique Id (e.g., "DDC_GSM5C6D_1").</param>
+        /// <param name="monitorId">The monitor's unique Id (new DevicePath-based format, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).</param>
         /// <returns>A tuple of (Brightness, ColorTemperatureVcp, Contrast, Volume) or null if not found.</returns>
         public (int? Brightness, int? ColorTemperatureVcp, int? Contrast, int? Volume)? GetMonitorParameters(string monitorId)
         {
@@ -142,6 +144,83 @@ namespace PowerDisplay.Common.Services
 
             return null;
         }
+
+        /// <summary>
+        /// One-shot upgrade migration: rewrite legacy <c>"{Source}_{EdidId}_{N}"</c> keys
+        /// (pre-PR #47712) onto the matching DevicePath-based monitor Ids by joining on
+        /// (EdidId, MonitorNumber). Legacy keys are always removed; if no exact match is
+        /// found the legacy state is dropped (a warning is logged) rather than risk
+        /// attaching to the wrong monitor.
+        /// </summary>
+        /// <param name="currentlyDiscovered">Ids and Windows DISPLAY numbers of monitors currently discovered.</param>
+        public void MigrateLegacyKeys(IEnumerable<(string Id, int MonitorNumber)> currentlyDiscovered)
+        {
+            if (currentlyDiscovered is null)
+            {
+                return;
+            }
+
+            try
+            {
+                var discoveredList = currentlyDiscovered as IList<(string Id, int MonitorNumber)> ?? currentlyDiscovered.ToList();
+                var legacyKeys = new List<string>();
+                foreach (var key in _states.Keys)
+                {
+                    if (MonitorIdentity.IsLegacyId(key))
+                    {
+                        legacyKeys.Add(key);
+                    }
+                }
+
+                if (legacyKeys.Count == 0)
+                {
+                    return;
+                }
+
+                int migrated = 0;
+                int dropped = 0;
+                foreach (var legacyKey in legacyKeys)
+                {
+                    var newKey = MonitorIdMigrator.MatchNewId(legacyKey, discoveredList);
+                    if (newKey != null && _states.TryGetValue(legacyKey, out var value))
+                    {
+                        // TryAdd is the atomic "add only if absent" we want: a freshly-written
+                        // new-format entry (from concurrent UpdateMonitorParameter) is authoritative.
+                        if (_states.TryAdd(newKey, CloneState(value)))
+                        {
+                            migrated++;
+                        }
+                    }
+                    else if (newKey == null)
+                    {
+                        Logger.LogWarning(
+                            $"[MonitorStateManager] Dropping legacy state for '{legacyKey}': no current monitor with matching EdidId+MonitorNumber.");
+                        dropped++;
+                    }
+
+                    _states.TryRemove(legacyKey, out _);
+                }
+
+                _isDirty = true;
+                _saveDebouncer.Debounce(SaveStateToDiskAsync);
+
+                Logger.LogInfo(
+                    $"[MonitorStateManager] Legacy migration finished: {migrated} migrated, {dropped} dropped (no match).");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"[MonitorStateManager] Legacy key migration failed: {ex.Message}");
+            }
+        }
+
+        private static MonitorState CloneState(MonitorState s) => new()
+        {
+            Brightness = s.Brightness,
+            ColorTemperatureVcp = s.ColorTemperatureVcp,
+            Contrast = s.Contrast,
+            Volume = s.Volume,
+            CapabilitiesRaw = s.CapabilitiesRaw,
+        };
 
         /// <summary>
         /// Load state from disk.

@@ -15,6 +15,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     {
         public const string ModuleName = "PowerDisplay";
 
+        /// <summary>
+        /// Number of days a per-monitor entry is preserved in settings.json after the monitor
+        /// last appeared in a successful discovery. Entries older than this are dropped on the
+        /// next save. <see cref="MonitorInfo.IsHidden"/>=true entries are exempt.
+        /// </summary>
+        public const int MonitorEntryRetentionDays = 30;
+
         [JsonPropertyName("properties")]
         public PowerDisplayProperties Properties { get; set; }
 

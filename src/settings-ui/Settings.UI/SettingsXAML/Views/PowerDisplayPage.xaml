@@ -32,288 +32,327 @@
 
     <controls:SettingsPageControl x:Uid="PowerDisplay" ModuleImageSource="ms-appx:///Assets/Settings/Modules/PowerDisplay.png">
         <controls:SettingsPageControl.ModuleContent>
-            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}">
-                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
-                    <tkcontrols:SettingsCard
-                        x:Uid="PowerDisplay_Enable_PowerDisplay"
-                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}"
-                        IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </tkcontrols:SettingsCard>
-                </controls:GPOInfoControl>
+            <!--  ChildrenTransitions intentionally omitted: RepositionThemeTransition interacts badly  -->
+            <!--  with the per-monitor SettingsExpanders and PageScrollViewer, causing rubber-band  -->
+            <!--  scrolling when a monitor is expanded.  -->
+            <StackPanel>
+                <!--  Crash recovery banner. Outside the inner StackPanel so the Ignore button stays clickable when the rest of the page is locked.  -->
+                <InfoBar
+                    x:Uid="PowerDisplay_CrashDetectedInfoBar"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.IsCrashLockActive, Mode=OneWay}"
+                    Severity="Error">
+                    <InfoBar.ActionButton>
+                        <Button x:Uid="PowerDisplay_CrashDetected_IgnoreButton" Command="{x:Bind ViewModel.DismissCrashWarningCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
 
-                <controls:SettingsGroup x:Uid="PowerDisplayGroupHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander
-                        x:Uid="PowerDisplayFlyoutHeader"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE770;}"
-                        IsExpanded="True">
-                        <Button
-                            x:Uid="PowerDisplay_LaunchButton"
-                            Command="{x:Bind ViewModel.LaunchEventHandler}"
-                            Style="{StaticResource AccentButtonStyle}" />
-                        <tkcontrols:SettingsExpander.Items>
-                            <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
-                            <tkcontrols:SettingsCard Visibility="Collapsed" />
-                            <tkcontrols:SettingsCard x:Uid="PowerDisplay_ActivationShortcut">
-                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                <!--  Inner wrapper: everything below is locked when crash flag is present. ContentControl carries IsEnabled because Panel/StackPanel does not derive from Control. IsTabStop/AccessibilityView keep it invisible to tab navigation and Narrator (purely structural).  -->
+                <ContentControl
+                    HorizontalContentAlignment="Stretch"
+                    AutomationProperties.AccessibilityView="Raw"
+                    IsEnabled="{x:Bind ViewModel.IsCrashLockActive, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                    IsTabStop="False">
+                    <StackPanel>
+                        <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                            <tkcontrols:SettingsCard
+                                x:Uid="PowerDisplay_Enable_PowerDisplay"
+                                HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/PowerDisplay.png}"
+                                IsEnabled="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </tkcontrols:SettingsCard>
+                        </controls:GPOInfoControl>
+                        <controls:SettingsGroup x:Uid="PowerDisplayGroupHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander
+                                x:Uid="PowerDisplayFlyoutHeader"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE770;}"
+                                IsExpanded="True">
+                                <Button
+                                    x:Uid="PowerDisplay_LaunchButton"
+                                    Command="{x:Bind ViewModel.LaunchEventHandler}"
+                                    Style="{StaticResource AccentButtonStyle}" />
+                                <tkcontrols:SettingsExpander.Items>
+                                    <!--  HACK: For some weird reason, a ShortcutControl does not work correctly if it's the first or last item in the expander, so we add an invisible card.  -->
+                                    <tkcontrols:SettingsCard Visibility="Collapsed" />
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_ActivationShortcut">
+                                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
 
-                            <tkcontrols:SettingsCard x:Uid="PowerDisplay_MonitorRefreshDelay">
-                                <ComboBox
-                                    MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
-                                    ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
-                                    SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerDisplay_RestoreSettingsOnStartup" IsChecked="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerDisplay_ShowSystemTrayIcon" IsChecked="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerDisplay_ShowProfileSwitcher" IsChecked="{x:Bind ViewModel.ShowProfileSwitcher, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard ContentAlignment="Left">
-                                <CheckBox x:Uid="PowerDisplay_ShowIdentifyMonitorsButton" IsChecked="{x:Bind ViewModel.ShowIdentifyMonitorsButton, Mode=TwoWay}" />
-                            </tkcontrols:SettingsCard>
-                        </tkcontrols:SettingsExpander.Items>
-                    </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MonitorRefreshDelay">
+                                        <ComboBox
+                                            MinWidth="{StaticResource PowerDisplayCompactActionControlMinWidth}"
+                                            ItemsSource="{x:Bind ViewModel.MonitorRefreshDelayOptions}"
+                                            SelectedItem="{x:Bind ViewModel.MonitorRefreshDelay, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                                        <CheckBox x:Uid="PowerDisplay_RestoreSettingsOnStartup" IsChecked="{x:Bind ViewModel.RestoreSettingsOnStartup, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                                        <CheckBox x:Uid="PowerDisplay_ShowSystemTrayIcon" IsChecked="{x:Bind ViewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                                        <CheckBox x:Uid="PowerDisplay_ShowProfileSwitcher" IsChecked="{x:Bind ViewModel.ShowProfileSwitcher, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                                        <CheckBox x:Uid="PowerDisplay_ShowIdentifyMonitorsButton" IsChecked="{x:Bind ViewModel.ShowIdentifyMonitorsButton, Mode=TwoWay}" />
+                                    </tkcontrols:SettingsCard>
+                                </tkcontrols:SettingsExpander.Items>
+                            </tkcontrols:SettingsExpander>
+                        </controls:SettingsGroup>
 
-                <!--  Custom VCP Name Mappings  -->
-                <controls:SettingsGroup x:Uid="PowerDisplay_CustomVcpMappings_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander
-                        x:Uid="PowerDisplay_CustomVcpMappings"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE70F;}"
-                        IsExpanded="{x:Bind ViewModel.HasCustomVcpMappings, Mode=OneWay}"
-                        ItemsSource="{x:Bind ViewModel.CustomVcpMappings, Mode=OneWay}">
-                        <tkcontrols:SettingsExpander.ItemTemplate>
-                            <DataTemplate x:DataType="pdmodels:CustomVcpValueMapping">
-                                <tkcontrols:SettingsCard Description="{x:Bind VcpCodeDisplayName}" Header="{x:Bind DisplaySummary}">
-                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayActionButtonSpacing}">
-                                        <Button
-                                            x:Uid="PowerDisplay_EditCustomMapping_Button"
-                                            Click="EditCustomMapping_Click"
-                                            Content="{ui:FontIcon Glyph=&#xE70F;,
-                                                                  FontSize={StaticResource PowerDisplayPrimaryGlyphFontSize}}"
-                                            Style="{StaticResource SubtleButtonStyle}"
-                                            Tag="{x:Bind}" />
-                                        <Button
-                                            x:Uid="PowerDisplay_DeleteCustomMapping_Button"
-                                            Click="DeleteCustomMapping_Click"
-                                            Content="{ui:FontIcon Glyph=&#xE74D;,
-                                                                  FontSize={StaticResource PowerDisplayPrimaryGlyphFontSize}}"
-                                            Style="{StaticResource SubtleButtonStyle}"
-                                            Tag="{x:Bind}" />
+                        <controls:SettingsGroup x:Uid="PowerDisplay_AdvancedSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsCard x:Uid="PowerDisplay_MaxCompatibilityMode" HeaderIcon="{ui:FontIcon Glyph=&#xE7B5;}">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.MaxCompatibilityMode, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </controls:SettingsGroup>
+
+                        <!--  Custom VCP Name Mappings  -->
+                        <controls:SettingsGroup x:Uid="PowerDisplay_CustomVcpMappings_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander
+                                x:Uid="PowerDisplay_CustomVcpMappings"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE70F;}"
+                                IsExpanded="{x:Bind ViewModel.HasCustomVcpMappings, Mode=OneWay}"
+                                ItemsSource="{x:Bind ViewModel.CustomVcpMappings, Mode=OneWay}">
+                                <tkcontrols:SettingsExpander.ItemTemplate>
+                                    <DataTemplate x:DataType="pdmodels:CustomVcpValueMapping">
+                                        <tkcontrols:SettingsCard Description="{x:Bind VcpCodeDisplayName}" Header="{x:Bind DisplaySummary}">
+                                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayActionButtonSpacing}">
+                                                <Button
+                                                    x:Uid="PowerDisplay_EditCustomMapping_Button"
+                                                    Click="EditCustomMapping_Click"
+                                                    Content="{ui:FontIcon Glyph=&#xE70F;,
+                                                                          FontSize={StaticResource PowerDisplayPrimaryGlyphFontSize}}"
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Tag="{x:Bind}" />
+                                                <Button
+                                                    x:Uid="PowerDisplay_DeleteCustomMapping_Button"
+                                                    Click="DeleteCustomMapping_Click"
+                                                    Content="{ui:FontIcon Glyph=&#xE74D;,
+                                                                          FontSize={StaticResource PowerDisplayPrimaryGlyphFontSize}}"
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Tag="{x:Bind}" />
+                                            </StackPanel>
+                                        </tkcontrols:SettingsCard>
+                                    </DataTemplate>
+                                </tkcontrols:SettingsExpander.ItemTemplate>
+
+                                <!--  Add mapping button  -->
+                                <Button x:Uid="PowerDisplay_AddCustomMappingButton" Click="AddCustomMapping_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayInlineIconSpacing}">
+                                        <FontIcon FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}" Glyph="&#xE710;" />
+                                        <TextBlock x:Uid="PowerDisplay_AddCustomMapping_Text" />
                                     </StackPanel>
-                                </tkcontrols:SettingsCard>
-                            </DataTemplate>
-                        </tkcontrols:SettingsExpander.ItemTemplate>
+                                </Button>
+                            </tkcontrols:SettingsExpander>
+                        </controls:SettingsGroup>
 
-                        <!--  Add mapping button  -->
-                        <Button x:Uid="PowerDisplay_AddCustomMappingButton" Click="AddCustomMapping_Click">
-                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayInlineIconSpacing}">
-                                <FontIcon FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}" Glyph="&#xE710;" />
-                                <TextBlock x:Uid="PowerDisplay_AddCustomMapping_Text" />
-                            </StackPanel>
-                        </Button>
-                    </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                        <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <tkcontrols:SettingsExpander
+                                x:Uid="PowerDisplay_QuickProfiles"
+                                HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
+                                IsExpanded="{x:Bind ViewModel.HasProfiles, Mode=OneWay}"
+                                ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}">
+                                <tkcontrols:SettingsExpander.ItemTemplate>
+                                    <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">
+                                        <tkcontrols:SettingsCard Header="{x:Bind Name}">
+                                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayActionButtonSpacing}">
+                                                <Button
+                                                    x:Uid="PowerDisplay_Profile_ApplyButton"
+                                                    Click="ProfileButton_Click"
+                                                    Tag="{x:Bind}" />
+                                                <Button
+                                                    x:Uid="PowerDisplay_Profile_MoreButton"
+                                                    Content="{ui:FontIcon Glyph=&#xE712;,
+                                                                          FontSize={StaticResource PowerDisplayMoreButtonGlyphFontSize}}"
+                                                    Style="{StaticResource SubtleButtonStyle}"
+                                                    Tag="{x:Bind}">
+                                                    <Button.Flyout>
+                                                        <MenuFlyout>
+                                                            <MenuFlyoutItem
+                                                                x:Uid="PowerDisplay_Profile_EditMenuItem"
+                                                                Click="EditProfile_Click"
+                                                                Icon="{ui:FontIcon Glyph=&#xE70F;}"
+                                                                Tag="{x:Bind}" />
+                                                            <MenuFlyoutSeparator />
+                                                            <MenuFlyoutItem
+                                                                x:Uid="PowerDisplay_Profile_DeleteMenuItem"
+                                                                Click="DeleteProfile_Click"
+                                                                Icon="{ui:FontIcon Glyph=&#xE74D;}"
+                                                                Tag="{x:Bind}" />
+                                                        </MenuFlyout>
+                                                    </Button.Flyout>
+                                                </Button>
+                                            </StackPanel>
+                                        </tkcontrols:SettingsCard>
+                                    </DataTemplate>
+                                </tkcontrols:SettingsExpander.ItemTemplate>
 
-                <controls:SettingsGroup x:Uid="PowerDisplay_Profiles_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsExpander
-                        x:Uid="PowerDisplay_QuickProfiles"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
-                        IsExpanded="{x:Bind ViewModel.HasProfiles, Mode=OneWay}"
-                        ItemsSource="{x:Bind ViewModel.Profiles, Mode=OneWay}">
-                        <tkcontrols:SettingsExpander.ItemTemplate>
-                            <DataTemplate x:DataType="pdmodels:PowerDisplayProfile">
-                                <tkcontrols:SettingsCard Header="{x:Bind Name}">
-                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayActionButtonSpacing}">
-                                        <Button
-                                            x:Uid="PowerDisplay_Profile_ApplyButton"
-                                            Click="ProfileButton_Click"
-                                            Tag="{x:Bind}" />
-                                        <Button
-                                            x:Uid="PowerDisplay_Profile_MoreButton"
-                                            Content="{ui:FontIcon Glyph=&#xE712;,
-                                                                  FontSize={StaticResource PowerDisplayMoreButtonGlyphFontSize}}"
-                                            Style="{StaticResource SubtleButtonStyle}"
-                                            Tag="{x:Bind}">
-                                            <Button.Flyout>
-                                                <MenuFlyout>
-                                                    <MenuFlyoutItem
-                                                        x:Uid="PowerDisplay_Profile_EditMenuItem"
-                                                        Click="EditProfile_Click"
-                                                        Icon="{ui:FontIcon Glyph=&#xE70F;}"
-                                                        Tag="{x:Bind}" />
-                                                    <MenuFlyoutSeparator />
-                                                    <MenuFlyoutItem
-                                                        x:Uid="PowerDisplay_Profile_DeleteMenuItem"
-                                                        Click="DeleteProfile_Click"
-                                                        Icon="{ui:FontIcon Glyph=&#xE74D;}"
-                                                        Tag="{x:Bind}" />
-                                                </MenuFlyout>
-                                            </Button.Flyout>
-                                        </Button>
+                                <!--  Add profile button  -->
+                                <Button x:Uid="PowerDisplay_AddProfileButton" Click="AddProfileButton_Click">
+                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayInlineIconSpacing}">
+                                        <FontIcon FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}" Glyph="&#xE710;" />
+                                        <TextBlock x:Uid="PowerDisplay_AddProfile_Text" />
                                     </StackPanel>
-                                </tkcontrols:SettingsCard>
-                            </DataTemplate>
-                        </tkcontrols:SettingsExpander.ItemTemplate>
+                                </Button>
+                            </tkcontrols:SettingsExpander>
+                        </controls:SettingsGroup>
 
-                        <!--  Add profile button  -->
-                        <Button x:Uid="PowerDisplay_AddProfileButton" Click="AddProfileButton_Click">
-                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayInlineIconSpacing}">
-                                <FontIcon FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}" Glyph="&#xE710;" />
-                                <TextBlock x:Uid="PowerDisplay_AddProfile_Text" />
-                            </StackPanel>
-                        </Button>
-                    </tkcontrols:SettingsExpander>
-                </controls:SettingsGroup>
+                        <controls:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                            <!--  Empty state hint  -->
+                            <TextBlock
+                                x:Uid="PowerDisplay_NoMonitorsDetected"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Visibility="{x:Bind ViewModel.HasMonitors, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
 
-                <controls:SettingsGroup x:Uid="PowerDisplay_Monitors" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <!--  Empty state hint  -->
-                    <TextBlock
-                        x:Uid="PowerDisplay_NoMonitorsDetected"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Visibility="{x:Bind ViewModel.HasMonitors, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
+                            <!--  Monitor list  -->
+                            <ItemsControl
+                                x:Name="MonitorsList"
+                                ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
+                                Visibility="{x:Bind ViewModel.HasMonitors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="library:MonitorInfo">
+                                        <tkcontrols:SettingsExpander
+                                            Margin="{StaticResource PowerDisplayMonitorExpanderMargin}"
+                                            Description="{x:Bind Id, Mode=OneWay}"
+                                            Header="{x:Bind DisplayName, Mode=OneWay}">
+                                            <tkcontrols:SettingsExpander.HeaderIcon>
+                                                <FontIcon Glyph="{x:Bind MonitorIconGlyph, Mode=OneWay}" />
+                                            </tkcontrols:SettingsExpander.HeaderIcon>
+                                            <ptcontrols:IsEnabledTextBlock Text="{x:Bind CommunicationMethod, Mode=OneWay}" />
+                                            <tkcontrols:SettingsExpander.ItemsHeader>
+                                                <!--  Capabilities warning  -->
+                                                <InfoBar
+                                                    x:Uid="PowerDisplay_Monitor_CapabilitiesWarning"
+                                                    BorderThickness="0"
+                                                    CornerRadius="0"
+                                                    IsClosable="False"
+                                                    IsOpen="{x:Bind ShowCapabilitiesWarning, Mode=OneWay}"
+                                                    Severity="Warning" />
+                                            </tkcontrols:SettingsExpander.ItemsHeader>
+                                            <tkcontrols:SettingsExpander.Items>
+                                                <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsContrast, Mode=OneWay}">
+                                                    <CheckBox x:Uid="PowerDisplay_Monitor_EnableContrast" IsChecked="{x:Bind EnableContrast, Mode=TwoWay}" />
+                                                </tkcontrols:SettingsCard>
+                                                <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsVolume, Mode=OneWay}">
+                                                    <CheckBox x:Uid="PowerDisplay_Monitor_EnableVolume" IsChecked="{x:Bind EnableVolume, Mode=TwoWay}" />
+                                                </tkcontrols:SettingsCard>
+                                                <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsInputSource, Mode=OneWay}">
+                                                    <CheckBox
+                                                        x:Uid="PowerDisplay_Monitor_EnableInputSource"
+                                                        Click="EnableInputSource_Click"
+                                                        IsChecked="{x:Bind EnableInputSource, Mode=OneWay}"
+                                                        Tag="{x:Bind}" />
+                                                </tkcontrols:SettingsCard>
+                                                <tkcontrols:SettingsCard ContentAlignment="Left">
+                                                    <CheckBox x:Uid="PowerDisplay_Monitor_EnableRotation" IsChecked="{x:Bind EnableRotation, Mode=TwoWay}" />
+                                                </tkcontrols:SettingsCard>
+                                                <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
+                                                    <CheckBox
+                                                        x:Uid="PowerDisplay_Monitor_EnableColorTemperature"
+                                                        Click="EnableColorTemperature_Click"
+                                                        IsChecked="{x:Bind EnableColorTemperature, Mode=OneWay}"
+                                                        Tag="{x:Bind}" />
+                                                </tkcontrols:SettingsCard>
+                                                <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsPowerState, Mode=OneWay}">
+                                                    <CheckBox
+                                                        x:Uid="PowerDisplay_Monitor_EnablePowerState"
+                                                        Click="EnablePowerState_Click"
+                                                        IsChecked="{x:Bind EnablePowerState, Mode=OneWay}"
+                                                        Tag="{x:Bind}" />
+                                                </tkcontrols:SettingsCard>
+                                                <tkcontrols:SettingsCard ContentAlignment="Left">
+                                                    <CheckBox x:Uid="PowerDisplay_Monitor_HideMonitor" IsChecked="{x:Bind IsHidden, Mode=TwoWay}" />
+                                                </tkcontrols:SettingsCard>
+                                                <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_Diagnostics">
+                                                    <Button
+                                                        x:Uid="PowerDisplay_Monitor_Diagnostics_CopyButton"
+                                                        Click="CopyMonitorDiagnostics_Click"
+                                                        Tag="{x:Bind}">
+                                                        <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayInlineIconSpacing}">
+                                                            <FontIcon FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}" Glyph="&#xE8C8;" />
+                                                            <TextBlock x:Uid="PowerDisplay_Monitor_Diagnostics_CopyText" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </tkcontrols:SettingsCard>
 
-                    <!--  Monitor list  -->
-                    <ItemsControl
-                        x:Name="MonitorsList"
-                        ItemsSource="{x:Bind ViewModel.Monitors, Mode=OneWay}"
-                        Visibility="{x:Bind ViewModel.HasMonitors, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="library:MonitorInfo">
-                                <tkcontrols:SettingsExpander
-                                    Margin="{StaticResource PowerDisplayMonitorExpanderMargin}"
-                                    Description="{x:Bind Id, Mode=OneWay}"
-                                    Header="{x:Bind DisplayName, Mode=OneWay}">
-                                    <tkcontrols:SettingsExpander.HeaderIcon>
-                                        <FontIcon Glyph="{x:Bind MonitorIconGlyph, Mode=OneWay}" />
-                                    </tkcontrols:SettingsExpander.HeaderIcon>
-                                    <ptcontrols:IsEnabledTextBlock Text="{x:Bind CommunicationMethod, Mode=OneWay}" />
-                                    <tkcontrols:SettingsExpander.ItemsHeader>
-                                        <!--  Capabilities warning  -->
-                                        <InfoBar
-                                            x:Uid="PowerDisplay_Monitor_CapabilitiesWarning"
-                                            BorderThickness="0"
-                                            CornerRadius="0"
-                                            IsClosable="False"
-                                            IsOpen="{x:Bind ShowCapabilitiesWarning, Mode=OneWay}"
-                                            Severity="Warning" />
-                                    </tkcontrols:SettingsExpander.ItemsHeader>
-                                    <tkcontrols:SettingsExpander.Items>
-                                        <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsContrast, Mode=OneWay}">
-                                            <CheckBox x:Uid="PowerDisplay_Monitor_EnableContrast" IsChecked="{x:Bind EnableContrast, Mode=TwoWay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsVolume, Mode=OneWay}">
-                                            <CheckBox x:Uid="PowerDisplay_Monitor_EnableVolume" IsChecked="{x:Bind EnableVolume, Mode=TwoWay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsInputSource, Mode=OneWay}">
-                                            <CheckBox
-                                                x:Uid="PowerDisplay_Monitor_EnableInputSource"
-                                                Click="EnableInputSource_Click"
-                                                IsChecked="{x:Bind EnableInputSource, Mode=TwoWay}"
-                                                Tag="{x:Bind}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Left">
-                                            <CheckBox x:Uid="PowerDisplay_Monitor_EnableRotation" IsChecked="{x:Bind EnableRotation, Mode=TwoWay}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsColorTemperature, Mode=OneWay}">
-                                            <CheckBox
-                                                x:Uid="PowerDisplay_Monitor_EnableColorTemperature"
-                                                Click="EnableColorTemperature_Click"
-                                                IsChecked="{x:Bind EnableColorTemperature, Mode=TwoWay}"
-                                                Tag="{x:Bind}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind SupportsPowerState, Mode=OneWay}">
-                                            <CheckBox
-                                                x:Uid="PowerDisplay_Monitor_EnablePowerState"
-                                                Click="EnablePowerState_Click"
-                                                IsChecked="{x:Bind EnablePowerState, Mode=TwoWay}"
-                                                Tag="{x:Bind}" />
-                                        </tkcontrols:SettingsCard>
-                                        <tkcontrols:SettingsCard ContentAlignment="Left">
-                                            <CheckBox x:Uid="PowerDisplay_Monitor_HideMonitor" IsChecked="{x:Bind IsHidden, Mode=TwoWay}" />
-                                        </tkcontrols:SettingsCard>
-
-                                        <!--  VCP Capabilities  -->
-                                        <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_VcpCapabilities" Visibility="{x:Bind HasCapabilities, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
-                                            <Button
-                                                x:Uid="PowerDisplay_Monitor_VcpDetails_Button"
-                                                Content="{ui:FontIcon Glyph=&#xE946;}"
-                                                Style="{StaticResource SubtleButtonStyle}">
-                                                <Button.Flyout>
-                                                    <Flyout ShouldConstrainToRootBounds="False">
-                                                        <Grid Width="{StaticResource PowerDisplayVcpDetailsFlyoutWidth}">
-                                                            <Grid.RowDefinitions>
-                                                                <RowDefinition Height="Auto" />
-                                                                <RowDefinition />
-                                                            </Grid.RowDefinitions>
-                                                            <!--  Header with Copy Button  -->
-                                                            <Grid Margin="{StaticResource PowerDisplayVcpDetailsHeaderMargin}">
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="*" />
-                                                                    <ColumnDefinition Width="Auto" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <TextBlock
-                                                                    x:Uid="PowerDisplay_Monitor_VcpCodes_Header"
-                                                                    VerticalAlignment="Center"
-                                                                    FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}"
-                                                                    FontWeight="SemiBold" />
-                                                                <Button
-                                                                    x:Uid="PowerDisplay_Monitor_VcpCodes_CopyButton"
-                                                                    Grid.Column="1"
-                                                                    Padding="{StaticResource PowerDisplayVcpCopyButtonPadding}"
-                                                                    VerticalAlignment="Center"
-                                                                    Click="CopyVcpCodes_Click"
-                                                                    Tag="{x:Bind}">
-                                                                    <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayCompactSpacing}">
-                                                                        <FontIcon FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}" Glyph="&#xE8C8;" />
-                                                                        <TextBlock x:Uid="PowerDisplay_Monitor_VcpCodes_CopyText" FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}" />
-                                                                    </StackPanel>
-                                                                </Button>
-                                                            </Grid>
-
-                                                            <!--  VCP Codes List  -->
-                                                            <ScrollViewer
-                                                                Grid.Row="1"
-                                                                MaxHeight="{StaticResource PowerDisplayVcpDetailsFlyoutMaxHeight}"
-                                                                HorizontalScrollBarVisibility="Disabled"
-                                                                HorizontalScrollMode="Disabled"
-                                                                VerticalScrollBarVisibility="Auto">
-                                                                <ItemsControl ItemsSource="{x:Bind VcpCodesFormatted, Mode=OneWay}">
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate x:DataType="library:VcpCodeDisplayInfo">
-                                                                            <StackPanel>
-                                                                                <TextBlock
-                                                                                    FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}"
-                                                                                    Text="{x:Bind Title}"
-                                                                                    TextWrapping="Wrap" />
-                                                                                <TextBlock
-                                                                                    Margin="{StaticResource PowerDisplayVcpValueMargin}"
-                                                                                    FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}"
-                                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                                    Text="{x:Bind Values}"
-                                                                                    TextWrapping="Wrap"
-                                                                                    Visibility="{x:Bind HasValues, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                <!--  VCP Capabilities  -->
+                                                <tkcontrols:SettingsCard x:Uid="PowerDisplay_Monitor_VcpCapabilities" Visibility="{x:Bind HasCapabilities, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                    <Button
+                                                        x:Uid="PowerDisplay_Monitor_VcpDetails_Button"
+                                                        Content="{ui:FontIcon Glyph=&#xE946;}"
+                                                        Style="{StaticResource SubtleButtonStyle}">
+                                                        <Button.Flyout>
+                                                            <Flyout ShouldConstrainToRootBounds="False">
+                                                                <Grid Width="{StaticResource PowerDisplayVcpDetailsFlyoutWidth}">
+                                                                    <Grid.RowDefinitions>
+                                                                        <RowDefinition Height="Auto" />
+                                                                        <RowDefinition />
+                                                                    </Grid.RowDefinitions>
+                                                                    <!--  Header with Copy Button  -->
+                                                                    <Grid Margin="{StaticResource PowerDisplayVcpDetailsHeaderMargin}">
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="*" />
+                                                                            <ColumnDefinition Width="Auto" />
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <TextBlock
+                                                                            x:Uid="PowerDisplay_Monitor_VcpCodes_Header"
+                                                                            VerticalAlignment="Center"
+                                                                            FontSize="{StaticResource PowerDisplayPrimaryGlyphFontSize}"
+                                                                            FontWeight="SemiBold" />
+                                                                        <Button
+                                                                            x:Uid="PowerDisplay_Monitor_VcpCodes_CopyButton"
+                                                                            Grid.Column="1"
+                                                                            Padding="{StaticResource PowerDisplayVcpCopyButtonPadding}"
+                                                                            VerticalAlignment="Center"
+                                                                            Click="CopyVcpCodes_Click"
+                                                                            Tag="{x:Bind}">
+                                                                            <StackPanel Orientation="Horizontal" Spacing="{StaticResource PowerDisplayCompactSpacing}">
+                                                                                <FontIcon FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}" Glyph="&#xE8C8;" />
+                                                                                <TextBlock x:Uid="PowerDisplay_Monitor_VcpCodes_CopyText" FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}" />
                                                                             </StackPanel>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </ScrollViewer>
-                                                        </Grid>
-                                                    </Flyout>
-                                                </Button.Flyout>
-                                            </Button>
-                                        </tkcontrols:SettingsCard>
-                                    </tkcontrols:SettingsExpander.Items>
-                                </tkcontrols:SettingsExpander>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </controls:SettingsGroup>
+                                                                        </Button>
+                                                                    </Grid>
+
+                                                                    <!--  VCP Codes List  -->
+                                                                    <ScrollViewer
+                                                                        Grid.Row="1"
+                                                                        MaxHeight="{StaticResource PowerDisplayVcpDetailsFlyoutMaxHeight}"
+                                                                        HorizontalScrollBarVisibility="Disabled"
+                                                                        HorizontalScrollMode="Disabled"
+                                                                        VerticalScrollBarVisibility="Auto">
+                                                                        <ItemsControl ItemsSource="{x:Bind VcpCodesFormatted, Mode=OneWay}">
+                                                                            <ItemsControl.ItemTemplate>
+                                                                                <DataTemplate x:DataType="library:VcpCodeDisplayInfo">
+                                                                                    <StackPanel>
+                                                                                        <TextBlock
+                                                                                            FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}"
+                                                                                            Text="{x:Bind Title}"
+                                                                                            TextWrapping="Wrap" />
+                                                                                        <TextBlock
+                                                                                            Margin="{StaticResource PowerDisplayVcpValueMargin}"
+                                                                                            FontSize="{StaticResource PowerDisplaySecondaryGlyphFontSize}"
+                                                                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                                            Text="{x:Bind Values}"
+                                                                                            TextWrapping="Wrap"
+                                                                                            Visibility="{x:Bind HasValues, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                                                                    </StackPanel>
+                                                                                </DataTemplate>
+                                                                            </ItemsControl.ItemTemplate>
+                                                                        </ItemsControl>
+                                                                    </ScrollViewer>
+                                                                </Grid>
+                                                            </Flyout>
+                                                        </Button.Flyout>
+                                                    </Button>
+                                                </tkcontrols:SettingsCard>
+                                            </tkcontrols:SettingsExpander.Items>
+                                        </tkcontrols:SettingsExpander>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </controls:SettingsGroup>
+                    </StackPanel>
+                </ContentControl>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>
