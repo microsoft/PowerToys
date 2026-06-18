@@ -14,6 +14,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             DoNotActivateOnGameMode = new BoolProperty(true);
             ShowGeometry = new BoolProperty(false);
             UseAltResize = new BoolProperty(true);
+            UseScreenEdgeMaximize = new BoolProperty(true);
+            UseScreenEdgeSnap = new BoolProperty(true);
             ExcludedApps = new StringProperty();
             ModifierKey = new IntProperty(0); // 0 = Alt, 1 = Win
         }
@@ -29,6 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("useAltResize")]
         public BoolProperty UseAltResize { get; set; }
+
+        [JsonPropertyName("useScreenEdgeMaximize")]
+        public BoolProperty UseScreenEdgeMaximize { get; set; }
+
+        [JsonPropertyName("useScreenEdgeSnap")]
+        public BoolProperty UseScreenEdgeSnap { get; set; }
 
         [JsonPropertyName("doNotActivateOnGameMode")]
         public BoolProperty DoNotActivateOnGameMode { get; set; }

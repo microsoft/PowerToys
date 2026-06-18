@@ -59,6 +59,12 @@
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_ShowGeometry" HeaderIcon="{ui:FontIcon Glyph=&#xE809;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowGeometry, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_UseScreenEdgeMaximize" HeaderIcon="{ui:FontIcon Glyph=&#xE922;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.UseScreenEdgeMaximize, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_UseScreenEdgeSnap" HeaderIcon="{ui:FontIcon Glyph=&#xE9A6;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.UseScreenEdgeSnap, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
