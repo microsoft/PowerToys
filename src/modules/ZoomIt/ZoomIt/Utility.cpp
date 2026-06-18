@@ -526,9 +526,49 @@ HBRUSH HandleDarkModeCtlColor(HDC hdc, HWND hCtrl, UINT message)
 
 //----------------------------------------------------------------------------
 //
+// IsMenuDarkModeEnabled
+//
+// Public-API dark-mode check used by the owner-drawn tray context menu.
+// Respects the ZoomIt theme override, then the documented per-user
+// AppsUseLightTheme value. Unlike IsDarkModeEnabled(), it never loads or calls
+// the undocumented uxtheme.dll ordinals.
+//
+//----------------------------------------------------------------------------
+bool IsMenuDarkModeEnabled()
+{
+    if (g_ThemeOverride == 0)
+    {
+        return false; // Force light mode
+    }
+    else if (g_ThemeOverride == 1)
+    {
+        return true; // Force dark mode
+    }
+
+    HKEY hKey;
+    if (RegOpenKeyExW(HKEY_CURRENT_USER,
+        L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+        0, KEY_READ, &hKey) == ERROR_SUCCESS)
+    {
+        DWORD value = 1;
+        DWORD size = sizeof(value);
+        RegQueryValueExW(hKey, L"AppsUseLightTheme", nullptr, nullptr,
+            reinterpret_cast<LPBYTE>(&value), &size);
+        RegCloseKey(hKey);
+        return value == 0; // 0 = dark mode, 1 = light mode
+    }
+
+    return false;
+}
+
+//----------------------------------------------------------------------------
+//
 // ApplyDarkModeToMenu
 //
-// Uses undocumented uxtheme functions to enable dark mode for menus
+// Sets a dark (or default) background brush on a popup menu using the public
+// SetMenuInfo API. The item foreground (text, check, highlight) is rendered
+// separately via owner-draw, so this no longer depends on the undocumented
+// uxtheme menu-theming ordinals.
 //
 //----------------------------------------------------------------------------
 void ApplyDarkModeToMenu(HMENU hMenu)
@@ -538,7 +578,7 @@ void ApplyDarkModeToMenu(HMENU hMenu)
         return;
     }
 
-    if (!IsDarkModeEnabled())
+    if (!IsMenuDarkModeEnabled())
     {
         // Light mode - clear any dark background
         MENUINFO mi = { sizeof(mi) };

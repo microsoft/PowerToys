@@ -7402,6 +7402,192 @@ void ShowMainWindow(HWND hWnd, const MONITORINFO& monInfo, int width, int height
 
 //----------------------------------------------------------------------------
 //
+// GetTrayMenuFont
+//
+// Returns the system menu font scaled for the given window's DPI. The caller
+// owns the returned HFONT. ZoomIt targets _WIN32_WINNT=0x602, so the Win10
+// per-monitor metrics API is used through the runtime-resolved pointer when
+// available, falling back to the system-DPI metrics otherwise.
+//
+//----------------------------------------------------------------------------
+static HFONT GetTrayMenuFont( HWND hWnd )
+{
+    LOGFONTW logFont{};
+    bool haveLogFont = false;
+
+    if( pSystemParametersInfoForDpi && pGetDpiForWindow )
+    {
+        NONCLIENTMETRICSW metrics{};
+        metrics.cbSize = sizeof( metrics );
+        if( pSystemParametersInfoForDpi( SPI_GETNONCLIENTMETRICS, sizeof( metrics ), &metrics, 0, pGetDpiForWindow( hWnd ) ) )
+        {
+            CopyMemory( &logFont, &metrics.lfMenuFont, sizeof( logFont ) );
+            haveLogFont = true;
+        }
+    }
+
+    if( !haveLogFont )
+    {
+        NONCLIENTMETRICSW metrics{};
+        metrics.cbSize = sizeof( metrics );
+        if( SystemParametersInfoW( SPI_GETNONCLIENTMETRICS, sizeof( metrics ), &metrics, 0 ) )
+        {
+            CopyMemory( &logFont, &metrics.lfMenuFont, sizeof( logFont ) );
+            haveLogFont = true;
+        }
+    }
+
+    if( !haveLogFont )
+    {
+        HFONT stockFont = static_cast<HFONT>( GetStockObject( DEFAULT_GUI_FONT ) );
+        GetObjectW( stockFont, sizeof( logFont ), &logFont );
+    }
+
+    return CreateFontIndirectW( &logFont );
+}
+
+//----------------------------------------------------------------------------
+//
+// MeasureTrayMenuItem
+//
+// Owner-draw measurement for the theme-aware tray context menu. Public Win32
+// APIs only. Returns true when the item was handled.
+//
+//----------------------------------------------------------------------------
+static bool MeasureTrayMenuItem( HWND hWnd, MEASUREITEMSTRUCT* measureItem )
+{
+    if( measureItem == nullptr || measureItem->CtlType != ODT_MENU )
+    {
+        return false;
+    }
+
+    const std::wstring* itemText = reinterpret_cast<const std::wstring*>( measureItem->itemData );
+    const UINT dpi = GetDpiForWindowHelper( hWnd );
+
+    HFONT menuFont = GetTrayMenuFont( hWnd );
+    HDC hdc = GetDC( hWnd );
+    HGDIOBJ oldFont = SelectObject( hdc, menuFont );
+
+    SIZE textSize{ 0, 0 };
+    if( itemText != nullptr && !itemText->empty() )
+    {
+        GetTextExtentPoint32W( hdc, itemText->c_str(), static_cast<int>( itemText->length() ), &textSize );
+    }
+
+    SelectObject( hdc, oldFont );
+    ReleaseDC( hWnd, hdc );
+    DeleteObject( menuFont );
+
+    const int gutter = ScaleForDpi( 22, dpi );
+    const int rightPadding = ScaleForDpi( 24, dpi );
+    const int verticalPadding = ScaleForDpi( 8, dpi );
+    const int minHeight = ScaleForDpi( 22, dpi );
+
+    measureItem->itemWidth = static_cast<UINT>( gutter + textSize.cx + rightPadding );
+
+    int itemHeight = textSize.cy + verticalPadding;
+    if( itemHeight < minHeight )
+    {
+        itemHeight = minHeight;
+    }
+    measureItem->itemHeight = static_cast<UINT>( itemHeight );
+    return true;
+}
+
+//----------------------------------------------------------------------------
+//
+// DrawTrayMenuItem
+//
+// Owner-draw rendering for the theme-aware tray context menu. Public Win32
+// APIs only (no uxtheme ordinals). Returns true when the item was handled.
+//
+//----------------------------------------------------------------------------
+static bool DrawTrayMenuItem( HWND hWnd, const DRAWITEMSTRUCT* drawItem )
+{
+    if( drawItem == nullptr || drawItem->CtlType != ODT_MENU )
+    {
+        return false;
+    }
+
+    const std::wstring* itemText = reinterpret_cast<const std::wstring*>( drawItem->itemData );
+    const bool dark = IsMenuDarkModeEnabled();
+    const bool selected = ( drawItem->itemState & ODS_SELECTED ) != 0;
+    const bool disabled = ( drawItem->itemState & ( ODS_DISABLED | ODS_GRAYED ) ) != 0;
+    const bool checked = ( drawItem->itemState & ODS_CHECKED ) != 0;
+    const UINT dpi = GetDpiForWindowHelper( hWnd );
+
+    COLORREF backColor;
+    COLORREF textColor;
+    if( dark )
+    {
+        backColor = selected ? DarkMode::HoverColor : DarkMode::SurfaceColor;
+        textColor = disabled ? DarkMode::DisabledTextColor : DarkMode::TextColor;
+    }
+    else
+    {
+        backColor = GetSysColor( selected ? COLOR_HIGHLIGHT : COLOR_MENU );
+        textColor = disabled ? GetSysColor( COLOR_GRAYTEXT )
+                             : GetSysColor( selected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT );
+    }
+
+    HBRUSH backBrush = CreateSolidBrush( backColor );
+    FillRect( drawItem->hDC, &drawItem->rcItem, backBrush );
+    DeleteObject( backBrush );
+
+    const int prevBkMode = SetBkMode( drawItem->hDC, TRANSPARENT );
+    const COLORREF prevTextColor = SetTextColor( drawItem->hDC, textColor );
+    const int gutter = ScaleForDpi( 22, dpi );
+
+    // Checkmark drawn with a pen so it picks up the themed text color.
+    if( checked )
+    {
+        HPEN markPen = CreatePen( PS_SOLID, ScaleForDpi( 2, dpi ), textColor );
+        HGDIOBJ oldPen = SelectObject( drawItem->hDC, markPen );
+
+        const int centerX = drawItem->rcItem.left + gutter / 2;
+        const int centerY = ( drawItem->rcItem.top + drawItem->rcItem.bottom ) / 2;
+        const int arm = ScaleForDpi( 3, dpi );
+        POINT check[3] = {
+            { centerX - 2 * arm, centerY },
+            { centerX - arm, centerY + arm },
+            { centerX + 2 * arm, centerY - arm }
+        };
+        Polyline( drawItem->hDC, check, 3 );
+
+        SelectObject( drawItem->hDC, oldPen );
+        DeleteObject( markPen );
+    }
+
+    // Label text (DrawText handles '&' mnemonics; underline follows keyboard cues).
+    if( itemText != nullptr && !itemText->empty() )
+    {
+        HFONT menuFont = GetTrayMenuFont( hWnd );
+        HGDIOBJ oldFont = SelectObject( drawItem->hDC, menuFont );
+
+        RECT textRect = drawItem->rcItem;
+        textRect.left += gutter;
+        textRect.right -= ScaleForDpi( 8, dpi );
+
+        UINT drawFlags = DT_SINGLELINE | DT_VCENTER | DT_LEFT;
+        BOOL keyboardCues = TRUE;
+        if( SystemParametersInfoW( SPI_GETKEYBOARDCUES, 0, &keyboardCues, 0 ) && !keyboardCues )
+        {
+            drawFlags |= DT_HIDEPREFIX;
+        }
+
+        DrawTextW( drawItem->hDC, itemText->c_str(), -1, &textRect, drawFlags );
+
+        SelectObject( drawItem->hDC, oldFont );
+        DeleteObject( menuFont );
+    }
+
+    SetBkMode( drawItem->hDC, prevBkMode );
+    SetTextColor( drawItem->hDC, prevTextColor );
+    return true;
+}
+
+//----------------------------------------------------------------------------
+//
 // MainWndProc
 //
 //----------------------------------------------------------------------------
@@ -10149,21 +10335,34 @@ LRESULT APIENTRY MainWndProc(
             POINT pt;
             GetCursorPos( &pt );
             hPopupMenu = CreatePopupMenu();
+
+            // The menu items are owner-drawn so the popup is theme-aware using
+            // only public Win32 APIs (see MeasureTrayMenuItem / DrawTrayMenuItem).
+            // Each label is owned by this list for the lifetime of the menu and
+            // passed through as the item's owner-draw data.
+            std::list<std::wstring> menuItemText;
+            auto insertItem = [&]( UINT flags, UINT_PTR id, PCWSTR label ) {
+                menuItemText.emplace_back( label );
+                InsertMenuW( hPopupMenu, 0, MF_BYPOSITION | MF_OWNERDRAW | flags, id,
+                             reinterpret_cast<LPCWSTR>( &menuItemText.back() ) );
+            };
+
             if(!g_StartedByPowerToys) {
                 // Exiting will happen through disabling in PowerToys, not the context menu.
-                InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDCANCEL, L"E&xit" );
+                insertItem( 0, IDCANCEL, L"E&xit" );
                 InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
             }
-            InsertMenu( hPopupMenu, 0, MF_BYPOSITION | ( g_RecordToggle ? MF_CHECKED : 0 ), IDC_RECORD, L"&Record" );
-            InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_ZOOM, L"&Zoom" );
-            InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_DRAW, L"&Draw" );
-            InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_BREAK, L"&Break Timer" );
+            insertItem( g_RecordToggle ? MF_CHECKED : 0, IDC_RECORD, L"&Record" );
+            insertItem( 0, IDC_ZOOM, L"&Zoom" );
+            insertItem( 0, IDC_DRAW, L"&Draw" );
+            insertItem( 0, IDC_BREAK, L"&Break Timer" );
             if(!g_StartedByPowerToys) {
                 // When started by PowerToys, options are configured through the PowerToys Settings.
                 InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
-                InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_OPTIONS, L"&Options" );
+                insertItem( 0, IDC_OPTIONS, L"&Options" );
             }
-            // Apply dark mode theme to the menu
+            // Paint a dark background brush behind the items and separators
+            // (public SetMenuInfo); item foreground is owner-drawn above.
             ApplyDarkModeToMenu( hPopupMenu );
             TrackPopupMenu( hPopupMenu, 0, pt.x , pt.y, 0, hWnd, NULL );
             DestroyMenu( hPopupMenu );
@@ -11252,6 +11451,20 @@ LRESULT APIENTRY MainWndProc(
         WTSUnRegisterSessionNotification( hWnd );
         CleanupDarkModeResources();
         PostQuitMessage( 0 );
+        break;
+
+    case WM_MEASUREITEM:
+        if( MeasureTrayMenuItem( hWnd, reinterpret_cast<MEASUREITEMSTRUCT*>( lParam ) ) )
+        {
+            return TRUE;
+        }
+        break;
+
+    case WM_DRAWITEM:
+        if( DrawTrayMenuItem( hWnd, reinterpret_cast<const DRAWITEMSTRUCT*>( lParam ) ) )
+        {
+            return TRUE;
+        }
         break;
 
     default:

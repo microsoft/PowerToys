@@ -77,6 +77,12 @@ HBRUSH HandleDarkModeCtlColor(HDC hdc, HWND hCtrl, UINT message);
 // Apply dark mode theme to a popup menu
 void ApplyDarkModeToMenu(HMENU hMenu);
 
+// Public-API dark-mode check for owner-drawn popup menus. Respects the ZoomIt
+// theme override, then the documented per-user AppsUseLightTheme setting.
+// Unlike IsDarkModeEnabled(), it never loads or calls the undocumented
+// uxtheme.dll ordinals.
+bool IsMenuDarkModeEnabled();
+
 // Force redraw of a window and all its children for theme change
 void RefreshWindowTheme(HWND hWnd);
 
