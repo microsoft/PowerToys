@@ -31,16 +31,13 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
         [ObservableProperty]
         private string? _tableCountText;
 
-        public ObservableCollection<SQLiteTableInfo> Tables { get; } = new();
+        public ObservableCollection<SQLiteTableInfo> Tables { get; } = [];
 
         private IFileSystemItem Item { get; }
 
         private DispatcherQueue Dispatcher { get; }
 
-        private static readonly HashSet<string> _supportedFileTypes = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ".db", ".sqlite", ".sqlite3",
-        };
+        private static readonly HashSet<string> _supportedFileTypes = [".db", ".sqlite", ".sqlite3"];
 
         public SQLitePreviewer(IFileSystemItem file)
         {
@@ -50,7 +47,7 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
 
         public static bool IsItemSupported(IFileSystemItem item)
         {
-            return _supportedFileTypes.Contains(item.Extension);
+            return _supportedFileTypes.Contains(item.Extension.ToLowerInvariant());
         }
 
         public Task<PreviewSize> GetPreviewSizeAsync(CancellationToken cancellationToken)
@@ -107,7 +104,7 @@ namespace Peek.FilePreviewer.Previewers.SQLitePreviewer
 
                 using (var cmd = connection.CreateCommand())
                 {
-                SQLiteHelpers.AssignBindingKeys(tableInfo.Columns);
+                    SQLiteHelpers.AssignBindingKeys(tableInfo.Columns);
 
                     cmd.CommandText = $"SELECT COUNT(*) FROM {SQLiteHelpers.QuoteIdentifier(tableName)};";
                     tableInfo.RowCount = (long)(await cmd.ExecuteScalarAsync(cancellationToken) ?? 0L);
