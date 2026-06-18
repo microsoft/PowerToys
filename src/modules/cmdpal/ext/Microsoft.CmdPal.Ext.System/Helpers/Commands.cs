@@ -94,7 +94,7 @@ internal static class Commands
                 })
             {
                 Title = Resources.Microsoft_plugin_sys_hibernate,
-                Icon = Icons.SleepIcon, // Icon change needed
+                Icon = Icons.HibernateIcon,
             },
         });
 
