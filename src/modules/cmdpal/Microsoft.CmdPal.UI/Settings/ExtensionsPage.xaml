@@ -92,7 +92,7 @@
                             <HyperlinkButton
                                 x:Uid="Settings_ExtensionsPage_Banner_Hyperlink"
                                 Padding="0"
-                                Content="Learn how to create your own extensions"
+                                AutomationProperties.AutomationId="CmdPal_ExtensionsPage_LearnMore"
                                 NavigateUri="https://aka.ms/building-cmdpal-extensions" />
                         </StackPanel>
                         <StackPanel
@@ -100,22 +100,17 @@
                             Grid.Column="1"
                             Orientation="Horizontal"
                             Spacing="8">
-                            <Button x:Uid="Settings_ExtensionsPage_FindExtensions_MicrosoftStore" Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
+                            <Button
+                                x:Uid="Settings_ExtensionsPage_FindExtensions_MicrosoftStore"
+                                AutomationProperties.AutomationId="CmdPal_ExtensionsPage_OpenMicrosoftStore"
+                                Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Viewbox Width="16">
                                         <Image AutomationProperties.AccessibilityView="Raw" Source="{ThemeResource StoreLogo}" />
                                     </Viewbox>
-                                    <TextBlock Text="Microsoft Store" />
+                                    <TextBlock x:Uid="Settings_ExtensionsPage_FindExtensions_MicrosoftStore_Text" />
                                 </StackPanel>
                             </Button>
-                            <!--<Button x:Uid="Settings_ExtensionsPage_FindExtensions_WinGet" Command="{x:Bind viewModel.Extensions.OpenStoreWithExtensionCommand}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Viewbox Width="16">
-                                        <Image AutomationProperties.AccessibilityView="Raw" Source="ms-appx:///Assets/WinGet.svg" />
-                                    </Viewbox>
-                                    <TextBlock Text="WinGet" />
-                                </StackPanel>
-                            </Button>-->
                         </StackPanel>
                     </Grid>
 
@@ -221,8 +216,10 @@
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:ProviderSettingsViewModel">
                                 <controls:SettingsCard
+                                    AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
                                     Click="SettingsCard_Click"
                                     DataContext="{x:Bind}"
+                                    DataContextChanged="SettingsCard_DataContextChanged"
                                     Description="{x:Bind ExtensionSubtext, Mode=OneWay}"
                                     Header="{x:Bind DisplayName, Mode=OneWay}"
                                     IsClickEnabled="True">
@@ -239,7 +236,7 @@
                                                             Height="20"
                                                             AutomationProperties.AccessibilityView="Raw"
                                                             SourceKey="{x:Bind Icon, Mode=OneWay}"
-                                                            SourceRequested="{x:Bind helpers:IconCacheProvider.SourceRequested20}" />
+                                                            SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                                     </controls:Case>
                                                     <controls:Case Value="False">
                                                         <Image
@@ -252,6 +249,12 @@
                                             </cpcontrols:ContentIcon.Content>
                                         </cpcontrols:ContentIcon>
                                     </controls:SettingsCard.HeaderIcon>
+                                    <!--
+                                        AutomationId on the inner ToggleSwitch is intentionally omitted
+                                        because the parent SettingsCard already exposes a unique
+                                        provider-derived AutomationId (Provider.Id), so tests can locate
+                                        the toggle relative to that without ambiguity across rows.
+                                    -->
                                     <ToggleSwitch IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
                                 </controls:SettingsCard>
                             </DataTemplate>

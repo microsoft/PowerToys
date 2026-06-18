@@ -54,6 +54,7 @@ namespace
     const wchar_t JSON_KEY_AUTO_ACTIVATE[] = L"auto_activate";
     const wchar_t JSON_KEY_DISABLE_WRAP_DURING_DRAG[] = L"disable_wrap_during_drag";
     const wchar_t JSON_KEY_WRAP_MODE[] = L"wrap_mode";
+    const wchar_t JSON_KEY_ACTIVATION_MODE[] = L"activation_mode";
     const wchar_t JSON_KEY_DISABLE_ON_SINGLE_MONITOR[] = L"disable_cursor_wrap_on_single_monitor";
 }
 
@@ -83,6 +84,7 @@ private:
     bool m_disableWrapDuringDrag = true; // Default to true to prevent wrap during drag
     bool m_disableOnSingleMonitor = false; // Default to false
     int m_wrapMode = 0; // 0=Both (default), 1=VerticalOnly, 2=HorizontalOnly
+    int m_activationMode = 0; // 0=Always (default), 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
     
     // Mouse hook
     HHOOK m_mouseHook = nullptr;
@@ -432,6 +434,21 @@ private:
             
             try
             {
+                // Parse activation mode
+                auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
+                if (propertiesObject.HasKey(JSON_KEY_ACTIVATION_MODE))
+                {
+                    auto activationModeObject = propertiesObject.GetNamedObject(JSON_KEY_ACTIVATION_MODE);
+                    m_activationMode = static_cast<int>(activationModeObject.GetNamedNumber(JSON_KEY_VALUE));
+                }
+            }
+            catch (...)
+            {
+                Logger::warn("Failed to initialize CursorWrap activation mode from settings. Will use default value (0=Always)");
+            }
+            
+            try
+            {
                 // Parse disable on single monitor
                 auto propertiesObject = settingsObject.GetNamedObject(JSON_KEY_PROPERTIES);
                 if (propertiesObject.HasKey(JSON_KEY_DISABLE_ON_SINGLE_MONITOR))
@@ -672,6 +689,26 @@ private:
             
             if (g_cursorWrapInstance && g_cursorWrapInstance->m_hookActive)
             {
+                // Check activation mode to determine if wrapping should happen.
+                // 0=Always, 1=HoldingCtrl (wraps only when Ctrl held), 2=HoldingShift (wraps only when Shift held)
+                int activationMode = g_cursorWrapInstance->m_activationMode;
+                bool shouldWrap = true;
+                
+                if (activationMode == 1) // HoldingCtrl - wrap only when Ctrl is held
+                {
+                    shouldWrap = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+                }
+                else if (activationMode == 2) // HoldingShift - wrap only when Shift is held
+                {
+                    shouldWrap = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+                }
+                
+                if (!shouldWrap)
+                {
+                    // Activation key is not held, do not wrap - let normal behavior happen.
+                    return CallNextHookEx(nullptr, nCode, wParam, lParam);
+                }
+                
                 POINT newPos = g_cursorWrapInstance->m_core.HandleMouseMove(
                     currentPos,
                     g_cursorWrapInstance->m_disableWrapDuringDrag,

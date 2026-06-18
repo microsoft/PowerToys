@@ -186,8 +186,37 @@
   <data name="GPU_Usage_Subtitle" xml:space="preserve">
     <value>GPU</value>
   </data>
+  <data name="Battery_Usage_Subtitle" xml:space="preserve">
+    <value>Battery</value>
+  </data>
   <data name="Performance_Monitor_Title" xml:space="preserve">
     <value>Performance monitor</value>
+  </data>
+  <data name="Performance_Monitor_Disabled_Title" xml:space="preserve">
+    <value>Performance monitor is temporarily disabled</value>
+  </data>
+  <data name="Performance_Monitor_Disabled_Subtitle" xml:space="preserve">
+    <value>Temporarily disabled after repeated startup crashes</value>
+  </data>
+  <data name="Performance_Monitor_Disabled_Band_Title" xml:space="preserve">
+    <value>Perf disabled</value>
+  </data>
+  <data name="Performance_Monitor_Disabled_Body" xml:space="preserve">
+    <value>Performance monitor was temporarily disabled after repeated crashes while initializing or reading performance counters.
+
+  Select **Re-enable now** to clear the crash guard and restore the Performance Monitor command and dock band in the current session.</value>
+  </data>
+  <data name="Performance_Monitor_Reenable_Title" xml:space="preserve">
+    <value>Re-enable now</value>
+  </data>
+  <data name="Performance_Monitor_Reenable_Subtitle" xml:space="preserve">
+    <value>Clear the crash guard and restore Performance Monitor in this session</value>
+  </data>
+  <data name="Performance_Monitor_Reenable_Success" xml:space="preserve">
+    <value>Performance monitor has been restored for this session.</value>
+  </data>
+  <data name="Performance_Monitor_Reenable_Failed" xml:space="preserve">
+    <value>Performance monitor could not be restored right now. It will stay disabled for this session.</value>
   </data>
   <data name="CPU_Usage_Title" xml:space="preserve">
     <value>CPU Usage</value>
@@ -241,13 +270,80 @@
   <data name="GPU_Usage_Unknown_Label" xml:space="preserve">
     <value>GPU Usage: ???</value>
   </data>
+  <data name="Battery_Usage_Title" xml:space="preserve">
+    <value>Battery</value>
+  </data>
+  <data name="Battery_Usage_Label" xml:space="preserve">
+    <value>Battery: {0}</value>
+    <comment>{0} is the battery charge percentage</comment>
+  </data>
+  <data name="Battery_Usage_Charging_Label" xml:space="preserve">
+    <value>Battery: {0} (charging)</value>
+    <comment>{0} is the battery charge percentage</comment>
+  </data>
+  <data name="Battery_Usage_Unknown" xml:space="preserve">
+    <value>No battery</value>
+  </data>
+  <data name="Battery_Usage_Unknown_Label" xml:space="preserve">
+    <value>Battery: No battery detected</value>
+  </data>
+  <data name="Battery_Time_Remaining_Format" xml:space="preserve">
+    <value>{0}h {1}m remaining</value>
+    <comment>{0} is hours, {1} is minutes</comment>
+  </data>
+  <data name="Battery_Time_Remaining_Minutes_Format" xml:space="preserve">
+    <value>{0}m remaining</value>
+    <comment>{0} is minutes</comment>
+  </data>
+  <data name="Battery_Time_Remaining_Unknown" xml:space="preserve">
+    <value>Calculating time remaining…</value>
+  </data>
+  <data name="Battery_Time_Remaining_Charging" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="Battery_Time_Remaining_OnAc" xml:space="preserve">
+    <value>Not discharging</value>
+  </data>
+  <data name="Battery_Status_Charging" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="Battery_Status_OnAc" xml:space="preserve">
+    <value>Plugged in</value>
+  </data>
+  <data name="Battery_Status_OnBattery" xml:space="preserve">
+    <value>On battery</value>
+  </data>
+  <data name="Battery_Widget_Template.Charge" xml:space="preserve">
+    <value>Charge</value>
+  </data>
+  <data name="Battery_Widget_Template.Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Battery_Widget_Template.TimeRemaining" xml:space="preserve">
+    <value>Time remaining</value>
+  </data>
   <data name="Open_Task_Manager_Title" xml:space="preserve">
     <value>Open Task Manager</value>
   </data>
   <data name="Network_Send_Subtitle" xml:space="preserve">
-    <value>Send ↑</value>
+    <value>Send</value>
   </data>
   <data name="Network_Receive_Subtitle" xml:space="preserve">
-    <value>Receive ↓</value>
+    <value>Receive</value>
+  </data>
+  <data name="Network_Speed_Unit_Setting_Title" xml:space="preserve">
+    <value>Network speed unit</value>
+  </data>
+  <data name="Network_Speed_Unit_Setting_Description" xml:space="preserve">
+    <value>Choose the unit used to display network transmission speed</value>
+  </data>
+  <data name="Network_Speed_Unit_BitsPerSec" xml:space="preserve">
+    <value>Bits per second (Kbps, Mbps, Gbps)</value>
+  </data>
+  <data name="Network_Speed_Unit_BytesPerSec" xml:space="preserve">
+    <value>Bytes per second (KB/s, MB/s, GB/s)</value>
+  </data>
+  <data name="Network_Speed_Unit_BinaryBytesPerSec" xml:space="preserve">
+    <value>Binary bytes per second (KiB/s, MiB/s, GiB/s)</value>
   </data>
 </root>

@@ -1,11 +1,11 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.PowerToys.Common.UI.Controls">
+    xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls">
 
-    <Style BasedOn="{StaticResource DefaultKeyVisualStyle}" TargetType="local:KeyVisual" />
+    <Style BasedOn="{StaticResource DefaultKeyVisualStyle}" TargetType="commoncontrols:KeyVisual" />
 
-    <Style x:Key="DefaultKeyVisualStyle" TargetType="local:KeyVisual">
+    <Style x:Key="DefaultKeyVisualStyle" TargetType="commoncontrols:KeyVisual">
         <Setter Property="MinWidth" Value="16" />
         <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
         <Setter Property="IsTabStop" Value="False" />
@@ -25,7 +25,7 @@
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:KeyVisual">
+                <ControlTemplate TargetType="commoncontrols:KeyVisual">
                     <Grid
                         x:Name="KeyHolder"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -40,7 +40,7 @@
                         <Grid.BackgroundTransition>
                             <BrushTransition Duration="0:0:0.083" />
                         </Grid.BackgroundTransition>
-                        <local:KeyCharPresenter
+                        <commoncontrols:KeyCharPresenter
                             x:Name="KeyPresenter"
                             Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -87,12 +87,12 @@
     <Style
         x:Key="SubtleKeyVisualStyle"
         BasedOn="{StaticResource DefaultKeyVisualStyle}"
-        TargetType="local:KeyVisual">
+        TargetType="commoncontrols:KeyVisual">
         <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:KeyVisual">
+                <ControlTemplate TargetType="commoncontrols:KeyVisual">
                     <Grid
                         x:Name="KeyHolder"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -106,7 +106,7 @@
                         <Grid.BackgroundTransition>
                             <BrushTransition Duration="0:0:0.083" />
                         </Grid.BackgroundTransition>
-                        <local:KeyCharPresenter
+                        <commoncontrols:KeyCharPresenter
                             x:Name="KeyPresenter"
                             Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -145,14 +145,14 @@
     <Style
         x:Key="AccentKeyVisualStyle"
         BasedOn="{StaticResource DefaultKeyVisualStyle}"
-        TargetType="local:KeyVisual">
+        TargetType="commoncontrols:KeyVisual">
         <Setter Property="Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
         <Setter Property="Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource AccentControlElevationBorderBrush}" />
         <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:KeyVisual">
+                <ControlTemplate TargetType="commoncontrols:KeyVisual">
                     <Grid
                         x:Name="KeyHolder"
                         MinWidth="{TemplateBinding MinWidth}"
@@ -168,7 +168,7 @@
                         <Grid.BackgroundTransition>
                             <BrushTransition Duration="0:0:0.083" />
                         </Grid.BackgroundTransition>
-                        <local:KeyCharPresenter
+                        <commoncontrols:KeyCharPresenter
                             x:Name="KeyPresenter"
                             Margin="{TemplateBinding Padding}"
                             HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"

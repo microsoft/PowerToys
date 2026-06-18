@@ -39,7 +39,7 @@
                         x:Uid="MouseUtils_CursorWrap_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.CursorWrapActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.CursorWrapActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.CursorWrapAutoActivate, Mode=TwoWay}" />
@@ -52,6 +52,13 @@
                                     <ComboBoxItem x:Uid="MouseUtils_CursorWrap_WrapMode_Both" />
                                     <ComboBoxItem x:Uid="MouseUtils_CursorWrap_WrapMode_VerticalOnly" />
                                     <ComboBoxItem x:Uid="MouseUtils_CursorWrap_WrapMode_HorizontalOnly" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorWrapActivationMode" x:Uid="MouseUtils_CursorWrap_ActivationMode">
+                                <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind Path=ViewModel.CursorWrapActivationMode, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_ActivationMode_Always" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_ActivationMode_HoldingCtrl" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorWrap_ActivationMode_HoldingShift" />
                                 </ComboBox>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left" IsEnabled="{x:Bind ViewModel.IsCursorWrapEnabled, Mode=OneWay}">
@@ -138,7 +145,7 @@
                                 HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                                 Visibility="{x:Bind ViewModel.FindMyMouseActivationMethod, Converter={StaticResource IndexBitFieldToVisibilityConverter}, Mode=OneWay, ConverterParameter=0x8}">
                                 <!--  Visible for the Shortcut activation method  -->
-                                <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
+                                <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.FindMyMouseActivationShortcut, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_Prevent_Activation_On_Game_Mode" IsChecked="{x:Bind ViewModel.FindMyMouseDoNotActivateOnGameMode, Mode=TwoWay}" />
@@ -249,7 +256,7 @@
                         AutomationProperties.AutomationId="MouseUtils_MouseHighlighterActivationShortcutId"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMouseHighlighterEnabled, Mode=OneWay}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MouseHighlighterActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MouseHighlighterAutoActivate, Mode=TwoWay}" />
@@ -331,7 +338,7 @@
                         x:Uid="MouseUtils_MousePointerCrosshairs_ActivationShortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.MousePointerCrosshairsActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard ContentAlignment="Left">
                                 <CheckBox x:Uid="MouseUtils_AutoActivate" IsChecked="{x:Bind ViewModel.MousePointerCrosshairsAutoActivate, Mode=TwoWay}" />
@@ -429,7 +436,7 @@
                         x:Uid="MouseUtils_GlidingCursor"
                         HeaderIcon="{ui:FontIcon Glyph=&#xECE7;}"
                         IsEnabled="{x:Bind ViewModel.IsMousePointerCrosshairsEnabled, Mode=OneWay}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.GlidingCursorActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.GlidingCursorActivationShortcut, Mode=TwoWay}" />
                         <tkcontrols:SettingsExpander.Items>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_GlidingCursor_InitialSpeed">
                                 <Slider

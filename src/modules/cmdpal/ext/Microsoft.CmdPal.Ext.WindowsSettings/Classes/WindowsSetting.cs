@@ -49,7 +49,7 @@ internal sealed class WindowsSetting
     public IEnumerable<string>? AltNames { get; set; }
 
     /// <summary>
-    /// Gets or sets a additional note of this settings.
+    /// Gets or sets an additional note of this settings.
     /// <para>(e.g. why is not supported on your system)</para>
     /// </summary>
     public string? Note { get; set; }

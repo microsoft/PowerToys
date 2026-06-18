@@ -515,8 +515,7 @@ namespace ManagedCommon
                     return lightnessL.ToString(CultureInfo.InvariantCulture);
                 case "Lc":
                     var (lightnessC, _, _) = ConvertToCIELABColor(color);
-                    lightnessC = Math.Round(lightnessC, 2);
-                    return lightnessC.ToString(CultureInfo.InvariantCulture);
+                    return ColorPercentFormatted(lightnessC, paramFormat, 2);
                 case "Lo":
                     var (lightnessO, _, _) = ConvertToOklabColor(color);
                     lightnessO = Math.Round(lightnessO, 2);
@@ -531,12 +530,10 @@ namespace ManagedCommon
                     return blackness.ToString(CultureInfo.InvariantCulture);
                 case "Ca":
                     var (_, chromaticityA, _) = ConvertToCIELABColor(color);
-                    chromaticityA = Math.Round(chromaticityA, 2);
-                    return chromaticityA.ToString(CultureInfo.InvariantCulture);
+                    return ColorPercentFormatted(chromaticityA, paramFormat, 2);
                 case "Cb":
                     var (_, _, chromaticityB) = ConvertToCIELABColor(color);
-                    chromaticityB = Math.Round(chromaticityB, 2);
-                    return chromaticityB.ToString(CultureInfo.InvariantCulture);
+                    return ColorPercentFormatted(chromaticityB, paramFormat, 2);
                 case "Oa":
                     var (_, chromaticityAOklab, _) = ConvertToOklabColor(color);
                     chromaticityAOklab = Math.Round(chromaticityAOklab, 2);
@@ -592,6 +589,24 @@ namespace ManagedCommon
                 case 'F':
                     return (colorByteValue / 255d).ToString(FormatTypeToStringFormatters[paramFormat], CultureInfo.InvariantCulture);
                 default: return colorByteValue.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        private static string ColorPercentFormatted(double colorPercentValue, char paramFormat, int defaultDecimalDigits)
+        {
+            switch (paramFormat)
+            {
+                case 'i':
+                    double roundedColorPercentValue = Math.Round(colorPercentValue);
+                    if (roundedColorPercentValue == 0)
+                    {
+                        // convert -0 to 0
+                        roundedColorPercentValue = 0.0;
+                    }
+
+                    return roundedColorPercentValue.ToString(CultureInfo.InvariantCulture);
+                default:
+                    return Math.Round(colorPercentValue, defaultDecimalDigits).ToString(CultureInfo.InvariantCulture);
             }
         }
 

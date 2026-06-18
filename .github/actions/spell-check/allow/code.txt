@@ -1,6 +1,7 @@
 # COLORS
 
 argb
+Bgr
 bgra
 BLACKONWHITE
 BLUEGRAY
@@ -18,6 +19,7 @@ OLIVEGREEN
 PALEBLUE
 PArgb
 Pbgra
+SRGBTo
 WHITEONBLACK
 
 
@@ -28,6 +30,7 @@ RUS
 
 AYUV
 bak
+HDP
 Bcl
 bgcode
 Deflatealgorithm
@@ -48,6 +51,7 @@ resw
 resx
 srt
 Stereolithography
+taskmgr
 terabyte
 UYVY
 xbf
@@ -126,6 +130,7 @@ HOLDSPACE
 HOLDBACKSPACE
 IDIGNORE
 KBDLLHOOKSTRUCT
+keydowns
 keyevent
 LAlt
 LBUTTON
@@ -183,6 +188,12 @@ xmlutil
 
 # Prefix
 pcs
+
+# EXPRTK / C++ MATH
+
+ifunction
+isinf
+isnan
 
 # User32.SYSTEM_METRICS_INDEX.cs
 
@@ -299,6 +310,8 @@ pwa
 
 AOT
 Aot
+ify
+TFM
 
 # YML
 onefuzz
@@ -306,6 +319,7 @@ onefuzz
 # NameInCode
 leilzh
 mengyuanchen
+contoso
 
 # DllName
 testhost
@@ -317,6 +331,7 @@ xef
 xes
 PACKAGEVERSIONNUMBER
 APPXMANIFESTVERSION
+PROGMAN
 
 # MRU lists
 CACHEWRITE
@@ -324,9 +339,61 @@ MRUCMPPROC
 MRUINFO
 REGSTR
 
+#Xaml
+NVI
+Storyboards
+
 # Misc Win32 APIs and PInvokes
+DEFAULTTONEAREST
 INVOKEIDLIST
+LCMAP
 MEMORYSTATUSEX
+ABE
+Mdt
+HTCAPTION
+POSCHANGED
+QPC
+QUERYPOS
+SETAUTOHIDEBAR
+ULW
+WINDOWPOS
+WINEVENTPROC
+WORKERW
+FULLSCREENAPP
+ACLO
+CACLI
+DOENVSUBST
+FILESYSONLY
+URLIS
+WAITTIMEOUT
+DEFAULTTONEAREST
+DWRITE
+LWIN
+VCENTER
+VREDRAW
+
+# COM/WinRT interface prefixes and type fragments
+BAlt
+BShift
+Cmanifest
+Cmodule
+Cuuid
+Dng
+IApplication
+IDisposable
+IEnum
+IFolder
+IInitialize
+IMemory
+IOle
+ipreview
+IProperty
+IShell
+ithumbnail
+IVirtual
+
+# Test frameworks
+MSTEST
 
 # PowerRename metadata pattern abbreviations (used in tests and regex patterns)
 DDDD
@@ -337,6 +404,12 @@ YYY
 
 # Unicode
 precomposed
+
+# names of characters
+zwsp
+
+# mermaid
+autonumber
 
 # GitHub issue/PR commands
 azp
@@ -351,3 +424,16 @@ nostdin
 # Performance counter keys
 engtype
 Nonpaged
+
+# XAML
+Untargeted
+
+# Program names
+SEARCHHOST
+SHELLEXPERIENCEHOST
+SHELLHOST
+STARTMENUEXPERIENCEHOST
+WIDGETBOARD
+
+# URIs
+actioncenter

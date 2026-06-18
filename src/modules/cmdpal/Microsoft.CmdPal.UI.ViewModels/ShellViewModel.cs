@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -16,7 +17,8 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ShellViewModel : ObservableObject,
     IDisposable,
     IRecipient<PerformCommandMessage>,
-    IRecipient<HandleCommandResultMessage>
+    IRecipient<HandleCommandResultMessage>,
+    IRecipient<WindowHiddenMessage>
 {
     private readonly IRootPageService _rootPageService;
     private readonly IAppHostService _appHostService;
@@ -79,8 +81,9 @@ public partial class ShellViewModel : ObservableObject,
     private IPage? _rootPage;
 
     private bool _isNested;
+    private bool _currentlyTransient;
 
-    public bool IsNested => _isNested;
+    public bool IsNested => _isNested && !_currentlyTransient;
 
     public PageViewModel NullPage { get; private set; }
 
@@ -101,6 +104,7 @@ public partial class ShellViewModel : ObservableObject,
         // Register to receive messages
         WeakReferenceMessenger.Default.Register<PerformCommandMessage>(this);
         WeakReferenceMessenger.Default.Register<HandleCommandResultMessage>(this);
+        WeakReferenceMessenger.Default.Register<WindowHiddenMessage>(this);
     }
 
     [RelayCommand]
@@ -257,10 +261,22 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
-        var providerContext = _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
+        // Determine whether this is the root/home page navigation BEFORE
+        // computing providerContext. When navigating back to the root page we
+        // must use an empty provider context so that home-page list items don't
+        // inherit a pinning-capable context left over from the previous sub-page
+        // (which can happen e.g. when the window is hidden while on a sub-page).
+        // isMainPage must be evaluated here; if it were moved inside the
+        // "if (command is IPage)" block below, it would be too late to affect
+        // the providerContext that is passed to the new page view-model.
+        var isMainPage = command == _rootPage;
 
-        _rootPageService.OnPerformCommand(message.Context, !CurrentPage.IsNested, host);
+        var host = _appHostService.GetHostForCommand(message.Context, CurrentPage.ExtensionHost);
+        var providerContext = isMainPage
+            ? CommandProviderContext.Empty
+            : _appHostService.GetProviderContextForCommand(message.Context, CurrentPage.ProviderContext);
+
+        _rootPageService.OnPerformCommand(message.Context, CurrentPage.IsRootPage, host);
 
         try
         {
@@ -268,8 +284,8 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Navigating to page");
 
-                var isMainPage = command == _rootPage;
                 _isNested = !isMainPage;
+                _currentlyTransient = message.TransientPage;
 
                 // Telemetry: Track extension page navigation for session metrics
                 if (host is not null)
@@ -288,6 +304,9 @@ public partial class ShellViewModel : ObservableObject,
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
                 }
+
+                pageViewModel.IsRootPage = isMainPage;
+                pageViewModel.HasBackButton = IsNested;
 
                 // Clear command bar, ViewModel initialization can already set new commands if it wants to
                 OnUIThread(() => WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null)));
@@ -308,7 +327,8 @@ public partial class ShellViewModel : ObservableObject,
                         _scheduler);
 
                 // While we're loading in the background, immediately move to the next page.
-                WeakReferenceMessenger.Default.Send<NavigateToPageMessage>(new(pageViewModel, message.WithAnimation, navigationToken));
+                NavigateToPageMessage msg = new(pageViewModel, message.WithAnimation, navigationToken, message.TransientPage);
+                WeakReferenceMessenger.Default.Send(msg);
 
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
@@ -366,7 +386,7 @@ public partial class ShellViewModel : ObservableObject,
             var result = invokable.Invoke(message.Context);
 
             // But if it did succeed, we need to handle the result.
-            UnsafeHandleCommandResult(result);
+            UnsafeHandleCommandResult(result, message.OnBeforeShowConfirmation);
 
             success = true;
             _handleInvokeTask = null;
@@ -392,7 +412,7 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
-    private void UnsafeHandleCommandResult(ICommandResult? result)
+    private void UnsafeHandleCommandResult(ICommandResult? result, Action? onBeforeShowConfirmation = null)
     {
         if (result is null)
         {
@@ -444,6 +464,17 @@ public partial class ShellViewModel : ObservableObject,
                 {
                     if (result.Args is IConfirmationArgs a)
                     {
+                        // Give the original sender (e.g. the dock) a chance to
+                        // prepare UI before the confirmation dialog surfaces.
+                        try
+                        {
+                            onBeforeShowConfirmation?.Invoke();
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreLogger.LogError(ex.ToString());
+                        }
+
                         WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
                     }
 
@@ -455,7 +486,7 @@ public partial class ShellViewModel : ObservableObject,
                     if (result.Args is IToastArgs a)
                     {
                         WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message));
-                        UnsafeHandleCommandResult(a.Result);
+                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation);
                     }
 
                     break;
@@ -469,6 +500,18 @@ public partial class ShellViewModel : ObservableObject,
         WeakReferenceMessenger.Default.Send<GoHomeMessage>(new(withAnimation, focusSearch));
     }
 
+    /// <summary>
+    /// Resets navigation to the root page, clearing any transient state.
+    /// Use when entering from a hotkey while the palette may already be
+    /// showing a transient dock page.
+    /// </summary>
+    public void ResetToHome()
+    {
+        _currentlyTransient = false;
+        _rootPageService.GoHome();
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+    }
+
     public void GoBack(bool withAnimation = true, bool focusSearch = true)
     {
         WeakReferenceMessenger.Default.Send<GoBackMessage>(new(withAnimation, focusSearch));
@@ -477,6 +520,19 @@ public partial class ShellViewModel : ObservableObject,
     public void Receive(HandleCommandResultMessage message)
     {
         UnsafeHandleCommandResult(message.Result.Unsafe);
+    }
+
+    public void Receive(WindowHiddenMessage message)
+    {
+        // If the window was hidden while we had a transient page, we need to reset that state.
+        if (_currentlyTransient)
+        {
+            _currentlyTransient = false;
+
+            // navigate back to the main page without animation
+            GoHome(withAnimation: false, focusSearch: false);
+            WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(new ExtensionObject<ICommand>(_rootPage)));
+        }
     }
 
     private void OnUIThread(Action action)

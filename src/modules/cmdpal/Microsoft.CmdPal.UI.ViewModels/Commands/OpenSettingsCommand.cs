@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -12,14 +12,31 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 public partial class OpenSettingsCommand : InvokableCommand
 {
     public OpenSettingsCommand()
+        : this(
+            settingsPageTag: string.Empty,
+            name: Properties.Resources.builtin_open_settings_name,
+            glyph: "\uE713",
+            id: "com.microsoft.cmdpal.opensettings") /* #no-spell-check-line */
     {
-        Name = Properties.Resources.builtin_open_settings_name;
-        Icon = new IconInfo("\uE713");
     }
+
+    protected OpenSettingsCommand(
+        string settingsPageTag,
+        string name,
+        string glyph,
+        string id)
+    {
+        _settingsPageTag = settingsPageTag;
+        Name = name;
+        Icon = new IconInfo(glyph);
+        Id = id;
+    }
+
+    private readonly string _settingsPageTag;
 
     public override ICommandResult Invoke()
     {
-        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage());
+        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage(_settingsPageTag));
         return CommandResult.KeepOpen();
     }
 }

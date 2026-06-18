@@ -36,7 +36,7 @@
                         x:Uid="Activation_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
                         Visibility="{x:Bind ViewModel.EnableSpaceToActivate, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
-                        <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="Peek_BehaviorHeader" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -57,6 +57,12 @@
                         x:Uid="Peek_ConfirmFileDelete"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7BA;}">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ConfirmFileDelete, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="PeekShowFilePreviewTooltip"
+                        x:Uid="Peek_ShowFilePreviewTooltip"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE171;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowFilePreviewTooltip, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 

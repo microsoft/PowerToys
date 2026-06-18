@@ -2,7 +2,7 @@
 #include "IconPathConverter.h"
 #include "IconPathConverter.g.cpp"
 
- #include "FontIconGlyphClassifier.h"
+#include "FontIconGlyphClassifier.h"
 
 #include <Shlobj.h>
 #include <Shlobj_core.h>
@@ -115,10 +115,13 @@ namespace winrt::Microsoft::Terminal::UI::implementation
             {
                 typename ImageIconSource<TIconSource>::type iconSource;
                 winrt::Microsoft::UI::Xaml::Media::Imaging::SvgImageSource source{ iconUri };
-                source.RasterizePixelWidth(static_cast<double>(targetSize));
-                // Set only single dimension here; the image might not be square and 
-                // this will preserve the aspect ratio (for the price of keeping height unbound).
-                // source.RasterizePixelHeight(static_cast<double>(targetSize));
+                if (targetSize > 0)
+                {
+                    source.RasterizePixelWidth(static_cast<double>(targetSize));
+                    // Set only single dimension here; the image might not be square and
+                    // this will preserve the aspect ratio (for the price of keeping height unbound).
+                    // source.RasterizePixelHeight(static_cast<double>(targetSize));
+                }
                 iconSource.ImageSource(source);
                 return iconSource;
             }
@@ -126,10 +129,13 @@ namespace winrt::Microsoft::Terminal::UI::implementation
             {
                 typename ImageIconSource<TIconSource>::type iconSource;
                 winrt::Microsoft::UI::Xaml::Media::Imaging::BitmapImage bitmapImage;
-                bitmapImage.DecodePixelWidth(targetSize);
-                // Set only single dimension here; the image might not be square and
-                // this will preserve the aspect ratio (for the price of keeping height unbound).
-                // bitmapImage.DecodePixelHeight(targetSize);
+                if (targetSize > 0)
+                {
+                    bitmapImage.DecodePixelWidth(targetSize);
+                    // Set only single dimension here; the image might not be square and
+                    // this will preserve the aspect ratio (for the price of keeping height unbound).
+                    // bitmapImage.DecodePixelHeight(targetSize);
+                }
                 bitmapImage.UriSource(iconUri);
                 iconSource.ImageSource(bitmapImage);
                 return iconSource;
@@ -210,7 +216,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
 
                     typename FontIconSource<TIconSource>::type icon;
                     icon.FontFamily(winrt::Microsoft::UI::Xaml::Media::FontFamily{ family });
-                    icon.FontSize(targetSize);
+                    icon.FontSize(targetSize > 0 ? targetSize : 8);
                     icon.Glyph(glyph_kind == FontIconGlyphKind::Invalid ? L"\u25CC" : iconPath);
                     iconSource = icon;
                 }
@@ -349,7 +355,7 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         // * C:\Program Files\PowerShell\6-preview\pwsh.exe, 0 (this doesn't exist for me)
         // * C:\Program Files\PowerShell\7\pwsh.exe, 0
 
-        const auto swBitmap{ _getBitmapFromIconFileAsync(winrt::hstring{ iconPathWithoutIndex }, index, targetSize) };
+        const auto swBitmap{ _getBitmapFromIconFileAsync(winrt::hstring{ iconPathWithoutIndex }, index, targetSize >= 0 ? targetSize : 256) };
         if (swBitmap == nullptr)
         {
             return nullptr;
@@ -379,7 +385,8 @@ namespace winrt::Microsoft::Terminal::UI::implementation
         return imageIconSource;
     }
 
-    Microsoft::UI::Xaml::Controls::IconElement IconPathConverter::IconMUX(const winrt::hstring& iconPath) {
+    Microsoft::UI::Xaml::Controls::IconElement IconPathConverter::IconMUX(const winrt::hstring& iconPath)
+    {
         return IconMUX(iconPath, 24);
     }
 

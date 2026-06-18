@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
@@ -70,7 +69,7 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
 
                 var item = new FancyZonesLayoutListItem(defaultCommand, layout, fallbackIcon)
                 {
-                    MoreCommands = BuildLayoutContext(layout, monitors),
+                    MoreCommands = FancyZonesContextHelper.BuildLayoutContext(layout, monitors),
                 };
 
                 items.Add(item);
@@ -83,22 +82,5 @@ internal sealed partial class FancyZonesLayoutsPage : DynamicListPage
             _emptyMessage.Subtitle = ex.Message;
             return Array.Empty<IListItem>();
         }
-    }
-
-    private static IContextItem[] BuildLayoutContext(FancyZonesLayoutDescriptor layout, IReadOnlyList<FancyZonesMonitorDescriptor> monitors)
-    {
-        var commands = new List<IContextItem>(monitors.Count);
-
-        for (var i = 0; i < monitors.Count; i++)
-        {
-            var monitor = monitors[i];
-            commands.Add(new CommandContextItem(new ApplyFancyZonesLayoutCommand(layout, monitor))
-            {
-                Title = string.Format(CultureInfo.CurrentCulture, "Apply to {0}", monitor.Title),
-                Subtitle = monitor.Subtitle,
-            });
-        }
-
-        return commands.ToArray();
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -59,12 +59,27 @@ public partial class SamplesListPage : ListPage
             Title = "Slow loading list page",
             Subtitle = "A demo of a list page that takes a while to load",
         },
+        new ListItem(new SampleSuggestionsPage())
+        {
+            Title = "Sample Prefix Suggestions",
+            Subtitle = "A demo of using 'nested' pages to provide 'suggestions' as the user types",
+        },
 
         // Content pages
         new ListItem(new SampleContentPage())
         {
             Title = "Sample content page",
             Subtitle = "Display mixed forms, markdown, and other types of content",
+        },
+        new ListItem(new SamplePlainTextContentPage())
+        {
+            Title = "Sample plain text content page",
+            Subtitle = "Display a page of plain text content",
+        },
+        new ListItem(new SampleImageContentPage())
+        {
+            Title = "Sample image content page",
+            Subtitle = "Display a page with an image",
         },
         new ListItem(new SampleTreeContentPage())
         {
@@ -111,6 +126,35 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Clipboard and Drag-and-Drop Demo",
             Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
+        },
+
+        // Parameter pages
+        new ListItem(new SimpleParameterTest())
+        {
+            Title = "Sample parameters page",
+            Subtitle = "A demo of a command that takes simple parameters",
+        },
+        new ListItem(new ButtonParameterTest())
+        {
+            Title = "Button parameters page",
+            Subtitle = "A demo of a command that takes simple parameters",
+        },
+        new ListItem(new MixedParamTestPage(stringFirst: true))
+        {
+            Title = "Mixed parameter types (string first)",
+            Subtitle = "A demo of a command that takes multiple types of parameters",
+        },
+        new ListItem(new MixedParamTestPage(stringFirst: false))
+        {
+            Title = "Mixed parameter types (file first)",
+            Subtitle = "A demo of a command that takes multiple types of parameters",
+        },
+
+        // List parameters aren't yet supported
+        new ListItem(new CreateNoteParametersPage())
+        {
+            Title = "Create note sample",
+            Subtitle = "A parameter page with both a string and list parameter",
         },
 
         // Evil edge cases

@@ -18,16 +18,22 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\CalculatorEngineCommon\CalculatorEngineCommon.vcxproj" />
     <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <!-- CmdPal Toolkit reference now included via Common.ExtDependencies.props -->
   </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
   <ItemGroup>
     <CsWinRTInputs Include="..\..\..\..\..\$(Platform)\$(Configuration)\CalculatorEngineCommon.winmd" />
-    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\CalculatorEngineCommon.winmd" Link="CalculatorEngineCommon.winmd">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\..\..\..\..\$(Platform)\$(Configuration)\CalculatorEngineCommon.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="..\..\..\..\..\$(Platform)\$(Configuration)\CalculatorEngineCommon.winmd" Link="CalculatorEngineCommon.winmd">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\..\..\..\..\$(Platform)\$(Configuration)\CalculatorEngineCommon.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

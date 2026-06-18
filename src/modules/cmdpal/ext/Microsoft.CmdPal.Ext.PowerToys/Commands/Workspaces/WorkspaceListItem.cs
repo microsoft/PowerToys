@@ -24,7 +24,7 @@ internal sealed partial class WorkspaceListItem : ListItem
     private static readonly CompositeFormat DaysAgoFormat = CompositeFormat.Parse(Resources.Workspaces_DaysAgo_Format);
 
     public WorkspaceListItem(ProjectWrapper workspace, IconInfo icon)
-        : base(new LaunchWorkspaceCommand(workspace.Id))
+        : base(new LaunchWorkspaceCommand(workspace.Id) { Id = $"com.microsoft.powertoys.workspaces.launch.{workspace.Id}" })
     {
         Title = workspace.Name;
         Subtitle = BuildSubtitle(workspace);

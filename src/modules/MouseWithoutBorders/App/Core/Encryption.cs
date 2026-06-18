@@ -121,12 +121,12 @@ internal static class Encryption
 
         if (!LegalKeyDictionary.TryGetValue(myKey, out byte[] value))
         {
-            Rfc2898DeriveBytes key = new(
+            rv = Rfc2898DeriveBytes.Pbkdf2(
                 myKey,
                 Common.GetBytesU(InitialIV),
                 50000,
-                HashAlgorithmName.SHA512);
-            rv = key.GetBytes(32);
+                HashAlgorithmName.SHA512,
+                32);
             _ = LegalKeyDictionary.AddOrUpdate(myKey, rv, (k, v) => rv);
         }
         else
@@ -194,11 +194,6 @@ internal static class Encryption
         Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, "magic: {0},{1},{2}", hashValue[0], hashValue[1], hashValue[^1]));
         hash.Clear();
         return (uint)((hashValue[0] << 23) + (hashValue[1] << 16) + (hashValue[^1] << 8) + hashValue[2]);
-    }
-
-    internal static string GetDebugInfo(string st)
-    {
-        return string.IsNullOrEmpty(st) ? st : ((byte)(Common.GetBytesU(st).Sum(value => value) % 256)).ToString(CultureInfo.InvariantCulture);
     }
 
     internal static string CreateDefaultKey()

@@ -36,17 +36,17 @@ public sealed record BackdropStyleConfig
     public float FixedOpacity { get; init; }
 
     /// <summary>
-    /// Gets whether this backdrop style supports custom colorization (tint colors).
+    /// Gets a value indicating whether this backdrop style supports custom colorization (tint colors).
     /// </summary>
     public bool SupportsColorization { get; init; } = true;
 
     /// <summary>
-    /// Gets whether this backdrop style supports custom background images.
+    /// Gets a value indicating whether this backdrop style supports custom background images.
     /// </summary>
     public bool SupportsBackgroundImage { get; init; } = true;
 
     /// <summary>
-    /// Gets whether this backdrop style supports opacity adjustment.
+    /// Gets a value indicating whether this backdrop style supports opacity adjustment.
     /// </summary>
     public bool SupportsOpacity { get; init; } = true;
 

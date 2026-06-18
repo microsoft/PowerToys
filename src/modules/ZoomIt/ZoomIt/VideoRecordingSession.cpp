@@ -8,6 +8,9 @@
 //==============================================================================
 #include "pch.h"
 #include "VideoRecordingSession.h"
+
+// Defined in Zoomit.cpp; compiles to nothing in Release builds.
+void OutputDebug(const TCHAR* format, ...);
 #include "CaptureFrameWait.h"
 #include "Utility.h"
 #include <winrt/Windows.Graphics.Imaging.h>
@@ -24,9 +27,23 @@ extern DWORD g_RecordScaling;
 extern DWORD g_TrimDialogWidth;
 extern DWORD g_TrimDialogHeight;
 extern DWORD g_TrimDialogVolume;
+extern BOOLEAN g_WebcamOverlay;
+extern DWORD g_WebcamPosition;
+extern DWORD g_WebcamSize;
+extern DWORD g_WebcamShape;
+extern TCHAR g_WebcamDeviceSymLink[MAX_PATH];
+extern DWORD g_WebcamBackgroundMode;
+extern TCHAR g_WebcamBackgroundImage[];
+extern DWORD g_WebcamBrightness;
 extern class ClassRegistry reg;
 extern REG_SETTING RegSettings[];
 extern HINSTANCE g_hInstance;
+extern HWND g_hWndMain;
+
+// Must match the definition in ZoomIt.h.
+#ifndef WM_USER_RECORDING_STARTED
+#define WM_USER_RECORDING_STARTED (WM_USER + 111)
+#endif
 
 HWND hDlgTrimDialog = nullptr;
 
@@ -70,6 +87,85 @@ int32_t EnsureEven(int32_t value)
         return value + 1;
     }
 }
+
+//----------------------------------------------------------------------------
+//
+// Recording startup diagnostics — active in ALL builds.
+// Logs QPC-based wall-clock timestamps so we can measure exactly where time
+// is spent during the recording startup pipeline.
+//
+//----------------------------------------------------------------------------
+static double RecDiagElapsedMs()
+{
+    static LARGE_INTEGER s_freq = {};
+    static LARGE_INTEGER s_origin = {};
+    if( s_freq.QuadPart == 0 )
+    {
+        QueryPerformanceFrequency( &s_freq );
+        QueryPerformanceCounter( &s_origin );
+    }
+    LARGE_INTEGER now;
+    QueryPerformanceCounter( &now );
+    return static_cast<double>( now.QuadPart - s_origin.QuadPart ) * 1000.0 / s_freq.QuadPart;
+}
+
+static FILE* s_recDiagFile = nullptr;
+
+static void RecDiagOpenFile()
+{
+    if( !s_recDiagFile )
+    {
+        wchar_t path[MAX_PATH];
+        if( ExpandEnvironmentStringsW( L"%TEMP%\\ZoomIt_RecDiag.log", path, MAX_PATH ) )
+        {
+            _wfopen_s( &s_recDiagFile, path, L"a" );
+            if( s_recDiagFile )
+            {
+                fwprintf( s_recDiagFile, L"\n===== NEW SESSION =====\n" );
+                fflush( s_recDiagFile );
+            }
+        }
+    }
+}
+
+static void RecDiagCloseFile()
+{
+    if( s_recDiagFile )
+    {
+        fclose( s_recDiagFile );
+        s_recDiagFile = nullptr;
+    }
+}
+
+static void RecDiag( const wchar_t* fmt, ... )
+{
+    wchar_t buf[512];
+    int offset = swprintf_s( buf, L"[RecDiag +%.1fms] ", RecDiagElapsedMs() );
+    va_list va;
+#ifdef _MSC_VER
+// For some reason, ARM64 Debug builds causes an analyzer error on va_start: "error C26492: Don't use const_cast to cast away const or volatile (type.3)."
+#pragma warning(push)
+#pragma warning(disable : 26492)
+#endif
+    va_start( va, fmt );
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+    _vsnwprintf_s( buf + offset, _countof( buf ) - offset, _TRUNCATE, fmt, va );
+    va_end( va );
+    OutputDebugStringW( buf );
+
+    RecDiagOpenFile();
+    if( s_recDiagFile )
+    {
+        fwprintf( s_recDiagFile, L"%s", buf );
+        fflush( s_recDiagFile );
+    }
+}
+
+static int s_diagVideoCount = 0;
+static int s_diagAudioCount = 0;
+static int64_t s_diagStartTs = 0;  // SystemRelativeTime from OnStarting
 
 static bool IsGifPath(const std::wstring& path)
 {
@@ -406,7 +502,10 @@ static bool LoadGifFrames(const std::wstring& gifPath, VideoRecordingSession::Tr
 
     const auto& lastFrame = pData->gifFrames.back();
     pData->videoDuration = winrt::TimeSpan{ lastFrame.start.count() + lastFrame.duration.count() };
-    pData->trimEnd = pData->videoDuration;
+    if( pData->trimEnd.count() <= 0 )
+    {
+        pData->trimEnd = pData->videoDuration;
+    }
     pData->gifFramesLoaded = true;
     pData->gifLastFrameIndex = 0;
 
@@ -495,15 +594,33 @@ namespace
         }
 
         UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
-#if defined(_DEBUG)
-        creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
 
         D3D_FEATURE_LEVEL levels[] = { D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0 };
         D3D_FEATURE_LEVEL levelCreated = D3D_FEATURE_LEVEL_11_0;
 
         winrt::com_ptr<ID3D11Device> device;
         winrt::com_ptr<ID3D11DeviceContext> context;
+
+#if defined(_DEBUG)
+        // Try with debug layer first, fall back without if SDK layers aren't installed.
+        if (SUCCEEDED(D3D11CreateDevice(
+            nullptr,
+            D3D_DRIVER_TYPE_HARDWARE,
+            nullptr,
+            creationFlags | D3D11_CREATE_DEVICE_DEBUG,
+            levels,
+            ARRAYSIZE(levels),
+            D3D11_SDK_VERSION,
+            device.put(),
+            &levelCreated,
+            context.put())))
+        {
+            pData->previewD3DDevice = device;
+            pData->previewD3DContext = context;
+            return true;
+        }
+#endif
+
         if (SUCCEEDED(D3D11CreateDevice(
             nullptr,
             D3D_DRIVER_TYPE_HARDWARE,
@@ -721,13 +838,9 @@ namespace
             SetDlgItemText(hDlg, IDC_TRIM_DURATION_LABEL, durationText.c_str());
         }
 
-        // Enable OK when trimming is active (even if unchanged since dialog opened),
-        // or when the user changed the selection (including reverting to full length).
-        const bool trimChanged = (pData->trimStart.count() != pData->originalTrimStart.count()) ||
-                                 (pData->trimEnd.count() != pData->originalTrimEnd.count());
-        const bool trimIsActive = (pData->trimStart.count() > 0) ||
-                                  (pData->videoDuration.count() > 0 && pData->trimEnd.count() < pData->videoDuration.count());
-        EnableWindow(GetDlgItem(hDlg, IDOK), trimChanged || trimIsActive);
+        // Always enable OK so users can close the dialog after previewing
+        // without being forced to use Cancel.
+        EnableWindow(GetDlgItem(hDlg, IDOK), TRUE);
     }
 
         RECT GetTimelineTrackRect(const RECT& clientRect, UINT dpi)
@@ -859,19 +972,33 @@ VideoRecordingSession::VideoRecordingSession(
     winrt::GraphicsCaptureItem const& item,
     RECT const cropRect,
     uint32_t frameRate,
-    bool captureAudio,
-    bool captureSystemAudio,
-    bool micMonoMix,
+    std::unique_ptr<AudioSampleGenerator> audioGenerator,
+    winrt::IAsyncAction audioInitAction,
     winrt::Streams::IRandomAccessStream const& stream)
 {
+    RecDiag( L"Constructor: entry\n" );
+
+    // Take ownership of pre-created audio generator.  Its InitializeAsync
+    // was started in StartRecordingAsync so it runs in parallel with all
+    // the D3D, capture-item, and webcam setup below.
+    m_audioGenerator = std::move( audioGenerator );
+    m_audioInitAction = audioInitAction;
+    RecDiag( L"Constructor: audio generator received (init %s)\n",
+             m_audioInitAction ? L"pending" : L"none" );
+
     m_device = device;
     m_d3dDevice = GetDXGIInterfaceFromObject<ID3D11Device>(m_device);
     m_d3dDevice->GetImmediateContext(m_d3dContext.put());
+    if (auto multithread = m_d3dContext.try_as<ID3D11Multithread>())
+    {
+        multithread->SetMultithreadProtected(TRUE);
+    }
     m_item = item;
     auto itemSize = item.Size();
     auto inputWidth = EnsureEven(itemSize.Width);
     auto inputHeight = EnsureEven(itemSize.Height);
     m_frameWait = std::make_shared<CaptureFrameWait>(m_device, m_item, winrt::SizeInt32{ inputWidth, inputHeight });
+    RecDiag( L"Constructor: CaptureFrameWait created (screen capture started)\n" );
     auto weakPointer{ std::weak_ptr{ m_frameWait } };
     m_itemClosed = item.Closed(winrt::auto_revoke, [weakPointer](auto&, auto&)
         {
@@ -926,6 +1053,85 @@ VideoRecordingSession::VideoRecordingSession(
     outputWidth = EnsureEven(outputWidth);
     outputHeight = EnsureEven(outputHeight);
 
+    // Start webcam capture early so the camera sensor warms up while the
+    // encoding profile, swap chain, audio graph, and MF transcoder
+    // initialize.  The first ReadSample takes ~850 ms for sensor warmup;
+    // starting it here overlaps that cost with the setup below.
+    {
+        OutputDebug( L"[WebcamCapture] g_WebcamOverlay=%d outputW=%d outputH=%d\n",
+                     static_cast<int>( g_WebcamOverlay ), outputWidth, outputHeight );
+    }
+    if( g_WebcamOverlay )
+    {
+        RecDiag( L"Constructor: probing webcam for exclusive access\n" );
+
+        // Check if the camera is already in use by another application.
+        // Frame Server allows shared access, so the MF source reader would
+        // succeed even when Teams etc. hold the camera.  We probe with
+        // ExclusiveControl to detect this before starting the capture thread.
+        // The probe must run on a background (MTA) thread because the
+        // constructor runs on the STA UI thread where .get() would deadlock.
+        std::wstring probeDeviceId( g_WebcamDeviceSymLink );
+        auto probeResult = std::async( std::launch::async, [&probeDeviceId]() -> bool
+        {
+            try
+            {
+                winrt::Windows::Media::Capture::MediaCapture probeCapture;
+                winrt::Windows::Media::Capture::MediaCaptureInitializationSettings probeSettings;
+                probeSettings.SharingMode( winrt::Windows::Media::Capture::MediaCaptureSharingMode::ExclusiveControl );
+                probeSettings.StreamingCaptureMode( winrt::Windows::Media::Capture::StreamingCaptureMode::Video );
+                if( !probeDeviceId.empty() )
+                {
+                    probeSettings.VideoDeviceId( winrt::hstring( probeDeviceId ) );
+                }
+                probeCapture.InitializeAsync( probeSettings ).get();
+                probeCapture.Close();
+                return true;
+            }
+            catch( winrt::hresult_error const& ex )
+            {
+                RecDiag( L"Constructor: webcam probe failed hr=0x%08X: %s\n",
+                         static_cast<unsigned>( ex.code() ), ex.message().c_str() );
+                return false;
+            }
+            catch( ... )
+            {
+                RecDiag( L"Constructor: webcam probe failed with unknown exception\n" );
+                return false;
+            }
+        });
+
+        if( !probeResult.get() )
+        {
+            RecDiag( L"Constructor: webcam is in use by another application\n" );
+            throw winrt::hresult_error( E_ACCESSDENIED,
+                L"The webcam could not be opened. It may be in use by another application." );
+        }
+
+        RecDiag( L"Constructor: creating WebcamCapture\n" );
+        // Force rectangle shape in fullscreen mode
+        auto webcamShape = (g_WebcamSize == WebcamCapture::FullScreen)
+            ? WebcamCapture::Square
+            : static_cast<WebcamCapture::Shape>( g_WebcamShape );
+        // Fullscreen recording (Ctrl+5) uses an empty cropRect;
+        // region recording (Ctrl+Shift+5) has a non-zero cropRect.
+        bool isFullScreenRecording = (cropRect.right - cropRect.left) == 0;
+        m_webcamCapture = std::make_unique<WebcamCapture>(
+            m_d3dDevice, m_d3dContext,
+            g_WebcamDeviceSymLink,
+            static_cast<UINT>( outputWidth ),
+            static_cast<UINT>( outputHeight ),
+            static_cast<WebcamCapture::Position>( g_WebcamPosition ),
+            static_cast<WebcamCapture::Size>( g_WebcamSize ),
+            webcamShape,
+            isFullScreenRecording,
+            static_cast<WebcamBackgroundMode>( g_WebcamBackgroundMode ),
+            g_WebcamBackgroundImage,
+            static_cast<int>( g_WebcamBrightness ) );
+        m_webcamCapture->Start();
+        RecDiag( L"Constructor: WebcamCapture::Start() returned\n" );
+    }
+
     // Describe out output: H264 video with an MP4 container
     m_encodingProfile = winrt::MediaEncodingProfile();
     m_encodingProfile.Container().Subtype(L"MPEG4");
@@ -940,10 +1146,13 @@ VideoRecordingSession::VideoRecordingSession(
     video.PixelAspectRatio().Denominator(1);
     m_encodingProfile.Video(video);
 
-    // Always set up audio profile for loopback capture (stereo AAC)
-    auto audio = m_encodingProfile.Audio();
-    audio = winrt::AudioEncodingProperties::CreateAac(48000, 2, 192000);
-    m_encodingProfile.Audio(audio);
+    // Store frame interval for timeout-based frame production when webcam is active.
+    m_frameIntervalTicks = ( frameRate > 0 ) ? ( 10'000'000LL / frameRate ) : 333'333LL;
+
+    // NOTE: Audio encoding profile (m_encodingProfile.Audio) is set in
+    // StartAsync() after the audio graph is fully initialized, not here.
+    // Calling GetEncodingProperties() before InitializeAsync completes
+    // would crash because m_audioOutputNode is still null.
 
     // Describe our input: uncompressed BGRA8 buffers
     auto properties = winrt::VideoEncodingProperties::CreateUncompressed(
@@ -960,12 +1169,29 @@ VideoRecordingSession::VideoRecordingSession(
         static_cast<uint32_t>(m_rcCrop.bottom - m_rcCrop.top),
         DXGI_FORMAT_B8G8R8A8_UNORM,
         2);
-    winrt::com_ptr<ID3D11Texture2D> backBuffer;
-    winrt::check_hresult(m_previewSwapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
-    winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(backBuffer.get(), nullptr, m_renderTargetView.put()));
 
-    // Always create audio generator for loopback capture; captureAudio controls microphone
-    m_audioGenerator = std::make_unique<AudioSampleGenerator>(captureAudio, captureSystemAudio, micMonoMix);
+    // Wait for the webcam's first frame now that all other setup is done.
+    // The camera was started early, so most of its ~850 ms sensor warmup has
+    // overlapped with the encoding profile, swap chain, and audio generator
+    // setup above.  Blocking here (on the calling thread, not the MF thread
+    // pool) ensures the webcam overlay is present from the very first frame.
+    if( m_webcamCapture )
+    {
+        RecDiag( L"Constructor: waiting for webcam first frame (up to 2000ms)...\n" );
+        bool webcamReady = m_webcamCapture->WaitForFirstFrame( 2000 );
+        RecDiag( L"Constructor: WaitForFirstFrame returned %s\n",
+                 webcamReady ? L"TRUE (ready)" : L"FALSE (timeout)" );
+
+        if( !webcamReady && m_webcamCapture->HasInitFailed() )
+        {
+            RecDiag( L"Constructor: webcam init failed (camera may be in use)\n" );
+            m_webcamCapture->Stop();
+            m_webcamCapture.reset();
+            throw winrt::hresult_error( E_ACCESSDENIED,
+                L"The webcam could not be opened. It may be in use by another application." );
+        }
+    }
+    RecDiag( L"Constructor: exit\n" );
 }
 
 
@@ -977,6 +1203,7 @@ VideoRecordingSession::VideoRecordingSession(
 VideoRecordingSession::~VideoRecordingSession()
 {
     Close();
+    RecDiagCloseFile();
 }
 
 
@@ -990,12 +1217,29 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
     auto expected = false;
     if (m_isRecording.compare_exchange_strong(expected, true))
     {
+        RecDiag( L"StartAsync: begin\n" );
 
         // Create our MediaStreamSource
         if(m_audioGenerator) {
 
-            co_await m_audioGenerator->InitializeAsync();
-            m_streamSource = winrt::MediaStreamSource(m_videoDescriptor, winrt::AudioStreamDescriptor(m_audioGenerator->GetEncodingProperties()));
+            RecDiag( L"StartAsync: co_await audio init...\n" );
+            if (m_audioInitAction) {
+                co_await m_audioInitAction;   // started in constructor
+                m_audioInitAction = nullptr;
+            } else {
+                co_await m_audioGenerator->InitializeAsync();
+            }
+            RecDiag( L"StartAsync: audio initialized\n" );
+
+            // Set up the audio encoding profile now that the audio graph is
+            // fully initialized.  GetEncodingProperties() requires
+            // m_audioOutputNode to be valid, which is only guaranteed after
+            // InitializeAsync completes.
+            auto audioProps = m_audioGenerator->GetEncodingProperties();
+            m_encodingProfile.Audio(winrt::AudioEncodingProperties::CreateAac(
+                audioProps.SampleRate(), audioProps.ChannelCount(), 192000));
+
+            m_streamSource = winrt::MediaStreamSource(m_videoDescriptor, winrt::AudioStreamDescriptor(audioProps));
         }
         else {
 
@@ -1022,7 +1266,9 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
         winrt::PrepareTranscodeResult transcode{ nullptr };
         try
         {
+            RecDiag( L"StartAsync: co_await PrepareMediaStreamSourceTranscodeAsync...\n" );
             transcode = co_await m_transcoder.PrepareMediaStreamSourceTranscodeAsync(m_streamSource, m_stream, m_encodingProfile);
+            RecDiag( L"StartAsync: transcode prepared, co_await TranscodeAsync...\n" );
 
             if (m_closed.load())
             {
@@ -1030,6 +1276,7 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
             }
 
             co_await transcode.TranscodeAsync();
+            RecDiag( L"StartAsync: transcode completed\n" );
         }
         catch (winrt::hresult_error const& error)
         {
@@ -1052,6 +1299,19 @@ winrt::IAsyncAction VideoRecordingSession::StartAsync()
 //----------------------------------------------------------------------------
 void VideoRecordingSession::Close()
 {
+    RecDiag( L"Close: totalVideoFrames=%d totalAudioSamples=%d\n",
+             s_diagVideoCount, s_diagAudioCount );
+
+    // Stop webcam capture before closing the main session.
+    if( m_webcamCapture )
+    {
+        m_webcamCapture->Stop();
+        m_webcamCapture.reset();
+    }
+
+    // Release cached desktop texture.
+    m_cachedDesktopTex = nullptr;
+
     auto expected = false;
     if (m_closed.compare_exchange_strong(expected, true))
     {
@@ -1091,14 +1351,47 @@ void VideoRecordingSession::OnMediaStreamSourceStarting(
     winrt::MediaStreamSource const&,
     winrt::MediaStreamSourceStartingEventArgs const& args)
 {
-    auto frame = m_frameWait->TryGetNextFrame();
-    if (frame) {
-        args.Request().SetActualStartPosition(frame->SystemRelativeTime);
-        if (m_audioGenerator) {
+    // Close the stale frame captured in the constructor (~1-2 seconds
+    // ago) and grab a FRESH frame via TryGetNextFrame.  This gives us
+    // both current visual content and a current SystemRelativeTime,
+    // avoiding the frozen-first-frame artefact.  WGC delivers a new
+    // frame within one vblank (~16 ms) after the old frame is released
+    // back to the pool, so a 200 ms timeout is very generous.
+    RecDiag( L"OnStarting: calling TryGetNextFrame(200) for fresh frame...\n" );
+    auto frame = m_frameWait->TryGetNextFrame( 200 );
 
-            m_audioGenerator->Start();
-        }
+    int64_t startSRT = 0;
+
+    if (frame) {
+        startSRT = frame->SystemRelativeTime.count();
+        RecDiag( L"OnStarting: got fresh frame, SRT=%lld (%.1fms)\n",
+                 startSRT, startSRT / 10000.0 );
+
+        args.Request().SetActualStartPosition( frame->SystemRelativeTime );
+        m_cachedStartingFrame = frame;
+        m_adjustedStartSRT = startSRT;
+    } else {
+        // Timeout (very unlikely).  Fall back to QPC-derived SRT.
+        // Use double for the intermediate product to avoid int64
+        // overflow (naive integer multiply overflows after ~25.6 h).
+        RecDiag( L"OnStarting: TryGetNextFrame timed out, using QPC fallback\n" );
+        LARGE_INTEGER qpcFreq, qpcNow;
+        QueryPerformanceFrequency( &qpcFreq );
+        QueryPerformanceCounter( &qpcNow );
+        startSRT = static_cast<int64_t>(
+            static_cast<double>( qpcNow.QuadPart ) * 10'000'000.0 / qpcFreq.QuadPart );
+        args.Request().SetActualStartPosition( winrt::TimeSpan{ startSRT } );
+        m_adjustedStartSRT = startSRT;
     }
+
+    // Start audio capture.  Pass the video start SRT so audio
+    // timestamps can be rebased to the same domain as video.
+    if (m_audioGenerator) {
+        RecDiag( L"OnStarting: calling AudioSampleGenerator::Start(videoStartSRT=%lld)\n", startSRT );
+        m_audioGenerator->Start( startSRT );
+        RecDiag( L"OnStarting: audio started\n" );
+    }
+    RecDiag( L"OnStarting: exit\n" );
 }
 
 //----------------------------------------------------------------------------
@@ -1111,12 +1404,11 @@ std::shared_ptr<VideoRecordingSession> VideoRecordingSession::Create(
     winrt::GraphicsCaptureItem const& item,
     RECT const& crop,
     uint32_t frameRate,
-    bool captureAudio,
-    bool captureSystemAudio,
-    bool micMonoMix,
+    std::unique_ptr<AudioSampleGenerator> audioGenerator,
+    winrt::IAsyncAction audioInitAction,
     winrt::Streams::IRandomAccessStream const& stream)
 {
-    return std::shared_ptr<VideoRecordingSession>(new VideoRecordingSession(device, item, crop, frameRate, captureAudio, captureSystemAudio, micMonoMix, stream));
+    return std::shared_ptr<VideoRecordingSession>(new VideoRecordingSession(device, item, crop, frameRate, std::move(audioGenerator), audioInitAction, stream));
 }
 
 //----------------------------------------------------------------------------
@@ -1132,27 +1424,90 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
     auto streamDescriptor = request.StreamDescriptor();
     if (auto videoStreamDescriptor = streamDescriptor.try_as<winrt::VideoStreamDescriptor>())
     {
-        if (auto frame = m_frameWait->TryGetNextFrame())
+        // If OnStarting cached a frame, serve it as the first sample
+        // so there is no timestamp gap at the start of the recording.
+        auto cachedFrame = std::exchange( m_cachedStartingFrame, std::nullopt );
+
+        // When a webcam overlay is active, use a timeout so we keep
+        // producing video frames (with fresh webcam composites) even
+        // when the desktop is static.  Without this, TryGetNextFrame
+        // blocks forever on a static desktop and the webcam freezes.
+        const bool useTimeout = ( m_webcamCapture != nullptr ) && !cachedFrame;
+        const DWORD timeoutMs = useTimeout
+            ? static_cast<DWORD>( m_frameIntervalTicks / 10'000 )  // ticks → ms
+            : INFINITE;
+
+        auto frame = cachedFrame
+            ? cachedFrame
+            : ( useTimeout
+                ? m_frameWait->TryGetNextFrame( timeoutMs )
+                : m_frameWait->TryGetNextFrame() );
+
+        // frame is nullopt either on timeout (static desktop) or end-of-capture.
+        // On timeout with a cached desktop texture, produce a repeat frame.
+        const bool isRepeatFrame = !frame && useTimeout && m_cachedDesktopTex;
+
+        if( !frame && !isRepeatFrame )
         {
-            try
+            // True end-of-capture — no cached desktop to reuse.
+            request.Sample( nullptr );
+            CloseInternal();
+            return;
+        }
+
+        try
+        {
+            winrt::com_ptr<ID3D11Texture2D> backBuffer;
+            winrt::check_hresult(m_previewSwapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
+
+            if( !m_cachedRTV )
             {
-                auto timeStamp = frame->SystemRelativeTime;
+                winrt::check_hresult(m_d3dDevice->CreateRenderTargetView(backBuffer.get(), nullptr, m_cachedRTV.put()));
+            }
+
+            winrt::TimeSpan timeStamp{ 0 };
+
+            if( isRepeatFrame )
+            {
+                // Desktop hasn't changed — copy cached desktop content
+                // to the back buffer.  Compute the timestamp from
+                // wall-clock elapsed time so it stays aligned with the
+                // audio stream's real-time clock.
+                m_d3dContext->CopyResource( backBuffer.get(), m_cachedDesktopTex.get() );
+
+                LARGE_INTEGER now;
+                QueryPerformanceCounter( &now );
+                // Elapsed wall-clock time in 100ns ticks since the first frame.
+                int64_t elapsedTicks = static_cast<int64_t>(
+                    static_cast<double>( now.QuadPart - m_qpcRecordingStart.QuadPart )
+                    * 10'000'000.0 / m_qpcFreq.QuadPart );
+                timeStamp = winrt::TimeSpan{ m_startSystemRelativeTime + elapsedTicks };
+
+                // Ensure monotonically increasing timestamps.
+                if( timeStamp.count() <= m_lastVideoTimestamp.count() )
+                    timeStamp = winrt::TimeSpan{ m_lastVideoTimestamp.count() + 1 };
+            }
+            else
+            {
+                // New desktop frame — crop and copy to back buffer.
+                // If this is the cached starting frame, use the adjusted
+                // SRT (computed from QPC in OnStarting) instead of the
+                // stale SRT from the constructor.  The stale SRT is ~2-3s
+                // behind, creating a massive timestamp gap between frame
+                // #1 and #2 that causes the transcoder to starve video
+                // while filling the gap with audio.
+                if( cachedFrame.has_value() && m_adjustedStartSRT != 0 )
+                    timeStamp = winrt::TimeSpan{ m_adjustedStartSRT };
+                else
+                    timeStamp = frame->SystemRelativeTime;
                 auto contentSize = frame->ContentSize;
                 auto frameTexture = GetDXGIInterfaceFromObject<ID3D11Texture2D>(frame->FrameTexture);
                 D3D11_TEXTURE2D_DESC desc = {};
                 frameTexture->GetDesc(&desc);
 
-                winrt::com_ptr<ID3D11Texture2D> backBuffer;
-                winrt::check_hresult(m_previewSwapChain->GetBuffer(0, winrt::guid_of<ID3D11Texture2D>(), backBuffer.put_void()));
-
-                // Use the smaller of the crop size or content size. The content
-                // size can change while recording, for example by resizing the
-                // window. This ensures that only valid content is copied.
                 auto width = min(m_rcCrop.right - m_rcCrop.left, contentSize.Width);
                 auto height = min(m_rcCrop.bottom - m_rcCrop.top, contentSize.Height);
 
-                // Set the content region to copy and clamp the coordinates to the
-                // texture surface.
                 D3D11_BOX region = {};
                 region.left = std::clamp(m_rcCrop.left, static_cast<LONG>(0), static_cast<LONG>(desc.Width));
                 region.right = std::clamp(m_rcCrop.left + width, static_cast<LONG>(0), static_cast<LONG>(desc.Width));
@@ -1160,65 +1515,184 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
                 region.bottom = std::clamp(m_rcCrop.top + height, static_cast<LONG>(0), static_cast<LONG>(desc.Height));
                 region.back = 1;
 
-                m_d3dContext->ClearRenderTargetView(m_renderTargetView.get(), CLEAR_COLOR);
+                m_d3dContext->ClearRenderTargetView(m_cachedRTV.get(), CLEAR_COLOR);
                 m_d3dContext->CopySubresourceRegion(
-                    backBuffer.get(),
-                    0,
-                    0, 0, 0,
-                    frameTexture.get(),
-                    0,
-                    &region);
+                    backBuffer.get(), 0, 0, 0, 0,
+                    frameTexture.get(), 0, &region);
 
-                desc = {};
-                backBuffer->GetDesc(&desc);
-
-                desc.Usage = D3D11_USAGE_DEFAULT;
-                desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-                desc.CPUAccessFlags = 0;
-                desc.MiscFlags = 0;
-                winrt::com_ptr<ID3D11Texture2D> sampleTexture;
-                winrt::check_hresult(m_d3dDevice->CreateTexture2D(&desc, nullptr, sampleTexture.put()));
-                m_d3dContext->CopyResource(sampleTexture.get(), backBuffer.get());
-                auto dxgiSurface = sampleTexture.as<IDXGISurface>();
-                auto sampleSurface = CreateDirect3DSurface(dxgiSurface.get());
-
-                DXGI_PRESENT_PARAMETERS presentParameters{};
-                winrt::check_hresult(m_previewSwapChain->Present1(0, 0, &presentParameters));
-
-                auto sample = winrt::MediaStreamSample::CreateFromDirect3D11Surface(sampleSurface, timeStamp);
-                m_hasVideoSample.store(true);
-                request.Sample(sample);
+                // Cache a standalone copy of the cropped desktop content.
+                // This texture is NOT in the frame pool — it's ours to keep.
+                D3D11_TEXTURE2D_DESC bbDesc = {};
+                backBuffer->GetDesc( &bbDesc );
+                if( !m_cachedDesktopTex )
+                {
+                    bbDesc.Usage = D3D11_USAGE_DEFAULT;
+                    bbDesc.BindFlags = 0;
+                    bbDesc.CPUAccessFlags = 0;
+                    bbDesc.MiscFlags = 0;
+                    winrt::check_hresult( m_d3dDevice->CreateTexture2D( &bbDesc, nullptr, m_cachedDesktopTex.put() ) );
+                }
+                m_d3dContext->CopyResource( m_cachedDesktopTex.get(), backBuffer.get() );
             }
-            catch (winrt::hresult_error const& error)
+
+            // Log first 50 video frames with timing.
+            if( !m_hasVideoSample.load() )
             {
-                OutputDebugStringW(error.message().c_str());
-                request.Sample(nullptr);
-                CloseInternal();
-                return;
+                s_diagVideoCount = 0;
+                s_diagAudioCount = 0;
+                s_diagStartTs = timeStamp.count();
+
+                // Establish the wall-clock reference for repeat-frame timestamps.
+                QueryPerformanceFrequency( &m_qpcFreq );
+                QueryPerformanceCounter( &m_qpcRecordingStart );
+                m_startSystemRelativeTime = timeStamp.count();
+                m_hasQpcOrigin = true;
             }
+            s_diagVideoCount++;
+            if( s_diagVideoCount <= 50 )
+            {
+                RecDiag( L"SampleReq VIDEO #%d: sysRelTime=%lld deltaFromStart=%.1fms repeat=%d cached=%d\n",
+                         s_diagVideoCount,
+                         timeStamp.count(),
+                         ( timeStamp.count() - s_diagStartTs ) / 10000.0,
+                         isRepeatFrame ? 1 : 0,
+                         ( s_diagVideoCount == 1 && cachedFrame.has_value() ) ? 1 : 0 );
+            }
+
+#if _DEBUG
+            static int dbgFrameNum = 0;
+            static LARGE_INTEGER dbgFreq = {}, dbgLastFrame = {};
+            if( !m_hasVideoSample.load() )
+            {
+                dbgFrameNum = 0;
+                dbgFreq.QuadPart = 0;
+            }
+            dbgFrameNum++;
+            if( dbgFreq.QuadPart == 0 )
+            {
+                QueryPerformanceFrequency( &dbgFreq );
+                QueryPerformanceCounter( &dbgLastFrame );
+            }
+            LARGE_INTEGER tStart;
+            QueryPerformanceCounter( &tStart );
+#endif
+
+            // Composite webcam overlay onto the back buffer.
+            if( m_webcamCapture )
+            {
+                if( s_diagVideoCount <= 3 )
+                {
+                    RecDiag( L"SampleReq VIDEO #%d: compositing LIVE webcam frame\n",
+                             s_diagVideoCount );
+                }
+                m_webcamCapture->CompositeOnto( backBuffer.get() );
+            }
+
+            D3D11_TEXTURE2D_DESC desc = {};
+            backBuffer->GetDesc(&desc);
+
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+            desc.CPUAccessFlags = 0;
+            desc.MiscFlags = 0;
+            winrt::com_ptr<ID3D11Texture2D> sampleTexture;
+            winrt::check_hresult(m_d3dDevice->CreateTexture2D(&desc, nullptr, sampleTexture.put()));
+            m_d3dContext->CopyResource(sampleTexture.get(), backBuffer.get());
+
+            auto dxgiSurface = sampleTexture.as<IDXGISurface>();
+            auto sampleSurface = CreateDirect3DSurface(dxgiSurface.get());
+
+            DXGI_PRESENT_PARAMETERS presentParameters{};
+            winrt::check_hresult(m_previewSwapChain->Present1(0, 0, &presentParameters));
+
+            auto sample = winrt::MediaStreamSample::CreateFromDirect3D11Surface(sampleSurface, timeStamp);
+            m_lastVideoTimestamp = timeStamp;
+
+            if( !m_hasVideoSample.exchange( true ) )
+            {
+                RecDiag( L"Posting WM_USER_RECORDING_STARTED to g_hWndMain=%p\n",
+                         static_cast<void*>( g_hWndMain ) );
+                PostMessage( g_hWndMain, WM_USER_RECORDING_STARTED, 0, 0 );
+            }
+
+#if _DEBUG
+            LARGE_INTEGER tEnd;
+            QueryPerformanceCounter( &tEnd );
+            double intervalMs = static_cast<double>( tStart.QuadPart - dbgLastFrame.QuadPart ) * 1000.0 / dbgFreq.QuadPart;
+            double totalMs = static_cast<double>( tEnd.QuadPart - tStart.QuadPart ) * 1000.0 / dbgFreq.QuadPart;
+            dbgLastFrame = tStart;
+
+            if( dbgFrameNum <= 10 || ( dbgFrameNum % 30 ) == 0 )
+            {
+                OutputDebug( L"[VideoRec] frame %d: interval=%.1fms total=%.1fms repeat=%d tex=%ux%u\n",
+                             dbgFrameNum, intervalMs, totalMs, isRepeatFrame ? 1 : 0,
+                             desc.Width, desc.Height );
+            }
+#endif
+
+            request.Sample(sample);
         }
-        else
+        catch (winrt::hresult_error const& error)
         {
+            RecDiag( L"SampleReq VIDEO EXCEPTION on frame #%d: hr=0x%08X %s\n",
+                     s_diagVideoCount, static_cast<unsigned>(error.code()),
+                     error.message().c_str() );
             request.Sample(nullptr);
             CloseInternal();
+            return;
         }
     }
     else if (auto audioStreamDescriptor = streamDescriptor.try_as<winrt::AudioStreamDescriptor>())
     {
         try
         {
-            if (auto sample = m_audioGenerator->TryGetNextSample())
+            static int s_audioReqCount = 0;
+            if( !m_hasVideoSample.load() )
+                s_audioReqCount = 0;
+            s_audioReqCount++;
+
+            if( s_audioReqCount <= 5 )
             {
+                RecDiag( L"SampleReq AUDIO req #%d: calling TryGetNextSample (started=%d)...\n",
+                         s_audioReqCount, m_audioGenerator ? 1 : 0 );
+            }
+
+            LARGE_INTEGER tBefore, tAfter, tFreq;
+            QueryPerformanceFrequency( &tFreq );
+            QueryPerformanceCounter( &tBefore );
+
+            if (auto sample = m_audioGenerator ? m_audioGenerator->TryGetNextSample() : std::optional<winrt::MediaStreamSample>{}; sample.has_value())
+            {
+                QueryPerformanceCounter( &tAfter );
+                double waitMs = static_cast<double>( tAfter.QuadPart - tBefore.QuadPart ) * 1000.0 / tFreq.QuadPart;
+
+                s_diagAudioCount++;
+                if( s_diagAudioCount <= 50 )
+                {
+                    auto ts = sample.value().Timestamp().count();
+                    auto dur = sample.value().Duration().count();
+                    RecDiag( L"SampleReq AUDIO #%d (req %d): timestamp=%lld (%.1fms) duration=%lld (%.1fms) waitMs=%.1f\n",
+                             s_diagAudioCount, s_audioReqCount,
+                             ts, ts / 10000.0,
+                             dur, dur / 10000.0,
+                             waitMs );
+                }
                 request.Sample(sample.value());
             }
             else
             {
+                QueryPerformanceCounter( &tAfter );
+                double waitMs = static_cast<double>( tAfter.QuadPart - tBefore.QuadPart ) * 1000.0 / tFreq.QuadPart;
+                RecDiag( L"SampleReq AUDIO req #%d: TryGetNextSample returned EMPTY after %.1fms → end-of-audio-stream\n",
+                         s_audioReqCount, waitMs );
                 request.Sample(nullptr);
             }
         }
         catch (winrt::hresult_error const& error)
         {
-            OutputDebugStringW(error.message().c_str());
+            RecDiag( L"SampleReq AUDIO EXCEPTION on sample #%d: hr=0x%08X %s\n",
+                     s_diagAudioCount, static_cast<unsigned>(error.code()),
+                     error.message().c_str() );
             request.Sample(nullptr);
             CloseInternal();
             return;
@@ -1307,7 +1781,7 @@ public:
         }
         return S_OK;
     }
-    
+
     IFACEMETHODIMP OnFolderChanging(IFileDialog*, IShellItem*) { return S_OK; }
     IFACEMETHODIMP OnSelectionChange(IFileDialog*) { return S_OK; }
     IFACEMETHODIMP OnShareViolation(IFileDialog*, IShellItem*, FDE_SHAREVIOLATION_RESPONSE*) { return S_OK; }
@@ -1343,7 +1817,10 @@ public:
                 auto trimResult = VideoRecordingSession::ShowTrimDialog(hParent, m_videoPath, *m_pTrimStart, *m_pTrimEnd);
                 if (trimResult == IDOK)
                 {
-                    *m_pShouldTrim = true;
+                    // Trim values are only written back when the user actually
+                    // changed the selection, so a non-zero trimEnd means a
+                    // real trim is requested.
+                    *m_pShouldTrim = (m_pTrimEnd->count() > 0);
                 }
                 else if( trimResult == IDCANCEL )
                 {
@@ -1500,12 +1977,13 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
     HWND hParent,
     const std::wstring& videoPath,
     winrt::TimeSpan& trimStart,
-    winrt::TimeSpan& trimEnd)
+    winrt::TimeSpan& trimEnd,
+    bool standaloneMode)
 {
     std::promise<INT_PTR> resultPromise;
     auto resultFuture = resultPromise.get_future();
 
-    std::thread staThread([hParent, videoPath, &trimStart, &trimEnd, promise = std::move(resultPromise)]() mutable
+    std::thread staThread([hParent, videoPath, &trimStart, &trimEnd, standaloneMode, promise = std::move(resultPromise)]() mutable
     {
         bool coInitialized = false;
         try
@@ -1523,7 +2001,7 @@ INT_PTR VideoRecordingSession::ShowTrimDialog(
 
         try
         {
-            INT_PTR dlgResult = ShowTrimDialogInternal(hParent, videoPath, trimStart, trimEnd);
+            INT_PTR dlgResult = ShowTrimDialogInternal(hParent, videoPath, trimStart, trimEnd, standaloneMode);
             promise.set_value(dlgResult);
         }
         catch (const winrt::hresult_error& e)
@@ -1582,7 +2060,8 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     HWND hParent,
     const std::wstring& videoPath,
     winrt::TimeSpan& trimStart,
-    winrt::TimeSpan& trimEnd)
+    winrt::TimeSpan& trimEnd,
+    bool standaloneMode)
 {
     TrimDialogData data;
     data.videoPath = videoPath;
@@ -1590,6 +2069,7 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
     data.trimStart = trimStart;
     data.trimEnd = trimEnd;
     data.isGif = IsGifPath(videoPath);
+    data.standaloneMode = standaloneMode;
 
     if (data.isGif)
     {
@@ -1784,8 +2264,17 @@ INT_PTR VideoRecordingSession::ShowTrimDialogInternal(
 
     if (result == IDOK)
     {
-        trimStart = data.trimStart;
-        trimEnd = data.trimEnd;
+        // Only write back trim values when the user actually changed the
+        // selection.  This lets the caller distinguish "confirmed without
+        // trimming" (preview-only) from a real trim operation.
+        const bool selectionChanged =
+            (data.trimStart.count() != data.originalTrimStart.count()) ||
+            (data.trimEnd.count() != data.originalTrimEnd.count());
+        if (selectionChanged)
+        {
+            trimStart = data.trimStart;
+            trimEnd = data.trimEnd;
+        }
     }
 
     return result;
@@ -2165,6 +2654,59 @@ static void DrawTimeline(HDC hdc, RECT rc, VideoRecordingSession::TrimDialogData
     SelectObject(hdcMem, hOldPen);
     DeleteObject(hOutline);
 
+    // Draw clip boundary markers for appended clips
+    if (pData && !pData->clipBoundaries.empty() && pData->videoDuration.count() > 0)
+    {
+        const int trackWidth2 = trackRight - trackLeft;
+        for (const auto& boundary : pData->clipBoundaries)
+        {
+            const double ratio = static_cast<double>(boundary.time.count()) / static_cast<double>(pData->videoDuration.count());
+            const int bx = trackLeft + static_cast<int>(std::round(ratio * trackWidth2));
+
+            if (boundary.transition == VideoRecordingSession::AppendTransition::None)
+            {
+                // Hard transition: solid black vertical line
+                HPEN hBoundaryPen = CreatePen(PS_SOLID, ScaleForDpi(2, dpi), RGB(0, 0, 0));
+                HPEN hOldBoundaryPen = static_cast<HPEN>(SelectObject(hdcMem, hBoundaryPen));
+                MoveToEx(hdcMem, bx, trackTop, nullptr);
+                LineTo(hdcMem, bx, trackBottom);
+                SelectObject(hdcMem, hOldBoundaryPen);
+                DeleteObject(hBoundaryPen);
+            }
+            else
+            {
+                // Fade transition: draw a filled segment spanning the transition region.
+                // The pre-rendered fade clip is 1.0s total (0.5s fade-out + 0.5s fade-in),
+                // centered at the boundary time.
+                constexpr int64_t kFadeDurationTicks = 5000000LL; // 0.5s per direction
+                const double fadeStartRatio = static_cast<double>(boundary.time.count() - kFadeDurationTicks)
+                                              / static_cast<double>(pData->videoDuration.count());
+                const double fadeEndRatio   = static_cast<double>(boundary.time.count() + kFadeDurationTicks)
+                                              / static_cast<double>(pData->videoDuration.count());
+                int fadeLeft  = trackLeft + static_cast<int>(std::round(std::clamp(fadeStartRatio, 0.0, 1.0) * trackWidth2));
+                int fadeRight = trackLeft + static_cast<int>(std::round(std::clamp(fadeEndRatio,   0.0, 1.0) * trackWidth2));
+                // Ensure at least a few pixels wide so the segment is visible.
+                if (fadeRight - fadeLeft < ScaleForDpi(6, dpi))
+                {
+                    int mid = (fadeLeft + fadeRight) / 2;
+                    fadeLeft  = mid - ScaleForDpi(3, dpi);
+                    fadeRight = mid + ScaleForDpi(3, dpi);
+                }
+
+                COLORREF segColor;
+                if (boundary.transition == VideoRecordingSession::AppendTransition::FadeToBlack)
+                    segColor = darkMode ? RGB(60, 60, 65) : RGB(50, 50, 55);
+                else // FadeToWhite
+                    segColor = darkMode ? RGB(180, 180, 185) : RGB(200, 200, 205);
+
+                HBRUSH hSegBrush = CreateSolidBrush(segColor);
+                RECT segRect = { fadeLeft, trackTop, fadeRight, trackBottom };
+                FillRect(hdcMem, &segRect, hSegBrush);
+                DeleteObject(hSegBrush);
+            }
+        }
+    }
+
     const int trackWidth = trackRight - trackLeft;
     if (trackWidth > 0 && pData && pData->videoDuration.count() > 0)
     {
@@ -2418,7 +2960,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
     case IDC_TRIM_REWIND:
     {
         StopPlayback(hDlg, pData, false);
-        // Use 1 second step for timelines < 20 seconds, 2 seconds 
+        // Use 1 second step for timelines < 20 seconds, 2 seconds
         const int64_t duration = pData->trimEnd.count() - pData->trimStart.count();
         const int64_t stepTicks = (duration < 200'000'000) ? 10'000'000 : kJogStepTicks;
         const int64_t newTicks = (std::max)(pData->trimStart.count(), pData->currentPosition.count() - stepTicks);
@@ -2434,7 +2976,7 @@ static void HandlePlaybackCommand(int controlId, VideoRecordingSession::TrimDial
     case IDC_TRIM_FORWARD:
     {
         StopPlayback(hDlg, pData, false);
-        // Use 1 second step for timelines < 20 seconds, 2 seconds 
+        // Use 1 second step for timelines < 20 seconds, 2 seconds
         const int64_t duration = pData->trimEnd.count() - pData->trimStart.count();
         const int64_t stepTicks = (duration < 200'000'000) ? 10'000'000 : kJogStepTicks;
         const int64_t newTicks = (std::min)(pData->trimEnd.count(), pData->currentPosition.count() + stepTicks);
@@ -2748,11 +3290,31 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         pData->frameCopyInProgress.store(false, std::memory_order_relaxed);
         pData->mediaPlayer = newPlayer;
 
-        auto mediaSource = winrt::MediaSource::CreateFromStorageFile(pData->playbackFile);
+        // When clips have been appended, the composition contains the full
+        // multi-clip timeline.  Use GeneratePreviewMediaStreamSource() so
+        // the MediaPlayer can play and seek across clip boundaries.
+        // For a single-file session, use the faster file-based source.
+        winrt::MediaSource mediaSource{ nullptr };
+        if (pData->composition && pData->composition.Clips().Size() > 1)
+        {
+            auto mss = pData->composition.GeneratePreviewMediaStreamSource(
+                static_cast<int>(pData->composition.Clips().GetAt(0).GetVideoEncodingProperties().Width()),
+                static_cast<int>(pData->composition.Clips().GetAt(0).GetVideoEncodingProperties().Height()));
+            mediaSource = winrt::MediaSource::CreateFromMediaStreamSource(mss);
+        }
+        else
+        {
+            mediaSource = winrt::MediaSource::CreateFromStorageFile(pData->playbackFile);
+        }
         VideoRecordingSession::TrimDialogData* dataPtr = pData;
 
         pData->frameAvailableToken = pData->mediaPlayer.VideoFrameAvailable([hDlg, dataPtr](auto const& sender, auto const&)
         {
+            static int s_frameAvailCount = 0;
+            static int s_frameDropped = 0;
+            static int s_frameCopied = 0;
+            s_frameAvailCount++;
+
             if (!dataPtr)
             {
                 return;
@@ -2760,6 +3322,14 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
             if (dataPtr->frameCopyInProgress.exchange(true, std::memory_order_relaxed))
             {
+                s_frameDropped++;
+                if (s_frameDropped <= 5 || (s_frameDropped % 100) == 0)
+                {
+                    wchar_t msg[256];
+                    swprintf_s(msg, L"[TrimPlayback] VideoFrameAvailable DROPPED (busy) total=%d avail=%d copied=%d\n",
+                        s_frameDropped, s_frameAvailCount, s_frameCopied);
+                    OutputDebugStringW(msg);
+                }
                 return;
             }
 
@@ -2767,6 +3337,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
             {
                 if (!EnsurePlaybackDevice(dataPtr))
                 {
+                    OutputDebugStringW(L"[TrimPlayback] EnsurePlaybackDevice FAILED\n");
                     dataPtr->frameCopyInProgress.store(false, std::memory_order_relaxed);
                     return;
                 }
@@ -2782,6 +3353,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
 
                 if (!EnsureFrameTextures(dataPtr, width, height))
                 {
+                    OutputDebugStringW(L"[TrimPlayback] EnsureFrameTextures FAILED\n");
                     dataPtr->frameCopyInProgress.store(false, std::memory_order_relaxed);
                     return;
                 }
@@ -2799,6 +3371,13 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
                     {
                         auto surface = inspectableSurface.as<winrt::Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface>();
                         sender.CopyFrameToVideoSurface(surface);
+
+                        if (s_frameAvailCount <= 5)
+                        {
+                            wchar_t msg[128];
+                            swprintf_s(msg, L"[TrimPlayback] CopyFrameToVideoSurface ok, frame %d size=%ux%u\n", s_frameAvailCount, width, height);
+                            OutputDebugStringW(msg);
+                        }
 
                         if (dataPtr->previewD3DContext && dataPtr->previewFrameStaging)
                         {
@@ -2843,10 +3422,18 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
                                         dataPtr->previewBitmapOwned = true;
                                     }
 
+                                    s_frameCopied++;
+                                    if (s_frameCopied <= 5 || (s_frameCopied % 100) == 0)
+                                    {
+                                        wchar_t msg[128];
+                                        swprintf_s(msg, L"[TrimPlayback] Bitmap created, posting PREVIEW_READY (copied=%d)\n", s_frameCopied);
+                                        OutputDebugStringW(msg);
+                                    }
                                     PostMessage(hDlg, WMU_PREVIEW_READY, 0, 0);
                                 }
                                 else if (hBitmap)
                                 {
+                                    OutputDebugStringW(L"[TrimPlayback] CreateDIBSection bits=null\n");
                                     DeleteObject(hBitmap);
                                 }
 
@@ -2858,6 +3445,7 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
             }
             catch (...)
             {
+                OutputDebugStringW(L"[TrimPlayback] VideoFrameAvailable EXCEPTION\n");
             }
 
             dataPtr->frameCopyInProgress.store(false, std::memory_order_relaxed);
@@ -2866,6 +3454,9 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
         auto session = pData->mediaPlayer.PlaybackSession();
         pData->positionChangedToken = session.PositionChanged([hDlg, dataPtr](auto const& sender, auto const&)
         {
+            static int s_posChangedCount = 0;
+            s_posChangedCount++;
+
             if (!dataPtr)
             {
                 return;
@@ -2876,10 +3467,22 @@ static winrt::fire_and_forget StartPlaybackAsync(HWND hDlg, VideoRecordingSessio
                 // When not playing, ignore media callbacks so UI-driven seeks remain authoritative.
                 if (!dataPtr->isPlaying.load(std::memory_order_relaxed))
                 {
+                    if (s_posChangedCount <= 10)
+                    {
+                        OutputDebugStringW(L"[TrimPlayback] PositionChanged: NOT playing, skipping\n");
+                    }
                     return;
                 }
 
                 auto pos = sender.Position();
+
+                if (s_posChangedCount <= 10 || (s_posChangedCount % 100) == 0)
+                {
+                    wchar_t msg[256];
+                    swprintf_s(msg, L"[TrimPlayback] PositionChanged #%d: pos=%lld trimEnd=%lld\n",
+                        s_posChangedCount, pos.count(), dataPtr->trimEnd.count());
+                    OutputDebugStringW(msg);
+                }
 
                 // Suppress the transient 0-position report before the initial seek takes effect.
                 if (dataPtr->pendingInitialSeek.load(std::memory_order_relaxed) &&
@@ -3495,30 +4098,71 @@ static void DrawPlaybackButton(
     const bool isPressed = (pDIS->itemState & ODS_SELECTED) != 0;
     const bool isPlaying = pData->isPlaying.load(std::memory_order_relaxed);
 
-    // Media Player color scheme - dark background with gradient
-    COLORREF bgColorTop = RGB(45, 45, 50);
-    COLORREF bgColorBottom = RGB(35, 35, 40);
-    COLORREF iconColor = RGB(220, 220, 220);
-    COLORREF borderColor = RGB(120, 120, 125);
+    // Media Player color scheme - adapt to light/dark mode
+    const bool darkMode = IsDarkModeEnabled();
+    COLORREF bgColorTop, bgColorBottom, iconColor, borderColor;
+
+    if (darkMode)
+    {
+        bgColorTop = RGB(45, 45, 50);
+        bgColorBottom = RGB(35, 35, 40);
+        iconColor = RGB(220, 220, 220);
+        borderColor = RGB(120, 120, 125);
+    }
+    else
+    {
+        bgColorTop = RGB(200, 200, 205);
+        bgColorBottom = RGB(190, 190, 195);
+        iconColor = RGB(50, 50, 50);
+        borderColor = RGB(170, 170, 175);
+    }
 
     if (isHover && !isDisabled)
     {
-        bgColorTop = RGB(60, 60, 65);
-        bgColorBottom = RGB(50, 50, 55);
-        iconColor = RGB(255, 255, 255);
-        borderColor = RGB(150, 150, 155);
+        if (darkMode)
+        {
+            bgColorTop = RGB(60, 60, 65);
+            bgColorBottom = RGB(50, 50, 55);
+            iconColor = RGB(255, 255, 255);
+            borderColor = RGB(150, 150, 155);
+        }
+        else
+        {
+            bgColorTop = RGB(185, 185, 190);
+            bgColorBottom = RGB(175, 175, 180);
+            iconColor = RGB(30, 30, 30);
+            borderColor = RGB(150, 150, 155);
+        }
     }
     if (isPressed && !isDisabled)
     {
-        bgColorTop = RGB(30, 30, 35);
-        bgColorBottom = RGB(25, 25, 30);
-        iconColor = RGB(200, 200, 200);
+        if (darkMode)
+        {
+            bgColorTop = RGB(30, 30, 35);
+            bgColorBottom = RGB(25, 25, 30);
+            iconColor = RGB(200, 200, 200);
+        }
+        else
+        {
+            bgColorTop = RGB(170, 170, 175);
+            bgColorBottom = RGB(160, 160, 165);
+            iconColor = RGB(60, 60, 60);
+        }
     }
     if (isDisabled)
     {
-        bgColorTop = RGB(40, 40, 45);
-        bgColorBottom = RGB(35, 35, 40);
-        iconColor = RGB(100, 100, 100);
+        if (darkMode)
+        {
+            bgColorTop = RGB(40, 40, 45);
+            bgColorBottom = RGB(35, 35, 40);
+            iconColor = RGB(100, 100, 100);
+        }
+        else
+        {
+            bgColorTop = RGB(210, 210, 215);
+            bgColorBottom = RGB(200, 200, 205);
+            iconColor = RGB(170, 170, 170);
+        }
     }
 
     int width = pDIS->rcItem.right - pDIS->rcItem.left;
@@ -3850,6 +4494,170 @@ static LRESULT CALLBACK TrimDialogSubclassProc(
 
 //----------------------------------------------------------------------------
 //
+// RenderFadeTransitionClip
+//
+// Pre-renders a fade transition (fade-out from clip1's tail → solid color
+// → fade-in to clip2's head) into a temp MP4 file, then returns a
+// MediaClip created from that file.
+//
+// This approach avoids MediaOverlayLayer, which is NOT rendered by
+// GeneratePreviewMediaStreamSource (used for playback) — only by
+// RenderToFileAsync.  By pre-rendering the transition as a regular file
+// clip, both preview playback and final save show the correct fade.
+//
+//----------------------------------------------------------------------------
+static winrt::MediaClip RenderFadeTransitionClip(
+    winrt::MediaClip const& clip1,
+    winrt::MediaClip const& clip2,
+    winrt::TimeSpan fadeDuration,
+    winrt::Windows::UI::Color transColor )
+{
+    constexpr int kSteps = 15;
+
+    int64_t stepTicks = fadeDuration.count() / kSteps;
+    if( stepTicks <= 0 )
+        return nullptr;
+
+    auto stepDuration = winrt::TimeSpan{ stepTicks };
+    winrt::Rect fullFrame{ 0.f, 0.f, 16384.f, 16384.f };
+
+    // Get source video dimensions for the render output.
+    uint32_t width = 1920, height = 1080;
+    try
+    {
+        auto props = clip1.GetVideoEncodingProperties();
+        width  = props.Width();
+        height = props.Height();
+    }
+    catch( ... ) {}
+
+    // Build a mini composition: [tail of clip1] + [head of clip2]
+    // Each segment is fadeDuration long.
+    winrt::MediaComposition miniComp;
+
+    // Clone clip1 and trim to just the last fadeDuration
+    auto tail = clip1.Clone();
+    {
+        auto origDur = tail.OriginalDuration();
+        int64_t trimFromStart = origDur.count() - tail.TrimTimeFromEnd().count()
+                              - fadeDuration.count();
+        if( trimFromStart > tail.TrimTimeFromStart().count() )
+            tail.TrimTimeFromStart( winrt::TimeSpan{ trimFromStart } );
+        tail.TrimTimeFromEnd( winrt::TimeSpan{ 0 } );
+    }
+    miniComp.Clips().Append( tail );
+
+    // Clone clip2 and trim to just the first fadeDuration
+    auto head = clip2.Clone();
+    {
+        auto origDur = head.OriginalDuration();
+        int64_t trimFromEnd = origDur.count() - head.TrimTimeFromStart().count()
+                            - fadeDuration.count();
+        if( trimFromEnd > 0 )
+            head.TrimTimeFromEnd( winrt::TimeSpan{ trimFromEnd } );
+    }
+    miniComp.Clips().Append( head );
+
+    // Add fade overlays to the mini composition.
+    auto layer = winrt::MediaOverlayLayer();
+
+    // Fade-out overlays: cover the tail segment [0 .. fadeDuration]
+    for( int i = 0; i < kSteps; i++ )
+    {
+        double opacity = static_cast<double>( i + 1 ) / kSteps;
+        auto overlayClip = winrt::MediaClip::CreateFromColor( transColor, stepDuration );
+        auto overlay = winrt::MediaOverlay( overlayClip, fullFrame, opacity );
+        overlay.Delay( winrt::TimeSpan{ static_cast<int64_t>( i ) * stepTicks } );
+        layer.Overlays().Append( overlay );
+    }
+
+    // Fade-in overlays: cover the head segment [fadeDuration .. 2*fadeDuration]
+    int64_t fadeInStart = fadeDuration.count();
+    for( int i = 0; i < kSteps; i++ )
+    {
+        double opacity = static_cast<double>( kSteps - i ) / kSteps;
+        auto overlayClip = winrt::MediaClip::CreateFromColor( transColor, stepDuration );
+        auto overlay = winrt::MediaOverlay( overlayClip, fullFrame, opacity );
+        overlay.Delay( winrt::TimeSpan{ fadeInStart + static_cast<int64_t>( i ) * stepTicks } );
+        layer.Overlays().Append( overlay );
+    }
+
+    miniComp.OverlayLayers().Append( layer );
+
+    // Render the mini composition to a temp file.
+    // All WinRT async calls are dispatched to a background thread to avoid
+    // blocking the STA/UI thread (which would trigger !is_sta_thread asserts
+    // and deadlocks).
+    auto tempPath = std::filesystem::temp_directory_path() / L"ZoomIt";
+    std::filesystem::create_directories( tempPath );
+
+    // Use a unique filename to avoid collisions with multiple appends.
+    static int s_fadeFileCounter = 0;
+    auto filename = L"zoomit_fade_" + std::to_wstring( ++s_fadeFileCounter ) + L".mp4";
+    auto fullPath = tempPath / filename;
+
+    // Delete any existing file with the same name.
+    std::error_code ec;
+    std::filesystem::remove( fullPath, ec );
+
+    // Run the async WinRT calls on a background thread.
+    winrt::MediaClip fadeClip{ nullptr };
+    wil::unique_event done( wil::EventOptions::ManualReset );
+    auto capturedTempPath = tempPath.wstring();
+
+    std::thread worker( [&]()
+    {
+        winrt::init_apartment( winrt::apartment_type::multi_threaded );
+        try
+        {
+            auto folder = winrt::StorageFolder::GetFolderFromPathAsync( capturedTempPath ).get();
+            auto outFile = folder.CreateFileAsync( filename,
+                winrt::CreationCollisionOption::ReplaceExisting ).get();
+
+            auto profile = winrt::MediaEncodingProfile::CreateMp4(
+                winrt::VideoEncodingQuality::HD1080p );
+            profile.Video().Width( width );
+            profile.Video().Height( height );
+
+            auto result = miniComp.RenderToFileAsync( outFile,
+                winrt::MediaTrimmingPreference::Precise, profile ).get();
+
+            if( result == winrt::TranscodeFailureReason::None )
+            {
+                fadeClip = winrt::MediaClip::CreateFromFileAsync( outFile ).get();
+            }
+            else
+            {
+                OutputDebugStringW( L"[FadeTransition] RenderToFileAsync failed\n" );
+            }
+        }
+        catch( winrt::hresult_error const& e )
+        {
+            OutputDebugStringW( ( L"[FadeTransition] Error: " + std::wstring( e.message() ) + L"\n" ).c_str() );
+        }
+        winrt::uninit_apartment();
+        done.SetEvent();
+    } );
+
+    // Pump messages while waiting so the UI stays responsive during render.
+    while( MsgWaitForMultipleObjects( 1, done.addressof(), FALSE, INFINITE,
+                                       QS_ALLINPUT ) == WAIT_OBJECT_0 + 1 )
+    {
+        MSG msg;
+        while( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) )
+        {
+            TranslateMessage( &msg );
+            DispatchMessage( &msg );
+        }
+    }
+    worker.join();
+
+    return fadeClip;
+}
+
+
+//----------------------------------------------------------------------------
+//
 // VideoRecordingSession::TrimDialogProc
 //
 // Dialog procedure for trim dialog
@@ -3887,6 +4695,12 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
 
         // Make OK the default button
         SendMessage(hDlg, DM_SETDEFID, IDOK, 0);
+
+        // In standalone mode, change OK button text to "Save As"
+        if (pData->standaloneMode)
+        {
+            SetDlgItemText(hDlg, IDOK, L"Save As");
+        }
 
         // Subclass the dialog to handle resize grip hit testing
         SetWindowSubclass(hDlg, TrimDialogSubclassProc, 0, reinterpret_cast<DWORD_PTR>(pData));
@@ -4329,6 +5143,16 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 SWP_NOZORDER | SWP_NOACTIVATE);
         }
 
+        // Position Append button (left-aligned)
+        HWND hAppend = GetDlgItem(hDlg, IDC_TRIM_APPEND);
+        if (hAppend)
+        {
+            int appendWidth;
+            DluToPixels(55, 0, &appendWidth, nullptr);
+            SetWindowPos(hAppend, nullptr, marginLeft, okCancelY, appendWidth, okCancelHeight,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+
         // Re-enable redraw and repaint the entire dialog
         SendMessage(hDlg, WM_SETREDRAW, TRUE, 0);
         // Use RDW_ERASE for the dialog, but invalidate timeline separately without erase to prevent flicker
@@ -4579,13 +5403,22 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             Gdiplus::Graphics graphics(pDIS->hDC);
             graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 
-            // Dark background
-            Gdiplus::SolidBrush bgBrush(Gdiplus::Color(255, 35, 35, 40));
+            // Clear background - match parent dialog
+            COLORREF bgColor = IsDarkModeEnabled() ? DarkMode::BackgroundColor : GetSysColor(COLOR_BTNFACE);
+            Gdiplus::SolidBrush bgBrush(Gdiplus::Color(255, GetRValue(bgColor), GetGValue(bgColor), GetBValue(bgColor)));
             graphics.FillRectangle(&bgBrush, pDIS->rcItem.left, pDIS->rcItem.top, width, height);
 
             // Icon color - brighter on hover
             const bool isHover = pData && pData->hoverVolumeIcon;
-            COLORREF iconColor = isHover ? RGB(255, 255, 255) : RGB(180, 180, 180);
+            COLORREF iconColor;
+            if (IsDarkModeEnabled())
+            {
+                iconColor = isHover ? RGB(255, 255, 255) : RGB(180, 180, 180);
+            }
+            else
+            {
+                iconColor = isHover ? RGB(30, 30, 30) : RGB(80, 80, 80);
+            }
             Gdiplus::SolidBrush iconBrush(Gdiplus::Color(255, GetRValue(iconColor), GetGValue(iconColor), GetBValue(iconColor)));
             Gdiplus::Pen iconPen(Gdiplus::Color(255, GetRValue(iconColor), GetGValue(iconColor), GetBValue(iconColor)), 1.2f);
 
@@ -4806,7 +5639,7 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
                 const auto relativePos = winrt::TimeSpan{ (std::max)(pData->currentPosition.count() - pData->trimStart.count(), int64_t{ 0 }) };
                 SetTimeText(hDlg, IDC_TRIM_POSITION_LABEL, relativePos, true);
             }
-            
+
             if (elapsedMs >= frameDurationMs)
             {
                 // Time to advance to next frame
@@ -5024,9 +5857,393 @@ INT_PTR CALLBACK VideoRecordingSession::TrimDialogProc(HWND hDlg, UINT message, 
             break;
         }
 
+        case IDC_TRIM_APPEND:
+        {
+            if (HIWORD(wParam) == BN_CLICKED)
+            {
+                pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
+                if (!pData)
+                    return TRUE;
+
+                StopPlayback(hDlg, pData);
+
+                // Show file open dialog for the video to append
+                auto openDialog = wil::CoCreateInstance<IFileOpenDialog>(CLSID_FileOpenDialog);
+
+                FILEOPENDIALOGOPTIONS options;
+                if (SUCCEEDED(openDialog->GetOptions(&options)))
+                    openDialog->SetOptions(options | FOS_FORCEFILESYSTEM);
+
+                if (pData->isGif)
+                {
+                    COMDLG_FILTERSPEC fileTypes[] = {
+                        { L"GIF Animation (*.gif)", L"*.gif" }
+                    };
+                    openDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+                }
+                else
+                {
+                    COMDLG_FILTERSPEC fileTypes[] = {
+                        { L"MP4 Video (*.mp4)", L"*.mp4" }
+                    };
+                    openDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+                }
+                openDialog->SetFileTypeIndex(1);
+                openDialog->SetTitle(L"ZoomIt: Select Video to Append...");
+
+                wil::com_ptr<IShellItem> videosFolder;
+                if (SUCCEEDED(SHGetKnownFolderItem(FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr, IID_PPV_ARGS(&videosFolder))))
+                    openDialog->SetDefaultFolder(videosFolder.get());
+
+                if (FAILED(openDialog->Show(hDlg)))
+                    return TRUE;  // User cancelled
+
+                wil::com_ptr<IShellItem> resultItem;
+                if (FAILED(openDialog->GetResult(&resultItem)))
+                    return TRUE;
+
+                wil::unique_cotaskmem_string pathStr;
+                if (FAILED(resultItem->GetDisplayName(SIGDN_FILESYSPATH, &pathStr)))
+                    return TRUE;
+
+                std::wstring appendPath(pathStr.get());
+
+                // Ask user for transition type
+                auto transition = VideoRecordingSession::AppendTransition::None;
+                if (!pData->isGif)
+                {
+                    // Show transition picker menu
+                    HMENU hMenu = CreatePopupMenu();
+                    AppendMenu(hMenu, MF_STRING, 1, L"No Transition (Hard Cut)");
+                    AppendMenu(hMenu, MF_STRING, 2, L"Fade to Black (0.5s)");
+                    AppendMenu(hMenu, MF_STRING, 3, L"Fade to White (0.5s)");
+
+                    RECT rcButton{};
+                    HWND hAppendBtn = GetDlgItem(hDlg, IDC_TRIM_APPEND);
+                    GetWindowRect(hAppendBtn, &rcButton);
+
+                    int cmd = TrackPopupMenu(hMenu, TPM_RETURNCMD | TPM_NONOTIFY,
+                        rcButton.left, rcButton.top, 0, hDlg, nullptr);
+                    DestroyMenu(hMenu);
+
+                    if (cmd == 0)
+                        return TRUE;  // User dismissed menu
+
+                    switch (cmd)
+                    {
+                    case 2: transition = VideoRecordingSession::AppendTransition::FadeToBlack; break;
+                    case 3: transition = VideoRecordingSession::AppendTransition::FadeToWhite; break;
+                    default: transition = VideoRecordingSession::AppendTransition::None; break;
+                    }
+                }
+
+                // Append the clip
+                if (!pData->isGif && pData->composition)
+                {
+                    try
+                    {
+                        // Record the boundary time before appending
+                        auto boundaryTime = pData->composition.Duration();
+
+                        // Load the file and create a clip on a background thread
+                        // to avoid !is_sta_thread() asserts from .get() on the UI thread.
+                        winrt::MediaClip clip{ nullptr };
+                        {
+                            wil::unique_event loadDone( wil::EventOptions::ManualReset );
+                            std::thread loader( [&]()
+                            {
+                                winrt::init_apartment( winrt::apartment_type::multi_threaded );
+                                try
+                                {
+                                    auto f = winrt::StorageFile::GetFileFromPathAsync( appendPath ).get();
+                                    clip = winrt::MediaClip::CreateFromFileAsync( f ).get();
+                                }
+                                catch( ... ) {}
+                                winrt::uninit_apartment();
+                                loadDone.SetEvent();
+                            } );
+                            // Pump messages while waiting.
+                            while( MsgWaitForMultipleObjects( 1, loadDone.addressof(), FALSE, INFINITE,
+                                                               QS_ALLINPUT ) == WAIT_OBJECT_0 + 1 )
+                            {
+                                MSG msg;
+                                while( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) )
+                                {
+                                    TranslateMessage( &msg );
+                                    DispatchMessage( &msg );
+                                }
+                            }
+                            loader.join();
+                        }
+
+                        if( !clip )
+                        {
+                            OutputDebugStringW( L"[Append] Failed to load clip\n" );
+                            return TRUE;
+                        }
+
+                        if (transition != VideoRecordingSession::AppendTransition::None)
+                        {
+                            winrt::Windows::UI::Color transColor{};
+                            if (transition == VideoRecordingSession::AppendTransition::FadeToBlack)
+                                transColor = { 255, 0, 0, 0 };
+                            else if (transition == VideoRecordingSession::AppendTransition::FadeToWhite)
+                                transColor = { 255, 255, 255, 255 };
+
+                            auto fadeDuration = winrt::TimeSpan{ 5000000LL }; // 0.5s
+
+                            // Get the last clip currently in the composition (clip1).
+                            auto clips = pData->composition.Clips();
+                            auto lastClip = clips.GetAt( clips.Size() - 1 );
+
+                            // Pre-render the transition segment (tail of clip1 + head of clip2)
+                            // into a temp MP4 file, then insert as a regular clip.
+                            SetCursor( LoadCursor( nullptr, IDC_WAIT ) );
+                            auto fadeClip = RenderFadeTransitionClip(
+                                lastClip, clip, fadeDuration, transColor );
+                            SetCursor( LoadCursor( nullptr, IDC_ARROW ) );
+
+                            if( fadeClip )
+                            {
+                                // Trim the tail of clip1 by fadeDuration.
+                                auto curTrimEnd = lastClip.TrimTimeFromEnd();
+                                lastClip.TrimTimeFromEnd( winrt::TimeSpan{
+                                    curTrimEnd.count() + fadeDuration.count() } );
+
+                                // Trim the head of clip2 by fadeDuration.
+                                auto curTrimStart = clip.TrimTimeFromStart();
+                                clip.TrimTimeFromStart( winrt::TimeSpan{
+                                    curTrimStart.count() + fadeDuration.count() } );
+
+                                // Insert: fade transition clip, then trimmed clip2.
+                                pData->composition.Clips().Append( fadeClip );
+                                pData->composition.Clips().Append( clip );
+                            }
+                            else
+                            {
+                                // Fallback: hard cut if render failed.
+                                pData->composition.Clips().Append( clip );
+                            }
+                        }
+                        else
+                        {
+                            // No transition — simple append.
+                            pData->composition.Clips().Append( clip );
+                        }
+
+                        // Record clip boundary
+                        TrimDialogData::ClipBoundary boundary;
+                        boundary.time = boundaryTime;
+                        boundary.transition = transition;
+                        pData->clipBoundaries.push_back(boundary);
+
+                        // Update duration
+                        pData->videoDuration = pData->composition.Duration();
+                        pData->trimEnd = pData->videoDuration;
+                        pData->originalTrimEnd = pData->videoDuration;
+
+                        // Invalidate the existing MediaPlayer — it was created from
+                        // the original single file and knows nothing about the
+                        // appended clips.  The next playback will recreate it from
+                        // the composition.
+                        CleanupMediaPlayer(pData);
+                        pData->playbackFile = nullptr;
+
+                        // Update UI
+                        UpdateDurationDisplay(hDlg, pData);
+                        UpdatePositionUI(hDlg, pData);
+                        InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_TIMELINE), nullptr, FALSE);
+                    }
+                    catch (const winrt::hresult_error& e)
+                    {
+                        std::wstring msg = L"Failed to append video: ";
+                        msg += e.message().c_str();
+                        MessageBox(hDlg, msg.c_str(), L"Error", MB_OK | MB_ICONERROR);
+                    }
+                    catch (...)
+                    {
+                        MessageBox(hDlg, L"Failed to append video.", L"Error", MB_OK | MB_ICONERROR);
+                    }
+                }
+                else if (pData->isGif)
+                {
+                    // For GIF, append frames from the second file
+                    try
+                    {
+                        // Save current frame count for boundary tracking
+                        auto boundaryTime = pData->videoDuration;
+
+                        // Create a temporary data struct to load the new GIF frames
+                        TrimDialogData tempData;
+                        tempData.isGif = true;
+                        if (LoadGifFrames(appendPath, &tempData))
+                        {
+                            // Record clip boundary
+                            TrimDialogData::ClipBoundary boundary;
+                            boundary.time = boundaryTime;
+                            boundary.transition = transition;
+                            pData->clipBoundaries.push_back(boundary);
+
+                            // Offset new frames' start times and append them
+                            for (auto& frame : tempData.gifFrames)
+                            {
+                                frame.start = winrt::TimeSpan{ frame.start.count() + boundaryTime.count() };
+                                pData->gifFrames.push_back(std::move(frame));
+                            }
+                            // Don't let tempData clean up the bitmaps we moved
+                            tempData.gifFrames.clear();
+
+                            // Update total duration
+                            if (!pData->gifFrames.empty())
+                            {
+                                auto& lastFrame = pData->gifFrames.back();
+                                pData->videoDuration = winrt::TimeSpan{ lastFrame.start.count() + lastFrame.duration.count() };
+                            }
+                            pData->trimEnd = pData->videoDuration;
+                            pData->originalTrimEnd = pData->videoDuration;
+
+                            // Update UI
+                            UpdateDurationDisplay(hDlg, pData);
+                            UpdatePositionUI(hDlg, pData);
+                            InvalidateRect(GetDlgItem(hDlg, IDC_TRIM_TIMELINE), nullptr, FALSE);
+                        }
+                        else
+                        {
+                            MessageBox(hDlg, L"Failed to load GIF frames from the selected file.", L"Error", MB_OK | MB_ICONERROR);
+                        }
+                    }
+                    catch (...)
+                    {
+                        MessageBox(hDlg, L"Failed to append GIF.", L"Error", MB_OK | MB_ICONERROR);
+                    }
+                }
+
+                return TRUE;
+            }
+            break;
+        }
+
         case IDOK:
             pData = reinterpret_cast<TrimDialogData*>(GetWindowLongPtr(hDlg, DWLP_USER));
             StopPlayback(hDlg, pData);
+
+            if (pData->standaloneMode)
+            {
+                // In standalone mode, "Save As" shows a save dialog and performs the trim
+                auto saveDialog = wil::CoCreateInstance<::IFileSaveDialog>(CLSID_FileSaveDialog);
+
+                FILEOPENDIALOGOPTIONS options;
+                if (SUCCEEDED(saveDialog->GetOptions(&options)))
+                    saveDialog->SetOptions(options | FOS_FORCEFILESYSTEM);
+
+                wil::com_ptr<::IShellItem> videosItem;
+                if (SUCCEEDED(SHGetKnownFolderItem(FOLDERID_Videos, KF_FLAG_DEFAULT, nullptr,
+                    IID_IShellItem, (void**)videosItem.put())))
+                    saveDialog->SetDefaultFolder(videosItem.get());
+
+                // Derive suggested filename from source
+                std::wstring suggestedName;
+                {
+                    auto pos = pData->videoPath.find_last_of(L"\\/");
+                    suggestedName = (pos != std::wstring::npos) ? pData->videoPath.substr(pos + 1) : pData->videoPath;
+                    auto dot = suggestedName.find_last_of(L'.');
+                    const wchar_t* suffix = pData->clipBoundaries.empty() ? L"_trimmed" : L"_composed";
+                    if (dot != std::wstring::npos)
+                        suggestedName.insert(dot, suffix);
+                    else
+                        suggestedName += suffix;
+                }
+
+                if (pData->isGif)
+                {
+                    saveDialog->SetDefaultExtension(L".gif");
+                    COMDLG_FILTERSPEC fileTypes[] = { { L"GIF Animation", L"*.gif" } };
+                    saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+                }
+                else
+                {
+                    saveDialog->SetDefaultExtension(L".mp4");
+                    COMDLG_FILTERSPEC fileTypes[] = { { L"MP4 Video", L"*.mp4" } };
+                    saveDialog->SetFileTypes(_countof(fileTypes), fileTypes);
+                }
+                saveDialog->SetFileName(suggestedName.c_str());
+                saveDialog->SetTitle(pData->clipBoundaries.empty()
+                    ? L"ZoomIt: Save Trimmed Video As..."
+                    : L"ZoomIt: Save Composed Video As...");
+
+                HRESULT hr = saveDialog->Show(hDlg);
+                if (FAILED(hr))
+                {
+                    // User cancelled save dialog — return to trim editor
+                    return TRUE;
+                }
+
+                wil::com_ptr<::IShellItem> resultItem;
+                THROW_IF_FAILED(saveDialog->GetResult(resultItem.put()));
+                wil::unique_cotaskmem_string savePath;
+                THROW_IF_FAILED(resultItem->GetDisplayName(SIGDN_FILESYSPATH, savePath.put()));
+
+                // Capture what we need before closing the dialog
+                std::wstring videoPath = pData->videoPath;
+                bool isGif = pData->isGif;
+                auto trimStart = pData->trimStart;
+                auto trimEnd = pData->trimEnd;
+                bool hasMultipleClips = !isGif && pData->composition && pData->composition.Clips().Size() > 1;
+                auto composition = hasMultipleClips ? pData->composition : winrt::MediaComposition{ nullptr };
+                std::wstring savePathStr(savePath.get());
+
+                // Close the trim dialog immediately
+                EndDialog(hDlg, IDOK);
+
+                // Perform the trim/render after the dialog is closed
+                try
+                {
+                    winrt::IAsyncOperation<winrt::hstring> trimOp{ nullptr };
+                    if (hasMultipleClips)
+                        trimOp = RenderCompositionAsync(composition, trimStart, trimEnd);
+                    else if (isGif)
+                        trimOp = TrimGifAsync(videoPath, trimStart, trimEnd);
+                    else
+                        trimOp = TrimVideoAsync(videoPath, trimStart, trimEnd);
+
+                    // Pump messages while waiting for async operation
+                    while (trimOp.Status() == winrt::AsyncStatus::Started)
+                    {
+                        MSG msg;
+                        while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+                        {
+                            TranslateMessage(&msg);
+                            DispatchMessage(&msg);
+                        }
+                        Sleep(10);
+                    }
+
+                    auto trimmedPath = std::wstring(trimOp.GetResults());
+                    if (trimmedPath.empty())
+                    {
+                        MessageBox(nullptr, L"Failed to trim video.", L"Error", MB_OK | MB_ICONERROR);
+                        return TRUE;
+                    }
+
+                    // Copy trimmed file to the user-chosen save location
+                    if (!CopyFile(trimmedPath.c_str(), savePathStr.c_str(), FALSE))
+                    {
+                        MessageBox(nullptr, L"Failed to save the trimmed file.", L"Error", MB_OK | MB_ICONERROR);
+                        DeleteFile(trimmedPath.c_str());
+                        return TRUE;
+                    }
+
+                    // Clean up temp file
+                    DeleteFile(trimmedPath.c_str());
+                }
+                catch (...)
+                {
+                    MessageBox(nullptr, L"Failed to trim video.", L"Error", MB_OK | MB_ICONERROR);
+                }
+
+                return TRUE;
+            }
+
             // Trim times are already set by mouse dragging
             EndDialog(hDlg, IDOK);
             return TRUE;
@@ -5084,6 +6301,74 @@ winrt::IAsyncOperation<winrt::hstring> VideoRecordingSession::TrimVideoAsync(
             filename, winrt::CreationCollisionOption::ReplaceExisting);
 
         // Render the composition to the output file with fast trimming (no re-encode)
+        auto renderResult = co_await composition.RenderToFileAsync(
+            outputFile, winrt::MediaTrimmingPreference::Fast);
+
+        if (renderResult == winrt::TranscodeFailureReason::None)
+        {
+            co_return winrt::hstring(outputFile.Path());
+        }
+        else
+        {
+            co_return winrt::hstring();
+        }
+    }
+    catch (...)
+    {
+        co_return winrt::hstring();
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// VideoRecordingSession::RenderCompositionAsync
+//
+// Renders a multi-clip composition (used when clips have been appended)
+//
+//----------------------------------------------------------------------------
+winrt::IAsyncOperation<winrt::hstring> VideoRecordingSession::RenderCompositionAsync(
+    winrt::MediaComposition composition,
+    winrt::TimeSpan trimTimeStart,
+    winrt::TimeSpan trimTimeEnd)
+{
+    try
+    {
+        // Apply trim to the composition by adjusting the first and last clips
+        auto clips = composition.Clips();
+        if (clips.Size() == 0)
+        {
+            co_return winrt::hstring();
+        }
+
+        // Apply trim start to the first clip
+        if (trimTimeStart.count() > 0)
+        {
+            auto firstClip = clips.GetAt(0);
+            auto currentTrimFromStart = firstClip.TrimTimeFromStart();
+            firstClip.TrimTimeFromStart(winrt::TimeSpan{ currentTrimFromStart.count() + trimTimeStart.count() });
+        }
+
+        // Apply trim end: trim from end of the last clip
+        auto totalDuration = composition.Duration();
+        if (trimTimeEnd < totalDuration)
+        {
+            auto lastClip = clips.GetAt(clips.Size() - 1);
+            auto trimFromEnd = winrt::TimeSpan{ totalDuration.count() - trimTimeEnd.count() };
+            auto currentTrimFromEnd = lastClip.TrimTimeFromEnd();
+            lastClip.TrimTimeFromEnd(winrt::TimeSpan{ currentTrimFromEnd.count() + trimFromEnd.count() });
+        }
+
+        // Create output file in temp folder
+        auto tempFolder = co_await winrt::StorageFolder::GetFolderFromPathAsync(
+            std::filesystem::temp_directory_path().wstring());
+        auto zoomitFolder = co_await tempFolder.CreateFolderAsync(
+            L"ZoomIt", winrt::CreationCollisionOption::OpenIfExists);
+
+        std::wstring filename = L"zoomit_composed_" +
+            std::to_wstring(GetTickCount64()) + L".mp4";
+        auto outputFile = co_await zoomitFolder.CreateFileAsync(
+            filename, winrt::CreationCollisionOption::ReplaceExisting);
+
         auto renderResult = co_await composition.RenderToFileAsync(
             outputFile, winrt::MediaTrimmingPreference::Fast);
 

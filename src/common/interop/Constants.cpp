@@ -259,6 +259,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT;
     }
+    hstring Constants::AutoDisablePowerDisplayEvent()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_AUTO_DISABLE_EVENT;
+    }
     hstring Constants::RefreshPowerDisplayMonitorsEvent()
     {
         return CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT;
@@ -275,6 +279,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::HOTKEY_UPDATED_POWER_DISPLAY_EVENT;
     }
+    hstring Constants::RescanPowerDisplayMonitorsEvent()
+    {
+        return CommonSharedConstants::RESCAN_POWER_DISPLAY_MONITORS_EVENT;
+    }
     hstring Constants::PowerDisplayToggleMessage()
     {
         return CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE;
@@ -287,4 +295,22 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::POWER_DISPLAY_TERMINATE_APP_MESSAGE;
     }
+    hstring Constants::MWBToggleEasyMouseEvent()
+    {
+        return CommonSharedConstants::MWB_TOGGLE_EASY_MOUSE_EVENT;
+    }
+    hstring Constants::MWBReconnectEvent()
+    {
+        return CommonSharedConstants::MWB_RECONNECT_EVENT;
+    }
+
+    hstring Constants::OpenNewKeyboardManagerEvent()
+    {
+        return CommonSharedConstants::OPEN_NEW_KEYBOARD_MANAGER_EVENT;
+    }
+    hstring Constants::KeyboardManagerEngineInstanceMutex()
+    {
+        return CommonSharedConstants::KEYBOARD_MANAGER_ENGINE_INSTANCE_MUTEX;
+    }
 }
+

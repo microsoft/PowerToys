@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -70,6 +71,7 @@ internal abstract partial class OnLoadContentPage : OnLoadBasePage, IContentPage
 
 internal abstract partial class OnLoadBasePage : Page
 {
+    private readonly Lock _loadLock = new();
     private int _loadCount;
 
 #pragma warning disable CS0067 // The event is never used
@@ -82,22 +84,28 @@ internal abstract partial class OnLoadBasePage : Page
         add
         {
             InternalItemsChanged += value;
-            if (_loadCount == 0)
+            lock (_loadLock)
             {
-                Loaded();
-            }
+                if (_loadCount == 0)
+                {
+                    Loaded();
+                }
 
-            _loadCount++;
+                _loadCount++;
+            }
         }
 
         remove
         {
             InternalItemsChanged -= value;
-            _loadCount--;
-            _loadCount = Math.Max(0, _loadCount);
-            if (_loadCount == 0)
+            lock (_loadLock)
             {
-                Unloaded();
+                _loadCount--;
+                _loadCount = Math.Max(0, _loadCount);
+                if (_loadCount == 0)
+                {
+                    Unloaded();
+                }
             }
         }
     }

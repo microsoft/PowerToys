@@ -11,7 +11,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public class AlwaysOnTopProperties
     {
         public static readonly HotkeySettings DefaultHotkeyValue = new HotkeySettings(true, true, false, false, 0x54);
+        public static readonly HotkeySettings DefaultIncreaseOpacityHotkeyValue = new HotkeySettings(true, true, false, false, 0xBB);
+        public static readonly HotkeySettings DefaultDecreaseOpacityHotkeyValue = new HotkeySettings(true, true, false, false, 0xBD);
         public const bool DefaultFrameEnabled = true;
+        public const bool DefaultShowInSystemMenu = false;
         public const int DefaultFrameThickness = 15;
         public const string DefaultFrameColor = "#0099cc";
         public const bool DefaultFrameAccentColor = true;
@@ -23,6 +26,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public AlwaysOnTopProperties()
         {
             Hotkey = new KeyboardKeysProperty(DefaultHotkeyValue);
+            IncreaseOpacityHotkey = new KeyboardKeysProperty(DefaultIncreaseOpacityHotkeyValue);
+            DecreaseOpacityHotkey = new KeyboardKeysProperty(DefaultDecreaseOpacityHotkeyValue);
+            ShowInSystemMenu = new BoolProperty(DefaultShowInSystemMenu);
             FrameEnabled = new BoolProperty(DefaultFrameEnabled);
             FrameThickness = new IntProperty(DefaultFrameThickness);
             FrameColor = new StringProperty(DefaultFrameColor);
@@ -37,8 +43,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("hotkey")]
         public KeyboardKeysProperty Hotkey { get; set; }
 
+        [JsonPropertyName("increase-opacity-hotkey")]
+        public KeyboardKeysProperty IncreaseOpacityHotkey { get; set; }
+
+        [JsonPropertyName("decrease-opacity-hotkey")]
+        public KeyboardKeysProperty DecreaseOpacityHotkey { get; set; }
+
         [JsonPropertyName("frame-enabled")]
         public BoolProperty FrameEnabled { get; set; }
+
+        [JsonPropertyName("show-in-system-menu")]
+        public BoolProperty ShowInSystemMenu { get; set; }
 
         [JsonPropertyName("frame-thickness")]
         public IntProperty FrameThickness { get; set; }

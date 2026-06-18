@@ -13,13 +13,11 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -112,12 +110,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="COMPLETE_REWRITE_SUMMARY.md" />
-    <None Include="CRITICAL_BUG_ANALYSIS.md" />
-    <None Include="CURSOR_WRAP_FIX_ANALYSIS.md" />
-    <None Include="DEBUG_GUIDE.md" />
+    <None Include="CursorWrapTests\WrapSimulator\test_new_algorithm.py" />
     <None Include="packages.config" />
-    <None Include="VERTICAL_WRAP_BUG_FIX.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
