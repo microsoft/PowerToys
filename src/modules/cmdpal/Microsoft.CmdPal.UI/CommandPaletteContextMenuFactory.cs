@@ -427,10 +427,37 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var title = _commandItemViewModel?.Title ?? string.Empty;
             var subtitle = _commandItemViewModel?.Subtitle ?? string.Empty;
             var icon = _commandItemViewModel?.Icon;
-            var dockSide = _settingsService.Settings.DockSettings.Side;
-            IReadOnlyList<MonitorInfo>? monitors = _monitorService?.GetMonitors();
+            var dockSettings = _settingsService.Settings.DockSettings;
+            var dockSide = dockSettings.Side;
+            IReadOnlyList<MonitorInfo>? monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
             ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide, monitors);
             WeakReferenceMessenger.Default.Send(message);
+        }
+
+        // Only list monitors where the dock is currently enabled, so users can't
+        // pin a command to a display that has no dock visible.
+        private static IReadOnlyList<MonitorInfo>? GetDockEnabledMonitors(IMonitorService? monitorService, DockSettings dockSettings)
+        {
+            var monitors = monitorService?.GetMonitors();
+            if (monitors is null)
+            {
+                return null;
+            }
+
+            var configs = dockSettings.MonitorConfigs;
+
+            // When there are no per-monitor configs (legacy / first-run), the dock
+            // is only shown on the primary monitor.
+            if (configs.Count == 0)
+            {
+                return monitors.Where(m => m.IsPrimary).ToList();
+            }
+
+            return monitors
+                .Where(m => configs.Any(c =>
+                    string.Equals(c.MonitorDeviceId, m.StableId, System.StringComparison.OrdinalIgnoreCase) &&
+                    c.Enabled))
+                .ToList();
         }
 
         private void UnpinFromDock()
