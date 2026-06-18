@@ -485,6 +485,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
         }
 
+        // When re-showing the palette, the previous session's query may still be present
+        // (e.g. after a light dismiss with HighlightSearchOnActivate). Recompute the
+        // compact/expanded state so a retained query restores the expanded results instead
+        // of being stuck in the collapsed search-only layout.
+        UpdateCompactModeForCurrentPage();
+
         WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 
@@ -666,7 +672,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             return;
         }
 
-        var nested = ViewModel.IsNested;
+        // The ShellViewModel's IsNested flag is only updated on forward navigation and is
+        // never cleared when navigating back to the root page. Gate it on the current
+        // page's own root-ness so a stale IsNested can't keep the home page expanded after
+        // returning to it (e.g. after following a 1-character alias and going back).
+        var isRootPage = ViewModel.CurrentPage?.IsRootPage ?? false;
+        var nested = ViewModel.IsNested && !isRootPage;
         var hasQuery = !string.IsNullOrEmpty(ViewModel.CurrentPage?.SearchTextBox);
         HandleExpandCompactOnUiThread(nested || hasQuery);
     }
@@ -905,7 +916,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ExpandCompactModeMessage message)
     {
-        this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
+        // Re-evaluate from the current authoritative page state rather than applying the
+        // message's snapshot directly. The message can race with navigation: following a
+        // 1-character alias clears the home search (sending a "collapse") right as we
+        // navigate to a nested page that must stay expanded. Recomputing here keeps the
+        // final state consistent regardless of message/navigation ordering.
+        this.DispatcherQueue.TryEnqueue(UpdateCompactModeForCurrentPage);
     }
 
     private void HandleExpandCompactOnUiThread(bool expanded)
