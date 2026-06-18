@@ -10,6 +10,9 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
 internal static class CommandLauncher
 {
+    // Test hook to intercept launch calls from unit tests. If set, it will be invoked instead of the real launch logic.
+    internal static System.Func<Classification, bool>? TestLaunchOverride;
+
     /// <summary>
     ///     Launches the classified item.
     /// </summary>
@@ -17,6 +20,12 @@ internal static class CommandLauncher
     /// <param name="runAsAdmin">Optional: force elevation if possible.</param>
     public static bool Launch(Classification classification, bool runAsAdmin = false)
     {
+        // If a test override is provided, use it to avoid actually launching external processes during tests.
+        if (TestLaunchOverride is not null)
+        {
+            return TestLaunchOverride(classification);
+        }
+
         switch (classification.Launch)
         {
             case LaunchMethod.ExplorerOpen:
