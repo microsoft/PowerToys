@@ -7,6 +7,25 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// <summary>
 /// Modules of PowerToys that a <see cref="UITestBase"/> can target.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <b>Launch model per scope</b> (see <see cref="SessionHelper.EnsureRunning"/>):
+/// </para>
+/// <list type="bullet">
+///   <item><description><see cref="PowerToysSettings"/> — runner-owned. Launched via
+///   <c>PowerToys.exe --open-settings</c> so the runner owns module toggles and activation hotkeys.
+///   This is the scope to use when a test drives a utility <i>through the Settings UI</i>
+///   (e.g. <c>ColorPicker.UITests</c>), because a standalone module exe has no runner behind it.</description></item>
+///   <item><description><see cref="Runner"/> — launches <c>PowerToys.exe</c> directly (the tray/runner host).</description></item>
+///   <item><description><b>Editor scopes</b> (<see cref="FancyZonesEditor"/>, <see cref="Hosts"/>,
+///   <see cref="Workspaces"/>, <see cref="PowerRename"/>, <see cref="CommandPalette"/>,
+///   <see cref="ScreenRuler"/>) — launch their own exe standalone. These are designed to run as
+///   self-contained editor windows, so binding directly to the editor's window is correct.</description></item>
+///   <item><description><see cref="ColorPicker"/>, <see cref="LightSwitch"/> — overlay/background
+///   modules that are <i>not</i> meant to be launched standalone by a test; drive them through the
+///   <see cref="PowerToysSettings"/> scope (toggle + activation hotkey) instead. The entries exist
+///   so window/process discovery can still resolve them once the runner spawns them.</description></item>
+/// </list>
 public enum PowerToysModule
 {
     PowerToysSettings,

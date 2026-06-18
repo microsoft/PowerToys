@@ -204,6 +204,42 @@ public static class WindowControl
         }
     }
 
+    /// <summary>
+    /// Force-terminate every process whose name <b>exactly</b> equals <paramref name="exactProcessName"/>
+    /// (no extension, case-insensitive — the form <see cref="Process.GetProcessesByName(string)"/> accepts).
+    /// Prefer this over <see cref="TryKillProcess"/> for short names like "PowerToys" that are a
+    /// substring of unrelated processes (e.g. a "PowerToys.*.UITests" test host the run is executing
+    /// in). Tolerant — returns false on any failure instead of throwing.
+    /// </summary>
+    public static bool TryKillProcessByName(string exactProcessName)
+    {
+        try
+        {
+            var hits = Process.GetProcessesByName(exactProcessName);
+            foreach (var p in hits)
+            {
+                try
+                {
+                    p.Kill(entireProcessTree: true);
+                }
+                catch
+                {
+                    // Best effort.
+                }
+                finally
+                {
+                    p.Dispose();
+                }
+            }
+
+            return hits.Length > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static void TryCloseHwnd(long hwnd)
     {
         try

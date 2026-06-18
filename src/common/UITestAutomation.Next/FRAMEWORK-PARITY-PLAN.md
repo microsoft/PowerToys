@@ -1,13 +1,28 @@
 # UITestAutomation.Next — Parity & Hardening Plan
 
 Tracks the gaps between the new winappcli-based framework (`UITestAutomation.Next`) and the
-legacy WinAppDriver/Selenium framework (`UITestAutomation`), plus the ideal end state. Nothing
-here is implemented yet — this is the backlog to work through later.
+legacy WinAppDriver/Selenium framework (`UITestAutomation`), plus the ideal end state. **All gaps
+below are now implemented** — see the per-gap **Done** notes and the Status summary. The detailed
+sections are kept as the rationale/record.
 
 > Reference points:
 > - Legacy base: `src/common/UITestAutomation/UITestBase.cs`
 > - New base: `src/common/UITestAutomation.Next/UITestBase.cs`
 > - New launch: `src/common/UITestAutomation.Next/SessionHelper.cs`
+
+## Status — implemented
+
+| Gap | Status | Where |
+|---|---|---|
+| 1 — Clean-slate hygiene | ✅ Done | `UITestBase.PreTestHygiene()` + `virtual StaleProcessNames`; `WindowControl.TryKillProcessByName` |
+| 2 — `WindowSize` wired in | ✅ Done | `UITestBase` ctor `size` param + `ApplyWindowSize()` |
+| 3 — Module-enablement pre-config | ✅ Done | `UITestBase` ctor `enableModules` param → `ConfigureGlobalModuleSettings` before launch |
+| 4 — Scope teardown / restart | ✅ Done | `SessionHelper.launchedByUs` / `StopIfStarted()` / `Restart()`; `UITestBase.RestartScope(...)` |
+| 5 — Pipeline diagnostics | ✅ Done (pipeline-gated) | new `ScreenCapture.cs`, `ScreenRecording.cs`, `DisplayHelper.cs`; wired in `UITestBase` |
+| 6 — Editor-scope launch audit | ✅ Documented | per-scope launch model in `ModuleConfigData.cs` (`PowerToysModule` doc) |
+
+Framework/test-only change — no product code touched. Harness + both `.Next` consumers
+(`ColorPicker.UITests`, `Settings.UITests`) build clean (exit 0).
 
 ## Current `.Next` init flow (baseline)
 
@@ -18,7 +33,8 @@ here is implemented yet — this is the backlog to work through later.
 
 `TestCleanup` captures a single screenshot on failure, then a no-op `Session.Cleanup()`.
 
-Everything below is present in the legacy harness but **missing or unwired** in `.Next`.
+> Historical (pre-implementation) baseline. Everything below was present in the legacy harness but
+> **missing or unwired** in `.Next` at the time of writing — now implemented (see Status above).
 
 ---
 
@@ -36,6 +52,11 @@ Legacy `TestInit` starts every test from a known desktop state; `.Next` does non
 minimize-all → ESC → kill known stale processes. Make the stale-process list a `virtual` property so
 module suites can extend it.
 
+**Done:** `UITestBase.PreTestHygiene()` runs at the top of `TestInit` — `Win+M` → `Esc` → kill each
+name in the new `virtual StaleProcessNames` property. Uses the new `WindowControl.TryKillProcessByName`
+(exact-name match) instead of the Contains-based `TryKillProcess`, so a `PowerToys.*.UITests` test
+host is never caught by the "PowerToys" entry.
+
 ## Gap 2 — `WindowSize` not wired into the base (HIGH, low risk)
 
 - Legacy ctor: `UITestBase(PowerToysModule scope, WindowSize size, string[]? commandLineArgs)` and applies
@@ -49,6 +70,10 @@ module suites can extend it.
 **Plan:** add `WindowSize size = WindowSize.UnSpecified` to the `UITestBase` ctor; after `Init()` resolves
 the window, call `WindowHelper.SetWindowSize(hwnd, size)` when `size != UnSpecified`.
 
+**Done:** `UITestBase` ctor now takes `WindowSize size = UnSpecified` (defaulted). `ApplyWindowSize()`
+runs after `Init()` (and after every `RestartScope`) and calls
+`WindowHelper.SetWindowSize(new IntPtr(Session.WindowHandle), size)` when set.
+
 ## Gap 3 — Module-enablement pre-config not wired in (HIGH, low risk)
 
 - Legacy `StartExe(enableModules)` → `SettingsConfigHelper.ConfigureGlobalModuleSettings(...)` seeds
@@ -59,6 +84,10 @@ the window, call `WindowHelper.SetWindowSize(hwnd, size)` when `size != UnSpecif
 **Plan:** add an optional `string[]? enableModules = null` ctor param. When non-null, call
 `ConfigureGlobalModuleSettings(enableModules)` in `TestInit` **before** launching the runner. Document that
 passing it gives a deterministic module baseline.
+
+**Done:** `UITestBase` ctor takes `string[]? enableModules = null`; `TestInit` calls
+`SettingsConfigHelper.ConfigureGlobalModuleSettings(enableModules)` before `SessionHelper.Init` when it's
+non-null. The ctor value is also re-applied by `RestartScope()` (unless that call overrides it).
 
 ## Gap 4 — No scope teardown on cleanup (MEDIUM, needs design)
 
@@ -71,6 +100,12 @@ Recommended: track the "launched-by-me" bool in `SessionHelper`, expose `StopIfS
 `TestCleanup` only when the base started the process. Add `RestartScope` convenience equivalent to legacy
 `RestartScopeExe`.
 
+**Done:** `SessionHelper` stores `launchedByUs` (set from `EnsureRunning`). `StopIfStarted()` tears down
+**only** what we launched — kills the scope process and, for the Settings scope, the runner (exact-name
+match); `TestCleanup` calls it. Instance `SessionHelper.Restart()` does kill → relaunch → rebind.
+`UITestBase.RestartScope(string[]? enableModules = null)` re-seeds modules (ctor value if null), restarts,
+reapplies window size, and returns the new `Session` — the `RestartScopeExe` equivalent.
+
 ## Gap 5 — Pipeline diagnostics (MEDIUM/LARGE, CI-only)
 
 Legacy gates these on `EnvironmentConfig.IsInPipeline`:
@@ -80,12 +115,21 @@ Legacy gates these on `EnvironmentConfig.IsInPipeline`:
 | Normalize resolution to 1920×1080 | ✅ `ChangeDisplayResolution` | ❌ | Port to `MonitorInfo`/native helper |
 | Monitor info snapshot | ✅ `GetMonitorInfo()` | ⚠️ `MonitorInfo` exists, not called in init | |
 | Screenshot timer (1s cadence) | ✅ `ScreenCapture.TimerCallback` | ❌ | Needs port |
-| Screen recording (FFmpeg) | ✅ `ScreenRecording` | ❌ | Needs FFmpeg dependency decision |
+| Screen recording (FFmpeg) | ✅ `ScreenRecording` | ❌ | Needs port |
 | On failure attach screenshots + recordings + **log files** | ✅ | ⚠️ single screenshot only | Add log-file + recording attach |
 
 **Plan:** `.Next` `UITestBase` should branch on `EnvironmentConfig.IsInPipeline` and, when true, set up
 screenshot timer + recording in `TestInit` and attach artifacts in `TestCleanup`. Treat FFmpeg recording as a
-separate, optional sub-task (it's the heaviest dependency).
+must have.
+
+**Done (pipeline-gated on `EnvironmentConfig.IsInPipeline`):** new files `ScreenCapture.cs` (1s screenshot
+timer), `ScreenRecording.cs` (FFmpeg encode), `DisplayHelper.cs` (`NormalizeResolution(1920,1080)` +
+`LogMonitors`). `TestInit` normalizes resolution, logs the monitor topology, and starts the timer +
+recording before launch; `TestCleanup` stops them and, on failure, attaches screenshots + recordings + the
+PowerToys `*.log` files (`AddLogFilesToTestResults`), cleaning recordings on pass. The local (non-pipeline)
+path still grabs the single winappcli `--capture-screen` failure shot. *Intentional difference:*
+`NormalizeResolution` sets `DM_PELSWIDTH | DM_PELSHEIGHT` on the current mode (the documented, reliable
+request) rather than the legacy's fields-unset call.
 
 ## Gap 6 — Editor scopes still launch the module exe directly (LOW, follow-up)
 
@@ -94,16 +138,21 @@ CommandPalette, FancyZonesEditor, ScreenRuler) still launch their own exe in `Se
 That is correct for editors that are meant to run standalone, but confirm each one against how the runner
 launches it in production, and document the intended pattern per scope in `ModuleConfigData`.
 
+**Done:** the launch model is now documented on the `PowerToysModule` enum in `ModuleConfigData.cs` —
+runner-owned Settings (`--open-settings`), the runner itself, standalone editor scopes (FancyZonesEditor,
+Hosts, Workspaces, PowerRename, CommandPalette, ScreenRuler), and overlay/background modules (ColorPicker,
+LightSwitch) that should be driven through the Settings scope rather than launched standalone.
+
 ---
 
 ## Suggested sequencing
 
-1. **Phase 1 (quick wins, no API break risk to callers):** Gap 1 hygiene.
-2. **Phase 2 (ctor surface):** Gaps 2 + 3 — add `WindowSize` and `enableModules` ctor params (defaulted, so
+1. ✅ **Phase 1 (quick wins, no API break risk to callers):** Gap 1 hygiene.
+2. ✅ **Phase 2 (ctor surface):** Gaps 2 + 3 — add `WindowSize` and `enableModules` ctor params (defaulted, so
    existing `.Next` tests keep compiling). Unblocks porting legacy Settings/Hosts/Workspaces tests.
-3. **Phase 3 (lifecycle):** Gap 4 teardown/restart design + implementation.
-4. **Phase 4 (CI):** Gap 5 diagnostics, FFmpeg recording last.
-5. **Phase 5 (cleanup):** Gap 6 per-scope launch audit + docs.
+3. ✅ **Phase 3 (lifecycle):** Gap 4 teardown/restart design + implementation.
+4. ✅ **Phase 4 (CI):** Gap 5 diagnostics, FFmpeg recording.
+5. ✅ **Phase 5 (cleanup):** Gap 6 per-scope launch audit + docs.
 
 ## Acceptance criteria (per phase)
 

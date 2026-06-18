@@ -28,6 +28,10 @@ public sealed class SessionHelper
 {
     private readonly PowerToysModule scope;
 
+    // True when this helper's Init/Restart actually launched the scope (vs. attaching to an
+    // already-running instance). StopIfStarted only tears down what we created.
+    private bool launchedByUs;
+
     public SessionHelper(PowerToysModule scope)
     {
         this.scope = scope;
@@ -35,11 +39,65 @@ public sealed class SessionHelper
 
     public Session Init()
     {
-        EnsureRunning(scope, TimeSpan.FromSeconds(20));
+        launchedByUs = EnsureRunning(scope, TimeSpan.FromSeconds(20));
+        return ResolveMainWindowOrFail();
+    }
 
+    /// <summary>
+    /// Force a clean restart of this helper's scope: kill the scope process (plus the runner for the
+    /// Settings scope), relaunch, and rebind to the fresh window. Marks the session launched-by-us so
+    /// <see cref="StopIfStarted"/> tears it down. Mirrors the net effect of the legacy <c>RestartScopeExe</c>.
+    /// </summary>
+    public Session Restart()
+    {
+        StopScope();
+        EnsureRunning(scope, TimeSpan.FromSeconds(20));
+        launchedByUs = true;
+        return ResolveMainWindowOrFail();
+    }
+
+    /// <summary>
+    /// Stop the process(es) this helper launched. No-op when the target was already running at
+    /// <see cref="Init"/> time — we never kill state the test didn't create. Mirrors the legacy
+    /// <c>ExitScopeExe</c>, scoped to "only what we started".
+    /// </summary>
+    public void StopIfStarted()
+    {
+        if (!launchedByUs)
+        {
+            return;
+        }
+
+        StopScope();
+        launchedByUs = false;
+    }
+
+    private Session ResolveMainWindowOrFail()
+    {
         var window = WaitForMainWindow(scope, TimeSpan.FromSeconds(20));
         Assert.IsNotNull(window, $"Main window for {scope} did not appear via winappcli within 20s");
         return window!;
+    }
+
+    /// <summary>
+    /// Kill the scope's process and, for the Settings scope, the runner that owns it (the runner's
+    /// exit also stops the modules it spawned). Uses exact-name matching so unrelated processes that
+    /// merely contain "PowerToys" in their name (e.g. the test host) are left alone. Waits briefly
+    /// for the scope process to disappear.
+    /// </summary>
+    private void StopScope()
+    {
+        WindowControl.TryKillProcessByName(GetProcessName(scope));
+        if (scope == PowerToysModule.PowerToysSettings)
+        {
+            WindowControl.TryKillProcessByName(GetProcessName(PowerToysModule.Runner));
+        }
+
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while (DateTime.UtcNow < deadline && Process.GetProcessesByName(GetProcessName(scope)).Length > 0)
+        {
+            Thread.Sleep(150);
+        }
     }
 
     /// <summary>Process name as winappcli's <c>-a</c> flag (and <see cref="Process.GetProcessesByName(string)"/>) accept it.</summary>
