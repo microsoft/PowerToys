@@ -11,6 +11,8 @@
 #   5. Round-trip                        — PutBlob a payload, GetBlob it back
 #   6. GetBlob NotFound                  — fresh user/namespace returns NotFound
 #   7. Per-user folder DACL              — only this user can read; admin can; others cannot
+#   8. Owner is a non-user principal      — store nodes owned by SYSTEM/Admin/service, never the user
+#   9. Non-elevated write+delete rejected — Medium-IL user token cannot tamper or delete the blob
 
 [CmdletBinding()]
 param(
@@ -217,6 +219,61 @@ Step "7. Per-user folder DACL (svc:F, admin:F, current-user:RX, others denied)" 
 
     Write-Host "  svc:F=$([bool]$svcOk)  admin:F=$([bool]$admOk)  user:R*=$([bool]$userOk)  no-blanket-AuthUsers=$noWild  PROTECTED=$($acl.AreAccessRulesProtected)"
     return ([bool]$svcOk -and [bool]$admOk -and [bool]$userOk -and $noWild -and $acl.AreAccessRulesProtected)
+}
+
+# 8) Owner is a non-user trusted principal ----------------------------
+Step "8. Owner of store nodes is a non-user principal (SYSTEM/Admin/service)" {
+    # Ensure the user folder + blob exist.
+    [System.IO.File]::WriteAllText($tmpPayload, 'hello', [System.Text.UTF8Encoding]::new($false))
+    Run-Caller $renamedCaller @('put', $tmpPayload) | Out-Null
+
+    $userSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    $userDir = Join-Path (Join-Path $DataRoot 'Workspaces') $userSid
+    $blob    = Join-Path $userDir 'blob.bin'
+
+    $me      = "$env:USERDOMAIN\$env:USERNAME"
+    $trusted = @('NT AUTHORITY\SYSTEM', 'BUILTIN\Administrators', 'NT SERVICE\PTSettingsSvc')
+
+    $allOk = $true
+    foreach ($p in @($DataRoot, $userDir, $blob))
+    {
+        if (-not (Test-Path $p)) { continue }
+        $owner = (Get-Acl $p).Owner
+        $ok = ($owner -ne $me) -and ($trusted -contains $owner)
+        Write-Host ("  {0,-70} owner={1}  {2}" -f (Split-Path $p -Leaf), $owner, ($ok ? 'OK' : 'BAD'))
+        if (-not $ok) { $allOk = $false }
+    }
+    return $allOk
+}
+
+# 9) Non-elevated write + delete are both rejected --------------------
+Step "9. Medium-IL user token cannot write or delete the blob" {
+    $safer    = Join-Path $RepoRoot 'SaferModify.exe'
+    $saferSrc = Join-Path $RepoRoot 'SaferModify.cs'
+    if (-not (Test-Path $safer) -and (Test-Path $saferSrc))
+    {
+        # Build the helper from source so the suite is self-contained.
+        $csc = Get-ChildItem 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($csc) { & $csc.FullName /nologo /out:$safer $saferSrc 2>&1 | Out-Null }
+    }
+    if (-not (Test-Path $safer))
+    {
+        Write-Host "  SKIPPED (SaferModify.exe/.cs not present in $RepoRoot)"
+        return $true
+    }
+    # Ensure the blob exists to target.
+    [System.IO.File]::WriteAllText($tmpPayload, 'hello', [System.Text.UTF8Encoding]::new($false))
+    Run-Caller $renamedCaller @('put', $tmpPayload) | Out-Null
+
+    $userSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    $blob    = Join-Path (Join-Path (Join-Path $DataRoot 'Workspaces') $userSid) 'blob.bin'
+
+    $out = (& $safer $blob 2>&1) -join "`n"
+    Write-Host ($out -split "`n" | ForEach-Object { "  $_" }) -Separator "`n"
+    $writeRej  = $out -match 'WRITE\s*:\s*rejected'
+    $deleteRej = $out -match 'DELETE\s*:\s*rejected'
+    $intact    = Test-Path $blob
+    return ($writeRej -and $deleteRej -and $intact)
 }
 
 Write-Host ""
