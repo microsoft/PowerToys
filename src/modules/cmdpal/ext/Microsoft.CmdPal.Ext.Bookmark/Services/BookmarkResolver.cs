@@ -349,27 +349,46 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         string? parentFallbackHead = null;
         string? parentFallbackTail = null;
 
-        // Be greedy: try to find the longest existing path prefix
-        for (var i = input.Length; i >= 0; i--)
+        // Build candidate end positions: full length, whitespace boundaries (where args start),
+        // and path separator boundaries (probe only at directory/component boundaries).
+        var candidateIndices = new System.Collections.Generic.List<int> { input.Length };
+        for (var i = 0; i < input.Length; i++)
         {
-            if (i < input.Length && !char.IsWhiteSpace(input[i]))
+            var c = input[i];
+            if (char.IsWhiteSpace(c))
             {
-                continue;
+                // split before the whitespace (candidate end at i)
+                candidateIndices.Add(i);
             }
 
-            var candidate = input.AsSpan(0, i).TrimEnd().ToString();
-            if (candidate.Length == 0)
+            if (c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar || c == '/' || c == '\')
             {
-                continue;
+                // candidate that includes the separator => end index is i + 1
+                candidateIndices.Add(i + 1);
             }
+        }
+
+        // Deduplicate and iterate longest-first
+        var seen = new System.Collections.Generic.HashSet<int>();
+        candidateIndices.Sort((a, b) => b.CompareTo(a));
+
+        foreach (var i in candidateIndices)
+        {
+            if (i < 0 || i > input.Length) continue;
+            if (!seen.Add(i)) continue;
+
+            var candidate = input.AsSpan(0, i).TrimEnd();
+            if (candidate.Length == 0) continue;
+
+            var candidateStr = candidate.ToString();
 
             // If we have placeholders, check if this candidate would contain a non-path placeholder
-            if (containsPlaceholders && ContainsNonPathPlaceholder(candidate, placeholderParser))
+            if (containsPlaceholders && ContainsNonPathPlaceholder(candidateStr, placeholderParser))
             {
                 continue; // Skip this candidate, try a shorter one
             }
 
-            if (TryResolvePathCandidate(candidate, out var resolvedCandidate, out var usedParentDirectoryFallback))
+            if (TryResolvePathCandidate(candidateStr, out var resolvedCandidate, out var usedParentDirectoryFallback))
             {
                 var tail = i < input.Length ? input[i..].TrimStart() : string.Empty;
                 if (!usedParentDirectoryFallback)
@@ -638,35 +657,10 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
 
     private static bool TryGetNearestExistingParentDirectory(string path, out string parentDirectory)
     {
-        parentDirectory = string.Empty;
-
-        try
-        {
-            var current = NormalizePathForWindows(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            while (!string.IsNullOrWhiteSpace(current))
-            {
-                if (Directory.Exists(current))
-                {
-                    parentDirectory = NormalizePathForWindows(Path.GetFullPath(current));
-                    return true;
-                }
-
-                var next = Path.GetDirectoryName(current);
-                if (string.IsNullOrEmpty(next) || next.Equals(current, StringComparison.Ordinal))
-                {
-                    break;
-                }
-
-                current = next;
-            }
-        }
-        catch
-        {
-            // ignored
-        }
-
-        return false;
+        // Delegate to shared helper to avoid duplicated logic across the extension
+        return PathHelpers.TryGetNearestExistingParentDirectory(path, out parentDirectory);
     }
+
 
     private static string NormalizePathForWindows(string path) =>
         PathNormalization.NormalizePathForWindows(path);
@@ -676,6 +670,8 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         try
         {
             var path = dir is null ? name : Path.Combine(dir, name);
+            // Normalize before probing filesystem
+            path = NormalizePathForWindows(path);
             if (File.Exists(path))
             {
                 return Path.GetFullPath(path);

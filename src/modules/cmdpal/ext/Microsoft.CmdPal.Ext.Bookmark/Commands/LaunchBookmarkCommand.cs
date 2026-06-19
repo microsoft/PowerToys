@@ -23,6 +23,7 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
     private readonly IBookmarkResolver _bookmarkResolver;
     private readonly SupersedingAsyncValueGate<IIconInfo?> _iconReloadGate;
     private readonly Classification _classification;
+    private readonly IProcessLauncher _processLauncher;
 
     private IIconInfo? _icon;
 
@@ -32,7 +33,7 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
 
     public string Id { get; }
 
-    public LaunchBookmarkCommand(BookmarkData bookmarkData, Classification classification, IBookmarkIconLocator iconLocator, IBookmarkResolver bookmarkResolver, Dictionary<string, string>? placeholders = null)
+    public LaunchBookmarkCommand(BookmarkData bookmarkData, Classification classification, IBookmarkIconLocator iconLocator, IBookmarkResolver bookmarkResolver, IProcessLauncher? processLauncher = null, Dictionary<string, string>? placeholders = null)
     {
         ArgumentNullException.ThrowIfNull(bookmarkData);
         ArgumentNullException.ThrowIfNull(classification);
@@ -41,6 +42,7 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
         _classification = classification;
         _placeholders = placeholders;
         _bookmarkResolver = bookmarkResolver;
+        _processLauncher = processLauncher ?? new ProductionProcessLauncher();
 
         Id = CommandIds.GetLaunchBookmarkItemId(bookmarkData.Id);
         Name = Resources.bookmarks_command_name_open;
@@ -144,40 +146,8 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
 
     private static bool TryGetNearestExistingParentDirectory(Classification classification, out string parentDirectory)
     {
-        parentDirectory = string.Empty;
-
-        try
-        {
-            var pathToProbe = string.IsNullOrWhiteSpace(classification.FileSystemTarget) ? classification.Target : classification.FileSystemTarget;
-            if (string.IsNullOrWhiteSpace(pathToProbe))
-            {
-                return false;
-            }
-
-            var current = pathToProbe.Trim();
-            if (Directory.Exists(current))
-            {
-                parentDirectory = current;
-                return true;
-            }
-
-            current = current.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            while (!string.IsNullOrWhiteSpace(current))
-            {
-                current = Path.GetDirectoryName(current);
-                if (!string.IsNullOrWhiteSpace(current) && Directory.Exists(current))
-                {
-                    parentDirectory = current;
-                    return true;
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Failed to resolve fallback folder for '{classification.Target}'", ex);
-        }
-
-        return false;
+        // Delegate to shared helper which applies normalization and consistent probing
+        return PathHelpers.TryGetNearestExistingParentDirectory(classification, out parentDirectory);
     }
 
     private string ReplacePlaceholders(string input)
