@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
 
