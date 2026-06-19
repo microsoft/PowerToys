@@ -6,13 +6,13 @@ Run these commands in an elevated (Administrator) command prompt:
 
 ```cmd
 REM Force-enable local images (toggle locked ON in Settings UI):
-reg add "HKLM\SOFTWARE\Policies\PowerToys" /v ConfigureEnabledUtilityFileExplorerMarkdownLocalImages /t REG_DWORD /d 1 /f
+reg add "HKLM\SOFTWARE\Policies\PowerToys" /v MarkdownAllowLocalImages /t REG_DWORD /d 1 /f
 
 REM Force-disable local images (toggle locked OFF in Settings UI):
-reg add "HKLM\SOFTWARE\Policies\PowerToys" /v ConfigureEnabledUtilityFileExplorerMarkdownLocalImages /t REG_DWORD /d 0 /f
+reg add "HKLM\SOFTWARE\Policies\PowerToys" /v MarkdownAllowLocalImages /t REG_DWORD /d 0 /f
 
 REM Remove policy (user controls the setting):
-reg delete "HKLM\SOFTWARE\Policies\PowerToys" /v ConfigureEnabledUtilityFileExplorerMarkdownLocalImages /f
+reg delete "HKLM\SOFTWARE\Policies\PowerToys" /v MarkdownAllowLocalImages /f
 ```
 
 After changing the registry value, restart PowerToys for the setting to take effect.
@@ -22,7 +22,7 @@ After changing the registry value, restart PowerToys for the setting to take eff
 1. Copy `src/gpo/assets/PowerToys.admx` to `C:\Windows\PolicyDefinitions\`
 2. Copy `src/gpo/assets/en-US/PowerToys.adml` to `C:\Windows\PolicyDefinitions\en-US\`
 3. Open `gpedit.msc`
-4. Navigate to: Computer Configuration > Administrative Templates > PowerToys
+4. Navigate to: Computer Configuration > Administrative Templates > PowerToys > File Explorer Preview
 5. Find "Markdown preview: Show local images - Configure enabled state"
 6. Set to Enabled, Disabled, or Not Configured
 

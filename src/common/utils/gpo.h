@@ -38,7 +38,6 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH = L"ConfigureEnabledUtilityFileLocksmith";
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMarkdownPreview";
-    const std::wstring POLICY_CONFIGURE_ENABLED_MARKDOWN_LOCAL_IMAGES = L"ConfigureEnabledUtilityFileExplorerMarkdownLocalImages";
     const std::wstring POLICY_CONFIGURE_ENABLED_MONACO_PREVIEW = L"ConfigureEnabledUtilityFileExplorerMonacoPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_PDF_PREVIEW = L"ConfigureEnabledUtilityFileExplorerPDFPreview";
     const std::wstring POLICY_CONFIGURE_ENABLED_GCODE_PREVIEW = L"ConfigureEnabledUtilityFileExplorerGcodePreview";
@@ -106,6 +105,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION = L"NewPlusHideTemplateFilenameExtension";
     const std::wstring POLICY_NEW_PLUS_REPLACE_VARIABLES = L"NewPlusReplaceVariablesInTemplateFilenames";
     const std::wstring POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU = L"NewPlusHideBuiltInNewContextMenu";
+    const std::wstring POLICY_MARKDOWN_ALLOW_LOCAL_IMAGES = L"MarkdownAllowLocalImages";
 
     // Methods used for reading the registry
 #pragma region ReadRegistryMethods
@@ -342,11 +342,6 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredMarkdownPreviewEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_PREVIEW);
-    }
-
-    inline gpo_rule_configured_t getConfiguredMarkdownLocalImagesEnabledValue()
-    {
-        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MARKDOWN_LOCAL_IMAGES);
     }
 
     inline gpo_rule_configured_t getConfiguredMonacoPreviewEnabledValue()
@@ -716,6 +711,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredNewPlusHideBuiltInNewContextMenuValue()
     {
         return getConfiguredValue(POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU);
+    }
+
+    inline gpo_rule_configured_t getConfiguredMarkdownLocalImagesEnabledValue()
+    {
+        return getConfiguredValue(POLICY_MARKDOWN_ALLOW_LOCAL_IMAGES);
     }
 
 #pragma endregion IndividualModuleSettingPolicies

@@ -14,6 +14,7 @@
       <string id="GeneralSettings">General settings</string>
       <string id="NewPlus">New+</string>
       <string id="DeprecatedPolicies">Deprecated policies</string>
+      <string id="FileExplorerPreview">File Explorer Preview</string>
 
       <string id="SUPPORTED_POWERTOYS_0_64_0">PowerToys version 0.64.0 or later</string>
       <string id="SUPPORTED_POWERTOYS_0_68_0">PowerToys version 0.68.0 or later</string>
@@ -257,8 +258,8 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerMarkdownLocalImages">Markdown preview: Show local images - Configure enabled state</string>
-      <string id="ConfigureEnabledUtilityFileExplorerMarkdownLocalImagesDescription">This policy configures whether local and network images should be displayed in Markdown file previews.
+      <string id="MarkdownAllowLocalImages">Markdown preview: Show local images - Configure enabled state</string>
+      <string id="MarkdownAllowLocalImagesDescription">This policy configures whether local and network images should be displayed in Markdown file previews.
 
 If you enable this setting, images from the document's folder (including network/UNC paths) will always be shown and the user won't be able to disable it.
 

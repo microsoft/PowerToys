@@ -57,6 +57,9 @@
     <category name="DeprecatedPolicies" displayName="$(string.DeprecatedPolicies)">
       <parentCategory ref="PowerToys" />
     </category>
+    <category name="FileExplorerPreview" displayName="$(string.FileExplorerPreview)">
+      <parentCategory ref="PowerToys" />
+    </category>
   </categories>
   <policies>
 
@@ -212,8 +215,8 @@
         <decimal value="0" />
       </disabledValue>
     </policy>
-    <policy name="ConfigureEnabledUtilityFileExplorerMarkdownLocalImages" class="Both" displayName="$(string.ConfigureEnabledUtilityFileExplorerMarkdownLocalImages)" explainText="$(string.ConfigureEnabledUtilityFileExplorerMarkdownLocalImagesDescription)" key="Software\Policies\PowerToys" valueName="ConfigureEnabledUtilityFileExplorerMarkdownLocalImages">
-      <parentCategory ref="PowerToys" />
+    <policy name="MarkdownAllowLocalImages" class="Both" displayName="$(string.MarkdownAllowLocalImages)" explainText="$(string.MarkdownAllowLocalImagesDescription)" key="Software\Policies\PowerToys" valueName="MarkdownAllowLocalImages">
+      <parentCategory ref="FileExplorerPreview" />
       <supportedOn ref="SUPPORTED_POWERTOYS_0_100_0" />
       <enabledValue>
         <decimal value="1" />
