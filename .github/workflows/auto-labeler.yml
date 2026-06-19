@@ -1,8 +1,10 @@
-name: Automatic Triaging on Issue Creation
+name: Automatic Triaging on Issue/PR Creation
 
 on:
   issues:
     types: [opened, reopened]
+  pull_request_target:
+    types: [opened, reopened, synchronize]
   # Manual trigger: go to Actions → "Automatic Triaging on Issue Creation" → Run workflow.
   # Enter one or more comma-separated issue numbers (e.g. "1234" or "1234,1235,1236")
   # to apply AI-generated area labels to existing untriaged issues.
@@ -15,12 +17,14 @@ on:
 permissions:
   models: read
   issues: write
+  pull-requests: write
 
 concurrency:
   # Each workflow run gets its own concurrency group.
   # For issue events, group by issue number so a rapid close+reopen only runs once.
+  # For pull request events, group by PR number so rapid updates coalesce.
   # For manual dispatch (which may cover multiple issues), use the unique run ID.
-  group: ${{ github.event_name == 'issues' && format('{0}-issue-{1}', github.workflow, github.event.issue.number) || github.run_id }}
+  group: ${{ github.event_name == 'issues' && format('{0}-issues-{1}', github.workflow, github.event.issue.number) || github.event_name == 'pull_request_target' && format('{0}-pr-{1}', github.workflow, github.event.pull_request.number) || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -28,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Apply area labels with AI
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           # actions/github-script does not propagate `github-token` to
           # process.env. Expose it explicitly so the inline script can
@@ -38,7 +42,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             // When triggered manually, process each supplied issue number in turn.
-            // When triggered by an issue event, use the event's issue number.
+            // When triggered by an issue or PR event, use the event's number.
             let issueNumbers;
             if (context.eventName === 'workflow_dispatch') {
               issueNumbers = String(context.payload.inputs.issue_numbers)
@@ -55,23 +59,25 @@ jobs:
             }
 
             for (const issueNumber of issueNumbers) {
-              console.log(`\n--- Processing issue #${issueNumber} ---`);
+              console.log(`\n--- Processing item #${issueNumber} ---`);
               await labelIssue(issueNumber);
             }
 
             async function labelIssue(issueNumber) {
-              // Fetch the issue so both the automatic and manual paths have the same data.
+              // Fetch as an issue resource; PRs are represented by issues with a pull_request field.
               const { data: issue } = await github.rest.issues.get({
                 owner: context.repo.owner,
                 repo:  context.repo.repo,
                 issue_number: issueNumber,
               });
 
+              const itemType = issue.pull_request ? 'Pull request' : 'Issue';
+
               const title = issue.title ?? '';
               const body  = issue.body  ?? '';
 
               if (!title && !body) {
-                console.log(`Issue #${issueNumber} has no title or body; skipping.`);
+                console.log(`${itemType} #${issueNumber} has no title or body; skipping.`);
                 return;
               }
 
@@ -124,8 +130,8 @@ jobs:
                 'Area-Localization',
               ];
 
-              const systemPrompt = `You are a GitHub issue triage assistant for the microsoft/PowerToys repository.
-              Your job is to classify issues by assigning the correct area label(s).
+              const systemPrompt = `You are a GitHub triage assistant for the microsoft/PowerToys repository.
+              Your job is to classify issues and pull requests by assigning the correct area label(s).
 
               Rules:
               - Only return labels from the following list, exactly as written:
@@ -136,9 +142,9 @@ jobs:
               - Respond with ONLY a JSON array of label strings, no explanation.
                 Example: ["Product-FancyZones","Product-Settings"]`;
 
-              const userPrompt = `Issue title: ${title}
+              const userPrompt = `${itemType} title: ${title}
 
-              Issue body:
+              ${itemType} body:
               ${body.slice(0, MAX_BODY_LENGTH)}`;
 
               // Validate that the token is available before making the API call.
@@ -203,11 +209,25 @@ jobs:
                 return;
               }
 
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo:  context.repo.repo,
-                issue_number: issueNumber,
-                labels: toApply,
-              });
-              console.log(`Issue #${issueNumber}: added labels: ${toApply.join(', ')}`);
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: toApply,
+                });
+                console.log(`${itemType} #${issueNumber}: added labels: ${toApply.join(', ')}`);
+              } catch (error) {
+                // Some contexts (for example, restricted integrations) can deny
+                // label writes even when workflow permissions request write scope.
+                // Skip without failing the entire triage workflow.
+                const status = error?.status;
+                const message = error?.message ?? String(error);
+                if (status === 403 && message.includes('Resource not accessible by integration')) {
+                  console.log(`${itemType} #${issueNumber}: skipping label write due to restricted token context (403).`);
+                  return;
+                }
+
+                throw error;
+              }
             }
