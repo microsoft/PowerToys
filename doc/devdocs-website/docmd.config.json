@@ -1,0 +1,6 @@
+{
+  "title": "PowerToys Dev Docs",
+  "src": "../devdocs",
+  "out": "site",
+  "base": "/"
+}
