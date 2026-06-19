@@ -26,6 +26,13 @@ namespace Microsoft.PowerToys.UITest.Next;
 /// </remarks>
 public sealed class SessionHelper
 {
+    // Generous window-appearance budget. On a cold/busy CI agent the runner spends tens of seconds
+    // enabling every module and the Settings WinUI process cold-starts before its window appears
+    // (~30-50s observed); the legacy WinAppDriver harness likewise allowed ~2 min for its driver to
+    // attach. We wait patiently (and re-issue the idempotent launch) rather than kill-and-relaunch on
+    // a short deadline, which only resets a slow-but-healthy startup and never converges.
+    private static readonly TimeSpan LaunchTimeout = TimeSpan.FromSeconds(90);
+
     private readonly PowerToysModule scope;
 
     // True when this helper's Init/Restart actually launched the scope (vs. attaching to an
@@ -39,7 +46,7 @@ public sealed class SessionHelper
 
     public Session Init()
     {
-        launchedByUs = EnsureRunning(scope, TimeSpan.FromSeconds(20));
+        launchedByUs = EnsureRunning(scope, LaunchTimeout);
         return ResolveMainWindowOrFail();
     }
 
@@ -51,7 +58,7 @@ public sealed class SessionHelper
     public Session Restart()
     {
         StopScope();
-        EnsureRunning(scope, TimeSpan.FromSeconds(20));
+        EnsureRunning(scope, LaunchTimeout);
         launchedByUs = true;
         return ResolveMainWindowOrFail();
     }
@@ -74,8 +81,8 @@ public sealed class SessionHelper
 
     private Session ResolveMainWindowOrFail()
     {
-        var window = WaitForMainWindow(scope, TimeSpan.FromSeconds(20));
-        Assert.IsNotNull(window, $"Main window for {scope} did not appear via winappcli within 20s");
+        var window = WaitForMainWindow(scope, LaunchTimeout);
+        Assert.IsNotNull(window, $"Main window for {scope} did not appear via winappcli within {LaunchTimeout.TotalSeconds:0}s");
         return window!;
     }
 
@@ -127,51 +134,78 @@ public sealed class SessionHelper
     /// </remarks>
     public static bool EnsureRunning(PowerToysModule scope, TimeSpan timeout)
     {
-        if (IsRunning(scope))
-        {
-            WaitForAnyWindow(GetProcessName(scope), timeout);
-            return false;
-        }
-
-        // The scope is down — launch it (the Settings scope goes through PowerToys.exe --open-settings;
-        // see this method's <remarks>) and wait for its window, retrying the whole sequence so the
-        // single-instance launch race that makes a one-shot launch flaky on CI is absorbed.
-        LaunchWithRetry(scope, timeout);
-        return true;
+        // Whether or not the scope process already exists, the test needs its WINDOW. EnsureWindow
+        // waits patiently and (idempotently) re-issues the launch as needed; it only kills/relaunches
+        // a genuinely-dead fresh launch, never a slow-but-healthy or class-shared (reused) window.
+        var alreadyRunning = IsRunning(scope);
+        EnsureWindow(scope, timeout, alreadyRunning);
+        return !alreadyRunning;
     }
 
     /// <summary>
-    /// Launch <paramref name="scope"/> and wait for its window, retrying the full sequence a few
-    /// times before failing. PowerToys' single-instance handoff (runner/Settings) intermittently
-    /// races on busy CI agents: the launcher signals a not-yet-ready or just-killed instance and no
-    /// window ever appears (matching the "no Settings window, only the CI worker" failures). Each
-    /// attempt first clears any surviving runner/Settings — waiting for exit so the single-instance
-    /// mutex is actually released — then launches and waits up to <paramref name="timeout"/>. Mirrors
-    /// the legacy harness's 3-attempt launch loop that kept the old Settings-driven tests reliable.
+    /// Wait for a UIA-visible window from <paramref name="scope"/> to appear, launching / re-issuing
+    /// the launch as needed. The Settings scope is launched through the runner
+    /// (<c>PowerToys.exe --open-settings</c>); see <see cref="EnsureRunning"/> remarks.
     /// </summary>
-    private static void LaunchWithRetry(PowerToysModule scope, TimeSpan timeout)
+    /// <remarks>
+    /// On a busy/cold CI agent the runner spends tens of seconds enabling every module before the
+    /// Settings window appears (~30-50s observed). A "kill + relaunch every 20s" loop kept resetting
+    /// that slow-but-healthy startup so it never converged (the "runner: 1, Settings: 2, no window"
+    /// failures). Instead this waits a single generous <paramref name="timeout"/> and only acts when
+    /// the window is still missing after a grace period: it re-issues the launch — idempotent, since
+    /// the runner is single-instance, so <c>--open-settings</c> just (re)shows Settings — and
+    /// additionally clears the single-instance mutex first only for a fresh launch that has gone
+    /// completely dead (nothing running), i.e. the handoff-to-a-now-exited-instance race. A
+    /// class-shared (reused) window is never killed.
+    /// </remarks>
+    private static void EnsureWindow(PowerToysModule scope, TimeSpan timeout, bool alreadyRunning)
     {
-        const int maxAttempts = 3;
         var processName = GetProcessName(scope);
+        var runnerName = GetProcessName(PowerToysModule.Runner);
+        var nudgeInterval = TimeSpan.FromSeconds(25);
 
-        for (int attempt = 1; attempt <= maxAttempts; attempt++)
+        if (!alreadyRunning)
         {
-            // Release the single-instance mutex held by any stale/half-launched instance: pre-test
-            // hygiene kills without waiting, and a failed previous attempt may have left one behind.
+            // Release the single-instance mutex any stale/half-launched instance still holds (pre-test
+            // hygiene kills without waiting), then launch.
             KillScopeProcessesAndWait(scope);
-
             LaunchScope(scope);
-
-            if (TryWaitForAnyWindow(processName, timeout))
-            {
-                return;
-            }
         }
 
-        var runnerName = GetProcessName(PowerToysModule.Runner);
+        var deadline = DateTime.UtcNow + timeout;
+        var lastLaunch = DateTime.UtcNow;
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (WindowsFinder.ListByApp(processName).Count > 0)
+            {
+                // Give XAML a moment to populate the visual tree.
+                Thread.Sleep(750);
+                return;
+            }
+
+            if (DateTime.UtcNow - lastLaunch > nudgeInterval)
+            {
+                // Still no window after a grace period. Re-issue the launch (idempotent) rather than
+                // killing a slow-but-healthy startup. Only a fresh launch that went fully dead
+                // (nothing running) gets a mutex-clearing kill first.
+                var alive = IsRunning(scope) || Process.GetProcessesByName(runnerName).Length > 0;
+                if (!alreadyRunning && !alive)
+                {
+                    KillScopeProcessesAndWait(scope);
+                }
+
+                LaunchScope(scope);
+                lastLaunch = DateTime.UtcNow;
+            }
+
+            Thread.Sleep(500);
+        }
+
         Assert.Fail(
-            $"No UIA-visible window from process '{processName}' appeared after {maxAttempts} launch attempts of {timeout.TotalSeconds:0}s each. " +
-            $"Live processes — runner '{runnerName}': {Process.GetProcessesByName(runnerName).Length}, '{processName}': {Process.GetProcessesByName(processName).Length}.");
+            $"No UIA-visible window from process '{processName}' appeared within {timeout.TotalSeconds:0}s. " +
+            $"Live processes — runner '{runnerName}': {Process.GetProcessesByName(runnerName).Length}, " +
+            $"'{processName}': {Process.GetProcessesByName(processName).Length}.");
     }
 
     /// <summary>
@@ -259,43 +293,6 @@ public sealed class SessionHelper
         }
 
         return EnsureRunning(scope, timeout);
-    }
-
-    /// <summary>
-    /// Poll for any UIA-visible top-level window owned by <paramref name="processName"/>. Returns
-    /// <c>true</c> once one appears (after a short settle so XAML can populate its visual tree), or
-    /// <c>false</c> when <paramref name="timeout"/> elapses — letting the caller retry the launch.
-    /// </summary>
-    private static bool TryWaitForAnyWindow(string processName, TimeSpan timeout)
-    {
-        var deadline = DateTime.UtcNow + timeout;
-        while (DateTime.UtcNow < deadline)
-        {
-            if (WindowsFinder.ListByApp(processName).Count > 0)
-            {
-                // Give XAML a moment to populate the visual tree.
-                Thread.Sleep(750);
-                return true;
-            }
-
-            Thread.Sleep(250);
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Wait for any window from <paramref name="processName"/>, asserting if none appears within
-    /// <paramref name="timeout"/>. Used by the attach-to-already-running path, where no relaunch
-    /// retry applies.
-    /// </summary>
-    private static void WaitForAnyWindow(string processName, TimeSpan timeout)
-    {
-        if (!TryWaitForAnyWindow(processName, timeout))
-        {
-            Assert.Fail(
-                $"No UIA-visible window from process '{processName}' appeared within {timeout.TotalSeconds:0}s.");
-        }
     }
 
     /// <summary>
