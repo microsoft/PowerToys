@@ -395,28 +395,28 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
 
         if (_winGetPackageStatusService is not null)
         {
-        if (refreshWinGetCatalogs && _winGetPackageManagerService is not null && _winGetPackageManagerService.State.IsAvailable)
-        {
-            try
+            if (refreshWinGetCatalogs && _winGetPackageManagerService is not null && _winGetPackageManagerService.State.IsAvailable)
             {
-                using var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                refreshCts.CancelAfter(WinGetRefreshTimeout);
-                await RunInBackgroundAsync(
-                    () => _winGetPackageManagerService.RefreshCatalogsAsync(refreshCts.Token),
-                    refreshCts.Token);
-                refreshCts.Token.ThrowIfCancellationRequested();
+                try
+                {
+                    using var refreshCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    refreshCts.CancelAfter(WinGetRefreshTimeout);
+                    await RunInBackgroundAsync(
+                        () => _winGetPackageManagerService.RefreshCatalogsAsync(refreshCts.Token),
+                        refreshCts.Token);
+                    refreshCts.Token.ThrowIfCancellationRequested();
+                }
+                catch (OperationCanceledException)
+                {
+                    // Proceed to next pass
+                }
+                catch (Exception ex)
+                {
+                    LogRefreshWinGetCatalogsError(_logger, ex);
+                }
             }
-            catch (OperationCanceledException)
-            {
-                // Proceed to next pass
-            }
-            catch (Exception ex)
-            {
-                LogRefreshWinGetCatalogsError(_logger, ex);
-            }
-        }
 
-        try
+            try
             {
                 lock (_entriesLock)
                 {
@@ -474,10 +474,15 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         {
             try
             {
+                lock (_entriesLock)
+                {
+                    snapshot = [.. _allEntries];
+                }
+
                 var storeIdsToLookup = snapshot
                     .Where(e => !e.IsInstalledStateKnown && !string.IsNullOrWhiteSpace(e.StoreId))
                     .Select(e => e.StoreId!)
-                    .Distinct()
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
                 if (storeIdsToLookup.Count > 0)
@@ -501,17 +506,17 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
 
                             if (results.Value.TryGetValue(entry.StoreId, out var catalogPackage))
                             {
-                                var isInstalled = catalogPackage.InstalledVersion != null;
+                                entry.IsInstalled = catalogPackage.InstalledVersion != null;
+                                entry.IsInstalledStateKnown = true;
+                            }
+                        }
 
-                                if (isInstalled)
-                                {
-                                    entry.IsInstalled = true;
-                                }
-                                else
-                                {
-                                    entry.IsInstalled = false;
-                                }
-
+                        // Mark any Store-ID entries not found in the catalog as known-not-installed.
+                        foreach (var entry in snapshot)
+                        {
+                            if (!entry.IsInstalledStateKnown && !string.IsNullOrWhiteSpace(entry.StoreId))
+                            {
+                                entry.IsInstalled = false;
                                 entry.IsInstalledStateKnown = true;
                             }
                         }

@@ -203,7 +203,7 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
         }
 
         var initialization = _initialization.Value;
-        if (!initialization.State.IsAvailable || initialization.Factory is null || initialization.StoreCatalog is null)
+        if (!initialization.State.IsAvailable || initialization.Factory is null)
         {
             return new WinGetQueryResult<IReadOnlyDictionary<string, CatalogPackage>>(null, true, initialization.State.Message);
         }
@@ -636,19 +636,19 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
                 _operationTracker.UpdateOperation(operationId, WinGetPackageOperationState.Queued, isIndeterminate: true);
                 break;
             case PackageInstallProgressState.Downloading:
-            {
-                var progressPercent = progress.BytesRequired > 0
-                    ? (uint?)Math.Min(100, (progress.BytesDownloaded * 100UL) / progress.BytesRequired)
-                    : null;
-                _operationTracker.UpdateOperation(
-                    operationId,
-                    WinGetPackageOperationState.Downloading,
-                    isIndeterminate: progress.BytesRequired == 0,
-                    progressPercent: progressPercent,
-                    bytesDownloaded: progress.BytesDownloaded,
-                    bytesRequired: progress.BytesRequired);
-                break;
-            }
+                {
+                    var progressPercent = progress.BytesRequired > 0
+                        ? (uint?)Math.Min(100, (progress.BytesDownloaded * 100UL) / progress.BytesRequired)
+                        : null;
+                    _operationTracker.UpdateOperation(
+                        operationId,
+                        WinGetPackageOperationState.Downloading,
+                        isIndeterminate: progress.BytesRequired == 0,
+                        progressPercent: progressPercent,
+                        bytesDownloaded: progress.BytesDownloaded,
+                        bytesRequired: progress.BytesRequired);
+                    break;
+                }
 
             case PackageInstallProgressState.Installing:
                 _operationTracker.UpdateOperation(operationId, WinGetPackageOperationState.Installing, isIndeterminate: true);
