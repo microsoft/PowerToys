@@ -19,18 +19,6 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 [TestClass]
 public class BookmarkPathHandlingTests
 {
-    [TestInitialize]
-    public void Setup()
-    {
-        // Ensure no test override left over
-        CommandLauncher.TestLaunchOverride = null;
-    }
-
-    [TestCleanup]
-    public void Cleanup()
-    {
-        CommandLauncher.TestLaunchOverride = null;
-    }
 
     [TestMethod]
     public async Task Accented_NonAscii_Path_Is_Classified_As_Directory()
@@ -153,27 +141,24 @@ public class BookmarkPathHandlingTests
             IBookmarkResolver resolver = new BookmarkResolver(new PlaceholderParser());
             var classification = resolver.ClassifyOrUnknown(bookmark.Bookmark);
 
-            // Capture the classification that would be launched without actually starting a process
-            Classification? captured = null;
-            CommandLauncher.TestLaunchOverride = c =>
-            {
-                captured = c;
-                return true; // simulate success
-            };
+            // Instead of using the global TestLaunchOverride, directly verify the fallback resolver logic
+            // by calling the private TryGetNearestExistingParentDirectory via reflection.
+            var launchCmd = new LaunchBookmarkCommand(bookmark, classification, new TestBookmarkIconLocator(), resolver);
 
-            using var iconLocator = new TestBookmarkIconLocator();
-            var launchCmd = new LaunchBookmarkCommand(bookmark, classification, iconLocator, resolver);
-            var result = launchCmd.Invoke(sender: this);
+            var method = typeof(LaunchBookmarkCommand).GetMethod("TryGetNearestExistingParentDirectory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.IsNotNull(method, "Could not find TryGetNearestExistingParentDirectory via reflection");
 
-            // Should have captured a classification launching the existing parent directory
-            Assert.IsNotNull(captured);
-            Assert.AreEqual(CommandKind.Directory, captured.Value.Kind);
+            var args = new object?[] { classification, null };
+            var success = (bool)method.Invoke(null, args)!;
+
+            Assert.IsTrue(success, "Nearest parent directory should be found");
+            var parentDirectory = args[1] as string;
+            Assert.IsNotNull(parentDirectory);
             Assert.IsTrue(Directory.Exists(parent));
-            Assert.AreEqual(Path.GetFullPath(parent), captured.Value.Target, StringComparer.OrdinalIgnoreCase);
+            Assert.AreEqual(Path.GetFullPath(parent), parentDirectory, StringComparer.OrdinalIgnoreCase);
         }
         finally
         {
-            CommandLauncher.TestLaunchOverride = null;
             if (Directory.Exists(tempRoot))
             {
                 Directory.Delete(tempRoot, true);

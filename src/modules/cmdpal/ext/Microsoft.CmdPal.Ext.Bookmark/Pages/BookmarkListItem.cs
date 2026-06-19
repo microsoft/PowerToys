@@ -24,6 +24,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
     private readonly IBookmarkResolver _commandResolver;
     private readonly IBookmarkIconLocator _iconLocator;
     private readonly IPlaceholderParser _placeholderParser;
+    private readonly IProcessLauncher _processLauncher;
     private readonly SupersedingAsyncValueGate<BookmarkListItemReclassifyResult> _classificationGate;
     private readonly TaskCompletionSource _initializationTcs = new();
     private readonly bool _isBandItem;
@@ -44,11 +45,13 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         IBookmarkResolver commandResolver,
         IBookmarkIconLocator iconLocator,
         IPlaceholderParser placeholderParser,
+        IProcessLauncher processLauncher,
         bool asBand = false)
     {
         ArgumentNullException.ThrowIfNull(bookmark);
         ArgumentNullException.ThrowIfNull(bookmarksManager);
         ArgumentNullException.ThrowIfNull(commandResolver);
+        ArgumentNullException.ThrowIfNull(processLauncher);
         _isBandItem = asBand;
         _bookmark = bookmark;
         _bookmarksManager = bookmarksManager;
@@ -56,6 +59,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         _commandResolver = commandResolver;
         _iconLocator = iconLocator;
         _placeholderParser = placeholderParser;
+        _processLauncher = processLauncher;
         _classificationGate = new SupersedingAsyncValueGate<BookmarkListItemReclassifyResult>(ClassifyAsync, ApplyClassificationResult);
         _ = _classificationGate.ExecuteAsync();
     }
@@ -109,7 +113,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
         ICommand command = classification.IsPlaceholder
             ? new BookmarkPlaceholderPage(_bookmark, _iconLocator, _commandResolver, _placeholderParser)
-            : new LaunchBookmarkCommand(_bookmark, classification, _iconLocator, _commandResolver);
+            : new LaunchBookmarkCommand(_bookmark, classification, _iconLocator, _commandResolver, _processLauncher);
 
         BuildSpecificContextMenuItems(classification, contextMenu);
         AddCommonContextMenuItems(_bookmark, _bookmarksManager, bookmarkSavedHandler, contextMenu);

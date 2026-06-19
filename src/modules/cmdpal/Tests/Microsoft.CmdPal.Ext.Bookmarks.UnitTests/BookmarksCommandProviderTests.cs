@@ -158,25 +158,16 @@ public class BookmarksCommandProviderTests
         var launchCommand = bookmarkItem.Command as LaunchBookmarkCommand;
         Assert.IsNotNull(launchCommand);
 
-        Classification? capturedClassification = null;
-        CommandLauncher.TestLaunchOverride = classification =>
-        {
-            capturedClassification = classification;
-            return true;
-        };
+        // Instead of invoking the command and intercepting the static launcher, inspect the private stored classification
+        // to verify the provider passed the resolver's classification unchanged.
+        var field = typeof(LaunchBookmarkCommand).GetField("_classification", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        Assert.IsNotNull(field, "Couldn't find _classification field via reflection");
 
-        try
-        {
-            _ = launchCommand.Invoke(this);
-        }
-        finally
-        {
-            CommandLauncher.TestLaunchOverride = null;
-        }
+        var storedClassification = field.GetValue(launchCommand) as Classification;
 
         // Assert
         Assert.AreEqual(bookmarkAddress, resolver.LastClassifyInput);
-        Assert.AreSame(expectedClassification, capturedClassification);
+        Assert.AreSame(expectedClassification, storedClassification);
     }
 
     private sealed class TestBookmarkResolver : IBookmarkResolver

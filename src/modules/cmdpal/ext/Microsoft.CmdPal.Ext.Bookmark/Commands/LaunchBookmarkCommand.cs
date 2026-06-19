@@ -90,7 +90,7 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
             });
     }
 
-    private static bool LaunchWithFilesystemFallback(Classification classification)
+    private bool LaunchWithFilesystemFallback(Classification classification)
     {
         if (TryLaunch(classification))
         {
@@ -120,11 +120,11 @@ internal sealed partial class LaunchBookmarkCommand : BaseObservable, IInvokable
         return TryLaunch(fallbackClassification);
     }
 
-    private static bool TryLaunch(Classification classification)
+    private bool TryLaunch(Classification classification)
     {
         try
         {
-            return CommandLauncher.Launch(classification);
+            return _processLauncher.Launch(classification);
         }
         catch (Exception ex)
         {

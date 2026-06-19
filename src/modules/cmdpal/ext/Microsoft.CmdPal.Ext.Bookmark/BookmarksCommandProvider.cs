@@ -24,6 +24,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
     private readonly IBookmarksManager _bookmarksManager;
     private readonly IBookmarkResolver _commandResolver;
     private readonly IBookmarkIconLocator _iconLocator = new IconLocator();
+    private readonly IProcessLauncher _processLauncher;
 
     public IBookmarksManager BookmarksManager => _bookmarksManager;
 
@@ -46,7 +47,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         return new BookmarksCommandProvider(new BookmarksManager(new FileBookmarkDataSource(StateJsonPath())));
     }
 
-    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager, IBookmarkResolver? commandResolver = null, IPlaceholderParser? placeholderParser = null)
+    internal BookmarksCommandProvider(IBookmarksManager bookmarksManager, IBookmarkResolver? commandResolver = null, IPlaceholderParser? placeholderParser = null, IProcessLauncher? processLauncher = null)
     {
         ArgumentNullException.ThrowIfNull(bookmarksManager);
         _placeholderParser = placeholderParser ?? new PlaceholderParser();
@@ -55,6 +56,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
         _bookmarksManager.BookmarkRemoved += OnBookmarkRemoved;
 
         _commandResolver = commandResolver ?? new BookmarkResolver(_placeholderParser);
+        _processLauncher = processLauncher ?? new ProductionProcessLauncher();
 
         Id = "Bookmarks";
         DisplayName = Resources.bookmarks_display_name;
@@ -67,7 +69,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
     private void OnBookmarkAdded(BookmarkData bookmarkData)
     {
-        var newItem = new BookmarkListItem(bookmarkData, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser);
+        var newItem = new BookmarkListItem(bookmarkData, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser, _processLauncher);
         lock (_bookmarksLock)
         {
             _bookmarks.Add(newItem);
@@ -96,7 +98,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
                 {
                     lock (_bookmarksLock)
                     {
-                        _bookmarks = [.. _bookmarksManager.Bookmarks.Select(bookmark => new BookmarkListItem(bookmark, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser))];
+                        _bookmarks = [.. _bookmarksManager.Bookmarks.Select(bookmark => new BookmarkListItem(bookmark, _bookmarksManager, _commandResolver, _iconLocator, _placeholderParser, _processLauncher))];
                         _commands = BuildTopLevelCommandsUnsafe();
                     }
 
@@ -152,6 +154,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
                     _commandResolver,
                     _iconLocator,
                     _placeholderParser,
+                    _processLauncher,
                     asBand: true))];
         }
 
