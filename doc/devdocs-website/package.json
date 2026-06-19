@@ -7,6 +7,9 @@
     "dev": "docmd dev",
     "build": "docmd build"
   },
+  "dependencies": {
+    "docmd-plugin-github-source-links": "file:./docmd-plugins/github-source-links"
+  },
   "devDependencies": {
     "@docmd/core": "0.8.6"
   }

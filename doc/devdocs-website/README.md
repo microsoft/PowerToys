@@ -23,8 +23,15 @@ GitHub Pages as an artifact, so nothing is written back to the repository.
 To change the documentation, edit the Markdown files under [`doc/devdocs`](../devdocs). The remaining
 files in this folder are maintained by hand and are safe to edit:
 
-- `docmd.config.json` &mdash; docmd configuration (title, source, output, and so on)
+- `docmd.config.json` &mdash; docmd configuration (title, source, output, plugins)
 - `package.json` &mdash; pins the docmd version used to build the site
+- `docmd-plugins/` &mdash; local build-time docmd plugins
+
+> [!TIP]
+> Link to repository files with repo-root-relative paths such as `/src/modules/.../Foo.cpp`.
+> VS Code resolves these against the workspace root (so they open the local file), and the
+> bundled `github-source-links` plugin rewrites them to
+> `https://github.com/microsoft/PowerToys/blob/main/...` on the published site.
 
 ## Building locally
 
