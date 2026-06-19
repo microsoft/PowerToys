@@ -442,7 +442,7 @@ public class Win32Program : IProgram
             {
                 var folderPath = Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify);
                 return !string.IsNullOrEmpty(folderPath)
-                       && IsPathInsideDirectory(path, folderPath);
+                       && PathHelpers.IsPathInsideDirectory(path, folderPath);
             }
         }
         catch (System.IO.FileLoadException e)
@@ -1092,28 +1092,6 @@ public class Win32Program : IProgram
     /// <c>true</c> if the program's resolved executable lives in a protected OS directory
     /// and should not be offered for uninstallation; otherwise <c>false</c>.
     /// </returns>
-    private static bool IsPathInsideDirectory(string path, string directory)
-    {
-        if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(directory))
-        {
-            return false;
-        }
-
-        try
-        {
-            // Normalize paths to full absolute paths and remove trailing separators
-            var fullPath = System.IO.Path.GetFullPath(path).TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
-            var fullDir = System.IO.Path.GetFullPath(directory).TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar;
-
-            // Use OrdinalIgnoreCase for Windows path comparisons
-            return fullPath.StartsWith(fullDir, StringComparison.OrdinalIgnoreCase);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private static bool IsProtectedSystemApp(Win32Program program)
     {
         // FullPath is the resolved target executable for both direct .exe apps and
@@ -1140,9 +1118,9 @@ public class Win32Program : IProgram
         // Win11 optional features (Notepad, Paint, Media Player) are MSIX-packaged
         // and resolve to that directory, but they DO have valid uninstallers via
         // Settings > Optional Features — blocking them would be incorrect.
-        return IsPathInsideDirectory(path, system32)
-            || IsPathInsideDirectory(path, sysWow64)
-            || IsPathInsideDirectory(path, systemApps);
+        return PathHelpers.IsPathInsideDirectory(path, system32)
+            || PathHelpers.IsPathInsideDirectory(path, sysWow64)
+            || PathHelpers.IsPathInsideDirectory(path, systemApps);
     }
 
     internal AppItem ToAppItem()
