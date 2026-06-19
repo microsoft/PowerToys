@@ -34,7 +34,6 @@
 		<None Remove="Assets\Settings\Modules\OOBE\pt-hero.light.png" />
 		<None Remove="SettingsXAML\Controls\Dashboard\CheckUpdateControl.xaml" />
 		<None Remove="SettingsXAML\Controls\Dashboard\ShortcutConflictControl.xaml" />
-		<None Remove="SettingsXAML\Controls\TitleBar\TitleBar.xaml" />
 	</ItemGroup>
 	<ItemGroup>
 		<Page Remove="SettingsXAML\App.xaml" />
@@ -175,9 +174,6 @@
 		<None Update="Assets\Settings\Scripts\DisableModule.ps1">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<Page Update="SettingsXAML\Controls\TitleBar\TitleBar.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
 		<Page Update="SettingsXAML\Controls\GPOInfoControl.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</Page>

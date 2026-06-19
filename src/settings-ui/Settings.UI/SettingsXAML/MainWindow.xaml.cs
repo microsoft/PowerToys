@@ -15,6 +15,8 @@ using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Data.Json;
 using WinRT.Interop;
 using WinUIEx;
@@ -137,15 +139,91 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void SetTitleBar()
         {
-            // We need to assign the window here so it can configure the custom title bar area correctly.
-            shellPage.TitleBar.Window = this;
             this.ExtendsContentIntoTitleBar = true;
+            this.SetTitleBar(AppTitleBar);
+            this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
+
+            // Set the title based on elevation state.
+            var loader = ResourceLoaderInstance.ResourceLoader;
+            AppTitleBar.Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
+#if DEBUG
+            AppTitleBar.Subtitle = "Debug";
+#endif
+
+            // Give ShellPage a reference to the SearchBox (defined here in XAML
+            // so drag regions are computed correctly by the built-in TitleBar).
+            shellPage.SearchBox = SearchBox;
+
+            // The built-in TitleBar's drag region auto-computation is unreliable
+            // in this setup. Manually register the SearchBox as a passthrough
+            // (non-draggable) region via InputNonClientPointerSource.
+            SearchBox.SizeChanged += (_, _) => UpdateSearchBoxPassthroughRegion();
+
+            // Update TitleBar pane toggle visibility when NavigationView display mode changes.
+            shellPage.DisplayModeChanged = mode =>
+            {
+                AppTitleBar.IsPaneToggleButtonVisible =
+                    mode == NavigationViewDisplayMode.Compact ||
+                    mode == NavigationViewDisplayMode.Minimal;
+            };
+
+            // Caption button theming — the built-in TitleBar handles drag regions
+            // and layout automatically, but caption button foreground colors need
+            // to be set explicitly for theme changes (WinUI known issue).
+            if (this.Content is FrameworkElement rootElement)
+            {
+                ApplyThemeToCaptionButtons(rootElement.ActualTheme);
+                rootElement.ActualThemeChanged += (_, _) => ApplyThemeToCaptionButtons(rootElement.ActualTheme);
+            }
+        }
+
+        private void ApplyThemeToCaptionButtons(ElementTheme theme)
+        {
+            this.AppWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
+            this.AppWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            if (theme == ElementTheme.Dark)
+            {
+                this.AppWindow.TitleBar.ButtonForegroundColor = Colors.White;
+                this.AppWindow.TitleBar.ButtonInactiveForegroundColor = Colors.DarkGray;
+            }
+            else
+            {
+                this.AppWindow.TitleBar.ButtonForegroundColor = Colors.Black;
+                this.AppWindow.TitleBar.ButtonInactiveForegroundColor = Colors.DarkGray;
+            }
         }
 
         public void NavigateToSection(Type type)
         {
             ShellPage.Navigate(type);
+        }
+
+        private void UpdateSearchBoxPassthroughRegion()
+        {
+            if (SearchBox.ActualWidth == 0)
+            {
+                return;
+            }
+
+            var scale = SearchBox.XamlRoot.RasterizationScale;
+            var transform = SearchBox.TransformToVisual(null);
+            var bounds = transform.TransformBounds(
+                new global::Windows.Foundation.Rect(0, 0, SearchBox.ActualWidth, SearchBox.ActualHeight));
+
+            var rect = new global::Windows.Graphics.RectInt32(
+                _X: (int)Math.Round(bounds.X * scale),
+                _Y: (int)Math.Round(bounds.Y * scale),
+                _Width: (int)Math.Round(bounds.Width * scale),
+                _Height: (int)Math.Round(bounds.Height * scale));
+
+            var source = Microsoft.UI.Input.InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
+            source.SetRegionRects(Microsoft.UI.Input.NonClientRegionKind.Passthrough, new[] { rect });
+        }
+
+        private void TitleBar_PaneToggleRequested(Microsoft.UI.Xaml.Controls.TitleBar sender, object args)
+        {
+            shellPage.ToggleNavigationPane();
         }
 
         public void CloseHiddenWindow()
@@ -201,5 +279,22 @@ namespace Microsoft.PowerToys.Settings.UI
         {
             ShellPage.EnsurePageIsSelected();
         }
+
+        // Search event forwarders — the SearchBox lives in MainWindow's XAML
+        // (required for TitleBar drag regions) but the search logic is in ShellPage.
+        private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+            => shellPage.HandleSearchTextChanged(sender, args);
+
+        private void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+            => shellPage.HandleSearchQuerySubmitted(sender, args);
+
+        private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+            => shellPage.HandleSearchSuggestionChosen(sender, args);
+
+        private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+            => shellPage.HandleSearchGotFocus(sender, e);
+
+        private void CtrlF_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+            => shellPage.HandleCtrlF(sender, args);
     }
 }

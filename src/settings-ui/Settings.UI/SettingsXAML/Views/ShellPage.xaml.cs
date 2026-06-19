@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Common.Search;
 using Common.Search.FuzzSearch;
 using ManagedCommon;
-using Microsoft.PowerToys.Settings.UI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
@@ -94,7 +93,18 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public static bool IsUserAnAdmin { get; set; }
 
-        public Controls.TitleBar TitleBar => AppTitleBar;
+        /// <summary>
+        /// Gets or sets the SearchBox control. The AutoSuggestBox lives in
+        /// MainWindow.xaml (inside the TitleBar) so drag regions work correctly.
+        /// MainWindow assigns this reference after InitializeComponent.
+        /// </summary>
+        public AutoSuggestBox SearchBox { get; set; }
+
+        /// <summary>
+        /// Callback invoked when the NavigationView display mode changes.
+        /// MainWindow uses this to update TitleBar.IsPaneToggleButtonVisible.
+        /// </summary>
+        public Action<NavigationViewDisplayMode> DisplayModeChanged { get; set; }
 
         private Dictionary<Type, NavigationViewItem> _navViewParentLookup = new Dictionary<Type, NavigationViewItem>();
         private List<string> _searchSuggestions = [];
@@ -346,11 +356,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void SetWindowTitle()
         {
-            var loader = ResourceLoaderInstance.ResourceLoader;
-            AppTitleBar.Title = App.IsElevated ? loader.GetString("SettingsWindow_AdminTitle") : loader.GetString("SettingsWindow_Title");
-#if DEBUG
-            AppTitleBar.Subtitle = "Debug";
-#endif
+            // Title is now set by MainWindow on the window-level TitleBar.
         }
 
         private void ShellPage_Loaded(object sender, RoutedEventArgs e)
@@ -360,21 +366,23 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SearchIndexService.BuildIndex();
             })
             .ContinueWith(_ => { });
+
+            // Wire the ItemTemplateSelector from ShellPage's resources to the
+            // SearchBox which lives in MainWindow's TitleBar XAML.
+            if (SearchBox != null
+                && this.Resources.TryGetValue("SearchSuggestionTemplateSelector", out var selector)
+                && selector is DataTemplateSelector templateSelector)
+            {
+                SearchBox.ItemTemplateSelector = templateSelector;
+            }
         }
 
         private void NavigationView_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)
         {
-            if (args.DisplayMode == NavigationViewDisplayMode.Compact || args.DisplayMode == NavigationViewDisplayMode.Minimal)
-            {
-                AppTitleBar.IsPaneButtonVisible = true;
-            }
-            else
-            {
-                AppTitleBar.IsPaneButtonVisible = false;
-            }
+            DisplayModeChanged?.Invoke(args.DisplayMode);
         }
 
-        private void PaneToggleBtn_Click(object sender, RoutedEventArgs e)
+        internal void ToggleNavigationPane()
         {
             navigationView.IsPaneOpen = !navigationView.IsPaneOpen;
         }
@@ -400,7 +408,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private List<SettingEntry> _lastSearchResults = new();
         private string _lastQueryText = string.Empty;
 
-        private async void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        internal async void HandleSearchTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             // Only respond to user input, not programmatic text changes
             if (args.Reason != AutoSuggestionBoxTextChangeReason.UserInput)
@@ -465,7 +473,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             sender.IsSuggestionListOpen = top.Count > 0;
         }
 
-        private void SearchBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        internal void HandleSearchSuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             // Do not navigate on arrow navigation. Let QuerySubmitted handle commits (Enter/click).
             // AutoSuggestBox will pass the chosen item via args.ChosenSuggestion to QuerySubmitted.
@@ -516,13 +524,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return assembly.GetType($"Microsoft.PowerToys.Settings.UI.Views.{pageTypeName}");
         }
 
-        private void CtrlF_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        internal void HandleCtrlF(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
             SearchBox.Focus(FocusState.Programmatic);
             args.Handled = true; // prevent further processing (e.g., unintended navigation)
         }
 
-        private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+        internal void HandleSearchGotFocus(object sender, RoutedEventArgs e)
         {
             var box = sender as AutoSuggestBox;
             var current = box?.Text?.Trim() ?? string.Empty;
@@ -606,7 +614,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             return list;
         }
 
-        private async void SearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        internal async void HandleSearchQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
         {
             // If a suggestion is selected, navigate directly
             if (args.ChosenSuggestion is SuggestionItem chosen)
