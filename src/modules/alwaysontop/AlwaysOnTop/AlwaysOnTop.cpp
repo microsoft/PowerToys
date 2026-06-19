@@ -234,6 +234,25 @@ LRESULT AlwaysOnTop::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lp
     {
         AlwaysOnTopSettings::instance().LoadSettings();
     }
+    else if (message == WM_QUERYENDSESSION)
+    {
+        // This WndProc returns 0 for unhandled messages (does not call
+        // DefWindowProc). Must explicitly return TRUE here or the OS treats
+        // it as a shutdown veto.
+        return TRUE;
+    }
+    else if (message == WM_ENDSESSION)
+    {
+        // wparam==FALSE means shutdown was vetoed; only quit on real shutdown.
+        // Without this, the message loop would block in GetMessageW until the
+        // OS quiesce timeout expired and forcibly terminated the process,
+        // producing an APPLICATION_HANG_QUIESCE Watson report.
+        if (wparam)
+        {
+            PostQuitMessage(0);
+        }
+        return 0;
+    }
     
     return 0;
 }
