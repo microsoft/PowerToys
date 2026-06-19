@@ -30,6 +30,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="dark_menu.h" />
     <ClInclude Include="icon_helpers.h" />
     <ClInclude Include="theme_listener.h" />
     <ClInclude Include="theme_helpers.h" />
