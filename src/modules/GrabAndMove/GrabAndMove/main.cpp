@@ -10,6 +10,8 @@
 
 #include "resource.h"
 
+#include <dwmapi.h>
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_hProvider,
     "Microsoft.PowerToys",
@@ -21,6 +23,7 @@ TRACELOGGING_DEFINE_PROVIDER(
 // Globals
 // ---------------------------------------------------------------------------
 static HINSTANCE g_hInstance = nullptr;
+static ULONG_PTR g_gdiplusToken = 0; // GDI+ token for overlay border rendering
 static HHOOK g_hhkKeyboard = nullptr;
 static HHOOK g_hhkMouse = nullptr;
 static HWND g_hMsgWnd = nullptr;
@@ -46,6 +49,29 @@ static HWND g_hOverlay = nullptr; // semi-transparent overlay during drag
 // Current target window rect for overlay info display
 static int g_overlayInfoX = 0, g_overlayInfoY = 0;
 static int g_overlayInfoW = 0, g_overlayInfoH = 0;
+
+// Visible frame overlay metrics. Computed once per drag/resize (cold path) and
+// reused while rendering - never recomputed in the mouse-move hot path.
+// Margins are the difference between GetWindowRect and the DWM extended frame
+// bounds (the invisible resize border), so the fill and border hug the visible
+// window. The border is drawn just inside the visible edge; Always On Top draws
+// its own border just outside that edge, so the two stack into a clean double
+// layer without Grab and Move having to widen its stroke.
+static int g_overlayMarginL = 0, g_overlayMarginT = 0, g_overlayMarginR = 0, g_overlayMarginB = 0;
+static int g_overlayCornerRadius = 0; // physical px; 0 = square corners
+static int g_overlayBorderThickness = 4; // physical px
+
+// Fluent "warning" gold - copy of WinUI SystemFillColorCaution
+// (used as a ThemeResource for warnings across the Settings UI). A Win32 layered
+// window can't resolve a ThemeResource, so the literal is required here.
+static constexpr COLORREF OVERLAY_BORDER_COLOR = RGB(255, 185, 0); // #FFB900
+
+// Border thickness in DIPs (scaled by the target window DPI).
+static constexpr int OVERLAY_BORDER_DIP = 4;
+
+// Translucent white wash painted over the visible window during a drag/resize,
+// matching the prior overlay. ~40% opacity (premultiplied white = 0x66666666).
+static constexpr BYTE OVERLAY_FILL_ALPHA = 0x66;
 
 static bool g_shouldAbsorbAlt =
     true; // true if we want to absorb Alt on the next keydown (set when Alt is pressed without dragging, cleared on next non-Alt key or Alt keyup)
@@ -343,9 +369,121 @@ static void SettingsWatcherThread(DWORD mainThreadId)
 static int g_overlayRenderedW = 0;
 static int g_overlayRenderedH = 0;
 
+// Maps the DWM window corner preference to a base radius in DIPs, matching
+// Always On Top (WindowCornerUtils::CornersRadius).
+static int CornerRadiusForWindow(HWND hwnd)
+{
+    int pref = 0; // DWMWCP_DEFAULT
+    if (DwmGetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &pref, sizeof(pref)) != S_OK)
+    {
+        return 0; // pre-Win11 / unsupported -> square corners
+    }
+
+    switch (pref)
+    {
+    case DWMWCP_ROUND:
+        return 8;
+    case DWMWCP_ROUNDSMALL:
+        return 4;
+    case DWMWCP_DEFAULT:
+        return 8;
+    default:
+        return 0; // DWMWCP_DONOTROUND
+    }
+}
+
+// Computes the overlay metrics (margins to the visible frame, corner radius, border
+// thickness) for the target window. Cold path only: called at the start of a
+// drag/resize and after un-maximize, never from the mouse-move hot path.
+static void PrepareOverlayMetrics(HWND target)
+{
+    g_overlayMarginL = g_overlayMarginT = g_overlayMarginR = g_overlayMarginB = 0;
+    g_overlayCornerRadius = 0;
+    g_overlayBorderThickness = OVERLAY_BORDER_DIP;
+
+    if (!target)
+    {
+        return;
+    }
+
+    const UINT dpi = GetDpiForWindow(target);
+    const float scale = (dpi != 0) ? dpi / 96.0f : 1.0f;
+
+    RECT windowRect{};
+    RECT frameRect{};
+    if (GetWindowRect(target, &windowRect) &&
+        SUCCEEDED(DwmGetWindowAttribute(target, DWMWA_EXTENDED_FRAME_BOUNDS, &frameRect, sizeof(frameRect))))
+    {
+        g_overlayMarginL = max(0, static_cast<int>(frameRect.left - windowRect.left));
+        g_overlayMarginT = max(0, static_cast<int>(frameRect.top - windowRect.top));
+        g_overlayMarginR = max(0, static_cast<int>(windowRect.right - frameRect.right));
+        g_overlayMarginB = max(0, static_cast<int>(windowRect.bottom - frameRect.bottom));
+    }
+
+    g_overlayCornerRadius = static_cast<int>(CornerRadiusForWindow(target) * scale);
+    g_overlayBorderThickness = static_cast<int>(OVERLAY_BORDER_DIP * scale);
+}
+
+// Draws an antialiased (optionally rounded) border stroke fully inside `rect` using
+// GDI+. The stroke hugs the inner edge of `rect` (the visible window frame).
+static void DrawOverlayBorder(Gdiplus::Graphics& graphics, const RECT& rect, int thickness, int radius)
+{
+    const int w = rect.right - rect.left;
+    const int h = rect.bottom - rect.top;
+    if (w <= 0 || h <= 0 || thickness <= 0)
+    {
+        return;
+    }
+
+    // Keep the whole stroke inside the visible frame on every side.
+    thickness = min(thickness, min(w, h) / 2);
+    if (thickness <= 0)
+    {
+        return;
+    }
+
+    const float half = thickness / 2.0f;
+    const Gdiplus::RectF path(
+        rect.left + half,
+        rect.top + half,
+        static_cast<Gdiplus::REAL>(w) - thickness,
+        static_cast<Gdiplus::REAL>(h) - thickness);
+
+    graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+    Gdiplus::Pen pen(
+        Gdiplus::Color(255, GetRValue(OVERLAY_BORDER_COLOR), GetGValue(OVERLAY_BORDER_COLOR), GetBValue(OVERLAY_BORDER_COLOR)),
+        static_cast<Gdiplus::REAL>(thickness));
+
+    if (radius <= 0)
+    {
+        graphics.DrawRectangle(&pen, path);
+        return;
+    }
+
+    // The stroke is centred, so the path corner radius is the window radius minus
+    // half the thickness; that keeps the outer edge aligned with the window corner.
+    const float pathRadius = max(0.0f, radius - half);
+    const float diameter = min(pathRadius * 2.0f, min(path.Width, path.Height));
+    if (diameter <= 0.0f)
+    {
+        graphics.DrawRectangle(&pen, path);
+        return;
+    }
+
+    Gdiplus::GraphicsPath border;
+    border.AddArc(path.X, path.Y, diameter, diameter, 180.0f, 90.0f);
+    border.AddArc(path.GetRight() - diameter, path.Y, diameter, diameter, 270.0f, 90.0f);
+    border.AddArc(path.GetRight() - diameter, path.GetBottom() - diameter, diameter, diameter, 0.0f, 90.0f);
+    border.AddArc(path.X, path.GetBottom() - diameter, diameter, diameter, 90.0f, 90.0f);
+    border.CloseFigure();
+    graphics.DrawPath(&pen, &border);
+}
+
 // Renders the overlay surface using per-pixel alpha via UpdateLayeredWindow.
-// The white background is painted at ~40% opacity; the geometry label box is
-// painted fully opaque so it remains legible regardless of what is beneath.
+// A translucent white wash covers the visible window (matching the prior overlay)
+// with a tight warning-gold border on top, both hugging the visible window frame;
+// the optional geometry label box is painted fully opaque so it remains legible
+// regardless of what is beneath.
 static void RenderOverlayContent(HWND hwnd, int cw, int ch)
 {
     if (!hwnd || cw <= 0 || ch <= 0)
@@ -372,8 +510,52 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
     HDC     memDC   = CreateCompatibleDC(screenDC);
     HBITMAP hOldBmp = static_cast<HBITMAP>(SelectObject(memDC, hDib));
 
-    // Premultiplied white at ~40% opacity: A=0x66, R=G=B=0x66 → 0x66666666
-    memset(pBits, 0x66, static_cast<size_t>(cw) * ch * sizeof(DWORD));
+    // Start fully transparent.
+    memset(pBits, 0, static_cast<size_t>(cw) * ch * sizeof(DWORD));
+
+    // We apply a translucent white rect with a gold border. 
+    // The overlay window spans GetWindowRect, so inset by
+    // the invisible-border margins so both hug the visible edge; Always On Top draws
+    // its own border just outside that edge, giving a clean double layer.
+    {
+        const RECT visible = {
+            g_overlayMarginL,
+            g_overlayMarginT,
+            cw - g_overlayMarginR,
+            ch - g_overlayMarginB
+        };
+        const int vw = visible.right - visible.left;
+        const int vh = visible.bottom - visible.top;
+
+        Gdiplus::Bitmap bitmap(cw, ch, cw * 4, PixelFormat32bppPARGB, reinterpret_cast<BYTE*>(pBits));
+        Gdiplus::Graphics graphics(&bitmap);
+        graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
+
+        if (vw > 0 && vh > 0)
+        {
+            Gdiplus::SolidBrush fillBrush(Gdiplus::Color(OVERLAY_FILL_ALPHA, 255, 255, 255));
+            if (g_overlayCornerRadius > 0)
+            {
+                // Round the wash to match the window corners (and the border).
+                const float d = min(static_cast<float>(g_overlayCornerRadius) * 2.0f,
+                                    static_cast<float>(min(vw, vh)));
+                Gdiplus::GraphicsPath fillPath;
+                fillPath.AddArc(static_cast<float>(visible.left), static_cast<float>(visible.top), d, d, 180.0f, 90.0f);
+                fillPath.AddArc(static_cast<float>(visible.right) - d, static_cast<float>(visible.top), d, d, 270.0f, 90.0f);
+                fillPath.AddArc(static_cast<float>(visible.right) - d, static_cast<float>(visible.bottom) - d, d, d, 0.0f, 90.0f);
+                fillPath.AddArc(static_cast<float>(visible.left), static_cast<float>(visible.bottom) - d, d, d, 90.0f, 90.0f);
+                fillPath.CloseFigure();
+                graphics.FillPath(&fillBrush, &fillPath);
+            }
+            else
+            {
+                graphics.FillRectangle(&fillBrush, visible.left, visible.top, vw, vh);
+            }
+        }
+
+        DrawOverlayBorder(graphics, visible, g_overlayBorderThickness, g_overlayCornerRadius);
+        graphics.Flush();
+    }
 
     if (g_showGeometry)
     {
@@ -1045,6 +1227,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 g_dragTarget = hwnd;
                 g_dragStart = pt;
                 GetWindowRect(hwnd, &g_dragWndRect);
+                PrepareOverlayMetrics(hwnd);
 
                 // Show the semi-transparent overlay on top of the target (persistent window – fix #9)
                 ShowOverlay(g_dragWndRect, g_curSizeAll);
@@ -1112,6 +1295,7 @@ static LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
                 g_resizeTarget = hwnd;
                 g_resizeLast = pt;
                 GetWindowRect(hwnd, &g_resizeWndRect);
+                PrepareOverlayMetrics(hwnd);
 
                 g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
                 ShowOverlay(g_resizeWndRect, CursorForHandle(g_currentHandle));
@@ -1183,6 +1367,9 @@ static void HandleDragMove(POINT pt)
 
             g_dragStart = pt;
             g_dragWndRect = {newX, newY, newX + restoredW, newY + restoredH};
+
+            // Corner radius / invisible-border margins differ once restored.
+            PrepareOverlayMetrics(g_dragTarget);
         }
     }
 
@@ -1229,6 +1416,9 @@ static void HandleDragResize(POINT pt)
             SetWindowPos(g_resizeTarget, nullptr, newLeft, newTop, newW, newH,
                          SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
             g_resizeWndRect = {newLeft, newTop, newLeft + newW, newTop + newH};
+
+            // Corner radius / invisible-border margins differ once restored.
+            PrepareOverlayMetrics(g_resizeTarget);
 
             g_resizeLast = pt;
             g_currentHandle = GetClosestHandle(pt, g_resizeWndRect);
@@ -1375,6 +1565,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
     INITCOMMONCONTROLSEX commonControls = { sizeof(commonControls), ICC_STANDARD_CLASSES };
     InitCommonControlsEx(&commonControls);
 
+    // Initialise GDI+ for antialiased overlay border rendering
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    Gdiplus::GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, nullptr);
+
     // Register a message-only window class
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(wc);
@@ -1387,13 +1581,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         return 1;
     }
 
-    // Register the overlay window class (white background, ARROW cursor)
+    // Register the overlay window class (layered per-pixel-alpha surface, ARROW cursor)
     WNDCLASSEXW overlayWindowClass = {};
     overlayWindowClass.cbSize = sizeof(overlayWindowClass);
     overlayWindowClass.lpfnWndProc = DefWindowProcW;
     overlayWindowClass.hInstance = hInstance;
     overlayWindowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
-    overlayWindowClass.hbrBackground = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+    overlayWindowClass.hbrBackground = nullptr; // per-pixel alpha via UpdateLayeredWindow
     overlayWindowClass.lpszClassName = OVERLAY_CLASS_NAME;
     if (!RegisterClassExW(&overlayWindowClass))
     {
@@ -1482,6 +1676,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         g_hOverlay = nullptr;
     }
     RemoveTrayIcon();
+    if (g_gdiplusToken)
+    {
+        Gdiplus::GdiplusShutdown(g_gdiplusToken);
+        g_gdiplusToken = 0;
+    }
     TraceLoggingUnregister(g_hProvider);
 
     return static_cast<int>(msg.wParam);
