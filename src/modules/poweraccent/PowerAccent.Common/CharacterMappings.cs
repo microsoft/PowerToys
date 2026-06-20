@@ -130,7 +130,7 @@ public static class CharacterMappings
             [LetterKey.VK_L] = ["ł"],
             [LetterKey.VK_N] = ["л"],
             [LetterKey.VK_M] = ["₼"],
-            [LetterKey.VK_P] = ["£", "₽"],
+            [LetterKey.VK_P] = ["£", "₽", "₱"],
             [LetterKey.VK_R] = ["₹", "៛", "﷼"],
             [LetterKey.VK_S] = ["$", "₪"],
             [LetterKey.VK_T] = ["₮", "₺", "₸"],
