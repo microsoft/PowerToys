@@ -97,6 +97,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 
                     // User/globalStorage/state.vscdb - history.recentlyOpenedPathsList - vscode v1.64 or later
                     var vscode_storage_db = Path.Combine(vscodeInstance.AppData, "User/globalStorage/state.vscdb");
+                    var vscode_shared_storage_db = GetSharedStorageDbPath(vscodeInstance);
 
                     if (File.Exists(vscode_storage))
                     {
@@ -109,10 +110,44 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
                         var storageDbResults = GetWorkspacesInVscdb(vscodeInstance, vscode_storage_db);
                         results.AddRange(storageDbResults);
                     }
+
+                    if (!string.IsNullOrEmpty(vscode_shared_storage_db) && File.Exists(vscode_shared_storage_db))
+                    {
+                        var sharedStorageDbResults = GetWorkspacesInVscdb(vscodeInstance, vscode_shared_storage_db);
+                        results.AddRange(sharedStorageDbResults);
+                    }
                 }
 
                 return results;
             }
+        }
+
+
+        private string GetSharedStorageDbPath(VSCodeInstance vscodeInstance)
+        {
+            var appDataDirectoryInfo = new DirectoryInfo(vscodeInstance.AppData);
+            var portableDataDirectoryInfo = appDataDirectoryInfo.Parent;
+            if (portableDataDirectoryInfo != null &&
+                portableDataDirectoryInfo.Name.Equals("data", StringComparison.OrdinalIgnoreCase))
+            {
+                var installRoot = portableDataDirectoryInfo.Parent?.FullName;
+                if (!string.IsNullOrEmpty(installRoot))
+                {
+                    return Path.Combine(installRoot, "data-shared", "sharedStorage", "state.vscdb");
+                }
+            }
+
+            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            return Path.GetFileName(vscodeInstance.AppData) switch
+            {
+                "Code" => Path.Combine(userProfile, ".vscode-shared", "sharedStorage", "state.vscdb"),
+                "Code - Insiders" => Path.Combine(userProfile, ".vscode-insiders-shared", "sharedStorage", "state.vscdb"),
+                "Code - Exploration" => Path.Combine(userProfile, ".vscode-exploration-shared", "sharedStorage", "state.vscdb"),
+                "VSCodium" => Path.Combine(userProfile, ".vscodium-shared", "sharedStorage", "state.vscdb"),
+                "VSCodium - Insiders" => Path.Combine(userProfile, ".vscodium-insiders-shared", "sharedStorage", "state.vscdb"),
+                _ => string.Empty,
+            };
         }
 
         private List<VSCodeWorkspace> GetWorkspacesInJson(VSCodeInstance vscodeInstance, string filePath)
