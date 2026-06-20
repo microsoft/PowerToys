@@ -537,7 +537,8 @@ public static class CharacterMappings
             [LetterKey.VK_COMMA] = ["“", "”", "‘", "’", "«", "»"],
         }),
 
-        new(Language.PJ, "Pitjantjatjara", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        // This language set covers both Pitjantjatjara and Yankunytjatjara dialects
+        new(Language.PJT, "Pitjantjatjara", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_L] = ["ḻ"],
             [LetterKey.VK_N] = ["ṉ"],
@@ -732,7 +733,7 @@ public static class CharacterMappings
         Language.NL,
         Language.NO,
         Language.PI,
-        Language.PJ,
+        Language.PJT,
         Language.PL,
         Language.PT,
         Language.RO,
