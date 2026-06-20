@@ -205,6 +205,8 @@ This applies only to a single literal digit. A range such as `1 - 8` is a free-f
 
 Special keys are enclosed between `<` and `>` and correspond to a key that should be displayed in a certain way. If the interpreter of the manifest file can't understand the content, the brackets should be left out.
 
+By convention these tokens are written as double-quoted strings in the YAML (for example `"<Enter>"` and `"<9>"`), matching the quoting used for punctuation key values. YAML treats the quoted and unquoted forms identically, so quoting is for consistency rather than a strict requirement for bracketed tokens.
+
 |Name|Description|
 |----|-----------|
 |`<Office>`| Corresponds to the Office key on some Windows keyboards |
