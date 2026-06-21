@@ -40,22 +40,53 @@ public partial class AliasManager : ObservableObject
 
     public bool CheckAlias(string searchText)
     {
+        // Try exact match first (handles both direct aliases like ">" and
+        // indirect aliases when the user types exactly "file ").
         if (_settingsService.Settings.Aliases.TryGetValue(searchText, out var alias))
         {
-            try
-            {
-                var topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
-                if (topLevelCommand is not null)
-                {
-                    WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
+            return TryFireAlias(alias, remainingText: string.Empty);
+        }
 
-                    WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
-                    return true;
-                }
-            }
-            catch
+        // For indirect aliases the debounce timer may deliver text beyond
+        // the prefix (e.g. "file test" when the user typed fast). Check if
+        // the search text starts with any known indirect alias prefix (#41736).
+        foreach (var kv in _settingsService.Settings.Aliases)
+        {
+            var candidateAlias = kv.Value;
+            if (!candidateAlias.IsDirect
+                && searchText.Length > kv.Key.Length
+                && searchText.StartsWith(kv.Key, StringComparison.Ordinal))
             {
+                var extraText = searchText[kv.Key.Length..];
+                return TryFireAlias(candidateAlias, extraText);
             }
+        }
+
+        return false;
+    }
+
+    private bool TryFireAlias(CommandAlias alias, string remainingText)
+    {
+        try
+        {
+            var topLevelCommand = _topLevelCommandManager.LookupCommand(alias.CommandId);
+            if (topLevelCommand is not null)
+            {
+                WeakReferenceMessenger.Default.Send<ClearSearchMessage>();
+                WeakReferenceMessenger.Default.Send<PerformCommandMessage>(topLevelCommand.GetPerformCommandMessage());
+
+                // If there was text typed after the alias prefix, forward it so
+                // keystrokes aren't lost (#41736).
+                if (!string.IsNullOrEmpty(remainingText))
+                {
+                    WeakReferenceMessenger.Default.Send(new SetSearchTextMessage(remainingText));
+                }
+
+                return true;
+            }
+        }
+        catch
+        {
         }
 
         return false;

@@ -30,6 +30,7 @@ public sealed partial class SearchBar : UserControl,
     IRecipient<FocusSearchBoxMessage>,
     IRecipient<UpdateSuggestionMessage>,
     IRecipient<FocusParamMessage>,
+    IRecipient<SetSearchTextMessage>,
     ICurrentPageAware
 {
     private readonly DispatcherQueue _queue = DispatcherQueue.GetForCurrentThread();
@@ -39,6 +40,9 @@ public sealed partial class SearchBar : UserControl,
     /// </summary>
     private readonly DispatcherQueueTimer _debounceTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private bool _isBackspaceHeld;
+
+    // Text to apply after the next page navigation completes (alias overflow, #41736).
+    private string? _pendingSearchText;
 
     // Inline text suggestions
     // In 0.4-0.5 we would replace the text of the search box with the TextToSuggest
@@ -74,7 +78,6 @@ public sealed partial class SearchBar : UserControl,
 
     private static void OnCurrentPageViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        //// TODO: If the Debounce timer hasn't fired, we may want to store the current Filter in the OldValue/prior VM, but we don't want that to go actually do work...
         var @this = (SearchBar)d;
 
         if (@this is not null
@@ -86,10 +89,30 @@ public sealed partial class SearchBar : UserControl,
         if (@this is not null
             && e.NewValue is PageViewModel page)
         {
-            // TODO: In some cases we probably want commands to clear a filter
-            // somewhere in the process, so we need to figure out when that is.
-            @this.FilterBox.Text = page.SearchTextBox;
+            // Stop any pending debounce so a stale callback doesn't overwrite
+            // the new page's search text after we set it here (#41736).
+            @this._debounceTimer.Stop();
+
+            // If an alias stored overflow text, apply it instead of the page default.
+            var pending = @this._pendingSearchText;
+            @this._pendingSearchText = null;
+
+            var textToSet = pending ?? page.SearchTextBox;
+            @this.FilterBox.Text = textToSet;
             @this.FilterBox.Select(@this.FilterBox.Text.Length, 0);
+
+            if (pending is not null)
+            {
+                // Defer pushing overflow text into the ViewModel so the page
+                // can finish initializing without a premature cancellation.
+                @this._queue.TryEnqueue(() =>
+                {
+                    if (@this.CurrentPageViewModel == page)
+                    {
+                        page.SearchTextBox = textToSet;
+                    }
+                });
+            }
 
             page.PropertyChanged += @this.Page_PropertyChanged;
 
@@ -123,14 +146,25 @@ public sealed partial class SearchBar : UserControl,
         WeakReferenceMessenger.Default.Register<FocusSearchBoxMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateSuggestionMessage>(this);
         WeakReferenceMessenger.Default.Register<FocusParamMessage>(this);
+        WeakReferenceMessenger.Default.Register<SetSearchTextMessage>(this);
     }
 
     public void ClearSearch()
     {
-        // TODO GH #239 switch back when using the new MD text block
-        // _ = _queue.EnqueueAsync(() =>
+        // Cancel any pending debounce to prevent stale text from being
+        // written after the clear (fixes alias keystroke race #41736).
+        _debounceTimer.Stop();
+
+        // Capture the current page so the queued clear only applies if we're
+        // still on the same page (avoids clearing a newly-navigated page).
+        var page = CurrentPageViewModel;
         _queue.TryEnqueue(new(() =>
         {
+            if (CurrentPageViewModel != page)
+            {
+                return;
+            }
+
             this.FilterBox.Text = string.Empty;
 
             if (CurrentPageViewModel is not null)
@@ -498,6 +532,12 @@ public sealed partial class SearchBar : UserControl,
     }
 
     public void Receive(FocusSearchBoxMessage message) => Focus();
+
+    public void Receive(SetSearchTextMessage message)
+    {
+        // Store the text to apply after the next page navigation (#41736).
+        _pendingSearchText = message.Text;
+    }
 
     private void Focus()
     {
