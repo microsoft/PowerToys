@@ -1326,6 +1326,7 @@ pch
 pchast
 PCIDLIST
 PCTSTR
+PCUITEMID
 PCWSTR
 pdbs
 PDBs
@@ -1365,6 +1366,7 @@ pii
 pinfo
 pinvoke
 pipename
+PITEMID
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI

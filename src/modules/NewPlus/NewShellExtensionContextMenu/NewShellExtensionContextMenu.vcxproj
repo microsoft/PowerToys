@@ -16,13 +16,11 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -124,6 +122,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
     <ClInclude Include="settings.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="new_utilities.h" />
+    <ClInclude Include="newplus_icon_utilities.h" />
     <ClInclude Include="RuntimeRegistration.h" />
     <ClInclude Include="resource.base.h" />
     <ClInclude Include="template_folder.h" />
@@ -134,6 +133,7 @@ MakeAppx.exe pack /d . /p $(OutDir)NewPlusPackage.msix /nv</Command>
   <ItemGroup>
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="new_utilities.cpp" />
+    <ClCompile Include="newplus_icon_utilities.cpp" />
     <ClCompile Include="shell_context_menu.cpp" />
     <ClCompile Include="shell_context_sub_menu.cpp" />
     <ClCompile Include="shell_context_sub_menu_item.cpp" />

@@ -42,4 +42,5 @@ protected:
     ComPtr<IUnknown> site_of_folder;
     newplus::template_folder* templates = nullptr;
     std::vector<HBITMAP> bitmap_handles;
+    POINT mouse_position_at_time_of_invoke = {0, 0};
 };
