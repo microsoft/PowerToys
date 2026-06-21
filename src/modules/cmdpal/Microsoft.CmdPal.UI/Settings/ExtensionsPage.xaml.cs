@@ -93,4 +93,16 @@ public sealed partial class ExtensionsPage : Page
             Logger.LogError("Error when showing FallbackRankerDialog", ex);
         }
     }
+
+    private async void ReorderExtensions_OnClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await ExtensionRankerDialog!.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Error when showing ExtensionRankerDialog", ex);
+        }
+    }
 }
