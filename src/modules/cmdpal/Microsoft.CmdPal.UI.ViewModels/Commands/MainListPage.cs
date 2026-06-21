@@ -691,10 +691,11 @@ public sealed partial class MainListPage : DynamicListPage,
         // Alias matching: exact match is overwhelming priority, substring match adds a small boost
         var aliasBoost = isAliasMatch ? 9001 : (isAliasSubstringMatch ? 1 : 0);
 
-        // Title matching: exact title match ranks just below alias, prefix match gets moderate boost
+        // Title matching: exact title match ranks just below alias, prefix match gets moderate boost.
+        // Prefix boost requires query length >= 3 so single-character queries don't overwhelm history.
         var titleMatchBoost = string.Equals(title, query.Original, StringComparison.OrdinalIgnoreCase)
             ? 9000
-            : title.StartsWith(query.Original, StringComparison.OrdinalIgnoreCase)
+            : query.Original.Length >= 3 && title.StartsWith(query.Original, StringComparison.OrdinalIgnoreCase)
                 ? 100
                 : 0;
 

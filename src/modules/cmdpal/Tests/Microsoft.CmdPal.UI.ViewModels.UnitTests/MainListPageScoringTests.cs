@@ -61,6 +61,7 @@ public partial class MainListPageScoringTests
     [TestMethod]
     public void PrefixMatch_ScoresHigherThan_SubstringMatch()
     {
+        // Prefix boost requires query length >= 3
         var prefixScore = Score("Term", "Terminal");
         var substringScore = Score("Term", "Windows Terminal");
 
