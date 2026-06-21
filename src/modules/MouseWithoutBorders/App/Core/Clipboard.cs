@@ -574,8 +574,30 @@ internal static class Clipboard
             }
             else
             {
+                // Create received files in the same context that the destination folder is created
+                // in. For per-user storage (the user's Desktop) that means as the logged-on user, so
+                // the file ends up owned by that user and inherits the folder's permissions. On the
+                // logon/screen-saver desktop the storage lives under Program Files where there is no
+                // interactive user to impersonate, so create the file directly.
+                void CreateDestinationFile(string path)
+                {
+                    if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
+                    {
+                        m = new FileStream(path, FileMode.Create);
+                    }
+                    else
+                    {
+                        _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                        {
+                            m = new FileStream(path, FileMode.Create);
+                        });
+                    }
+                }
+
                 if (postAct.Equals("desktop", StringComparison.OrdinalIgnoreCase))
                 {
+                    // Create the folder and open the file in a single impersonated scope so both
+                    // are owned by the logged-on user. This branch always targets the user's Desktop.
                     _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                     {
                         savingFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\MouseWithoutBorders\\";
@@ -584,22 +606,22 @@ internal static class Clipboard
                         {
                             _ = Directory.CreateDirectory(savingFolder);
                         }
-                    });
 
-                    tempFile = savingFolder + Path.GetFileName(fileName);
-                    m = new FileStream(tempFile, FileMode.Create);
+                        tempFile = savingFolder + Path.GetFileName(fileName);
+                        m = new FileStream(tempFile, FileMode.Create);
+                    });
                 }
                 else if (postAct.Contains("mspaint"))
                 {
                     tempFile = Common.GetMyStorageDir() + @"ScreenCapture-" +
                         remoteMachine + ".png";
-                    m = new FileStream(tempFile, FileMode.Create);
+                    CreateDestinationFile(tempFile);
                 }
                 else
                 {
                     tempFile = Common.GetMyStorageDir();
                     tempFile += Path.GetFileName(fileName);
-                    m = new FileStream(tempFile, FileMode.Create);
+                    CreateDestinationFile(tempFile);
                 }
 
                 Logger.Log("==> " + tempFile);
