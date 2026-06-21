@@ -258,16 +258,16 @@ If you don't configure this policy, the user will be able to control the setting
       <string id="ConfigureEnabledUtilityFileLocksmith">File Locksmith: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerSVGPreview">SVG file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerMarkdownPreview">Markdown file preview: Configure enabled state</string>
-      <string id="MarkdownAllowLocalImages">Markdown preview: Show local images - Configure enabled state</string>
-      <string id="MarkdownAllowLocalImagesDescription">This policy configures whether local and network images should be displayed in Markdown file previews.
+      <string id="MarkdownAllowLocalImages">Markdown preview: Show images from local and network source</string>
+      <string id="MarkdownAllowLocalImagesDescription">This policy configures whether images from local and network (UNC) sources should be displayed in Markdown file previews.
 
-If you enable this setting, images from the document's folder (including network/UNC paths) will always be shown and the user won't be able to disable it.
+If you enable this setting, images from the document's folder and network shares will always be shown and the user won't be able to disable it.
 
 If you disable this setting, all images will be blocked and the user won't be able to enable local image rendering.
 
 If you don't configure this setting, users are able to enable or disable showing local images.
 
-Note: Online/remote images (http/https URLs) are always blocked regardless of this setting.
+Note: Online/remote images (http/https URLs) are always blocked regardless of this setting. Images are rendered inside a sandboxed WebView2 control with scripts disabled. The Mark-of-the-Web (Zone Identifier) is not checked; access is controlled by path validation against the document's directory (local) or share root (UNC).
 </string>
       <string id="ConfigureEnabledUtilityFileExplorerMonacoPreview">Source code file preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityFileExplorerPDFPreview">PDF file preview: Configure enabled state</string>
