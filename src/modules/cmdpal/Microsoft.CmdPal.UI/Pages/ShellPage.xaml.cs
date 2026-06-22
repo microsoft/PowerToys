@@ -67,6 +67,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
+    private readonly ISettingsService _settingsService;
+
     private SettingsWindow? _settingsWindow;
     private DockWindowManager? _dockWindowManager;
 
@@ -92,10 +94,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public ShellPage()
     {
-        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        var settings = _settingsService.Settings;
         this.ExpandedMode = !settings.CompactMode;
 
         this.InitializeComponent();
+
+        // React to the compact-mode setting changing at runtime. Toggling compact mode off
+        // must immediately expand the (possibly collapsed) shell back out to its full UI.
+        _settingsService.SettingsChanged += OnSettingsChanged;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -663,6 +670,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         if (!settings.CompactMode)
         {
+            // Compact mode is disabled (possibly just toggled off at runtime): always present
+            // the full expanded UI so we don't stay stuck in the collapsed search-only layout.
+            HandleExpandCompactOnUiThread(true);
             return;
         }
 
@@ -917,6 +927,19 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
+    private void OnSettingsChanged(ISettingsService sender, SettingsModel args)
+    {
+        _ = DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            UpdateCompactModeForCurrentPage();
+        });
+    }
+
     public void Receive(ExpandCompactModeMessage message)
     {
         // Re-evaluate from the current authoritative page state rather than applying the
@@ -971,6 +994,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _isDisposed = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
+        _settingsService.SettingsChanged -= OnSettingsChanged;
 
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
