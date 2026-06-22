@@ -707,7 +707,7 @@ public sealed partial class MainWindow : WindowEx,
         // actually shown. On a cold launch these are first set during
         // construction before the HWND has ever been displayed, and DWM doesn't
         // reliably honor the border color until the window exists on-screen —
-        // which left the faint OS outline visible until the chrome was toggled. 
+        // which left the faint OS outline visible until the chrome was toggled.
         ApplyHwndBorderAttributes(_hwndFrameVisible ?? false);
 
         // Once we're done, uncloak to avoid all animations
