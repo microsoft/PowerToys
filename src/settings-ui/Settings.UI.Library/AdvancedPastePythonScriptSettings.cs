@@ -36,20 +36,25 @@ public sealed class AdvancedPastePythonScriptSettings
     [JsonPropertyName("trustedScriptHashes")]
     public Dictionary<string, string> TrustedScriptHashes { get; set; } = [];
 
-    // Legacy properties for backward compatibility during migration
+    // Legacy properties — read for migration, never written back
     [JsonPropertyName("isEnabled")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? IsEnabled { get; set; }
 
     [JsonPropertyName("useWsl")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public bool? UseWsl { get; set; }
 
     [JsonPropertyName("scriptsFolder")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string ScriptsFolder { get; set; }
 
     [JsonPropertyName("pythonExecutablePath")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string PythonExecutablePath { get; set; }
 
     [JsonPropertyName("wslDistribution")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string WslDistribution { get; set; }
 
     /// <summary>
@@ -57,7 +62,9 @@ public sealed class AdvancedPastePythonScriptSettings
     /// </summary>
     public void MigrateLegacyIfNeeded()
     {
-        if (IsEnabled.HasValue)
+        // Only migrate if Mode hasn't been set by the new UI yet
+        // (i.e., still at default "disabled") AND legacy fields are present.
+        if (IsEnabled.HasValue && string.Equals(Mode, "disabled", System.StringComparison.OrdinalIgnoreCase))
         {
             // Migrate from old format
             if (!IsEnabled.Value)
@@ -87,13 +94,13 @@ public sealed class AdvancedPastePythonScriptSettings
             {
                 WslSettings.Distribution = WslDistribution;
             }
-
-            // Clear legacy fields
-            IsEnabled = null;
-            UseWsl = null;
-            ScriptsFolder = null;
-            PythonExecutablePath = null;
-            WslDistribution = null;
         }
+
+        // Always clear legacy fields so they don't persist
+        IsEnabled = null;
+        UseWsl = null;
+        ScriptsFolder = null;
+        PythonExecutablePath = null;
+        WslDistribution = null;
     }
 }
