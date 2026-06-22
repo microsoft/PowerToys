@@ -107,6 +107,10 @@ public sealed partial class MainWindow : WindowEx,
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
 
+    // Tracks whether the visible card is currently expanded, so the card-height clamp can be
+    // recomputed (e.g. after a settings hot-reload or DPI change) without resetting it.
+    private bool _compactExpanded;
+
     private DevRibbon? _devRibbon;
 
     private MainWindowViewModel ViewModel { get; }
@@ -471,8 +475,10 @@ public sealed partial class MainWindow : WindowEx,
 
         ApplyHwndFrameMode(ShouldShowHwndFrame(settings));
 
-        // Start collapsed: the card shrinks to just the search box until there is a query.
-        HandleExpandCompactOnUiThread(false);
+        // Re-apply the card-height clamp for the current expanded state. The clamp only
+        // matters in compact + centered mode; recomputing (rather than forcing it off) keeps
+        // an already-expanded palette correctly bounded when an unrelated setting changes.
+        ApplyCompactCardHeightClampOnUiThread(_compactExpanded);
     }
 
     /// <summary>
@@ -952,8 +958,15 @@ public sealed partial class MainWindow : WindowEx,
         unsafe
         {
             BOOL value = false;
-            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
-            IsVisibleToUser = true;
+            var hr = PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            if (hr.Failed)
+            {
+                Logger.LogWarning($"DWM uncloaking of the main window failed. HRESULT: {hr.Value}.");
+            }
+            else
+            {
+                IsVisibleToUser = true;
+            }
         }
     }
 
@@ -1025,8 +1038,16 @@ public sealed partial class MainWindow : WindowEx,
         // the card to make room for the drop shadow, and we don't want that transparent
         // shadow area to be draggable.
         var card = RootElement.CardElement;
+        var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
+
         if (card.ActualWidth <= 0 || card.ActualHeight <= 0)
         {
+            // The card isn't measurable yet (e.g. mid-collapse). Clear any previously
+            // registered caption/passthrough regions and the HWND clip so stale hit-test
+            // zones from the last layout don't linger over an empty/transparent window.
+            nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, Array.Empty<RectInt32>());
+            nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, Array.Empty<RectInt32>());
+            ApplyCardWindowRegion(new RectInt32(0, 0, 0, 0));
             return;
         }
 
@@ -1047,8 +1068,6 @@ public sealed partial class MainWindow : WindowEx,
         // The resize grip straddles each card edge by `grip` DIPs on either side so the
         // affordance reaches a little into the drop-shadow padding too.
         const double grip = ResizeBorderThicknessDip;
-
-        var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
 
         // Mark the card's border ring AND the top drag bar as non-client (Caption).
         // This is the critical bit: only regions registered here generate WM_NCHITTEST
@@ -1711,13 +1730,17 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ExpandCompactModeMessage message)
     {
-        this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
+        this.DispatcherQueue.TryEnqueue(() => ApplyCompactCardHeightClampOnUiThread(message.Expanded));
     }
 
     // The HWND is already as large as it will ever need to be (and it's transparent), so
     // instead of resizing the window we simply shrink or grow the visible card inside it.
-    private void HandleExpandCompactOnUiThread(bool expanded)
+    // This only governs the card's max height clamp; the semantic compact/expanded state is
+    // owned by the shell (ShellViewModel.ExpandedMode).
+    private void ApplyCompactCardHeightClampOnUiThread(bool expanded)
     {
+        _compactExpanded = expanded;
+
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         // Only the compact + centered configuration needs a screen-fit clamp. There the card
@@ -1750,7 +1773,11 @@ public sealed partial class MainWindow : WindowEx,
 
         if (availablePhysical <= 0)
         {
-            return double.PositiveInfinity;
+            // The card top is already at/below the work-area bottom (e.g. it was positioned
+            // off-screen before expanding). Fall back to a screen-bounded height instead of
+            // removing the clamp entirely, so the card can never grow taller than the display.
+            var screenBoundedPhysical = workArea.Height - ((padding.Top + padding.Bottom) * scale);
+            return Math.Max(screenBoundedPhysical, 1) / scale;
         }
 
         return availablePhysical / scale;
