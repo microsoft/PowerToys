@@ -63,7 +63,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - "<1>"
       - Name: Jump to rightmost tab
         Shortcut:
         - Win: false
@@ -71,7 +71,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 9
+            - "<9>"
       - Name: Open home page in current tab
         Shortcut:
         - Win: false
@@ -424,7 +424,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 0
+            - "<0>"
       - Name: Scroll down a screen
         Shortcut:
         - Win: false
