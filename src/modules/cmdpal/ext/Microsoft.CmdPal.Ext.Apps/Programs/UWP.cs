@@ -45,6 +45,8 @@ public partial class UWP
 
     public static IPackageManager PackageManagerWrapper { get; set; } = new PackageManagerWrapper();
 
+    public bool IsNonRemovable { get; }
+
     public UWP(IPackage package)
     {
         ArgumentNullException.ThrowIfNull(package);
@@ -52,6 +54,7 @@ public partial class UWP
         Name = package.Name;
         FullName = package.FullName;
         FamilyName = package.FamilyName;
+        IsNonRemovable = package.IsNonRemovable;
     }
 
     public unsafe void InitializeAppInfo(string installedLocation)

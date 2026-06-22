@@ -221,7 +221,9 @@ public class Win32Program : IProgram
             RequestedShortcut = KeyChords.OpenInConsole,
         });
 
-        if (AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+        if ((AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+            && !IsProtectedSystemApp(this)
+            && !IsShortcutTarget(this))
         {
             commands.Add(new CommandContextItem(
                 new UninstallApplicationConfirmation(this))
@@ -1092,5 +1094,47 @@ public class Win32Program : IProgram
             AppIdentifier = app.GetAppIdentifier(),
             FullExecutablePath = app.FullPath,
         };
+    }
+
+    /// <summary>
+    /// Determines whether a Win32 program is a protected system app whose
+    /// executable lives inside %SystemRoot% (e.g. regedit.exe, taskmgr.exe).
+    /// </summary>
+    private static bool IsProtectedSystemApp(Win32Program program)
+    {
+        var path = program.FullPath;
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+        // Anything inside %SystemRoot% (C:\Windows) is an OS component.
+        return PathHelpers.IsPathInsideDirectory(path, systemRoot);
+    }
+
+    /// <summary>
+    /// Determines whether the program's resolved path is itself a shortcut (.lnk).
+    /// This occurs when a shortcut targets another shortcut (an unresolved chain).
+    /// In this case, there is no real executable to uninstall, so the uninstall
+    /// option should be hidden.
+    /// </summary>
+    private static bool IsShortcutTarget(Win32Program program)
+    {
+        var path = program.FullPath;
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        var isShortcut = path.EndsWith("." + ShortcutExtension, StringComparison.OrdinalIgnoreCase);
+        if (isShortcut)
+        {
+            var identifier = program.GetAppIdentifier();
+            return identifier.EndsWith("." + ShortcutExtension, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
     }
 }
