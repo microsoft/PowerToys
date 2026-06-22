@@ -1,0 +1,62 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+
+using ManagedCommon;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
+
+namespace WorkspacesEditor
+{
+    public partial class App : Application, IDisposable
+    {
+        private MainWindow _mainWindow;
+        private bool _isDisposed;
+
+        public static DispatcherQueue DispatcherQueue { get; private set; }
+
+        public App()
+        {
+            string languageTag = LanguageHelper.LoadLanguage();
+            if (!string.IsNullOrEmpty(languageTag))
+            {
+                try
+                {
+                    Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = languageTag;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to set language override: " + ex.Message);
+                }
+            }
+
+            this.InitializeComponent();
+            this.UnhandledException += OnUnhandledException;
+        }
+
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        {
+            DispatcherQueue = DispatcherQueue.GetForCurrentThread();
+
+            _mainWindow = new MainWindow();
+            _mainWindow.Activate();
+        }
+
+        private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
+        {
+            Logger.LogError("Unhandled exception occurred", e.Exception);
+        }
+
+        public void Dispose()
+        {
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+            }
+
+            GC.SuppressFinalize(this);
+        }
+    }
+}
