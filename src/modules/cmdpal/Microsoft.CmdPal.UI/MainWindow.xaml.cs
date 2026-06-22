@@ -35,7 +35,6 @@ using Windows.System;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
-using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinUIEx;
@@ -107,10 +106,6 @@ public sealed partial class MainWindow : WindowEx,
 
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
-
-    // Tracks whether the visible card is currently expanded, so the card-height clamp can be
-    // recomputed (e.g. after a settings hot-reload or DPI change) without resetting it.
-    private bool _compactExpanded;
 
     private DevRibbon? _devRibbon;
 
@@ -476,10 +471,8 @@ public sealed partial class MainWindow : WindowEx,
 
         ApplyHwndFrameMode(ShouldShowHwndFrame(settings));
 
-        // Re-apply the card-height clamp for the current expanded state. The clamp only
-        // matters in compact + centered mode; recomputing (rather than forcing it off) keeps
-        // an already-expanded palette correctly bounded when an unrelated setting changes.
-        ApplyCompactCardHeightClampOnUiThread(_compactExpanded);
+        // Start collapsed: the card shrinks to just the search box until there is a query.
+        HandleExpandCompactOnUiThread(false);
     }
 
     /// <summary>
@@ -723,9 +716,16 @@ public sealed partial class MainWindow : WindowEx,
         PInvoke.SetForegroundWindow(hwnd);
         PInvoke.SetActiveWindow(hwnd);
 
-        // Push our window to the top of the Z-order and make it the topmost, so that it appears above all other windows.
-        // We want to remove the topmost status when we hide the window (because we cloak it instead of hiding it).
-        PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE);
+        // Push our window to the top of the Z-order and make it the topmost, so
+        // that it appears above all other windows. We want to remove the
+        // topmost status when we hide the window (because we cloak it instead
+        // of hiding it).
+        //
+        // SWP_FRAMECHANGED is load-bearing for the borderless look on a cold
+        // start.  Asking for SWP_FRAMECHANGED here re-sends WM_NCCALCSIZE and
+        // forces the NC repaint every time we show, so the frame is gone from
+        // the very first summon.
+        PInvoke.SetWindowPos(hwnd, HWND.HWND_TOPMOST, 0, 0, 0, 0, SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_FRAMECHANGED);
     }
 
     private static DisplayArea GetScreen(HWND currentHwnd, MonitorBehavior target)
@@ -959,15 +959,8 @@ public sealed partial class MainWindow : WindowEx,
         unsafe
         {
             BOOL value = false;
-            var hr = PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
-            if (hr.Failed)
-            {
-                Logger.LogWarning($"DWM uncloaking of the main window failed. HRESULT: {hr.Value}.");
-            }
-            else
-            {
-                IsVisibleToUser = true;
-            }
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_CLOAK, &value, (uint)sizeof(BOOL));
+            IsVisibleToUser = true;
         }
     }
 
@@ -1039,16 +1032,8 @@ public sealed partial class MainWindow : WindowEx,
         // the card to make room for the drop shadow, and we don't want that transparent
         // shadow area to be draggable.
         var card = RootElement.CardElement;
-        var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
-
         if (card.ActualWidth <= 0 || card.ActualHeight <= 0)
         {
-            // The card isn't measurable yet (e.g. mid-collapse). Clear any previously
-            // registered caption/passthrough regions and the HWND clip so stale hit-test
-            // zones from the last layout don't linger over an empty/transparent window.
-            nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, Array.Empty<RectInt32>());
-            nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, Array.Empty<RectInt32>());
-            ApplyCardWindowRegion(new RectInt32(0, 0, 0, 0));
             return;
         }
 
@@ -1069,6 +1054,8 @@ public sealed partial class MainWindow : WindowEx,
         // The resize grip straddles each card edge by `grip` DIPs on either side so the
         // affordance reaches a little into the drop-shadow padding too.
         const double grip = ResizeBorderThicknessDip;
+
+        var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
 
         // Mark the card's border ring AND the top drag bar as non-client (Caption).
         // This is the critical bit: only regions registered here generate WM_NCHITTEST
@@ -1097,49 +1084,84 @@ public sealed partial class MainWindow : WindowEx,
         };
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, passthrough);
 
-        // Clip the HWND itself down to just the visible card. The window is intentionally
-        // larger than the card (the extra margin holds the drop shadow), but that
-        // transparent margin shouldn't be part of the window at all: clicks there should
-        // fall through to whatever is behind the palette, and the shadow must not be
-        // hit-testable. The region is updated here so it tracks the card as it grows /
-        // shrinks (e.g. compact <-> expanded).
-        ApplyCardWindowRegion(CardRect(0, 0, w, h));
+        // Clip the HWND down to the card plus its drop-shadow margin. The card is inset from
+        // the HWND by ShadowPadding on every side and its drop shadow fills that padding, so on
+        // the left / top / right we let the clip reach almost all the way out to the HWND edge
+        // to keep the shadow visible. The bottom is the one side that must cut in: the HWND is
+        // much taller than a compact card, and the empty space below it must stay click-through
+        // rather than becoming an opaque, shadowed band.
+        //
+        // The catch — and the reason naive "card + ShadowPadding" produced visible borders — is
+        // that the card sits exactly ShadowPadding from each HWND edge, so card + full padding
+        // lands *flush* with the window edge. With WS_THICKFRAME still present, a window region
+        // flush with the window edge makes the OS draw the sizing-frame border along that edge.
+        // So we keep the region EdgeInsetPx (1px) inside the HWND on every side: that hides the
+        // frame while trimming only an imperceptible sliver of shadow. The bottom is likewise
+        // clamped to 1px inside the HWND bottom, which is what stops the bottom border from
+        // flashing in as the card grows toward the full HWND height.
+        var shadowPadding = RootElement.ShadowPadding;
+        var cardPhysical = CardRect(0, 0, w, h);
+
+        const int EdgeInsetPx = 1;
+        var windowWidthPx = AppWindow.Size.Width;
+        var windowHeightPx = AppWindow.Size.Height;
+
+        var clipLeft = EdgeInsetPx;
+        var clipTop = EdgeInsetPx;
+        var clipRight = windowWidthPx - EdgeInsetPx;
+
+        var bottomShadowPx = (int)Math.Round(shadowPadding.Bottom * scaleAdjustment);
+        var clipBottom = Math.Min(
+            cardPhysical.Y + cardPhysical.Height + bottomShadowPx,
+            windowHeightPx - EdgeInsetPx);
+
+        ApplyCardWindowRegion(new RectInt32(
+            clipLeft,
+            clipTop,
+            Math.Max(0, clipRight - clipLeft),
+            Math.Max(0, clipBottom - clipTop)));
     }
 
     /// <summary>
-    /// Restricts the HWND's visible / hit-testable area to the rectangle occupied by the
-    /// visible card (supplied in physical client pixels). Everything outside — the
-    /// transparent drop-shadow margin — becomes click-through and is excluded from the
-    /// window region. When the debug HWND frame is enabled the clip is removed so the full
-    /// window stays visible.
+    /// Restricts the HWND's visible / hit-testable area to the supplied rectangle (in physical
+    /// client pixels), which covers the visible card and its drop-shadow margin. Everything
+    /// outside — the empty transparent area of the (larger) HWND — becomes click-through and is
+    /// excluded from the window region. When the debug HWND frame is enabled the clip is removed
+    /// so the full window stays visible.
     /// </summary>
-    private void ApplyCardWindowRegion(RectInt32 cardPhysical)
+    private void ApplyCardWindowRegion(RectInt32 regionPhysical)
     {
+        nint hwnd;
+        unsafe
+        {
+            hwnd = (nint)_hwnd.Value;
+        }
+
         // Debug frame mode: keep the whole window visible / interactive, no clip.
         if (_hwndFrameVisible == true)
         {
-            _ = PInvoke.SetWindowRgn(_hwnd, HRGN.Null, true);
+            _ = SetWindowRgn(hwnd, IntPtr.Zero, true);
             return;
         }
 
         // CreateRectRgn coordinates are relative to the window's top-left. For this
         // borderless popup the client origin coincides with the window origin, so the
-        // card's client-space physical rect maps directly into window space.
-        var region = PInvoke.CreateRectRgn(
-            cardPhysical.X,
-            cardPhysical.Y,
-            cardPhysical.X + cardPhysical.Width,
-            cardPhysical.Y + cardPhysical.Height);
-        if (region.IsNull)
+        // region's client-space physical rect maps directly into window space.
+        var region = CreateRectRgn(
+            regionPhysical.X,
+            regionPhysical.Y,
+            regionPhysical.X + regionPhysical.Width,
+            regionPhysical.Y + regionPhysical.Height);
+        if (region == IntPtr.Zero)
         {
             return;
         }
 
         // On success SetWindowRgn takes ownership of the region (the OS frees it), so we
         // only delete it ourselves if the call failed.
-        if (PInvoke.SetWindowRgn(_hwnd, region, true) == 0)
+        if (SetWindowRgn(hwnd, region, true) == 0)
         {
-            _ = PInvoke.DeleteObject(region);
+            _ = DeleteObject(region);
         }
     }
 
@@ -1151,6 +1173,19 @@ public sealed partial class MainWindow : WindowEx,
             _Width: (int)Math.Round(bounds.Width * scale),
             _Height: (int)Math.Round(bounds.Height * scale));
     }
+
+    // Raw interop for the window-region clip. Declared here (rather than via CsWin32)
+    // because SetWindowRgn transfers ownership of the HRGN to the OS on success, which is
+    // awkward to express through CsWin32's SafeHandle-returning region creator.
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, [MarshalAs(UnmanagedType.Bool)] bool bRedraw);
+
+    [DllImport("gdi32.dll")]
+    private static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
+
+    [DllImport("gdi32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DeleteObject(IntPtr hObject);
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
@@ -1712,17 +1747,13 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(ExpandCompactModeMessage message)
     {
-        this.DispatcherQueue.TryEnqueue(() => ApplyCompactCardHeightClampOnUiThread(message.Expanded));
+        this.DispatcherQueue.TryEnqueue(() => HandleExpandCompactOnUiThread(message.Expanded));
     }
 
     // The HWND is already as large as it will ever need to be (and it's transparent), so
     // instead of resizing the window we simply shrink or grow the visible card inside it.
-    // This only governs the card's max height clamp; the semantic compact/expanded state is
-    // owned by the shell (ShellViewModel.ExpandedMode).
-    private void ApplyCompactCardHeightClampOnUiThread(bool expanded)
+    private void HandleExpandCompactOnUiThread(bool expanded)
     {
-        _compactExpanded = expanded;
-
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
 
         // Only the compact + centered configuration needs a screen-fit clamp. There the card
@@ -1755,11 +1786,7 @@ public sealed partial class MainWindow : WindowEx,
 
         if (availablePhysical <= 0)
         {
-            // The card top is already at/below the work-area bottom (e.g. it was positioned
-            // off-screen before expanding). Fall back to a screen-bounded height instead of
-            // removing the clamp entirely, so the card can never grow taller than the display.
-            var screenBoundedPhysical = workArea.Height - ((padding.Top + padding.Bottom) * scale);
-            return Math.Max(screenBoundedPhysical, 1) / scale;
+            return double.PositiveInfinity;
         }
 
         return availablePhysical / scale;

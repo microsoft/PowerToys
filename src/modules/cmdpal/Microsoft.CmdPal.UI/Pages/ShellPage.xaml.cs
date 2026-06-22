@@ -67,8 +67,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
-    private readonly ISettingsService _settingsService;
-
     private SettingsWindow? _settingsWindow;
     private DockWindowManager? _dockWindowManager;
 
@@ -78,10 +76,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     // When the shell goes from compact (collapsed) to expanded, the content frame's page
     // — which was collapsed and therefore never laid out — finally fires its Loaded event.
     // That late Loaded would otherwise run the post-navigation focus/select logic and
-    // select-all the character the user just typed (which triggered the expand). We capture
-    // the specific page the expand realized so the suppression only applies to that exact
-    // load and can't leak onto an unrelated page during rapid navigation.
-    private WeakReference<Page>? _suppressSelectForPageRef;
+    // select-all the character the user just typed (which triggered the expand). This
+    // one-shot flag suppresses that select for the expand-driven load.
+    private bool _suppressSelectOnNextLoad;
     private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
@@ -94,15 +91,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public ShellPage()
     {
-        _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
-        var settings = _settingsService.Settings;
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         this.ExpandedMode = !settings.CompactMode;
 
         this.InitializeComponent();
-
-        // React to the compact-mode setting changing at runtime. Toggling compact mode off
-        // must immediately expand the (possibly collapsed) shell back out to its full UI.
-        _settingsService.SettingsChanged += OnSettingsChanged;
 
         // how we are doing navigation around
         WeakReferenceMessenger.Default.Register<NavigateBackMessage>(this);
@@ -613,8 +605,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         // A real navigation always loads a fresh page that we do want to focus/select, so
         // clear any stale suppression left over from a prior compact expand. (If this
         // navigation itself expands compact mode, UpdateCompactModeForCurrentPage below
-        // will re-arm it for the page that's about to load.)
-        _suppressSelectForPageRef = null;
+        // will re-arm the flag for the page that's about to load.)
+        _suppressSelectOnNextLoad = false;
 
         // This listens to the root frame to ensure that we also track the content's page VM as well that we passed as a parameter.
         // This is currently used for both forward and backward navigation.
@@ -670,9 +662,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
         if (!settings.CompactMode)
         {
-            // Compact mode is disabled (possibly just toggled off at runtime): always present
-            // the full expanded UI so we don't stay stuck in the collapsed search-only layout.
-            HandleExpandCompactOnUiThread(true);
             return;
         }
 
@@ -726,11 +715,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             // This Loaded can fire late when expanding out of compact mode (the page was
             // collapsed and never laid out). In that case the user is mid-typing in the
             // already-focused search box, so don't steal focus / select-all their input.
-            if (_suppressSelectForPageRef is not null
-                && _suppressSelectForPageRef.TryGetTarget(out var suppressPage)
-                && ReferenceEquals(page, suppressPage))
+            if (_suppressSelectOnNextLoad)
             {
-                _suppressSelectForPageRef = null;
+                _suppressSelectOnNextLoad = false;
                 return;
             }
 
@@ -927,19 +914,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
     }
 
-    private void OnSettingsChanged(ISettingsService sender, SettingsModel args)
-    {
-        _ = DispatcherQueue.TryEnqueue(() =>
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            UpdateCompactModeForCurrentPage();
-        });
-    }
-
     public void Receive(ExpandCompactModeMessage message)
     {
         // Re-evaluate from the current authoritative page state rather than applying the
@@ -957,11 +931,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         // Going from collapsed to expanded realizes the (previously collapsed) content
         // page for the first time, which fires its deferred Loaded event. Suppress the
-        // resulting focus/select for that specific page so we don't select-all the
-        // character the user just typed.
+        // resulting focus/select so we don't select-all the character the user just typed.
         if (!this.ExpandedMode && newExpanded)
         {
-            _suppressSelectForPageRef = _lastNavigatedPageRef;
+            _suppressSelectOnNextLoad = true;
         }
 
         this.ExpandedMode = newExpanded;
@@ -994,7 +967,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         _isDisposed = true;
         WeakReferenceMessenger.Default.UnregisterAll(this);
-        _settingsService.SettingsChanged -= OnSettingsChanged;
 
         _focusAfterLoadedCts?.Cancel();
         _focusAfterLoadedCts?.Dispose();
