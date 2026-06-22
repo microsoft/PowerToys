@@ -703,11 +703,11 @@ public sealed partial class MainWindow : WindowEx,
         // Just to be sure, SHOW our hwnd.
         PInvoke.ShowWindow(hwnd, SHOW_WINDOW_CMD.SW_SHOW);
 
-        // Re-apply the borderless DWM attributes now that the window is actually shown.
-        // On a cold process start these are first set during construction before the HWND
-        // has ever been displayed, and DWM doesn't reliably honor the border color until
-        // the window exists on-screen — which left the faint OS outline visible until the
-        // chrome was toggled. Re-applying here makes the borderless look stick on cold start.
+        // Re-apply the borderless DWM attributes now that the window is
+        // actually shown. On a cold launch these are first set during
+        // construction before the HWND has ever been displayed, and DWM doesn't
+        // reliably honor the border color until the window exists on-screen —
+        // which left the faint OS outline visible until the chrome was toggled. 
         ApplyHwndBorderAttributes(_hwndFrameVisible ?? false);
 
         // Once we're done, uncloak to avoid all animations
@@ -1057,12 +1057,11 @@ public sealed partial class MainWindow : WindowEx,
 
         var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
 
-        // Mark the card's border ring AND the top drag bar as non-client (Caption).
-        // This is the critical bit: only regions registered here generate WM_NCHITTEST
-        // on our window proc. Without the side/bottom strips, the XAML content island
-        // swallows the pointer and we never get a hit-test to turn into a resize. Our
-        // HotKeyPrc WM_NCHITTEST handler then decides drag (caption) vs. resize
-        // (HTLEFT / HTRIGHT / HT{TOP,BOTTOM}{,LEFT,RIGHT}) per-pixel via geometry.
+        // Mark the card's border ring + top drag bar as Caption. Only regions
+        // registered here generate WM_NCHITTEST on our wndproc - without the
+        // side/bottom strips the XAML island swallows the pointer and we never
+        // get a resize. HotKeyPrc's WM_NCHITTEST then picks drag vs. resize
+        // per-pixel.
         var caption = new RectInt32[]
         {
             CardRect(0, 0, w, dragHeight),                       // top drag bar
@@ -1073,9 +1072,10 @@ public sealed partial class MainWindow : WindowEx,
         };
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, caption);
 
-        // Everything inside the border ring (and below the drag bar) is interactive
-        // content. Marking it Passthrough keeps the search box, list, etc. clickable
-        // and explicitly carves it out of the caption regions above.
+        // Everything inside the border ring (and below the drag bar) is
+        // interactive content. Marking it Passthrough keeps the search box,
+        // list, etc. clickable and explicitly carves it out of the caption
+        // regions above.
         var interiorWidth = Math.Max(0, w - (2 * grip));
         var interiorHeight = Math.Max(0, h - dragHeight - grip);
         var passthrough = new RectInt32[]
@@ -1084,21 +1084,12 @@ public sealed partial class MainWindow : WindowEx,
         };
         nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, passthrough);
 
-        // Clip the HWND down to the card plus its drop-shadow margin. The card is inset from
-        // the HWND by ShadowPadding on every side and its drop shadow fills that padding, so on
-        // the left / top / right we let the clip reach almost all the way out to the HWND edge
-        // to keep the shadow visible. The bottom is the one side that must cut in: the HWND is
-        // much taller than a compact card, and the empty space below it must stay click-through
-        // rather than becoming an opaque, shadowed band.
-        //
-        // The catch — and the reason naive "card + ShadowPadding" produced visible borders — is
-        // that the card sits exactly ShadowPadding from each HWND edge, so card + full padding
-        // lands *flush* with the window edge. With WS_THICKFRAME still present, a window region
-        // flush with the window edge makes the OS draw the sizing-frame border along that edge.
-        // So we keep the region EdgeInsetPx (1px) inside the HWND on every side: that hides the
-        // frame while trimming only an imperceptible sliver of shadow. The bottom is likewise
-        // clamped to 1px inside the HWND bottom, which is what stops the bottom border from
-        // flashing in as the card grows toward the full HWND height.
+        // Clip the HWND to the card + its shadow. Card is inset by
+        // ShadowPadding on each side, so card + full padding lands flush with
+        // the HWND edge - and a region flush with the edge makes WS_THICKFRAME
+        // draw its border there. So inset 1px on every side to hide that.
+        // Bottom is clamped to 1px inside the HWND so the border doesn't
+        // reappear as the card grows tall.
         var shadowPadding = RootElement.ShadowPadding;
         var cardPhysical = CardRect(0, 0, w, h);
 
@@ -1123,10 +1114,11 @@ public sealed partial class MainWindow : WindowEx,
     }
 
     /// <summary>
-    /// Restricts the HWND's visible / hit-testable area to the supplied rectangle (in physical
-    /// client pixels), which covers the visible card and its drop-shadow margin. Everything
-    /// outside — the empty transparent area of the (larger) HWND — becomes click-through and is
-    /// excluded from the window region. When the debug HWND frame is enabled the clip is removed
+    /// Restricts the HWND's visible / hit-testable area to the supplied
+    /// rectangle (in physical client pixels), which covers the visible card and
+    /// its drop-shadow margin. Everything outside — the empty transparent area
+    /// of the (larger) HWND — becomes click-through and is excluded from the
+    /// window region. When the debug HWND frame is enabled the clip is removed
     /// so the full window stays visible.
     /// </summary>
     private void ApplyCardWindowRegion(RectInt32 regionPhysical)
