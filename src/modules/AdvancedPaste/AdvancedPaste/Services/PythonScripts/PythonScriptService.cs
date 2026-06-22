@@ -1654,6 +1654,25 @@ public sealed class PythonScriptService(IUserSettings userSettings) : IPythonScr
 
     internal static string ToWslPath(string windowsPath)
     {
+        // Handle UNC paths to WSL filesystem: \\wsl.localhost\<distro>\path or \\wsl$\<distro>\path
+        if (windowsPath.StartsWith(@"\\wsl", StringComparison.OrdinalIgnoreCase))
+        {
+            // \\wsl.localhost\Ubuntu\home\user\file → /home/user/file
+            // \\wsl$\Ubuntu\home\user\file → /home/user/file
+            var normalized = windowsPath.Replace('\\', '/');
+
+            // Skip the \\wsl.localhost\<distro> or \\wsl$\<distro> prefix (3 segments: empty, empty, wsl..., distro)
+            var parts = normalized.Split('/', StringSplitOptions.None);
+
+            // parts[0]="" parts[1]="" parts[2]="wsl.localhost" or "wsl$" parts[3]="Ubuntu" parts[4+]=path
+            if (parts.Length > 4)
+            {
+                return "/" + string.Join("/", parts[4..]);
+            }
+
+            return "/";
+        }
+
         if (windowsPath.Length < 3 || windowsPath[1] != ':')
         {
             throw new ArgumentException($"Not an absolute Windows path: {windowsPath}", nameof(windowsPath));
