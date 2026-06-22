@@ -600,11 +600,9 @@ internal static class Clipboard
                     }
                 }
 
-                if (postAct.Equals("desktop", StringComparison.OrdinalIgnoreCase))
-                {
                     // Create the folder and open the file in a single impersonated scope so both
                     // are owned by the logged-on user. This branch always targets the user's Desktop.
-                    _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                    bool success = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                     {
                         savingFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\MouseWithoutBorders\\";
 
@@ -616,6 +614,19 @@ internal static class Clipboard
                         tempFile = savingFolder + Path.GetFileName(fileName);
                         m = new FileStream(tempFile, FileMode.Create);
                     });
+
+                    if (!success || m == null)
+                    {
+                        Logger.Log("Impersonation failed for desktop file creation, falling back to direct creation.");
+                        savingFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\MouseWithoutBorders\\";
+                        if (!Directory.Exists(savingFolder))
+                        {
+                            _ = Directory.CreateDirectory(savingFolder);
+                        }
+
+                        tempFile = savingFolder + Path.GetFileName(fileName);
+                        m = new FileStream(tempFile, FileMode.Create);
+                    }
                 }
                 else if (postAct.Contains("mspaint"))
                 {
