@@ -370,6 +370,35 @@ namespace Microsoft.PowerToys.UITest
 
             this.ExitExe(winAppDriverProcessInfo.FileName);
             SessionHelper.appDriver = Process.Start(winAppDriverProcessInfo);
+
+            // WinAppDriver needs a moment to open its HTTP listener on :4723. Connecting immediately
+            // races that startup; under a fast test host the connect loses every time, and because
+            // each test then re-kills and restarts WinAppDriver the failure is consistent. Wait until
+            // the port accepts a connection before returning so the first session reliably succeeds.
+            WaitForWinAppDriverReady();
+        }
+
+        private static void WaitForWinAppDriverReady(int timeoutMs = 30000)
+        {
+            var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+            while (DateTime.UtcNow < deadline)
+            {
+                try
+                {
+                    using var client = new System.Net.Sockets.TcpClient();
+                    client.Connect("127.0.0.1", 4723);
+                    if (client.Connected)
+                    {
+                        return;
+                    }
+                }
+                catch
+                {
+                    // Listener not up yet; keep polling until the timeout.
+                }
+
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
         private void KillPowerToysProcesses()
