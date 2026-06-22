@@ -21,16 +21,10 @@
         # Settings (Tier A — UI driven)
         'Open-PtSettings', 'Switch-PtSettingsPage',
         'Get-PtSettingsToggle', 'Set-PtSettingsToggle',
-        # Settings (Tier B — JSON + restart)
-        'Get-PtSettingsJsonPath', 'Backup-PtSettings', 'Restore-PtSettings',
-        'Set-PtSettingJson', 'Disable-PtModuleWarning',
         # Input — keyboard simulation (PInvoke SendInput)
         'Send-PtHotkey', 'Send-PtKey',
         # Input — keyboard via PostMessage (bypasses SendInput's UIPI restrictions)
         'Send-PtKeyToWindow',
-        # Input — mouse simulation (PInvoke SendInput) — closes the WinAppDriver gap
-        'Move-PtMouseTo', 'Send-PtMouseButton', 'Send-PtMouseClick',
-        'Send-PtMouseDrag', 'Get-PtCursorPos',
         # Visual — Win32 + GDI deterministic checks
         'Get-WindowExStyle', 'Test-WindowTopmost', 'Get-WindowParent', 'Get-WindowRect',
         'Set-WindowForeground', 'Get-ForegroundHwnd', 'Hide-Window', 'Test-WindowVisible',
@@ -47,11 +41,7 @@
         'Get-ProcessesStartedAfter', 'Stop-ProcessesSafely',
         # High-level UIA wrappers — Playwright/Selenium-style sugar
         'Get-UiaProperty', 'Set-UiaText', 'Invoke-UiaAction',
-        'Wait-AnyOf', 'Wait-AllOf', 'Wait-PropertyChange', 'Wait-ListCount',
-        # Retrying assertions
-        'Assert-Eventually', 'Assert-EventuallyEquals', 'Assert-EventuallyMatches',
-        # Lifecycle (block-scoped state snapshots, AppX restart)
-        'Use-ClipboardSnapshot', 'New-FreshAppX'
+        'Wait-AnyOf', 'Wait-AllOf', 'Wait-PropertyChange', 'Wait-ListCount'
     )
     PrivateData = @{
         PSData = @{
