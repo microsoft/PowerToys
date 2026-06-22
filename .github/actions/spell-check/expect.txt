@@ -1365,6 +1365,7 @@ pii
 pinfo
 pinvoke
 pipename
+Pitjantjatjara
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI
@@ -2184,6 +2185,7 @@ XUP
 XVIRTUALSCREEN
 XXL
 xxxxxx
+Yankunytjatjara
 ycombinator
 yinle
 yinyue
