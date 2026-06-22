@@ -35,6 +35,7 @@ using Windows.System;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
+using Windows.Win32.Graphics.Gdi;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinUIEx;
@@ -1114,37 +1115,31 @@ public sealed partial class MainWindow : WindowEx,
     /// </summary>
     private void ApplyCardWindowRegion(RectInt32 cardPhysical)
     {
-        nint hwnd;
-        unsafe
-        {
-            hwnd = (nint)_hwnd.Value;
-        }
-
         // Debug frame mode: keep the whole window visible / interactive, no clip.
         if (_hwndFrameVisible == true)
         {
-            _ = SetWindowRgn(hwnd, IntPtr.Zero, true);
+            _ = PInvoke.SetWindowRgn(_hwnd, HRGN.Null, true);
             return;
         }
 
         // CreateRectRgn coordinates are relative to the window's top-left. For this
         // borderless popup the client origin coincides with the window origin, so the
         // card's client-space physical rect maps directly into window space.
-        var region = CreateRectRgn(
+        var region = PInvoke.CreateRectRgn(
             cardPhysical.X,
             cardPhysical.Y,
             cardPhysical.X + cardPhysical.Width,
             cardPhysical.Y + cardPhysical.Height);
-        if (region == IntPtr.Zero)
+        if (region.IsNull)
         {
             return;
         }
 
         // On success SetWindowRgn takes ownership of the region (the OS frees it), so we
         // only delete it ourselves if the call failed.
-        if (SetWindowRgn(hwnd, region, true) == 0)
+        if (PInvoke.SetWindowRgn(_hwnd, region, true) == 0)
         {
-            _ = DeleteObject(region);
+            _ = PInvoke.DeleteObject(region);
         }
     }
 
@@ -1156,19 +1151,6 @@ public sealed partial class MainWindow : WindowEx,
             _Width: (int)Math.Round(bounds.Width * scale),
             _Height: (int)Math.Round(bounds.Height * scale));
     }
-
-    // Raw interop for the window-region clip. Declared here (rather than via CsWin32)
-    // because SetWindowRgn transfers ownership of the HRGN to the OS on success, which is
-    // awkward to express through CsWin32's SafeHandle-returning region creator.
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, [MarshalAs(UnmanagedType.Bool)] bool bRedraw);
-
-    [DllImport("gdi32.dll")]
-    private static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
-
-    [DllImport("gdi32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DeleteObject(IntPtr hObject);
 
     internal void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {

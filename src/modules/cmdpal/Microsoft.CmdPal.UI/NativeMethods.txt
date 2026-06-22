@@ -24,6 +24,8 @@ GetMonitorInfo
 GetDpiForMonitor
 WM_HOTKEY
 WM_NCLBUTTONDBLCLK
+SetWindowRgn
+CreateRectRgn
 
 Shell_NotifyIcon
 LoadIcon
