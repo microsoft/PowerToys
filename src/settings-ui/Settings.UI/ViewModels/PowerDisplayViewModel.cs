@@ -639,7 +639,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 else
                 {
                     // Create a dictionary for quick lookup by Id
-                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m);
+                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m, MonitorIdComparer.Instance);
 
                     // Update existing monitors or remove ones that no longer exist
                     for (int i = Monitors.Count - 1; i >= 0; i--)
