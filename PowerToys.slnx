@@ -1004,6 +1004,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/ShortcutGuide/ShortcutGuide.UnitTests/ShortcutGuide.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/ShortcutGuide/ShortcutGuideModuleInterface/ShortcutGuideModuleInterface.vcxproj" Id="e487304a-b1fb-4e6b-8e70-014051af5b99" />
   </Folder>
   <Folder Name="/modules/Workspaces/">
