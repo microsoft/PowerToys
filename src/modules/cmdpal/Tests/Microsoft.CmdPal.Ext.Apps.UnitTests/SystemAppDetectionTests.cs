@@ -96,5 +96,50 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests
 
             Assert.IsTrue(IsProtected(program), "Normalized paths that resolve into System32 should be detected as system-owned.");
         }
+
+        private static MethodInfo? _isShortcutTargetMethod;
+
+        [TestMethod]
+        public void IsShortcutTarget_FullPathEndsWithLnk_ReturnsTrue()
+        {
+            _isShortcutTargetMethod ??= typeof(Win32Program).GetMethod("IsShortcutTarget", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(_isShortcutTargetMethod, "Could not find IsShortcutTarget via reflection.");
+
+            var program = TestDataHelper.CreateTestWin32Program(
+                name: "Some Shortcut",
+                fullPath: @"C:\Users\test\Desktop\target.lnk");
+            program.AppType = Win32Program.ApplicationType.ShortcutApplication;
+
+            var result = (bool)_isShortcutTargetMethod.Invoke(null, new object[] { program })!;
+            Assert.IsTrue(result, "A program whose FullPath is a .lnk should be detected as a shortcut target.");
+        }
+
+        [TestMethod]
+        public void IsShortcutTarget_FullPathEndsWithExe_ReturnsFalse()
+        {
+            _isShortcutTargetMethod ??= typeof(Win32Program).GetMethod("IsShortcutTarget", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(_isShortcutTargetMethod, "Could not find IsShortcutTarget via reflection.");
+
+            var program = TestDataHelper.CreateTestWin32Program(
+                name: "Normal App",
+                fullPath: @"C:\Program Files\App\app.exe");
+
+            var result = (bool)_isShortcutTargetMethod.Invoke(null, new object[] { program })!;
+            Assert.IsFalse(result, "A program whose FullPath is an .exe should not be detected as a shortcut target.");
+        }
+
+        [TestMethod]
+        public void IsShortcutTarget_EmptyFullPath_ReturnsFalse()
+        {
+            _isShortcutTargetMethod ??= typeof(Win32Program).GetMethod("IsShortcutTarget", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(_isShortcutTargetMethod, "Could not find IsShortcutTarget via reflection.");
+
+            var program = TestDataHelper.CreateTestWin32Program(
+                name: "Empty Path App",
+                fullPath: string.Empty);
+
+            var result = (bool)_isShortcutTargetMethod.Invoke(null, new object[] { program })!;
+            Assert.IsFalse(result, "A program with an empty FullPath should not be detected as a shortcut target.");
+        }
     }
 }

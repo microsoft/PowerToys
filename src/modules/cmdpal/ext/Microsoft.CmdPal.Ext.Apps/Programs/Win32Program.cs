@@ -224,8 +224,10 @@ public class Win32Program : IProgram
         // Uninstall is gated in two places:
         // - UWP apps: guarded by Package.IsNonRemovable (SignatureKind == System)
         // - Win32/.lnk apps: guarded by IsProtectedSystemApp (path-based detection)
+        //   and by IsShortcutTarget (FullPath itself is a .lnk — unresolved chain)
         if ((AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
-            && !IsProtectedSystemApp(this))
+            && !IsProtectedSystemApp(this)
+            && !IsShortcutTarget(this))
         {
             commands.Add(new CommandContextItem(
                 new UninstallApplicationConfirmation(this))
@@ -1121,6 +1123,33 @@ public class Win32Program : IProgram
         return PathHelpers.IsPathInsideDirectory(path, system32)
             || PathHelpers.IsPathInsideDirectory(path, sysWow64)
             || PathHelpers.IsPathInsideDirectory(path, systemApps);
+    }
+
+    /// <summary>
+    /// Determines whether the program's resolved path is itself a shortcut (.lnk).
+    /// This occurs when a shortcut targets another shortcut (an unresolved chain).
+    /// In this case, there is no real executable to uninstall, so the uninstall
+    /// option should be hidden.
+    /// </summary>
+    private static bool IsShortcutTarget(Win32Program program)
+    {
+        var path = program.FullPath;
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        // If FullPath ends in .lnk, the target was not resolved to an executable.
+        // Additionally confirm the AppIdentifier reflects the same shortcut path,
+        // meaning this isn't a manually overridden identifier.
+        var isShortcut = path.EndsWith("." + ShortcutExtension, StringComparison.OrdinalIgnoreCase);
+        if (isShortcut)
+        {
+            var identifier = program.GetAppIdentifier();
+            return identifier.EndsWith("." + ShortcutExtension, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
     }
 
     internal AppItem ToAppItem()
