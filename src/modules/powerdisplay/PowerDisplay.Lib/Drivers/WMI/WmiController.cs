@@ -12,6 +12,7 @@ using ManagedCommon;
 using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Models;
 using WmiLight;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
@@ -192,25 +193,22 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Discover supported monitors.
-        /// WMI brightness control is typically only available on internal laptop displays.
-        /// The monitor Name is left blank here; the ViewModel layer fills in a localized
-        /// "Built-in Display" string so it can be translated for the user's UI language.
+        /// Discover the panels the WMI brightness provider exposes, pairing each against the
+        /// active-display inventory. A display present in <c>WmiMonitorBrightness</c> is treated
+        /// as an internal panel by <see cref="MonitorManager"/>, regardless of the OutputTechnology
+        /// the active GPU reports — this is what lets a built-in panel driven by the discrete GPU
+        /// (reported as DisplayPort-External) still be found. See issue #48587.
         /// </summary>
-        /// <param name="targets">Internal-only display targets (pre-filtered by MonitorManager Phase 0).</param>
+        /// <param name="targets">The full active-display inventory from QueryDisplayConfig.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>List of WMI-managed internal monitors.</returns>
+        /// <returns>WMI-managed monitors (those present in both WMI and the inventory).</returns>
         public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
             IReadOnlyList<MonitorDisplayInfo> targets,
             CancellationToken cancellationToken = default)
         {
-            // Short-circuit: with no internal displays classified there is nothing for WMI
-            // brightness control to do. Skipping the query also avoids the WmiMonitorBrightness
-            // class throwing WMI 0x1068 ("feature not supported") on systems without an
-            // internal panel — that exception is otherwise caught and logged as Error.
+            // No active displays at all — nothing to pair WMI brightness instances against.
             if (targets.Count == 0)
             {
-                Logger.LogInfo("WMI: No internal displays classified — skipping WmiMonitorBrightness query");
                 return Enumerable.Empty<Monitor>();
             }
 
@@ -219,32 +217,25 @@ namespace PowerDisplay.Common.Drivers.WMI
                 {
                 var monitors = new List<Monitor>();
 
-                // Build PnP-hardware-key -> MonitorDisplayInfo lookup. The PnP key (manufacturer
-                // code + PnP instance UID) is globally unique per physical device and present in
-                // both WMI InstanceName and DevicePath, so this is a one-step exact match that
-                // handles dual-internal-panel devices (e.g. Yoga Book 9i, Zenbook Duo) without
-                // needing any disambiguation pass.
-                var monitorDisplayInfos = targets
-                    .Select(t => (Key: MonitorIdentity.PnpHardwareKeyFromDevicePath(t.DevicePath), Info: t))
-                    .Where(p => !string.IsNullOrEmpty(p.Key))
-                    .ToDictionary(p => p.Key, p => p.Info, StringComparer.OrdinalIgnoreCase);
-
-                // Track which internal targets (keyed by DevicePath, the unique target id) were
-                // observed via WmiMonitorBrightness so we can warn about any that were classified
-                // internal but not exposed.
-                var seenDevicePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                // Key the inventory by canonical Monitor.Id (FromDevicePath). A WMI InstanceName
+                // reduces to the same Id via FromInstanceName, so pairing is a single exact lookup
+                // that also disambiguates dual-internal-panel devices without a separate pass.
+                var byId = targets
+                    .Select(t => (Id: MonitorIdentity.FromDevicePath(t.DevicePath), Info: t))
+                    .Where(p => !string.IsNullOrEmpty(p.Id))
+                    .ToDictionary(p => p.Id, p => p.Info, MonitorIdComparer.Instance);
 
                 try
                 {
                     using var connection = new WmiConnection(WmiNamespace);
 
-                    // Query WMI brightness support - only internal displays typically support this
+                    // System-wide query: returns every panel the driver exposes for WMI
+                    // brightness, regardless of which GPU currently drives it.
                     var brightnessQuery = $"SELECT InstanceName, CurrentBrightness FROM {BrightnessQueryClass}";
                     var brightnessResults = connection.CreateQuery(brightnessQuery).ToList();
 
-                    // Create monitor objects for each supported brightness instance.
-                    // Check cancellation per iteration since WMI work inside Task.Run
-                    // doesn't respond to the token after the loop starts.
+                    // Check cancellation per iteration: WMI work inside Task.Run doesn't
+                    // respond to the token once the loop has started.
                     foreach (var obj in brightnessResults)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -254,39 +245,38 @@ namespace PowerDisplay.Common.Drivers.WMI
                             var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
                             var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
 
-                            // Derive the same PnP hardware key from the WMI InstanceName and look up
-                            // the matching MonitorDisplayInfo — exact, unique, no disambiguation needed.
-                            var pnpKey = MonitorIdentity.PnpHardwareKeyFromInstanceName(instanceName);
-                            if (string.IsNullOrEmpty(pnpKey) || !monitorDisplayInfos.TryGetValue(pnpKey, out var displayInfo))
+                            // Pair on the canonical Monitor.Id. A miss means this WMI instance is
+                            // not an active display (e.g. a disconnected panel still cached by the
+                            // provider) — skip it.
+                            var lookupId = MonitorIdentity.FromInstanceName(instanceName);
+                            if (string.IsNullOrEmpty(lookupId) || !byId.TryGetValue(lookupId, out var displayInfo))
                             {
-                                Logger.LogWarning(
-                                    $"WMI returned brightness for instance '{instanceName}' but no matching " +
-                                    "QueryDisplayConfig target was found — skipping");
+                                Logger.LogInfo(
+                                    $"WMI exposed brightness for instance '{instanceName}' with no matching " +
+                                    "active display — skipping");
                                 continue;
                             }
 
-                            // DevicePath is guaranteed non-empty here: the PnP-key lookup above
-                            // only succeeds for targets whose key was derived from a populated
-                            // DevicePath.
-                            seenDevicePaths.Add(displayInfo.DevicePath);
-                            string uniqueId = MonitorIdentity.FromDevicePath(displayInfo.DevicePath);
-
-                            int monitorNumber = displayInfo.MonitorNumber;
-                            string gdiDeviceName = displayInfo.GdiDeviceName ?? string.Empty;
-
+                            // Derive the Id from the matched entry's DevicePath, not the
+                            // reconstructed lookupId. The persisted Monitor.Id ALWAYS comes from this
+                            // single source (FromDevicePath), so a WMI panel's Id stays byte-identical
+                            // to the DDC route and to prior releases. FromInstanceName is only the
+                            // lookup key; every Id comparison/key elsewhere goes through MonitorIdComparer
+                            // (case-insensitive), so an InstanceName/DevicePath casing difference can
+                            // never orphan per-monitor settings.
                             // Name is left blank: MonitorViewModel injects a localized
                             // "Built-in Display" string for internal displays.
                             var monitor = new Monitor
                             {
-                                Id = uniqueId,
+                                Id = MonitorIdentity.FromDevicePath(displayInfo.DevicePath),
                                 Name = string.Empty,
                                 CurrentBrightness = currentBrightness,
                                 InstanceName = instanceName,
                                 Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
                                 CommunicationMethod = "WMI",
                                 SupportsColorTemperature = false,
-                                MonitorNumber = monitorNumber,
-                                GdiDeviceName = gdiDeviceName,
+                                MonitorNumber = displayInfo.MonitorNumber,
+                                GdiDeviceName = displayInfo.GdiDeviceName ?? string.Empty,
                             };
 
                             monitors.Add(monitor);
@@ -299,26 +289,14 @@ namespace PowerDisplay.Common.Drivers.WMI
                 }
                 catch (WmiException ex)
                 {
-                    Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message} (HResult: 0x{ex.HResult:X})");
+                    // On a system with no WMI-controllable panel the provider may be absent or
+                    // throw 0x1068 ("feature not supported"); those displays are handled by
+                    // DDC/CI instead, so this is informational rather than an error.
+                    Logger.LogInfo($"WMI brightness query unavailable: {ex.Message} (HResult: 0x{ex.HResult:X})");
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message}");
-                }
-
-                // Warn about every internal target the driver didn't expose via WMI.
-                // DevicePath is per-target unique, so dual-internal-panel devices report each
-                // missing panel separately.
-                foreach (var target in targets)
-                {
-                    if (seenDevicePaths.Contains(target.DevicePath))
-                    {
-                        continue;
-                    }
-
-                    Logger.LogWarning(
-                        $"Internal display \"{target.FriendlyName}\" ({target.DevicePath}) was classified internal " +
-                        "but is not exposed via WmiMonitorBrightness — driver may not support brightness control");
                 }
 
                 return monitors;
