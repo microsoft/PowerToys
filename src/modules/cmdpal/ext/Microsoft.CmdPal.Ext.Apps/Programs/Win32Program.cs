@@ -221,7 +221,11 @@ public class Win32Program : IProgram
             RequestedShortcut = KeyChords.OpenInConsole,
         });
 
-        if (AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+        // Uninstall is gated in two places:
+        // - UWP apps: guarded by Package.IsNonRemovable (SignatureKind == System)
+        // - Win32/.lnk apps: guarded by IsProtectedSystemApp (path-based detection)
+        if ((AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+            && !IsProtectedSystemApp(this))
         {
             commands.Add(new CommandContextItem(
                 new UninstallApplicationConfirmation(this))
@@ -438,7 +442,7 @@ public class Win32Program : IProgram
             {
                 var folderPath = Environment.GetFolderPath(folder, Environment.SpecialFolderOption.DoNotVerify);
                 return !string.IsNullOrEmpty(folderPath)
-                       && path.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase);
+                       && PathHelpers.IsPathInsideDirectory(path, folderPath);
             }
         }
         catch (System.IO.FileLoadException e)
@@ -1069,6 +1073,54 @@ public class Win32Program : IProgram
             Logger.LogError(e.Message);
             return Array.Empty<Win32Program>();
         }
+    }
+
+    /// <summary>
+    /// Determines whether a Win32 program is a protected Windows system component
+    /// that should not offer an uninstall option.
+    /// <para>
+    /// Uses path-based detection rather than registry-based alternatives (e.g.,
+    /// checking the SystemComponent DWORD in the Uninstall registry key) because:
+    /// 1. Path checks require no I/O — <see cref="FullPath"/> is already resolved
+    ///    during program discovery (including .lnk target resolution in LnkProgram()).
+    /// 2. System executables reliably live under well-known OS directories.
+    /// 3. Registry matching for .lnk shortcuts is non-trivial since they do not
+    ///    carry product codes.
+    /// </para>
+    /// </summary>
+    /// <returns>
+    /// <c>true</c> if the program's resolved executable lives in a protected OS directory
+    /// and should not be offered for uninstallation; otherwise <c>false</c>.
+    /// </returns>
+    private static bool IsProtectedSystemApp(Win32Program program)
+    {
+        // FullPath is the resolved target executable for both direct .exe apps and
+        // .lnk shortcuts — LnkProgram() replaces FullPath with the shortcut target
+        // before storing the record, so this is safe to use directly.
+        var path = program.FullPath;
+        if (string.IsNullOrEmpty(path))
+        {
+            return false;
+        }
+
+        var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+        // Core OS binaries (Control Panel, Task Manager, Registry Editor, etc.)
+        var system32 = System.IO.Path.Combine(systemRoot, "System32");
+
+        // 32-bit system binaries on 64-bit Windows (same protection rationale as System32)
+        var sysWow64 = System.IO.Path.Combine(systemRoot, "SysWOW64");
+
+        // Inbox Windows Store apps that ship with the OS (e.g., Settings, Xbox Game Bar)
+        var systemApps = System.IO.Path.Combine(systemRoot, "SystemApps");
+
+        // NOTE: We intentionally do NOT include %ProgramFiles%\WindowsApps here.
+        // Win11 optional features (Notepad, Paint, Media Player) are MSIX-packaged
+        // and resolve to that directory, but they DO have valid uninstallers via
+        // Settings > Optional Features — blocking them would be incorrect.
+        return PathHelpers.IsPathInsideDirectory(path, system32)
+            || PathHelpers.IsPathInsideDirectory(path, sysWow64)
+            || PathHelpers.IsPathInsideDirectory(path, systemApps);
     }
 
     internal AppItem ToAppItem()
