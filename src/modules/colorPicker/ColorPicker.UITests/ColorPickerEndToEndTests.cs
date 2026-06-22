@@ -163,12 +163,21 @@ public class ColorPickerEndToEndTests : UITestBase
             TestContext.WriteLine($"Cursor parked at ({cx}, {cy}) — primary screen center.");
 
             // -- 7+8. Activate via the shortcut, then wait for the picker overlay ------------
-            // Enabling the module from Settings spawns the ColorPickerUI process, but the runner
-            // wires its activation hotkey into the centralized WH_KEYBOARD_LL hook
-            // asynchronously — the first chord can land before the hook is live. So send the
-            // chord, wait briefly for the overlay, and resend if it didn't appear. ColorPickerUI's
-            // MainWindow (cursor-following picker) is ~167x61 — much smaller than the editor
-            // (~660x570) — so filter by size to disambiguate when both could exist.
+            // The overlay (ColorPickerUI's MainWindow) is a small, LAYERED, transparent, topmost,
+            // no-taskbar window. Once activated it stays visible and follows the cursor until a
+            // click/Esc, so normally it shows immediately and winapp enumerates it WITHOUT any
+            // cursor movement (the common path locally and on most agents). Intermittently on a
+            // slow/loaded agent, winapp lists ZERO ColorPickerUI windows even though the runner
+            // logged the hotkey firing and ColorPicker activated — i.e. the overlay never reached a
+            // UIA-visible, on-screen state. Two mitigations, applied per attempt:
+            //   * Poll patiently BEFORE re-sending: re-issuing the chord runs
+            //     StartUserSession -> EndUserSession, which HIDES then re-shows the overlay, so the
+            //     old 2s re-send cadence churned the window and a slow winapp poll kept missing it.
+            //   * Reposition the cursor once mid-wait: ColorPicker re-positions + re-renders the
+            //     overlay at the live cursor, recovering it if it landed off-screen/uncomposited.
+            // We still retry because the very first chord can be lost if the runner hasn't finished
+            // arming its WH_KEYBOARD_LL hook. The overlay is ~120x64 (vs the ~660x570 editor), so
+            // filter by size; the cursor settles on a stable pixel for the later HEX read + click.
             const int activationAttempts = 3;
             Session? overlay = null;
             for (int attempt = 1; attempt <= activationAttempts && overlay is null; attempt++)
@@ -177,9 +186,16 @@ public class ColorPickerEndToEndTests : UITestBase
                 KeyboardHelper.SendKeys(keys);
 
                 overlay = WindowsFinder.WaitForWindowByApp(
-                    "PowerToys.ColorPickerUI",
-                    w => w.Width < 300 && w.Height < 200,
-                    timeoutMS: attempt < activationAttempts ? 2_000 : 5_000);
+                    "PowerToys.ColorPickerUI", w => w.Width < 300 && w.Height < 200, timeoutMS: 2_500);
+
+                if (overlay is null)
+                {
+                    // Recovery kick: nudge the overlay to a fresh on-screen spot, then keep polling
+                    // before re-sending (which would hide/re-show it and restart the churn).
+                    MouseHelper.MoveTo(cx + 60, cy + 60);
+                    overlay = WindowsFinder.WaitForWindowByApp(
+                        "PowerToys.ColorPickerUI", w => w.Width < 300 && w.Height < 200, timeoutMS: 2_500);
+                }
             }
 
             if (overlay is null)
@@ -190,7 +206,9 @@ public class ColorPickerEndToEndTests : UITestBase
                         .Select(w => $"    hwnd={w.Hwnd} title='{w.Title}' class='{w.ClassName}' size={w.Width}x{w.Height}"));
                 Assert.Fail(
                     $"Picker overlay did not appear after {activationAttempts} shortcut attempts." + Environment.NewLine +
-                    "  Hotkey may not have fired through the runner's WH_KEYBOARD_LL hook." + Environment.NewLine +
+                    "  The hotkey DID reach the runner (it logs 'ColorPicker hotkey is invoked') and ColorPicker" + Environment.NewLine +
+                    "  activated, so this is the overlay (a small layered/transparent/topmost window) failing to" + Environment.NewLine +
+                    "  become UIA-visible/on-screen on this agent — a rendering/enumeration issue, not input." + Environment.NewLine +
                     "  Current ColorPickerUI windows:" + Environment.NewLine +
                     (dump.Length > 0 ? dump : "    (none)"));
             }
