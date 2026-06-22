@@ -587,10 +587,16 @@ internal static class Clipboard
                     }
                     else
                     {
-                        _ = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
+                        bool success = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                         {
                             m = new FileStream(path, FileMode.Create);
                         });
+
+                        if (!success || m == null)
+                        {
+                            Logger.Log("Impersonation failed for file creation, falling back to direct creation.");
+                            m = new FileStream(path, FileMode.Create);
+                        }
                     }
                 }
 
