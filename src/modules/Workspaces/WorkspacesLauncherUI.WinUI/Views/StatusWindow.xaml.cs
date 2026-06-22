@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
@@ -41,8 +42,9 @@ namespace WorkspacesLauncherUI
             {
                 this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("LauncherWindowTitle") ?? "Workspaces";
             }
-            catch
+            catch (System.Exception ex)
             {
+                Logger.LogError("Failed to load window title resource: " + ex.Message);
                 this.Title = "Workspaces";
             }
 
@@ -81,6 +83,7 @@ namespace WorkspacesLauncherUI
         private void Window_Closed(object sender, WindowEventArgs args)
         {
             _viewModel?.Dispose();
+            (Application.Current as System.IDisposable)?.Dispose();
         }
     }
 }

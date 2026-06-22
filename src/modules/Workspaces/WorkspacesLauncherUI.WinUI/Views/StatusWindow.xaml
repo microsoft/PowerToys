@@ -41,6 +41,13 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
+                                <Image
+                                    Width="20"
+                                    Height="20"
+                                    Margin="4,0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Source="{Binding IconImage}" />
                                 <TextBlock
                                     Grid.Column="1"
                                     VerticalAlignment="Center"
@@ -94,7 +101,7 @@
             Margin="4"
             HorizontalAlignment="Stretch"
             Click="DismissButton_Click"
-            Style="{StaticResource AccentButtonStyle}"
+            Style="{ThemeResource AccentButtonStyle}"
             TabIndex="2" />
     </Grid>
 </Window>

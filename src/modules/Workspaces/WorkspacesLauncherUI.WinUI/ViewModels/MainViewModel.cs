@@ -10,6 +10,7 @@ using System.ComponentModel;
 using ManagedCommon;
 using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
+using WorkspacesLauncherUI.Helpers;
 using WorkspacesLauncherUI.Models;
 
 namespace WorkspacesLauncherUI.ViewModels
@@ -55,6 +56,7 @@ namespace WorkspacesLauncherUI.ViewModels
                 {
                     Name = app.Application.Application,
                     AppPath = app.Application.ApplicationPath,
+                    IconImage = IconHelper.TryGetExecutableIcon(app.Application.ApplicationPath),
                     PackagedName = app.Application.PackageFullName,
                     Aumid = app.Application.AppUserModelId,
                     PwaAppId = app.Application.PwaAppId,

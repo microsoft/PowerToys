@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 using WorkspacesLauncherUI.Data;
 
@@ -31,13 +32,33 @@ namespace WorkspacesLauncherUI.Models
 
         public string AppPath { get; set; }
 
+        public BitmapImage IconImage { get; set; }
+
         public string PackagedName { get; set; }
 
         public string Aumid { get; set; }
 
         public string PwaAppId { get; set; }
 
-        public LaunchingState LaunchState { get; set; }
+        private LaunchingState _launchState;
+
+        public LaunchingState LaunchState
+        {
+            get => _launchState;
+            set
+            {
+                if (_launchState != value)
+                {
+                    _launchState = value;
+                    _stateColorBrush = null;
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(LaunchState)));
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(Loading)));
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(StateGlyph)));
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(StateColor)));
+                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(StateColorValue)));
+                }
+            }
+        }
 
         public string StateGlyph
         {
@@ -49,9 +70,11 @@ namespace WorkspacesLauncherUI.Models
             };
         }
 
+        private SolidColorBrush _stateColorBrush;
+
         public Brush StateColor
         {
-            get => new SolidColorBrush(StateColorValue);
+            get => _stateColorBrush ??= new SolidColorBrush(StateColorValue);
         }
 
         public Windows.UI.Color StateColorValue
