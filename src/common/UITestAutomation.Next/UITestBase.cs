@@ -92,7 +92,7 @@ public class UITestBase : IDisposable
     }
 
     [TestInitialize]
-    public void TestInit()
+    public async Task TestInit()
     {
         if (!CliAvailable.Value)
         {
@@ -151,25 +151,25 @@ public class UITestBase : IDisposable
             // MSTest does NOT run [TestCleanup] when [TestInitialize] throws, so capture the failure
             // media here (e.g. the window never appeared) before propagating — otherwise an init
             // failure would attach no diagnostics at all.
-            CaptureFailureArtifacts();
+            await CaptureFailureArtifactsAsync();
             throw;
         }
     }
 
     [TestCleanup]
-    public void TestCleanup()
+    public async Task TestCleanup()
     {
         var failed = TestContext.CurrentTestOutcome is
             UnitTestOutcome.Failed or UnitTestOutcome.Error or UnitTestOutcome.Unknown;
 
         if (failed)
         {
-            CaptureFailureArtifacts();
+            await CaptureFailureArtifactsAsync();
         }
         else if (isInPipeline)
         {
             // Passing test: stop the capture and discard the (now uninteresting) recording.
-            StopPipelineCapture();
+            await StopPipelineCaptureAsync();
             CleanupRecordingDirectory();
         }
 
@@ -215,7 +215,7 @@ public class UITestBase : IDisposable
     /// the PowerToys log files. Idempotent and fully tolerant — runs from both the <see cref="TestInit"/>
     /// failure path (where <c>[TestCleanup]</c> won't fire) and <see cref="TestCleanup"/>.
     /// </summary>
-    private void CaptureFailureArtifacts()
+    private async Task CaptureFailureArtifactsAsync()
     {
         if (artifactsCaptured)
         {
@@ -228,7 +228,7 @@ public class UITestBase : IDisposable
         {
             try
             {
-                StopPipelineCapture();
+                await StopPipelineCaptureAsync();
             }
             catch
             {
@@ -393,7 +393,7 @@ public class UITestBase : IDisposable
     }
 
     /// <summary>Stop the screenshot timer and finalize the recording. Best-effort.</summary>
-    private void StopPipelineCapture()
+    private async Task StopPipelineCaptureAsync()
     {
         try
         {
@@ -407,7 +407,7 @@ public class UITestBase : IDisposable
         {
             try
             {
-                screenRecording.StopRecordingAsync().GetAwaiter().GetResult();
+                await screenRecording.StopRecordingAsync();
             }
             catch
             {

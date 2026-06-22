@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,6 +34,13 @@ public static class WinappCli
         "(or set the WINAPP_CLI_PATH environment variable to its full path).";
 
     private static readonly Lazy<string> ExecutablePath = new(ResolveExecutable);
+
+    /// <summary>
+    /// Per-invocation guard. A hung <c>winapp.exe</c> call must fail fast and name the offending
+    /// command instead of blocking until the suite's outer timeout fires (which buries the cause).
+    /// Commands that pass a longer <c>-t</c> wait extend this; see <see cref="ResolveInvokeTimeout"/>.
+    /// </summary>
+    private static readonly TimeSpan DefaultInvokeTimeout = TimeSpan.FromSeconds(60);
 
     public sealed record Result(int ExitCode, string StdOut, string StdErr, IReadOnlyList<string> Args)
     {
@@ -126,6 +134,25 @@ public static class WinappCli
 
         var stdoutTask = p.StandardOutput.ReadToEndAsync();
         var stderrTask = p.StandardError.ReadToEndAsync();
+
+        var timeout = ResolveInvokeTimeout(args);
+        if (!p.WaitForExit((int)timeout.TotalMilliseconds))
+        {
+            try
+            {
+                p.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+                // Raced with a natural exit between the wait timing out and the kill — nothing to do.
+            }
+
+            throw new TimeoutException(
+                $"winapp {string.Join(' ', args)} did not exit within {timeout.TotalSeconds:0}s and was killed.");
+        }
+
+        // Process exited within budget; this parameterless overload also blocks until the async
+        // stdout/stderr reads reach EOF, so the captured streams are complete.
         p.WaitForExit();
 
         return new Result(
@@ -133,6 +160,32 @@ public static class WinappCli
             stdoutTask.GetAwaiter().GetResult(),
             stderrTask.GetAwaiter().GetResult(),
             args);
+    }
+
+    /// <summary>
+    /// Process-guard budget for one invocation. Defaults to <see cref="DefaultInvokeTimeout"/>; when the
+    /// command carries its own <c>-t</c>/<c>--timeout</c> wait in milliseconds (e.g. <c>wait-for</c>), the
+    /// guard is extended past that wait plus a grace margin so a legitimate long wait isn't killed early.
+    /// </summary>
+    private static TimeSpan ResolveInvokeTimeout(string[] args)
+    {
+        var budget = DefaultInvokeTimeout;
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if ((string.Equals(args[i], "-t", StringComparison.Ordinal) ||
+                 string.Equals(args[i], "--timeout", StringComparison.Ordinal)) &&
+                int.TryParse(args[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var ms) &&
+                ms > 0)
+            {
+                var withGrace = TimeSpan.FromMilliseconds(ms) + TimeSpan.FromSeconds(30);
+                if (withGrace > budget)
+                {
+                    budget = withGrace;
+                }
+            }
+        }
+
+        return budget;
     }
 
     /// <summary>Run and throw if the exit code is non-zero. Use for fire-and-forget commands.</summary>
