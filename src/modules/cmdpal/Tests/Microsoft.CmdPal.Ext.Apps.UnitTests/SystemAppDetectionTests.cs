@@ -56,17 +56,14 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests
         [TestMethod]
         public void DirectoryBoundary_DoesNotFalsePositive_WhenPrefixOnly()
         {
-            var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            // A directory that looks system-like but is NOT inside %SystemRoot%
+            var fakeSystemLike = Path.GetFullPath(@"C:\WindowsFake\System32\notepad.exe");
 
-            // A directory that starts with the System32 token but is not inside System32
-            var fakeSystemLike = Path.Combine(systemRoot, "System32Apps", "MyApp.exe");
+            var program = TestDataHelper.CreateTestWin32Program(fullPath: fakeSystemLike);
 
-            var program = TestDataHelper.CreateTestWin32Program(fullPath: Path.GetFullPath(fakeSystemLike));
-
-            // The desired behavior: this should NOT be considered inside System32.
-            // If this test fails it indicates the detection logic is using simple prefix matching
-            // and may incorrectly treat System32Apps as a system directory.
-            Assert.IsFalse(IsProtected(program), "A path such as C:\\Windows\\System32Apps\\MyApp should NOT be treated as inside C:\\Windows\\System32.");
+            // The desired behavior: this should NOT be considered a system app
+            // since it is not inside the actual Windows directory.
+            Assert.IsFalse(IsProtected(program), "A path outside %SystemRoot% should NOT be treated as a protected system app.");
         }
 
         [TestMethod]
@@ -95,6 +92,19 @@ namespace Microsoft.CmdPal.Ext.Apps.UnitTests
             var program = TestDataHelper.CreateTestWin32Program(fullPath: normalized);
 
             Assert.IsTrue(IsProtected(program), "Normalized paths that resolve into System32 should be detected as system-owned.");
+        }
+
+        [TestMethod]
+        public void WindowsRoot_ExecutableDirectlyInSystemRoot_IsDetected()
+        {
+            var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+
+            // regedit.exe lives directly in %SystemRoot%, not in a subdirectory
+            var path = Path.Combine(systemRoot, "regedit.exe");
+
+            var program = TestDataHelper.CreateTestWin32Program(fullPath: Path.GetFullPath(path));
+
+            Assert.IsTrue(IsProtected(program), "Executables directly in %SystemRoot% (e.g., regedit.exe) should be detected as system-owned.");
         }
 
         private static MethodInfo? _isShortcutTargetMethod;

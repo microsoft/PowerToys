@@ -1107,22 +1107,15 @@ public class Win32Program : IProgram
 
         var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
 
-        // Core OS binaries (Control Panel, Task Manager, Registry Editor, etc.)
-        var system32 = System.IO.Path.Combine(systemRoot, "System32");
-
-        // 32-bit system binaries on 64-bit Windows (same protection rationale as System32)
-        var sysWow64 = System.IO.Path.Combine(systemRoot, "SysWOW64");
-
-        // Inbox Windows Store apps that ship with the OS (e.g., Settings, Xbox Game Bar)
-        var systemApps = System.IO.Path.Combine(systemRoot, "SystemApps");
-
+        // Anything inside %SystemRoot% (C:\Windows) is an OS component — this covers
+        // executables directly in the Windows folder (regedit.exe, explorer.exe) as
+        // well as subdirectories like System32, SysWOW64, and SystemApps.
+        //
         // NOTE: We intentionally do NOT include %ProgramFiles%\WindowsApps here.
         // Win11 optional features (Notepad, Paint, Media Player) are MSIX-packaged
         // and resolve to that directory, but they DO have valid uninstallers via
         // Settings > Optional Features — blocking them would be incorrect.
-        return PathHelpers.IsPathInsideDirectory(path, system32)
-            || PathHelpers.IsPathInsideDirectory(path, sysWow64)
-            || PathHelpers.IsPathInsideDirectory(path, systemApps);
+        return PathHelpers.IsPathInsideDirectory(path, systemRoot);
     }
 
     /// <summary>
