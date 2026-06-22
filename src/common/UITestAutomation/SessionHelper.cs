@@ -365,6 +365,12 @@ namespace Microsoft.PowerToys.UITest
             var winAppDriverProcessInfo = new ProcessStartInfo
             {
                 FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
+
+                // WinAppDriver must be elevated to open its HTTP listener on :4723. The "runas" verb
+                // only elevates when UseShellExecute is true; with the .NET default (false) the verb is
+                // ignored and WinAppDriver inherits the (non-elevated) test process, so it can't bind the
+                // port and every session request is refused. ShellExecute + runas elevates it for real.
+                UseShellExecute = true,
                 Verb = "runas",
             };
 
