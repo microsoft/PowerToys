@@ -67,6 +67,16 @@ namespace WorkspacesEditor
             {
                 ShowWindow(WindowNative.GetWindowHandle(this), 9); // SW_RESTORE
             };
+            vm.ShowLoadingAction = () =>
+            {
+                LoadingRing.IsActive = true;
+                LoadingRing.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            };
+            vm.HideLoadingAction = () =>
+            {
+                LoadingRing.IsActive = false;
+                LoadingRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            };
 
             // Navigate to main page
             ContentFrame.Navigate(typeof(Views.MainPage), vm);

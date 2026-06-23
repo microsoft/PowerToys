@@ -9,5 +9,13 @@
     mc:Ignorable="d">
     <Grid Margin="0,16,0,0">
         <Frame x:Name="ContentFrame" />
+        <ProgressRing
+            x:Name="LoadingRing"
+            Width="48"
+            Height="48"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsActive="False"
+            Visibility="Collapsed" />
     </Grid>
 </Window>

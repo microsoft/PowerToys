@@ -149,6 +149,10 @@ namespace WorkspacesEditor.ViewModels
 
         public Action RestoreMainWindowAction { get; set; }
 
+        public Action ShowLoadingAction { get; set; }
+
+        public Action HideLoadingAction { get; set; }
+
         public MainViewModel(WorkspacesEditorIO workspacesEditorIO)
         {
             _settings = Utils.Settings.ReadSettings();
@@ -330,8 +334,11 @@ namespace WorkspacesEditor.ViewModels
 
             // Restore window immediately so user sees feedback
             RestoreMainWindowAction?.Invoke();
+            ShowLoadingAction?.Invoke();
 
             await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
+
+            HideLoadingAction?.Invoke();
 
             Project project = _workspacesEditorIO.ParseTempProject();
             if (project != null)
