@@ -22,7 +22,7 @@ $totalList = $projFiles | ForEach-Object -Parallel {
     #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
     $procInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{ 
         FileName               = "dotnet.exe"; 
-        Arguments              = "list $csproj package"; 
+        Arguments              = "list $csproj package --no-restore"; 
         RedirectStandardOutput = $true; 
         RedirectStandardError  = $true; 
     }

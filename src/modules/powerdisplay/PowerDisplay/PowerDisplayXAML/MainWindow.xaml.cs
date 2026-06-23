@@ -5,6 +5,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Flyout;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -16,6 +18,7 @@ using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using PowerDisplay.ViewModels;
 using Windows.Graphics;
+using Windows.System;
 using WinUIEx;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
@@ -30,7 +33,7 @@ namespace PowerDisplay
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
         private HotkeyService? _hotkeyService;
-        private DpiSuppressor? _dpiSuppressor;
+        private WindowMessageHook? _messageHook;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
@@ -69,9 +72,9 @@ namespace PowerDisplay
                 _hotkeyService = new HotkeyService(_settingsUtils, ToggleWindow);
                 _hotkeyService.Initialize(hwnd);
 
-                // 6. Subclass WndProc for hotkey handling and DPI change suppression
-                Logger.LogTrace("MainWindow constructor: Setting up DpiSuppressor");
-                _dpiSuppressor = new DpiSuppressor(this, (uMsg, wParam, _) =>
+                // 6. Subclass WndProc to route WM_HOTKEY messages into HotkeyService.
+                Logger.LogTrace("MainWindow constructor: Setting up WindowMessageHook");
+                _messageHook = new WindowMessageHook(this, (uMsg, wParam, _) =>
                     _hotkeyService?.HandleMessage(uMsg, wParam) == true);
                 Logger.LogTrace("MainWindow constructor: HotkeyService initialized");
 
@@ -247,17 +250,14 @@ namespace PowerDisplay
         private void OnUIRefreshRequested(object? sender, EventArgs e)
         {
             // Adjust window size when UI configuration changes (feature visibility toggles)
-            DispatcherQueue.TryEnqueue(() => AdjustWindowSizeToContent());
+            QueueWindowSizeAdjustment();
         }
 
         private void OnMonitorsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             // Adjust window size when monitors collection changes (event-driven!)
             // The UI binding will update first, then we adjust size
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                AdjustWindowSizeToContent();
-            });
+            QueueWindowSizeAdjustment();
         }
 
         private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -265,14 +265,26 @@ namespace PowerDisplay
             // Adjust window size when relevant properties change (event-driven!)
             if (e.PropertyName == nameof(_viewModel.IsScanning) ||
                 e.PropertyName == nameof(_viewModel.HasMonitors) ||
-                e.PropertyName == nameof(_viewModel.ShowNoMonitorsMessage))
+                e.PropertyName == nameof(_viewModel.ShowNoMonitorsMessage) ||
+                e.PropertyName == nameof(_viewModel.LinkedLevelsActive) ||
+                e.PropertyName == nameof(_viewModel.IndividualDisplaysExpanded) ||
+                e.PropertyName == nameof(_viewModel.ShowIndividualDisplays) ||
+                e.PropertyName == nameof(_viewModel.ShowLinkLevelsToggle) ||
+                e.PropertyName == nameof(_viewModel.LinkedMonitorsCount) ||
+                e.PropertyName == nameof(_viewModel.LinkedMonitorsCountText) ||
+                e.PropertyName == nameof(_viewModel.ExcludedMonitorsCount) ||
+                e.PropertyName == nameof(_viewModel.ExcludedMonitorsCountText) ||
+                e.PropertyName == nameof(_viewModel.HasExcludedMonitors) ||
+                e.PropertyName == nameof(_viewModel.IsLinkedBrightnessAvailable))
             {
-                // Use Low priority to ensure UI bindings update first
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                {
-                    AdjustWindowSizeToContent();
-                });
+                QueueWindowSizeAdjustment();
             }
+        }
+
+        private void QueueWindowSizeAdjustment()
+        {
+            // Use Low priority to ensure x:Bind visibility/layout updates land before measuring.
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
         }
 
         private void OnRefreshClick(object sender, RoutedEventArgs e)
@@ -302,6 +314,15 @@ namespace PowerDisplay
             SettingsDeepLink.OpenSettings(true);
         }
 
+        private void RootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Escape)
+            {
+                HideWindow();
+                e.Handled = true;
+            }
+        }
+
         /// <summary>
         /// Configure window properties (synchronous, no data dependency)
         /// </summary>
@@ -320,7 +341,7 @@ namespace PowerDisplay
                 PositionWindowAtBottomRight();
 
                 // Set window title
-                this.AppWindow.Title = "PowerDisplay";
+                this.AppWindow.Title = "Power Display";
 
                 // Custom title bar - completely remove all buttons
                 var titleBar = this.AppWindow.TitleBar;
@@ -331,16 +352,6 @@ namespace PowerDisplay
 
                     // Completely remove title bar height
                     titleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
-
-                    // Set all button colors to transparent
-                    titleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonHoverForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonPressedForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-                    titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
 
                     // Disable title bar interaction area
                     titleBar.SetDragRectangles(Array.Empty<Windows.Graphics.RectInt32>());
@@ -366,28 +377,37 @@ namespace PowerDisplay
                     return;
                 }
 
+                var maxHeightDip = GetAdaptiveWindowMaxHeightDip();
+                if (MainScrollViewer != null)
+                {
+                    MainScrollViewer.MaxHeight = double.PositiveInfinity;
+                }
+
                 // Force layout update and measure content height
                 RootGrid.UpdateLayout();
                 MainContainer?.Measure(new Windows.Foundation.Size(AppConstants.UI.WindowWidthDip, double.PositiveInfinity));
                 var contentHeight = (int)Math.Ceiling(MainContainer?.DesiredSize.Height ?? 0);
-                var maxHeightDip = GetAdaptiveWindowMaxHeightDip();
 
                 // Apply min/max height limits and reposition using DIP values.
                 // Min height ensures window is visible even if content hasn't loaded yet
-                var finalHeightDip = Math.Min(contentHeight, maxHeightDip);
+                var finalHeightDip = Math.Max(AppConstants.UI.WindowMinHeightDip, Math.Min(contentHeight, maxHeightDip));
                 Logger.LogTrace($"AdjustWindowSizeToContent: contentHeight={contentHeight}, maxHeightDip={maxHeightDip}, finalHeightDip={finalHeightDip}");
 
-                // Suppress WM_DPICHANGED during MoveAndResize to prevent double-scaling
-                // when moving across monitors with different DPI settings.
-                using (_dpiSuppressor?.Suppress() ?? default)
+                if (MainScrollViewer != null)
                 {
-                    WindowHelper.PositionWindowBottomRight(
-                        this,
-                        AppConstants.UI.WindowWidthDip,
-                        finalHeightDip,
-                        AppConstants.UI.WindowRightMarginDip,
-                        AppConstants.UI.WindowBottomMarginDip);
+                    var statusBarHeight = StatusBar?.ActualHeight > 0 ? StatusBar.ActualHeight : 48;
+                    MainScrollViewer.MaxHeight = Math.Max(0, maxHeightDip - statusBarHeight);
+                    RootGrid.UpdateLayout();
                 }
+
+                // FlyoutWindowHelper handles cross-monitor DPI internally via a 1×1 teleport
+                // before the final move, so no WM_DPICHANGED suppression is required here.
+                FlyoutWindowHelper.PositionWindowBottomRight(
+                    this,
+                    AppConstants.UI.WindowWidthDip,
+                    finalHeightDip,
+                    AppConstants.UI.WindowRightMarginDip,
+                    AppConstants.UI.WindowBottomMarginDip);
             }
             catch (Exception ex)
             {
@@ -397,25 +417,25 @@ namespace PowerDisplay
 
         private static int GetAdaptiveWindowMaxHeightDip()
         {
-            if (!WindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            if (!FlyoutWindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
             {
                 return AppConstants.UI.WindowMaxHeightDip;
             }
 
-            double dpiScale = WindowHelper.GetDpiScale(displayArea);
-            int workAreaHeightDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Height, dpiScale);
+            double dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
+            int workAreaHeightDip = FlyoutWindowHelper.ScaleToDip(displayArea.WorkArea.Height, dpiScale);
             return (int)Math.Floor(workAreaHeightDip * AppConstants.UI.WindowMaxWorkAreaHeightRatio);
         }
 
         private static double GetAdaptiveFlyoutMaxWidthDip()
         {
-            if (!WindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            if (!FlyoutWindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
             {
                 return AppConstants.UI.FlyoutContextMenuMaxWidthDip;
             }
 
-            double dpiScale = WindowHelper.GetDpiScale(displayArea);
-            int workAreaWidthDip = WindowHelper.ScaleToDip(displayArea.WorkArea.Width, dpiScale);
+            double dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
+            int workAreaWidthDip = FlyoutWindowHelper.ScaleToDip(displayArea.WorkArea.Width, dpiScale);
             double adaptiveMaxWidthDip = Math.Floor(workAreaWidthDip * AppConstants.UI.FlyoutContextMenuMaxWorkAreaWidthRatio);
 
             return Math.Max(
@@ -431,7 +451,7 @@ namespace PowerDisplay
                     ? (int)Math.Ceiling(this.Height)
                     : AppConstants.UI.WindowMinHeightDip;
 
-                WindowHelper.PositionWindowBottomRight(
+                FlyoutWindowHelper.PositionWindowBottomRight(
                     this,  // MainWindow inherits from WindowEx
                     AppConstants.UI.WindowWidthDip,
                     windowHeightDip,
@@ -500,7 +520,7 @@ namespace PowerDisplay
         public void Dispose()
         {
             _hotkeyService?.Dispose();
-            _dpiSuppressor?.Dispose();
+            _messageHook?.Dispose();
             _viewModel?.Dispose();
             GC.SuppressFinalize(this);
         }

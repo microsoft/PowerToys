@@ -4,5 +4,6 @@
         <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/KeyVisual/KeyCharPresenter.xaml" />
         <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/IsEnabledTextBlock/IsEnabledTextBlock.xaml" />
         <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/ShortcutWithTextLabelControl/ShortcutWithTextLabelControl.xaml" />
+        <ResourceDictionary Source="ms-appx:///PowerToys.Common.UI.Controls/Controls/TransparentCard/TransparentCard.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

@@ -6,9 +6,9 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Windows;
-using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.Win32;
 using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
@@ -27,8 +27,6 @@ namespace WorkspacesEditor
         private MainWindow _mainWindow;
 
         private MainViewModel _mainViewModel;
-
-        public static ThemeManager ThemeManager { get; set; }
 
         private bool _isDisposed;
 
@@ -92,8 +90,6 @@ namespace WorkspacesEditor
                 });
             }
 
-            ThemeManager = new ThemeManager(this);
-
             if (_mainViewModel == null)
             {
                 _mainViewModel = new MainViewModel(WorkspacesEditorIO);
@@ -114,6 +110,27 @@ namespace WorkspacesEditor
 
             // we can reset topmost flag after it's opened
             _mainWindow.Topmost = false;
+        }
+
+        public static Theme GetCurrentTheme()
+        {
+            if (SystemParameters.HighContrast)
+            {
+                return Theme.HighContrastOne;
+            }
+
+            try
+            {
+                var useLightTheme = Registry.GetValue(
+                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+                    "AppsUseLightTheme",
+                    1);
+                return (useLightTheme is int value && value == 0) ? Theme.Dark : Theme.Light;
+            }
+            catch
+            {
+                return Theme.Light;
+            }
         }
 
         private void OnExit(object sender, ExitEventArgs e)
@@ -138,7 +155,6 @@ namespace WorkspacesEditor
             {
                 if (disposing)
                 {
-                    ThemeManager?.Dispose();
                     _instanceMutex?.Dispose();
                     etwTrace?.Dispose();
                 }

@@ -93,7 +93,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Exit a exe by Name.
+        /// Exit an exe by Name.
         /// </summary>
         /// <param name="processName">The path to the application executable.</param>
         public void ExitExeByName(string processName)
@@ -114,7 +114,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Exit a exe.
+        /// Exit an exe.
         /// </summary>
         /// <param name="appPath">The path to the application executable.</param>
         public void ExitExe(string appPath)

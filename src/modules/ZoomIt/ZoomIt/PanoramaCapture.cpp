@@ -285,13 +285,11 @@ public:
             SetWindowPos( m_hProgress, nullptr, 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED );
 
-            // Disable visual styles so PBM_SETBARCOLOR is honored
+            // Disable visual styles so PBM_SETBARCOLOR / PBM_SETBKCOLOR are honored
             SetWindowTheme( m_hProgress, L"", L"" );
             SendMessage( m_hProgress, PBM_SETBARCOLOR, 0, static_cast<LPARAM>( RGB( 0x00, 0x78, 0xD4 ) ) );
-            if( darkMode )
-            {
-                SendMessage( m_hProgress, PBM_SETBKCOLOR, 0, static_cast<LPARAM>( DarkMode::SurfaceColor ) );
-            }
+            SendMessage( m_hProgress, PBM_SETBKCOLOR, 0, static_cast<LPARAM>(
+                darkMode ? DarkMode::SurfaceColor : GetSysColor( COLOR_WINDOW ) ) );
         }
 
         // Set font scaled for DPI
@@ -389,25 +387,32 @@ private:
 
         case WM_CTLCOLORSTATIC:
         case WM_CTLCOLORBTN:
-            if( IsDarkModeEnabled() )
             {
                 HDC hdc = reinterpret_cast<HDC>( wParam );
-                SetTextColor( hdc, DarkMode::TextColor );
-                SetBkColor( hdc, DarkMode::BackgroundColor );
-                return reinterpret_cast<LRESULT>( GetDarkModeBrush() );
+                if( IsDarkModeEnabled() )
+                {
+                    SetTextColor( hdc, DarkMode::TextColor );
+                    SetBkColor( hdc, DarkMode::BackgroundColor );
+                    return reinterpret_cast<LRESULT>( GetDarkModeBrush() );
+                }
+                else
+                {
+                    SetBkMode( hdc, TRANSPARENT );
+                    SetTextColor( hdc, GetSysColor( COLOR_WINDOWTEXT ) );
+                    return reinterpret_cast<LRESULT>( GetSysColorBrush( COLOR_BTNFACE ) );
+                }
             }
-            break;
 
         case WM_ERASEBKGND:
-            if( IsDarkModeEnabled() )
             {
                 HDC hdc = reinterpret_cast<HDC>( wParam );
                 RECT rc{};
                 GetClientRect( hWnd, &rc );
-                FillRect( hdc, &rc, GetDarkModeBrush() );
+                FillRect( hdc, &rc, IsDarkModeEnabled()
+                    ? GetDarkModeBrush()
+                    : GetSysColorBrush( COLOR_BTNFACE ) );
                 return 1;
             }
-            break;
         }
         return DefWindowProcW( hWnd, uMsg, wParam, lParam );
     }
@@ -7195,12 +7200,11 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
 
     if( directOk && !transposedOk )
     {
-        bestDx = directDx;
-        bestDy = directDy;
-        return true;
+        // When only one direction succeeds on the first pair, the result
+        // might be spurious autocorrelation rather than true scroll.
+        // Fall through to the axis scan to validate the direction.
     }
-
-    if( transposedOk && !directOk )
+    else if( transposedOk && !directOk )
     {
         // On portrait portals (height >= 2*width), a transposed-only
         // success is likely spurious horizontal autocorrelation from
@@ -7215,9 +7219,7 @@ static bool FindBestFrameShift( const std::vector<BYTE>& previousPixels,
                        mappedDx, mappedDy, frameWidth, frameHeight );
             return false;
         }
-        bestDx = mappedDx;
-        bestDy = mappedDy;
-        return true;
+        // Otherwise fall through to the axis scan to validate the direction.
     }
 
     // Both searches succeeded.  Startup axis choice is critical because a
@@ -10341,6 +10343,7 @@ static bool RunPanoramaCaptureCommon( HWND hWnd, bool saveToFile )
     } captureStitchLogGuard;
 
     g_RecordCropping = TRUE;
+    g_SelectRectangle.AspectRatio( 0.0 );
     const bool started = g_SelectRectangle.Start( hWnd );
     g_RecordCropping = FALSE;
     if( !started )

@@ -26,7 +26,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
-using WinUIEx;
 using DispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -68,7 +67,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     private readonly CompositeFormat _pageNavigatedAnnouncement;
 
     private SettingsWindow? _settingsWindow;
-    private DockWindow? _dockWindow;
+    private DockWindowManager? _dockWindowManager;
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
@@ -116,8 +115,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (App.Current.Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
         {
-            _dockWindow = new DockWindow();
-            _dockWindow.Show();
+            _dockWindowManager = App.Current.Services.GetService<DockWindowManager>();
+            _dockWindowManager?.ShowDocks();
         }
     }
 
@@ -171,6 +170,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                 {
                     ListViewModel => typeof(ListPage),
                     ContentPageViewModel => typeof(ContentPage),
+                    ParametersPageViewModel => typeof(ParametersPage),
                     _ => throw new NotSupportedException(),
                 },
                 new AsyncNavigationRequest(message.Page, message.CancellationToken),
@@ -229,23 +229,37 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private async Task HandlePinToDockDialogOnUiThread(ShowPinToDockDialogMessage message)
     {
-        var (result, content) = await PinToDockDialogContent.ShowAsync(
-            this.XamlRoot,
-            message.Title,
-            message.Subtitle,
-            message.Icon,
-            message.DockSide);
+        // Ask each dock window to display a teaching tip identifying its monitor,
+        // so the user can correlate the dialog's monitor list with the physical docks.
+        WeakReferenceMessenger.Default.Send(new ShowDockMonitorLabelsMessage(true));
 
-        if (result == ContentDialogResult.Primary)
+        try
         {
-            var pinMessage = new PinToDockMessage(
-                message.ProviderId,
-                message.CommandId,
-                Pin: true,
-                Side: content.SelectedSide,
-                ShowTitles: content.ShowTitles,
-                ShowSubtitles: content.ShowSubtitles);
-            WeakReferenceMessenger.Default.Send(pinMessage);
+            var (result, content) = await PinToDockDialogContent.ShowAsync(
+                this.XamlRoot,
+                message.Title,
+                message.Subtitle,
+                message.Icon,
+                message.DockSide,
+                message.AvailableMonitors);
+
+            if (result == ContentDialogResult.Primary)
+            {
+                var pinMessage = new PinToDockMessage(
+                    message.ProviderId,
+                    message.CommandId,
+                    Pin: true,
+                    Side: content.SelectedSide,
+                    ShowTitles: content.ShowTitles,
+                    ShowSubtitles: content.ShowSubtitles,
+                    MonitorDeviceId: content.SelectedMonitorDeviceId);
+                WeakReferenceMessenger.Default.Send(pinMessage);
+            }
+        }
+        finally
+        {
+            // Hide the teaching tips once the dialog is saved or dismissed.
+            WeakReferenceMessenger.Default.Send(new ShowDockMonitorLabelsMessage(false));
         }
     }
 
@@ -446,8 +460,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
                     if (isPage)
                     {
                         // If we're here, then the bound command was a page
-                        // of some kind. Let's pop the stack, show the window, and navigate to it.
-                        GoHome(false);
+                        // of some kind. Reset to root (clearing any transient dock state),
+                        // show the window, and navigate to it.
+                        ViewModel.ResetToHome();
 
                         WeakReferenceMessenger.Default.Send<ShowWindowMessage>(new(message.Hwnd));
                     }
@@ -543,17 +558,16 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             if (message.ShowDock)
             {
-                if (_dockWindow is null)
+                if (_dockWindowManager is null)
                 {
-                    _dockWindow = new DockWindow();
+                    _dockWindowManager = App.Current.Services.GetService<DockWindowManager>();
                 }
 
-                _dockWindow.Show();
+                _dockWindowManager?.ShowDocks();
             }
-            else if (_dockWindow is not null)
+            else
             {
-                _dockWindow.Close();
-                _dockWindow = null;
+                _dockWindowManager?.HideDocks();
             }
         });
     }
@@ -854,20 +868,9 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         _focusAfterLoadedCts?.Dispose();
         _focusAfterLoadedCts = null;
 
-        var dockWindow = _dockWindow;
-        _dockWindow = null;
-
-        if (dockWindow is not null)
-        {
-            if (DispatcherQueue.HasThreadAccess)
-            {
-                dockWindow.Close();
-            }
-            else
-            {
-                DispatcherQueue.TryEnqueue(dockWindow.Close);
-            }
-        }
+        var dockWindowManager = _dockWindowManager;
+        _dockWindowManager = null;
+        dockWindowManager?.Dispose();
 
         GC.SuppressFinalize(this);
     }

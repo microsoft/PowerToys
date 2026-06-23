@@ -66,7 +66,7 @@ namespace Microsoft.Plugin.WindowWalker.Components
         internal bool HideKillProcessOnElevatedProcesses { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating whether we show the explorer settings info or not.
+        /// Gets a value indicating whether or not we show the explorer settings info.
         /// </summary>
         internal bool HideExplorerSettingInfo { get; private set; }
 
