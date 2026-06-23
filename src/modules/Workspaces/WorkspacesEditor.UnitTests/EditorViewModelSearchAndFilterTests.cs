@@ -30,7 +30,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.SearchTerm = string.Empty;
-            Assert.AreEqual(2, vm.WorkspacesView.Count());
+            Assert.AreEqual(2, vm.WorkspacesView.Count);
         }
 
         [TestMethod]
@@ -45,7 +45,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.SearchTerm = null;
-            Assert.AreEqual(2, vm.WorkspacesView.Count());
+            Assert.AreEqual(2, vm.WorkspacesView.Count);
         }
 
         [TestMethod]
@@ -97,7 +97,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.SearchTerm = "devsetup";
-            Assert.AreEqual(1, vm.WorkspacesView.Count());
+            Assert.AreEqual(1, vm.WorkspacesView.Count);
         }
 
         [TestMethod]
@@ -112,7 +112,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.SearchTerm = "NonExistent";
-            Assert.AreEqual(0, vm.WorkspacesView.Count());
+            Assert.AreEqual(0, vm.WorkspacesView.Count);
         }
 
         [TestMethod]
@@ -127,7 +127,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.SearchTerm = "Develop";
-            Assert.AreEqual(1, vm.WorkspacesView.Count());
+            Assert.AreEqual(1, vm.WorkspacesView.Count);
         }
 
         [TestMethod]
@@ -143,7 +143,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.SearchTerm = "Dev";
-            Assert.AreEqual(2, vm.WorkspacesView.Count());
+            Assert.AreEqual(2, vm.WorkspacesView.Count);
         }
 
         [TestMethod]
@@ -171,7 +171,7 @@ namespace WorkspacesEditor.UnitTests
             vm.Workspaces = new ObservableCollection<Project>();
 
             vm.SearchTerm = "anything";
-            Assert.AreEqual(0, vm.WorkspacesView.Count());
+            Assert.AreEqual(0, vm.WorkspacesView.Count);
             Assert.IsTrue(vm.IsWorkspacesViewEmpty);
         }
 
@@ -186,7 +186,7 @@ namespace WorkspacesEditor.UnitTests
             };
 
             vm.SearchTerm = "visual studio";
-            Assert.AreEqual(1, vm.WorkspacesView.Count());
+            Assert.AreEqual(1, vm.WorkspacesView.Count);
         }
     }
 }

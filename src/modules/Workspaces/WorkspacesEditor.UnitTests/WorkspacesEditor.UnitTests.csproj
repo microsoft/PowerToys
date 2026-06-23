@@ -11,8 +11,7 @@
     <RootNamespace>WorkspacesEditor.UnitTests</RootNamespace>
     <AssemblyName>PowerToys.WorkspacesEditor.Tests</AssemblyName>
     <OutputType>Exe</OutputType>
-    <UseWPF>true</UseWPF>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWinUI>true</UseWinUI>
     <Platforms>x64;ARM64</Platforms>
   </PropertyGroup>
 
@@ -23,7 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
-    <ProjectReference Include="..\WorkspacesEditor\WorkspacesEditor.csproj" />
+    <ProjectReference Include="..\WorkspacesEditor.WinUI\WorkspacesEditor.WinUI.csproj" />
   </ItemGroup>
 
 </Project>
