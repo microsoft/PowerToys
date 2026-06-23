@@ -17,6 +17,9 @@ namespace WorkspacesEditor
 {
     public sealed partial class MainWindow : Window, IDisposable
     {
+        public const int MinWindowWidth = 750;
+        public const int MinWindowHeight = 680;
+
         private readonly CancellationTokenSource _cancellationToken = new();
         private readonly AppWindow _appWindow;
 
@@ -28,7 +31,7 @@ namespace WorkspacesEditor
             var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             _appWindow = AppWindow.GetFromWindowId(windowId);
 
-            SetMinSize(hwnd, 750, 680);
+            SetMinSize(hwnd, MinWindowWidth, MinWindowHeight);
             RestoreWindowState(hwnd);
 
             // Set title from resource or fallback
@@ -203,9 +206,46 @@ namespace WorkspacesEditor
 
         private static void SetMinSize(IntPtr hwnd, int minWidth, int minHeight)
         {
-            // WinUI 3 doesn't expose MinWidth/MinHeight on Window directly.
-            // Use Win32 subclass or AppWindow.Resize constraint in future.
-            // For now, enforce via initial size (M2 will add proper constraint).
+            var subclassId = (nuint)1;
+            SubclassProc callback = (hWnd, msg, wParam, lParam, id, data) =>
+            {
+                if (msg == WmGetminmaxinfo)
+                {
+                    var mmi = Marshal.PtrToStructure<MINMAXINFO>(lParam);
+                    mmi.PtMinTrackSize.X = minWidth;
+                    mmi.PtMinTrackSize.Y = minHeight;
+                    Marshal.StructureToPtr(mmi, lParam, false);
+                }
+
+                return DefSubclassProc(hWnd, msg, wParam, lParam);
+            };
+
+            // prevent GC of delegate
+            _subclassCallback = callback;
+            SetWindowSubclass(hwnd, callback, subclassId, 0);
+        }
+
+        private static SubclassProc _subclassCallback;
+
+        private const uint WmGetminmaxinfo = 0x0024;
+
+        private delegate IntPtr SubclassProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, nuint id, nuint data);
+
+        [DllImport("comctl32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetWindowSubclass(IntPtr hWnd, SubclassProc pfnSubclass, nuint uIdSubclass, nuint dwRefData);
+
+        [DllImport("comctl32.dll")]
+        private static extern IntPtr DefSubclassProc(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MINMAXINFO
+        {
+            public POINT PtReserved;
+            public POINT PtMaxSize;
+            public POINT PtMaxPosition;
+            public POINT PtMinTrackSize;
+            public POINT PtMaxTrackSize;
         }
 
         public void Dispose()
