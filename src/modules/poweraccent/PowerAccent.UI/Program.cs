@@ -6,9 +6,10 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 using PowerToys.Interop;
 
 namespace PowerAccent.UI;
@@ -16,7 +17,6 @@ namespace PowerAccent.UI;
 internal static class Program
 {
     private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
-    private static App _application;
     private static int _powerToysRunnerPid;
 
     [STAThread]
@@ -34,9 +34,12 @@ internal static class Program
 
         InitEvents();
 
-        _application = new App();
-        _application.InitializeComponent();
-        _application.Run();
+        Application.Start((p) =>
+        {
+            var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+            SynchronizationContext.SetSynchronizationContext(context);
+            _ = new App();
+        });
     }
 
     private static void InitEvents()
@@ -84,10 +87,11 @@ internal static class Program
 
     private static void Terminate()
     {
-        Application.Current.Dispatcher.BeginInvoke(() =>
+        if (DispatcherQueue.GetForCurrentThread() is DispatcherQueue queue)
         {
-            _tokenSource.Cancel();
-            Application.Current.Shutdown();
-        });
+            queue.TryEnqueue(() => Application.Current.Exit());
+        }
+
+        _tokenSource.Cancel();
     }
 }

@@ -11,6 +11,9 @@ using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 using PowerToys.PowerAccentKeyboardService;
 
+using Windows.Win32;
+using Windows.Win32.UI.Input.KeyboardAndMouse;
+
 namespace PowerAccent.Core;
 
 public partial class PowerAccent : IDisposable
@@ -41,10 +44,12 @@ public partial class PowerAccent : IDisposable
     private readonly KeyboardListener _keyboardListener;
 
     private readonly CharactersUsageInfo _usageInfo;
+    private readonly Action<Action> _uiThreadDispatcher;
 
-    public PowerAccent()
+    public PowerAccent(Action<Action> uiThreadDispatcher = null)
     {
         Logger.InitializeLogger("\\QuickAccent\\Logs");
+        _uiThreadDispatcher = uiThreadDispatcher ?? (action => action());
 
         LoadUnicodeInfoCache();
 
@@ -65,26 +70,17 @@ public partial class PowerAccent : IDisposable
     {
         _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                ShowToolbar(letterKey);
-            });
+            _uiThreadDispatcher(() => ShowToolbar(letterKey));
         }));
 
         _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                SendInputAndHideToolbar(inputType);
-            });
+            _uiThreadDispatcher(() => SendInputAndHideToolbar(inputType));
         }));
 
         _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey, bool shiftPressed) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                ProcessNextChar(triggerKey, shiftPressed);
-            });
+            _uiThreadDispatcher(() => ProcessNextChar(triggerKey, shiftPressed));
         }));
 
         _keyboardListener.SetIsLanguageLetterDelegate(new PowerToys.PowerAccentKeyboardService.IsLanguageLetter((LetterKey letterKey, out bool result) =>
@@ -208,13 +204,13 @@ public partial class PowerAccent : IDisposable
 
             case InputType.Right:
                 {
-                    SendKeys.SendWait("{RIGHT}");
+                    WindowsFunctions.SendVirtualKey(VIRTUAL_KEY.VK_RIGHT);
                     break;
                 }
 
             case InputType.Left:
                 {
-                    SendKeys.SendWait("{LEFT}");
+                    WindowsFunctions.SendVirtualKey(VIRTUAL_KEY.VK_LEFT);
                     break;
                 }
 
