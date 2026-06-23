@@ -324,11 +324,26 @@ public class UITestBase : IDisposable
     /// <summary>Apply the constructor's <see cref="WindowSize"/> to the resolved window, if any.</summary>
     private void ApplyWindowSize()
     {
-        if (windowSize != WindowSize.UnSpecified && Session is not null && Session.WindowHandle != 0)
+        if (Session is null || Session.WindowHandle == 0)
         {
-            WindowHelper.SetWindowSize(new IntPtr(Session.WindowHandle), windowSize);
-            Thread.Sleep(200);
+            return;
         }
+
+        var hwnd = new IntPtr(Session.WindowHandle);
+        if (windowSize == WindowSize.UnSpecified)
+        {
+            // No explicit size requested: maximize so the whole window is on-screen and every control is
+            // reachable. PowerToys restores a module's last window rect, which on a CI agent is often small
+            // or pushed off the side of the screen; for Settings that collapses the NavigationView pane and
+            // breaks nav-item lookups (e.g. SystemToolsNavItem). Maximizing is the deterministic default.
+            WindowHelper.MaximizeWindow(hwnd);
+        }
+        else
+        {
+            WindowHelper.SetWindowSize(hwnd, windowSize);
+        }
+
+        Thread.Sleep(200);
     }
 
     /// <summary>

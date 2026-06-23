@@ -53,6 +53,7 @@ public static class WindowHelper
     private const uint SWP_NOACTIVATE = 0x0010;
     private const int SM_CXSCREEN = 0;
     private const int SM_CYSCREEN = 1;
+    private const int SW_MAXIMIZE = 3;
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -61,6 +62,10 @@ public static class WindowHelper
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int nIndex);
@@ -91,6 +96,13 @@ public static class WindowHelper
     /// <summary>Resize a window to explicit width/height (keeps its current position).</summary>
     public static void SetMainWindowSize(IntPtr hWnd, int width, int height) =>
         SetWindowPos(hWnd, IntPtr.Zero, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+    /// <summary>
+    /// Maximize a window so it fills the monitor work area and is fully on-screen. Used as the default
+    /// window state for tests so a module's restored (possibly small or off-screen) last window rect
+    /// can't hide controls such as the Settings NavigationView pane.
+    /// </summary>
+    public static void MaximizeWindow(IntPtr hWnd) => ShowWindow(hWnd, SW_MAXIMIZE);
 
     /// <summary>(Left, Top, Right, Bottom) of the window in screen pixels.</summary>
     public static (int Left, int Top, int Right, int Bottom) GetWindowBounds(IntPtr hWnd)
