@@ -600,6 +600,8 @@ internal static class Clipboard
                     }
                 }
 
+                if (postAct.Equals("desktop", StringComparison.OrdinalIgnoreCase))
+                {
                     // Create the folder and open the file in a single impersonated scope so both
                     // are owned by the logged-on user. This branch always targets the user's Desktop.
                     bool success = Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
