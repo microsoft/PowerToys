@@ -22,7 +22,7 @@
 const std::wstring workspacesLauncherPath = L"PowerToys.WorkspacesLauncher.exe";
 const std::wstring workspacesWindowArrangerPath = L"PowerToys.WorkspacesWindowArranger.exe";
 const std::wstring workspacesSnapshotToolPath = L"PowerToys.WorkspacesSnapshotTool.exe";
-const std::wstring workspacesEditorPath = L"PowerToys.WorkspacesEditor.exe";
+const std::wstring workspacesEditorPath = L"WinUI3Apps\\PowerToys.WorkspacesEditor.exe";
 
 namespace
 {
@@ -327,7 +327,7 @@ private:
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = SEE_MASK_NOCLOSEPROCESS;
-        sei.lpFile = L"PowerToys.WorkspacesEditor.exe";
+        sei.lpFile = workspacesEditorPath.c_str();
         sei.nShow = SW_SHOWNORMAL;
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))

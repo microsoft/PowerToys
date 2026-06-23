@@ -1015,7 +1015,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/Workspaces/WorkspacesEditor/WorkspacesEditor.csproj">
+    <Project Path="src/modules/Workspaces/WorkspacesEditor.WinUI/WorkspacesEditor.WinUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
