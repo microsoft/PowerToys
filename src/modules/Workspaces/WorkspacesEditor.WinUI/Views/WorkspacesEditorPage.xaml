@@ -89,7 +89,7 @@
                             MinWidth="12"
                             IsChecked="{Binding IsElevated, Mode=TwoWay}"
                             IsEnabled="{Binding CanLaunchElevated, Mode=OneWay}">
-                            <TextBlock x:Name="LaunchAsAdminLabel" Text="Launch as Admin" />
+                            <TextBlock x:Uid="LaunchAsAdminLabel" />
                         </CheckBox>
                         <StackPanel
                             Grid.Row="1"
@@ -98,7 +98,7 @@
                             <TextBlock
                                 VerticalAlignment="Center"
                                 Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                                Text="CLI arguments" />
+                                x:Uid="CliArgumentsLabel" />
                             <TextBox
                                 Margin="12,0,0,0"
                                 MinWidth="200"
@@ -115,33 +115,33 @@
                             Spacing="8">
                             <TextBlock
                                 VerticalAlignment="Center"
-                                Text="Window position" />
+                                x:Uid="WindowPositionLabel" />
                             <ComboBox
                                 VerticalAlignment="Center"
                                 SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay}">
-                                <ComboBoxItem Content="Custom" />
-                                <ComboBoxItem Content="Maximized" />
-                                <ComboBoxItem Content="Minimized" />
+                                <ComboBoxItem x:Uid="CustomItem" />
+                                <ComboBoxItem x:Uid="MaximizedItem" />
+                                <ComboBoxItem x:Uid="MinimizedItem" />
                             </ComboBox>
-                            <TextBlock VerticalAlignment="Center" Text="Left" />
+                            <TextBlock VerticalAlignment="Center" x:Uid="LeftLabel" />
                             <TextBox
                                 MinWidth="60"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.X, Mode=OneWay}"
                                 TextChanged="LeftTextBox_TextChanged" />
-                            <TextBlock VerticalAlignment="Center" Text="Top" />
+                            <TextBlock VerticalAlignment="Center" x:Uid="TopLabel" />
                             <TextBox
                                 MinWidth="60"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.Y, Mode=OneWay}"
                                 TextChanged="TopTextBox_TextChanged" />
-                            <TextBlock VerticalAlignment="Center" Text="Width" />
+                            <TextBlock VerticalAlignment="Center" x:Uid="WidthLabel" />
                             <TextBox
                                 MinWidth="60"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.Width, Mode=OneWay}"
                                 TextChanged="WidthTextBox_TextChanged" />
-                            <TextBlock VerticalAlignment="Center" Text="Height" />
+                            <TextBlock VerticalAlignment="Center" x:Uid="HeightLabel" />
                             <TextBox
                                 MinWidth="60"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"

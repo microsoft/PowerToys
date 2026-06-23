@@ -162,7 +162,7 @@
                                     <Button
                                         Margin="0,0,8,0"
                                         Click="LaunchButton_Click"
-                                        Content="Launch" />
+                                        x:Uid="LaunchBtn" />
                                     <Button
                                         Click="MoreButton_Click"
                                         Padding="8">
@@ -174,14 +174,14 @@
                                             <MenuFlyout>
                                                 <MenuFlyoutItem
                                                     Click="EditButtonClicked"
-                                                    Text="Edit">
+                                                    x:Uid="EditFlyoutItem">
                                                     <MenuFlyoutItem.Icon>
                                                         <FontIcon Glyph="&#xE70F;" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
                                                 <MenuFlyoutItem
                                                     Click="DeleteButtonClicked"
-                                                    Text="Remove">
+                                                    x:Uid="RemoveFlyoutItem">
                                                     <MenuFlyoutItem.Icon>
                                                         <FontIcon Glyph="&#xE74D;" />
                                                     </MenuFlyoutItem.Icon>

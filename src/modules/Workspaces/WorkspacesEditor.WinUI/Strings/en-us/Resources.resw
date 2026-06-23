@@ -240,4 +240,49 @@
   <data name="NameItem.Content" xml:space="preserve">
     <value>Name</value>
   </data>
+  <data name="CustomItem.Content" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="MaximizedItem.Content" xml:space="preserve">
+    <value>Maximized</value>
+  </data>
+  <data name="MinimizedItem.Content" xml:space="preserve">
+    <value>Minimized</value>
+  </data>
+  <data name="LaunchAsAdminLabel.Text" xml:space="preserve">
+    <value>Launch as Admin</value>
+  </data>
+  <data name="CliArgumentsLabel.Text" xml:space="preserve">
+    <value>CLI arguments</value>
+  </data>
+  <data name="WindowPositionLabel.Text" xml:space="preserve">
+    <value>Window position</value>
+  </data>
+  <data name="LaunchBtn.Content" xml:space="preserve">
+    <value>Launch</value>
+  </data>
+  <data name="EditFlyoutItem.Text" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="RemoveFlyoutItem.Text" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="LeftLabel.Text" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="TopLabel.Text" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="WidthLabel.Text" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="HeightLabel.Text" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="CapturedAppList" xml:space="preserve">
+    <value>Captured Application List</value>
+  </data>
+  <data name="Screen" xml:space="preserve">
+    <value>Screen</value>
+  </data>
 </root>

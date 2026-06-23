@@ -154,7 +154,7 @@ namespace WorkspacesEditor.Models
                 ILookup<MonitorSetup, Application> apps = Applications.Where(x => !x.Minimized).ToLookup(x => x.MonitorSetup);
                 foreach (IGrouping<MonitorSetup, Application> appItem in apps.OrderBy(x => x.Key.MonitorDpiUnawareBounds.X).ThenBy(x => x.Key.MonitorDpiUnawareBounds.Y))
                 {
-                    MonitorHeaderRow headerRow = new() { MonitorName = "Screen " + appItem.Key.MonitorNumber, SelectString = GetString("SelectAllAppsOnMonitor") + " " + appItem.Key.MonitorInfo };
+                    MonitorHeaderRow headerRow = new() { MonitorName = GetString("Screen") + " " + appItem.Key.MonitorNumber, SelectString = GetString("SelectAllAppsOnMonitor") + " " + appItem.Key.MonitorInfo };
                     applicationsListed.Add(headerRow);
                     foreach (Application app in appItem)
                     {
