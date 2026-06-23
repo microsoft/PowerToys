@@ -316,8 +316,32 @@ namespace WorkspacesEditor.Models
 
         public void InitializePreview()
         {
-            // TODO: Port DrawHelper preview rendering in M2 continuation
-            // For now, preview images are not rendered
+            try
+            {
+                if (Applications == null || Applications.Count == 0 || Monitors == null || Monitors.Count == 0)
+                {
+                    return;
+                }
+
+                // Compute bounding rect across all monitors
+                double left = Monitors.Min(m => m.MonitorDpiAwareBounds.X);
+                double top = Monitors.Min(m => m.MonitorDpiAwareBounds.Y);
+                double right = Monitors.Max(m => m.MonitorDpiAwareBounds.X + m.MonitorDpiAwareBounds.Width);
+                double bottom = Monitors.Max(m => m.MonitorDpiAwareBounds.Y + m.MonitorDpiAwareBounds.Height);
+
+                var bounds = new System.Drawing.Rectangle((int)left, (int)top, (int)(right - left), (int)(bottom - top));
+
+                // Detect dark theme via app-level setting or default to dark
+                bool isDarkTheme = true;
+
+                PreviewImage = Utils.DrawHelper.DrawPreview(this, bounds, isDarkTheme);
+                PreviewImageWidth = bounds.Width * 0.1;
+                PreviewIcons = Utils.DrawHelper.DrawPreviewIcons(this);
+            }
+            catch (System.Exception)
+            {
+                // Preview is cosmetic — don't crash on rendering failures
+            }
         }
 
         public MonitorSetup GetMonitorForApp(Application app)

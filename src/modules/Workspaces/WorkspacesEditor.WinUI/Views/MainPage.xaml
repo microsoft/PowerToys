@@ -132,10 +132,16 @@
                                         FontSize="16"
                                         FontWeight="SemiBold"
                                         Text="{Binding Name, Mode=OneWay}" />
-                                    <TextBlock
-                                        Margin="0,0,0,8"
-                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{Binding AppsCountString}" />
+                                    <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
+                                        <Image
+                                            Height="16"
+                                            Source="{Binding PreviewIcons, Mode=OneWay}" />
+                                        <TextBlock
+                                            Margin="8,0,8,0"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding AppsCountString}" />
+                                    </StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock
                                             Margin="0,0,8,0"
