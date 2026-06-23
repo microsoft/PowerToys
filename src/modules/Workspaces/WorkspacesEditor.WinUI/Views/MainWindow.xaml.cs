@@ -146,7 +146,7 @@ namespace WorkspacesEditor
                         return;
                     }
                 }
-            }).Start();
+            }) { IsBackground = true }.Start();
         }
 
         private void SaveWindowState()
