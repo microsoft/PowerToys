@@ -59,6 +59,14 @@ namespace WorkspacesEditor
                     ContentFrame.GoBack();
                 }
             };
+            vm.MinimizeMainWindowAction = () =>
+            {
+                ShowWindow(WindowNative.GetWindowHandle(this), 6); // SW_MINIMIZE
+            };
+            vm.RestoreMainWindowAction = () =>
+            {
+                ShowWindow(WindowNative.GetWindowHandle(this), 9); // SW_RESTORE
+            };
 
             // Navigate to main page
             ContentFrame.Navigate(typeof(Views.MainPage), vm);

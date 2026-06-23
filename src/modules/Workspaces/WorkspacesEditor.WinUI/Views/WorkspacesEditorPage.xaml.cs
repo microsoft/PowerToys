@@ -189,12 +189,15 @@ namespace WorkspacesEditor.Views
 
         private void LaunchEditButtonClicked(object sender, RoutedEventArgs e)
         {
-            // TODO: M3 — LaunchAndEdit flow
+            if (this.DataContext is Project project)
+            {
+                _mainViewModel.LaunchAndEdit(project);
+            }
         }
 
         private void RevertButtonClicked(object sender, RoutedEventArgs e)
         {
-            // TODO: M3 — RevertLaunch flow
+            _mainViewModel.RevertLaunch();
         }
     }
 }

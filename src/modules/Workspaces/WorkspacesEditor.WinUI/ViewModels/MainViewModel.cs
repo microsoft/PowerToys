@@ -16,11 +16,13 @@ using System.Timers;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Windowing;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Utils;
+using WorkspacesEditor.Views;
 
 namespace WorkspacesEditor.ViewModels
 {
@@ -28,10 +30,14 @@ namespace WorkspacesEditor.ViewModels
     {
         private WorkspacesEditorIO _workspacesEditorIO;
         private Project _editedProject;
+        private Project _projectBeforeLaunch;
         private string _projectNameBeingEdited;
         private Timer _lastUpdatedTimer;
         private WorkspacesSettings _settings;
         private bool _isDisposed;
+        private bool _isExistingProjectLaunched;
+        private SnapshotWindow _snapshotWindow;
+        private List<OverlayWindow> _overlayWindows = new();
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
@@ -138,6 +144,10 @@ namespace WorkspacesEditor.ViewModels
         public Action<Type, object> NavigateAction { get; set; }
 
         public Action GoBackAction { get; set; }
+
+        public Action MinimizeMainWindowAction { get; set; }
+
+        public Action RestoreMainWindowAction { get; set; }
 
         public MainViewModel(WorkspacesEditorIO workspacesEditorIO)
         {
@@ -270,8 +280,91 @@ namespace WorkspacesEditor.ViewModels
 
         public void EnterSnapshotMode(bool isExistingProjectLaunched)
         {
-            // TODO: M3 — Snapshot/Overlay window flow
-            Logger.LogInfo("Snapshot mode not yet implemented in WinUI Editor.");
+            _isExistingProjectLaunched = isExistingProjectLaunched;
+
+            // Minimize the main window
+            MinimizeMainWindowAction?.Invoke();
+
+            // Show snapshot dialog (overlays are cosmetic — skip for now if they cause issues)
+            try
+            {
+                _overlayWindows.Clear();
+                foreach (var displayArea in DisplayArea.FindAll())
+                {
+                    var bounds = displayArea.OuterBounds;
+                    var overlay = new OverlayWindow();
+                    overlay.SetBounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
+                    overlay.Activate();
+                    _overlayWindows.Add(overlay);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError($"Failed to create overlay windows: {ex.Message}");
+            }
+
+            // Show snapshot dialog
+            _snapshotWindow = new SnapshotWindow(this);
+            _snapshotWindow.Activate();
+        }
+
+        internal void CancelSnapshot()
+        {
+            foreach (var overlay in _overlayWindows)
+            {
+                overlay.Close();
+            }
+
+            _overlayWindows.Clear();
+            RestoreMainWindowAction?.Invoke();
+        }
+
+        internal async void SnapWorkspace()
+        {
+            foreach (var overlay in _overlayWindows)
+            {
+                overlay.Close();
+            }
+
+            _overlayWindows.Clear();
+
+            // Restore window immediately so user sees feedback
+            RestoreMainWindowAction?.Invoke();
+
+            await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
+
+            Project project = _workspacesEditorIO.ParseTempProject();
+            if (project != null)
+            {
+                if (_isExistingProjectLaunched)
+                {
+                    project.UpdateAfterLaunchAndEdit(_projectBeforeLaunch);
+                    project.EditorWindowTitle = GetString("EditWorkspace");
+
+                    // Navigate to editor page with the updated project
+                    NavigateAction?.Invoke(typeof(WorkspacesEditorPage), project);
+                }
+                else
+                {
+                    EditProject(project, true);
+                }
+            }
+        }
+
+        internal async void LaunchAndEdit(Project project)
+        {
+            await Task.Run(() => RunLauncher(project.Id, InvokePoint.LaunchAndEdit));
+            _projectBeforeLaunch = new Project(project);
+            EnterSnapshotMode(true);
+        }
+
+        internal void RevertLaunch()
+        {
+            if (_projectBeforeLaunch != null)
+            {
+                _projectBeforeLaunch.InitializePreview();
+                NavigateAction?.Invoke(typeof(WorkspacesEditorPage), _projectBeforeLaunch);
+            }
         }
 
         public void SaveProjectName(Project project)
@@ -310,8 +403,17 @@ namespace WorkspacesEditor.ViewModels
 
         private void RunLauncher(string projectId, InvokePoint invokePoint)
         {
+            var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
+            var parentDir = Path.GetDirectoryName(exeDir);
+            var launcherPath = Path.Combine(parentDir, "PowerToys.WorkspacesLauncher.exe");
+
+            if (!File.Exists(launcherPath))
+            {
+                launcherPath = Path.Combine(exeDir, "PowerToys.WorkspacesLauncher.exe");
+            }
+
             Process process = new Process();
-            process.StartInfo = new ProcessStartInfo(@".\PowerToys.WorkspacesLauncher.exe", $"{projectId} {(int)invokePoint}")
+            process.StartInfo = new ProcessStartInfo(launcherPath, $"{projectId} {(int)invokePoint}")
             {
                 CreateNoWindow = true,
             };
@@ -324,6 +426,38 @@ namespace WorkspacesEditor.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to launch workspace: {ex.Message}");
+            }
+        }
+
+        private void RunSnapshotTool(bool isExistingProjectLaunched)
+        {
+            var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
+
+            // Snapshot tool is in the parent directory (WinUI apps are in WinUI3Apps subfolder)
+            var parentDir = Path.GetDirectoryName(exeDir);
+            var snapshotUtilsPath = Path.Combine(parentDir, "PowerToys.WorkspacesSnapshotTool.exe");
+
+            if (!File.Exists(snapshotUtilsPath))
+            {
+                // Fallback: try same directory
+                snapshotUtilsPath = Path.Combine(exeDir, "PowerToys.WorkspacesSnapshotTool.exe");
+            }
+
+            Process process = new Process();
+            process.StartInfo = new ProcessStartInfo(snapshotUtilsPath)
+            {
+                CreateNoWindow = true,
+                Arguments = isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty,
+            };
+
+            try
+            {
+                process.Start();
+                process.WaitForExit();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to run snapshot tool: {ex.Message}");
             }
         }
 
