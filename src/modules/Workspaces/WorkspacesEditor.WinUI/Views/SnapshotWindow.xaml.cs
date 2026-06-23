@@ -17,6 +17,7 @@ namespace WorkspacesEditor.Views
     public sealed partial class SnapshotWindow : Window
     {
         private readonly MainViewModel _mainViewModel;
+        private bool _captured;
 
         public SnapshotWindow(MainViewModel mainViewModel)
         {
@@ -54,6 +55,7 @@ namespace WorkspacesEditor.Views
 
         private void SnapshotButtonClicked(object sender, RoutedEventArgs e)
         {
+            _captured = true;
             this.Close();
             _mainViewModel.SnapWorkspace();
         }
@@ -65,7 +67,10 @@ namespace WorkspacesEditor.Views
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
-            _mainViewModel.CancelSnapshot();
+            if (!_captured)
+            {
+                _mainViewModel.CancelSnapshot();
+            }
         }
     }
 }
