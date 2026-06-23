@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -124,7 +124,7 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add Command Palette extensions from WinGet.
+        ///   Looks up a localized string similar to Find Command Palette extensions from WinGet.
         /// </summary>
         public static string winget_install_extensions_title {
             get {
@@ -259,7 +259,7 @@ namespace Microsoft.CmdPal.Ext.WinGet.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add Command Palette extensions from the Microsoft Store.
+        ///   Looks up a localized string similar to Find Command Palette extensions from the Microsoft Store.
         /// </summary>
         public static string winget_search_store_title {
             get {

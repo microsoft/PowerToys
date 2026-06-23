@@ -33,6 +33,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Enums
         Hosts,
         Workspaces,
         RegistryPreview,
+        PowerDisplay,
+        GrabAndMove,
         NewPlus,
         ZoomIt,
     }

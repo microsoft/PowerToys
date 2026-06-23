@@ -116,6 +116,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe access in case property wasn't upgraded yet - default to 0 (Both)
             _cursorWrapWrapMode = CursorWrapSettingsConfig.Properties.WrapMode?.Value ?? 0;
 
+            // Null-safe access in case property wasn't upgraded yet - default to 0 (Always)
+            _cursorWrapActivationMode = CursorWrapSettingsConfig.Properties.ActivationMode?.Value ?? 0;
+
+            // Null-safe access in case property wasn't upgraded yet - default to false
+            _cursorWrapDisableOnSingleMonitor = CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor?.Value ?? false;
+
             int isEnabled = 0;
 
             Utilities.NativeMethods.SystemParametersInfo(Utilities.NativeMethods.SPI_GETCLIENTAREAANIMATION, 0, ref isEnabled, 0);
@@ -1003,13 +1009,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     GeneralSettingsConfig.Enabled.CursorWrap = value;
                     OnPropertyChanged(nameof(IsCursorWrapEnabled));
 
-                    // Auto-enable the AutoActivate setting when CursorWrap is enabled
-                    // This ensures cursor wrapping is active immediately after enabling
-                    if (value && !_cursorWrapAutoActivate)
-                    {
-                        CursorWrapAutoActivate = true;
-                    }
-
                     OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
                     SendConfigMSG(outgoing.ToString());
 
@@ -1114,6 +1113,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int CursorWrapActivationMode
+        {
+            get
+            {
+                return _cursorWrapActivationMode;
+            }
+
+            set
+            {
+                if (value != _cursorWrapActivationMode)
+                {
+                    _cursorWrapActivationMode = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.ActivationMode == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.ActivationMode = new IntProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.ActivationMode.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
+        public bool CursorWrapDisableOnSingleMonitor
+        {
+            get
+            {
+                return _cursorWrapDisableOnSingleMonitor;
+            }
+
+            set
+            {
+                if (value != _cursorWrapDisableOnSingleMonitor)
+                {
+                    _cursorWrapDisableOnSingleMonitor = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor = new BoolProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyCursorWrapPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1186,5 +1241,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _cursorWrapAutoActivate;
         private bool _cursorWrapDisableWrapDuringDrag; // Will be initialized in constructor from settings
         private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
+        private int _cursorWrapActivationMode; // 0=Always, 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
+        private bool _cursorWrapDisableOnSingleMonitor; // Disable cursor wrap when only one monitor is connected
     }
 }

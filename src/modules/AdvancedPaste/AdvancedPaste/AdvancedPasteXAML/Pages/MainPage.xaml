@@ -29,31 +29,31 @@
                         Padding="-9,0,0,0"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        AutomationProperties.AcceleratorKey="{x:Bind ShortcutText, Mode=OneWay}"
+                        AutomationProperties.AcceleratorKey="{x:Bind ShortcutText, Mode=OneTime}"
                         AutomationProperties.AutomationControlType="ListItem"
-                        AutomationProperties.FullDescription="{x:Bind ToolTip, Mode=OneWay}"
-                        AutomationProperties.HelpText="{x:Bind Name, Mode=OneWay}"
-                        AutomationProperties.Name="{x:Bind AccessibleName, Mode=OneWay}">
+                        AutomationProperties.FullDescription="{x:Bind ToolTip, Mode=OneTime}"
+                        AutomationProperties.HelpText="{x:Bind Name, Mode=OneTime}"
+                        AutomationProperties.Name="{x:Bind AccessibleName, Mode=OneTime}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="48" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <ToolTipService.ToolTip>
-                            <TextBlock Text="{x:Bind ToolTip, Mode=OneWay}" />
+                            <TextBlock Text="{x:Bind ToolTip, Mode=OneTime}" />
                         </ToolTipService.ToolTip>
                         <FontIcon
                             Margin="0,0,0,0"
                             VerticalAlignment="Center"
                             AutomationProperties.AccessibilityView="Raw"
                             FontSize="16"
-                            Glyph="{x:Bind IconGlyph, Mode=OneWay}" />
+                            Glyph="{x:Bind IconGlyph, Mode=OneTime}" />
                         <TextBlock
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             x:Phase="1"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind Name, Mode=OneWay}" />
+                            Text="{x:Bind Name, Mode=OneTime}" />
                         <TextBlock
                             Grid.Column="2"
                             Margin="0,0,8,0"
@@ -61,7 +61,7 @@
                             VerticalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind ShortcutText, Mode=OneWay}" />
+                            Text="{x:Bind ShortcutText, Mode=OneTime}" />
                     </Grid>
                 </DataTemplate>
             </controls:PasteFormatTemplateSelector.ItemTemplate>
@@ -83,13 +83,13 @@
                             Margin="0,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="16"
-                            Glyph="{x:Bind IconGlyph, Mode=OneWay}" />
+                            Glyph="{x:Bind IconGlyph, Mode=OneTime}" />
                         <TextBlock
                             Grid.Column="1"
                             VerticalAlignment="Center"
                             x:Phase="1"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind Name, Mode=OneWay}" />
+                            Text="{x:Bind Name, Mode=OneTime}" />
                     </Grid>
                 </DataTemplate>
             </controls:PasteFormatTemplateSelector.ItemTemplateDisabled>
@@ -198,7 +198,7 @@
                             <ItemsView.ItemTemplate>
                                 <DataTemplate x:DataType="local:ClipboardItem">
                                     <ItemContainer
-                                        AutomationProperties.Name="{x:Bind Description, Mode=OneWay}"
+                                        AutomationProperties.Name="{x:Bind Description, Mode=OneTime}"
                                         CornerRadius="16"
                                         ToolTipService.ToolTip="{x:Bind Content}">
                                         <Grid

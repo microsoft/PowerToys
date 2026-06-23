@@ -12,6 +12,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Data.Json;
@@ -75,7 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI
             // open main window
             ShellPage.SetOpenMainWindowCallback(type =>
             {
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
                      App.OpenSettingsWindow(type));
             });
 
@@ -106,30 +107,8 @@ namespace Microsoft.PowerToys.Settings.UI
                 return needToUpdate;
             });
 
-            // open oobe
-            ShellPage.SetOpenOobeCallback(() =>
-            {
-                if (App.GetOobeWindow() == null)
-                {
-                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.Overview));
-                }
-
-                App.GetOobeWindow().Activate();
-            });
-
-            // open whats new window
-            ShellPage.SetOpenWhatIsNewCallback(() =>
-            {
-                if (App.GetScoobeWindow() == null)
-                {
-                    App.SetScoobeWindow(new ScoobeWindow());
-                }
-
-                App.GetScoobeWindow().Activate();
-            });
-
             this.InitializeComponent();
-            SetAppTitleBar();
+            SetTitleBar();
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -156,21 +135,22 @@ namespace Microsoft.PowerToys.Settings.UI
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
         }
 
-        private void SetAppTitleBar()
+        private void SetTitleBar()
         {
             // We need to assign the window here so it can configure the custom title bar area correctly.
             shellPage.TitleBar.Window = this;
+            this.ExtendsContentIntoTitleBar = true;
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
         }
 
-        public void NavigateToSection(System.Type type)
+        public void NavigateToSection(Type type)
         {
             ShellPage.Navigate(type);
         }
 
         public void CloseHiddenWindow()
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var hWnd = WindowNative.GetWindowHandle(this);
             if (!NativeMethods.IsWindowVisible(hWnd))
             {
                 Close();
@@ -179,10 +159,10 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var hWnd = WindowNative.GetWindowHandle(this);
             WindowHelper.SerializePlacement(hWnd);
 
-            if (App.GetOobeWindow() == null && App.GetScoobeWindow() == null)
+            if (!App.IsSecondaryWindowOpen())
             {
                 App.ClearSettingsWindow();
             }
@@ -198,10 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
         {
             // Set window icon
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\Settings\\icon.ico");
+            this.SetIcon("Assets\\Settings\\icon.ico");
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -209,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI
             if (args.WindowActivationState != WindowActivationState.Deactivated)
             {
                 this.Activated -= Window_Activated;
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                var hWnd = WindowNative.GetWindowHandle(this);
                 var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
                 NativeMethods.SetWindowPlacement(hWnd, ref placement);
             }

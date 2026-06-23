@@ -152,7 +152,7 @@ FancyZones is divided into several projects:
 ## Development Environment Setup
 
 ### Prerequisites
-- Visual Studio 2022 or 2026: Required for building and debugging
+- Visual Studio 2026 (or 2022 17.4+): Required for building and debugging
 - Windows 10 SDK: Ensure the latest version is installed
 - PowerToys Repository: Clone from GitHub
 
@@ -183,7 +183,7 @@ FancyZones is divided into several projects:
 ## Debugging
 
 ### Setup for Debugging
-1. In Visual Studio 2022 or 2026, set FancyZonesEditor as the startup project
+1. In Visual Studio, set FancyZonesEditor as the startup project
 2. Set breakpoints in the code where needed
 3. Click Run to start debugging
 
@@ -461,7 +461,7 @@ Editor read/write config data handler is in FancyZonesEditorCommon project.
 FancyZones cpp project read/write config data handler is in FancyZonesLib project.
 
 ![Debug Step Image](../images/fancyzones/19.png)
-However, the files write and read those are C:\Users\“xxxxxx”\AppData\Local\Microsoft\PowerToys\FancyZones
+However, the files read from and written to are those in `C:\Users\“xxxxxx”\AppData\Local\Microsoft\PowerToys\FancyZones`
 
 You can think of the editor as a visual config editor, which is most of its functionality. Another feature is used to set the layout for the monitor displays.
 

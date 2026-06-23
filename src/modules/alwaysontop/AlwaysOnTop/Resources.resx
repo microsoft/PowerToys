@@ -131,4 +131,7 @@
   <data name="System_Foreground_Elevated_Dialog_Dont_Show_Again" xml:space="preserve">
     <value>Don't show again</value>
   </data>
+  <data name="System_Menu_Toggle_Always_On_Top" xml:space="preserve">
+    <value>Always on top</value>
+  </data>
 </root>

@@ -7,7 +7,19 @@ namespace ProcessWaiter
 {
     void OnProcessTerminate(std::wstring parent_pid, std::function<void(DWORD)> callback)
     {
-        DWORD pid = std::stol(parent_pid);
+        DWORD pid = 0;
+        try
+        {
+            pid = std::stol(parent_pid);
+        }
+        catch (...)
+        {
+            if (callback)
+            {
+                callback(ERROR_INVALID_PARAMETER);
+            }
+            return;
+        }
         std::thread([=]() {
             HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
             if (process != nullptr)
@@ -15,17 +27,26 @@ namespace ProcessWaiter
                 if (WaitForSingleObject(process, INFINITE) == WAIT_OBJECT_0)
                 {
                     CloseHandle(process);
-                    callback(ERROR_SUCCESS);
+                    if (callback)
+                    {
+                        callback(ERROR_SUCCESS);
+                    }
                 }
                 else
                 {
                     CloseHandle(process);
-                    callback(GetLastError());
+                    if (callback)
+                    {
+                        callback(GetLastError());
+                    }
                 }
             }
             else
             {
-                callback(GetLastError());
+                if (callback)
+                {
+                    callback(GetLastError());
+                }
             }
         }).detach();
     }

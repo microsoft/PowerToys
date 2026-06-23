@@ -1,0 +1,6 @@
+steps:
+- pwsh: |-
+    nuget install -source "https://microsoft.pkgs.visualstudio.com/Dart/_packaging/PowerToysDependencies/nuget/v3/index.json" TerrapinRetrievalTool -Prerelease -OutputDirectory _trt -Config "$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+    $TerrapinRetrievalToolPath = (Get-Item _trt\TerrapinRetrievalTool.*\win-x64\TerrapinRetrievalTool.exe).FullName
+    Write-Host "##vso[task.setvariable variable=X_VCPKG_ASSET_SOURCES]x-script,${TerrapinRetrievalToolPath} -b https://vcpkg.storage.devpackages.microsoft.io/artifacts/ -a true -u None -p {url} -s {sha512} -d {dst};x-block-origin"
+  displayName: Set up the Terrapin Retrieval Tool (vcpkg cache)

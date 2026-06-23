@@ -66,6 +66,21 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring WorkspacesHotkeyEvent();
         static hstring PowerToysRunnerTerminateSettingsEvent();
         static hstring ShowCmdPalEvent();
+        static hstring TogglePowerDisplayEvent();
+        static hstring TerminatePowerDisplayEvent();
+        static hstring AutoDisablePowerDisplayEvent();
+        static hstring RefreshPowerDisplayMonitorsEvent();
+        static hstring SettingsUpdatedPowerDisplayEvent();
+        static hstring PowerDisplaySendSettingsTelemetryEvent();
+        static hstring HotkeyUpdatedPowerDisplayEvent();
+        static hstring RescanPowerDisplayMonitorsEvent();
+        static hstring PowerDisplayToggleMessage();
+        static hstring PowerDisplayApplyProfileMessage();
+        static hstring PowerDisplayTerminateAppMessage();
+        static hstring MWBToggleEasyMouseEvent();
+        static hstring MWBReconnectEvent();
+        static hstring OpenNewKeyboardManagerEvent();
+        static hstring KeyboardManagerEngineInstanceMutex();
     };
 }
 
@@ -75,3 +90,4 @@ namespace winrt::PowerToys::Interop::factory_implementation
     {
     };
 }
+

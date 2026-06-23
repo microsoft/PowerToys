@@ -6,6 +6,7 @@ using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
@@ -101,9 +102,24 @@ public sealed partial class ContentFormControl : UserControl
 
             // Use the Loaded event to ensure we focus after the card is in the visual tree
             _renderedCard.FrameworkElement.Loaded += OnFrameworkElementLoaded;
+
+            // Use LayoutUpdated to fix accessibility after the full visual tree is materialized.
+            // Loaded fires too early — the Adaptive Card renderer may not have finished building
+            // the control tree by then.
+            _renderedCard.FrameworkElement.LayoutUpdated += OnFrameworkElementLayoutUpdated;
         }
 
         _renderedCard.Action += Rendered_Action;
+    }
+
+    private void OnFrameworkElementLayoutUpdated(object? sender, object e)
+    {
+        // Only fix once — unhook after first layout pass
+        if (_renderedCard?.FrameworkElement is FrameworkElement element)
+        {
+            element.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
+            FixToggleAccessibilityNames(element);
+        }
     }
 
     private void OnFrameworkElementLoaded(object sender, RoutedEventArgs e)
@@ -125,6 +141,109 @@ public sealed partial class ContentFormControl : UserControl
                 focusableElement?.Focus(FocusState.Programmatic);
             });
         }
+    }
+
+    /// <summary>
+    /// Fixes missing AutomationProperties.Name on CheckBox and ToggleSwitch controls
+    /// rendered by the Adaptive Cards library (AdaptiveCards.Rendering.WinUI3 v2.x).
+    /// Without this fix, Narrator announces "space, checkbox, checked" instead of the
+    /// actual setting label. This method walks the tree, finds CheckBox/ToggleSwitch
+    /// controls missing an automation name, and sets it from the adjacent label TextBlock.
+    /// </summary>
+    private static void FixToggleAccessibilityNames(DependencyObject root)
+    {
+        var childCount = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+
+            if (child is CheckBox checkBox)
+            {
+                var existingName = AutomationProperties.GetName(checkBox);
+                if (string.IsNullOrEmpty(existingName))
+                {
+                    // In Adaptive Cards, the label TextBlock is a sibling to the CheckBox's
+                    // container within a shared Grid parent. Walk up to find that Grid, then
+                    // search for a TextBlock with actual text content.
+                    var labelText = FindAdjacentLabel(checkBox);
+                    if (!string.IsNullOrEmpty(labelText))
+                    {
+                        AutomationProperties.SetName(checkBox, labelText);
+                    }
+                }
+            }
+            else if (child is ToggleSwitch toggleSwitch)
+            {
+                var existingName = AutomationProperties.GetName(toggleSwitch);
+                if (string.IsNullOrEmpty(existingName))
+                {
+                    var labelText = FindAdjacentLabel(toggleSwitch);
+                    if (!string.IsNullOrEmpty(labelText))
+                    {
+                        AutomationProperties.SetName(toggleSwitch, labelText);
+                    }
+                }
+            }
+
+            // Recurse into children
+            FixToggleAccessibilityNames(child);
+        }
+    }
+
+    /// <summary>
+    /// Walks up the visual tree from a control to find the nearest parent Grid,
+    /// then searches that Grid's descendants for a TextBlock with non-whitespace text.
+    /// This handles the Adaptive Cards layout where the label TextBlock is a sibling
+    /// of the CheckBox's container within a shared Grid row.
+    /// </summary>
+    private static string? FindAdjacentLabel(FrameworkElement control)
+    {
+        // Walk up the tree to find the nearest Grid ancestor (the row container)
+        DependencyObject? current = control;
+        Grid? parentGrid = null;
+        for (var depth = 0; depth < 10 && current != null; depth++)
+        {
+            current = VisualTreeHelper.GetParent(current);
+            if (current is Grid grid)
+            {
+                // Find the grid that contains multiple children (the row container)
+                if (VisualTreeHelper.GetChildrenCount(grid) > 1)
+                {
+                    parentGrid = grid;
+                    break;
+                }
+            }
+        }
+
+        if (parentGrid == null)
+        {
+            return null;
+        }
+
+        // Search the parent Grid for a TextBlock with actual text
+        return FindFirstNonEmptyTextBlock(parentGrid);
+    }
+
+    private static string? FindFirstNonEmptyTextBlock(DependencyObject root)
+    {
+        var childCount = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+
+            if (child is TextBlock tb && !string.IsNullOrWhiteSpace(tb.Text))
+            {
+                return tb.Text;
+            }
+
+            var result = FindFirstNonEmptyTextBlock(child);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        return null;
     }
 
     private Control? FindFirstFocusableElement(DependencyObject parent)

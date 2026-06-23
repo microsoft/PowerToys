@@ -4,7 +4,7 @@
 
 using System.Text.Json;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
@@ -14,7 +14,6 @@ public sealed partial class DefaultCommandProviderCache : ICommandProviderCache,
     private const string CacheFileName = "commandProviderCache.json";
 
     private readonly Dictionary<string, CommandProviderCacheItem> _cache = new(StringComparer.Ordinal);
-
     private readonly Lock _sync = new();
 
     private readonly SupersedingAsyncGate _saveGate;

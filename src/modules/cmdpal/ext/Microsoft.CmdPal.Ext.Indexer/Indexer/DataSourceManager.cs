@@ -26,19 +26,26 @@ internal static class DataSourceManager
 
     private static bool InitializeDataSource()
     {
-        var riid = typeof(IDBInitialize).GUID;
-
         try
         {
             _dataSource = ComHelper.CreateComInstance<IDBInitialize>(ref Unsafe.AsRef(in CLSID.CollatorDataSource), CLSCTX.InProcServer);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Logger.LogError($"Failed to create datasource. ex: {e.Message}");
+            Logger.LogError("Failed to create datasource.", ex);
             return false;
         }
 
-        _dataSource.Initialize();
+        try
+        {
+            _dataSource.Initialize();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to initialize datasource.", ex);
+            _dataSource = null;
+            return false;
+        }
 
         return true;
     }

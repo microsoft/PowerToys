@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<winuiex:WindowEx
+    x:Class="KeyboardManagerEditorUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:KeyboardManagerEditorUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:pages="using:KeyboardManagerEditorUI.Pages"
+    xmlns:winuiex="using:WinUIEx"
+    Title="KeyboardManagerEditorUI"
+    Width="1440"
+    Height="900"
+    MinWidth="860"
+    MinHeight="320"
+    mc:Ignorable="d">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+    <Grid
+        x:Name="LayoutRoot"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TitleBar x:Name="titleBar" Title="Keyboard Manager">
+            <TitleBar.IconSource>
+                <ImageIconSource ImageSource="/Assets/KeyboardManagerEditor/FluentIconsKeyboardManager.png" />
+            </TitleBar.IconSource>
+        </TitleBar>
+
+        <pages:MainPage
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch" />
+    </Grid>
+</winuiex:WindowEx>

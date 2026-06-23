@@ -5,7 +5,7 @@
       "fuzzer": {
         "$type": "libfuzzerDotNet",
         "dll": "HostsEditor.FuzzTests.dll",
-        "class": "HostsEditor.FuzzTests.FuzzTests",
+        "class": "Hosts.FuzzTests.FuzzTests",
         "method": "FuzzValidIPv4",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"
@@ -46,7 +46,7 @@
       "fuzzer": {
         "$type": "libfuzzerDotNet",
         "dll": "HostsEditor.FuzzTests.dll",
-        "class": "HostsEditor.FuzzTests.FuzzTests",
+        "class": "Hosts.FuzzTests.FuzzTests",
         "method": "FuzzValidIPv6",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"
@@ -87,7 +87,7 @@
       "fuzzer": {
         "$type": "libfuzzerDotNet",
         "dll": "HostsEditor.FuzzTests.dll",
-        "class": "HostsEditor.FuzzTests.FuzzTests",
+        "class": "Hosts.FuzzTests.FuzzTests",
         "method": "FuzzValidHosts",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"
@@ -128,7 +128,7 @@
       "fuzzer": {
         "$type": "libfuzzerDotNet",
         "dll": "HostsEditor.FuzzTests.dll",
-        "class": "HostsEditor.FuzzTests.FuzzTests",
+        "class": "Hosts.FuzzTests.FuzzTests",
         "method": "FuzzWriteAsync",
         "FuzzingTargetBinaries": [
           "PowerToys.Hosts.dll"

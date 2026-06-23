@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using CommunityToolkit.WinUI.Controls;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -21,8 +21,10 @@ using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.Views;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PowerToys.Interop;
 using Settings.UI.Library;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
@@ -33,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override string ModuleName => "Dashboard";
 
-        private Dispatcher dispatcher;
+        private DispatcherQueue dispatcher;
 
         public Func<string, int> SendConfigMSG { get; }
 
@@ -55,6 +57,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         // Flag to prevent toggle operations during sorting to avoid race conditions.
         private bool _isSorting;
+        private bool _isDisposed;
 
         private AllHotkeyConflictsData _allHotkeyConflictsData = new AllHotkeyConflictsData();
 
@@ -107,7 +110,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public DashboardViewModel(ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc)
         {
-            dispatcher = Dispatcher.CurrentDispatcher;
+            dispatcher = DispatcherQueue.GetForCurrentThread();
             _settingsRepository = settingsRepository;
             generalSettingsConfig = settingsRepository.SettingsConfig;
 
@@ -123,6 +126,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsRepository,
                 new Microsoft.PowerToys.Settings.UI.Controls.QuickAccessLauncher(App.IsElevated),
                 moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Disabled,
+                moduleType => Helpers.ModuleGpoHelper.GetModuleGpoConfiguration(moduleType) == global::PowerToys.GPOWrapper.GpoRuleConfigured.Enabled,
                 resourceLoader);
 
             BuildModuleList();
@@ -132,8 +136,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
-            dispatcher.BeginInvoke(() =>
+            if (_isDisposed)
             {
+                return;
+            }
+
+            dispatcher.TryEnqueue(() =>
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
                 generalSettingsConfig = newSettings;
 
                 // Update local field and notify UI if sort order changed
@@ -149,8 +163,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         protected override void OnConflictsUpdated(object sender, AllHotkeyConflictsEventArgs e)
         {
-            dispatcher.BeginInvoke(() =>
+            if (_isDisposed)
             {
+                return;
+            }
+
+            dispatcher.TryEnqueue(() =>
+            {
+                if (_isDisposed)
+                {
+                    return;
+                }
+
                 var allConflictData = e.Conflicts;
                 foreach (var inAppConflict in allConflictData.InAppConflicts)
                 {
@@ -199,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = moduleType == ModuleType.CursorWrap,
+                    IsNew = moduleType == ModuleType.ShortcutGuide,
                     DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
@@ -258,7 +282,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 finally
                 {
                     // Use dispatcher to reset flag after UI updates complete
-                    dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, () =>
+                    dispatcher.TryEnqueue(DispatcherQueuePriority.Low, () =>
                     {
                         _isSorting = false;
                     });
@@ -363,6 +387,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public void ModuleEnabledChangedOnSettingsPage()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             // Ignore if this was triggered by a UI change that we're already handling.
             if (_isUpdatingFromUI)
             {
@@ -391,6 +420,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void RefreshShortcutModules()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (!dispatcher.HasThreadAccess)
+            {
+                _ = dispatcher.TryEnqueue(DispatcherQueuePriority.Normal, RefreshShortcutModules);
+                return;
+            }
+
             ShortcutModules.Clear();
             ActionModules.Clear();
 
@@ -454,14 +494,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 ModuleType.FancyZones => GetModuleItemsFancyZones(),
                 ModuleType.FindMyMouse => GetModuleItemsFindMyMouse(),
                 ModuleType.Hosts => GetModuleItemsHosts(),
+                ModuleType.KeyboardManager => GetModuleItemsKeyboardManager(),
                 ModuleType.LightSwitch => GetModuleItemsLightSwitch(),
                 ModuleType.MouseHighlighter => GetModuleItemsMouseHighlighter(),
                 ModuleType.MouseJump => GetModuleItemsMouseJump(),
                 ModuleType.MousePointerCrosshairs => GetModuleItemsMousePointerCrosshairs(),
+                ModuleType.MouseWithoutBorders => GetModuleItemsMouseWithoutBorders(),
                 ModuleType.Peek => GetModuleItemsPeek(),
+                ModuleType.PowerDisplay => GetModuleItemsPowerDisplay(),
                 ModuleType.PowerLauncher => GetModuleItemsPowerLauncher(),
                 ModuleType.PowerAccent => GetModuleItemsPowerAccent(),
                 ModuleType.Workspaces => GetModuleItemsWorkspaces(),
+                ModuleType.GrabAndMove => new ObservableCollection<DashboardModuleItem>(),
                 ModuleType.RegistryPreview => GetModuleItemsRegistryPreview(),
                 ModuleType.MeasureTool => GetModuleItemsMeasureTool(),
                 ModuleType.ShortcutGuide => GetModuleItemsShortcutGuide(),
@@ -475,7 +519,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             ISettingsRepository<AlwaysOnTopSettings> moduleSettingsRepository = SettingsRepository<AlwaysOnTopSettings>.GetInstance(SettingsUtils.Default);
             var list = new List<DashboardModuleItem>
             {
-                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_ActivationShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.Hotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_IncreaseOpacityShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.IncreaseOpacityHotkey.Value.GetKeysList() },
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("AlwaysOnTop_DecreaseOpacityShortcut/Header"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.DecreaseOpacityHotkey.Value.GetKeysList() },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -589,6 +635,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return new ObservableCollection<DashboardModuleItem>(list);
         }
 
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsKeyboardManager()
+        {
+            ISettingsRepository<KeyboardManagerSettings> moduleSettingsRepository = SettingsRepository<KeyboardManagerSettings>.GetInstance(SettingsUtils.Default);
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>();
+
+            if (settings.Properties.UseNewEditor)
+            {
+                list.Add(new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("Dashboard_KeyboardManager_OpenEditor"), Shortcut = settings.Properties.EditorShortcut.GetKeysList() });
+            }
+
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
         private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseHighlighter()
         {
             ISettingsRepository<MouseHighlighterSettings> moduleSettingsRepository = SettingsRepository<MouseHighlighterSettings>.GetInstance(SettingsUtils.Default);
@@ -615,6 +675,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("MouseCrosshairs_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsMouseWithoutBorders()
+        {
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleButtonItem()
+                {
+                    ButtonTitle = resourceLoader.GetString("MouseWithoutBorders_ReconnectButton/Text"),
+                    IsButtonDescriptionVisible = true,
+                    ButtonDescription = resourceLoader.GetString("MouseWithoutBorders_ReconnectTooltip/Text"),
+                    ButtonGlyph = "ms-appx:///Assets/Settings/Icons/MouseWithoutBorders.png",
+                    ButtonClickHandler = MouseWithoutBordersReconnectClicked,
+                },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -717,9 +793,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             ISettingsRepository<ShortcutGuideSettings> moduleSettingsRepository = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default);
 
-            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.UseLegacyPressWinKeyBehavior.Value
-                ? new List<object> { 92 } // Right Windows key code
-                : moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
+            var shortcut = moduleSettingsRepository.SettingsConfig.Properties.OpenShortcutGuide.GetKeysList();
 
             var list = new List<DashboardModuleItem>
             {
@@ -734,6 +808,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             var list = new List<DashboardModuleItem>
             {
                 new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PowerOcr_ShortDescription"), Shortcut = moduleSettingsRepository.SettingsConfig.Properties.ActivationShortcut.GetKeysList() },
+            };
+            return new ObservableCollection<DashboardModuleItem>(list);
+        }
+
+        private ObservableCollection<DashboardModuleItem> GetModuleItemsPowerDisplay()
+        {
+            ISettingsRepository<PowerDisplaySettings> moduleSettingsRepository = SettingsRepository<PowerDisplaySettings>.GetInstance(SettingsUtils.Default);
+            var settings = moduleSettingsRepository.SettingsConfig;
+            var list = new List<DashboardModuleItem>
+            {
+                new DashboardModuleShortcutItem() { Label = resourceLoader.GetString("PowerDisplay_ToggleWindow"), Shortcut = settings.Properties.ActivationShortcut.GetKeysList() },
+                new DashboardModuleButtonItem() { ButtonTitle = resourceLoader.GetString("PowerDisplay_LaunchButtonControl/Header"), IsButtonDescriptionVisible = true, ButtonDescription = resourceLoader.GetString("PowerDisplay_LaunchButtonControl/Description"), ButtonGlyph = "ms-appx:///Assets/Settings/Icons/PowerDisplay.png", ButtonClickHandler = PowerDisplayLaunchClicked },
             };
             return new ObservableCollection<DashboardModuleItem>(list);
         }
@@ -775,6 +861,18 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG("{\"action\":{\"RegistryPreview\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
         }
 
+        private void PowerDisplayLaunchClicked(object sender, RoutedEventArgs e)
+        {
+            var actionName = "Launch";
+            SendConfigMSG("{\"action\":{\"PowerDisplay\":{\"action_name\":\"" + actionName + "\", \"value\":\"\"}}}");
+        }
+
+        private void MouseWithoutBordersReconnectClicked(object sender, RoutedEventArgs e)
+        {
+            using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MWBReconnectEvent());
+            eventHandle.Set();
+        }
+
         internal void DashboardListItemClick(object sender)
         {
             if (sender is ModuleType moduleType)
@@ -785,6 +883,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public override void Dispose()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
             base.Dispose();
             if (_settingsRepository != null)
             {

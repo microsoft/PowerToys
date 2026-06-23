@@ -1,10 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
-    <OutputPath>..\..\..\..\$(Configuration)\$(Platform)\tests\PowerToys.DSC.Tests\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Configuration)\$(Platform)\tests\PowerToys.DSC.Tests\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>

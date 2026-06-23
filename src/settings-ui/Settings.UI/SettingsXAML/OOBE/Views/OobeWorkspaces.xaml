@@ -5,6 +5,7 @@
     xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
@@ -14,7 +15,7 @@
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />
 
                 <tkcontrols:MarkdownTextBlock x:Uid="Oobe_Workspaces_HowToUse" />
-                <controls:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_Workspaces_HowToUse_Shortcut" />
+                <ptcontrols:ShortcutWithTextLabelControl x:Name="HotkeyControl" x:Uid="Oobe_Workspaces_HowToUse_Shortcut" />
 
                 <TextBlock x:Uid="Oobe_TipsAndTricks" Style="{ThemeResource OobeSubtitleStyle}" />
 

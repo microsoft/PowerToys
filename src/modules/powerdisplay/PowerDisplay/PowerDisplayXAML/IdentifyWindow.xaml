@@ -1,0 +1,29 @@
+﻿<winuiex:WindowEx
+    x:Class="PowerDisplay.PowerDisplayXAML.IdentifyWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:winuiex="using:WinUIEx"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsTitleBarVisible="False"
+    mc:Ignorable="d">
+    <Grid Background="{ThemeResource SolidBackgroundFillColorBaseBrush}">
+        <Grid.Resources>
+            <Thickness x:Key="IdentifyWindowContentMargin">24</Thickness>
+        </Grid.Resources>
+
+        <Viewbox Margin="{StaticResource IdentifyWindowContentMargin}" Stretch="Uniform">
+            <TextBlock
+                x:Name="NumberText"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontWeight="Bold"
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                Text="1"
+                TextAlignment="Center" />
+        </Viewbox>
+    </Grid>
+</winuiex:WindowEx>

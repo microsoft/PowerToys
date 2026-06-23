@@ -12,21 +12,10 @@ A PowerToy module is a self-contained utility integrated into the PowerToys ecos
 
 ### Requirements
 
-- [Visual Studio 2026](https://visualstudio.microsoft.com/downloads/) and the following workloads/individual components:
-  - Desktop Development with C++
-  - WinUI application development
-  - .NET desktop development
-  - Windows 10 SDK (10.0.22621.0)
-  - Windows 11 SDK (10.0.26100.3916)
-- .NET 8 SDK
-- Fork the [PowerToys repository](https://github.com/microsoft/PowerToys/tree/main) locally
-- [Validate that you are able to build and run](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/development/debugging.md) `PowerToys.slnx`.
+Follow the [Getting Started](../readme.md#getting-started) guide to set up your development environment, then [validate that you are able to build and run](debugging.md) `PowerToys.slnx`.
 
 Optional: 
 - [WiX v5 toolset](https://github.com/microsoft/PowerToys/tree/main) for the installer
-
-> [!NOTE]
-> To ensure all the correct VS Workloads are installed, use [the WinGet configuration files](https://github.com/microsoft/PowerToys/tree/e13d6a78aafbcf32a4bb5f8581d041e1d057c3f1/.config) in the project repository. (Use the one that matches your VS distribution. ie: VS Community would use `configuration.winget`)
 
 ### Folder structure
 

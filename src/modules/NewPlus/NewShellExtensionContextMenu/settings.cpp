@@ -45,6 +45,7 @@ void NewSettings::Save()
     values.add_property(newplus::constants::non_localizable::settings_json_key_hide_starting_digits, new_settings.hide_starting_digits);
     values.add_property(newplus::constants::non_localizable::settings_json_key_replace_variables, new_settings.replace_variables);
     values.add_property(newplus::constants::non_localizable::settings_json_key_template_location, new_settings.template_location);
+    values.add_property(newplus::constants::non_localizable::settings_json_key_hide_built_in_new, new_settings.hide_built_in_new_preference);
 
     values.save_to_settings_file();
 
@@ -75,6 +76,9 @@ void NewSettings::InitializeWithDefaultSettings()
     SetReplaceVariables(false);
 
     SetTemplateLocation(GetTemplateLocationDefaultPath());
+
+    // By default we show the built-in New context menu
+    SetHideBuiltInNew(false);
 }
 
 void NewSettings::RefreshEnabledState()
@@ -147,6 +151,12 @@ void NewSettings::ParseJson()
     if (resolveVariables.has_value())
     {
         new_settings.replace_variables = resolveVariables.value();
+    }
+
+    const auto hideBuiltInNewValue = settings.get_bool_value(newplus::constants::non_localizable::settings_json_key_hide_built_in_new);
+    if (hideBuiltInNewValue.has_value())
+    {
+        new_settings.hide_built_in_new_preference = hideBuiltInNewValue.value();
     }
 
     GetSystemTimeAsFileTime(&new_settings_last_loaded_timestamp);
@@ -237,6 +247,26 @@ std::wstring NewSettings::GetTemplateLocationDefaultPath() const
                                           L"\\" + default_template_sub_folder_name;
 
     return full_path;
+}
+
+bool NewSettings::GetHideBuiltInNew()
+{
+    const auto gpoSetting = powertoys_gpo::getConfiguredNewPlusHideBuiltInNewContextMenuValue();
+    if (gpoSetting == powertoys_gpo::gpo_rule_configured_enabled)
+    {
+        return true;
+    }
+    else if (gpoSetting == powertoys_gpo::gpo_rule_configured_disabled)
+    {
+        return false;
+    }
+
+    return new_settings.hide_built_in_new_preference;
+}
+
+void NewSettings::SetHideBuiltInNew(const bool hide_built_in_new)
+{
+    new_settings.hide_built_in_new_preference = hide_built_in_new;
 }
 
 NewSettings& NewSettingsInstance()

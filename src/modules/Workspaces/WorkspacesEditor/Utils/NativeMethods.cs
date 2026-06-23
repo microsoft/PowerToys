@@ -4,6 +4,8 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Interop;
 
 namespace WorkspacesEditor.Utils
 {
@@ -16,6 +18,39 @@ namespace WorkspacesEditor.Utils
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
+
+        private const uint SWP_NOZORDER = 0x0004;
+        private const uint SWP_NOACTIVATE = 0x0010;
+
+        private static readonly IntPtr DPI_AWARENESS_CONTEXT_UNAWARE = new IntPtr(-1);
+
+        /// <summary>
+        /// Positions a WPF window using DPI-unaware context to match the virtual coordinates.
+        /// This fixes overlay positioning on mixed-DPI multi-monitor setups.
+        /// </summary>
+        public static void SetWindowPositionDpiUnaware(Window window, int x, int y, int width, int height)
+        {
+            var helper = new WindowInteropHelper(window).Handle;
+            if (helper != IntPtr.Zero)
+            {
+                // Temporarily switch to DPI-unaware context to position window.
+                IntPtr oldContext = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+                try
+                {
+                    SetWindowPos(helper, IntPtr.Zero, x, y, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+                }
+                finally
+                {
+                    SetThreadDpiAwarenessContext(oldContext);
+                }
+            }
+        }
 
         [DllImport("USER32.DLL")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);

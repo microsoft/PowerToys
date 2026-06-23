@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Common.Search.FuzzSearch;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -21,7 +20,7 @@ internal sealed partial class PowerToysFallbackCommandItem : FallbackCommandItem
     private readonly Command? _mutableCommand;
 
     public PowerToysFallbackCommandItem(ICommand command, string title, string subtitle, IIconInfo? icon, IContextItem[]? moreCommands)
-        : base(command, title)
+        : base(command, title, "com.microsoft.powertoys.fallback")
     {
         _baseTitle = title ?? string.Empty;
         _baseSubtitle = subtitle ?? string.Empty;

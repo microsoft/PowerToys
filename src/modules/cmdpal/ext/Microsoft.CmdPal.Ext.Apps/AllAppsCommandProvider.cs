@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using Microsoft.CmdPal.Ext.Apps.Helpers;
 using Microsoft.CmdPal.Ext.Apps.Programs;
 using Microsoft.CmdPal.Ext.Apps.Properties;
-using Microsoft.CmdPal.Ext.Apps.State;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -16,6 +15,7 @@ namespace Microsoft.CmdPal.Ext.Apps;
 public partial class AllAppsCommandProvider : CommandProvider
 {
     public const string WellKnownId = "AllApps";
+    internal const int DefaultResultLimit = 10;
 
     public static readonly AllAppsPage Page = new();
 
@@ -39,34 +39,11 @@ public partial class AllAppsCommandProvider : CommandProvider
         {
             MoreCommands = [new CommandContextItem(AllAppsSettings.Instance.Settings.SettingsPage)],
         };
-
-        // Subscribe to pin state changes to refresh the command provider
-        PinnedAppsManager.Instance.PinStateChanged += OnPinStateChanged;
     }
 
-    public static int TopLevelResultLimit
-    {
-        get
-        {
-            var limitSetting = AllAppsSettings.Instance.SearchResultLimit;
+    public static int TopLevelResultLimit => AllAppsSettings.Instance.SearchResultLimit ?? DefaultResultLimit;
 
-            if (limitSetting is null)
-            {
-                return 10;
-            }
-
-            var quantity = 10;
-
-            if (int.TryParse(limitSetting, out var result))
-            {
-                quantity = result < 0 ? quantity : result;
-            }
-
-            return quantity;
-        }
-    }
-
-    public override ICommandItem[] TopLevelCommands() => [_listItem, .. _page.GetPinnedApps()];
+    public override ICommandItem[] TopLevelCommands() => [_listItem];
 
     public ICommandItem? LookupAppByPackageFamilyName(string packageFamilyName, bool requireSingleMatch)
     {
@@ -184,8 +161,17 @@ public partial class AllAppsCommandProvider : CommandProvider
         return null;
     }
 
-    private void OnPinStateChanged(object? sender, System.EventArgs e)
+    public override ICommandItem? GetCommandItem(string id)
     {
-        RaiseItemsChanged(0);
+        var items = _page.GetItems();
+        foreach (var item in items)
+        {
+            if (item.Command.Id == id)
+            {
+                return item;
+            }
+        }
+
+        return null;
     }
 }

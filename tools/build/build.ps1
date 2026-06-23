@@ -86,7 +86,7 @@ if (-not $Platform -or $Platform -eq '') {
     }
 }
 
-$cwd = if ($Path) {
+$cwd = if ($Path -ne '') {
     (Resolve-Path $Path).ProviderPath
 } else {
     (Get-Location).ProviderPath

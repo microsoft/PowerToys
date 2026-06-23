@@ -18,7 +18,7 @@ internal sealed class CommandNotFoundModuleCommandProvider : ModuleCommandProvid
         var title = SettingsWindow.CmdNotFound.ModuleDisplayName();
         var icon = SettingsWindow.CmdNotFound.ModuleIcon();
 
-        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.CmdNotFound, title))
+        yield return new ListItem(new OpenInSettingsCommand(SettingsWindow.CmdNotFound, title) { Id = "com.microsoft.powertoys.commandNotFound.openSettings" })
         {
             Title = title,
             Subtitle = Resources.CommandNotFound_Settings_Subtitle,

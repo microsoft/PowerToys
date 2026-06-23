@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
@@ -17,9 +16,6 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OobeShortcutGuide : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
@@ -27,13 +23,13 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeShortcutGuide()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.ShortcutGuide]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.ShortcutGuide);
             DataContext = ViewModel;
         }
 
         private void Start_ShortcutGuide_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var executablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "..", @"PowerToys.ShortcutGuide.exe");
+            var executablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "..", @"WinUI3Apps//PowerToys.ShortcutGuide.exe");
             var id = System.Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
             var p = Process.Start(executablePath, id);
             if (p != null)
@@ -46,9 +42,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(ShortcutGuidePage));
+                OobeWindow.OpenMainWindowCallback(typeof(ShortcutGuidePage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -59,14 +55,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel.LogOpeningModuleEvent();
             var settingsProperties = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties;
 
-            if ((bool)settingsProperties.UseLegacyPressWinKeyBehavior.Value)
-            {
-                HotkeyControl.Keys = new List<object> { 92 };
-            }
-            else
-            {
-                HotkeyControl.Keys = settingsProperties.OpenShortcutGuide.GetKeysList();
-            }
+            HotkeyControl.Keys = settingsProperties.OpenShortcutGuide.GetKeysList();
 
             // Disable the Launch button if the module is disabled
             var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
