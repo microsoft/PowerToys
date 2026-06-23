@@ -12,9 +12,9 @@
     IsResizable="False"
     IsTitleBarVisible="False"
     mc:Ignorable="d">
-    <winuiex:WindowEx.SystemBackdrop>
+    <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop />
-    </winuiex:WindowEx.SystemBackdrop>
+    </Window.SystemBackdrop>
 
     <Grid>
         <Border
