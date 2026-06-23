@@ -1504,6 +1504,7 @@ RAWPATH
 rbhid
 Rbuttondown
 rclsid
+RCW
 RCZOOMIT
 rdp
 RDW
