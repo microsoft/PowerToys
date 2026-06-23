@@ -118,7 +118,7 @@ internal static class Logger
     [Conditional("DEBUG")]
     internal static void LogStatistics()
     {
-        if (!lastPackageSent.Equals(Package.PackageSent))
+        if ((lastPackageSent is null) || !lastPackageSent.Equals(Package.PackageSent))
         {
             var log =
                 $"SENT:" +
@@ -140,7 +140,7 @@ internal static class Logger
             lastPackageSent = Package.PackageSent;
         }
 
-        if (!lastPackageReceived.Equals(Package.PackageReceived))
+        if ((lastPackageReceived is null) || !lastPackageReceived.Equals(Package.PackageReceived))
         {
             var log =
                 $"RECEIVED:" +
