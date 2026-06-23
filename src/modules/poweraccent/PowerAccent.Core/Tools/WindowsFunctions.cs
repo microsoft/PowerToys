@@ -121,4 +121,39 @@ internal static class WindowsFunctions
         var shift = PInvoke.GetAsyncKeyState((int)VIRTUAL_KEY.VK_SHIFT);
         return shift < 0;
     }
+
+    public static void SendVirtualKey(VIRTUAL_KEY key)
+    {
+        unsafe
+        {
+            var inputs = new INPUT[]
+            {
+                new INPUT
+                {
+                    type = INPUT_TYPE.INPUT_KEYBOARD,
+                    Anonymous = new INPUT._Anonymous_e__Union
+                    {
+                        ki = new KEYBDINPUT
+                        {
+                            wVk = key,
+                        },
+                    },
+                },
+                new INPUT
+                {
+                    type = INPUT_TYPE.INPUT_KEYBOARD,
+                    Anonymous = new INPUT._Anonymous_e__Union
+                    {
+                        ki = new KEYBDINPUT
+                        {
+                            wVk = key,
+                            dwFlags = KEYBD_EVENT_FLAGS.KEYEVENTF_KEYUP,
+                        },
+                    },
+                },
+            };
+
+            _ = PInvoke.SendInput(inputs, Marshal.SizeOf<INPUT>());
+        }
+    }
 }

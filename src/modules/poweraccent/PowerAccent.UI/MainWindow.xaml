@@ -1,0 +1,103 @@
+<winuiex:WindowEx
+    x:Class="PowerAccent.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:winuiex="using:WinUIEx"
+    MinWidth="0"
+    MinHeight="0"
+    IsMaximizable="False"
+    IsMinimizable="False"
+    IsResizable="False"
+    IsTitleBarVisible="False">
+    <winuiex:WindowEx.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </winuiex:WindowEx.SystemBackdrop>
+
+    <Grid>
+        <Border
+            x:Name="ContentBorder"
+            Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ListView
+                    x:Name="CharactersList"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"
+                    Background="Transparent"
+                    FocusVisualPrimaryBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                    IsHitTestVisible="False"
+                    IsTabStop="False"
+                    SelectionMode="Single"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                    ScrollViewer.HorizontalScrollMode="Enabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollMode="Disabled">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <ItemsStackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Grid
+                                Height="48"
+                                MinWidth="48"
+                                Margin="0"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                                <Rectangle
+                                    x:Name="SelectionIndicator"
+                                    Margin="7"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Fill="{ThemeResource AccentFillColorDefaultBrush}"
+                                    RadiusX="4"
+                                    RadiusY="4"
+                                    Stroke="{ThemeResource AccentControlElevationBorderBrush}"
+                                    StrokeThickness="1"
+                                    Visibility="Collapsed" />
+                                <TextBlock
+                                    x:Name="CharText"
+                                    Margin="12"
+                                    VerticalAlignment="Center"
+                                    FontSize="18"
+                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                    Text="{x:Bind}"
+                                    TextAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <Grid
+                    Grid.Row="1"
+                    MinWidth="600"
+                    Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+                    Visibility="{x:Bind CharacterNameVisibility, Mode=OneWay}">
+                    <Rectangle
+                        Height="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                    <TextBlock
+                        x:Name="CharacterNameText"
+                        MaxHeight="36"
+                        Margin="8"
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Text="(U+0000) CHARACTER NAME"
+                        TextAlignment="Center"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="Wrap" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</winuiex:WindowEx>
