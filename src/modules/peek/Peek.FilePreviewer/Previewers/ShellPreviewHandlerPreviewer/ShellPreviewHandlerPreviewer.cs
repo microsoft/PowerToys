@@ -257,7 +257,7 @@ namespace Peek.FilePreviewer.Previewers
             {
                 // Split Unload() and FinalReleaseComObject() into separate try
                 // blocks: if Unload throws (the preview-handler host process
-                // crashed mid-tear-down) the RCW must still be released, otherwise
+                // crashed mid-tear-down) the RCW must still be released. Otherwise,
                 // we leak it and the cache+process can't be torn down cleanly on
                 // exit.
                 try
