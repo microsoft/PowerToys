@@ -9,6 +9,7 @@ using ManagedCommon;
 using PowerToys.Interop;
 using PowerToys.ModuleContracts;
 using WorkspacesCsharpLibrary.Data;
+using WorkspacesCsharpLibrary.SettingsService;
 
 namespace Workspaces.ModuleServices;
 
@@ -84,6 +85,8 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
     {
         try
         {
+            EnsureMigrationBackstop();
+
             var items = WorkspacesStorage.Load();
 
             return Task.FromResult(OperationResults.Ok<IReadOnlyList<ProjectWrapper>>(items));
@@ -91,6 +94,30 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
         catch (Exception ex)
         {
             return Task.FromResult(OperationResults.Fail<IReadOnlyList<ProjectWrapper>>($"Failed to read workspaces: {ex.Message}"));
+        }
+    }
+
+    // One-shot legacy-migration backstop (Design-v6-Final.md §10/§11).  Primary
+    // seeding happens at install (per-machine) or the lazy hardening step
+    // (per-user); this catches stragglers — a user whose legacy file appeared
+    // after install.  Idempotent (sentinel-guarded inside Run); runs at most
+    // once per process and never blocks reads.
+    private static int _migrationChecked;
+
+    private static void EnsureMigrationBackstop()
+    {
+        if (Interlocked.Exchange(ref _migrationChecked, 1) != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            WorkspacesMigration.Run();
+        }
+        catch (Exception)
+        {
+            // Best-effort backstop; on failure reads fall back per WorkspacesStorage.
         }
     }
 }

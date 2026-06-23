@@ -168,11 +168,54 @@
       </Component>
     </DirectoryRef>
 
+    <!--
+      Migration / cleanup CustomActions (Design-v6-Final.md §11).  The seeding
+      and cleanup logic lives in PowerShell scripts (installed next to the
+      service binary); these CAs invoke them as SYSTEM.  Installer validation
+      is deferred — authored, not yet MSI-validated.
+
+      * Seed at install: enumerate user profiles → create each user's protected
+        blob from their legacy %LocalAppData% file (direct SYSTEM write).
+      * Cleanup at uninstall: recursively delete the SettingsSvc data tree
+        (the runtime-created <SID>\blob.bin nodes aren't MSI-tracked, so the
+        default RemoveFolder can't remove them; the service itself is removed
+        by ServiceControl above).
+    -->
+    <DirectoryRef Id="WorkspacesSettingsServiceFolder"
+                  FileSource="$(var.ProjectDir)\CustomActions">
+      <Component Id="PTSettingsCustomActionScripts"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0005}">
+        <File Id="PtSeedScript"    Name="Seed-PtSettingsStore.ps1"   KeyPath="yes" />
+        <File Id="PtCleanupScript" Name="Remove-PtSettingsStore.ps1" />
+        <File Id="PtHardenScript"  Name="Harden-PtSettingsPerUser.ps1" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Run the seeding script as SYSTEM after files are laid down (fresh install only). -->
+    <CustomAction Id="PtSeedStore"
+                  Directory="WorkspacesSettingsServiceFolder"
+                  ExeCommand="powershell.exe -NonInteractive -NoProfile -ExecutionPolicy Bypass -File &quot;[#PtSeedScript]&quot;"
+                  Execute="deferred" Impersonate="no" Return="ignore" />
+
+    <!-- Recursively remove the protected data tree as SYSTEM on uninstall. -->
+    <CustomAction Id="PtCleanupStore"
+                  Directory="WorkspacesSettingsServiceFolder"
+                  ExeCommand="powershell.exe -NonInteractive -NoProfile -ExecutionPolicy Bypass -File &quot;[#PtCleanupScript]&quot; -RemoveService:$false -RemoveData"
+                  Execute="deferred" Impersonate="no" Return="ignore" />
+
+    <InstallExecuteSequence>
+      <!-- After the data root + files exist; only on a fresh install. -->
+      <Custom Action="PtSeedStore" After="InstallFiles" Condition="NOT Installed" />
+      <!-- While the script still exists; only on full uninstall. -->
+      <Custom Action="PtCleanupStore" Before="RemoveFiles" Condition="Installed AND (REMOVE=&quot;ALL&quot;)" />
+    </InstallExecuteSequence>
+
     <ComponentGroup Id="PTSettingsServiceComponentGroup">
       <ComponentRef Id="RegisterPTSettingsService" />
       <ComponentRef Id="RemovePTSettingsServiceFolder" />
       <ComponentRef Id="CreatePTSettingsDataRoot" />
       <ComponentRef Id="HardenInstallFolderDacl" />
+      <ComponentRef Id="PTSettingsCustomActionScripts" />
     </ComponentGroup>
   </Fragment>
 </Wix>
