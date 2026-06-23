@@ -130,7 +130,7 @@ public static class CharacterMappings
             [LetterKey.VK_L] = ["ł"],
             [LetterKey.VK_N] = ["л"],
             [LetterKey.VK_M] = ["₼"],
-            [LetterKey.VK_P] = ["£", "₽"],
+            [LetterKey.VK_P] = ["£", "₽", "₱"],
             [LetterKey.VK_R] = ["₹", "៛", "﷼"],
             [LetterKey.VK_S] = ["$", "₪"],
             [LetterKey.VK_T] = ["₮", "₺", "₸"],
@@ -537,6 +537,15 @@ public static class CharacterMappings
             [LetterKey.VK_COMMA] = ["“", "”", "‘", "’", "«", "»"],
         }),
 
+        // This language set covers both Pitjantjatjara and Yankunytjatjara dialects
+        new(Language.PJT, "Pitjantjatjara", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_L] = ["ḻ"],
+            [LetterKey.VK_N] = ["ṉ"],
+            [LetterKey.VK_R] = ["ṟ"],
+            [LetterKey.VK_T] = ["ṯ"],
+        }),
+
         new(Language.RO, "Romanian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["ă", "â"],
@@ -724,6 +733,7 @@ public static class CharacterMappings
         Language.NL,
         Language.NO,
         Language.PI,
+        Language.PJT,
         Language.PL,
         Language.PT,
         Language.RO,
