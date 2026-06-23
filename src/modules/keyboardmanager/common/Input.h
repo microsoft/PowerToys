@@ -18,6 +18,11 @@ namespace KeyboardManagerInput
         // modifier stuck). In that rare case we suppress the original and log a warning.
         bool SendVirtualInput(const std::vector<INPUT>& inputs)
         {
+            if (inputs.empty())
+            {
+                return true;
+            }
+
             std::vector<INPUT> copy = inputs;
             UINT eventCount = SendInput(static_cast<UINT>(copy.size()), copy.data(), sizeof(INPUT));
             if (eventCount == 0)

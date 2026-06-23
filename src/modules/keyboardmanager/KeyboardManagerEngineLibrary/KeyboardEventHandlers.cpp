@@ -765,7 +765,6 @@ namespace KeyboardEventHandlers
                         else if (remapToText)
                         {
                             auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
-                            ii.SendVirtualInput(keyEventList);
                             Helpers::SendTextInput(remapping, ii);
                             return 1;
                         }
