@@ -3,16 +3,19 @@ name: PR Needs-Author-Feedback lifecycle
 # Handles the lifecycle of the "Needs-Author-Feedback" label on pull requests:
 # 1. New non-draft PRs automatically get "Needs-Triage" label.
 # 2. When "Needs-Author-Feedback" is added to a PR:
-#    - After 7 days of inactivity → convert PR to draft + comment.
-#    - After 14 days of inactivity → close PR + comment.
-# 3. When the author pushes commits or comments → remove "Needs-Author-Feedback",
-#    add back "Needs-Triage".
+#    - After 7 days of author inactivity (measured from label application or last
+#      author activity, whichever is later) → convert PR to draft + comment.
+#    - After 14 days → close PR + comment.
+# 3. When the author pushes commits, comments, or submits a review →
+#    remove "Needs-Author-Feedback", add back "Needs-Triage".
 
 on:
   pull_request_target:
     types: [opened, synchronize, ready_for_review]
   issue_comment:
     types: [created]
+  pull_request_review:
+    types: [submitted]
   schedule:
     # Run every 6 hours to check for stale PRs
     - cron: '0 */6 * * *'
@@ -31,6 +34,10 @@ permissions:
   pull-requests: write
   issues: write
   contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.event.review.pull_request_url || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
@@ -109,15 +116,17 @@ jobs:
             }
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 3: When author comments on the PR → remove "Needs-Author-Feedback", add
-  #         "Needs-Triage"
+  # Job 3: When author comments on the PR (issue comment or review) →
+  #         remove "Needs-Author-Feedback", add "Needs-Triage"
   # ─────────────────────────────────────────────────────────────────────────────
   author-responded-comment:
     if: >-
-      github.event_name == 'issue_comment' &&
-      github.event.issue.pull_request &&
-      github.event.issue.state == 'open' &&
-      github.event.sender.id == github.event.issue.user.id
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       github.event.issue.state == 'open' &&
+       github.event.sender.id == github.event.issue.user.id) ||
+      (github.event_name == 'pull_request_review' &&
+       github.event.review.user.id == github.event.pull_request.user.id)
     runs-on: ubuntu-latest
     steps:
       - name: Remove Needs-Author-Feedback and add Needs-Triage
@@ -125,7 +134,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const prNumber = context.payload.issue.number;
+            const prNumber = context.payload.pull_request?.number || context.payload.issue?.number;
             const labels = (await github.rest.issues.listLabelsOnIssue({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -198,8 +207,27 @@ jobs:
 
               const authorLogin = pr.user.login;
 
+              // Determine when "Needs-Author-Feedback" was applied.
+              // The inactivity timer starts from label application, not from the
+              // PR's overall last activity, so labeling a long-stale PR doesn't
+              // cause immediate draft/close.
+              const events = await github.paginate(github.rest.issues.listEvents, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                per_page: 100,
+              });
+              let labelAppliedDate = new Date(pr.created_at).getTime();
+              for (const event of events) {
+                if (event.event === 'labeled' && event.label?.name === 'Needs-Author-Feedback') {
+                  const eventDate = new Date(event.created_at).getTime();
+                  if (eventDate > labelAppliedDate) {
+                    labelAppliedDate = eventDate;
+                  }
+                }
+              }
+
               // Find last commit authored by the PR author.
-              // Use paginate to get all commits and filter by author login.
               const allCommits = await github.paginate(github.rest.pulls.listCommits, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -207,7 +235,7 @@ jobs:
                 per_page: 100,
               });
 
-              let lastAuthorCommitDate = new Date(pr.created_at).getTime();
+              let lastAuthorCommitDate = 0;
               for (const commit of allCommits) {
                 const commitAuthorLogin = commit.author?.login || commit.committer?.login;
                 if (commitAuthorLogin === authorLogin) {
@@ -221,29 +249,41 @@ jobs:
                 }
               }
 
-              // Get all comments and find last one from the PR author (not bots).
-              // Use paginate to handle PRs with >100 comments.
-              const allComments = await github.paginate(github.rest.issues.listComments, {
+              // Get all comments (issue comments + review comments) from the author.
+              const allIssueComments = await github.paginate(github.rest.issues.listComments, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: prNumber,
                 per_page: 100,
               });
 
+              const allReviewComments = await github.paginate(github.rest.pulls.listReviewComments, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+
+              const allComments = [...allIssueComments, ...allReviewComments];
+
               let lastAuthorCommentDate = 0;
               for (const comment of allComments) {
                 if (comment.user?.login === authorLogin && comment.user?.type !== 'Bot') {
-                  const commentDate = new Date(comment.created_at).getTime();
+                  const commentDate = new Date(comment.created_at || comment.submitted_at).getTime();
                   if (commentDate > lastAuthorCommentDate) {
                     lastAuthorCommentDate = commentDate;
                   }
                 }
               }
 
+              // The inactivity baseline is the later of: when the label was applied,
+              // or the author's last activity. This ensures that labeling an already-
+              // stale PR starts a fresh 7-day window rather than acting immediately.
               const lastAuthorActivity = Math.max(lastAuthorCommitDate, lastAuthorCommentDate);
-              const daysSinceAuthorActivity = (now - lastAuthorActivity) / MS_PER_DAY;
+              const inactivityBaseline = Math.max(lastAuthorActivity, labelAppliedDate);
+              const daysSinceBaseline = (now - inactivityBaseline) / MS_PER_DAY;
 
-              console.log(`PR #${prNumber}: ${daysSinceAuthorActivity.toFixed(1)} days since last author activity, draft=${pr.draft}`);
+              console.log(`PR #${prNumber}: ${daysSinceBaseline.toFixed(1)} days since inactivity baseline (author activity: ${((now - lastAuthorActivity) / MS_PER_DAY).toFixed(1)}d ago, label applied: ${((now - labelAppliedDate) / MS_PER_DAY).toFixed(1)}d ago), draft=${pr.draft}`);
 
               // If already draft and still inactive → check whether to warn or close.
               if (pr.draft) {
@@ -253,9 +293,8 @@ jobs:
                 );
 
                 if (!botWarningComment) {
-                  // No prior warning exists. Only post warning if author has been
-                  // inactive for at least DAYS_TO_DRAFT.
-                  if (daysSinceAuthorActivity < DAYS_TO_DRAFT) {
+                  // No prior warning exists. Only post warning if baseline exceeded.
+                  if (daysSinceBaseline < DAYS_TO_DRAFT) {
                     continue;
                   }
 
@@ -284,14 +323,14 @@ jobs:
                 }
 
                 // Warning was posted previously. Only close if DAYS_TO_CLOSE have
-                // passed since the last author activity (i.e. 14 days total).
-                if (daysSinceAuthorActivity < DAYS_TO_CLOSE) {
-                  console.log(`PR #${prNumber}: draft with warning, but only ${daysSinceAuthorActivity.toFixed(1)} days inactive (need ${DAYS_TO_CLOSE}); skipping`);
+                // passed since the inactivity baseline.
+                if (daysSinceBaseline < DAYS_TO_CLOSE) {
+                  console.log(`PR #${prNumber}: draft with warning, but only ${daysSinceBaseline.toFixed(1)} days since baseline (need ${DAYS_TO_CLOSE}); skipping`);
                   continue;
                 }
 
                 if (DRY_RUN) {
-                  console.log(`[DRY RUN] Would close PR #${prNumber} (inactive ${daysSinceAuthorActivity.toFixed(1)} days)`);
+                  console.log(`[DRY RUN] Would close PR #${prNumber} (inactive ${daysSinceBaseline.toFixed(1)} days)`);
                   continue;
                 }
 
@@ -315,17 +354,17 @@ jobs:
                   pull_number: prNumber,
                   state: 'closed',
                 });
-                console.log(`Closed PR #${prNumber} (inactive ${daysSinceAuthorActivity.toFixed(1)} days)`);
+                console.log(`Closed PR #${prNumber} (inactive ${daysSinceBaseline.toFixed(1)} days)`);
                 continue;
               }
 
-              // Not draft yet — only convert after DAYS_TO_DRAFT of inactivity.
-              if (daysSinceAuthorActivity < DAYS_TO_DRAFT) {
+              // Not draft yet — only convert after DAYS_TO_DRAFT since baseline.
+              if (daysSinceBaseline < DAYS_TO_DRAFT) {
                 continue;
               }
 
               if (DRY_RUN) {
-                console.log(`[DRY RUN] Would convert PR #${prNumber} to draft (inactive ${daysSinceAuthorActivity.toFixed(1)} days)`);
+                console.log(`[DRY RUN] Would convert PR #${prNumber} to draft (inactive ${daysSinceBaseline.toFixed(1)} days)`);
                 continue;
               }
 
@@ -342,7 +381,7 @@ jobs:
               try {
                 await github.graphql(mutation, { pullRequestId: pr.node_id });
                 draftConversionSucceeded = true;
-                console.log(`Converted PR #${prNumber} to draft (inactive ${daysSinceAuthorActivity.toFixed(1)} days)`);
+                console.log(`Converted PR #${prNumber} to draft (inactive ${daysSinceBaseline.toFixed(1)} days)`);
               } catch (err) {
                 console.log(`Failed to convert PR #${prNumber} to draft: ${err.message}`);
               }
