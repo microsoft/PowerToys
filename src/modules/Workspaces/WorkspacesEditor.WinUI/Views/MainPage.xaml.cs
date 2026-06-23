@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -52,12 +54,27 @@ namespace WorkspacesEditor.Views
             }
         }
 
-        private void DeleteButtonClicked(object sender, RoutedEventArgs e)
+        private async void DeleteButtonClicked(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element && element.DataContext is Project selectedProject)
             {
                 selectedProject.IsPopupVisible = false;
-                ViewModel.DeleteProject(selectedProject);
+
+                var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
+                {
+                    Title = ResourceLoaderInstance.ResourceLoader?.GetString("Are_You_Sure") ?? "Are you sure?",
+                    Content = ResourceLoaderInstance.ResourceLoader?.GetString("Are_You_Sure_Description") ?? "Are you sure you want to delete this Workspace?",
+                    PrimaryButtonText = ResourceLoaderInstance.ResourceLoader?.GetString("Delete") ?? "Remove",
+                    CloseButtonText = ResourceLoaderInstance.ResourceLoader?.GetString("Cancel") ?? "Cancel",
+                    DefaultButton = Microsoft.UI.Xaml.Controls.ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot,
+                };
+
+                var result = await dialog.ShowAsync();
+                if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
+                {
+                    ViewModel.DeleteProject(selectedProject);
+                }
             }
         }
 
