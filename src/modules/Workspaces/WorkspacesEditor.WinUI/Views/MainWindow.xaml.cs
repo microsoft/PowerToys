@@ -45,6 +45,23 @@ namespace WorkspacesEditor
 
             // Listen for hotkey toggle event
             StartHotkeyEventLoop(hwnd);
+
+            // Wire ViewModel navigation
+            var vm = App.MainViewModel;
+            vm.NavigateAction = (pageType, param) =>
+            {
+                ContentFrame.Navigate(pageType, (vm, param));
+            };
+            vm.GoBackAction = () =>
+            {
+                if (ContentFrame.CanGoBack)
+                {
+                    ContentFrame.GoBack();
+                }
+            };
+
+            // Navigate to main page
+            ContentFrame.Navigate(typeof(Views.MainPage), vm);
         }
 
         private void RestoreWindowState(IntPtr hwnd)

@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="WorkspacesEditor.Views.WorkspacesEditorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:WorkspacesEditor.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WorkspacesEditor.Models"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+        <DataTemplate x:Key="headerTemplate" x:DataType="models:MonitorHeaderRow">
+            <Border HorizontalAlignment="Stretch">
+                <TextBlock
+                    Margin="0,16,0,8"
+                    VerticalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                    Text="{x:Bind MonitorName}" />
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="appTemplate" x:DataType="models:Application">
+            <Border Margin="0,4,0,0">
+                <Expander
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    AutomationProperties.AutomationId="{Binding AppName}"
+                    AutomationProperties.Name="{Binding AppName}"
+                    IsEnabled="{Binding IsIncluded, Mode=OneWay}"
+                    IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+                    <Expander.Header>
+                        <Grid HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="12" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Image
+                                Grid.Column="1"
+                                Width="20"
+                                Height="20"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Source="{Binding IconImage}" />
+
+                            <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding AppName}" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding RepeatIndexString, Mode=OneWay}" />
+                                    <TextBlock
+                                        Margin="8,0,0,0"
+                                        VerticalAlignment="Center"
+                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                        Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                        Text="&#xE7BA;"
+                                        Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
+                                </StackPanel>
+                                <TextBlock
+                                    FontSize="12"
+                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                    Text="{Binding AppMainParams, Mode=OneWay}"
+                                    Visibility="{Binding IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
+                            </StackPanel>
+                            <Button
+                                Grid.Column="4"
+                                Width="Auto"
+                                Margin="12,4"
+                                Click="DeleteButtonClicked"
+                                Content="{Binding DeleteButtonContent, Mode=OneWay}"
+                                IsEnabled="True" />
+                        </Grid>
+                    </Expander.Header>
+                    <Grid Margin="52,8,48,8" HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <CheckBox
+                            MinWidth="12"
+                            IsChecked="{Binding IsElevated, Mode=TwoWay}"
+                            IsEnabled="{Binding CanLaunchElevated, Mode=OneWay}">
+                            <TextBlock x:Name="LaunchAsAdminLabel" Text="Launch as Admin" />
+                        </CheckBox>
+                        <StackPanel
+                            Grid.Row="1"
+                            Margin="0,16,0,0"
+                            Orientation="Horizontal">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                Text="CLI arguments" />
+                            <TextBox
+                                Margin="12,0,0,0"
+                                MinWidth="200"
+                                HorizontalAlignment="Stretch"
+                                VerticalContentAlignment="Center"
+                                Text="{Binding CommandLineArguments, Mode=TwoWay}"
+                                TextChanged="CommandLineTextBox_TextChanged" />
+                        </StackPanel>
+
+                        <StackPanel
+                            Grid.Row="2"
+                            Margin="0,16,0,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                Text="Window position" />
+                            <ComboBox
+                                VerticalAlignment="Center"
+                                SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay}">
+                                <ComboBoxItem Content="Custom" />
+                                <ComboBoxItem Content="Maximized" />
+                                <ComboBoxItem Content="Minimized" />
+                            </ComboBox>
+                            <TextBlock VerticalAlignment="Center" Text="Left" />
+                            <TextBox
+                                MinWidth="60"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
+                                Text="{Binding Position.X, Mode=OneWay}"
+                                TextChanged="LeftTextBox_TextChanged" />
+                            <TextBlock VerticalAlignment="Center" Text="Top" />
+                            <TextBox
+                                MinWidth="60"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
+                                Text="{Binding Position.Y, Mode=OneWay}"
+                                TextChanged="TopTextBox_TextChanged" />
+                            <TextBlock VerticalAlignment="Center" Text="Width" />
+                            <TextBox
+                                MinWidth="60"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
+                                Text="{Binding Position.Width, Mode=OneWay}"
+                                TextChanged="WidthTextBox_TextChanged" />
+                            <TextBlock VerticalAlignment="Center" Text="Height" />
+                            <TextBox
+                                MinWidth="60"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
+                                Text="{Binding Position.Height, Mode=OneWay}"
+                                TextChanged="HeightTextBox_TextChanged" />
+                        </StackPanel>
+                    </Grid>
+                </Expander>
+            </Border>
+        </DataTemplate>
+
+        <models:AppListDataTemplateSelector
+            x:Key="AppListDataTemplateSelector"
+            AppTemplate="{StaticResource appTemplate}"
+            HeaderTemplate="{StaticResource headerTemplate}" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  breadcrumb + Save/Cancel  -->
+        <Grid Margin="24,0,24,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Top" Orientation="Horizontal">
+                <Button
+                    Padding="0"
+                    VerticalAlignment="Center"
+                    Click="CancelButtonClicked"
+                    FontSize="24">
+                    <TextBlock x:Name="WorkspacesBackText" Text="Workspaces" />
+                </Button>
+                <TextBlock
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                    Text="&#xE76C;" />
+                <TextBlock
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    FontSize="24"
+                    FontWeight="SemiBold"
+                    Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                    Text="{Binding EditorWindowTitle}" />
+            </StackPanel>
+            <StackPanel
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                Orientation="Horizontal">
+                <Button
+                    x:Name="SaveButton"
+                    Click="SaveButtonClicked"
+                    IsEnabled="{Binding CanBeSaved}"
+                    Style="{ThemeResource AccentButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                            Text="&#xE74E;" />
+                        <TextBlock
+                            x:Name="SaveText"
+                            Margin="8,0,0,0"
+                            VerticalAlignment="Center"
+                            Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                            Text="Save" />
+                    </StackPanel>
+                </Button>
+                <Button
+                    x:Name="CancelButton"
+                    Margin="8,0,0,0"
+                    Click="CancelButtonClicked">
+                    <TextBlock x:Name="CancelText" Text="Cancel" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!--  properties  -->
+        <StackPanel
+            Grid.Row="1"
+            Margin="24,0,24,0"
+            Orientation="Vertical">
+            <TextBlock
+                Margin="0,0,0,8"
+                FontWeight="SemiBold"
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+                <Run x:Name="WorkspaceNameLabel" Text="Workspace name" />
+            </TextBlock>
+            <StackPanel Orientation="Horizontal" Spacing="24">
+                <TextBox
+                    x:Name="EditNameTextBox"
+                    Width="300"
+                    HorizontalAlignment="Left"
+                    GotFocus="EditNameTextBox_GotFocus"
+                    KeyDown="EditNameTextBoxKeyDown"
+                    Text="{Binding Name, Mode=TwoWay}"
+                    TextChanged="EditNameTextBox_TextChanged" />
+                <CheckBox
+                    VerticalAlignment="Bottom"
+                    IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay}">
+                    <TextBlock x:Name="CreateShortcutLabel" Text="Create desktop shortcut" />
+                </CheckBox>
+                <CheckBox
+                    VerticalAlignment="Bottom"
+                    IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}">
+                    <TextBlock x:Name="MoveIfExistLabel" Text="Move existing windows" />
+                </CheckBox>
+            </StackPanel>
+        </StackPanel>
+
+        <!--  Launch&Edit / Revert  -->
+        <StackPanel
+            Grid.Row="2"
+            Margin="24,16,24,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                x:Name="LaunchEditButton"
+                Click="LaunchEditButtonClicked">
+                <TextBlock x:Name="LaunchEditText" Text="Launch &amp; edit" />
+            </Button>
+            <Button
+                x:Name="RevertButton"
+                Click="RevertButtonClicked"
+                IsEnabled="{Binding IsRevertEnabled, Mode=OneWay}">
+                <TextBlock x:Name="RevertText" Text="Revert" />
+            </Button>
+        </StackPanel>
+
+        <!--  app list  -->
+        <ScrollViewer
+            Grid.Row="3"
+            Margin="0,24,0,0"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="24,0,24,24" Orientation="Vertical">
+                <ItemsControl
+                    x:Name="CapturedAppList"
+                    AutomationProperties.Name="Captured Application List"
+                    ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}"
+                    ItemsSource="{Binding ApplicationsListed, Mode=OneWay}" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

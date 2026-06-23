@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="WorkspacesEditor.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:WorkspacesEditor.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:WorkspacesEditor.Models"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  header + create button  -->
+        <TextBlock
+            x:Name="WorkspacesHeaderBlock"
+            Grid.Row="0"
+            Margin="24,0,48,16"
+            AutomationProperties.HeadingLevel="Level1"
+            FontSize="24"
+            FontWeight="SemiBold"
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+
+        <Button
+            x:Name="NewProjectButton"
+            Margin="0,0,24,36"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            AutomationProperties.Name="Create Workspace"
+            Click="NewProjectButton_Click"
+            Style="{ThemeResource AccentButtonStyle}"
+            TabIndex="3">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock
+                    Margin="0,4,0,0"
+                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"
+                    Text="&#xE710;" />
+                <TextBlock
+                    x:Name="CreateWorkspaceText"
+                    Margin="8,0,0,0"
+                    Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+            </StackPanel>
+        </Button>
+
+        <!--  search + sort  -->
+        <StackPanel
+            Grid.Row="1"
+            Margin="24,0,0,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Orientation="Horizontal">
+            <TextBox
+                x:Name="SearchTextBox"
+                Width="320"
+                PlaceholderText="Search for Workspaces or apps"
+                Text="{x:Bind ViewModel.SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="1"
+            Margin="0,0,24,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <TextBlock
+                x:Name="SortByLabel"
+                Margin="12,0,8,0"
+                VerticalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+            <ComboBox
+                MinWidth="140"
+                SelectedIndex="{x:Bind ViewModel.OrderByIndex, Mode=TwoWay}">
+                <ComboBoxItem x:Uid="LastLaunchedItem" />
+                <ComboBoxItem x:Uid="CreatedItem" />
+                <ComboBoxItem x:Uid="NameItem" />
+            </ComboBox>
+        </StackPanel>
+
+        <!--  empty state  -->
+        <TextBlock
+            Grid.Row="2"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            FontSize="16"
+            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+            Text="{x:Bind ViewModel.EmptyWorkspacesViewMessage, Mode=OneWay}"
+            TextAlignment="Center"
+            Visibility="{x:Bind ViewModel.IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BoolToVis}}" />
+
+        <!--  workspace list  -->
+        <ScrollViewer
+            Grid.Row="2"
+            Margin="0,24,0,0"
+            VerticalScrollBarVisibility="Auto"
+            Visibility="{x:Bind ViewModel.IsWorkspacesViewEmpty, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}}">
+            <ItemsRepeater
+                x:Name="WorkspacesRepeater"
+                Margin="24,0,24,24"
+                ItemsSource="{x:Bind ViewModel.WorkspacesView, Mode=OneWay}">
+                <ItemsRepeater.Layout>
+                    <StackLayout Orientation="Vertical" Spacing="4" />
+                </ItemsRepeater.Layout>
+                <ItemsRepeater.ItemTemplate>
+                    <DataTemplate x:DataType="models:Project">
+                        <Button
+                            Margin="0,4,0,0"
+                            Padding="1"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            AutomationProperties.Name="Edit"
+                            Click="EditButtonClicked">
+                            <Grid HorizontalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel
+                                    Margin="12,8,8,8"
+                                    HorizontalAlignment="Left"
+                                    Orientation="Vertical">
+                                    <TextBlock
+                                        Margin="0,0,0,8"
+                                        FontSize="16"
+                                        FontWeight="SemiBold"
+                                        Text="{Binding Name, Mode=OneWay}" />
+                                    <TextBlock
+                                        Margin="0,0,0,8"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{Binding AppsCountString}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock
+                                            Margin="0,0,8,0"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            FontSize="12"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="&#xE81C;" />
+                                        <TextBlock
+                                            FontSize="12"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Text="{Binding LastLaunched, Mode=OneWay}" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel
+                                    Grid.Column="1"
+                                    Margin="12"
+                                    Orientation="Horizontal">
+                                    <Button
+                                        Margin="0,0,8,0"
+                                        Click="LaunchButton_Click"
+                                        Content="Launch" />
+                                    <Button
+                                        Click="MoreButton_Click"
+                                        Padding="8">
+                                        <TextBlock
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                            Text="&#xE712;" />
+                                        <Button.Flyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem
+                                                    Click="EditButtonClicked"
+                                                    Text="Edit">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE70F;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                                <MenuFlyoutItem
+                                                    Click="DeleteButtonClicked"
+                                                    Text="Remove">
+                                                    <MenuFlyoutItem.Icon>
+                                                        <FontIcon Glyph="&#xE74D;" />
+                                                    </MenuFlyoutItem.Icon>
+                                                </MenuFlyoutItem>
+                                            </MenuFlyout>
+                                        </Button.Flyout>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Button>
+                    </DataTemplate>
+                </ItemsRepeater.ItemTemplate>
+            </ItemsRepeater>
+        </ScrollViewer>
+    </Grid>
+</Page>

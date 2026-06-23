@@ -7,6 +7,8 @@ using System;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using WorkspacesEditor.Utils;
+using WorkspacesEditor.ViewModels;
 
 namespace WorkspacesEditor
 {
@@ -16,6 +18,10 @@ namespace WorkspacesEditor
         private bool _isDisposed;
 
         public static DispatcherQueue DispatcherQueue { get; private set; }
+
+        public static WorkspacesEditorIO WorkspacesEditorIO { get; private set; }
+
+        public static MainViewModel MainViewModel { get; private set; }
 
         public App()
         {
@@ -40,6 +46,11 @@ namespace WorkspacesEditor
         {
             DispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
+            WorkspacesEditorIO = new WorkspacesEditorIO();
+            MainViewModel = new MainViewModel(WorkspacesEditorIO);
+            WorkspacesEditorIO.ParseWorkspaces(MainViewModel);
+            MainViewModel.Initialize();
+
             _mainWindow = new MainWindow();
             _mainWindow.Activate();
         }
@@ -53,6 +64,7 @@ namespace WorkspacesEditor
         {
             if (!_isDisposed)
             {
+                MainViewModel?.Dispose();
                 _isDisposed = true;
             }
 
