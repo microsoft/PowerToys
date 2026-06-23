@@ -16,6 +16,16 @@ on:
   schedule:
     # Run every 6 hours to check for stale PRs
     - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'If true, only log actions without making changes'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 permissions:
   pull-requests: write
@@ -34,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add Needs-Triage label
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -67,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Remove Needs-Author-Feedback and add Needs-Triage
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -111,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Remove Needs-Author-Feedback and add Needs-Triage
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -146,17 +156,23 @@ jobs:
   # Job 4: Scheduled check — convert to draft after 7 days, close after 14 days
   # ─────────────────────────────────────────────────────────────────────────────
   check-stale-prs:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Process stale PRs with Needs-Author-Feedback
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const INACTIVITY_DAYS = 7;
+            const DRY_RUN = '${{ github.event.inputs.dry_run }}' === 'true';
+            const DAYS_TO_DRAFT = 7;
+            const DAYS_TO_CLOSE = 14;
             const MS_PER_DAY = 24 * 60 * 60 * 1000;
             const now = Date.now();
+
+            if (DRY_RUN) {
+              console.log('🔍 DRY RUN MODE — no changes will be made');
+            }
 
             // Find all open PRs with "Needs-Author-Feedback" label
             const prs = await github.paginate(github.rest.issues.listForRepo, {
@@ -180,51 +196,43 @@ jobs:
                 pull_number: prNumber,
               });
 
-              // Find last meaningful activity from the PR author (not bot actions).
-              // Check commits and comments from the author.
               const authorLogin = pr.user.login;
 
-              // Get last commit date
-              const commits = await github.rest.pulls.listCommits({
+              // Find last commit authored by the PR author.
+              // Use paginate to get all commits and filter by author login.
+              const allCommits = await github.paginate(github.rest.pulls.listCommits, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: prNumber,
-                per_page: 1,
-                page: 1,
+                per_page: 100,
               });
-              // Get total pages to find last commit
-              const linkHeader = commits.headers?.link || '';
-              let lastCommitDate = new Date(pr.created_at).getTime();
-              if (commits.data.length > 0) {
-                // Fetch last page of commits for the most recent one
-                const lastPageMatch = linkHeader.match(/page=(\d+)>; rel="last"/);
-                const lastPage = lastPageMatch ? parseInt(lastPageMatch[1], 10) : 1;
-                const lastCommits = await github.rest.pulls.listCommits({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: prNumber,
-                  per_page: 1,
-                  page: lastPage,
-                });
-                if (lastCommits.data.length > 0) {
-                  const commitDate = lastCommits.data[lastCommits.data.length - 1].commit?.committer?.date
-                    || lastCommits.data[lastCommits.data.length - 1].commit?.author?.date;
+
+              let lastAuthorCommitDate = new Date(pr.created_at).getTime();
+              for (const commit of allCommits) {
+                const commitAuthorLogin = commit.author?.login || commit.committer?.login;
+                if (commitAuthorLogin === authorLogin) {
+                  const commitDate = commit.commit?.committer?.date || commit.commit?.author?.date;
                   if (commitDate) {
-                    lastCommitDate = new Date(commitDate).getTime();
+                    const ts = new Date(commitDate).getTime();
+                    if (ts > lastAuthorCommitDate) {
+                      lastAuthorCommitDate = ts;
+                    }
                   }
                 }
               }
 
-              // Get last comment from author
-              const comments = await github.rest.issues.listComments({
+              // Get all comments and find last one from the PR author (not bots).
+              // Use paginate to handle PRs with >100 comments.
+              const allComments = await github.paginate(github.rest.issues.listComments, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: prNumber,
                 per_page: 100,
               });
+
               let lastAuthorCommentDate = 0;
-              for (const comment of comments) {
-                if (comment.user?.login === authorLogin && !comment.user?.type?.includes('Bot')) {
+              for (const comment of allComments) {
+                if (comment.user?.login === authorLogin && comment.user?.type !== 'Bot') {
                   const commentDate = new Date(comment.created_at).getTime();
                   if (commentDate > lastAuthorCommentDate) {
                     lastAuthorCommentDate = commentDate;
@@ -232,27 +240,29 @@ jobs:
                 }
               }
 
-              const lastAuthorActivity = Math.max(lastCommitDate, lastAuthorCommentDate);
+              const lastAuthorActivity = Math.max(lastAuthorCommitDate, lastAuthorCommentDate);
               const daysSinceAuthorActivity = (now - lastAuthorActivity) / MS_PER_DAY;
 
               console.log(`PR #${prNumber}: ${daysSinceAuthorActivity.toFixed(1)} days since last author activity, draft=${pr.draft}`);
 
-              if (daysSinceAuthorActivity < INACTIVITY_DAYS) {
-                continue;
-              }
-
-              // If already draft and still inactive → close.
-              // Check if we previously posted the draft-conversion warning. If the PR was
-              // submitted as a draft originally (no bot warning), we still convert-to-draft
-              // step is a no-op but we post the warning first before closing on the next cycle.
+              // If already draft and still inactive → check whether to warn or close.
               if (pr.draft) {
                 const BOT_DRAFT_MARKER = 'automatically converted to a draft';
-                const hasBotDraftWarning = comments.some(c =>
+                const botWarningComment = allComments.find(c =>
                   c.user?.type === 'Bot' && c.body?.includes(BOT_DRAFT_MARKER)
                 );
 
-                if (!hasBotDraftWarning) {
-                  // Post the warning first; close on next scheduled run
+                if (!botWarningComment) {
+                  // No prior warning exists. Only post warning if author has been
+                  // inactive for at least DAYS_TO_DRAFT.
+                  if (daysSinceAuthorActivity < DAYS_TO_DRAFT) {
+                    continue;
+                  }
+
+                  if (DRY_RUN) {
+                    console.log(`[DRY RUN] Would post draft warning on PR #${prNumber} (already draft, no prior warning)`);
+                    continue;
+                  }
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
@@ -270,6 +280,18 @@ jobs:
                     ].join('\n'),
                   });
                   console.log(`PR #${prNumber} was already draft; posted warning (will close on next cycle if still inactive)`);
+                  continue;
+                }
+
+                // Warning was posted previously. Only close if DAYS_TO_CLOSE have
+                // passed since the last author activity (i.e. 14 days total).
+                if (daysSinceAuthorActivity < DAYS_TO_CLOSE) {
+                  console.log(`PR #${prNumber}: draft with warning, but only ${daysSinceAuthorActivity.toFixed(1)} days inactive (need ${DAYS_TO_CLOSE}); skipping`);
+                  continue;
+                }
+
+                if (DRY_RUN) {
+                  console.log(`[DRY RUN] Would close PR #${prNumber} (inactive ${daysSinceAuthorActivity.toFixed(1)} days)`);
                   continue;
                 }
 
@@ -297,7 +319,16 @@ jobs:
                 continue;
               }
 
-              // Not draft yet and inactive 7+ days → convert to draft
+              // Not draft yet — only convert after DAYS_TO_DRAFT of inactivity.
+              if (daysSinceAuthorActivity < DAYS_TO_DRAFT) {
+                continue;
+              }
+
+              if (DRY_RUN) {
+                console.log(`[DRY RUN] Would convert PR #${prNumber} to draft (inactive ${daysSinceAuthorActivity.toFixed(1)} days)`);
+                continue;
+              }
+
               // GitHub REST API does not support converting to draft; use GraphQL.
               const mutation = `
                 mutation($pullRequestId: ID!) {
@@ -307,27 +338,32 @@ jobs:
                 }
               `;
 
+              let draftConversionSucceeded = false;
               try {
                 await github.graphql(mutation, { pullRequestId: pr.node_id });
+                draftConversionSucceeded = true;
                 console.log(`Converted PR #${prNumber} to draft (inactive ${daysSinceAuthorActivity.toFixed(1)} days)`);
               } catch (err) {
                 console.log(`Failed to convert PR #${prNumber} to draft: ${err.message}`);
               }
 
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                body: [
-                  'This pull request has been automatically converted to a draft because it has',
-                  'been marked as requiring author feedback but has not had any activity for',
-                  '**7 days**.',
-                  '',
-                  'If no further activity occurs within **7 more days**, this PR will be closed',
-                  'automatically.',
-                  '',
-                  'To continue working on this PR, please push your changes or leave a comment.',
-                  'The `Needs-Author-Feedback` label will be removed automatically when you do so.',
-                ].join('\n'),
-              });
+              // Only post the comment if draft conversion actually succeeded.
+              if (draftConversionSucceeded) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: [
+                    'This pull request has been automatically converted to a draft because it has',
+                    'been marked as requiring author feedback but has not had any activity for',
+                    '**7 days**.',
+                    '',
+                    'If no further activity occurs within **7 more days**, this PR will be closed',
+                    'automatically.',
+                    '',
+                    'To continue working on this PR, please push your changes or leave a comment.',
+                    'The `Needs-Author-Feedback` label will be removed automatically when you do so.',
+                  ].join('\n'),
+                });
+              }
             }
