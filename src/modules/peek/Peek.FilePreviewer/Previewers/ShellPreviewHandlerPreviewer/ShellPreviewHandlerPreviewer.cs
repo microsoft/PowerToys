@@ -247,6 +247,12 @@ namespace Peek.FilePreviewer.Previewers
                     catch
                     {
                     }
+
+                    if (fileStream != null)
+                    {
+                        fileStream.Dispose();
+                        fileStream = null;
+                    }
                 }
             }
         }
