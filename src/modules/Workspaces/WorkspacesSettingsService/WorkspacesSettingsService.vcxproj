@@ -76,5 +76,8 @@
     <ClInclude Include="Paths.h" />
     <ClInclude Include="protocol\Protocol.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WorkspacesSettingsService.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

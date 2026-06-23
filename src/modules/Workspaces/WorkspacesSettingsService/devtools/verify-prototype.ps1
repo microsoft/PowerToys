@@ -16,7 +16,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$RepoRoot    = 'D:\PowerToys-Workspaces-EoP-v6',
+    [string]$RepoRoot    = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..\..')).Path,
     [string]$FakeInstall = (Join-Path $env:TEMP 'PTFakeInstall'),
     [string]$DataRoot    = 'C:\ProgramData\Microsoft\PowerToys\SettingsSvc'
 )
@@ -248,8 +248,8 @@ Step "8. Owner of store nodes is a non-user principal (SYSTEM/Admin/service)" {
 
 # 9) Non-elevated write + delete are both rejected --------------------
 Step "9. Medium-IL user token cannot write or delete the blob" {
-    $safer    = Join-Path $RepoRoot 'SaferModify.exe'
-    $saferSrc = Join-Path $RepoRoot 'SaferModify.cs'
+    $safer    = Join-Path $PSScriptRoot 'SaferModify.exe'
+    $saferSrc = Join-Path $PSScriptRoot 'SaferModify.cs'
     if (-not (Test-Path $safer) -and (Test-Path $saferSrc))
     {
         # Build the helper from source so the suite is self-contained.
@@ -258,7 +258,7 @@ Step "9. Medium-IL user token cannot write or delete the blob" {
     }
     if (-not (Test-Path $safer))
     {
-        Write-Host "  SKIPPED (SaferModify.exe/.cs not present in $RepoRoot)"
+        Write-Host "  SKIPPED (SaferModify.exe/.cs not present in $PSScriptRoot)"
         return $true
     }
     # Ensure the blob exists to target.

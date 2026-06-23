@@ -13,7 +13,7 @@
 
 [CmdletBinding()]
 param(
-    [string]$RepoRoot   = 'D:\PowerToys-Workspaces-EoP-v6',
+    [string]$RepoRoot   = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..\..')).Path,
     [string]$SvcName    = 'PTSettingsSvc',
     [string]$DisplayName= 'PowerToys Settings Service',
     [string]$Description= 'Provides tamper-resistant storage for PowerToys module settings. Stopping this service prevents affected modules (e.g. Workspaces) from saving configuration changes.',
