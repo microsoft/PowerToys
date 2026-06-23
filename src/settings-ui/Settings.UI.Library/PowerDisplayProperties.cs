@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowIdentifyMonitorsButton = true;
             MaxCompatibilityMode = false;
             LinkedLevelsActive = false;
+            MouseWheelChange = 5;
             ExcludedFromSyncMonitorIds = new List<string>();
             CustomVcpMappings = new List<CustomVcpValueMapping>();
 
@@ -107,5 +108,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("custom_vcp_mappings")]
         public List<CustomVcpValueMapping> CustomVcpMappings { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mouse wheel increment for slider controls (brightness, contrast, volume).
+        /// Default is 5. Higher values make the slider change more per wheel notch.
+        /// </summary>
+        [JsonPropertyName("mouse_wheel_change")]
+        public int MouseWheelChange { get; set; }
     }
 }

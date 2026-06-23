@@ -96,6 +96,15 @@
                                     <tkcontrols:SettingsCard ContentAlignment="Left">
                                         <CheckBox x:Uid="PowerDisplay_ShowIdentifyMonitorsButton" IsChecked="{x:Bind ViewModel.ShowIdentifyMonitorsButton, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelChange">
+                                        <NumberBox
+                                            Minimum="1"
+                                            Maximum="25"
+                                            SmallChange="1"
+                                            LargeChange="5"
+                                            Value="{x:Bind ViewModel.MouseWheelChange, Mode=TwoWay}"
+                                            SpinButtonPlacementMode="Inline" />
+                                    </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
                         </controls:SettingsGroup>

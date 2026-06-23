@@ -5793,6 +5793,12 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_ShowIdentifyMonitorsButton.Content" xml:space="preserve">
     <value>Show identify monitors button</value>
   </data>
+  <data name="PowerDisplay_MouseWheelChange.Header" xml:space="preserve">
+    <value>Mouse wheel increment</value>
+  </data>
+  <data name="PowerDisplay_MouseWheelChange.Description" xml:space="preserve">
+    <value>Amount the brightness, contrast, and volume sliders change per mouse wheel notch (1-25).</value>
+  </data>
   <data name="PowerDisplay_CustomVcpMappings_GroupSettings.Header" xml:space="preserve">
     <value>Custom VCP name mappings</value>
   </data>

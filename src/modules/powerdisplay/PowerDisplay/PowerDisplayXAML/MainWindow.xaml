@@ -234,13 +234,13 @@
                                             x:Uid="AllDisplaysBrightnessAutomation"
                                             Grid.Column="1"
                                             VerticalAlignment="Center"
-                                            helpers:SliderExtensions.IsMouseWheelEnabled="True"
-                                            helpers:SliderExtensions.MouseWheelChange="5"
-                                            IsEnabled="{x:Bind ViewModel.IsLinkedBrightnessSliderEnabled, Mode=OneWay}"
-                                            IsTabStop="True"
-                                            Maximum="100"
-                                            Minimum="0"
-                                            Value="{x:Bind ViewModel.LinkedBrightness, Mode=TwoWay}" />
+                                        helpers:SliderExtensions.IsMouseWheelEnabled="True"
+                                        helpers:SliderExtensions.MouseWheelChange="{x:Bind ViewModel.MouseWheelChange, Mode=OneWay}"
+                                        IsEnabled="{x:Bind ViewModel.IsLinkedBrightnessSliderEnabled, Mode=OneWay}"
+                                        IsTabStop="True"
+                                        Maximum="100"
+                                        Minimum="0"
+                                        Value="{x:Bind ViewModel.LinkedBrightness, Mode=TwoWay}" />
                                     </Grid>
                                 </StackPanel>
 
@@ -525,13 +525,13 @@
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
                                                         helpers:SliderExtensions.IsMouseWheelEnabled="True"
-                                                        helpers:SliderExtensions.MouseWheelChange="5"
+                                                        helpers:SliderExtensions.MouseWheelChange="{x:Bind MouseWheelChange, Mode=OneWay}"
                                                         IsEnabled="{x:Bind IsBrightnessSliderEnabled, Mode=OneWay}"
-                                                        IsTabStop="True"
-                                                        Maximum="100"
-                                                        Minimum="0"
-                                                        Value="{x:Bind Brightness, Mode=TwoWay}" />
-                                                </Grid>
+                                                    IsTabStop="True"
+                                                    Maximum="100"
+                                                    Minimum="0"
+                                                    Value="{x:Bind Brightness, Mode=TwoWay}" />
+                                            </Grid>
 
                                                 <!--  Contrast Control  -->
                                                 <Grid
@@ -556,7 +556,7 @@
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
                                                         helpers:SliderExtensions.IsMouseWheelEnabled="True"
-                                                        helpers:SliderExtensions.MouseWheelChange="5"
+                                                        helpers:SliderExtensions.MouseWheelChange="{x:Bind MouseWheelChange, Mode=OneWay}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
@@ -586,7 +586,7 @@
                                                         Grid.Column="1"
                                                         VerticalAlignment="Center"
                                                         helpers:SliderExtensions.IsMouseWheelEnabled="True"
-                                                        helpers:SliderExtensions.MouseWheelChange="5"
+                                                        helpers:SliderExtensions.MouseWheelChange="{x:Bind MouseWheelChange, Mode=OneWay}"
                                                         IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"

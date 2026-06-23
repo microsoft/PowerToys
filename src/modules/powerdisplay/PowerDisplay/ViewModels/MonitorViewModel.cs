@@ -210,6 +210,9 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     // Property to access IsInteractionEnabled from parent ViewModel
     public bool IsInteractionEnabled => _mainViewModel?.IsInteractionEnabled ?? true;
 
+    // Property to access MouseWheelChange from parent ViewModel
+    public double MouseWheelChange => _mainViewModel?.MouseWheelChange ?? 5;
+
     public MonitorViewModel(Monitor monitor, MonitorManager monitorManager, MainViewModel mainViewModel)
     {
         _monitor = monitor;
@@ -865,6 +868,10 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
             OnPropertyChanged(nameof(ShowBrightnessSlider));
             OnPropertyChanged(nameof(ShowExcludeButton));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.MouseWheelChange))
+        {
+            OnPropertyChanged(nameof(MouseWheelChange));
         }
     }
 

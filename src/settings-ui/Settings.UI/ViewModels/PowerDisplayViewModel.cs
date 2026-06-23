@@ -343,6 +343,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int MouseWheelChange
+        {
+            get => _settings.Properties.MouseWheelChange;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.MouseWheelChange, value, v => _settings.Properties.MouseWheelChange = v))
+                {
+                    SignalSettingsUpdated();
+                    Logger.LogInfo($"MouseWheelChange changed to {value}");
+                }
+            }
+        }
+
         public HotkeySettings ActivationShortcut
         {
             get => _settings.Properties.ActivationShortcut;

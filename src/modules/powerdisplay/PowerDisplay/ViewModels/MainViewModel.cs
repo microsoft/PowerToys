@@ -129,6 +129,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial bool ShowIdentifyMonitorsButton { get; set; }
 
+    [ObservableProperty]
+    public partial double MouseWheelChange { get; set; }
+
     /// <summary>
     /// Gets or sets a value indicating whether brightness slider changes are broadcast to all
     /// non-excluded monitors as one linked level. Persisted in <c>PowerDisplaySettings</c> so
@@ -486,6 +489,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             LoadExcludedMonitorIds(settings.Properties.ExcludedFromSyncMonitorIds);
 
             LinkedLevelsActive = settings.Properties.LinkedLevelsActive;
+
+            // Load mouse wheel increment for slider controls
+            MouseWheelChange = settings.Properties.MouseWheelChange;
 
             // Load custom VCP mappings (now using shared type from PowerDisplay.Common.Models)
             CustomVcpMappings = settings.Properties.CustomVcpMappings?.ToList() ?? new List<CustomVcpValueMapping>();
