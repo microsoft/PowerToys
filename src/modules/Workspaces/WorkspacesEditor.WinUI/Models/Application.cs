@@ -307,6 +307,7 @@ namespace WorkspacesEditor.Models
 
         public new void Dispose()
         {
+            base.Dispose();
             GC.SuppressFinalize(this);
         }
     }
