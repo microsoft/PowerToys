@@ -362,26 +362,58 @@ namespace Microsoft.PowerToys.UITest
 
         private void StartWindowsAppDriverApp()
         {
+            // Reuse an already-running WinAppDriver — one started once per job by the pipeline
+            // ("Start WinAppDriver" step), or by an earlier test in this assembly — instead of killing
+            // and relaunching it. Only spin up a fresh instance when nothing is listening on :4723.
+            if (IsWinAppDriverListening())
+            {
+                SessionHelper.appDriver ??= Process.GetProcessesByName("WinAppDriver").FirstOrDefault();
+                return;
+            }
+
             var winAppDriverProcessInfo = new ProcessStartInfo
             {
                 FileName = "C:\\Program Files (x86)\\Windows Application Driver\\WinAppDriver.exe",
 
-                // WinAppDriver must be elevated to open its HTTP listener on :4723. The "runas" verb
-                // only elevates when UseShellExecute is true; with the .NET default (false) the verb is
-                // ignored and WinAppDriver inherits the (non-elevated) test process, so it can't bind the
-                // port and every session request is refused. ShellExecute + runas elevates it for real.
-                UseShellExecute = true,
-                Verb = "runas",
+                // WinAppDriver ends its Main with "Press ENTER to exit" + Console.ReadLine(). Under the
+                // Microsoft.Testing.Platform test host the child inherits a stdin that is already at EOF,
+                // so that read returns immediately and WinAppDriver prints "Exiting..." and dies right
+                // after it starts listening — which is what forced the previous launch to keep
+                // relaunching it (and made the very first connection racy). Redirecting stdin and NEVER
+                // closing the pipe makes that read block, so the server stays alive for the whole test
+                // process and is reused by every test in this assembly. Redirect requires
+                // UseShellExecute = false; the default endpoint 127.0.0.1:4723 needs no elevation (only a
+                // custom IP/port does, per WinAppDriver's docs), so "runas" is not needed.
+                UseShellExecute = false,
+                RedirectStandardInput = true,
+                CreateNoWindow = true,
             };
 
             this.ExitExe(winAppDriverProcessInfo.FileName);
             SessionHelper.appDriver = Process.Start(winAppDriverProcessInfo);
 
-            // WinAppDriver needs a moment to open its HTTP listener on :4723. Connecting immediately
-            // races that startup; under a fast test host the connect loses every time, and because
-            // each test then re-kills and restarts WinAppDriver the failure is consistent. Wait until
-            // the port accepts a connection before returning so the first session reliably succeeds.
+            // Intentionally do NOT close appDriver.StandardInput: the open pipe is exactly what blocks
+            // WinAppDriver's stdin read and keeps the server alive. The static appDriver reference holds
+            // the pipe open until the test process exits, at which point WinAppDriver shuts down cleanly.
+
+            // WinAppDriver needs a moment to open its HTTP listener on :4723. Connecting immediately races
+            // that startup, so wait until the port accepts a connection before returning.
             WaitForWinAppDriverReady();
+        }
+
+        // True when something is already accepting connections on the WinAppDriver port (127.0.0.1:4723).
+        private static bool IsWinAppDriverListening()
+        {
+            try
+            {
+                using var client = new System.Net.Sockets.TcpClient();
+                client.Connect("127.0.0.1", 4723);
+                return client.Connected;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static void WaitForWinAppDriverReady(int timeoutMs = 30000)
@@ -389,18 +421,9 @@ namespace Microsoft.PowerToys.UITest
             var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
             while (DateTime.UtcNow < deadline)
             {
-                try
+                if (IsWinAppDriverListening())
                 {
-                    using var client = new System.Net.Sockets.TcpClient();
-                    client.Connect("127.0.0.1", 4723);
-                    if (client.Connected)
-                    {
-                        return;
-                    }
-                }
-                catch
-                {
-                    // Listener not up yet; keep polling until the timeout.
+                    return;
                 }
 
                 System.Threading.Thread.Sleep(500);

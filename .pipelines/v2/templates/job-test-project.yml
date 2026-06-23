@@ -156,6 +156,41 @@ jobs:
       inputs:
         displaySettings: 'optimal'
 
+  # Start WinAppDriver once for the whole job — WinAppDriver's documented CI pattern
+  # (https://github.com/microsoft/WinAppDriver/blob/master/Docs/CI_AzureDevOps.md). Launching it
+  # detached gives it its own console whose stdin blocks, so it stays alive for the run instead of
+  # reading EOF and exiting the moment it starts listening (the failure mode when a test host launches
+  # it as a child). The legacy UITest harness reuses an already-listening instance rather than
+  # relaunching it per test, so this removes the per-assembly launch cost. The winappcli-based .Next
+  # tests don't use WinAppDriver. Best-effort: if the pre-start fails, each assembly still launches its own.
+  - pwsh: |
+      $winapp = "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
+      if (Test-Path $winapp) {
+        Start-Process -FilePath $winapp
+
+        $deadline = (Get-Date).AddSeconds(30)
+        $ready = $false
+        while (-not $ready -and (Get-Date) -lt $deadline) {
+          try {
+            $client = [System.Net.Sockets.TcpClient]::new()
+            $client.Connect('127.0.0.1', 4723)
+            $ready = $client.Connected
+            $client.Close()
+          } catch {
+            Start-Sleep -Milliseconds 500
+          }
+        }
+
+        if ($ready) {
+          Write-Host 'WinAppDriver is listening on 127.0.0.1:4723.'
+        } else {
+          Write-Host "##vso[task.logissue type=warning]WinAppDriver did not start listening on :4723 within 30s; tests will launch it themselves."
+        }
+      } else {
+        Write-Host "##vso[task.logissue type=warning]WinAppDriver not found at $winapp; tests will launch it themselves."
+      }
+    displayName: Start WinAppDriver (shared, persistent)
+
   - pwsh: |
       $ErrorActionPreference = 'Stop'
       $artifactRoot = "$(Pipeline.Workspace)\$(TestArtifactsName)"
@@ -235,3 +270,10 @@ jobs:
       testResultsFiles: '$(Common.TestResultsDirectory)/**/*.trx'
       mergeTestResults: true
       failTaskOnFailedTests: false
+
+  # Stop the shared WinAppDriver (paired with the start step above) so it doesn't linger on the
+  # self-hosted agent between jobs. Best-effort and always runs.
+  - pwsh: |
+      Get-Process -Name 'WinAppDriver' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    displayName: Stop WinAppDriver
+    condition: always()
