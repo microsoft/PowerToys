@@ -17,7 +17,9 @@ namespace WorkspacesEditor.Views
     public sealed partial class SnapshotWindow : Window
     {
         private readonly MainViewModel _mainViewModel;
+        private readonly Microsoft.UI.Xaml.DispatcherTimer _pulseTimer;
         private bool _captured;
+        private bool _dotVisible = true;
 
         public SnapshotWindow(MainViewModel mainViewModel)
         {
@@ -34,7 +36,7 @@ namespace WorkspacesEditor.Views
             var hwnd = WindowNative.GetWindowHandle(this);
             var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.Resize(new Windows.Graphics.SizeInt32(420, 160));
+            appWindow.Resize(new Windows.Graphics.SizeInt32(420, 200));
 
             if (appWindow.Presenter is OverlappedPresenter presenter)
             {
@@ -47,8 +49,18 @@ namespace WorkspacesEditor.Views
             var displayArea = DisplayArea.Primary;
             var workArea = displayArea.WorkArea;
             int x = workArea.X + ((workArea.Width - 420) / 2);
-            int y = workArea.Y + ((workArea.Height - 160) / 2);
+            int y = workArea.Y + ((workArea.Height - 200) / 2);
             appWindow.Move(new Windows.Graphics.PointInt32(x, y));
+
+            // Pulse the recording dot
+            _pulseTimer = new Microsoft.UI.Xaml.DispatcherTimer();
+            _pulseTimer.Interval = TimeSpan.FromMilliseconds(600);
+            _pulseTimer.Tick += (s, e) =>
+            {
+                _dotVisible = !_dotVisible;
+                RecordingDot.Opacity = _dotVisible ? 1.0 : 0.15;
+            };
+            _pulseTimer.Start();
 
             this.Closed += OnClosed;
         }
@@ -67,6 +79,7 @@ namespace WorkspacesEditor.Views
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
+            _pulseTimer.Stop();
             if (!_captured)
             {
                 _mainViewModel.CancelSnapshot();

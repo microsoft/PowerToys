@@ -9,6 +9,7 @@
     mc:Ignorable="d">
     <Grid Margin="4">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -16,22 +17,49 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+
+        <!--  Recording indicator  -->
+        <StackPanel
+            Grid.ColumnSpan="2"
+            Margin="0,12,0,4"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Ellipse
+                x:Name="RecordingDot"
+                Width="12"
+                Height="12"
+                VerticalAlignment="Center"
+                Fill="Red">
+                <Ellipse.OpacityTransition>
+                    <ScalarTransition Duration="0:0:0.6" />
+                </Ellipse.OpacityTransition>
+            </Ellipse>
+            <TextBlock
+                VerticalAlignment="Center"
+                FontSize="13"
+                FontWeight="SemiBold"
+                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                Text="CAPTURING" />
+        </StackPanel>
+
         <TextBlock
             x:Name="DescriptionText"
+            Grid.Row="1"
             Grid.ColumnSpan="2"
-            Margin="8,16,8,16"
+            Margin="8,8,8,16"
             HorizontalTextAlignment="Center"
             TextWrapping="Wrap" />
         <Button
             x:Name="SnapshotButton"
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="8,8,4,8"
             HorizontalAlignment="Stretch"
             Click="SnapshotButtonClicked"
             Style="{ThemeResource AccentButtonStyle}" />
         <Button
             x:Name="CancelButton"
-            Grid.Row="1"
+            Grid.Row="2"
             Grid.Column="1"
             Margin="4,8,8,8"
             HorizontalAlignment="Stretch"

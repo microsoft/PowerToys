@@ -289,27 +289,12 @@ namespace WorkspacesEditor.ViewModels
             // Minimize the main window
             MinimizeMainWindowAction?.Invoke();
 
-            // Show snapshot dialog (overlays are cosmetic — skip for now if they cause issues)
-            try
-            {
-                _overlayWindows.Clear();
-                foreach (var displayArea in DisplayArea.FindAll())
-                {
-                    var bounds = displayArea.OuterBounds;
-                    var overlay = new OverlayWindow();
-                    overlay.SetBounds(bounds.X, bounds.Y, bounds.Width, bounds.Height);
-                    overlay.Activate();
-                    _overlayWindows.Add(overlay);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                Logger.LogError($"Failed to create overlay windows: {ex.Message}");
-            }
-
             // Show snapshot dialog
             _snapshotWindow = new SnapshotWindow(this);
             _snapshotWindow.Activate();
+
+            // Note: Red border overlays are not shown in WinUI due to multi-window limitations.
+            // The Capture/Cancel dialog provides sufficient capture-mode feedback.
         }
 
         internal void CancelSnapshot()
