@@ -105,6 +105,18 @@ public static class LoggerTests
     }
 
     [TestClass]
+    public sealed class LogStatisticsTests
+    {
+        [TestMethod]
+        public void LogStatisticsShouldNotThrow()
+        {
+            // make sure LogStatistics doesn't throw an exception
+            // (there's no need to assert anything - the test passes if it doesn't throw)
+            Logger.LogStatistics();
+        }
+    }
+
+    [TestClass]
     public sealed class PrivateDumpTests
     {
         /*
