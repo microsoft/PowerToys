@@ -691,7 +691,33 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
             {
-                MoveSizeUpdate(monitor, ptScreen);
+                if (!m_windowMouseSnapper)
+                {
+                    // Fallback: detect custom window dragging for apps that don't
+                    // fire EVENT_SYSTEM_MOVESIZESTART (e.g., JUCE, Electron, custom
+                    // canvas frameworks that handle their own window movement).
+                    if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)
+                    {
+                        auto hwnd = reinterpret_cast<HWND>(wparam);
+                        if (hwnd && FancyZonesWindowUtils::IsRoot(hwnd) && FancyZonesWindowProcessing::IsProcessableManually(hwnd))
+                        {
+                            MoveSizeStart(hwnd, monitor);
+                            MoveSizeUpdate(monitor, ptScreen);
+                        }
+                    }
+                }
+                else
+                {
+                    MoveSizeUpdate(monitor, ptScreen);
+
+                    // End the drag if the user released the mouse button.
+                    // This handles the case where EVENT_SYSTEM_MOVESIZEEND
+                    // never fires for custom-drag windows.
+                    if (!(GetAsyncKeyState(VK_LBUTTON) & 0x8000))
+                    {
+                        MoveSizeEnd();
+                    }
+                }
             }
         }
         else if (message == WM_PRIV_WINDOWCREATED)
