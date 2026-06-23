@@ -216,30 +216,16 @@ namespace Peek.UI
 
         private void Uninitialize()
         {
-            // Round 2 cross-review caught a regression in the previous defensive
-            // wrap: if the outer try/catch in AppWindow_Closing swallows an
-            // exception thrown from inside this method, the `Environment.Exit(0)`
-            // tail below is never reached and the CLI/`-FilePath` exit-after-close
-            // path turns into a hang (process stays alive with no window).
-            //
-            // To keep the fail-fast prevention AND the CLI exit contract, move the
-            // try/catch inline here so cleanup failures are logged-and-swallowed
-            // while `Environment.Exit(0)` still runs in `finally`.
             try
             {
-                this.Restore();
-                this.Hide();
-
-                ViewModel.Uninitialize();
-                ViewModel.ScalingFactor = 1;
-
-                this.Content.KeyUp -= Content_KeyUp;
-
-                ShellPreviewHandlerPreviewer.ReleaseHandlerFactories();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Unhandled exception in Peek MainWindow.Uninitialize; continuing to honor exit-after-close.", ex);
+                // Keep teardown best-effort: one failure must not skip later cleanup
+                // or prevent the CLI/-FilePath exit-after-close contract.
+                TryRunUninitializeStep(this.Restore, "Restore");
+                TryRunUninitializeStep(() => this.Hide(), "Hide");
+                TryRunUninitializeStep(ViewModel.Uninitialize, nameof(ViewModel.Uninitialize));
+                TryRunUninitializeStep(() => ViewModel.ScalingFactor = 1, nameof(ViewModel.ScalingFactor));
+                TryRunUninitializeStep(() => this.Content.KeyUp -= Content_KeyUp, nameof(Content_KeyUp));
+                TryRunUninitializeStep(ShellPreviewHandlerPreviewer.ReleaseHandlerFactories, nameof(ShellPreviewHandlerPreviewer.ReleaseHandlerFactories));
             }
             finally
             {
@@ -247,6 +233,18 @@ namespace Peek.UI
                 {
                     Environment.Exit(0);
                 }
+            }
+        }
+
+        private static void TryRunUninitializeStep(Action action, string stepName)
+        {
+            try
+            {
+                action();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Unhandled exception in Peek MainWindow.Uninitialize step '{stepName}'; continuing cleanup.", ex);
             }
         }
 
