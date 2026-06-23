@@ -215,6 +215,13 @@ namespace PTSettingsSvc
         // Production relies on the MSI-written
         // HKLM\SOFTWARE\Classes\PowerToys\InstallFolder value.  Remove (or
         // #ifdef _DEBUG) before merge.
+#ifdef _DEBUG
+        // DEV-ONLY override (compiled out of Release): lets the smoke test
+        // demonstrate the per-machine path happy-path without a real MSI
+        // install + HKLM write.  Production relies solely on the MSI-written
+        // HKLM\SOFTWARE\Classes\PowerToys\InstallFolder value.  This MUST NOT
+        // ship — the IsFolderAdminOnlyWritable check still applies, but an
+        // env-var-chosen root is a dev convenience only.
         if (installFolder.empty())
         {
             wchar_t dev[MAX_PATH] = {};
@@ -223,6 +230,7 @@ namespace PTSettingsSvc
                 installFolder = dev;
             }
         }
+#endif
 
         const bool pathTrusted =
             !installFolder.empty() &&
