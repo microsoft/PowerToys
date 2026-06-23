@@ -63,6 +63,23 @@ namespace WorkspacesEditor.Views
             _pulseTimer.Start();
 
             this.Closed += OnClosed;
+
+            // Set focus to the Capture button when window loads
+            this.Activated += (s, e) =>
+            {
+                var snapshotHwnd = WindowNative.GetWindowHandle(this);
+                SetForegroundWindow(snapshotHwnd);
+                SnapshotButton.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            };
+
+            // Handle Escape key to cancel
+            this.Content.KeyDown += (s, e) =>
+            {
+                if (e.Key == Windows.System.VirtualKey.Escape)
+                {
+                    this.Close();
+                }
+            };
         }
 
         private void SnapshotButtonClicked(object sender, RoutedEventArgs e)
@@ -85,5 +102,9 @@ namespace WorkspacesEditor.Views
                 _mainViewModel.CancelSnapshot();
             }
         }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }

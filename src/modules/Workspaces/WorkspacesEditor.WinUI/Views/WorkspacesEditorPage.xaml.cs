@@ -28,6 +28,16 @@ namespace WorkspacesEditor.Views
         {
             this.InitializeComponent();
             SetLocalizedStrings();
+
+            this.KeyDown += (s, e) =>
+            {
+                if (e.Key == Windows.System.VirtualKey.Escape)
+                {
+                    TempProjectData.DeleteTempFile();
+                    _mainViewModel?.SwitchToMainView();
+                    e.Handled = true;
+                }
+            };
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
