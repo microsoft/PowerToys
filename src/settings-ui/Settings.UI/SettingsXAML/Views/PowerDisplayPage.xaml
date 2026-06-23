@@ -98,12 +98,12 @@
                                     </tkcontrols:SettingsCard>
                                     <tkcontrols:SettingsCard x:Uid="PowerDisplay_MouseWheelChange">
                                         <NumberBox
-                                            Minimum="1"
-                                            Maximum="25"
-                                            SmallChange="1"
                                             LargeChange="5"
-                                            Value="{x:Bind ViewModel.MouseWheelChange, Mode=TwoWay}"
-                                            SpinButtonPlacementMode="Inline" />
+                                            Maximum="25"
+                                            Minimum="1"
+                                            SmallChange="1"
+                                            SpinButtonPlacementMode="Inline"
+                                            Value="{x:Bind ViewModel.MouseWheelChange, Mode=TwoWay}" />
                                     </tkcontrols:SettingsCard>
                                 </tkcontrols:SettingsExpander.Items>
                             </tkcontrols:SettingsExpander>
