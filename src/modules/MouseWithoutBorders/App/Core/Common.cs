@@ -222,9 +222,7 @@ internal static class Common
     private static int _screenWidth;
 
     internal static int ScreenWidth
-    {
-        get;
-    }
+        => _screenWidth;
 
     internal static int SetScreenWidth(int value)
     {
