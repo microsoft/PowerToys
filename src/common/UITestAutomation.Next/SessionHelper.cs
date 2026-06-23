@@ -27,11 +27,13 @@ namespace Microsoft.PowerToys.UITest.Next;
 public sealed class SessionHelper
 {
     // Generous window-appearance budget. On a cold/busy CI agent the runner spends tens of seconds
-    // enabling every module and the Settings WinUI process cold-starts before its window appears
-    // (~30-50s observed); the legacy WinAppDriver harness likewise allowed ~2 min for its driver to
-    // attach. We wait patiently (and re-issue the idempotent launch) rather than kill-and-relaunch on
-    // a short deadline, which only resets a slow-but-healthy startup and never converges.
-    private static readonly TimeSpan LaunchTimeout = TimeSpan.FromSeconds(90);
+    // enabling every module and the Settings WinUI process cold-starts before its window appears.
+    // When the whole test job runs elevated (required so the legacy WinAppDriver harness can bind
+    // :4723) the runner's startup is slower still — ~100s to the first Settings window observed on a
+    // slow platform — so the budget is 150s. We wait patiently (and only re-issue the launch when
+    // nothing is alive) rather than kill-and-relaunch on a short deadline, which only resets a
+    // slow-but-healthy startup and never converges.
+    private static readonly TimeSpan LaunchTimeout = TimeSpan.FromSeconds(150);
 
     private readonly PowerToysModule scope;
 
@@ -186,17 +188,25 @@ public sealed class SessionHelper
 
             if (DateTime.UtcNow - lastLaunch > nudgeInterval)
             {
-                // Still no window after a grace period. Re-issue the launch (idempotent) rather than
-                // killing a slow-but-healthy startup. Only a fresh launch that went fully dead
-                // (nothing running) gets a mutex-clearing kill first.
+                // Re-issue the launch ONLY when nothing is alive to present the window — the genuine
+                // "launcher handed off to an instance that then exited" race. If the runner is still
+                // alive it already owns the queued --open-settings request and, on a slow agent, may
+                // need tens of seconds to enable every module before it spawns Settings. Re-launching
+                // there is NOT free: each extra --open-settings queues another request that the runner
+                // honours with a SEPARATE Settings.exe (the "Settings: 3" pile-up seen in CI), and the
+                // competing single-instance processes plus the launch contention push the window past
+                // the deadline. So when anything is alive, keep waiting instead of piling on.
                 var alive = IsRunning(scope) || Process.GetProcessesByName(runnerName).Length > 0;
-                if (!alreadyRunning && !alive)
+                if (!alive)
                 {
-                    KillScopeProcessesAndWait(scope);
-                }
+                    if (!alreadyRunning)
+                    {
+                        KillScopeProcessesAndWait(scope);
+                    }
 
-                LaunchScope(scope);
-                lastLaunch = DateTime.UtcNow;
+                    LaunchScope(scope);
+                    lastLaunch = DateTime.UtcNow;
+                }
             }
 
             Thread.Sleep(500);
