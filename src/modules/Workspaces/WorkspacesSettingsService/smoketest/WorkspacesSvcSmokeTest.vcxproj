@@ -51,6 +51,9 @@
   <PropertyGroup>
     <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <TargetName>PowerToys.PTSettingsSvcSmokeTest</TargetName>
+    <!-- Manual CLI driver, not an automated VSTest container. Opt out of the
+         RunVSTest SDK so the CI "/t:Test" pass does not try to execute it. -->
+    <RunVSTest>false</RunVSTest>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
