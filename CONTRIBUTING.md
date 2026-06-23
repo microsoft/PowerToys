@@ -73,6 +73,12 @@ If you are an LLM-based coding agent operating without a human reviewing each st
 
 ---
 
+## Verifying your changes
+
+The author is responsible for verifying a change actually works before requesting review. Every PR should include the repro / verification steps you followed to confirm the new behavior (and that you didn't regress existing behavior), and for any user-visible or behavior change, a screenshot or short screen recording of the new behavior.
+
+---
+
 ## Development
 
 Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md).
