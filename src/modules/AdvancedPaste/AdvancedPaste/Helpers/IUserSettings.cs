@@ -17,6 +17,8 @@ namespace AdvancedPaste.Settings
 
         public bool ShowCustomPreview { get; }
 
+        public bool ShowAIPaste { get; }
+
         public bool CloseAfterLosingFocus { get; }
 
         public bool EnableClipboardPreview { get; }

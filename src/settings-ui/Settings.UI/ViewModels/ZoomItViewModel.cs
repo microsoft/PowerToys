@@ -45,6 +45,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public ButtonClickCommand SelectBreakBackgroundFileCommand { get; set; }
 
+        public ButtonClickCommand SelectWebcamBackgroundImageCommand { get; set; }
+
         public ButtonClickCommand SelectTypeFontCommand { get; set; }
 
         // These values should track what's in DemoType.h
@@ -160,6 +162,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SelectDemoTypeFileCommand = new ButtonClickCommand(SelectDemoTypeFileAction);
             SelectBreakSoundFileCommand = new ButtonClickCommand(SelectBreakSoundFileAction);
             SelectBreakBackgroundFileCommand = new ButtonClickCommand(SelectBreakBackgroundFileAction);
+            SelectWebcamBackgroundImageCommand = new ButtonClickCommand(SelectWebcamBackgroundImageAction);
             SelectTypeFontCommand = new ButtonClickCommand(SelectTypeFontAction);
 
             LoadMicrophoneList();
@@ -1011,6 +1014,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool RecordNoiseCancellation
+        {
+            get => _zoomItSettings.Properties.NoiseCancellation.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.NoiseCancellation.Value != value)
+                {
+                    _zoomItSettings.Properties.NoiseCancellation.Value = value;
+                    OnPropertyChanged(nameof(RecordNoiseCancellation));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool RecordMicMonoMix
         {
             get => _zoomItSettings.Properties.MicMonoMix.Value;
@@ -1125,6 +1142,51 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int WebcamBackgroundMode
+        {
+            get => _zoomItSettings.Properties.WebcamBackgroundMode.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamBackgroundMode.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamBackgroundMode.Value = value;
+                    OnPropertyChanged(nameof(WebcamBackgroundMode));
+                    OnPropertyChanged(nameof(WebcamBackgroundIsImage));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool WebcamBackgroundIsImage => _zoomItSettings.Properties.WebcamBackgroundMode.Value == 2;
+
+        public string WebcamBackgroundImage
+        {
+            get => _zoomItSettings.Properties.WebcamBackgroundImage.Value ?? string.Empty;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamBackgroundImage.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamBackgroundImage.Value = value;
+                    OnPropertyChanged(nameof(WebcamBackgroundImage));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int WebcamBrightness
+        {
+            get => _zoomItSettings.Properties.WebcamBrightness.Value;
+            set
+            {
+                if (_zoomItSettings.Properties.WebcamBrightness.Value != value)
+                {
+                    _zoomItSettings.Properties.WebcamBrightness.Value = value;
+                    OnPropertyChanged(nameof(WebcamBrightness));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool RecordAspectRatio
         {
             get => _zoomItSettings.Properties.RecordAspectRatio.Value;
@@ -1205,6 +1267,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             catch (Exception ex)
             {
                 Logger.LogError("Error picking Break Background file.", ex);
+            }
+        }
+
+        private void SelectWebcamBackgroundImageAction()
+        {
+            try
+            {
+                ResourceLoader resourceLoader = ResourceLoaderInstance.ResourceLoader;
+                string title = resourceLoader.GetString("ZoomIt_Record_WebcamBackgroundImage_Picker_Dialog_Title");
+                string bitmapFilesFilter = resourceLoader.GetString("FilePicker_ZoomIt_BitmapFilesFilter");
+                string allPictureFilesFilter = resourceLoader.GetString("FilePicker_ZoomIt_AllPicturesFilter");
+                string allFilesFilter = resourceLoader.GetString("FilePicker_AllFilesFilter");
+                string initialDirectory = Environment.ExpandEnvironmentVariables("%USERPROFILE%\\Pictures");
+                string pickedFile = PickFileDialog($"{bitmapFilesFilter} (*.bmp;*.dib)\0*.bmp;*.dib\0PNG (*.png)\0*.png\0JPEG (*.jpg;*.jpeg;*.jpe;*.jfif)\0*.jpg;*.jpeg;*.jpe;*.jfif\0GIF (*.gif)\0*.gif\0{allPictureFilesFilter}\0*.bmp;*.dib;*.png;*.jpg;*.jpeg;*.jpe;*.jfif;*.gif\0{allFilesFilter}\0*.*\0\0", title, initialDirectory, 5);
+                if (pickedFile != null)
+                {
+                    WebcamBackgroundImage = pickedFile;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error picking Webcam Background image.", ex);
             }
         }
 
