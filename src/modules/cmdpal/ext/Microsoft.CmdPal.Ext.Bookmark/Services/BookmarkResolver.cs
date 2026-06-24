@@ -133,12 +133,12 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             (longestUnquotedHead, tailAfterLongestUnquotedHead) = CommandLineHelper.SplitHeadAndArgs(input);
         }
 
-        var (headPath, tailArgs, usedParentDirectoryFallback) = ExpandToBestExistingPath(longestUnquotedHead, tailAfterLongestUnquotedHead, isPlaceholder, placeholderParser);
+        var (headPath, tailArgs, _) = ExpandToBestExistingPath(longestUnquotedHead, tailAfterLongestUnquotedHead, isPlaceholder, placeholderParser);
         if (headPath is not null)
         {
             var args = tailArgs ?? string.Empty;
 
-            if (usedParentDirectoryFallback || Directory.Exists(headPath))
+            if (Directory.Exists(headPath))
             {
                 result = new Classification(
                     CommandKind.Directory,
@@ -332,10 +332,10 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         {
             // This goes greedy from the longest head down to shortest; exactly opposite of what
             // CreateProcess rules are for the first token. But here we operate with a slightly different goal.
-            var (greedyHead, greedyTail, usedParentDirectoryFallback) = GreedyFind(head, containsPlaceholders, placeholderParser);
+            var (greedyHead, greedyTail) = GreedyFind(head, containsPlaceholders, placeholderParser);
 
             // put tails back together:
-            return (Head: greedyHead, string.Join(" ", greedyTail, tail).Trim(), usedParentDirectoryFallback);
+            return (Head: greedyHead, string.Join(" ", greedyTail, tail).Trim(), false);
         }
         catch (Exception ex)
         {
@@ -344,11 +344,8 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         }
     }
 
-    private static (string? Head, string? Tail, bool UsedParentDirectoryFallback) GreedyFind(string input, bool containsPlaceholders, IPlaceholderParser placeholderParser)
+    private static (string? Head, string? Tail) GreedyFind(string input, bool containsPlaceholders, IPlaceholderParser placeholderParser)
     {
-        string? parentFallbackHead = null;
-        string? parentFallbackTail = null;
-
         // Be greedy: try to find the longest existing path prefix.
         // Only probe at whitespace or path-separator boundaries to avoid unnecessary filesystem calls.
         for (var i = input.Length; i >= 0; i--)
@@ -375,25 +372,14 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 continue; // Skip this candidate, try a shorter one
             }
 
-            if (TryResolvePathCandidate(candidateStr, out var resolvedCandidate, out var usedParentDirectoryFallback))
+            if (TryResolvePathCandidate(candidateStr, out var resolvedCandidate))
             {
                 var tail = i < input.Length ? input[i..].TrimStart() : string.Empty;
-                if (!usedParentDirectoryFallback)
-                {
-                    return (resolvedCandidate, tail, false);
-                }
-
-                if (parentFallbackHead is null)
-                {
-                    parentFallbackHead = resolvedCandidate;
-                    parentFallbackTail = tail;
-                }
+                return (resolvedCandidate, tail);
             }
         }
 
-        return parentFallbackHead is not null
-            ? (parentFallbackHead, parentFallbackTail, true)
-            : (null, null, false);
+        return (null, null);
     }
 
     // Attempts to guess if any placeholders in the candidate string are likely not part of a filesystem path.
@@ -539,21 +525,20 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return ShellHelpers.TryResolveExecutableAsShell(head, out resolvedFile);
     }
 
-    private static bool TryResolvePathCandidate(string candidate, out string resolvedPath, out bool usedParentDirectoryFallback)
+    private static bool TryResolvePathCandidate(string candidate, out string resolvedPath)
     {
         resolvedPath = string.Empty;
-        usedParentDirectoryFallback = false;
 
         var normalizedCandidate = NormalizePathForWindows(candidate);
 
-        if (TryResolvePathCandidateCore(normalizedCandidate, out resolvedPath, out usedParentDirectoryFallback))
+        if (TryResolvePathCandidateCore(normalizedCandidate, out resolvedPath))
         {
             return true;
         }
 
         if (TryPercentDecodePathCandidate(normalizedCandidate, out var decodedCandidate)
             && !decodedCandidate.Equals(normalizedCandidate, StringComparison.Ordinal)
-            && TryResolvePathCandidateCore(decodedCandidate, out resolvedPath, out usedParentDirectoryFallback))
+            && TryResolvePathCandidateCore(decodedCandidate, out resolvedPath))
         {
             return true;
         }
@@ -561,10 +546,9 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return false;
     }
 
-    private static bool TryResolvePathCandidateCore(string candidate, out string resolvedPath, out bool usedParentDirectoryFallback)
+    private static bool TryResolvePathCandidateCore(string candidate, out string resolvedPath)
     {
         resolvedPath = string.Empty;
-        usedParentDirectoryFallback = false;
 
         try
         {
@@ -577,22 +561,6 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                     resolvedPath = normalizedExpanded;
                     return true;
                 }
-            }
-            else
-            {
-                expanded = NormalizePathForWindows(expanded);
-            }
-
-            if (!LooksPathy(expanded))
-            {
-                return false;
-            }
-
-            if (TryGetNearestExistingParentDirectory(expanded, out var nearestParent))
-            {
-                resolvedPath = nearestParent;
-                usedParentDirectoryFallback = true;
-                return true;
             }
         }
         catch (Exception ex)
