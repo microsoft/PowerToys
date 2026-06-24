@@ -15,15 +15,24 @@ internal sealed partial class NowDockBand : ListItem, IDisposable
     private readonly Action? _onUpdated;
     private readonly Func<DateTime> _clock;
 
-    internal CopyTextCommand _copyTimeCommand;
-    internal CopyTextCommand _copyDateCommand;
+    private CopyTextCommand _copyTimeCommand;
+    private CopyTextCommand _copyDateCommand;
+
+    internal CopyTextCommand CopyTimeCommand => _copyTimeCommand;
+
+    internal CopyTextCommand CopyDateCommand => _copyDateCommand;
 
     internal NowDockBand(Action? onUpdated = null, Func<DateTime>? clock = null)
     {
         _onUpdated = onUpdated;
         _clock = clock ?? (() => DateTime.Now);
 
-        Command = new NoOpCommand() { Id = "com.microsoft.cmdpal.timedate.dockBand" };
+        Command = new OpenUrlCommand("ms-actioncenter:")
+        {
+            Id = "com.microsoft.cmdpal.timedate.dockBand",
+            Name = Resources.timedate_show_notification_center_command_name,
+            Result = CommandResult.Dismiss(),
+        };
         _copyTimeCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_time_command_name };
         _copyDateCommand = new CopyTextCommand(string.Empty) { Name = Resources.timedate_copy_date_command_name };
         MoreCommands =

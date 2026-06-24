@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
 [TestClass]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("IDisposable", "CA1001:Types that own disposable fields should be disposable", Justification = "Disposed in TestCleanup")]
 public class NowDockBandTests
 {
     private static readonly DateTime FixedTime = new DateTime(2025, 7, 1, 14, 5, 32);
@@ -100,8 +101,8 @@ public class NowDockBandTests
 
         _band.UpdateText();
 
-        Assert.AreEqual(_band.Title, _band._copyTimeCommand.Text);
-        Assert.AreEqual(_band.Subtitle, _band._copyDateCommand.Text);
+        Assert.AreEqual(_band.Title, _band.CopyTimeCommand.Text);
+        Assert.AreEqual(_band.Subtitle, _band.CopyDateCommand.Text);
     }
 
     [DataTestMethod]

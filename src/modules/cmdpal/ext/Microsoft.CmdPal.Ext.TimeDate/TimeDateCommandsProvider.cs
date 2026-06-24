@@ -5,10 +5,10 @@
 using System;
 using System.Globalization;
 using System.Text;
+using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Microsoft.UI.Dispatching;
 
 namespace Microsoft.CmdPal.Ext.TimeDate;
 
@@ -26,10 +26,6 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
     // Keep a reference to the band so we can dispose it when the provider is disposed.
     private NowDockBand? _nowDockBand;
 
-    // Capture the UI dispatcher queue for the thread that constructs the provider. It may be
-    // null in out-of-process extension hosts, so callers must handle that.
-    private readonly DispatcherQueue? _uiDispatcherQueue;
-
     public TimeDateCommandsProvider()
     {
         DisplayName = Resources.Microsoft_plugin_timedate_plugin_name;
@@ -46,28 +42,16 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
 
         WrappedDockItem? wrappedBand = null;
 
-        // Capture dispatcher for the current thread. This may be null in some extension hosting scenarios.
-        _uiDispatcherQueue = DispatcherQueue.GetForCurrentThread();
-
-        // NOTE: During NowDockBand construction, UpdateText() runs synchronously.
-        // At that point wrappedBand is null → the callback is a no-op (intended).
-        // The dock framework reads the initial Title/Subtitle via GetItems() on first render.
-        // On every subsequent timer tick, wrappedBand is non-null → SetItems fires.
-        // RaiseItemsChanged fires unconditionally even for same-instance updates — load-bearing.
+        // During NowDockBand construction, UpdateText() runs synchronously.
+        // At that point wrappedBand is still null so the callback is a no-op.
+        // On subsequent timer ticks, wrappedBand is non-null and SetItems fires
+        // RaiseItemsChanged — the framework marshals to the UI thread in
+        // DockBandViewModel.InitializeFromList via DoOnUiThread.
         _nowDockBand = new NowDockBand(onUpdated: () =>
         {
             if (wrappedBand is not null)
             {
-                if (_uiDispatcherQueue is not null)
-                {
-                    // Marshal the Items update back to the UI thread to avoid cross-thread updates.
-                    _uiDispatcherQueue.TryEnqueue(() => wrappedBand.Items = [_nowDockBand!]);
-                }
-                else
-                {
-                    // If there's no dispatcher available (out-of-process), assign directly.
-                    wrappedBand.Items = [_nowDockBand!];
-                }
+                wrappedBand.Items = [_nowDockBand!];
             }
         });
 
@@ -109,25 +93,13 @@ public sealed partial class TimeDateCommandsProvider : CommandProvider
         return [_bandItem, _notificationCenterBandItem];
     }
 
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
     public override void Dispose()
     {
-        if (_nowDockBand is not null)
-        {
-            try
-            {
-                _nowDockBand.Dispose();
-            }
-            catch
-            {
-            }
-
-            _nowDockBand = null;
-        }
-
+        _nowDockBand?.Dispose();
+        _nowDockBand = null;
+        GC.SuppressFinalize(this);
         base.Dispose();
     }
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 }
 
 #pragma warning disable SA1402 // File may only contain a single type

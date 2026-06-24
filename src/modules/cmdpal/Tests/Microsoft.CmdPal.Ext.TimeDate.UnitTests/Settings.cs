@@ -22,7 +22,7 @@ public class Settings : ISettingsInterface
         bool enableFallbackItems = true,
         bool timeWithSecond = false,
         bool dateWithWeekday = false,
-        List<string> customFormats = null)
+        List<string>? customFormats = null)
     {
         this.firstWeekOfYear = firstWeekOfYear;
         this.firstDayOfWeek = firstDayOfWeek;
