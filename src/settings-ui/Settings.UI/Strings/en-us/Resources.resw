@@ -3892,6 +3892,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
     <value>Preview the output of AI formats and Image to text before pasting</value>
   </data>
+  <data name="AdvancedPaste_ShowAIPasteSettingsCard.Content" xml:space="preserve">
+    <value>Show the AI paste input box</value>
+  </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
     <value>Advanced AI</value>
   </data>
@@ -4389,8 +4392,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the window after it loses focus</value>
     <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
-  <data name="AdvancedPaste_EnableClipboardPreview.Header" xml:space="preserve">
-    <value>Show clipboard preview</value>
+  <data name="AdvancedPaste_EnableClipboardPreview.Content" xml:space="preserve">
+    <value>Show a preview of the current clipboard content</value>
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
@@ -5995,9 +5998,6 @@ The break timer font matches the text font.</value>
   </data>
   <data name="AdvancedPaste_EndpointDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
-    <value>Display a preview of the current clipboard content</value>
   </data>
   <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
     <value>Learn more</value>
