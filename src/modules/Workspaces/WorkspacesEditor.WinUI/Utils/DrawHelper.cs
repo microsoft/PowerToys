@@ -167,8 +167,9 @@ namespace WorkspacesEditor.Utils
                     {
                         graphics.DrawIcon(app.Icon, new Rectangle(appIndex * 32, 0, 24, 24));
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        ManagedCommon.Logger.LogError($"Failed to draw preview icon for {app.AppName}", ex);
                     }
 
                     appIndex++;
@@ -219,8 +220,9 @@ namespace WorkspacesEditor.Utils
                     graphics.Restore(state);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                ManagedCommon.Logger.LogError($"Failed to draw window for {app.AppName}", ex);
             }
         }
 
@@ -269,8 +271,9 @@ namespace WorkspacesEditor.Utils
                         graphics.Restore(state);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    ManagedCommon.Logger.LogError($"Failed to draw minimized app icon", ex);
                 }
             }
         }
