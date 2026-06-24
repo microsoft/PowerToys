@@ -27,6 +27,5 @@
             UI project.
         -->
         <ProjectReference Include="..\MouseJump.WinUI3\MouseJump.WinUI3.csproj" />
-        <ProjectReference Include="..\MouseJumpUI\MouseJumpUI.csproj" />
     </ItemGroup>
 </Project>

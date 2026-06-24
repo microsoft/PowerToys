@@ -526,10 +526,6 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/MouseUtils/MouseJump/MouseJump.vcxproj" Id="8a08d663-4995-40e3-b42c-3f910625f284" />
-    <Project Path="src/modules/MouseUtils/MouseJumpUI/MouseJumpUI.csproj">
-      <Platform Solution="*|ARM64" Project="ARM64" />
-      <Platform Solution="*|x64" Project="x64" />
-    </Project>
     <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
   </Folder>
   <Folder Name="/modules/MouseUtils/Tests/">

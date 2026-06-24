@@ -8,7 +8,7 @@
         <AssemblyTitle>PowerToys.MouseJump.Models</AssemblyTitle>
         <AssemblyDescription>PowerToys MouseJump.Models</AssemblyDescription>
         <OutputType>Library</OutputType>
-        <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+        <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 

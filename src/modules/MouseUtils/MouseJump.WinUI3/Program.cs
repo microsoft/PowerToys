@@ -14,6 +14,7 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        Logger.LogInfo("MouseJump process started");
         WinRT.ComWrappersSupport.InitializeComWrappers();
 
         var instanceKey = AppInstance.FindOrRegisterForKey("MouseJump_Instance");

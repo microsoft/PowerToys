@@ -16,7 +16,6 @@
         <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
         <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
 
-        <WindowsPackageType>None</WindowsPackageType>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DefineConstants>DISABLE_XAML_GENERATED_MAIN</DefineConstants>
