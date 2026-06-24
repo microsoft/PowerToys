@@ -10,18 +10,16 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 /// <summary>
 /// An elastic pool of dedicated background threads for running blocking work
 /// off the ThreadPool. Starts with <c>minThreads</c> always-alive threads and
-/// expands up to <c>maxThreads</c> on demand. Once created, threads are kept
-/// alive for the lifetime of the pool and reused — they are never shrunk back
-/// below the high-water mark. Terminating a managed thread leaks per-thread
-/// native CLR/CRT bookkeeping (EventPipeThread, CrstStatic, vcrt PTD), so
-/// recreating threads on each work burst would grow native memory without
-/// bound. Items are processed FIFO; cancelled items are skipped at dequeue time.
+/// expands up to <c>maxThreads</c> on demand. Threads above the minimum exit
+/// automatically after <c>idleTimeout</c> with no work. Items are processed
+/// FIFO; cancelled items are skipped at dequeue time.
 /// </summary>
 internal sealed partial class DedicatedThreadPool : IDisposable
 {
     private const int DrainTimeoutMs = 3000;
 
     private readonly BlockingCollection<Action> _workQueue = new();
+    private readonly int _minThreads;
     private readonly int _maxThreads;
     private readonly TimeSpan _idleTimeout;
     private readonly string _name;
@@ -43,6 +41,7 @@ internal sealed partial class DedicatedThreadPool : IDisposable
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(minThreads);
         ArgumentOutOfRangeException.ThrowIfLessThan(maxThreads, minThreads);
 
+        _minThreads = minThreads;
         _maxThreads = maxThreads;
         _name = name;
         _idleTimeout = idleTimeout ?? TimeSpan.FromSeconds(30);
@@ -104,15 +103,27 @@ internal sealed partial class DedicatedThreadPool : IDisposable
             }
 
             // TryTake timed out (no work for idleTimeout).
-            // If the pool is shutting down, exit; otherwise keep this thread
-            // alive and re-park in TryTake. We intentionally never shrink below
-            // the high-water mark: terminating a managed thread leaks per-thread
-            // native CLR/CRT structures (EventPipeThread, CrstStatic, vcrt PTD)
-            // that the runtime does not reclaim, so threads are reused for the
-            // lifetime of the pool instead of being recreated on the next burst.
             if (_workQueue.IsCompleted)
             {
                 break;
+            }
+
+            // Try to shrink: exit if we're above the minimum.
+            // CAS ensures exactly one thread wins each decrement race.
+            while (true)
+            {
+                var count = _threadCount;
+                if (count <= _minThreads)
+                {
+                    break; // At minimum — stay alive.
+                }
+
+                if (Interlocked.CompareExchange(ref _threadCount, count - 1, count) == count)
+                {
+                    return; // Decremented successfully — this thread exits.
+                }
+
+                // Another thread changed _threadCount concurrently; retry.
             }
         }
 
