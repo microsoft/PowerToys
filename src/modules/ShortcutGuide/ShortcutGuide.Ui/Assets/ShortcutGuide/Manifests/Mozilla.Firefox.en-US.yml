@@ -202,7 +202,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 0
+            - "<0>"
   - SectionName: Editing
     Properties:
       - Name: Copy
@@ -485,7 +485,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - "<1>"
       - Name: Go to last tab
         Shortcut:
         - Win: false
@@ -493,7 +493,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 9
+            - "<9>"
       - Name: Move tab left
         Shortcut:
         - Win: false

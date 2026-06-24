@@ -24,7 +24,7 @@ advancedpaste
 advapi
 advfirewall
 AFeature
-affordances
+affordance
 afterfx
 AFX
 agentskills
@@ -112,7 +112,6 @@ azman
 azureaiinference
 azureinference
 azureopenai
-Backlight
 backticks
 Badflags
 Badmode
@@ -414,7 +413,6 @@ DISPLAYFLAGS
 DISPLAYFREQUENCY
 displayname
 DISPLAYORIENTATION
-DISPLAYPORT
 divyan
 DLGFRAME
 dlgmodalframe
@@ -462,8 +460,8 @@ DWMNCRENDERINGCHANGED
 Dwmp
 DWMSENDICONICLIVEPREVIEWBITMAP
 DWMSENDICONICTHUMBNAIL
-DWMWA
-DWMWCP
+dwmwa
+dwmwcp
 DWMWINDOWATTRIBUTE
 DWMWINDOWMAXIMIZEDCHANGE
 DWORDLONG
@@ -679,6 +677,7 @@ HDEVNOTIFY
 hdr
 HDROP
 hdwwiz
+Headered
 Helpline
 helptext
 hgdiobj
@@ -866,7 +865,6 @@ jjw
 jobject
 JOBOBJECT
 jpe
-JPN
 jpnime
 jrsoftware
 Jsons
@@ -999,7 +997,6 @@ LTM
 LTRREADING
 luid
 lusrmgr
-LVDS
 LWA
 LZero
 MAGTRANSFORM
@@ -1062,8 +1059,6 @@ MINIMIZESTART
 MINMAXINFO
 minwindef
 Mip
-Miracast
-miracast
 mkdn
 mlcfg
 mmc
@@ -1364,6 +1359,7 @@ pii
 pinfo
 pinvoke
 pipename
+Pitjantjatjara
 PKBDLLHOOKSTRUCT
 pkgfamily
 PKI
@@ -1387,6 +1383,7 @@ popups
 POPUPWINDOW
 portfile
 POSITIONITEM
+Postbot
 POWERBROADCAST
 powerdisplay
 POWERDISPLAYMODULEINTERFACE
@@ -1418,7 +1415,6 @@ Prefixer
 Premul
 prependpath
 prepopulate
-Prereq
 prevhost
 previewer
 PREVIEWHANDLERFRAMEINFO
@@ -1507,6 +1503,7 @@ RAWPATH
 rbhid
 Rbuttondown
 rclsid
+RCW
 RCZOOMIT
 rdp
 RDW
@@ -1814,7 +1811,6 @@ svchost
 SVGIn
 SVGIO
 svgz
-SVIDEO
 SVSI
 SWFO
 swp
@@ -2081,6 +2077,7 @@ winapi
 winappsdk
 windir
 WINDOWCREATED
+WINDOWDESTROYED
 windowedge
 WINDOWINFO
 WINDOWNAME
@@ -2184,6 +2181,7 @@ XUP
 XVIRTUALSCREEN
 XXL
 xxxxxx
+Yankunytjatjara
 ycombinator
 yinle
 yinyue

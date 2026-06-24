@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +15,7 @@ using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Helpers
@@ -27,7 +27,7 @@ namespace PowerDisplay.Helpers
     public partial class MonitorManager : IDisposable
     {
         private readonly List<Monitor> _monitors = new();
-        private readonly Dictionary<string, Monitor> _monitorLookup = new();
+        private readonly Dictionary<string, Monitor> _monitorLookup = new(MonitorIdComparer.Instance);
         private readonly SemaphoreSlim _discoveryLock = new(1, 1);
         private readonly DisplayRotationService _rotationService = new();
 
@@ -123,18 +123,19 @@ namespace PowerDisplay.Helpers
         }
 
         /// <summary>
-        /// Classify all displays via OutputTechnology using a single QueryDisplayConfig
-        /// call, then dispatch strictly-scoped target lists to each controller in parallel
-        /// (WMI = internal only, DDC/CI = external only).
+        /// Discover monitors by capability, not by nominal output technology. WMI runs first
+        /// over the full QueryDisplayConfig inventory; every display it claims is a
+        /// WMI-controllable internal panel. Whatever WMI does not claim is then sent to DDC/CI.
+        /// This avoids incorrectly routing a built-in panel that the active (discrete) GPU reports as
+        /// DisplayPort-External — the root cause of issue #48587.
         /// </summary>
         private async Task<List<Monitor>> DiscoverFromAllControllersAsync(CancellationToken cancellationToken)
         {
             var inventory = DisplayConfigInventory.GetAllMonitorDisplayInfo();
 
-            // Filter blacklisted monitors out of the inventory before any controller
-            // is dispatched. Matching uses MonitorIdentity.EdidIdFromMonitorId on each
-            // entry's DevicePath, so blocked monitors are not opened, probed, or queried
-            // — the whole point of the blacklist over the per-monitor IsHidden flag.
+            // Filter blacklisted monitors before any controller runs, so blocked displays are
+            // never opened, probed, or queried (unlike the per-monitor IsHidden flag). Matching
+            // is by MonitorIdentity.EdidIdFromMonitorId on each entry's DevicePath.
             var beforeCount = inventory.Count;
             var filteredInventory = new Dictionary<string, MonitorDisplayInfo>(
                 inventory.Count, StringComparer.OrdinalIgnoreCase);
@@ -165,59 +166,61 @@ namespace PowerDisplay.Helpers
                 return new List<Monitor>();
             }
 
-            var byKind = inventory.Values.ToLookup(i => i.IsInternal);
-            IReadOnlyList<MonitorDisplayInfo> internalTargets = byKind[true].ToList();
-            IReadOnlyList<MonitorDisplayInfo> externalTargets = byKind[false].ToList();
+            var allDisplays = inventory.Values.ToList();
 
-            LogClassificationSummary(internalTargets, externalTargets);
+            // Phase 1: WMI over the full inventory — whatever it claims is an internal panel.
+            var wmiMonitors = _wmiController != null
+                ? (await SafeDiscoverAsync(_wmiController, allDisplays, cancellationToken)).ToList()
+                : new List<Monitor>();
 
-            var tasks = new List<Task<IEnumerable<Monitor>>>();
+            var wmiClaimedIds = new HashSet<string>(
+                wmiMonitors.Select(m => m.Id), MonitorIdComparer.Instance);
 
-            if (_ddcController != null)
-            {
-                tasks.Add(SafeDiscoverAsync(_ddcController, externalTargets, cancellationToken));
-            }
+            // Phase 2: everything WMI did not claim goes to DDC/CI. Accepted trade-off — a
+            // monitor exposing both is controlled via WMI only and won't get DDC-only features
+            // (contrast/volume/input). Partition once so FromDevicePath runs a single time each.
+            var byRoute = allDisplays.ToLookup(
+                d => wmiClaimedIds.Contains(MonitorIdentity.FromDevicePath(d.DevicePath)));
+            IReadOnlyList<MonitorDisplayInfo> wmiTargets = byRoute[true].ToList();
+            IReadOnlyList<MonitorDisplayInfo> ddcTargets = byRoute[false].ToList();
 
-            if (_wmiController != null)
-            {
-                tasks.Add(SafeDiscoverAsync(_wmiController, internalTargets, cancellationToken));
-            }
+            LogClassificationSummary(wmiTargets, ddcTargets);
 
-            var results = await Task.WhenAll(tasks);
-            return results.SelectMany(m => m).ToList();
+            var ddcMonitors = _ddcController != null
+                ? (await SafeDiscoverAsync(_ddcController, ddcTargets, cancellationToken)).ToList()
+                : new List<Monitor>();
+
+            return wmiMonitors.Concat(ddcMonitors).ToList();
         }
 
         /// <summary>
-        /// Logs the result of Phase 0 classification at Info level, one line per display
-        /// plus a summary. Used for diagnostic traceability of internal/external decisions.
+        /// Logs how each display was routed (WMI vs DDC/CI) at Info level, one line per
+        /// display plus a summary. Runs after WMI discovery but before the crash-prone DDC/CI
+        /// capability fetch, so every attached model's EdidId is on disk for crash correlation.
         /// </summary>
         private static void LogClassificationSummary(
-            IReadOnlyList<MonitorDisplayInfo> internalTargets,
-            IReadOnlyList<MonitorDisplayInfo> externalTargets)
+            IReadOnlyList<MonitorDisplayInfo> wmiTargets,
+            IReadOnlyList<MonitorDisplayInfo> ddcTargets)
         {
-            Logger.LogInfo($"[DisplayClassification] Found {internalTargets.Count + externalTargets.Count} displays:");
+            Logger.LogInfo($"[DisplayClassification] Found {wmiTargets.Count + ddcTargets.Count} displays:");
 
-            foreach (var info in internalTargets.Concat(externalTargets).OrderBy(i => i.MonitorNumber))
+            var wmiPaths = new HashSet<string>(wmiTargets.Select(t => t.DevicePath), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var info in wmiTargets.Concat(ddcTargets).OrderBy(i => i.MonitorNumber))
             {
-                var techValue = info.OutputTechnology >= 0x80000000u
-                    ? "0x" + info.OutputTechnology.ToString("X", CultureInfo.InvariantCulture)
-                    : info.OutputTechnology.ToString(CultureInfo.InvariantCulture);
-                var classification = info.IsInternal ? "Internal" : "External";
+                var route = wmiPaths.Contains(info.DevicePath) ? "WMI (internal)" : "DDC/CI (external)";
 
-                // Log EdidId (manufacturer+product code from EDID) up front, before any
-                // DDC/CI capability fetch runs. QueryDisplayConfig reads OS-cached EDID and
-                // cannot BSOD, so this line is guaranteed on disk before the crash-prone
-                // Phase 2 fetch starts — recovered logs identify every attached model
-                // (and same-model duplicates) for crash correlation.
+                // EdidId (manufacturer+product code) is logged here, before the BSOD-prone DDC
+                // capability fetch, so recovered logs identify every attached model (and
+                // same-model duplicates) for crash correlation.
                 var edidId = MonitorIdentity.EdidIdFromMonitorId(info.DevicePath);
                 var edidIdField = string.IsNullOrEmpty(edidId) ? "?" : edidId;
 
                 Logger.LogInfo(
-                    $"  [Path {info.MonitorNumber}] EdidId={edidIdField} {info.GdiDeviceName} / \"{info.FriendlyName}\": " +
-                    $"OutputTechnology={techValue} → {classification}");
+                    $"  [Path {info.MonitorNumber}] EdidId={edidIdField} {info.GdiDeviceName} / \"{info.FriendlyName}\" → {route}");
             }
 
-            Logger.LogInfo($"[DisplayClassification] Summary: {internalTargets.Count} internal, {externalTargets.Count} external");
+            Logger.LogInfo($"[DisplayClassification] Summary: {wmiTargets.Count} WMI, {ddcTargets.Count} DDC/CI");
         }
 
         /// <summary>

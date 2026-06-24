@@ -477,7 +477,8 @@ Shortcuts:
             Keys:
               - "<PrtScr>"
         Description: Save to the pictures folder
-      - Name: Open search
+      - Name: Open Click to Do
+        Description: On Copilot+ PCs
         Shortcut:
           - Win: true
             Ctrl: false

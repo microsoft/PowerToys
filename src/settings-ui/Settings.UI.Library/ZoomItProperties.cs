@@ -103,6 +103,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public BoolProperty CaptureAudio { get; set; }
 
+        public BoolProperty NoiseCancellation { get; set; }
+
         public BoolProperty MicMonoMix { get; set; }
 
         public StringProperty MicrophoneDeviceId { get; set; }
@@ -116,6 +118,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public IntProperty WebcamSize { get; set; }
 
         public IntProperty WebcamShape { get; set; }
+
+        public IntProperty WebcamBackgroundMode { get; set; }
+
+        public StringProperty WebcamBackgroundImage { get; set; }
+
+        public IntProperty WebcamBrightness { get; set; }
 
         public BoolProperty RecordAspectRatio { get; set; }
 

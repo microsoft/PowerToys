@@ -130,7 +130,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 {
                     Id = monitorId,
                     Name = name.Trim(),
-                    CurrentBrightness = 50, // Default value, will be updated by MonitorManager after discovery
+                    CurrentBrightness = 50, // Initial placeholder; overwritten if the VCP read succeeds
                     Handle = physicalMonitor.HPhysicalMonitor,
                     Capabilities = MonitorCapabilities.DdcCi,
                     CommunicationMethod = "DDC/CI",
