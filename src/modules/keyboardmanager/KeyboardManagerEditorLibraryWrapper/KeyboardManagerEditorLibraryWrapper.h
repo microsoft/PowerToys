@@ -23,6 +23,12 @@ struct KeyboardTextMapping
     wchar_t* targetText;
 };
 
+struct TextReplacementMapping
+{
+    wchar_t* trigger;
+    wchar_t* targetText;
+};
+
 struct ShortcutMapping
 {
     wchar_t* originalKeys;
@@ -48,6 +54,9 @@ extern "C"
     __declspec(dllexport) int GetSingleKeyToTextRemapCount(void* config);
     __declspec(dllexport) bool GetSingleKeyToTextRemap(void* config, int index, KeyboardTextMapping* mapping);
 
+    __declspec(dllexport) int GetTextReplacementCount(void* config);
+    __declspec(dllexport) bool GetTextReplacement(void* config, int index, TextReplacementMapping* mapping);
+
     __declspec(dllexport) int GetShortcutRemapCountByType(void* config, int operationType);
     __declspec(dllexport) bool GetShortcutRemapByType(void* config, int operationType, int index, ShortcutMapping* mapping);
    
@@ -56,6 +65,7 @@ extern "C"
 
     __declspec(dllexport) bool AddSingleKeyRemap(void* config, int originalKey, int targetKey);
     __declspec(dllexport) bool AddSingleKeyToTextRemap(void* config, int originalKey, const wchar_t* text);
+    __declspec(dllexport) bool AddTextReplacement(void* config, const wchar_t* trigger, const wchar_t* text);
     __declspec(dllexport) bool AddSingleKeyToShortcutRemap(void* config,
                                                            int originalKey,
                                                            const wchar_t* targetKeys);
@@ -81,6 +91,7 @@ extern "C"
 
     __declspec(dllexport) bool DeleteSingleKeyRemap(void* config, int originalKey);
     __declspec(dllexport) bool DeleteSingleKeyToTextRemap(void* config, int originalKey);
+    __declspec(dllexport) bool DeleteTextReplacement(void* config, const wchar_t* trigger);
     __declspec(dllexport) bool DeleteShortcutRemap(void* config, const wchar_t* originalKeys, const wchar_t* targetApp);
 }
 extern "C" __declspec(dllexport) int GetKeyboardKeysList(bool isShortcut, KeyNamePair* keyList, int maxCount);

@@ -126,6 +126,27 @@ namespace KeyboardManagerEditorUI.Interop
             return result;
         }
 
+        public List<TextReplacement> GetTextReplacementMappings()
+        {
+            var result = new List<TextReplacement>();
+            int count = KeyboardManagerInterop.GetTextReplacementCount(_configHandle);
+
+            for (int i = 0; i < count; i++)
+            {
+                var mapping = default(TextReplacementMapping);
+                if (KeyboardManagerInterop.GetTextReplacement(_configHandle, i, ref mapping))
+                {
+                    result.Add(new TextReplacement
+                    {
+                        Trigger = KeyboardManagerInterop.GetStringAndFree(mapping.Trigger),
+                        TargetText = KeyboardManagerInterop.GetStringAndFree(mapping.TargetText),
+                    });
+                }
+            }
+
+            return result;
+        }
+
         public string GetKeyDisplayName(int keyCode)
         {
             var keyName = new StringBuilder(64);
@@ -190,6 +211,16 @@ namespace KeyboardManagerEditorUI.Interop
             }
 
             return KeyboardManagerInterop.AddSingleKeyToTextRemap(_configHandle, originalKey, targetText);
+        }
+
+        public bool AddTextReplacementMapping(string trigger, string targetText)
+        {
+            if (string.IsNullOrEmpty(trigger) || string.IsNullOrEmpty(targetText))
+            {
+                return false;
+            }
+
+            return KeyboardManagerInterop.AddTextReplacement(_configHandle, trigger, targetText);
         }
 
         public bool AddShortcutMapping(string originalKeys, string targetKeys, string targetApp = "", ShortcutOperationType operationType = ShortcutOperationType.RemapShortcut)
@@ -271,6 +302,16 @@ namespace KeyboardManagerEditorUI.Interop
             }
 
             return KeyboardManagerInterop.DeleteSingleKeyToTextRemap(_configHandle, originalKey);
+        }
+
+        public bool DeleteTextReplacementMapping(string trigger)
+        {
+            if (string.IsNullOrEmpty(trigger))
+            {
+                return false;
+            }
+
+            return KeyboardManagerInterop.DeleteTextReplacement(_configHandle, trigger);
         }
 
         public bool DeleteShortcutMapping(string originalKeys, string targetApp = "")

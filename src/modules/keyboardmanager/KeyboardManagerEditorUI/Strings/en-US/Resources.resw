@@ -204,6 +204,12 @@
   <data name="TriggerType_KeyOrShortcut_Text.Text" xml:space="preserve">
     <value>Key or shortcut</value>
   </data>
+  <data name="TriggerType_Text.AutomationProperties.Name" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="TriggerType_Text_Text.Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
   <data name="TriggerType_Mouse.AutomationProperties.Name" xml:space="preserve">
     <value>Mouse button</value>
   </data>
@@ -215,6 +221,12 @@
   </data>
   <data name="TriggerKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
+  </data>
+  <data name="TextTriggerBox.Header" xml:space="preserve">
+    <value>Text to replace</value>
+  </data>
+  <data name="TextTriggerBox.PlaceholderText" xml:space="preserve">
+    <value>Enter the text to replace when typed</value>
   </data>
   <data name="ActionKeyPlaceholder.Text" xml:space="preserve">
     <value>Press to start recording keys</value>
@@ -431,6 +443,12 @@
   </data>
   <data name="Validation_EmptyTargetText_Message" xml:space="preserve">
     <value>Please enter the text to be inserted when the shortcut is pressed.</value>
+  </data>
+  <data name="Validation_EmptyTriggerText_Title" xml:space="preserve">
+    <value>Missing text trigger</value>
+  </data>
+  <data name="Validation_EmptyTriggerText_Message" xml:space="preserve">
+    <value>Please enter the text to replace.</value>
   </data>
   <data name="Validation_EmptyUrl_Title" xml:space="preserve">
     <value>Missing URL</value>
