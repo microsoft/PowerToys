@@ -50,6 +50,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     IRecipient<NavigateToPageMessage>,
     IRecipient<ShowHideDockMessage>,
     IRecipient<ShowPinToDockDialogMessage>,
+    IRecipient<ExpandCompactModeMessage>,
     INotifyPropertyChanged,
     IDisposable
 {
@@ -71,6 +72,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private CancellationTokenSource? _focusAfterLoadedCts;
     private WeakReference<Page>? _lastNavigatedPageRef;
+
+    // When the shell goes from compact (collapsed) to expanded, the content frame's page
+    // — which was collapsed and therefore never laid out — finally fires its Loaded event.
+    // That late Loaded would otherwise run the post-navigation focus/select logic and
+    // select-all the character the user just typed (which triggered the expand). This
+    // one-shot flag suppresses that select for the expand-driven load.
+    private bool _suppressSelectOnNextLoad;
     private bool _isDisposed;
 
     public ShellViewModel ViewModel { get; private set; } = App.Current.Services.GetService<ShellViewModel>()!;
@@ -79,8 +87,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public IHostWindow? HostWindow { get; set; }
 
+    public bool ExpandedMode { get; set; }
+
     public ShellPage()
     {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        this.ExpandedMode = !settings.CompactMode;
+
         this.InitializeComponent();
 
         // how we are doing navigation around
@@ -103,6 +116,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         WeakReferenceMessenger.Default.Register<ShowHideDockMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowPinToDockDialogMessage>(this);
+
+        WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
 
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(ShellPage_OnPreviewKeyDown), true);
         AddHandler(KeyDownEvent, new KeyEventHandler(ShellPage_OnKeyDown), false);
@@ -482,6 +497,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             }
         }
 
+        // When re-showing the palette, the previous session's query may still be present
+        // (e.g. after a light dismiss with HighlightSearchOnActivate). Recompute the
+        // compact/expanded state so a retained query restores the expanded results instead
+        // of being stuck in the collapsed search-only layout.
+        UpdateCompactModeForCurrentPage();
+
         WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
     }
 
@@ -593,6 +614,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void RootFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
+        // A real navigation always loads a fresh page that we do want to focus/select, so
+        // clear any stale suppression left over from a prior compact expand. (If this
+        // navigation itself expands compact mode, UpdateCompactModeForCurrentPage below
+        // will re-arm the flag for the page that's about to load.)
+        _suppressSelectOnNextLoad = false;
+
         // This listens to the root frame to ensure that we also track the content's page VM as well that we passed as a parameter.
         // This is currently used for both forward and backward navigation.
         // As when we go back that we restore ourselves to the proper state within our VM
@@ -629,6 +656,42 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             _lastNavigatedPageRef = new WeakReference<Page>(element);
             element.Loaded += FocusAfterLoaded;
         }
+
+        UpdateCompactModeForCurrentPage();
+    }
+
+    /// <summary>
+    /// Updates the compact/expanded state after a navigation. On any nested (sub) page we
+    /// always show the full expanded UI; on the root page the search box drives the state,
+    /// so we collapse to the compact search box only when the query is empty. Driving this
+    /// from navigation (rather than only from search-text changes) makes alias-based
+    /// navigation expand correctly — an alias clears the search box before navigating, so
+    /// the search-text transition alone would otherwise leave the palette collapsed.
+    /// Transient pages always show the expanded UI, ignoring the compact setting entirely.
+    /// </summary>
+    private void UpdateCompactModeForCurrentPage()
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        if (!settings.CompactMode)
+        {
+            return;
+        }
+
+        // Transient pages ignore compact mode and always present as expanded.
+        if (ViewModel.IsTransient)
+        {
+            HandleExpandCompactOnUiThread(true);
+            return;
+        }
+
+        // The ShellViewModel's IsNested flag is only updated on forward navigation and is
+        // never cleared when navigating back to the root page. Gate it on the current
+        // page's own root-ness so a stale IsNested can't keep the home page expanded after
+        // returning to it (e.g. after following a 1-character alias and going back).
+        var isRootPage = ViewModel.CurrentPage?.IsRootPage ?? false;
+        var nested = ViewModel.IsNested && !isRootPage;
+        var hasQuery = !string.IsNullOrEmpty(ViewModel.CurrentPage?.SearchTextBox);
+        HandleExpandCompactOnUiThread(nested || hasQuery);
     }
 
     private void FocusAfterLoaded(object sender, RoutedEventArgs e)
@@ -658,6 +721,15 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
             if (HostWindow?.IsVisibleToUser != true)
             {
+                return;
+            }
+
+            // This Loaded can fire late when expanding out of compact mode (the page was
+            // collapsed and never laid out). In that case the user is mid-typing in the
+            // already-focused search box, so don't steal focus / select-all their input.
+            if (_suppressSelectOnNextLoad)
+            {
+                _suppressSelectOnNextLoad = false;
                 return;
             }
 
@@ -852,6 +924,50 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         {
             Logger.LogError("Error handling mouse button press event", ex);
         }
+    }
+
+    public void Receive(ExpandCompactModeMessage message)
+    {
+        // Re-evaluate from the current authoritative page state rather than applying the
+        // message's snapshot directly. The message can race with navigation: following a
+        // 1-character alias clears the home search (sending a "collapse") right as we
+        // navigate to a nested page that must stay expanded. Recomputing here keeps the
+        // final state consistent regardless of message/navigation ordering.
+        this.DispatcherQueue.TryEnqueue(UpdateCompactModeForCurrentPage);
+    }
+
+    private void HandleExpandCompactOnUiThread(bool expanded)
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        var newExpanded = settings.CompactMode ? expanded : true;
+
+        // Going from collapsed to expanded realizes the (previously collapsed) content
+        // page for the first time, which fires its deferred Loaded event. Suppress the
+        // resulting focus/select so we don't select-all the character the user just typed.
+        if (!this.ExpandedMode && newExpanded)
+        {
+            _suppressSelectOnNextLoad = true;
+        }
+
+        this.ExpandedMode = newExpanded;
+        PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
+    }
+
+    /// <summary>
+    /// Forces the shell into its compact (collapsed) layout and flushes layout so the host can
+    /// read the resulting card height. Only has an effect when compact mode is enabled.
+    /// </summary>
+    public void EnsureCompactLayout()
+    {
+        var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        if (!settings.CompactMode)
+        {
+            return;
+        }
+
+        this.ExpandedMode = false;
+        PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
+        this.UpdateLayout();
     }
 
     public void Dispose()
