@@ -657,6 +657,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         try
         {
             var path = dir is null ? name : Path.Combine(dir, name);
+
             // Normalize before probing filesystem
             path = NormalizePathForWindows(path);
             if (File.Exists(path))
