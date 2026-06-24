@@ -649,7 +649,6 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         return PathHelpers.TryGetNearestExistingParentDirectory(path, out parentDirectory);
     }
 
-
     private static string NormalizePathForWindows(string path) =>
         PathNormalization.NormalizePathForWindows(path);
 

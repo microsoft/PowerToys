@@ -20,7 +20,6 @@ namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 [TestClass]
 public class BookmarkPathHandlingTests
 {
-
     [TestMethod]
     public async Task Accented_NonAscii_Path_Is_Classified_As_Directory()
     {
