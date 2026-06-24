@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 using MouseJump.Common.Interop;
@@ -128,8 +129,12 @@ public static class MouseHelper
             },
         };
 
-        // don't check return value - we aren't going to do anything if it fails
-        _ = PInvoke.SendInput(inputs, inputs.Length);
+        var cbSize = Marshal.SizeOf<INPUT>();
+        var result = PInvoke.SendInput(inputs, cbSize);
+        if (result != inputs.Length)
+        {
+            ResultHandler.HandleFailure(result, getLastError: true, nameof(PInvoke.SendInput));
+        }
     }
 
     private static decimal CalculateAbsoluteCoordinateX(decimal x)
