@@ -1102,16 +1102,7 @@ public class Win32Program : IProgram
     /// </summary>
     private static bool IsProtectedSystemApp(Win32Program program)
     {
-        var path = program.FullPath;
-        if (string.IsNullOrEmpty(path))
-        {
-            return false;
-        }
-
-        var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-
-        // Anything inside %SystemRoot% (C:\Windows) is an OS component.
-        return PathHelpers.IsPathInsideDirectory(path, systemRoot);
+        return PathHelpers.IsSystemRootPath(program.FullPath);
     }
 
     /// <summary>
@@ -1122,19 +1113,12 @@ public class Win32Program : IProgram
     /// </summary>
     private static bool IsShortcutTarget(Win32Program program)
     {
-        var path = program.FullPath;
-        if (string.IsNullOrEmpty(path))
+        if (!PathHelpers.IsShortcutFile(program.FullPath))
         {
             return false;
         }
 
-        var isShortcut = path.EndsWith("." + ShortcutExtension, StringComparison.OrdinalIgnoreCase);
-        if (isShortcut)
-        {
-            var identifier = program.GetAppIdentifier();
-            return identifier.EndsWith("." + ShortcutExtension, StringComparison.OrdinalIgnoreCase);
-        }
-
-        return false;
+        var identifier = program.GetAppIdentifier();
+        return PathHelpers.IsShortcutFile(identifier);
     }
 }
