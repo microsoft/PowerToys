@@ -180,7 +180,7 @@
                                         </MenuFlyoutItem>
                                         <MenuFlyoutItem x:Uid="Settings_ExtensionsPage_More_ReorderExtensions_MenuFlyoutItem" Click="ReorderExtensions_OnClick">
                                             <MenuFlyoutItem.Icon>
-                                                <FontIcon Glyph="&#xE8CB;" />
+                                                <FontIcon Glyph="&#xE174;" />
                                             </MenuFlyoutItem.Icon>
                                         </MenuFlyoutItem>
                                     </MenuFlyout>

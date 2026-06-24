@@ -509,79 +509,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         return new RegisterAndLoadSummary(totalCommands, totalDockBands);
     }
 
-    /// <summary>
-    /// Sorts commands so that providers listed in <paramref name="extensionOrder"/>
-    /// appear first (in that order), followed by the remaining providers in their
-    /// original load order.
-    /// </summary>
     internal static List<TopLevelViewModel> SortByExtensionOrder(List<TopLevelViewModel> commands, string[] extensionOrder)
-    {
-        var orderLookup = new Dictionary<string, int>(extensionOrder.Length, StringComparer.Ordinal);
-        for (var i = 0; i < extensionOrder.Length; i++)
-        {
-            orderLookup.TryAdd(extensionOrder[i], i);
-        }
+        => ExtensionOrderHelper.SortByExtensionOrder(commands, extensionOrder, c => c.CommandProviderId);
 
-        // Stable sort: items whose provider is in the order list get a low key;
-        // items not in the list keep their relative order after the ordered ones.
-        var ordered = new List<TopLevelViewModel>(commands.Count);
-        var unordered = new List<TopLevelViewModel>(commands.Count);
-
-        foreach (var cmd in commands)
-        {
-            if (orderLookup.ContainsKey(cmd.CommandProviderId))
-            {
-                ordered.Add(cmd);
-            }
-            else
-            {
-                unordered.Add(cmd);
-            }
-        }
-
-        ordered.Sort((a, b) => orderLookup[a.CommandProviderId].CompareTo(orderLookup[b.CommandProviderId]));
-        ordered.AddRange(unordered);
-        return ordered;
-    }
-
-    /// <summary>
-    /// Determines where to insert a new provider's commands in the existing list
-    /// based on <paramref name="extensionOrder"/>. If the provider is in the order
-    /// list, it's placed after other ordered providers that precede it. Otherwise
-    /// it goes at the end.
-    /// </summary>
     private static int FindInsertIndexByExtensionOrder(List<TopLevelViewModel> items, string providerId, string[] extensionOrder)
-    {
-        var providerIndex = Array.IndexOf(extensionOrder, providerId);
-        if (providerIndex < 0)
-        {
-            return items.Count;
-        }
-
-        // Find the last item in the list whose provider has a lower order index
-        for (var i = items.Count - 1; i >= 0; i--)
-        {
-            var existingIndex = Array.IndexOf(extensionOrder, items[i].CommandProviderId);
-            if (existingIndex >= 0 && existingIndex < providerIndex)
-            {
-                // Insert after the last command of this earlier-ordered provider
-                var insertAfterProvider = items[i].CommandProviderId;
-                for (var j = i + 1; j < items.Count; j++)
-                {
-                    if (items[j].CommandProviderId != insertAfterProvider)
-                    {
-                        return j;
-                    }
-                }
-
-                return i + 1;
-            }
-        }
-
-        // This provider has the lowest order index among those present — insert at the beginning
-        // (after built-in commands which are already in the list)
-        return 0;
-    }
+        => ExtensionOrderHelper.FindInsertIndex(items, providerId, extensionOrder, c => c.CommandProviderId);
 
     private async Task<CommandLoadResult> TryLoadCommandsAsync(CommandProviderWrapper wrapper, CancellationToken ct)
     {
