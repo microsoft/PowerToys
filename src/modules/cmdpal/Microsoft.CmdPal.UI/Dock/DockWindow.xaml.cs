@@ -1069,7 +1069,7 @@ public sealed partial class DockWindow : WindowEx,
         var track = new TRACKMOUSEEVENT
         {
             cbSize = (uint)Marshal.SizeOf<TRACKMOUSEEVENT>(),
-            dwFlags = PInvoke.TME_LEAVE,
+            dwFlags = TRACKMOUSEEVENT_FLAGS.TME_LEAVE,
             hwndTrack = _hwnd,
             dwHoverTime = 0,
         };
