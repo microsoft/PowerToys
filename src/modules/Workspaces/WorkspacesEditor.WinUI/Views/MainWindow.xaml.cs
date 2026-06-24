@@ -91,15 +91,13 @@ namespace WorkspacesEditor
 
             if (state != null && state.IsValid())
             {
-                _appWindow.MoveAndResize(new Windows.Graphics.RectInt32(
-                    (int)state.Left,
-                    (int)state.Top,
-                    (int)state.Width,
-                    (int)state.Height));
+                // Use AppWindow for positioning — it handles DPI correctly for WinUI windows
+                _appWindow.Move(new Windows.Graphics.PointInt32((int)state.Left, (int)state.Top));
+                _appWindow.Resize(new Windows.Graphics.SizeInt32((int)state.Width, (int)state.Height));
 
                 if (state.Maximized)
                 {
-                    ShowWindow(hwnd, SwMaximize);
+                    ShowWindow(hwnd, 3); // SW_SHOWMAXIMIZED
                 }
             }
             else
@@ -154,33 +152,17 @@ namespace WorkspacesEditor
             var hwnd = WindowNative.GetWindowHandle(this);
             bool isMaximized = IsWindowMaximized(hwnd);
 
-            if (isMaximized)
+            // Use AppWindow for both save and restore — same coordinate space, no DPI mismatch
+            var pos = _appWindow.Position;
+            var size = _appWindow.Size;
+            WindowStateHelper.Save(new WindowStateData
             {
-                // Save restore bounds, not maximized bounds
-                GetWindowPlacement(hwnd, out WINDOWPLACEMENT placement);
-                var rc = placement.RcNormalPosition;
-                WindowStateHelper.Save(new WindowStateData
-                {
-                    Top = rc.Top,
-                    Left = rc.Left,
-                    Width = rc.Right - rc.Left,
-                    Height = rc.Bottom - rc.Top,
-                    Maximized = true,
-                });
-            }
-            else
-            {
-                var pos = _appWindow.Position;
-                var size = _appWindow.Size;
-                WindowStateHelper.Save(new WindowStateData
-                {
-                    Top = pos.Y,
-                    Left = pos.X,
-                    Width = size.Width,
-                    Height = size.Height,
-                    Maximized = false,
-                });
-            }
+                Top = pos.Y,
+                Left = pos.X,
+                Width = size.Width,
+                Height = size.Height,
+                Maximized = isMaximized,
+            });
         }
 
         private void OnClosed(object sender, WindowEventArgs args)
@@ -269,6 +251,23 @@ namespace WorkspacesEditor
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetWindowPlacement(IntPtr hWnd, out WINDOWPLACEMENT lpwndpl);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr dpiContext);
+
+        private static readonly IntPtr DpiAwarenessContextUnaware = new(-1);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
         private static bool IsWindowMaximized(IntPtr hwnd)
         {
