@@ -324,11 +324,23 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command):
-                Command.PropertyChanged -= Command_PropertyChanged;
+                var oldCommand = Command;
+                oldCommand.PropertyChanged -= Command_PropertyChanged;
                 var command = model.Command;
                 Command = new(command, PageContext);
                 Command.InitializeProperties();
                 Command.PropertyChanged += Command_PropertyChanged;
+
+                // The previous CommandViewModel subscribed to its extension
+                // model's PropChanged event (a WinRT/COM event). Replacing the
+                // reference is not enough: that subscription roots the old
+                // CommandViewModel - and the COM object, icon view models, and
+                // ComWrappers behind it - keeping them all alive forever. For
+                // fallback items the Command is swapped on every keystroke, so
+                // failing to clean it up leaks an entire view-model + COM tree
+                // per character typed. SafeCleanup() unsubscribes the COM
+                // PropChanged handler so the old graph can be collected.
+                oldCommand.SafeCleanup();
 
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
                 // or Command.Name change. This is a workaround to ensure that the Title is always up-to-date for extensions with old SDK.
