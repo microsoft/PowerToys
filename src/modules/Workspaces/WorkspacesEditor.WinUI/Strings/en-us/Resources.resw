@@ -288,4 +288,37 @@
   <data name="Screen" xml:space="preserve">
     <value>Screen</value>
   </data>
+  <data name="CreateWorkspaceBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Create Workspace</value>
+  </data>
+  <data name="SortByComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sort by</value>
+  </data>
+  <data name="MoreOptionsBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="CliArgsTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>CLI arguments</value>
+  </data>
+  <data name="WindowPositionComboBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Window position</value>
+  </data>
+  <data name="LeftTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Left</value>
+  </data>
+  <data name="TopTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="WidthTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="HeightTextBox.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Height</value>
+  </data>
+  <data name="SaveBtn.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="CapturedAppListControl.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Captured Application List</value>
+  </data>
 </root>

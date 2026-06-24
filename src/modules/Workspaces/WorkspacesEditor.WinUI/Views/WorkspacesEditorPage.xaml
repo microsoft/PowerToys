@@ -100,11 +100,11 @@
                                 Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                 x:Uid="CliArgumentsLabel" />
                             <TextBox
+                                x:Uid="CliArgsTextBox"
                                 Margin="12,0,0,0"
                                 MinWidth="200"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                AutomationProperties.Name="CLI arguments"
                                 Text="{Binding CommandLineArguments, Mode=TwoWay}"
                                 TextChanged="CommandLineTextBox_TextChanged" />
                         </StackPanel>
@@ -118,8 +118,8 @@
                                 VerticalAlignment="Center"
                                 x:Uid="WindowPositionLabel" />
                             <ComboBox
+                                x:Uid="WindowPositionComboBox"
                                 VerticalAlignment="Center"
-                                AutomationProperties.Name="Window position"
                                 SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay}">
                                 <ComboBoxItem x:Uid="CustomItem" />
                                 <ComboBoxItem x:Uid="MaximizedItem" />
@@ -127,29 +127,29 @@
                             </ComboBox>
                             <TextBlock VerticalAlignment="Center" x:Uid="LeftLabel" />
                             <TextBox
+                                x:Uid="LeftTextBox"
                                 MinWidth="60"
-                                AutomationProperties.Name="Left"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.X, Mode=OneWay}"
                                 TextChanged="LeftTextBox_TextChanged" />
                             <TextBlock VerticalAlignment="Center" x:Uid="TopLabel" />
                             <TextBox
+                                x:Uid="TopTextBox"
                                 MinWidth="60"
-                                AutomationProperties.Name="Top"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.Y, Mode=OneWay}"
                                 TextChanged="TopTextBox_TextChanged" />
                             <TextBlock VerticalAlignment="Center" x:Uid="WidthLabel" />
                             <TextBox
+                                x:Uid="WidthTextBox"
                                 MinWidth="60"
-                                AutomationProperties.Name="Width"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.Width, Mode=OneWay}"
                                 TextChanged="WidthTextBox_TextChanged" />
                             <TextBlock VerticalAlignment="Center" x:Uid="HeightLabel" />
                             <TextBox
+                                x:Uid="HeightTextBox"
                                 MinWidth="60"
-                                AutomationProperties.Name="Height"
                                 IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
                                 Text="{Binding Position.Height, Mode=OneWay}"
                                 TextChanged="HeightTextBox_TextChanged" />
@@ -208,7 +208,7 @@
                 Orientation="Horizontal">
                 <Button
                     x:Name="SaveButton"
-                    AutomationProperties.Name="Save"
+                    x:Uid="SaveBtn"
                     Click="SaveButtonClicked"
                     IsEnabled="{Binding CanBeSaved}"
                     Style="{ThemeResource AccentButtonStyle}">
@@ -296,7 +296,7 @@
             <StackPanel Margin="24,0,24,24" Orientation="Vertical">
                 <ItemsControl
                     x:Name="CapturedAppList"
-                    AutomationProperties.Name="Captured Application List"
+                    x:Uid="CapturedAppListControl"
                     ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}"
                     ItemsSource="{Binding ApplicationsListed, Mode=OneWay}" />
             </StackPanel>

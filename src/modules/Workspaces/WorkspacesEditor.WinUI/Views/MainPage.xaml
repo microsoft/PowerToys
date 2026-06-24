@@ -32,10 +32,10 @@
 
         <Button
             x:Name="NewProjectButton"
+            x:Uid="CreateWorkspaceBtn"
             Margin="0,0,24,36"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            AutomationProperties.Name="Create Workspace"
             Click="NewProjectButton_Click"
             Style="{ThemeResource AccentButtonStyle}"
             TabIndex="3">
@@ -77,8 +77,8 @@
                 VerticalAlignment="Center"
                 Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
             <ComboBox
+                x:Uid="SortByComboBox"
                 MinWidth="140"
-                AutomationProperties.Name="Sort by"
                 SelectedIndex="{x:Bind ViewModel.OrderByIndex, Mode=TwoWay}">
                 <ComboBoxItem x:Uid="LastLaunchedItem" />
                 <ComboBoxItem x:Uid="CreatedItem" />
@@ -165,8 +165,8 @@
                                         Click="LaunchButton_Click"
                                         x:Uid="LaunchBtn" />
                                     <Button
-                                        Padding="8"
-                                        AutomationProperties.Name="More options">
+                                        x:Uid="MoreOptionsBtn"
+                                        Padding="8">
                                         <TextBlock
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Foreground="{ThemeResource TextFillColorPrimaryBrush}"
