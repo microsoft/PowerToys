@@ -37,7 +37,6 @@ namespace WorkspacesEditor.ViewModels
         private bool _isDisposed;
         private bool _isExistingProjectLaunched;
         private SnapshotWindow _snapshotWindow;
-        private List<OverlayWindow> _overlayWindows = new();
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
@@ -292,31 +291,15 @@ namespace WorkspacesEditor.ViewModels
             // Show snapshot dialog
             _snapshotWindow = new SnapshotWindow(this);
             _snapshotWindow.Activate();
-
-            // Note: Red border overlays are not shown in WinUI due to multi-window limitations.
-            // The Capture/Cancel dialog provides sufficient capture-mode feedback.
         }
 
         internal void CancelSnapshot()
         {
-            foreach (var overlay in _overlayWindows)
-            {
-                overlay.Close();
-            }
-
-            _overlayWindows.Clear();
             RestoreMainWindowAction?.Invoke();
         }
 
         internal async void SnapWorkspace()
         {
-            foreach (var overlay in _overlayWindows)
-            {
-                overlay.Close();
-            }
-
-            _overlayWindows.Clear();
-
             // Restore window immediately so user sees feedback
             RestoreMainWindowAction?.Invoke();
             ShowLoadingAction?.Invoke();
@@ -425,7 +408,7 @@ namespace WorkspacesEditor.ViewModels
         {
             var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
 
-            // Snapshot tool is in the parent directory (WinUI apps are in WinUI3Apps subfolder)
+            // Snapshot tool is in the parent directory
             var parentDir = Path.GetDirectoryName(exeDir);
             var snapshotUtilsPath = Path.Combine(parentDir, "PowerToys.WorkspacesSnapshotTool.exe");
 

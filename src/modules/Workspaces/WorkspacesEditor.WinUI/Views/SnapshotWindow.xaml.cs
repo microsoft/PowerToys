@@ -26,7 +26,6 @@ namespace WorkspacesEditor.Views
             _mainViewModel = mainViewModel;
             this.InitializeComponent();
 
-            // Set localized strings
             this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotWindowTitle") ?? "Snapshot Creator";
             DescriptionText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotDescription") ?? "Edit your layout and click \"Capture\" when finished.";
             SnapshotButton.Content = ResourceLoaderInstance.ResourceLoader?.GetString("Take_Snapshot") ?? "Capture";
