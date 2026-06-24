@@ -204,6 +204,7 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
             _commandResolver,
             _iconLocator,
             _placeholderParser,
+            _processLauncher,
             asBand: true);
 
         return new WrappedDockItem(items: [listItem], id: id, displayTitle: listItem.BookmarkTitle);
