@@ -190,6 +190,18 @@ jobs:
               console.log('🔍 DRY RUN MODE — no changes will be made');
             }
 
+            // Re-check that the label is still present before mutating.
+            // Guards against races where a maintainer removes the label while
+            // this batch job is running.
+            async function hasLabel(prNumber, labelName) {
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+              });
+              return labels.some(l => l.name === labelName);
+            }
+
             // Find all open PRs with "Needs-Author-Feedback" label
             const prs = await github.paginate(github.rest.issues.listForRepo, {
               owner: context.repo.owner,
@@ -232,6 +244,15 @@ jobs:
                     labelAppliedDate = eventDate;
                   }
                 }
+              }
+
+              // Early skip: if the label was applied less than DAYS_TO_DRAFT ago,
+              // the PR can never meet the draft/close thresholds yet — avoid
+              // expensive commit/comment pagination.
+              const daysSinceLabelApplied = (now - labelAppliedDate) / MS_PER_DAY;
+              if (daysSinceLabelApplied < DAYS_TO_DRAFT) {
+                console.log(`PR #${prNumber}: label applied only ${daysSinceLabelApplied.toFixed(1)} days ago (need ${DAYS_TO_DRAFT}); skipping`);
+                continue;
               }
 
               // Find last commit authored by the PR author.
@@ -343,6 +364,12 @@ jobs:
                   continue;
                 }
 
+                // Re-check label before closing (guards against concurrent removal).
+                if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                  console.log(`PR #${prNumber}: label was removed while job was running; skipping`);
+                  continue;
+                }
+
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -374,6 +401,12 @@ jobs:
 
               if (DRY_RUN) {
                 console.log(`[DRY RUN] Would convert PR #${prNumber} to draft (inactive ${daysSinceBaseline.toFixed(1)} days)`);
+                continue;
+              }
+
+              // Re-check label before mutating (guards against concurrent removal).
+              if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                console.log(`PR #${prNumber}: label was removed while job was running; skipping`);
                 continue;
               }
 
