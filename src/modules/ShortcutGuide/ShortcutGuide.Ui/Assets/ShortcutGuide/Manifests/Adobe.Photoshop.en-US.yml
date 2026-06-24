@@ -803,7 +803,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 1
+            - "<1>"
       - Name: Switch to Hand tool (when not in text-edit mode)
         Shortcut:
         - Win: false
@@ -1309,7 +1309,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 1
+            - "<1>"
       - Name: Tone Curve panel
         Shortcut:
         - Win: false
@@ -1317,7 +1317,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Detail panel
         Shortcut:
         - Win: false
@@ -1325,7 +1325,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 3
+            - "<3>"
       - Name: HSL/Grayscale panel
         Shortcut:
         - Win: false
@@ -1333,7 +1333,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 4
+            - "<4>"
       - Name: Split Toning panel
         Shortcut:
         - Win: false
@@ -1341,7 +1341,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 5
+            - "<5>"
       - Name: Lens Corrections panel
         Shortcut:
         - Win: false
@@ -1349,7 +1349,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 6
+            - "<6>"
       - Name: Camera Calibration panel
         Shortcut:
         - Win: false
@@ -1357,7 +1357,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 7
+            - "<7>"
       - Name: Presets panel
         Shortcut:
         - Win: false
@@ -1365,7 +1365,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 9
+            - "<9>"
       - Name: Open Snapshots panel
         Shortcut:
         - Win: false
@@ -1373,7 +1373,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 9
+            - "<9>"
       - Name: Parametric Curve Targeted Adjustment tool
         Shortcut:
         - Win: false
@@ -1665,7 +1665,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 6
+            - "<6>"
       - Name: (Filmstrip mode) Add yellow label
         Shortcut:
         - Win: false
@@ -1673,7 +1673,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 7
+            - "<7>"
       - Name: (Filmstrip mode) Add green label
         Shortcut:
         - Win: false
@@ -1681,7 +1681,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 8
+            - "<8>"
       - Name: (Filmstrip mode) Add blue label
         Shortcut:
         - Win: false
@@ -1689,7 +1689,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 9
+            - "<9>"
       - Name: (Filmstrip mode) Add purple label
         Shortcut:
         - Win: false
@@ -1697,7 +1697,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - 0
+            - "<0>"
       - Name: Camera Raw preferences
         Shortcut:
         - Win: false
@@ -1936,7 +1936,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - 0
+            - "<0>"
       - Name: Cycle through blending modes
         Shortcut:
         - Win: false
@@ -2433,7 +2433,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - 2
+            - "<2>"
       - Name: Delete adjustment layer
         Shortcut:
         - Win: false

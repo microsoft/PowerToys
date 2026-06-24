@@ -129,6 +129,13 @@ public:
                 PostMessageW(m_window, WM_PRIV_WINDOWCREATED, wparam, lparam);
             }
             break;
+
+        case EVENT_OBJECT_DESTROY:
+            if (data->idObject == OBJID_WINDOW)
+            {
+                PostMessageW(m_window, WM_PRIV_WINDOWDESTROYED, wparam, lparam);
+            }
+            break;
         }
     }
 
@@ -342,9 +349,12 @@ void FancyZones::MoveSizeEnd()
     if (m_windowMouseSnapper)
     {
         m_windowMouseSnapper->MoveSizeEnd();
-        m_draggingState.Disable();
         m_windowMouseSnapper = nullptr;
     }
+
+    // Always disable dragging state, even if m_windowMouseSnapper was already null.
+    // This prevents stuck drag state when a window is destroyed mid-drag.
+    m_draggingState.Disable();
 }
 
 bool FancyZones::MoveToAppLastZone(HWND window, HMONITOR monitor, GUID currentVirtualDesktop) noexcept
@@ -505,7 +515,9 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 
         bool dragging = m_draggingState.IsDragging();
         bool changeLayoutWhileNotDragging = !dragging && !shift && win && ctrl && alt && digitPressed != -1;
-        bool changeLayoutWhileDragging = dragging && digitPressed != -1;
+        // Require Win+Ctrl+Alt even while dragging to prevent accidental layout switches
+        // when drag state is stuck (root cause of #410 "steals number keys")
+        bool changeLayoutWhileDragging = dragging && win && ctrl && alt && digitPressed != -1;
 
         if (changeLayoutWhileNotDragging || changeLayoutWhileDragging)
         {
@@ -519,7 +531,10 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
         }
     }
 
-    if (m_draggingState.IsDragging() && shift)
+    // Only suppress the bare Shift key itself during drag (used for drag-toggle).
+    // Do NOT swallow Shift+<other key> combos - that steals keystrokes from apps.
+    if (m_draggingState.IsDragging() &&
+        (info->vkCode == VK_LSHIFT || info->vkCode == VK_RSHIFT))
     {
         return true;
     }
@@ -698,6 +713,20 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         {
             auto hwnd = reinterpret_cast<HWND>(wparam);
             WindowCreated(hwnd);
+        }
+        else if (message == WM_PRIV_WINDOWDESTROYED)
+        {
+            auto hwnd = reinterpret_cast<HWND>(wparam);
+            // If the destroyed window was being dragged, abort the drag without
+            // snapping. Calling MoveSizeEnd() here would snap the now-destroyed
+            // HWND into a zone and corrupt the layout state.
+            if (m_windowMouseSnapper && m_windowMouseSnapper->GetDraggedWindow() == hwnd)
+            {
+                Logger::info(L"Window destroyed during drag - aborting drag");
+                m_windowMouseSnapper->Abort();
+                m_windowMouseSnapper = nullptr;
+                m_draggingState.Disable();
+            }
         }
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
         {

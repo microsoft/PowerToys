@@ -139,6 +139,14 @@ namespace KeyboardEventHandlers
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
                     ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first, target);
+
+                    // If a Ctrl/Alt/Shift key is remapped to a non-modifier key, reset the modifier state to prevent the injected key from being delivered as WM_SYSKEYDOWN instead of WM_KEYDOWN
+                    if (Helpers::IsModifierKey(it->first) && !Helpers::IsModifierKey(target) && target != VK_CAPITAL && !(it->first == VK_LWIN || it->first == VK_RWIN || it->first == CommonSharedConstants::VK_WIN_BOTH))
+                    {
+                        std::vector<INPUT> suppressList;
+                        Helpers::SetKeyEvent(suppressList, INPUT_KEYBOARD, static_cast<WORD>(it->first), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+                        ii.SendVirtualInput(suppressList);
+                    }
                 }
 
                 if (remapToKey)
@@ -303,9 +311,13 @@ namespace KeyboardEventHandlers
             static bool isAltRightKeyInvoked = false;
 
             // Check if the right Alt key (AltGr) is pressed.
-            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL))
+            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
             {
                 isAltRightKeyInvoked = true;
+            }
+            else if (data->lParam->vkCode == VK_RMENU && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+            {
+                isAltRightKeyInvoked = false;
             }
 
             // If the shortcut has been pressed down

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Immutable;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -20,6 +19,9 @@ public record AppStateModel
         init => _recentCommands = value;
     }
 
+    // HERE BE DRAGONS: Using an ImmutableList<T> for a setting may explode in
+    // AOT builds. Make sure to test IN AOT setting this setting to null, [],
+    // and and array with values.
     private ImmutableList<string>? _runHistory = ImmutableList<string>.Empty;
 
     public ImmutableList<string> RunHistory
