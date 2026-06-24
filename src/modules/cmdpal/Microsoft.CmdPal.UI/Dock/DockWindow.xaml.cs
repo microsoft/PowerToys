@@ -203,6 +203,11 @@ public sealed partial class DockWindow : WindowEx,
         {
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
+
+            // Remove the 1px accent border that Windows 11 DWM draws on all windows.
+            // DWMWA_COLOR_NONE (0xFFFFFFFE) instructs DWM to render no border color.
+            uint borderColorNone = 0xFFFFFFFE;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &borderColorNone, (uint)sizeof(uint));
         }
     }
 
