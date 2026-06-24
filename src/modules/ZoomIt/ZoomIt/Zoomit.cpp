@@ -19,6 +19,7 @@
 #include "WebcamPreviewWindow.h"
 #include "BreakTimer.h"
 #include "PanoramaCapture.h"
+#include "ImageEncoder.h"
 #include <wtsapi32.h>
 #include <tlhelp32.h>
 #include <vector>
@@ -1497,43 +1498,6 @@ void ScaleImage( HDC hdcDst, float xDst, float yDst, float wDst, float hDst,
 }
 
 
-//----------------------------------------------------------------------------
-//
-// GetEncoderClsid
-//
-//----------------------------------------------------------------------------
-int GetEncoderClsid(const WCHAR* format, CLSID* pClsid)
-{
-   UINT  num = 0;          // number of image encoders
-   UINT  size = 0;         // size of the image encoder array in bytes
-using namespace Gdiplus;
-
-   ImageCodecInfo* pImageCodecInfo = NULL;
-
-   GetImageEncodersSize(&num, &size);
-   if(size == 0)
-      return -1;  // Failure
-
-   pImageCodecInfo = static_cast<ImageCodecInfo*>(malloc(size));
-   if(pImageCodecInfo == NULL)
-      return -1;  // Failure
-
-   GetImageEncoders(num, size, pImageCodecInfo);
-
-   for(UINT j = 0; j < num; ++j)
-   {
-      if( wcscmp(pImageCodecInfo[j].MimeType, format) == 0 )
-      {
-         *pClsid = pImageCodecInfo[j].Clsid;
-         free(pImageCodecInfo);
-         return j;  // Success
-      }
-   }
-
-   free(pImageCodecInfo);
-   return -1;  // Failure
-}
-
 //----------------------------------------------------------------------
 //
 // ConvertToUnicode
@@ -1574,26 +1538,6 @@ HBITMAP LoadImageFile( PTCHAR Filename )
     }
     delete bitmap;
     return hBmp;
-}
-
-
-//----------------------------------------------------------------------------
-//
-// SavePng
-//
-// Use gdi+ to save a PNG.
-//
-//----------------------------------------------------------------------------
-DWORD SavePng( LPCTSTR Filename, HBITMAP hBitmap )
-{
-    Gdiplus::Bitmap		bitmap( hBitmap, NULL );
-    CLSID pngClsid;
-    GetEncoderClsid(L"image/png", &pngClsid);
-    if( bitmap.Save( Filename, &pngClsid, NULL )) {
-
-        return GetLastError();
-    }
-    return ERROR_SUCCESS;
 }
 
 
@@ -10517,11 +10461,32 @@ LRESULT APIENTRY MainWndProc(
             if( SUCCEEDED( saveDialog->GetOptions( &options ) ) )
                 saveDialog->SetOptions( options | FOS_FORCEFILESYSTEM | FOS_OVERWRITEPROMPT );
 
-            // Set file types - index is 1-based when retrieved via GetFileTypeIndex
+            // Set file types - index is 1-based when retrieved via GetFileTypeIndex.
+            // Keep fileTypes[] and s_saveFilters[] below in the same order so the
+            // selected filter index maps directly to format/size/extension.
             COMDLG_FILTERSPEC fileTypes[] = {
                 { L"Zoomed PNG", L"*.png" },
-                { L"Actual size PNG", L"*.png" }
+                { L"Actual size PNG", L"*.png" },
+                { L"Zoomed WebP", L"*.webp" },
+                { L"Actual size WebP", L"*.webp" },
+                { L"Zoomed JPG", L"*.jpg" },
+                { L"Actual size JPG", L"*.jpg" }
             };
+            struct SaveFilterInfo
+            {
+                ImageFormat    format;
+                bool           actualSize;
+                const wchar_t* extension;
+            };
+            static const SaveFilterInfo s_saveFilters[] = {
+                { ImageFormat::Png,  false, L".png" },
+                { ImageFormat::Png,  true,  L".png" },
+                { ImageFormat::Webp, false, L".webp" },
+                { ImageFormat::Webp, true,  L".webp" },
+                { ImageFormat::Jpeg, false, L".jpg" },
+                { ImageFormat::Jpeg, true,  L".jpg" }
+            };
+
             saveDialog->SetFileTypes( _countof( fileTypes ), fileTypes );
             saveDialog->SetFileTypeIndex( 1 ); // Default to "Zoomed PNG"
             saveDialog->SetDefaultExtension( L"png" );
@@ -10569,16 +10534,37 @@ LRESULT APIENTRY MainWndProc(
 
             if( !selectedFilePath.empty() )
             {
-                std::wstring targetFilePath = selectedFilePath;
-                if( targetFilePath.find(L'.') == std::wstring::npos )
-                {
-                    targetFilePath += L".png";
-                }
+                // Map the selected filter to an image format and whether to save the
+                // pixel-accurate (actual size) bitmap. Filter indices are 1-based and
+                // map directly into the parallel s_saveFilters[] table defined above.
+                UINT filterSlot = ( selectedFilterIndex >= 1 &&
+                                    selectedFilterIndex <= _countof( s_saveFilters ) )
+                                  ? selectedFilterIndex - 1 : 0;
+                const SaveFilterInfo& filterInfo = s_saveFilters[filterSlot];
+                ImageFormat imageFormat = filterInfo.format;
+                bool saveActualSize = filterInfo.actualSize;
+                const wchar_t* desiredExtension = filterInfo.extension;
 
-                if( selectedFilterIndex == 2 )
+                // Ensure the filename carries the extension that matches the chosen
+                // format. Only override when the user left the extension off or used a
+                // format extension we manage (.png/.webp/.jpg/.jpeg); otherwise respect
+                // their input.
+                std::filesystem::path targetPath( selectedFilePath );
+                std::wstring currentExt = targetPath.extension().wstring();
+                if( currentExt.empty() ||
+                    _wcsicmp( currentExt.c_str(), L".png" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".webp" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".jpg" ) == 0 ||
+                    _wcsicmp( currentExt.c_str(), L".jpeg" ) == 0 )
+                {
+                    targetPath.replace_extension( desiredExtension );
+                }
+                std::wstring targetFilePath = targetPath.wstring();
+
+                if( saveActualSize )
                 {
                     // Save at actual size.
-                    SavePng( targetFilePath.c_str(), hbmActualSize.get() );
+                    SaveImage( targetFilePath.c_str(), hbmActualSize.get(), imageFormat );
                 }
                 else
                 {
@@ -10605,7 +10591,7 @@ LRESULT APIENTRY MainWndProc(
                                 saveWidth, saveHeight,
                                 SRCCOPY | CAPTUREBLT );
 
-                    SavePng(targetFilePath.c_str(), hbmZoomed.get());
+                    SaveImage( targetFilePath.c_str(), hbmZoomed.get(), imageFormat );
                 }
 
                 // Remember the save location for next time and persist to registry

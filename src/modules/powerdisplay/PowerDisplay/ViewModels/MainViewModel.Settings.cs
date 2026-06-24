@@ -273,7 +273,7 @@ public partial class MainViewModel
         foreach (var setting in monitorSettings)
         {
             // Find monitor by Id (unique identifier)
-            var monitorVm = Monitors.FirstOrDefault(m => m.Id == setting.MonitorId);
+            var monitorVm = Monitors.FirstOrDefault(m => MonitorIdComparer.Equal(m.Id, setting.MonitorId));
 
             if (monitorVm == null)
             {
@@ -349,7 +349,7 @@ public partial class MainViewModel
     private void ApplyFeatureVisibility(MonitorViewModel monitorVm, PowerDisplaySettings settings)
     {
         var monitorSettings = settings.Properties.Monitors.FirstOrDefault(m =>
-            m.Id == monitorVm.Id);
+            MonitorIdComparer.Equal(m.Id, monitorVm.Id));
 
         if (monitorSettings != null)
         {
@@ -396,8 +396,8 @@ public partial class MainViewModel
             // Filter out monitors with empty IDs to avoid dictionary key collision errors
             var existingMonitorSettings = settings.Properties.Monitors
                 .Where(m => !string.IsNullOrEmpty(m.Id))
-                .GroupBy(m => m.Id)
-                .ToDictionary(g => g.Key, g => g.First());
+                .GroupBy(m => m.Id, MonitorIdComparer.Instance)
+                .ToDictionary(g => g.Key, g => g.First(), MonitorIdComparer.Instance);
 
             // Build monitor list using Settings UI's MonitorInfo model
             // Only include monitors with valid (non-empty) IDs to auto-fix corrupted settings
@@ -450,7 +450,7 @@ public partial class MainViewModel
                     continue;
                 }
 
-                var target = monitors.FirstOrDefault(m => m.Id == newId);
+                var target = monitors.FirstOrDefault(m => MonitorIdComparer.Equal(m.Id, newId));
                 if (target != null)
                 {
                     CopyUserFlags(target, legacy);
@@ -622,7 +622,7 @@ public partial class MainViewModel
                 .ToList())
             {
                 var newId = MonitorIdMigrator.MatchNewId(legacy.MonitorId, discovered);
-                if (newId != null && profile.MonitorSettings.All(s => s.MonitorId != newId))
+                if (newId != null && profile.MonitorSettings.All(s => !MonitorIdComparer.Equal(s.MonitorId, newId)))
                 {
                     profile.MonitorSettings.Add(new ProfileMonitorSetting(
                         newId,

@@ -90,6 +90,7 @@ public static class CharacterMappings
 
         new(Language.CA, "Catalan", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
+            [LetterKey.VK_1] = ["¡"],
             [LetterKey.VK_A] = ["à", "á"],
             [LetterKey.VK_C] = ["ç"],
             [LetterKey.VK_E] = ["è", "é", "€"],
@@ -99,6 +100,7 @@ public static class CharacterMappings
             [LetterKey.VK_U] = ["ù", "ú", "ü"],
             [LetterKey.VK_L] = ["·"],
             [LetterKey.VK_COMMA] = ["¿", "?", "¡", "!", "«", "»", "“", "”", "‘", "’"],
+            [LetterKey.VK_SLASH_] = ["¿"],
         }),
 
         new(Language.CRH, "Crimean", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -537,6 +539,15 @@ public static class CharacterMappings
             [LetterKey.VK_COMMA] = ["“", "”", "‘", "’", "«", "»"],
         }),
 
+        // This language set covers both Pitjantjatjara and Yankunytjatjara dialects
+        new(Language.PJT, "Pitjantjatjara", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
+        {
+            [LetterKey.VK_L] = ["ḻ"],
+            [LetterKey.VK_N] = ["ṉ"],
+            [LetterKey.VK_R] = ["ṟ"],
+            [LetterKey.VK_T] = ["ṯ"],
+        }),
+
         new(Language.RO, "Romanian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
             [LetterKey.VK_A] = ["ă", "â"],
@@ -605,6 +616,7 @@ public static class CharacterMappings
 
         new(Language.SP, "Spanish", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
         {
+            [LetterKey.VK_1] = ["¡"],
             [LetterKey.VK_A] = ["á"],
             [LetterKey.VK_E] = ["é", "€"],
             [LetterKey.VK_H] = ["ḥ"],
@@ -614,6 +626,7 @@ public static class CharacterMappings
             [LetterKey.VK_O] = ["ó"],
             [LetterKey.VK_U] = ["ú", "ü"],
             [LetterKey.VK_COMMA] = ["¿", "?", "¡", "!", "«", "»", "“", "”", "‘", "’"],
+            [LetterKey.VK_SLASH_] = ["¿"],
         }),
 
         new(Language.SR, "Serbian", LanguageGroup.Language, new Dictionary<LetterKey, string[]>
@@ -724,6 +737,7 @@ public static class CharacterMappings
         Language.NL,
         Language.NO,
         Language.PI,
+        Language.PJT,
         Language.PL,
         Language.PT,
         Language.RO,

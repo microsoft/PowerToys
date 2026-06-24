@@ -18,6 +18,7 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -37,6 +38,7 @@ namespace Microsoft.CmdPal.UI.Dock;
 public sealed partial class DockWindow : WindowEx,
     IRecipient<BringToTopMessage>,
     IRecipient<RequestShowPaletteAtMessage>,
+    IRecipient<ShowDockMonitorLabelsMessage>,
     IRecipient<QuitMessage>,
     IDisposable
 {
@@ -140,6 +142,7 @@ public sealed partial class DockWindow : WindowEx,
 
         WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
         WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
+        WeakReferenceMessenger.Default.Register<ShowDockMonitorLabelsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
         // Subclass the window to intercept messages
@@ -200,6 +203,11 @@ public sealed partial class DockWindow : WindowEx,
         {
             BOOL value = false;
             PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_WINDOW_CORNER_PREFERENCE, &value, (uint)sizeof(BOOL));
+
+            // Remove the 1px accent border that Windows 11 DWM draws on all windows.
+            // DWMWA_COLOR_NONE (0xFFFFFFFE) instructs DWM to render no border color.
+            uint borderColorNone = 0xFFFFFFFE;
+            PInvoke.DwmSetWindowAttribute(_hwnd, DWMWINDOWATTRIBUTE.DWMWA_BORDER_COLOR, &borderColorNone, (uint)sizeof(uint));
         }
     }
 
@@ -777,6 +785,55 @@ public sealed partial class DockWindow : WindowEx,
         DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () => RequestShowPaletteOnUiThread(message.PosDips));
     }
 
+    void IRecipient<ShowDockMonitorLabelsMessage>.Receive(ShowDockMonitorLabelsMessage message)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            if (message.Show)
+            {
+                ShowMonitorLabel();
+            }
+            else
+            {
+                HideMonitorLabel();
+            }
+        });
+    }
+
+    private void ShowMonitorLabel()
+    {
+        var name = _targetMonitor?.DisplayName
+            ?? _monitorService.GetPrimaryMonitor()?.DisplayName
+            ?? string.Empty;
+
+        MonitorLabelTeachingTip.Title = name;
+        MonitorLabelTeachingTip.Target = Root;
+
+        // Open the tip on the side opposite the dock alignment so it stays
+        // within the bounds of the monitor the dock is on (e.g. a top dock
+        // shows its tip below the bar).
+        MonitorLabelTeachingTip.PreferredPlacement = EffectiveSide switch
+        {
+            DockSide.Top => TeachingTipPlacementMode.Bottom,
+            DockSide.Bottom => TeachingTipPlacementMode.Top,
+            DockSide.Left => TeachingTipPlacementMode.Right,
+            DockSide.Right => TeachingTipPlacementMode.Left,
+            _ => TeachingTipPlacementMode.Bottom,
+        };
+
+        MonitorLabelTeachingTip.IsOpen = true;
+    }
+
+    private void HideMonitorLabel()
+    {
+        MonitorLabelTeachingTip.IsOpen = false;
+    }
+
     private void RequestShowPaletteOnUiThread(Point posDips)
     {
         // pos is relative to our root. We need to convert to absolute
@@ -1000,6 +1057,8 @@ internal static class ShowDesktop
 internal sealed record BringToTopMessage(bool BringToFront);
 
 internal sealed record RequestShowPaletteAtMessage(Point PosDips, IntPtr OwnerHwnd);
+
+internal sealed record ShowDockMonitorLabelsMessage(bool Show);
 
 internal sealed record ShowPaletteAtMessage(Point PosPixels, AnchorPoint Anchor);
 
