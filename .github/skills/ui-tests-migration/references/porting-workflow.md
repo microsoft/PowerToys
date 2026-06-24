@@ -87,6 +87,10 @@ For each legacy method:
 
 ### A4. Port shared helpers thoughtfully
 
+- Start from [../templates/TestHelper.cs](../templates/TestHelper.cs) — it already implements the
+  common building blocks (navigate, toggle + verify process, read shortcut, discover/activate/close
+  the module window, clipboard, screen-center) with the right `.Next` idioms; map your legacy helper's
+  module-specific bits onto it rather than translating Selenium scaffolding line-by-line.
 - A static `TestHelper` is fine to keep, but re-point it at the new APIs. Drop members that only
   existed to work around Selenium (manual `Session.Attach` dances, STA-clipboard wrappers → use
   `ClipboardHelper`).

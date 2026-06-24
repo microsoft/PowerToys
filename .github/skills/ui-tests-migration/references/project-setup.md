@@ -107,11 +107,21 @@ Add the project to [../../../../PowerToys.slnx](../../../../PowerToys.slnx) insi
 Match the `<Platform>` mapping block of the sibling projects in the same folder (every UI-tests entry
 uses the `*|ARM64 → ARM64` / `*|x64 → x64` pair shown above).
 
-## 4. Add the test class
+## 4. Add the test class(es) and shared helper
 
 Copy [../templates/ModuleEndToEndTests.cs](../templates/ModuleEndToEndTests.cs) into the project,
 rename it to `[Module]EndToEndTests.cs` (or keep the legacy test-class names in Scenario A), and start
-filling in test methods. The standard file header is required on every `.cs`:
+filling in test methods.
+
+For anything beyond a single trivial test, also copy
+[../templates/TestHelper.cs](../templates/TestHelper.cs) — a static helper with the reusable building
+blocks every port needs (navigate to the page, toggle + verify the process, read the activation
+shortcut, discover/activate/close the module window with patient retry, clipboard, screen-center).
+Fill in the `__MODULE__` / `__MODULEUI__` / AutomationId placeholders and delete what you don't use.
+This mirrors how the legacy suites are organized (a `TestHelper` + thin test classes) and is exactly
+the shape of the validated ScreenRuler port.
+
+The standard file header is required on every `.cs`:
 
 ```csharp
 // Copyright (c) Microsoft Corporation
