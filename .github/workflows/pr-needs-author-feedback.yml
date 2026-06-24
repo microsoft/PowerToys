@@ -35,7 +35,6 @@ on:
 permissions:
   pull-requests: write
   issues: write
-  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || 'maintenance' }}
