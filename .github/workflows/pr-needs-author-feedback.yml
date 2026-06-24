@@ -36,7 +36,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.event.review.pull_request_url || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.event.review.pull_request_url || 'maintenance' }}
   cancel-in-progress: true
 
 jobs:
@@ -126,6 +126,7 @@ jobs:
        github.event.issue.state == 'open' &&
        github.event.sender.id == github.event.issue.user.id) ||
       (github.event_name == 'pull_request_review' &&
+       github.event.pull_request.state == 'open' &&
        github.event.review.user.id == github.event.pull_request.user.id)
     runs-on: ubuntu-latest
     steps:
@@ -287,19 +288,22 @@ jobs:
 
               // If already draft and still inactive → check whether to warn or close.
               if (pr.draft) {
-                const BOT_DRAFT_MARKER = 'automatically converted to a draft';
+                const BOT_DRAFT_MARKER = 'has been marked as requiring author feedback';
+                // Only consider bot warnings posted AFTER the label was (re-)applied.
                 const botWarningComment = allComments.find(c =>
-                  c.user?.type === 'Bot' && c.body?.includes(BOT_DRAFT_MARKER)
+                  c.user?.type === 'Bot' &&
+                  c.body?.includes(BOT_DRAFT_MARKER) &&
+                  new Date(c.created_at).getTime() >= labelAppliedDate
                 );
 
                 if (!botWarningComment) {
-                  // No prior warning exists. Only post warning if baseline exceeded.
+                  // No prior warning exists for this label cycle.
                   if (daysSinceBaseline < DAYS_TO_DRAFT) {
                     continue;
                   }
 
                   if (DRY_RUN) {
-                    console.log(`[DRY RUN] Would post draft warning on PR #${prNumber} (already draft, no prior warning)`);
+                    console.log(`[DRY RUN] Would post draft warning on PR #${prNumber} (draft, no prior warning this cycle)`);
                     continue;
                   }
                   await github.rest.issues.createComment({
@@ -307,9 +311,8 @@ jobs:
                     repo: context.repo.repo,
                     issue_number: prNumber,
                     body: [
-                      'This pull request has been automatically converted to a draft because it has',
-                      'been marked as requiring author feedback but has not had any activity for',
-                      '**7 days**.',
+                      'This draft pull request has been marked as requiring author feedback but has',
+                      'not had any activity for **7 days**.',
                       '',
                       'If no further activity occurs within **7 more days**, this PR will be closed',
                       'automatically.',
@@ -318,7 +321,7 @@ jobs:
                       'The `Needs-Author-Feedback` label will be removed automatically when you do so.',
                     ].join('\n'),
                   });
-                  console.log(`PR #${prNumber} was already draft; posted warning (will close on next cycle if still inactive)`);
+                  console.log(`PR #${prNumber} is draft; posted warning (will close on next cycle if still inactive)`);
                   continue;
                 }
 
@@ -386,7 +389,6 @@ jobs:
                 console.log(`Failed to convert PR #${prNumber} to draft: ${err.message}`);
               }
 
-              // Only post the comment if draft conversion actually succeeded.
               if (draftConversionSucceeded) {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
@@ -404,5 +406,29 @@ jobs:
                     'The `Needs-Author-Feedback` label will be removed automatically when you do so.',
                   ].join('\n'),
                 });
+              } else if (daysSinceBaseline >= DAYS_TO_CLOSE) {
+                // Fallback: if draft conversion keeps failing and we've exceeded
+                // the close threshold, close the PR anyway.
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: [
+                    'This pull request has been automatically closed because it has been marked as',
+                    'requiring author feedback but has not had any activity for **14 days**.',
+                    '',
+                    'If you would like to continue working on this, please reopen the PR and push',
+                    'your changes. The `Needs-Author-Feedback` label will be removed automatically',
+                    'when you do so.',
+                  ].join('\n'),
+                });
+
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,
+                  state: 'closed',
+                });
+                console.log(`Closed PR #${prNumber} as fallback (draft conversion failed, inactive ${daysSinceBaseline.toFixed(1)} days)`);
               }
             }
