@@ -42,7 +42,12 @@ internal sealed partial class FallbackUpdateManager : IDisposable
     // Per-batch cap on sibling workers
     private static readonly int MaxWorkersPerBatch = Math.Max(2, Environment.ProcessorCount / 2);
 
-    private readonly ConcurrentDictionary<string, InflightCounter> _inflightFallbacks = new();
+    // Keyed by the TopLevelViewModel instance (reference identity), NOT by command.Id.
+    // A fallback item's Id is derived from its Title for extensions that don't supply a
+    // stable id, and that Title changes on every keystroke. Keying by the mutable Id would
+    // allocate a fresh entry (+ InflightCounter) per keystroke that never gets reclaimed,
+    // leaking unboundedly while typing. The VM instance is stable for the command's lifetime.
+    private readonly ConcurrentDictionary<TopLevelViewModel, InflightCounter> _inflightFallbacks = new();
 
     // Dedicated background threads for fallback COM/RPC calls so they never block the
     // ThreadPool. Stuck extensions consume a dedicated thread, not a pool thread.
@@ -95,7 +100,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                 }
 
                 var command = commands[i];
-                var counter = _inflightFallbacks.GetOrAdd(command.Id, static _ => new InflightCounter());
+                var counter = _inflightFallbacks.GetOrAdd(command, static _ => new InflightCounter());
                 if (!counter.TryClaim(MaxInflightPerFallback))
                 {
                     // At capacity — store this query as a pending retry so it runs
