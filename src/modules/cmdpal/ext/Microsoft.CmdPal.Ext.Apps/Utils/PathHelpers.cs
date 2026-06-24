@@ -4,17 +4,18 @@
 
 using System;
 using System.IO;
-using System.Security;
-using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.Apps.Utils;
 
 internal static class PathHelpers
 {
+    private static readonly string CachedSystemRoot =
+        NormalizeDirectory(Environment.GetFolderPath(Environment.SpecialFolder.Windows));
+
     /// <summary>
     /// Determines whether the given path is inside the specified directory.
-    /// Directory comparison is performed in a directory-boundary-aware manner
-    /// ("C:\\Windows\\System32Apps" does not match "C:\\Windows\\System32").
+    /// Uses pure string comparison (no filesystem access). Directory comparison
+    /// is boundary-aware ("C:\\Windows\\System32Apps" does not match "C:\\Windows\\System32").
     /// </summary>
     internal static bool IsPathInsideDirectory(string path, string directory)
     {
@@ -23,19 +24,10 @@ internal static class PathHelpers
             return false;
         }
 
-        try
-        {
-            var fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            var fullDir = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var normalizedPath = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var normalizedDir = NormalizeDirectory(directory);
 
-            // On Windows, path comparisons are case-insensitive; use OrdinalIgnoreCase for reliability.
-            return fullPath.StartsWith(fullDir, StringComparison.OrdinalIgnoreCase);
-        }
-        catch (Exception ex) when (ex is ArgumentException || ex is IOException || ex is SecurityException)
-        {
-            Logger.LogError($"PathHelpers.IsPathInsideDirectory failed for path '{path}': {ex.Message}");
-            return false;
-        }
+        return normalizedPath.StartsWith(normalizedDir, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -48,8 +40,8 @@ internal static class PathHelpers
             return false;
         }
 
-        var systemRoot = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-        return IsPathInsideDirectory(path, systemRoot);
+        var normalizedPath = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        return normalizedPath.StartsWith(CachedSystemRoot, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -64,5 +56,14 @@ internal static class PathHelpers
         }
 
         return path.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Ensures a directory string ends with exactly one directory separator.
+    /// </summary>
+    private static string NormalizeDirectory(string directory)
+    {
+        return directory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            + Path.DirectorySeparatorChar;
     }
 }
