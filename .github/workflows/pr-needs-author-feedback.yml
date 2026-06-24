@@ -351,6 +351,10 @@ jobs:
                     console.log(`[DRY RUN] Would post draft warning on PR #${prNumber} (draft, no prior warning this cycle)`);
                     continue;
                   }
+                  if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                    console.log(`PR #${prNumber}: label was removed while job was running; skipping`);
+                    continue;
+                  }
                   await github.rest.issues.createComment({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
@@ -447,45 +451,53 @@ jobs:
               }
 
               if (draftConversionSucceeded) {
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                  body: [
-                    'This pull request has been automatically converted to a draft because it has',
-                    'been marked as requiring author feedback but has not had any activity for',
-                    '**7 days**.',
-                    '',
-                      'If no further activity occurs within approximately **7 more days**, this PR',
-                      'will be closed automatically.',
-                    '',
-                    'To continue working on this PR, please push your changes or leave a comment.',
-                    'The `Needs-Author-Feedback` label will be removed automatically when you do so.',
-                  ].join('\n'),
-                });
+                if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                  console.log(`PR #${prNumber}: label was removed after draft conversion; skipping comment`);
+                } else {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    body: [
+                      'This pull request has been automatically converted to a draft because it has',
+                      'been marked as requiring author feedback but has not had any activity for',
+                      '**7 days**.',
+                      '',
+                        'If no further activity occurs within approximately **7 more days**, this PR',
+                        'will be closed automatically.',
+                      '',
+                      'To continue working on this PR, please push your changes or leave a comment.',
+                      'The `Needs-Author-Feedback` label will be removed automatically when you do so.',
+                    ].join('\n'),
+                  });
+                }
               } else if (daysSinceBaseline >= DAYS_TO_CLOSE) {
                 // Fallback: if draft conversion keeps failing and we've exceeded
                 // the close threshold, close the PR anyway.
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                  body: [
-                    'This pull request has been automatically closed because it has been marked as',
-                    'requiring author feedback but has not had any activity for **14 days**.',
-                    '',
-                    'If you would like to continue working on this, please reopen the PR and push',
-                    'your changes. The `Needs-Author-Feedback` label will be removed automatically',
-                    'when you do so.',
-                  ].join('\n'),
-                });
+                if (!(await hasLabel(prNumber, 'Needs-Author-Feedback'))) {
+                  console.log(`PR #${prNumber}: label was removed while job was running; skipping fallback close`);
+                } else {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: prNumber,
+                    body: [
+                      'This pull request has been automatically closed because it has been marked as',
+                      'requiring author feedback but has not had any activity for **14 days**.',
+                      '',
+                      'If you would like to continue working on this, please reopen the PR and push',
+                      'your changes. The `Needs-Author-Feedback` label will be removed automatically',
+                      'when you do so.',
+                    ].join('\n'),
+                  });
 
-                await github.rest.pulls.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: prNumber,
-                  state: 'closed',
-                });
-                console.log(`Closed PR #${prNumber} as fallback (draft conversion failed, inactive ${daysSinceBaseline.toFixed(1)} days)`);
+                  await github.rest.pulls.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: prNumber,
+                    state: 'closed',
+                  });
+                  console.log(`Closed PR #${prNumber} as fallback (draft conversion failed, inactive ${daysSinceBaseline.toFixed(1)} days)`);
+                }
               }
             }
