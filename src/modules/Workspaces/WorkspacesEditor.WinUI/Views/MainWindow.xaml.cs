@@ -83,6 +83,8 @@ namespace WorkspacesEditor
 
             // Navigate to main page
             ContentFrame.Navigate(typeof(Views.MainPage), vm);
+
+            Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.WorkspacesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
         }
 
         private void RestoreWindowState(IntPtr hwnd)

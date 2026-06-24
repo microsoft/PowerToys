@@ -190,6 +190,8 @@ namespace WorkspacesEditor.ViewModels
             _editedProject.InitializePreview();
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             ApplyShortcut(_editedProject);
+
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.EditEvent { Successful = true, PixelAdjustmentsUsed = projectToSave.IsPositionChangedManually });
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
@@ -244,6 +246,16 @@ namespace WorkspacesEditor.ViewModels
             TempProjectData.DeleteTempFile();
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
             ApplyShortcut(project);
+
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.CreateEvent
+            {
+                Successful = true,
+                NumScreens = project.Monitors.Count,
+                AppCount = project.Applications.Count,
+                CliCount = project.Applications.FindAll(app => !string.IsNullOrEmpty(app.CommandLineArguments)).Count,
+                AdminCount = project.Applications.FindAll(app => app.IsElevated).Count,
+                ShortcutCreated = project.IsShortcutNeeded,
+            });
         }
 
         public void DeleteProject(Project selectedProject)
@@ -252,6 +264,8 @@ namespace WorkspacesEditor.ViewModels
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             RemoveShortcut(selectedProject);
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
+
+            PowerToysTelemetry.Log.WriteEvent(new Telemetry.DeleteEvent { Successful = true });
         }
 
         public void SwitchToMainView()

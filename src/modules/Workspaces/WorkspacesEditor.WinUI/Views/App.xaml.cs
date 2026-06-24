@@ -5,8 +5,10 @@
 using System;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 
@@ -25,6 +27,8 @@ namespace WorkspacesEditor
 
         public App()
         {
+            PowerToysTelemetry.Log.WriteEvent(new WorkspacesEditorStartEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+
             string languageTag = LanguageHelper.LoadLanguage();
             if (!string.IsNullOrEmpty(languageTag))
             {
