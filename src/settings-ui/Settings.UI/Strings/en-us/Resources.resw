@@ -1149,6 +1149,12 @@ opera.exe</value>
   <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Description" xml:space="preserve">
+    <value>Choose the highlight style and customize its appearance</value>
+  </data>
   <data name="StartupAndPermissions.Header" xml:space="preserve">
     <value>Startup &amp; permissions</value>
   </data>
@@ -2811,57 +2817,29 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Fade delay (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>Time before the highlight begins to fade (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
     <value>Fade duration (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>Duration of the disappear animation (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_RippleSize.Header" xml:space="preserve">
-    <value>Ripple size (px)</value>
+    <value>Size (px)</value>
     <comment>Ripple mode only. px = pixels. Base radius of the click pulse.</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_RippleSize.Description" xml:space="preserve">
-    <value>Base radius of the ripple pulse in pixels (ripple mode only)</value>
-    <comment>Description for the Ripple size setting.</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_RippleIntensity.Header" xml:space="preserve">
-    <value>Ripple intensity</value>
+    <value>Intensity</value>
     <comment>Ripple mode only. Brightness/punch of the pulse.</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_RippleIntensity.Description" xml:space="preserve">
-    <value>Brightness and stroke weight of the ripple pulse. Higher values add a soft glow halo.</value>
-    <comment>Description for the Ripple intensity slider.</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_RippleDurationMs.Header" xml:space="preserve">
-    <value>Ripple duration (ms)</value>
+    <value>Duration (ms)</value>
     <comment>Ripple mode only. ms = milliseconds.</comment>
-  </data>
-  <data name="MouseUtils_MouseHighlighter_RippleDurationMs.Description" xml:space="preserve">
-    <value>How long each ripple pulse takes to fade out (ms)</value>
-    <comment>Description for the Ripple duration setting. ms = milliseconds.</comment>
   </data>
   <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Header" xml:space="preserve">
     <value>Follow cursor while held</value>
     <comment>Ripple mode only. Toggle for whether the held ring tracks the cursor when dragged.</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Description" xml:space="preserve">
-    <value>The held ripple ring moves with the cursor when you drag; turn off to anchor the ring at the click point</value>
-    <comment>Description for the Follow cursor while held toggle in ripple mode.</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Header" xml:space="preserve">
     <value>Show crosshairs on right-click release</value>
     <comment>Ripple mode only. Toggle for the expanding crosshair lines drawn when a right-click is released.</comment>
-  </data>
-  <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Description" xml:space="preserve">
-    <value>Draw expanding crosshair lines when a right-click is released</value>
-    <comment>Description for the Show crosshairs on right-click release toggle in ripple mode.</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
