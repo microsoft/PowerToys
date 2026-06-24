@@ -36,11 +36,11 @@
                 </Ellipse.OpacityTransition>
             </Ellipse>
             <TextBlock
+                x:Uid="CapturingLabel"
                 VerticalAlignment="Center"
                 FontSize="13"
                 FontWeight="SemiBold"
-                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                Text="CAPTURING" />
+                Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
         </StackPanel>
 
         <TextBlock

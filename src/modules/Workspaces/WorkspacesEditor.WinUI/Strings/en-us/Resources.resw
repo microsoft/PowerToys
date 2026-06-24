@@ -279,6 +279,9 @@
   <data name="HeightLabel.Text" xml:space="preserve">
     <value>Height</value>
   </data>
+  <data name="CapturingLabel.Text" xml:space="preserve">
+    <value>CAPTURING</value>
+  </data>
   <data name="CapturedAppList" xml:space="preserve">
     <value>Captured Application List</value>
   </data>
