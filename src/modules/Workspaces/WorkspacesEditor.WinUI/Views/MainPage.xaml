@@ -78,6 +78,7 @@
                 Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
             <ComboBox
                 MinWidth="140"
+                AutomationProperties.Name="Sort by"
                 SelectedIndex="{x:Bind ViewModel.OrderByIndex, Mode=TwoWay}">
                 <ComboBoxItem x:Uid="LastLaunchedItem" />
                 <ComboBoxItem x:Uid="CreatedItem" />
@@ -116,7 +117,7 @@
                             Padding="1"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
-                            AutomationProperties.Name="Edit"
+                            AutomationProperties.Name="{Binding Name}"
                             Click="EditButtonClicked">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
@@ -165,7 +166,8 @@
                                         x:Uid="LaunchBtn" />
                                     <Button
                                         Click="MoreButton_Click"
-                                        Padding="8">
+                                        Padding="8"
+                                        AutomationProperties.Name="More options">
                                         <TextBlock
                                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                             Foreground="{ThemeResource TextFillColorPrimaryBrush}"

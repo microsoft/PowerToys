@@ -48,6 +48,8 @@
             Grid.Row="1"
             Grid.ColumnSpan="2"
             Margin="8,8,8,16"
+            AutomationProperties.AccessibilityView="Content"
+            IsTabStop="True"
             HorizontalTextAlignment="Center"
             TextWrapping="Wrap" />
         <Button
