@@ -165,6 +165,7 @@ public static class TestHelper
     public static Session ActivateModule(UITestBase testBase, Key[] activationKeys, string testName)
     {
         ClipboardHelper.Clear();
+
         Assert.IsTrue(
             SendShortcutUntilVisible(testBase, activationKeys),
             $"Module UI should appear after the activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");

@@ -232,6 +232,12 @@ public static class TestHelper
     {
         ClearClipboard();
 
+        // Park the cursor on the primary-monitor centre so the Measure Tool initialises tracking at a
+        // predictable on-screen spot before activation (the cursor can otherwise be anywhere).
+        var (cx, cy) = ScreenCenter();
+        MouseHelper.MoveTo(cx, cy);
+        Thread.Sleep(200);
+
         Assert.IsTrue(
             SendShortcutUntilVisible(testBase, activationKeys),
             $"ScreenRulerUI should appear after pressing activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");
@@ -275,15 +281,16 @@ public static class TestHelper
         Assert.IsNotNull(boundsButton, "Bounds button should be found");
         boundsButton.Click(msPostAction: 500);
 
-        // Drag a 100x100 box centred on the primary monitor. Anchoring to the screen centre (rather
-        // than the current cursor position, which can be anywhere — often near the bottom edge after
-        // the toolbar appears) keeps the whole box on-screen and clear of the top toolbar. The 99px
-        // delta measures as 100x100 inclusive once the host is per-monitor DPI aware (app.manifest).
+        // Drag a 100x100 box centred on the primary monitor. Move to the start first so the Measure
+        // Tool overlay is tracking the cursor before the drag. The 99px delta measures 100x100
+        // inclusive once the host is per-monitor DPI aware (app.manifest).
         var (cx, cy) = ScreenCenter();
         int startX = cx - 50;
         int startY = cy - 50;
-        MouseHelper.Drag(startX, startY, startX + 99, startY + 99, steps: 12);
+        MouseHelper.MoveTo(startX, startY);
         Thread.Sleep(300);
+        MouseHelper.Drag(startX, startY, startX + 99, startY + 99, steps: 16);
+        Thread.Sleep(400);
 
         // Right-click to dismiss the selection (commits the measurement to the clipboard).
         MouseHelper.RightClick();
@@ -304,13 +311,16 @@ public static class TestHelper
     /// <summary>Move to the screen centre, left-click to capture, right-click to dismiss.</summary>
     private static void PerformMeasurementAction()
     {
-        // Park on the primary-monitor centre so the measurement happens in a predictable on-screen
-        // spot (the cursor can otherwise be near the bottom edge after activation).
+        // Move to centre in two steps so the Measure Tool registers cursor MOVEMENT (a single
+        // SetCursorPos can land without a tracked move, leaving the measurement empty), then click
+        // to capture.
         var (cx, cy) = ScreenCenter();
-        MouseHelper.MoveTo(cx, cy);
+        MouseHelper.MoveTo(cx - 60, cy - 60);
         Thread.Sleep(200);
-        MouseHelper.LeftClick();
+        MouseHelper.MoveTo(cx, cy);
         Thread.Sleep(400);
+        MouseHelper.LeftClick();
+        Thread.Sleep(500);
         MouseHelper.RightClick();
         Thread.Sleep(400);
     }

@@ -245,6 +245,20 @@ anywhere (often near the bottom edge after a toolbar pops up), pushing the gestu
 producing a wrong/empty measurement. `System.Windows.Forms` flows transitively from the harness
 (`UseWindowsForms=true`), so you can call `SystemInformation` without adding a reference.
 
+**Move in steps so the overlay tracks the cursor.** A coordinate gesture must land on-screen, and the
+module's overlay needs to see the cursor *move* before the click — a single `SetCursorPos` can land
+without a tracked move, leaving the measurement empty. Park at a known on-screen point (screen-centre)
+and move in a couple of steps:
+
+```csharp
+var (cx, cy) = ScreenCenter();
+MouseHelper.MoveTo(cx - 60, cy - 60);  // first move...
+Thread.Sleep(200);
+MouseHelper.MoveTo(cx, cy);            // ...then settle on the target so the overlay is tracking
+Thread.Sleep(400);
+MouseHelper.LeftClick();               // or Drag(...) for a free-form box
+```
+
 ---
 
 ## Pitfalls
@@ -303,3 +317,13 @@ producing a wrong/empty measurement. `System.Windows.Forms` flows transitively f
     measurements (spacing edge-detection) also vary with what's under the cursor — assert on **format**
     (regex) unless the gesture is content-independent (a free-form drag like Bounds), where an exact
     value is safe.
+16. **Coordinate gestures break when the window/cursor is off-screen — and it only shows on CI.** A
+    `WindowSize` preset that resized but kept its old top-left could push the Settings window (and the
+    measurement area) partially off a same-sized 1920×1080 CI display, so the gesture landed off-screen
+    and nothing was captured (empty clipboard). It passed **locally** only because a higher-res dev
+    display left everything on-screen — so don't trust a local pass for coordinate tests. The harness
+    now **centers and clamps** `WindowSize` presets to ~90% of the display, keeping the window fully
+    on-screen; anchor gestures to `ScreenCenter()` (always on-screen) and move in steps (Recipe 11).
+    You do **not** need to minimize or move the covering window — an overlay module like the Measure
+    Tool captures the gesture even with the Settings window underneath (verified); the failure was the
+    off-screen position, not the window covering the centre.
