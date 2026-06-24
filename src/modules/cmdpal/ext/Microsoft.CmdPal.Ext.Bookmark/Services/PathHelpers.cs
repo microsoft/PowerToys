@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Services;
@@ -45,9 +46,9 @@ internal static class PathHelpers
                 current = next;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // ignore
+            Logger.LogError($"Failed to resolve nearest parent directory for '{path}'", ex);
         }
 
         return false;

@@ -349,36 +349,23 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         string? parentFallbackHead = null;
         string? parentFallbackTail = null;
 
-        // Build candidate end positions: full length, whitespace boundaries (where args start),
-        // and path separator boundaries (probe only at directory/component boundaries).
-        var candidateIndices = new System.Collections.Generic.List<int> { input.Length };
-        for (var i = 0; i < input.Length; i++)
+        // Be greedy: try to find the longest existing path prefix.
+        // Only probe at whitespace or path-separator boundaries to avoid unnecessary filesystem calls.
+        for (var i = input.Length; i >= 0; i--)
         {
-            var c = input[i];
-            if (char.IsWhiteSpace(c))
+            if (i < input.Length
+                && !char.IsWhiteSpace(input[i])
+                && input[i] != Path.DirectorySeparatorChar
+                && input[i] != Path.AltDirectorySeparatorChar)
             {
-                // split before the whitespace (candidate end at i)
-                candidateIndices.Add(i);
+                continue;
             }
-
-            if (c == Path.DirectorySeparatorChar || c == Path.AltDirectorySeparatorChar || c == '/' || c == '\')
-            {
-                // candidate that includes the separator => end index is i + 1
-                candidateIndices.Add(i + 1);
-            }
-        }
-
-        // Deduplicate and iterate longest-first
-        var seen = new System.Collections.Generic.HashSet<int>();
-        candidateIndices.Sort((a, b) => b.CompareTo(a));
-
-        foreach (var i in candidateIndices)
-        {
-            if (i < 0 || i > input.Length) continue;
-            if (!seen.Add(i)) continue;
 
             var candidate = input.AsSpan(0, i).TrimEnd();
-            if (candidate.Length == 0) continue;
+            if (candidate.Length == 0)
+            {
+                continue;
+            }
 
             var candidateStr = candidate.ToString();
 
@@ -608,9 +595,9 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 return true;
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore malformed paths; keep scanning.
+            Logger.LogError($"Failed to resolve path candidate '{candidate}'", ex);
         }
 
         return false;
@@ -629,8 +616,9 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             decoded = NormalizePathForWindows(Uri.UnescapeDataString(input));
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError($"Failed to percent-decode path candidate '{input}'", ex);
             return false;
         }
     }

@@ -150,7 +150,8 @@ public class BookmarksCommandProviderTests
             @"C:\Données\été",
             false);
         var resolver = new TestBookmarkResolver(expectedClassification);
-        var provider = new BookmarksCommandProvider(mockBookmarkManager, resolver);
+        var mockLauncher = new MockProcessLauncher();
+        var provider = new BookmarksCommandProvider(mockBookmarkManager, resolver, processLauncher: mockLauncher);
 
         var commands = provider.TopLevelCommands();
         var bookmarkItem = commands.OfType<Pages.BookmarkListItem>().Single();
@@ -158,16 +159,26 @@ public class BookmarksCommandProviderTests
         var launchCommand = bookmarkItem.Command as LaunchBookmarkCommand;
         Assert.IsNotNull(launchCommand);
 
-        // Instead of invoking the command and intercepting the static launcher, inspect the private stored classification
-        // to verify the provider passed the resolver's classification unchanged.
-        var field = typeof(LaunchBookmarkCommand).GetField("_classification", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        Assert.IsNotNull(field, "Couldn't find _classification field via reflection");
-
-        var storedClassification = field.GetValue(launchCommand) as Classification;
+        // Act — invoke the command; the mock launcher captures what's launched
+        _ = launchCommand.Invoke(this);
 
         // Assert
         Assert.AreEqual(bookmarkAddress, resolver.LastClassifyInput);
-        Assert.AreSame(expectedClassification, storedClassification);
+        Assert.IsNotNull(mockLauncher.LastLaunchedClassification);
+        Assert.AreEqual(expectedClassification.Target, mockLauncher.LastLaunchedClassification.Value.Target);
+        Assert.AreEqual(expectedClassification.Kind, mockLauncher.LastLaunchedClassification.Value.Kind);
+        Assert.AreEqual(expectedClassification.Launch, mockLauncher.LastLaunchedClassification.Value.Launch);
+    }
+
+    private sealed class MockProcessLauncher : IProcessLauncher
+    {
+        public Classification? LastLaunchedClassification { get; private set; }
+
+        public bool Launch(Classification classification, bool runAsAdmin = false)
+        {
+            LastLaunchedClassification = classification;
+            return true;
+        }
     }
 
     private sealed class TestBookmarkResolver : IBookmarkResolver

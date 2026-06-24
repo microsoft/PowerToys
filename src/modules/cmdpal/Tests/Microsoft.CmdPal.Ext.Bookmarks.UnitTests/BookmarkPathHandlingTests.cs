@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CmdPal.Ext.Bookmarks.Commands;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
@@ -141,21 +142,16 @@ public class BookmarkPathHandlingTests
             IBookmarkResolver resolver = new BookmarkResolver(new PlaceholderParser());
             var classification = resolver.ClassifyOrUnknown(bookmark.Bookmark);
 
-            // Instead of using the global TestLaunchOverride, directly verify the fallback resolver logic
-            // by calling the private TryGetNearestExistingParentDirectory via reflection.
-            var launchCmd = new LaunchBookmarkCommand(bookmark, classification, new TestBookmarkIconLocator(), resolver);
+            // Use a mock process launcher to capture what gets launched
+            var mockLauncher = new MockProcessLauncher();
+            var launchCmd = new LaunchBookmarkCommand(bookmark, classification, new TestBookmarkIconLocator(), resolver, mockLauncher);
+            var result = launchCmd.Invoke(sender: this);
 
-            var method = typeof(LaunchBookmarkCommand).GetMethod("TryGetNearestExistingParentDirectory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            Assert.IsNotNull(method, "Could not find TryGetNearestExistingParentDirectory via reflection");
-
-            var args = new object?[] { classification, null };
-            var success = (bool)method.Invoke(null, args)!;
-
-            Assert.IsTrue(success, "Nearest parent directory should be found");
-            var parentDirectory = args[1] as string;
-            Assert.IsNotNull(parentDirectory);
+            // Should have launched a classification targeting the existing parent directory
+            Assert.IsNotNull(mockLauncher.LastLaunchedClassification, "Expected a launch to be captured");
+            Assert.AreEqual(CommandKind.Directory, mockLauncher.LastLaunchedClassification.Value.Kind);
             Assert.IsTrue(Directory.Exists(parent));
-            Assert.AreEqual(Path.GetFullPath(parent), parentDirectory, StringComparer.OrdinalIgnoreCase);
+            Assert.AreEqual(Path.GetFullPath(parent), mockLauncher.LastLaunchedClassification.Value.Target, StringComparer.OrdinalIgnoreCase);
         }
         finally
         {
@@ -163,6 +159,17 @@ public class BookmarkPathHandlingTests
             {
                 Directory.Delete(tempRoot, true);
             }
+        }
+    }
+
+    private sealed class MockProcessLauncher : IProcessLauncher
+    {
+        public Classification? LastLaunchedClassification { get; private set; }
+
+        public bool Launch(Classification classification, bool runAsAdmin = false)
+        {
+            LastLaunchedClassification = classification;
+            return true;
         }
     }
 
