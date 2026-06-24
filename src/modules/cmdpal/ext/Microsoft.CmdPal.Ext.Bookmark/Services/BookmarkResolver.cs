@@ -133,7 +133,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
             (longestUnquotedHead, tailAfterLongestUnquotedHead) = CommandLineHelper.SplitHeadAndArgs(input);
         }
 
-        var (headPath, tailArgs, _) = ExpandToBestExistingPath(longestUnquotedHead, tailAfterLongestUnquotedHead, isPlaceholder, placeholderParser);
+        var (headPath, tailArgs) = ExpandToBestExistingPath(longestUnquotedHead, tailAfterLongestUnquotedHead, isPlaceholder, placeholderParser);
         if (headPath is not null)
         {
             var args = tailArgs ?? string.Empty;
@@ -326,16 +326,14 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
     // whitespace boundaries. Prefers files to directories; for same kind,
     // prefers the longer path.
     // Returns (head, tail) or (null, null) if nothing found.
-    private static (string? Head, string? Tail, bool UsedParentDirectoryFallback) ExpandToBestExistingPath(string head, string tail, bool containsPlaceholders, IPlaceholderParser placeholderParser)
+    private static (string? Head, string? Tail) ExpandToBestExistingPath(string head, string tail, bool containsPlaceholders, IPlaceholderParser placeholderParser)
     {
         try
         {
-            // This goes greedy from the longest head down to shortest; exactly opposite of what
-            // CreateProcess rules are for the first token. But here we operate with a slightly different goal.
             var (greedyHead, greedyTail) = GreedyFind(head, containsPlaceholders, placeholderParser);
 
             // put tails back together:
-            return (Head: greedyHead, string.Join(" ", greedyTail, tail).Trim(), false);
+            return (Head: greedyHead, string.Join(" ", greedyTail, tail).Trim());
         }
         catch (Exception ex)
         {
@@ -347,13 +345,13 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
     private static (string? Head, string? Tail) GreedyFind(string input, bool containsPlaceholders, IPlaceholderParser placeholderParser)
     {
         // Be greedy: try to find the longest existing path prefix.
-        // Only probe at whitespace or path-separator boundaries to avoid unnecessary filesystem calls.
+        // Only probe at whitespace boundaries to find where the command ends and arguments begin.
+        // We intentionally do NOT split at path separators — that would act as parent-directory
+        // fallback, misclassifying non-existing files (e.g. classifying C:\Users\x\file.txt as
+        // Directory because C:\Users exists).
         for (var i = input.Length; i >= 0; i--)
         {
-            if (i < input.Length
-                && !char.IsWhiteSpace(input[i])
-                && input[i] != Path.DirectorySeparatorChar
-                && input[i] != Path.AltDirectorySeparatorChar)
+            if (i < input.Length && !char.IsWhiteSpace(input[i]))
             {
                 continue;
             }
