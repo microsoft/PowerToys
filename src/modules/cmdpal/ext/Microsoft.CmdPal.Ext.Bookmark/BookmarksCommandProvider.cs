@@ -168,4 +168,40 @@ public sealed partial class BookmarksCommandProvider : CommandProvider
 
         return bands.Count > 0 ? bands.ToArray() : null;
     }
+
+    public override ICommandItem? GetCommandItem(string id)
+    {
+        const string prefix = "Bookmarks.Launch.";
+        if (string.IsNullOrEmpty(id) || !id.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var guidString = id.Substring(prefix.Length);
+        if (!Guid.TryParse(guidString, out var bookmarkId))
+        {
+            return null;
+        }
+
+        BookmarkData? bookmark;
+        lock (_bookmarksLock)
+        {
+            bookmark = _bookmarksManager.Bookmarks.FirstOrDefault(b => b.Id == bookmarkId);
+        }
+
+        if (bookmark is null)
+        {
+            return null;
+        }
+
+        var listItem = new BookmarkListItem(
+            bookmark,
+            _bookmarksManager,
+            _commandResolver,
+            _iconLocator,
+            _placeholderParser,
+            asBand: true);
+
+        return new WrappedDockItem(items: [listItem], id: id, displayTitle: listItem.BookmarkTitle);
+    }
 }
