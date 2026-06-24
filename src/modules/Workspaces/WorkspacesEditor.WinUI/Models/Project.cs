@@ -338,9 +338,9 @@ namespace WorkspacesEditor.Models
                 PreviewImageWidth = bounds.Width * 0.1;
                 PreviewIcons = Utils.DrawHelper.DrawPreviewIcons(this);
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-                // Preview is cosmetic — don't crash on rendering failures
+                ManagedCommon.Logger.LogError("Preview render failed", ex);
             }
         }
 
