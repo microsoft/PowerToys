@@ -259,6 +259,12 @@ jobs:
                 per_page: 100,
               });
 
+              // Find last commit authored by the PR author.
+              // Note: if GitHub cannot associate the git committer with a GitHub
+              // user (commit.author is null), those commits are not counted here.
+              // This is acceptable because the event-driven job (Job 2) reliably
+              // catches author pushes via the synchronize event and removes the
+              // label immediately — the scheduled job is a secondary fallback.
               let lastAuthorCommitDate = 0;
               for (const commit of allCommits) {
                 const commitAuthorLogin = commit.author?.login || commit.committer?.login;
