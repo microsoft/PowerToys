@@ -51,6 +51,7 @@ internal sealed partial class TintedDesktopAcrylicBackdrop : TintedControllerBac
 
     public void Dispose()
     {
-        throw new NotImplementedException();
+        _controller?.Dispose();
+        _controller = null;
     }
 }

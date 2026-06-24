@@ -55,6 +55,7 @@ internal sealed partial class TintedMicaBackdrop : TintedControllerBackdrop, IDi
 
     public void Dispose()
     {
-        throw new NotImplementedException();
+        _controller?.Dispose();
+        _controller = null;
     }
 }
