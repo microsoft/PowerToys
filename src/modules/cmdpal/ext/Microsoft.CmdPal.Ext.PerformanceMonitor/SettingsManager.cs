@@ -30,6 +30,21 @@ internal sealed class SettingsManager : JsonSettingsManager
             ? unit
             : NetworkSpeedUnit.BitsPerSecond;
 
+    private readonly ChoiceSetSetting _diskSpeedUnit = new(
+        Namespaced(nameof(DiskSpeedUnit)),
+        Resources.GetResource("Disk_Speed_Unit_Setting_Title"),
+        Resources.GetResource("Disk_Speed_Unit_Setting_Description"),
+        [
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BitsPerSec"), DiskSpeedUnit.BitsPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BytesPerSec"), DiskSpeedUnit.BytesPerSecond.ToString("G")),
+            new ChoiceSetSetting.Choice(Resources.GetResource("Disk_Speed_Unit_BinaryBytesPerSec"), DiskSpeedUnit.BinaryBytesPerSecond.ToString("G")),
+        ]);
+
+    public DiskSpeedUnit DiskSpeedUnit =>
+        Enum.TryParse<DiskSpeedUnit>(_diskSpeedUnit.Value, out var unit)
+            ? unit
+            : DiskSpeedUnit.BitsPerSecond;
+
     private static string SettingsJsonPath()
     {
         var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
@@ -42,6 +57,7 @@ internal sealed class SettingsManager : JsonSettingsManager
         FilePath = SettingsJsonPath();
 
         Settings.Add(_networkSpeedUnit);
+        Settings.Add(_diskSpeedUnit);
 
         LoadSettings();
 
