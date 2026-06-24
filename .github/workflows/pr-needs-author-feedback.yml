@@ -115,6 +115,8 @@ jobs:
               });
               console.log(`Removed Needs-Author-Feedback from PR #${prNumber}`);
             }
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 3: When author comments (issue comment, review submission,
   #         or inline review comment) → remove "Needs-Author-Feedback", add
   #         "Needs-Triage"
   # ─────────────────────────────────────────────────────────────────────────────
@@ -251,7 +253,7 @@ jobs:
                 continue;
               }
 
-              // Find last commit authored by the PR author.
+              // Fetch all commits on the PR for author-activity detection.
               const allCommits = await github.paginate(github.rest.pulls.listCommits, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -369,11 +371,12 @@ jobs:
                         'This draft pull request has been marked as requiring author feedback but has',
                         'not had any activity for **7 days**.',
                         '',
-                          'If no further activity occurs within approximately **7 more days**, this PR',
-                          'will be closed automatically.',
+                        'If no further activity occurs within approximately **7 more days**, this PR',
+                        'will be closed automatically.',
                         '',
                         'To continue working on this PR, please push your changes or leave a comment.',
-                        'The `Needs-Author-Feedback` label will be removed automatically when you do so.',
+                        'Once the label is removed, please also click **"Ready for review"** to move',
+                        'your PR out of draft state.',
                       ].join('\n'),
                     });
                     console.log(`PR #${prNumber} is draft; posted warning (will close on next cycle if still inactive)`);
@@ -469,11 +472,12 @@ jobs:
                       'been marked as requiring author feedback but has not had any activity for',
                       '**7 days**.',
                       '',
-                        'If no further activity occurs within approximately **7 more days**, this PR',
-                        'will be closed automatically.',
+                      'If no further activity occurs within approximately **7 more days**, this PR',
+                      'will be closed automatically.',
                       '',
                       'To continue working on this PR, please push your changes or leave a comment.',
-                      'The `Needs-Author-Feedback` label will be removed automatically when you do so.',
+                      'Once the label is removed, please also click **"Ready for review"** to move',
+                      'your PR out of draft state.',
                     ].join('\n'),
                   });
                 }
