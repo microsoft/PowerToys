@@ -14,7 +14,8 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsViewModel : INotifyPropertyChanged
+public partial class SettingsViewModel : INotifyPropertyChanged,
+    IRecipient<DockAutoHideConflictMessage>
 {
     private static readonly List<TimeSpan> AutoGoHomeIntervals =
     [
@@ -353,10 +354,12 @@ public partial class SettingsViewModel : INotifyPropertyChanged
             ApplyFallbackSort();
         }
 
-        WeakReferenceMessenger.Default.Register<DockAutoHideConflictMessage>(this, (r, m) =>
-        {
-            ((SettingsViewModel)r).Dock_AutoHideConflict = m.IsConflict;
-        });
+        WeakReferenceMessenger.Default.Register<DockAutoHideConflictMessage>(this);
+    }
+
+    public void Receive(DockAutoHideConflictMessage message)
+    {
+        Dock_AutoHideConflict = message.IsConflict;
     }
 
     private IEnumerable<CommandProviderWrapper> GetCommandProviders()

@@ -642,7 +642,7 @@ public sealed partial class DockWindow : WindowEx,
             return false;
         }
 
-        // Taskbar is auto-hiding — check which edge
+        // Taskbar is auto-hiding; check which edge
         var posAbd = new APPBARDATA { cbSize = (uint)Marshal.SizeOf<APPBARDATA>() };
         _ = PInvoke.SHAppBarMessage(PInvoke.ABM_GETTASKBARPOS, ref posAbd);
 
@@ -746,7 +746,7 @@ public sealed partial class DockWindow : WindowEx,
 
         if (width <= 0 || height <= 0)
         {
-            // Window is fully collapsed — hide it
+            // Window is fully collapsed - hide it
             PInvoke.ShowWindow(_hwnd, SHOW_WINDOW_CMD.SW_HIDE);
             return;
         }
@@ -955,7 +955,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private bool IsCursorAtDockEdge(POINT cursor)
     {
-        // Use the revealed rect's edge position for detection — this already
+        // Use the revealed rect's edge position for detection. This already
         // accounts for work area offsets (e.g., dock positioned above taskbar).
         switch (EffectiveSide)
         {
@@ -1057,7 +1057,7 @@ public sealed partial class DockWindow : WindowEx,
         };
     }
 
-    private static int Lerp(int a, int b, double t) => (int)Math.Round(a + ((b - a) * t));
+    private static int Lerp(int a, int b, double t) => (int)Math.Round(double.Lerp(a, b, t));
 
     private void EnsureMouseLeaveTracking()
     {
@@ -1066,34 +1066,48 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        var track = new NativeTrackMouseEvent
+        var track = new TRACKMOUSEEVENT
         {
-            cbSize = (uint)Marshal.SizeOf<NativeTrackMouseEvent>(),
-            dwFlags = 0x00000002, // TME_LEAVE
+            cbSize = (uint)Marshal.SizeOf<TRACKMOUSEEVENT>(),
+            dwFlags = PInvoke.TME_LEAVE,
             hwndTrack = _hwnd,
             dwHoverTime = 0,
         };
 
-        if (TrackMouseEventInterop(ref track))
+        if (PInvoke.TrackMouseEvent(ref track))
         {
             _trackingMouseLeave = true;
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
-#pragma warning disable SA1307 // Field names should begin with upper-case letter
-    private struct NativeTrackMouseEvent
+    private void HandleWorkAreaChanged()
     {
-        public uint cbSize;
-        public uint dwFlags;
-        public HWND hwndTrack;
-        public uint dwHoverTime;
-    }
-#pragma warning restore SA1307 // Field names should begin with upper-case letter
+        if (_isDisposed)
+        {
+            return;
+        }
 
-    [DllImport("user32.dll", EntryPoint = "TrackMouseEvent", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool TrackMouseEventInterop(ref NativeTrackMouseEvent lpEventTrack);
+        var desiredMode = GetDesiredAppBarMode();
+        var taskbarConflict = desiredMode == DockAppBarMode.AutoHide
+            && IsTaskbarAutoHideOnSameEdge(EffectiveSide);
+
+        if (taskbarConflict && _appBarMode == DockAppBarMode.AutoHide)
+        {
+            // Taskbar started auto-hiding on our edge, switch to pinned
+            DestroyAppBar(_hwnd);
+            CreateAppBar(_hwnd);
+        }
+        else if (!taskbarConflict && _appBarMode == DockAppBarMode.Pinned && desiredMode == DockAppBarMode.AutoHide)
+        {
+            // Taskbar stopped auto-hiding on our edge, try auto-hide again
+            DestroyAppBar(_hwnd);
+            CreateAppBar(_hwnd);
+        }
+        else
+        {
+            UpdateWindowPosition();
+        }
+    }
 
     private void HandleMouseMoveForAutoHide()
     {
@@ -1264,36 +1278,9 @@ public sealed partial class DockWindow : WindowEx,
             {
                 Logger.LogDebug($"WM_SETTINGCHANGE(SPI_SETWORKAREA)");
 
-                // Work area changed — taskbar may have toggled auto-hide or moved.
+                // Work area changed - taskbar may have toggled auto-hide or moved.
                 // Re-evaluate whether our auto-hide mode is still valid.
-                DispatcherQueue.TryEnqueue(() =>
-                {
-                    if (_isDisposed)
-                    {
-                        return;
-                    }
-
-                    var desiredMode = GetDesiredAppBarMode();
-                    var taskbarConflict = desiredMode == DockAppBarMode.AutoHide
-                        && IsTaskbarAutoHideOnSameEdge(EffectiveSide);
-
-                    if (taskbarConflict && _appBarMode == DockAppBarMode.AutoHide)
-                    {
-                        // Taskbar started auto-hiding on our edge — switch to pinned
-                        DestroyAppBar(_hwnd);
-                        CreateAppBar(_hwnd);
-                    }
-                    else if (!taskbarConflict && _appBarMode == DockAppBarMode.Pinned && desiredMode == DockAppBarMode.AutoHide)
-                    {
-                        // Taskbar stopped auto-hiding on our edge — try auto-hide again
-                        DestroyAppBar(_hwnd);
-                        CreateAppBar(_hwnd);
-                    }
-                    else
-                    {
-                        UpdateWindowPosition();
-                    }
-                });
+                DispatcherQueue.TryEnqueue(HandleWorkAreaChanged);
             }
         }
         else if (msg == PInvoke.WM_DISPLAYCHANGE)
@@ -1322,6 +1309,10 @@ public sealed partial class DockWindow : WindowEx,
 
                 if (_appBarData.hWnd != IntPtr.Zero)
                 {
+                    // The Shell caches the monitor coordinates from the original
+                    // ABM_NEW registration, so after a topology change the stale
+                    // AppBar rect cannot be repositioned correctly. Destroy and
+                    // recreate to re-register with the new monitor geometry.
                     DestroyAppBar(_hwnd);
                     CreateAppBar(_hwnd);
                 }
@@ -1455,7 +1446,7 @@ public sealed partial class DockWindow : WindowEx,
                 }
                 else if (_appBarMode == DockAppBarMode.AutoHide && !_isDockRevealed)
                 {
-                    // Fullscreen app exited — restart edge detection
+                    // Fullscreen app exited - restart edge detection
                     StartRevealPollTimer();
                 }
 
