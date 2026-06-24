@@ -38,7 +38,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || github.event.review.pull_request_url || 'maintenance' }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.event.issue.number || 'maintenance' }}
   cancel-in-progress: true
 
 jobs:
@@ -304,10 +304,29 @@ jobs:
                 }
               }
 
+              // Also count review submissions (e.g., author submitting a review)
+              // as author activity.
+              const allReviews = await github.paginate(github.rest.pulls.listReviews, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                per_page: 100,
+              });
+
+              let lastAuthorReviewDate = 0;
+              for (const review of allReviews) {
+                if (review.user?.login === authorLogin) {
+                  const reviewDate = new Date(review.submitted_at).getTime();
+                  if (reviewDate > lastAuthorReviewDate) {
+                    lastAuthorReviewDate = reviewDate;
+                  }
+                }
+              }
+
               // The inactivity baseline is the later of: when the label was applied,
               // or the author's last activity. This ensures that labeling an already-
               // stale PR starts a fresh 7-day window rather than acting immediately.
-              const lastAuthorActivity = Math.max(lastAuthorCommitDate, lastAuthorCommentDate);
+              const lastAuthorActivity = Math.max(lastAuthorCommitDate, lastAuthorCommentDate, lastAuthorReviewDate);
               const inactivityBaseline = Math.max(lastAuthorActivity, labelAppliedDate);
               const daysSinceBaseline = (now - inactivityBaseline) / MS_PER_DAY;
 
