@@ -231,5 +231,17 @@ namespace ColorPicker
             var hwnd = new WindowInteropHelper(win).Handle;
             _ = SetWindowLong(hwnd, GWL_EX_STYLE, GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
         }
+
+        /// <summary>
+        /// Sets the display affinity of a window, which controls how the window is
+        /// displayed on a monitor. Used to exclude the picker window from ZoomWindow's
+        /// source bitmap.
+        /// </summary>
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint dwAffinity);
+
+        internal const uint WDA_NONE = 0x00000000;
+        internal const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
     }
 }

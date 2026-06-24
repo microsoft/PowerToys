@@ -7,7 +7,9 @@ using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -24,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 {
     public sealed partial class LightSwitchPage : NavigablePage, IRefreshablePage
     {
+        private static readonly TimeSpan GeoLocationTimeout = TimeSpan.FromSeconds(10);
+
         private readonly string appName = "LightSwitch";
         private readonly SettingsUtils settingsUtils;
         private readonly Func<string, int> sendConfigMsg = ShellPage.SendDefaultIPCMessage;
@@ -100,6 +104,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             this.SyncLoader.IsActive = true;
             this.SyncLoader.Visibility = Visibility.Visible;
             this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LocationErrorText.Visibility = Visibility.Collapsed;
 
             try
             {
@@ -107,13 +112,15 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var accessStatus = await Geolocator.RequestAccessAsync();
                 if (accessStatus != GeolocationAccessStatus.Allowed)
                 {
-                    // User denied location or it's not available
+                    ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Unavailable"));
                     return;
                 }
 
                 var geolocator = new Geolocator { DesiredAccuracy = PositionAccuracy.Default };
 
-                Geoposition pos = await geolocator.GetGeopositionAsync();
+                using var cts = new CancellationTokenSource(GeoLocationTimeout);
+                var positionTask = geolocator.GetGeopositionAsync().AsTask(cts.Token);
+                Geoposition pos = await positionTask;
 
                 double latitude = Math.Round(pos.Coordinate.Point.Position.Latitude);
                 double longitude = Math.Round(pos.Coordinate.Point.Position.Longitude);
@@ -129,7 +136,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 // Since we use this mode, we can remove the selected city data.
                 this.ViewModel.SelectedCity = null;
 
-                // ViewModel.CityTimesText = $"Sunrise: {result.SunriseHour}:{result.SunriseMinute:D2}\n" + $"Sunset: {result.SunsetHour}:{result.SunsetMinute:D2}";
                 this.SyncButton.IsEnabled = true;
                 this.SyncLoader.IsActive = false;
                 this.SyncLoader.Visibility = Visibility.Collapsed;
@@ -138,16 +144,27 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 this.LongitudeBox.IsEnabled = true;
                 this.LocationResultPanel.Visibility = Visibility.Visible;
             }
+            catch (OperationCanceledException)
+            {
+                ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Timeout"));
+            }
             catch (Exception ex)
             {
-                this.SyncButton.IsEnabled = true;
-                this.SyncLoader.IsActive = false;
-                this.SyncLoader.Visibility = Visibility.Collapsed;
-                this.LocationResultPanel.Visibility = Visibility.Collapsed;
-                this.LatitudeBox.IsEnabled = true;
-                this.LongitudeBox.IsEnabled = true;
+                ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Timeout"));
                 Logger.LogInfo($"Location error: " + ex.Message);
             }
+        }
+
+        private void ShowLocationError(string message)
+        {
+            this.SyncButton.IsEnabled = true;
+            this.SyncLoader.IsActive = false;
+            this.SyncLoader.Visibility = Visibility.Collapsed;
+            this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LatitudeBox.IsEnabled = true;
+            this.LongitudeBox.IsEnabled = true;
+            this.LocationErrorText.Text = message;
+            this.LocationErrorText.Visibility = Visibility.Visible;
         }
 
         private void LatLonBox_ValueChanged(NumberBox sender, NumberBoxValueChangedEventArgs args)
@@ -300,6 +317,21 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             this.LocationDialog.IsPrimaryButtonEnabled = false;
             this.LocationResultPanel.Visibility = Visibility.Collapsed;
+            this.LocationErrorText.Visibility = Visibility.Collapsed;
+
+            // Pre-check location services availability
+            var accessStatus = await Geolocator.RequestAccessAsync();
+            if (accessStatus != GeolocationAccessStatus.Allowed)
+            {
+                this.SyncButton.IsEnabled = false;
+                this.LocationErrorText.Text = ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Unavailable");
+                this.LocationErrorText.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                this.SyncButton.IsEnabled = true;
+            }
+
             await this.LocationDialog.ShowAsync();
         }
 
@@ -379,6 +411,11 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 this.TimelineCard.Visibility = Visibility.Collapsed;
                 this.LocationWarningBar.Visibility = Visibility.Visible;
             }
+        }
+
+        private void NavigatePowerDisplaySettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ShellPage.Navigate(typeof(PowerDisplayPage));
         }
     }
 }

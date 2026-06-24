@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="CursorLog/CursorLog.vcxproj" Id="646f6684-9f11-42cd-8b35-b2954404f985" />
+</Solution>

@@ -139,6 +139,14 @@ namespace KeyboardEventHandlers
                 if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
                 {
                     ResetIfModifierKeyForLowerLevelKeyHandlers(ii, it->first, target);
+
+                    // If a Ctrl/Alt/Shift key is remapped to a non-modifier key, reset the modifier state to prevent the injected key from being delivered as WM_SYSKEYDOWN instead of WM_KEYDOWN
+                    if (Helpers::IsModifierKey(it->first) && !Helpers::IsModifierKey(target) && target != VK_CAPITAL && !(it->first == VK_LWIN || it->first == VK_RWIN || it->first == CommonSharedConstants::VK_WIN_BOTH))
+                    {
+                        std::vector<INPUT> suppressList;
+                        Helpers::SetKeyEvent(suppressList, INPUT_KEYBOARD, static_cast<WORD>(it->first), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+                        ii.SendVirtualInput(suppressList);
+                    }
                 }
 
                 if (remapToKey)
@@ -303,9 +311,13 @@ namespace KeyboardEventHandlers
             static bool isAltRightKeyInvoked = false;
 
             // Check if the right Alt key (AltGr) is pressed.
-            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL))
+            if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
             {
                 isAltRightKeyInvoked = true;
+            }
+            else if (data->lParam->vkCode == VK_RMENU && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+            {
+                isAltRightKeyInvoked = false;
             }
 
             // If the shortcut has been pressed down
@@ -538,7 +550,11 @@ namespace KeyboardEventHandlers
                         // Release original shortcut state (release in reverse order of shortcut to be accurate)
                         Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
 
-                        Helpers::SetTextKeyEvents(keyEventList, remapping);
+                        // Send modifier release events first, then send text directly
+                        // (SendTextInput handles multiline by flushing between chunks)
+                        ii.SendVirtualInput(keyEventList);
+                        keyEventList.clear();
+                        Helpers::SendTextInput(remapping);
                     }
 
                     it->second.isShortcutInvoked = true;
@@ -719,7 +735,9 @@ namespace KeyboardEventHandlers
                         else if (remapToText)
                         {
                             auto& remapping = std::get<std::wstring>(it->second.targetShortcut);
-                            Helpers::SetTextKeyEvents(keyEventList, remapping);
+                            ii.SendVirtualInput(keyEventList);
+                            Helpers::SendTextInput(remapping);
+                            return 1;
                         }
 
                         ii.SendVirtualInput(keyEventList);
@@ -1563,7 +1581,7 @@ namespace KeyboardEventHandlers
 
             if (hwnd == GetForegroundWindow())
             {
-                // only hide if this was a call from a already open program, don't make small if we just opened it.
+                // only hide if this was a call from an already open program, don't make small if we just opened it.
                 if (!isNewProcess && minimizeIfVisible)
                 {
                     Logger::trace(L"ChordKeyboardHandler:{}, got GetForegroundWindow, doing SW_MINIMIZE", programName);
@@ -1717,7 +1735,7 @@ namespace KeyboardEventHandlers
                 return 0;
             }
 
-            // Convert process name to lower case
+            // Convert process name to lowercase
             std::transform(process_name.begin(), process_name.end(), process_name.begin(), towlower);
 
             std::wstring query_string;
@@ -1793,9 +1811,7 @@ namespace KeyboardEventHandlers
             return 0;
         }
 
-        std::vector<INPUT> keyEventList;
-        Helpers::SetTextKeyEvents(keyEventList, *remapping);
-        ii.SendVirtualInput(keyEventList);
+        Helpers::SendTextInput(*remapping);
 
         return 1;
     }

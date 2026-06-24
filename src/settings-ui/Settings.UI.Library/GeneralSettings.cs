@@ -111,7 +111,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             QuickAccessShortcut = new HotkeySettings();
             IsElevated = false;
             ShowNewUpdatesToastNotification = true;
-            AutoDownloadUpdates = false;
+            AutoDownloadUpdates = true;
             EnableExperimentation = true;
             DashboardSortOrder = DashboardSortOrder.Alphabetical;
             Theme = "system";

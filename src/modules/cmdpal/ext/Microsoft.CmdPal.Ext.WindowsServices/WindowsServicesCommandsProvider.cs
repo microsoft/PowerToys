@@ -23,7 +23,7 @@ public partial class WindowsServicesCommandsProvider : CommandProvider
         return [
             new CommandItem(new ServicesListPage())
             {
-                Title = "Manage Windows services",
+                Title = Resources.ManageWindowsServicesCommand_Title,
             }
         ];
     }

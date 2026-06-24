@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <UseWinUI>true</UseWinUI>
     <ApplicationIcon>Assets\AdvancedPaste\AdvancedPaste.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -74,8 +74,6 @@
     <PackageReference Include="ReverseMarkdown" />
     <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="WinUIEx" />
-    <!-- HACK: To make sure the version pulled in by Microsoft.Extensions.Hosting is current. -->
-    <PackageReference Include="System.Text.Json" />
     <!-- This line forces the WebView2 version used by Windows App SDK to be the one we expect from Directory.Packages.props . -->
     <PackageReference Include="Microsoft.Web.WebView2" />
     <!-- HACK: CmdPal uses CommunityToolkit.Common directly. Align the version. -->

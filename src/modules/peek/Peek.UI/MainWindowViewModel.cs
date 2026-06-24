@@ -388,6 +388,13 @@ namespace Peek.UI
             IsErrorVisible = true;
         }
 
+        public void ShowError(string message)
+        {
+            IsErrorVisible = false;
+            ErrorMessage = message;
+            IsErrorVisible = true;
+        }
+
         private void NavigationThrottleTimer_Tick(object? sender, object e)
         {
             if (sender == null)

@@ -146,7 +146,7 @@
   </data>
   <data name="Distance_adjacent_zones" xml:space="preserve">
     <value>Highlight distance</value>
-    <comment>Distance of when an adjacent zone should light up when the window is close to it</comment>
+    <comment>The pixel distance at which an adjacent zone highlights (lights up) when a window is dragged near it. This is about detection/snapping range proximity, not about making something visually stand out.</comment>
   </data>
   <data name="Fancy_Zones_Editor_App_Title" xml:space="preserve">
     <value>FancyZones Editor</value>
@@ -162,9 +162,11 @@
   </data>
   <data name="Show_Space_Zones" xml:space="preserve">
     <value>Show space around zones</value>
+    <comment>Toggle to enable or disable displaying the padding/margin (empty space) around each zone</comment>
   </data>
   <data name="Space_Around_Zones" xml:space="preserve">
     <value>Space around zones</value>
+    <comment>The size (in pixels) of the padding or margin (empty gap) surrounding each zone. This is about blank space/whitespace between zones, not an area or region.</comment>
   </data>
   <data name="Templates" xml:space="preserve">
     <value>Templates</value>

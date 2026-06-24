@@ -404,7 +404,11 @@ namespace Microsoft.Plugin.WindowWalker.Components
                                 var childProcessName = WindowProcess.GetProcessNameFromProcessID(childProcessId);
 
                                 // Update process info in cache
-                                _handlesToProcessCache[hWindow].UpdateProcessInfo(childProcessId, childThreadId, childProcessName);
+                                lock (_handlesToProcessCache)
+                                {
+                                    _handlesToProcessCache[hWindow].UpdateProcessInfo(childProcessId, childThreadId, childProcessName);
+                                }
+
                                 return false;
                             }
                             else

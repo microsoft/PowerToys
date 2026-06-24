@@ -173,6 +173,10 @@
     <value>Settings\tDouble-click</value>
     <comment>Don't localize "\t" as that is what separates the click portion to be right aligned in the menu.</comment>
   </data>
+  <data name="SETTINGS_MENU_TEXT_LEFTCLICK" xml:space="preserve">
+    <value>Settings\tLeft-click</value>
+    <comment>Don't localize "\t" as that is what separates the click portion to be right aligned in the menu. This is shown when Quick Access is disabled.</comment>
+  </data>
   <data name="DOCUMENTATION_MENU_TEXT" xml:space="preserve">
     <value>Documentation</value>
   </data>
@@ -192,5 +196,8 @@
   <data name="CLOSE_MENU_TEXT" xml:space="preserve">
     <value>Close</value>
     <comment>Close as a verb, as in Close the application</comment>
+  </data>
+  <data name="UPDATE_AVAILABLE_MENU_TEXT" xml:space="preserve">
+    <value>Update available</value>
   </data>
 </root>

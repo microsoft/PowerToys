@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
+using Microsoft.CmdPal.Ext.ClipboardHistory.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers.Analyzers;
@@ -16,7 +17,7 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers.Analyzers;
 /// </summary>
 internal sealed class WebLinkMetadataProvider : IClipboardMetadataProvider
 {
-    public string SectionTitle => "Link";
+    public string SectionTitle => Resources.metadata_web_link_section_title;
 
     public bool CanHandle(ClipboardItem item)
     {
@@ -62,29 +63,29 @@ internal sealed class WebLinkMetadataProvider : IClipboardMetadataProvider
                 return result;
             }
 
-            result.Add(new DetailsElement { Key = "URL", Data = new DetailsLink(normalized) });
-            result.Add(new DetailsElement { Key = "Host", Data = new DetailsLink(uri.Host) });
+            result.Add(new DetailsElement { Key = Resources.metadata_web_link_url_key, Data = new DetailsLink(normalized) });
+            result.Add(new DetailsElement { Key = Resources.metadata_web_link_host_key, Data = new DetailsLink(uri.Host) });
 
             if (!uri.IsDefaultPort)
             {
-                result.Add(new DetailsElement { Key = "Port", Data = new DetailsLink(uri.Port.ToString(CultureInfo.CurrentCulture)) });
+                result.Add(new DetailsElement { Key = Resources.metadata_web_link_port_key, Data = new DetailsLink(uri.Port.ToString(CultureInfo.CurrentCulture)) });
             }
 
             if (!string.IsNullOrEmpty(uri.AbsolutePath) && uri.AbsolutePath != "/")
             {
-                result.Add(new DetailsElement { Key = "Path", Data = new DetailsLink(uri.AbsolutePath) });
+                result.Add(new DetailsElement { Key = Resources.metadata_web_link_path_key, Data = new DetailsLink(uri.AbsolutePath) });
             }
 
             if (!string.IsNullOrEmpty(uri.Query))
             {
                 var q = uri.Query;
                 var count = q.Count(static c => c == '&') + (q.Length > 1 ? 1 : 0);
-                result.Add(new DetailsElement { Key = "Query params", Data = new DetailsLink(count.ToString(CultureInfo.CurrentCulture)) });
+                result.Add(new DetailsElement { Key = Resources.metadata_web_link_query_params_key, Data = new DetailsLink(count.ToString(CultureInfo.CurrentCulture)) });
             }
 
             if (!string.IsNullOrEmpty(uri.Fragment))
             {
-                result.Add(new DetailsElement { Key = "Fragment", Data = new DetailsLink(uri.Fragment) });
+                result.Add(new DetailsElement { Key = Resources.metadata_web_link_fragment_key, Data = new DetailsLink(uri.Fragment) });
             }
         }
         catch

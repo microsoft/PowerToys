@@ -41,16 +41,13 @@ internal static class FancyZonesDataService
 
         try
         {
-            if (!File.Exists(FZPaths.EditorParameters))
-            {
-                error = Resources.FancyZones_MonitorDataNotFound;
-                Logger.LogWarning($"TryGetMonitors: File not found. Path={FZPaths.EditorParameters}");
-                return false;
-            }
-
-            Logger.LogInfo($"TryGetMonitors: File exists, reading...");
-            var editorParams = FancyZonesDataIO.ReadEditorParameters();
-            Logger.LogInfo($"TryGetMonitors: ReadEditorParameters returned. Monitors={editorParams.Monitors?.Count ?? -1}");
+            // Request FancyZones to save current monitor configuration.
+            // The editor-parameters.json file is only written when:
+            // 1. Opening the FancyZones Editor
+            // 2. Receiving the WM_PRIV_SAVE_EDITOR_PARAMETERS message
+            // Without this, monitor changes (plug/unplug) won't be reflected in the file.
+            var editorParams = ReadEditorParametersWithRefresh();
+            Logger.LogInfo($"TryGetMonitors: ReadEditorParametersWithRefreshWithRefresh returned. Monitors={editorParams.Monitors?.Count ?? -1}");
 
             var editorMonitors = editorParams.Monitors;
             if (editorMonitors is null || editorMonitors.Count == 0)
@@ -72,6 +69,23 @@ internal static class FancyZonesDataService
             Logger.LogError($"TryGetMonitors: Exception. Message={ex.Message} Stack={ex.StackTrace}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Requests FancyZones to save the current monitor configuration and reads the file.
+    /// This is a best-effort approach for performance: we send the save request and immediately
+    /// read the file without waiting. If the file hasn't been updated yet, the next call will
+    /// see the updated data since FancyZones processes the message asynchronously.
+    /// </summary>
+    private static EditorParameters.ParamsWrapper ReadEditorParametersWithRefresh()
+    {
+        // Request FancyZones to save the current monitor configuration.
+        // This is fire-and-forget for performance - we don't wait for the save to complete.
+        // If this is the first call after a monitor change, we may read stale data, but the
+        // next call will see the updated file since FancyZones will have processed the message.
+        FancyZonesNotifier.NotifySaveEditorParameters();
+
+        return FancyZonesDataIO.ReadEditorParameters();
     }
 
     public static IReadOnlyList<FancyZonesLayoutDescriptor> GetLayouts()

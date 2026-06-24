@@ -120,6 +120,27 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     }
 
                     return true;
+                case ModuleType.PowerDisplay:
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.TogglePowerDisplayEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
+                case ModuleType.KeyboardManager:
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.OpenNewKeyboardManagerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
+                case ModuleType.MouseWithoutBorders:
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MWBReconnectEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
                 default:
                     return false;
             }

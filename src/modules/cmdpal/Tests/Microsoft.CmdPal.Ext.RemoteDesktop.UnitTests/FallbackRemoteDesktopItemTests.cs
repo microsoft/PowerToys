@@ -52,9 +52,9 @@ public class FallbackRemoteDesktopItemTests
         fallback.UpdateQuery(hostname);
 
         // Assert
-        var expectedTitle = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostname);
-        Assert.AreEqual(expectedTitle, fallback.Title);
-        Assert.AreEqual(Resources.remotedesktop_title, fallback.Subtitle);
+        Assert.AreEqual(Resources.remotedesktop_title, fallback.Title);
+        var expectedSubtitleArbitrary = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostname);
+        Assert.AreEqual(expectedSubtitleArbitrary, fallback.Subtitle);
 
         var command = fallback.Command as OpenRemoteDesktopCommand;
         Assert.IsNotNull(command);
@@ -96,6 +96,48 @@ public class FallbackRemoteDesktopItemTests
 
         var command = fallback.Command as OpenRemoteDesktopCommand;
         Assert.IsNull(command);
+    }
+
+    [TestMethod]
+    public void UpdateQuery_WhenQueryIsHostnameWithPort_UsesFullHostPort()
+    {
+        // Arrange
+        var setup = CreateFallback();
+        var fallback = setup.Fallback;
+        const string hostPort = "localhost:3389";
+
+        // Act
+        fallback.UpdateQuery(hostPort);
+
+        // Assert
+        Assert.AreEqual(Resources.remotedesktop_title, fallback.Title);
+        var expectedSubtitleHostPort = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostPort);
+        Assert.AreEqual(expectedSubtitleHostPort, fallback.Subtitle);
+
+        var command = fallback.Command as OpenRemoteDesktopCommand;
+        Assert.IsNotNull(command);
+        Assert.AreEqual(hostPort, GetCommandHost(command));
+    }
+
+    [TestMethod]
+    public void UpdateQuery_WhenQueryIsIPWithPort_UsesFullHostPort()
+    {
+        // Arrange
+        var setup = CreateFallback();
+        var fallback = setup.Fallback;
+        const string hostPort = "192.168.1.100:3390";
+
+        // Act
+        fallback.UpdateQuery(hostPort);
+
+        // Assert
+        Assert.AreEqual(Resources.remotedesktop_title, fallback.Title);
+        var expectedSubtitleHostPort = string.Format(CultureInfo.CurrentCulture, OpenHostCompositeFormat, hostPort);
+        Assert.AreEqual(expectedSubtitleHostPort, fallback.Subtitle);
+
+        var command = fallback.Command as OpenRemoteDesktopCommand;
+        Assert.IsNotNull(command);
+        Assert.AreEqual(hostPort, GetCommandHost(command));
     }
 
     private static string GetCommandHost(OpenRemoteDesktopCommand command)

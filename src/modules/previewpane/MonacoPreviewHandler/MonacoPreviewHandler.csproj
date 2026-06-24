@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
-  <Import Project="..\..\..\Common.SelfContained.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,7 +9,7 @@
     <AssemblyTitle>PowerToys.MonacoPreviewHandler</AssemblyTitle>
     <AssemblyDescription>PowerToys MonacoPreviewHandler</AssemblyDescription>
     <Description>PowerToys MonacoPreviewHandler</Description>
-    <OutputPath>..\..\..\..\$(Platform)\$(Configuration)</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>

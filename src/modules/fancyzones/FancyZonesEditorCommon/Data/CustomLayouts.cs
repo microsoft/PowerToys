@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 
@@ -23,8 +24,10 @@ namespace FancyZonesEditorCommon.Data
         {
             public struct CanvasZoneWrapper
             {
+                [JsonPropertyName("X")]
                 public int X { get; set; }
 
+                [JsonPropertyName("Y")]
                 public int Y { get; set; }
 
                 public int Width { get; set; }

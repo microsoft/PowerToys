@@ -16,6 +16,8 @@ namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 [TestClass]
 public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
 {
+    private const int IntMax = int.MaxValue;
+
     [DataTestMethod]
     [DataRow(null)]
     [DataRow("")]
@@ -64,7 +66,18 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
             ["log2(3)", 1.58496250072116M],
             ["log10(3)", 0.47712125471966M],
             ["ln(e)", 1M],
+
+            // Space between function name and '(' must produce the same result
+            // (regression test for the log-mapping bug).
+            ["ln (3)", 1.09861228866811M],
+            ["log (3)", 0.47712125471966M],
+            ["log2 (3)", 1.58496250072116M],
+            ["log10 (3)", 0.47712125471966M],
+
             ["cosh(0)", 1M],
+            ["1*10^(-5)", 0.00001M],
+            ["1*10^(-15)", 0.0000000000000001M],
+            ["1*10^(-16)", 0M],
         ];
 
     [DataTestMethod]
@@ -192,9 +205,11 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
     private static IEnumerable<object[]> Interpret_MustReturnExpectedResult_WhenCalled_Data =>
         [
 
-            // ["factorial(5)", 120M], ToDo: this don't support now
-            // ["sign(-2)", -1M],
-            // ["sign(2)", +1M],
+            ["factorial(5)", 120M],
+            ["5!", 120M],
+            ["(2+3)!", 120M],
+            ["sign(-2)", -1M],
+            ["sign(2)", +1M],
             ["abs(-2)", 2M],
             ["abs(2)", 2M],
             ["0+(1*2)/(0+1)", 2M], // Validate that division by "(0+1)" is not interpret as division by zero.
@@ -221,6 +236,9 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         [
             ["0.2E1", "en-US", 2M],
             ["0,2E1", "pt-PT", 2M],
+            ["3.5e3 + 2.5E2", "en-US", 3750M],
+            ["3,5e3 + 2,5E2", "fr-FR", 3750M],
+            ["1E3-1E3/1.5", "en-US", 333.333333333333371M],
         ];
 
     [DataTestMethod]
@@ -388,5 +406,141 @@ public class ExtendedCalculatorParserTests : CommandPaletteUnitTestBase
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedResult, result);
+    }
+
+    [DataTestMethod]
+    [DataRow("171!")]
+    [DataRow("1000!")]
+    public void Interpret_ReturnsOutOfBoundsError_WhenValueOverflowsDecimal(string input)
+    {
+        var settings = new Settings();
+
+        CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(Properties.Resources.calculator_not_covert_to_decimal, error);
+    }
+
+    [DataTestMethod]
+    [DataRow("exp(99999)")]
+    [DataRow("-exp(99999)")]
+    public void Interpret_ReturnsOutOfBoundsError_WhenResultIsInfinity(string input)
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_not_covert_to_decimal, error);
+    }
+
+    [DataTestMethod]
+    [DataRow("1 2")]
+    public void Interpret_ReturnsExpressionNotCompleteError_WhenExpressionIsInvalid(string input)
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_expression_not_complete, error);
+    }
+
+    [TestMethod]
+    public void Interpret_ReturnsNotANumberError_WhenResultIsNaN()
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, "sqrt(-1)", CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_not_a_number, error);
+    }
+
+    [DataTestMethod]
+    [DataRow("factorial(-1)")]
+    [DataRow("factorial(0.5)")]
+    [DataRow("factorial(sqrt(-1))")]
+    [DataRow("sign(sqrt(-1))")]
+    public void Interpret_ReturnsNotANumberError_WhenCustomFunctionArgumentInvalid(string input)
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_not_a_number, error);
+    }
+
+    [TestMethod]
+    public void Interpret_Rand_ReturnsValueInRange()
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, "rand()", CultureInfo.InvariantCulture, out var error);
+
+        Assert.IsNull(error);
+        Assert.IsTrue(result.Result.HasValue, "rand() returned no result");
+        Assert.IsTrue(result.Result >= 0M && result.Result < 1M, $"rand() result {result.Result} was not in [0, 1)");
+    }
+
+    [TestMethod]
+    public void Interpret_Randi_ReturnsZero_WhenArgIsOne()
+    {
+        // randi(1) has only one valid outcome: 0. This test is fully deterministic.
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, "randi(1)", CultureInfo.InvariantCulture, out var error);
+
+        Assert.IsNull(error);
+        Assert.IsTrue(result.Result.HasValue, "randi(1) returned no result");
+        Assert.AreEqual(0M, result.Result!.Value, "randi(1) must always return 0");
+    }
+
+    [TestMethod]
+    public void Interpret_Randi_StaysInRange_WhenArgIsTwo()
+    {
+        // randi(2) has the smallest non-trivial range [0, 1]. Running many iterations
+        // gives high confidence both boundary values are reachable.
+        var settings = new Settings();
+
+        for (var i = 0; i < 100; i++)
+        {
+            var result = CalculateEngine.Interpret(settings, "randi(2)", CultureInfo.InvariantCulture, out var error);
+            Assert.IsNull(error);
+            Assert.IsTrue(result.Result.HasValue, "randi(2) returned no result");
+            var value = result.Result!.Value;
+            Assert.AreEqual(value, Math.Floor(value), $"randi(2) result {value} was not an integer");
+            Assert.IsTrue(value >= 0M && value <= 1M, $"randi(2) result {value} was not in [0, 1]");
+        }
+    }
+
+    [TestMethod]
+    public void Interpret_Randi_HandlesIntMaxArgument()
+    {
+        // Ensures no integer overflow in the C++ cast when the argument is int.MaxValue.
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, $"randi({IntMax})", CultureInfo.InvariantCulture, out var error);
+
+        Assert.IsNull(error);
+        Assert.IsTrue(result.Result.HasValue, $"randi({IntMax}) returned no result");
+        var value = result.Result!.Value;
+        Assert.AreEqual(value, Math.Floor(value), $"randi({IntMax}) result {value} was not an integer");
+        Assert.IsTrue(value >= 0M && value < IntMax, $"randi({IntMax}) result {value} was out of range");
+    }
+
+    [DataTestMethod]
+    [DataRow("randi(0)")]
+    [DataRow("randi(0.5)")]
+    [DataRow("randi(-1)")]
+    [DataRow("randi(exp(10000))")]
+    public void Interpret_Randi_ReturnsNotANumberError_WhenArgumentInvalid(string input)
+    {
+        var settings = new Settings();
+
+        var result = CalculateEngine.Interpret(settings, input, CultureInfo.InvariantCulture, out var error);
+
+        Assert.AreEqual(default, result);
+        Assert.AreEqual(Properties.Resources.calculator_not_a_number, error);
     }
 }

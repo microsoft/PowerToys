@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Look at Directory.Build.props in root for common stuff as well -->
-  <Import Project="..\..\..\..\Common.Dotnet.CsWinRT.props" />	 
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />	 
 
   <PropertyGroup>
     <ProjectGuid>{212AD910-8488-4036-BE20-326931B75FB2}</ProjectGuid>
@@ -12,7 +12,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
-    <OutputPath>..\..\..\..\..\$(Platform)\$(Configuration)\RunPlugins\History\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\RunPlugins\History\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,18 +36,6 @@
 
   <ItemGroup>
     <PackageReference Include="Mages" />
-    <PackageReference Include="System.Drawing.Common">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
-    <PackageReference Include="System.Configuration.ConfigurationManager">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.EventLog">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
-    <PackageReference Include="System.Diagnostics.PerformanceCounter">
-      <ExcludeAssets>runtime</ExcludeAssets> <!-- Should already be present on .net sdk runtime, so we avoid the conflicting runtime version from nuget -->
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

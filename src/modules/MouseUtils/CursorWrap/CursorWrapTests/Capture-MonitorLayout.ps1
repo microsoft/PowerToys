@@ -7,21 +7,61 @@
     Queries Windows for all connected monitors and saves their configuration
     (position, size, DPI, primary status) to a JSON file that can be used
     for testing the CursorWrap module.
+    
+    By default, potentially identifying information (computer name, user name,
+    device names) is anonymized to protect privacy when sharing layout files.
 
 .PARAMETER OutputPath
-    Path where the JSON file will be saved. Default: monitor_layout.json
+    Path where the JSON file will be saved. Default: cursorwrap_monitor_layout.json
+
+.PARAMETER AddUserMachineNames
+    Include computer name and user name in the output. By default these are
+    blank to protect privacy when sharing layout files.
+
+.PARAMETER AddDeviceNames
+    Include device names (e.g., \\.\DISPLAY1) in the output. By default these
+    are anonymized to "DISPLAY1", "DISPLAY2", etc. to reduce fingerprinting.
+
+.PARAMETER Help
+    Show this help message and exit.
 
 .EXAMPLE
     .\Capture-MonitorLayout.ps1
+    Captures layout with privacy-safe defaults (no user/machine names).
     
 .EXAMPLE
     .\Capture-MonitorLayout.ps1 -OutputPath "my_setup.json"
+    Saves to a custom filename.
+
+.EXAMPLE
+    .\Capture-MonitorLayout.ps1 -AddUserMachineNames
+    Includes computer name and user name in the output.
+
+.EXAMPLE
+    .\Capture-MonitorLayout.ps1 -AddUserMachineNames -AddDeviceNames
+    Includes all identifying information (useful for personal debugging).
 #>
 
 param(
     [Parameter(Mandatory=$false)]
-    [string]$OutputPath = "$($env:USERNAME)_monitor_layout.json"
+    [string]$OutputPath = "cursorwrap_monitor_layout.json",
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$AddUserMachineNames,
+    
+    [Parameter(Mandatory=$false)]
+    [switch]$AddDeviceNames,
+    
+    [Parameter(Mandatory=$false)]
+    [Alias("h", "?")]
+    [switch]$Help
 )
+
+# Show help if requested
+if ($Help) {
+    Get-Help $MyInvocation.MyCommand.Path -Detailed
+    exit 0
+}
 
 # Add Windows Forms for screen enumeration
 Add-Type -AssemblyName System.Windows.Forms
@@ -137,11 +177,19 @@ function Capture-MonitorLayout {
     
     $screens = [System.Windows.Forms.Screen]::AllScreens
     $monitors = @()
-    
+    $monitorIndex = 1
+
     foreach ($screen in $screens) {
         $isPrimary = $screen.Primary
         $bounds = $screen.Bounds
         $dpi = Get-MonitorDPI -Screen $screen
+        
+        # Anonymize device name by default to reduce fingerprinting
+        $deviceName = if ($AddDeviceNames) {
+            $screen.DeviceName
+        } else {
+            "DISPLAY$monitorIndex"
+        }
         
         $monitor = [ordered]@{
             left = $bounds.Left
@@ -153,10 +201,11 @@ function Capture-MonitorLayout {
             dpi = $dpi
             scaling_percent = [math]::Round(($dpi / 96.0) * 100, 0)
             primary = $isPrimary
-            device_name = $screen.DeviceName
+            device_name = $deviceName
         }
         
         $monitors += $monitor
+        $monitorIndex++
         
         # Display info
         $primaryTag = if ($isPrimary) { " [PRIMARY]" } else { "" }
@@ -170,11 +219,11 @@ function Capture-MonitorLayout {
         Write-Host "  Bounds: [$($bounds.Left), $($bounds.Top), $($bounds.Right), $($bounds.Bottom)]"
     }
     
-    # Create output object
+    # Create output object with privacy-safe defaults
     $output = [ordered]@{
         captured_at = (Get-Date -Format "yyyy-MM-ddTHH:mm:sszzz")
-        computer_name = $env:COMPUTERNAME
-        user_name = $env:USERNAME
+        computer_name = if ($AddUserMachineNames) { $env:COMPUTERNAME } else { "" }
+        user_name = if ($AddUserMachineNames) { $env:USERNAME } else { "" }
         monitor_count = $monitors.Count
         monitors = $monitors
     }
@@ -200,9 +249,21 @@ try {
     Write-Host "`n" + ("=" * 80)
     Write-Host "SUMMARY" -ForegroundColor Cyan
     Write-Host ("=" * 80)
-    Write-Host "Configuration Name: $($layout.computer_name)"
+    if ($layout.computer_name) {
+        Write-Host "Configuration Name: $($layout.computer_name)"
+    }
     Write-Host "Captured: $($layout.captured_at)"
     Write-Host "Monitors: $($layout.monitor_count)"
+    
+    # Privacy notice
+    if (-not $AddUserMachineNames -or -not $AddDeviceNames) {
+        Write-Host "`nPrivacy: " -NoNewline -ForegroundColor Yellow
+        $privacyNotes = @()
+        if (-not $AddUserMachineNames) { $privacyNotes += "user/machine names excluded" }
+        if (-not $AddDeviceNames) { $privacyNotes += "device names anonymized" }
+        Write-Host ($privacyNotes -join ", ") -ForegroundColor Yellow
+        Write-Host "  Use -AddUserMachineNames and/or -AddDeviceNames to include." -ForegroundColor DarkGray
+    }
     
     # Calculate desktop dimensions
     $widths = @($layout.monitors | ForEach-Object { $_.width })

@@ -203,6 +203,13 @@
 
                                     </Grid>
                                 </Border>
+
+                                <!--  More section  -->
+                                <TextBlock Style="{ThemeResource SettingsSectionHeaderTextBlockStyle}" Text="More" />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Command="{x:Bind ViewModel.OpenInternalToolsCommand}" Content="Open internal tools" />
+                                    <Button Command="{x:Bind ViewModel.ToggleDevRibbonVisibilityCommand}" Content="Hide me" />
+                                </StackPanel>
                             </StackPanel>
 
                             <!--  Footer  -->

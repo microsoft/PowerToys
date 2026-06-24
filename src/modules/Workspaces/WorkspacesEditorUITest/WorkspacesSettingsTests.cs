@@ -57,7 +57,7 @@ public class WorkspacesSettingsTests : UITestBase
         GoToSettingsPageAndEnable();
 
         // Find the enable toggle
-        var enableToggle = Find<ToggleSwitch>("Enable Workspaces");
+        var enableToggle = Find<ToggleSwitch>("Workspaces");
         Assert.IsNotNull(enableToggle, "Enable Workspaces toggle should exist");
 
         Assert.IsTrue(enableToggle.IsOn, "Enable Workspaces toggle should be in the 'on' state");
@@ -80,7 +80,7 @@ public class WorkspacesSettingsTests : UITestBase
     public void TestLaunchEditorByActivationShortcut()
     {
         // Ensure module is enabled
-        var enableToggle = Find<ToggleSwitch>("Enable Workspaces");
+        var enableToggle = Find<ToggleSwitch>("Workspaces");
         if (!enableToggle.IsOn)
         {
             enableToggle.Click();
@@ -109,7 +109,7 @@ public class WorkspacesSettingsTests : UITestBase
     public void TestDisabledModuleDoesNotLaunchByShortcut()
     {
         // Disable the module
-        var enableToggle = Find<ToggleSwitch>("Enable Workspaces");
+        var enableToggle = Find<ToggleSwitch>("Workspaces");
         if (enableToggle.IsOn)
         {
             enableToggle.Click();
@@ -131,7 +131,7 @@ public class WorkspacesSettingsTests : UITestBase
         RestartScopeExe();
         NavigateToWorkspacesSettings();
 
-        enableToggle = Find<ToggleSwitch>("Enable Workspaces");
+        enableToggle = Find<ToggleSwitch>("Workspaces");
         if (!enableToggle.IsOn)
         {
             enableToggle.Click();
@@ -174,7 +174,7 @@ public class WorkspacesSettingsTests : UITestBase
 
         this.Find<NavigationViewItem>("Workspaces").Click();
 
-        var enableButton = this.Find<ToggleSwitch>("Enable Workspaces");
+        var enableButton = this.Find<ToggleSwitch>("Workspaces");
         Assert.IsNotNull(enableButton, "Enable Workspaces toggle should exist");
 
         if (!enableButton.IsOn)

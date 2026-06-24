@@ -14,6 +14,8 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredColorPickerEnabledValue();
         static GpoRuleConfigured GetConfiguredCropAndLockEnabledValue();
         static GpoRuleConfigured GetConfiguredLightSwitchEnabledValue();
+        static GpoRuleConfigured GetConfiguredPowerDisplayEnabledValue();
+        static GpoRuleConfigured GetConfiguredGrabAndMoveEnabledValue();
         static GpoRuleConfigured GetConfiguredFancyZonesEnabledValue();
         static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue();
         static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
@@ -77,6 +79,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetAllowDataDiagnosticsValue();
         static GpoRuleConfigured GetConfiguredRunAtStartupValue();
         static GpoRuleConfigured GetConfiguredNewPlusReplaceVariablesValue();
+        static GpoRuleConfigured GetConfiguredNewPlusHideBuiltInNewContextMenuValue();
     };
 }
 

@@ -5,10 +5,11 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Services;
-using Microsoft.CmdPal.Core.ViewModels;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using WinRT;
 
@@ -23,19 +24,19 @@ internal sealed class PowerToysRootPageService : IRootPageService
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, SettingsModel settings, AliasManager aliasManager, AppStateModel appStateModel)
+    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService)
     {
         _tlcManager = topLevelCommandManager;
 
         _mainListPage = new Lazy<MainListPage>(() =>
         {
-            return new MainListPage(_tlcManager, settings, aliasManager, appStateModel);
+            return new MainListPage(_tlcManager, aliasManager, fuzzyMatcherProvider, settingsService, appStateService);
         });
     }
 
     public async Task PreLoadAsync()
     {
-        await _tlcManager.LoadBuiltinsAsync();
+        await _tlcManager.LoadBuiltInProvidersAsync();
     }
 
     public Microsoft.CommandPalette.Extensions.IPage GetRootPage()
@@ -45,11 +46,11 @@ internal sealed class PowerToysRootPageService : IRootPageService
 
     public async Task PostLoadRootPageAsync()
     {
-        // After loading built-ins, and starting navigation, kick off a thread to load extensions.
-        _tlcManager.LoadExtensionsCommand.Execute(null);
+        // After loading built-ins, and starting navigation, kick off a thread to load external extensions.
+        _tlcManager.LoadExternalProvidersCommand.Execute(null);
 
-        await _tlcManager.LoadExtensionsCommand.ExecutionTask!;
-        if (_tlcManager.LoadExtensionsCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
+        await _tlcManager.LoadExternalProvidersCommand.ExecutionTask!;
+        if (_tlcManager.LoadExternalProvidersCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
         {
             // TODO: Handle failure case
         }

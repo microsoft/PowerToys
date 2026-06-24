@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Microsoft.CmdPal.Core.Common.Helpers;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks;
@@ -47,6 +47,7 @@ internal sealed partial class BookmarksManager : IDisposable, IBookmarksManager
     public BookmarkData Add(string name, string bookmark)
     {
         var newBookmark = new BookmarkData(name, bookmark);
+        Logger.LogDebug($"BookmarksManager.Add: created bookmark id={newBookmark.Id} name='{name}' value='{bookmark}'");
 
         lock (_lock)
         {

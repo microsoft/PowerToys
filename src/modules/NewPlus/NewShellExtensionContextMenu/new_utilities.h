@@ -446,4 +446,69 @@ namespace newplus::utilities
 
         return hr;
     }
+
+    constexpr wchar_t built_in_new_registry_path[] = LR"(Software\Classes\Directory\Background\ShellEx\ContextMenuHandlers\New)";
+    constexpr wchar_t built_in_new_registry_disabled_value_prefix[] = L"disabled_";
+
+    inline bool disable_built_in_new_via_registry()
+    {
+        // This is implemented to support where New+ GPO is configured to 
+        // hide the built-in New context menu but Settings UI hasn't been launched
+        // Mirrors the logic in DisableBuiltInNewViaRegistry in .cs
+
+        HKEY key{};
+
+        if (RegCreateKeyExW(HKEY_CURRENT_USER,
+                            built_in_new_registry_path,
+                            0,
+                            nullptr,
+                            REG_OPTION_NON_VOLATILE,
+                            KEY_ALL_ACCESS,
+                            nullptr,
+                            &key,
+                            nullptr) != ERROR_SUCCESS)
+        {
+            return false;
+        }
+
+        const auto built_in_new_registry_disabled_value_prefix_len = lstrlenW(built_in_new_registry_disabled_value_prefix);
+
+        if (RegSetValueExW(key, nullptr, 0, REG_SZ, reinterpret_cast<const BYTE*>(&built_in_new_registry_disabled_value_prefix), built_in_new_registry_disabled_value_prefix_len) != ERROR_SUCCESS)
+        {
+            RegCloseKey(key);
+            return true;
+        }
+
+        RegCloseKey(key);
+        return false;
+
+    }
+
+    inline bool enable_built_in_new_via_registry()
+    {
+        // This is implemented to support where New+ GPO is configured to 
+        // display the built-in New context menu but Settings UI hasn't been launched
+        // Mirrors the logic in EnableBuiltInNewViaRegistry in .cs
+
+        HKEY key{};
+
+        if (RegOpenKeyExW(HKEY_CURRENT_USER,
+                          built_in_new_registry_path,
+                          0,
+                          KEY_ALL_ACCESS,
+                          &key) != ERROR_SUCCESS)
+        {
+            return true;
+        }
+
+        if (RegDeleteValueW(key, nullptr) != ERROR_SUCCESS)
+        {
+            RegCloseKey(key);
+            return true;
+        }
+
+        RegCloseKey(key);
+        return false;
+
+    }
 }

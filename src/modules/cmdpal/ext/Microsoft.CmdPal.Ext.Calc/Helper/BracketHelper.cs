@@ -53,6 +53,56 @@ public static class BracketHelper
         return trailTest.Count == 0;
     }
 
+    public static string BalanceBrackets(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return query ?? string.Empty;
+        }
+
+        var openBrackets = new Stack<TrailType>();
+
+        for (var i = 0; i < query.Length; i++)
+        {
+            var (direction, type) = BracketTrail(query[i]);
+
+            if (direction == TrailDirection.None)
+            {
+                continue;
+            }
+
+            if (direction == TrailDirection.Open)
+            {
+                openBrackets.Push(type);
+            }
+            else if (direction == TrailDirection.Close)
+            {
+                // Only pop if we have a matching open bracket
+                if (openBrackets.Count > 0 && openBrackets.Peek() == type)
+                {
+                    openBrackets.Pop();
+                }
+            }
+        }
+
+        if (openBrackets.Count == 0)
+        {
+            return query;
+        }
+
+        // Build closing brackets in LIFO order
+        var closingBrackets = new char[openBrackets.Count];
+        var index = 0;
+
+        while (openBrackets.Count > 0)
+        {
+            var type = openBrackets.Pop();
+            closingBrackets[index++] = type == TrailType.Round ? ')' : ']';
+        }
+
+        return query + new string(closingBrackets);
+    }
+
     private static (TrailDirection Direction, TrailType Type) BracketTrail(char @char)
     {
         switch (@char)

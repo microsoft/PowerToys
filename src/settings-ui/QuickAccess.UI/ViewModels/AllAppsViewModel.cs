@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
 public sealed class AllAppsViewModel : Observable
 {
+    private readonly object _sortLock = new object();
     private readonly IQuickAccessCoordinator _coordinator;
     private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
     private readonly SettingsUtils _settingsUtils;
@@ -29,6 +30,9 @@ public sealed class AllAppsViewModel : Observable
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly List<FlyoutMenuItem> _allFlyoutMenuItems = new();
     private GeneralSettings _generalSettings;
+
+    // Flag to prevent toggle operations during sorting to avoid race conditions.
+    private bool _isSorting;
 
     public ObservableCollection<FlyoutMenuItem> FlyoutMenuItems { get; }
 
@@ -40,9 +44,9 @@ public sealed class AllAppsViewModel : Observable
             if (_generalSettings.DashboardSortOrder != value)
             {
                 _generalSettings.DashboardSortOrder = value;
-                _settingsUtils.SaveSettings(_generalSettings.ToJsonString(), _generalSettings.GetModuleName());
+                _coordinator.SendSortOrderUpdate(_generalSettings);
                 OnPropertyChanged();
-                RefreshFlyoutMenuItems();
+                SortFlyoutMenuItems();
             }
         }
     }
@@ -54,7 +58,6 @@ public sealed class AllAppsViewModel : Observable
         _settingsUtils = SettingsUtils.Default;
         _settingsRepository = SettingsRepository<GeneralSettings>.GetInstance(_settingsUtils);
         _generalSettings = _settingsRepository.SettingsConfig;
-        _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
         _settingsRepository.SettingsChanged += OnSettingsChanged;
 
         _resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
@@ -87,7 +90,6 @@ public sealed class AllAppsViewModel : Observable
         _dispatcherQueue.TryEnqueue(() =>
         {
             _generalSettings = newSettings;
-            _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChangedOnSettingsPage);
             OnPropertyChanged(nameof(DashboardSortOrder));
             RefreshFlyoutMenuItems();
         });
@@ -120,30 +122,55 @@ public sealed class AllAppsViewModel : Observable
             }
         }
 
-        var sortedItems = DashboardSortOrder switch
-        {
-            DashboardSortOrder.ByStatus => _allFlyoutMenuItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label).ToList(),
-            _ => _allFlyoutMenuItems.OrderBy(x => x.Label).ToList(),
-        };
+        SortFlyoutMenuItems();
+    }
 
-        if (FlyoutMenuItems.Count == 0)
+    private void SortFlyoutMenuItems()
+    {
+        if (_isSorting)
         {
-            foreach (var item in sortedItems)
-            {
-                FlyoutMenuItems.Add(item);
-            }
-
             return;
         }
 
-        for (int i = 0; i < sortedItems.Count; i++)
+        lock (_sortLock)
         {
-            var item = sortedItems[i];
-            var oldIndex = FlyoutMenuItems.IndexOf(item);
-
-            if (oldIndex != -1 && oldIndex != i)
+            _isSorting = true;
+            try
             {
-                FlyoutMenuItems.Move(oldIndex, i);
+                var sortedItems = DashboardSortOrder switch
+                {
+                    DashboardSortOrder.ByStatus => _allFlyoutMenuItems.OrderByDescending(x => x.IsEnabled).ThenBy(x => x.Label).ToList(),
+                    _ => _allFlyoutMenuItems.OrderBy(x => x.Label).ToList(),
+                };
+
+                if (FlyoutMenuItems.Count == 0)
+                {
+                    foreach (var item in sortedItems)
+                    {
+                        FlyoutMenuItems.Add(item);
+                    }
+
+                    return;
+                }
+
+                for (int i = 0; i < sortedItems.Count; i++)
+                {
+                    var item = sortedItems[i];
+                    var oldIndex = FlyoutMenuItems.IndexOf(item);
+
+                    if (oldIndex != -1 && oldIndex != i)
+                    {
+                        FlyoutMenuItems.Move(oldIndex, i);
+                    }
+                }
+            }
+            finally
+            {
+                // Use dispatcher to reset flag after UI updates complete
+                _dispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+                {
+                    _isSorting = false;
+                });
             }
         }
     }
@@ -151,14 +178,17 @@ public sealed class AllAppsViewModel : Observable
     private void EnabledChangedOnUI(ModuleListItem item)
     {
         var flyoutItem = (FlyoutMenuItem)item;
-        if (_coordinator.UpdateModuleEnabled(flyoutItem.Tag, flyoutItem.IsEnabled))
-        {
-            _coordinator.NotifyUserSettingsInteraction();
-        }
-    }
+        var isEnabled = flyoutItem.IsEnabled;
 
-    private void ModuleEnabledChangedOnSettingsPage()
-    {
-        RefreshFlyoutMenuItems();
+        // Ignore toggle operations during sorting to prevent race conditions.
+        // Revert the toggle state since UI already changed due to TwoWay binding.
+        if (_isSorting)
+        {
+            flyoutItem.UpdateStatus(!isEnabled);
+            return;
+        }
+
+        _coordinator.UpdateModuleEnabled(flyoutItem.Tag, flyoutItem.IsEnabled);
+        SortFlyoutMenuItems();
     }
 }

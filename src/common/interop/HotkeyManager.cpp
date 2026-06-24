@@ -14,7 +14,7 @@ namespace winrt::PowerToys::Interop::implementation
     }
 
     // When all Shortcut keys are pressed, fire the HotkeyCallback event.
-    void HotkeyManager::KeyboardEventProc(KeyboardEvent ev)
+    void HotkeyManager::KeyboardEventProc(KeyboardEvent /*ev*/)
     {
         // pressedKeys always stores the latest keyboard state
         auto pressedKeysHandle = GetHotkeyHandle(pressedKeys);

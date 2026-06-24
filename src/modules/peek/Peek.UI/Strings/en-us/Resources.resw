@@ -341,6 +341,10 @@
     <value>No more files to preview.</value>
     <comment>The message to show when there are no files remaining to preview.</comment>
   </data>
+  <data name="NoFilesSelected" xml:space="preserve">
+    <value>No files selected or this folder is not supported for preview.</value>
+    <comment>Displayed when Peek is activated in a virtual folder (like Home or Recent) where file selection cannot be retrieved.</comment>
+  </data>
   <data name="DeleteFileError_NotFound" xml:space="preserve">
     <value>The file cannot be found. Please check if the file has been moved, renamed, or deleted.</value>
     <comment>Displayed if the file or path was not found</comment>

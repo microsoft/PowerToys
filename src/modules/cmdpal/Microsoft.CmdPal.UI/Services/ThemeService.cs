@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -7,6 +7,7 @@ using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -26,7 +27,8 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
     private static readonly TimeSpan ReloadDebounceInterval = TimeSpan.FromMilliseconds(500);
 
     private readonly UISettings _uiSettings;
-    private readonly SettingsModel _settings;
+    private readonly ISettingsService _settingsService;
+
     private readonly ResourceSwapper _resourceSwapper;
     private readonly NormalThemeProvider _normalThemeProvider;
     private readonly ColorfulThemeProvider _colorfulThemeProvider;
@@ -36,10 +38,13 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
     private bool _isInitialized;
     private bool _disposed;
     private InternalThemeState _currentState;
+    private DockThemeSnapshot _currentDockState;
 
     public event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
 
     public ThemeSnapshot Current => Volatile.Read(ref _currentState).Snapshot;
+
+    public DockThemeSnapshot CurrentDockTheme => Volatile.Read(ref _currentDockState);
 
     /// <summary>
     /// Initializes the theme service. Must be called after the application window is activated and on UI thread.
@@ -72,56 +77,66 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
 
         // provider selection
-        var intensity = Math.Clamp(_settings.CustomThemeColorIntensity, 0, 100);
-        IThemeProvider provider = intensity > 0 && _settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
-                ? _colorfulThemeProvider
-                : _normalThemeProvider;
+        var themeColorIntensity = Math.Clamp(_settingsService.Settings.CustomThemeColorIntensity, 0, 100);
+        var imageTintIntensity = Math.Clamp(_settingsService.Settings.BackgroundImageTintIntensity, 0, 100);
+        var effectiveColorIntensity = _settingsService.Settings.ColorizationMode == ColorizationMode.Image
+            ? imageTintIntensity
+            : themeColorIntensity;
+
+        IThemeProvider provider = UseColorfulProvider(effectiveColorIntensity) ? _colorfulThemeProvider : _normalThemeProvider;
 
         // Calculate values
-        var tint = _settings.ColorizationMode switch
+        var tint = _settingsService.Settings.ColorizationMode switch
         {
-            ColorizationMode.CustomColor => _settings.CustomThemeColor,
+            ColorizationMode.CustomColor => _settingsService.Settings.CustomThemeColor,
             ColorizationMode.WindowsAccentColor => _uiSettings.GetColorValue(UIColorType.Accent),
-            ColorizationMode.Image => _settings.CustomThemeColor,
+            ColorizationMode.Image => _settingsService.Settings.CustomThemeColor,
             _ => Colors.Transparent,
         };
-        var effectiveTheme = GetElementTheme((ElementTheme)_settings.Theme);
-        var imageSource = _settings.ColorizationMode == ColorizationMode.Image
-            ? LoadImageSafe(_settings.BackgroundImagePath)
+        var effectiveTheme = GetElementTheme((ElementTheme)_settingsService.Settings.Theme);
+        var imageSource = _settingsService.Settings.ColorizationMode == ColorizationMode.Image
+            ? LoadImageSafe(_settingsService.Settings.BackgroundImagePath)
             : null;
-        var stretch = _settings.BackgroundImageFit switch
+        var stretch = _settingsService.Settings.BackgroundImageFit switch
         {
             BackgroundImageFit.Fill => Stretch.Fill,
             _ => Stretch.UniformToFill,
         };
-        var opacity = Math.Clamp(_settings.BackgroundImageOpacity, 0, 100) / 100.0;
+        var opacity = Math.Clamp(_settingsService.Settings.BackgroundImageOpacity, 0, 100) / 100.0;
 
-        // create context and offload to actual theme provider
+        // create input and offload to actual theme provider
         var context = new ThemeContext
         {
             Tint = tint,
-            ColorIntensity = intensity,
+            ColorIntensity = effectiveColorIntensity,
             Theme = effectiveTheme,
             BackgroundImageSource = imageSource,
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
+            BackdropStyle = _settingsService.Settings.BackdropStyle,
+            BackdropOpacity = Math.Clamp(_settingsService.Settings.BackdropOpacity, 0, 100) / 100f,
         };
-        var backdrop = provider.GetAcrylicBackdrop(context);
-        var blur = _settings.BackgroundImageBlurAmount;
-        var brightness = _settings.BackgroundImageBrightness;
+        var backdrop = provider.GetBackdropParameters(context);
+        var blur = _settingsService.Settings.BackgroundImageBlurAmount;
+        var brightness = _settingsService.Settings.BackgroundImageBrightness;
 
         // Create public snapshot (no provider!)
+        var hasColorization = effectiveColorIntensity > 0
+            && _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image;
+
         var snapshot = new ThemeSnapshot
         {
             Tint = tint,
-            TintIntensity = intensity / 100f,
+            TintIntensity = effectiveColorIntensity / 100f,
             Theme = effectiveTheme,
             BackgroundImageSource = imageSource,
             BackgroundImageStretch = stretch,
             BackgroundImageOpacity = opacity,
             BackdropParameters = backdrop,
+            BackdropOpacity = context.BackdropOpacity,
             BlurAmount = blur,
             BackgroundBrightness = brightness / 100f,
+            HasColorization = hasColorization,
         };
 
         // Bundle with provider for internal use
@@ -134,8 +149,68 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         // Atomic swap
         Interlocked.Exchange(ref _currentState, newState);
 
+        // Compute DockThemeSnapshot from DockSettings
+        var dockSettings = _settingsService.Settings.DockSettings;
+        var dockIntensity = Math.Clamp(dockSettings.CustomThemeColorIntensity, 0, 100);
+        IThemeProvider dockProvider = dockIntensity > 0 && dockSettings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor or ColorizationMode.Image
+                ? _colorfulThemeProvider
+                : _normalThemeProvider;
+
+        var dockTint = dockSettings.ColorizationMode switch
+        {
+            ColorizationMode.CustomColor => dockSettings.CustomThemeColor,
+            ColorizationMode.WindowsAccentColor => _uiSettings.GetColorValue(UIColorType.Accent),
+            ColorizationMode.Image => dockSettings.CustomThemeColor,
+            _ => Colors.Transparent,
+        };
+        var dockEffectiveTheme = GetElementTheme((ElementTheme)dockSettings.Theme);
+        var dockImageSource = dockSettings.ColorizationMode == ColorizationMode.Image
+            ? LoadImageSafe(dockSettings.BackgroundImagePath)
+            : null;
+        var dockStretch = dockSettings.BackgroundImageFit switch
+        {
+            BackgroundImageFit.Fill => Stretch.Fill,
+            _ => Stretch.UniformToFill,
+        };
+        var dockOpacity = Math.Clamp(dockSettings.BackgroundImageOpacity, 0, 100) / 100.0;
+
+        var dockContext = new ThemeContext
+        {
+            Tint = dockTint,
+            ColorIntensity = dockIntensity,
+            Theme = dockEffectiveTheme,
+            BackgroundImageSource = dockImageSource,
+            BackgroundImageStretch = dockStretch,
+            BackgroundImageOpacity = dockOpacity,
+        };
+        var dockBackdrop = dockProvider.GetBackdropParameters(dockContext);
+        var dockBlur = dockSettings.BackgroundImageBlurAmount;
+        var dockBrightness = dockSettings.BackgroundImageBrightness;
+
+        var dockSnapshot = new DockThemeSnapshot
+        {
+            Tint = dockTint,
+            TintIntensity = dockIntensity / 100f,
+            Theme = dockEffectiveTheme,
+            Backdrop = dockSettings.Backdrop,
+            BackgroundImageSource = dockImageSource,
+            BackgroundImageStretch = dockStretch,
+            BackgroundImageOpacity = dockOpacity,
+            BackdropParameters = dockBackdrop,
+            BlurAmount = dockBlur,
+            BackgroundBrightness = dockBrightness / 100f,
+        };
+
+        Interlocked.Exchange(ref _currentDockState, dockSnapshot);
+
         _resourceSwapper.TryActivateTheme(provider.ThemeKey);
         ThemeChanged?.Invoke(this, new ThemeChangedEventArgs());
+    }
+
+    private bool UseColorfulProvider(int effectiveColorIntensity)
+    {
+        return _settingsService.Settings.ColorizationMode == ColorizationMode.Image
+               || (effectiveColorIntensity > 0 && _settingsService.Settings.ColorizationMode is ColorizationMode.CustomColor or ColorizationMode.WindowsAccentColor);
     }
 
     private static BitmapImage? LoadImageSafe(string? path)
@@ -167,13 +242,12 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         }
     }
 
-    public ThemeService(SettingsModel settings, ResourceSwapper resourceSwapper)
+    public ThemeService(ResourceSwapper resourceSwapper, ISettingsService settingsService)
     {
-        ArgumentNullException.ThrowIfNull(settings);
         ArgumentNullException.ThrowIfNull(resourceSwapper);
 
-        _settings = settings;
-        _settings.SettingsChanged += SettingsOnSettingsChanged;
+        _settingsService = settingsService;
+        _settingsService.SettingsChanged += SettingsOnSettingsChanged;
 
         _resourceSwapper = resourceSwapper;
 
@@ -195,15 +269,31 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
             {
                 Tint = Colors.Transparent,
                 Theme = ElementTheme.Light,
-                BackdropParameters = new AcrylicBackdropParameters(Colors.Black, Colors.Black, 0.5f, 0.5f),
+                BackdropParameters = new BackdropParameters(Colors.Black, Colors.Black, EffectiveOpacity: 0.5f, EffectiveLuminosityOpacity: 0.5f),
+                BackdropOpacity = 1.0f,
                 BackgroundImageOpacity = 1,
                 BackgroundImageSource = null,
                 BackgroundImageStretch = Stretch.Fill,
                 BlurAmount = 0,
                 TintIntensity = 1.0f,
                 BackgroundBrightness = 0,
+                HasColorization = false,
             },
             Provider = _normalThemeProvider,
+        };
+
+        _currentDockState = new DockThemeSnapshot
+        {
+            Tint = Colors.Transparent,
+            TintIntensity = 1.0f,
+            Theme = ElementTheme.Light,
+            Backdrop = DockBackdrop.Acrylic,
+            BackdropParameters = new BackdropParameters(Colors.Black, Colors.Black, 0.5f, 0.5f),
+            BackgroundImageOpacity = 1,
+            BackgroundImageSource = null,
+            BackgroundImageStretch = Stretch.Fill,
+            BlurAmount = 0,
+            BackgroundBrightness = 0,
         };
     }
 
@@ -229,7 +319,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         };
     }
 
-    private void SettingsOnSettingsChanged(SettingsModel sender, object? args)
+    private void SettingsOnSettingsChanged(ISettingsService sender, SettingsModel args)
     {
         RequestReload();
     }
@@ -249,7 +339,7 @@ internal sealed partial class ThemeService : IThemeService, IDisposable
         _disposed = true;
         _dispatcherQueueTimer?.Stop();
         _uiSettings.ColorValuesChanged -= UiSettings_ColorValuesChanged;
-        _settings.SettingsChanged -= SettingsOnSettingsChanged;
+        _settingsService.SettingsChanged -= SettingsOnSettingsChanged;
     }
 
     private sealed class InternalThemeState

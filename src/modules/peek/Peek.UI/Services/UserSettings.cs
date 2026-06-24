@@ -40,6 +40,7 @@ namespace Peek.UI
                     ShowTaskbarIcon = _settings.Properties.ShowTaskbarIcon.Value;
                     CloseAfterLosingFocus = _settings.Properties.CloseAfterLosingFocus.Value;
                     ConfirmFileDelete = _settings.Properties.ConfirmFileDelete.Value;
+                    ShowFilePreviewTooltip = _settings.Properties.ShowFilePreviewTooltip.Value;
 
                     Changed?.Invoke(this, EventArgs.Empty);
                 }
@@ -79,7 +80,7 @@ namespace Peek.UI
                 {
                     _confirmFileDelete = value;
 
-                    // We write directly to the settings file. The Settings UI will pick detect
+                    // We write directly to the settings file. The Settings UI will detect
                     // this change via its file watcher and update accordingly. This is the only
                     // setting that is modified by Peek itself.
                     lock (_settingsLock)
@@ -90,6 +91,11 @@ namespace Peek.UI
                 }
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the file metadata tooltip is shown when hovering over the Peek preview.
+        /// </summary>
+        public bool ShowFilePreviewTooltip { get; private set; }
 
         public UserSettings()
         {

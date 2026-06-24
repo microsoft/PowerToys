@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2025-08-08
+last updated: 2026-02-05
 issue id: n/a
 ---
 
@@ -75,6 +75,16 @@ functionality.
   - [Advanced scenarios](#advanced-scenarios)
     - [Status messages](#status-messages)
     - [Rendering of ICommandItems in Lists and Menus](#rendering-of-icommanditems-in-lists-and-menus)
+  - [Addenda I: API additions (ICommandProvider2)](#addenda-i-api-additions-icommandprovider2)
+  - [Addenda II: Commands with Parameters](#addenda-ii-commands-with-parameters)
+    - [String parameters](#string-parameters)
+    - [Command parameters - Invokable Commands](#command-parameters---invokable-commands)
+    - [Command parameters - List Commands](#command-parameters---list-commands)
+    - [Examples](#examples)
+  - [Addenda III: Rich Search (DRAFT)](#addenda-iii-rich-search-draft)
+    - [Nov 2025 status](#nov-2025-status)
+  - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
+    - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -350,7 +360,7 @@ On a cold launch, DevPal will do the following:
      * Start it up.
      * Check if it's fresh or frozen.
      * Call `TopLevelCommands`, and put all of them in the list
-     * Create a extension cache entry for that app.
+     * Create an extension cache entry for that app.
      * If the provider is frozen: we can actually release the
        `ICommandProvider` instance at this point.
    * And of course, if we don't find all the packages we had cached, then delete
@@ -451,7 +461,7 @@ ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette
 
 to open the store to a list of extensions. However, we can't list those
 ourselves directly. Our friends in DevHome suggested it could be possible to
-stand up a azure service which could query the store for us, and return a list
+stand up an azure service which could query the store for us, and return a list
 of extensions. This is not something that they currently have planned, nor would
 it be cheap from an engineering standpoint.
 
@@ -1545,13 +1555,12 @@ public class SpongebotPage : Microsoft.CommandPalette.Extensions.Toolkit.Markdow
         this.Name = "";
         this.Icon = new("https://imgflip.com/s/meme/Mocking-Spongebob.jpg");
     }
-    public void IFallbackHandler.UpdateQuery(string query) {
+    public void UpdateQuery(string query) {
         if (string.IsNullOrEmpty(query)) {
             this.Name = "";
         } else {
             this.Name = ConvertToAlternatingCase(query);
         }
-        return Task.CompletedTask.AsAsyncCommand();
     }
     static string ConvertToAlternatingCase(string input) {
         StringBuilder sb = new StringBuilder();
@@ -1778,7 +1787,7 @@ class MyAppSettings {
         /* You can save the settings to the file here */
         var mySettingsFilePath = /* whatever */;
         string mySettingsJson = mySettings.Settings.GetState();
-        // Or you could raise a event to indicate to the rest of your app that settings have changed.
+        // Or you could raise an event to indicate to the rest of your app that settings have changed.
     }
 }
 
@@ -2004,7 +2013,7 @@ class CommandWithOnlyProperties : IExtendedAttributesProvider { ... }
 
 will populate the WinRT type cache in Command Palette with the type information
 for `ICommandWithProperties`. In fact, if Command Palette has the
-`IExtendedAttributesProvider` type info in it's cache, and then later receives a new
+`IExtendedAttributesProvider` type info in its cache, and then later receives a new
 `MyCommandWithProperties` object, it'll actually be able to know that
 `MyCommandWithProperties` is an `IExtendedAttributesProvider`. WinRT is just weird
 like that some times.
@@ -2046,6 +2055,293 @@ Fortunately, we can put all of that (`GetApiExtensionStubs`,
 developers won't have to do anything. The toolkit will just do the right thing
 for them.
 
+## Addenda II: Commands with Parameters
+
+Extensions will often want to provide commands that accept parameters from the
+user.
+
+To support this, we're adding a new page type. The `IParametersPage` is a page
+that allows an extension to define a set of parameters that the user can fill.
+These parameters can be of different types, such as:
+* Labels: static text that provides context or instructions.
+* String parameters: text input fields where the user can type a string.
+* Command parameters: interactive fields that allow the user to select from a
+  list of predefined commands, or just press a button to select an input.
+
+Interleaving labels with parameters allows extensions to create rich, guided
+input forms for their commands. These are a more lightweight solution than the
+current adaptive card content. 
+
+```csharp
+[uuid("a2590cc9-510c-4af7-b562-a6b56fe37f55")]
+interface IParameterRun requires INotifyPropChanged
+{
+};
+
+interface ILabelRun requires IParameterRun
+{
+    String Text{ get; };
+};
+
+interface IParameterValueRun requires IParameterRun
+{
+    String PlaceholderText{ get; };
+    Boolean NeedsValue{ get; }; // TODO! name is weird
+};
+
+interface IStringParameterRun requires IParameterValueRun
+{
+    String Text{ get; set; };
+
+    // TODO! do we need a way to validate string inputs?
+};
+
+interface ICommandParameterRun requires IParameterValueRun
+{
+    String DisplayText{ get; };
+    ICommand GetSelectValueCommand(UInt64 hostHwnd);
+    IIconInfo Icon{ get; }; // ? maybe
+
+};
+
+interface IParametersPage requires IPage
+{
+    IParameterRun[] Parameters{ get; };
+    IListItem Command{ get; };
+};
+```
+
+When we open a `IParametersPage`, we will render the `Parameters` in the search
+box. We'll move focus to the first `IParameterRun` that is not a `ILabelRun`.
+What those interactions looks like depends on the type of `IParameterRun`. 
+
+There are three basic types of inputs: strings, invokable commands, and lists.
+Strings are a special case that doesn't require a command to set the value.
+Lists and invokable commands are picked based on the type of the
+`SelectValueCommand`. Each of these are detailed below. 
+
+When all the parameters have `NeedsValue` set to `false`, we will display a
+single item to the user - the `Command` item. 
+
+### String parameters
+
+These are rendered as a text box within the search box. The user can type into
+it. Focus is moved to the next parameter when the user presses Enter or tab. 
+
+### Command parameters - Invokable Commands
+
+These are used when the `SelectValueCommand` is an `IInvokableCommand`.
+
+These are rendered as a button within the search box. The button text is
+`DisplayText` if it is set. If it is not, we will display the
+`PlaceholderText`. If the user clicks the button, we invoke the
+`SelectValueCommand` (and ignore the `CommandResult`).
+
+This is good for file pickers, date pickers, color pickers, etc. Anything that
+requires a custom UI to pick a value.
+
+When the extension has picked a value, it should set the `NeedsValue` to false. 
+The extension can also set the `DisplayText` and `Icon` to reflect the chosen value.
+
+When the user presses enter with the button focused, we will also invoke the
+`SelectValueCommand`.
+
+When the user presses tab, we will move focus to the next parameter.
+
+If the `NeedsValue` property is changed to `false` while it's focused, we will
+move focus to the next parameter.
+
+### Command parameters - List Commands
+
+These are used when the `SelectValueCommand` is an `IListPage` - both static and
+dynamic lists work similarly.
+
+These are rendered as a text box within the search box. When the user focuses
+the text box, we will display the items from the `IListPage` in the body of
+CmdPal. The user can then type to filter the list. This filtering will work the
+same way as any other list page in CmdPal - CmdPal will filter static lists, or
+pass the query to a dynamic list.
+
+The items in this list should all be `IListItem` objects with
+`IInvokableCommands`. Putting a `IPage` into one of these items will cause the
+user to navigate away from the parameters page, which would probably be
+unexpected.
+
+When the user picks an item from the list, the extension should handle that
+command by bubbling an event up to the `CommandRun`, and setting the `Value`,
+`DisplayText`, and `Icon` properties, and setting `NeedsValue` to false.
+
+When the user presses enter with the text box focused, we will invoke the
+command of the selected item in the list. 
+
+When the user presses tab, we will move focus to the next parameter.
+
+If the `NeedsValue` property is changed to `false` while it's focused, we will
+move focus to the next parameter.
+
+### Examples
+
+Lets say you had a command like "Create a note \${title} in \${folder}".
+`title` is a string input, and `folder` is a static list of folders. 
+
+The extension author can then define a `IParametersPage` with four runs in it:
+* A `ILabelRun` for "Create a note"
+* A `IStringParameterRun` for the `title`
+* A `ILabelRun` for "in"
+* A `ICommandParameterRun` for the `folder`. The `Command` will be a
+  `IListPage`, where the items are possible folders
+
+In this example, the user can pick the "create note" command, then type the
+title, hit enter/tab, and then pick a folder from the list, then hit enter to
+run the command.
+
+Samples for the parameters page are implemented over in 
+[the sample extension](../../ext/SamplePagesExtension/Pages/ParameterSamples.cs)
+
+
+## Addenda III: Rich Search (DRAFT)
+
+> [!NOTE]
+> _Mike_: Rich search and parameters were prototyped together, but ultimately we used two different solutions. 
+>
+> Currently, we have a dummy implementation of draft C (ZWSP tokens), but without full API changes. Detailed [below](#nov-2025-status).
+
+Extensions will often want to provide rich search experiences for their users.
+
+This addenda is broken into multiple draft specs currently. These represent
+different approaches to the same goals. 
+
+* **A**: [Rich Search Box](./drafts/RichSearchBox-draft-A.md)
+* **B**: [Prefix Search](./drafts/PrefixSearch-draft-B.md)
+* **C**: [ZWSP tokens](./drafts/PlainRichSearch-draft-C.md)
+
+### Nov 2025 status
+
+As of Nov 2025, we're implementing a simple version of draft C in the host. 
+
+In this version, if the extension implements `IDynamicListPage`, and also
+implements `IExtendedAttributesProvider`, then they can set the `TokenSearch`
+property. This will enlighten CmdPal to treat ZWSP-separated tokens in the
+search text specially. 
+
+For an example, see 
+[this sample implementation](../../ext/SamplePagesExtension/Pages/SampleSuggestionsPage.cs).
+
+In my head, I am still leaning towards a more full-featured version of draft C,
+but with full CommandItem's in the `ISearchUpdateArgs` instead of just strings.
+We'd almost need a new page type to support that, where the extension can add
+`ICommandItem`s to the search box directly.
+
+## Addenda IV: Dock bands
+
+The "dock" is another way to surface commands to the user. This is a
+toolbar-like window that can be docked to the side of the screen, or floated as
+its own window. It enables another surface for extensions to display real-time
+information and shortcuts to users.
+
+Bands are powered by the same interfaces as DevPal itself. Extensions can provide
+bands via the new `DockBand` property on `ICommandProvider3`.
+
+```csharp
+interface ICommandProvider3 requires ICommandProvider2
+{
+    ICommandItem[] GetDockBands();
+};
+```
+
+A **Dock Band** is one "strip of items" in the dock. Each band can have multiple
+items. This allows an extension to create a strip of buttons that should all be
+treated as a single unit. For example, a media player band will want probably
+four items:
+* one for the previous track
+* one for play/pause
+* one for next track
+* and one to display the album art and track title
+
+`GetDockBands` returns an array of `ICommandItem`s. Each `ICommandItem`
+represents one band in the dock. These represent all of the bands that an
+extension would allow the user to add to their dock. 
+
+All of the `ICommandItem`s returned from `GetDockBands` **must** have a
+`Command` with a non-empty `Id` set. If the `Id` is null or empty, DevPal will
+ignore that band.
+
+Bands are not automatically added to the dock. Instead, the user must choose
+which bands they want to add. This is done via the DevPal settings page.
+Furthermore, bands are not displayed in the list of commands in DevPal itself.
+This allows extension authors to create objects that are only intended for the
+dock, without cluttering up the main DevPal UI, and vice versa.
+
+DevPal will then create UI in the dock for each band the user has chosen to add.
+What that looks like will depend on the `Command` in the `ICommandItem`:
+* A `IInvokableCommand` will be rendered as a single button. Think "the
+  time/date" button on the taskbar, that opens the notification center.
+* A `IListPage` will be rendered as a strip of buttons, one for each `IListItem`
+  in the list. Think "media controls" for a music player. 
+* A `IContentPage` will be rendered as a single button. Clicking that button
+  will open a flyout with that content rendered in it. Think "weather" or "news"
+  flyouts.
+
+If the `Command` in the `IListItem`s of a band are pages, then clicking those
+buttons will open DevPal to that page, as if it were a flyout from the dock.
+
+The `.Title` property of the top-level `ICommandItem` representing the band will
+be used as the name of the band in the settings. So a media player band might
+want to set the `Title` to "Contoso Music Player", even if the individual
+buttons in the band don't show that title.
+
+Users may also "pin" a top-level command from DevPal into the dock. DevPal will
+take care of creating a new band (owned by devpal) with that command in it. This
+allows users to add quick shortcuts to their favorite commands in the dock.
+Think: pinning an app, or pinning a particular GitHub query. 
+
+Bands are added via ID. An extension may choose to have a TopLevelCommand and a
+DockBand with the same `Id`. In this case, if the user pins the TopLevelCommand
+to the dock, DevPal will pin the band from `GetDockBands`, rather than creating
+a simple pinned command. This allows extension authors to seamlessly have a
+top-level command present a palette-specific experience, while also having a
+dock-specific experience. In our ongoing media player example, the top-level
+command might open DevPal to a full-featured music control page, while the dock
+band has simpler buttons on it (without a title/subtitle).
+
+Users may choose to have:
+* the orientation of the dock: vertical or horizontal
+* the size of the dock
+* which bands are shown in the dock
+* whether the "labels" (read: `Title` & `Subtitle`) of individual bands are
+  shown or hidden.
+  - Dock bands will still display the `Title` & `Subtitle` of each item in the
+    band as the tooltip on those items, even when the "labels" are hidden. 
+
+### Pinning nested commands to the dock (and top level)
+
+We'll use another command provider method to allow the host to ask extensions
+for items based on their ID.
+
+```csharp
+interface ICommandProvider4 requires ICommandProvider3
+{
+    ICommandItem GetCommandItem(String id);
+};
+```
+
+This will allow users to pin not just top-level commands, but also nested
+commands which have an ID. The host can store that ID away, and then later ask
+the extension for the `ICommandItem` with that ID, to get the full details of
+the command to pin.
+
+This is needed separate from the `GetCommand` method on `ICommandProvider`,
+because that method is was designed for two main purposes:
+
+* Short-circuiting the loading of top-level commands for frozen extensions. In
+  that case, DevPal would only need to look up the actual `ICommand` to perform
+  it. It wouldn't need the full `ICommandItem` with all the details.
+* Allowing invokable commands to navigate using the GoToPageArgs. In that case,
+  DevPal would only need the `ICommand` to perform the navigation.
+
+In neither of those scenarios was the full "display" of the item needed. In
+pinning scenarios, however, we need everything that the user would see in the UI
+for that item, which is all in the `ICommandItem`.
 ## Class diagram
 
 This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconData` and `IPropChanged`, which are used in many places.)
@@ -2237,7 +2533,7 @@ follow - these are not part of the current SDK spec.
 
 > [!NOTE]
 >
-> A thought: what if a action returns a `CommandResult.Entity`, then that takes
+> A thought: what if an action returns a `CommandResult.Entity`, then that takes
 > devpal back home, but leaves the entity in the query box. This would allow for
 > a Quicksilver-like "thing, do" flow. That command would prepopulate the
 > parameters. So we would then filter top-level commands based on things that can

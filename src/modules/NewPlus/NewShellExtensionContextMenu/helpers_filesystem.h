@@ -4,22 +4,6 @@
 
 namespace newplus::helpers::filesystem
 {
-    namespace constants::non_localizable
-    {
-        constexpr WCHAR desktop_ini_filename[] = L"desktop.ini";
-    }
-
-    inline bool is_hidden(const std::filesystem::path path)
-    {
-        const std::filesystem::path::string_type name = path.filename();
-        if (name == constants::non_localizable::desktop_ini_filename)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     inline bool is_directory(const std::filesystem::path path)
     {
         const auto entry = std::filesystem::directory_entry(path);

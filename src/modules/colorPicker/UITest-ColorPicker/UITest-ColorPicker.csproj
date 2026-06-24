@@ -1,6 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<!-- Look at Directory.Build.props in root for common stuff as well -->
-	<Import Project="..\..\..\Common.Dotnet.CsWinRT.props" />
+	<Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
 	<PropertyGroup>
 		<ProjectGuid>{6880CE86-5B71-4440-9795-79A325F95747}</ProjectGuid>
@@ -14,15 +14,12 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<OutputPath>..\..\..\..\$(Platform)\$(Configuration)\tests\UITests-ColorPicker\</OutputPath>
+		<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\UITests-ColorPicker\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Appium.WebDriver" />
 		<PackageReference Include="MSTest" />
-		<PackageReference Include="System.Net.Http" />
-		<PackageReference Include="System.Private.Uri" />
-		<PackageReference Include="System.Text.RegularExpressions" />
 	</ItemGroup>
 
 	<ItemGroup>

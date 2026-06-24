@@ -62,7 +62,7 @@ internal static class Helper
             {
                 Process p = Process.GetCurrentProcess();
                 string procInfo = $"{p.PrivateMemorySize64 / 1024 / 1024}MB, {p.TotalProcessorTime}, {Environment.ProcessorCount}.";
-                string threadStacks = $"{procInfo} {Thread.DumpThreadsStack()}";
+                string threadStacks = $"{procInfo}\r\n{Thread.DumpThreadsStack()}\r\n";
                 Logger.TelemetryLogTrace(threadStacks, SeverityLevel.Error);
                 break;
             }
@@ -379,7 +379,7 @@ internal static class Helper
         log += "=============================================================================================================================\r\n";
         log += $"{Application.ProductName} version {Application.ProductVersion}\r\n";
 
-        log += $"{Setting.Values.Username}/{Encryption.GetDebugInfo(Encryption.MyKey)}\r\n";
+        log += $"{Setting.Values.Username}/{Logger.GetChecksum(Encryption.MyKey)}\r\n";
         log += $"{Common.MachineName}/{Common.MachineID}/{Common.DesMachineID}\r\n";
         log += $"Id: {Setting.Values.DeviceId}\r\n";
         log += $"Matrix: {string.Join(",", MachineStuff.MachineMatrix)}\r\n";
@@ -428,9 +428,12 @@ internal static class Helper
         log += Setting.Values.LastPersonalizeLogonScr + "\r\n";
         log += "Name2IP =\r\n" + Setting.Values.Name2IP + "\r\n";
 
+        // note - this doesn't actually log the last 10 messages - it really concatenates the counts of
+        // the first 10 unique messages that were logged, which isn't really very useful so we'll remove it
+        /*
         log += "Last 10 trace messages:\r\n";
-
         log += string.Join(Environment.NewLine, Logger.LogCounter.Select(item => $"({item.Value}): {item.Key}").Take(10));
+        */
 
         log += "\r\n=============================================================================================================================";
 

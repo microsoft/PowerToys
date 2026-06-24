@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -13,14 +14,17 @@ namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 public sealed partial class BuiltInsCommandProvider : CommandProvider
 {
     private readonly OpenSettingsCommand openSettings = new();
+    private readonly OpenGallerySettingsCommand openGallerySettings = new();
     private readonly QuitCommand quitCommand = new();
     private readonly FallbackReloadItem _fallbackReloadItem = new();
     private readonly FallbackLogItem _fallbackLogItem = new();
     private readonly NewExtensionPage _newExtension = new();
+    private readonly GoHomeDockCommand _goHomeDockCommand = new();
 
     public override ICommandItem[] TopLevelCommands() =>
         [
             new CommandItem(openSettings) { },
+            new CommandItem(openGallerySettings) { },
             new CommandItem(_newExtension) { Title = _newExtension.Title },
         ];
 
@@ -41,7 +45,12 @@ public sealed partial class BuiltInsCommandProvider : CommandProvider
     {
         Id = "com.microsoft.cmdpal.builtin.core";
         DisplayName = Properties.Resources.builtin_display_name;
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.scale-200.png");
+        Icon = IconHelpers.FromRelativePath("Assets\\Square44x44Logo.altform-unplated_targetsize-256.png");
+    }
+
+    public override ICommandItem[]? GetDockBands()
+    {
+        return [new WrappedDockItem(_goHomeDockCommand, Properties.Resources.builtin_command_palette_title)];
     }
 
     public override void InitializeWithHost(IExtensionHost host) => BuiltinsExtensionHost.Instance.Initialize(host);

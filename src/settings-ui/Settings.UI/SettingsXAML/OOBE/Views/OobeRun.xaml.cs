@@ -5,6 +5,7 @@
 using System.Threading;
 
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.OOBE.Enums;
 using Microsoft.PowerToys.Settings.UI.OOBE.ViewModel;
 using Microsoft.PowerToys.Settings.UI.Views;
@@ -13,9 +14,6 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OobeRun : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
@@ -23,15 +21,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeRun()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Run]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.Run);
             DataContext = ViewModel;
         }
 
         private void Start_Run_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.RunSharedEventCallback != null)
+            if (OobeWindow.RunSharedEventCallback != null)
             {
-                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeShellPage.RunSharedEventCallback()))
+                using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, OobeWindow.RunSharedEventCallback()))
                 {
                     eventHandle.Set();
                 }
@@ -42,9 +40,9 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(PowerLauncherPage));
+                OobeWindow.OpenMainWindowCallback(typeof(PowerLauncherPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -55,6 +53,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             ViewModel.LogOpeningModuleEvent();
 
             HotkeyControl.Keys = SettingsRepository<PowerLauncherSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenPowerLauncher.GetKeysList();
+
+            // Disable the Launch button if the module is disabled
+            var generalSettings = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
+            LaunchButton.IsEnabled = ModuleHelper.GetIsModuleEnabled(generalSettings, ManagedCommon.ModuleType.PowerLauncher);
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

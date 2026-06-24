@@ -246,7 +246,7 @@ void SendKeyInput( const WORD vK, const wchar_t ch, const bool keyup = false )
 
     SendInput( 1, &input, sizeof( INPUT ) );
 
-    // Add latency between keydown/up to accomodate notepad input handling
+    // Add latency between keydown/up to accommodate notepad input handling
     if( !keyup && g_Notepad )
     {
         std::this_thread::sleep_for( std::chrono::milliseconds( NOTEPAD_REFRESH ) );
@@ -846,7 +846,6 @@ LRESULT CALLBACK DemoTypeHookProc( int nCode, WPARAM wParam, LPARAM lParam )
                 if( g_UserDriven )
                 {
                     // Set baseline indentation to a blocking flag
-                    // Otherwise indentation seeking will trigger user-driven injection events
                     g_BaselineIndentation = INDENT_SEEK_FLAG;
 
                     // Initialize the injection handler
@@ -1330,7 +1329,7 @@ int GetDemoTypeFile( const TCHAR* filePath )
         buffer << file.rdbuf();
         std::string narrowText = buffer.str();
 
-        // Determine the size our wide string will need to be to accomodate the conversion
+        // Determine the size our wide string will need to be to accommodate the conversion
         int wideSize = MultiByteToWideChar( CP_UTF8, 0, narrowText.c_str(), -1, nullptr, 0 );
         if( wideSize <= 0 )
         {

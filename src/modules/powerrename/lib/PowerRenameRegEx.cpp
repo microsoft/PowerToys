@@ -33,22 +33,26 @@ static std::wstring SanitizeAndNormalize(const std::wstring& input)
 
     // Normalize to NFC (Precomposed).
     // Get the size needed for the normalized string, including null terminator.
-    int size = NormalizeString(NormalizationC, sanitized.c_str(), -1, nullptr, 0);
-    if (size <= 0)
+    int sizeEstimate = NormalizeString(NormalizationC, sanitized.c_str(), -1, nullptr, 0);
+    if (sizeEstimate <= 0)
     {
         return sanitized; // Return unaltered if normalization fails.
     }
 
     // Perform the normalization.
     std::wstring normalized;
-    normalized.resize(size);
-    NormalizeString(NormalizationC, sanitized.c_str(), -1, &normalized[0], size);
+    normalized.resize(sizeEstimate);
+    int actualSize = NormalizeString(NormalizationC, sanitized.c_str(), -1, &normalized[0], sizeEstimate);
 
-    // Remove the explicit null terminator added by NormalizeString.
-    if (!normalized.empty() && normalized.back() == L'\0')
+    if (actualSize <= 0)
     {
-        normalized.pop_back();
+        // Normalization failed, return sanitized string.
+        return sanitized;
     }
+
+    // Resize to actual size minus the null terminator.
+    // actualSize includes the null terminator when input length is -1.
+    normalized.resize(static_cast<size_t>(actualSize) - 1);
 
     return normalized;
 }

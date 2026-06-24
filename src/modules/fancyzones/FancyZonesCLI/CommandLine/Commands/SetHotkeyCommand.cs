@@ -9,6 +9,7 @@ using System.CommandLine.Invocation;
 using System.Globalization;
 using System.Linq;
 
+using FancyZonesCLI.Utils;
 using FancyZonesEditorCommon.Data;
 using FancyZonesEditorCommon.Utils;
 
@@ -35,11 +36,17 @@ internal sealed partial class SetHotkeyCommand : FancyZonesBaseCommand
     {
         // FancyZones running guard is handled by FancyZonesBaseCommand.
         int key = context.ParseResult.GetValueForArgument(_key);
-        string layout = context.ParseResult.GetValueForArgument(_layout);
+        string layoutInput = context.ParseResult.GetValueForArgument(_layout);
 
         if (key < 0 || key > 9)
         {
             throw new InvalidOperationException(Properties.Resources.set_hotkey_error_invalid_key);
+        }
+
+        // Normalize GUID to Windows format with braces (supports input with or without braces)
+        if (!GuidHelper.TryNormalizeGuid(layoutInput, out string layout))
+        {
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_hotkey_error_not_custom, layoutInput));
         }
 
         // Editor only allows assigning hotkeys to existing custom layouts.
@@ -60,7 +67,7 @@ internal sealed partial class SetHotkeyCommand : FancyZonesBaseCommand
 
         if (!matchedLayout.HasValue)
         {
-            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_hotkey_error_not_custom, layout));
+            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, Properties.Resources.set_hotkey_error_not_custom, layoutInput));
         }
 
         string layoutName = matchedLayout.Value.Name;

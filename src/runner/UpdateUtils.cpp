@@ -5,6 +5,7 @@
 #include "ActionRunnerUtils.h"
 #include "general_settings.h"
 #include "trace.h"
+#include "tray_icon.h"
 #include "UpdateUtils.h"
 
 #include <common/utils/gpo.h>
@@ -130,6 +131,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         state.releasePageUrl = {};
         state.downloadedInstallerFilename = {};
         Logger::trace(L"Version is up to date");
+        dispatch_run_on_main_ui_thread([](PVOID) { set_tray_icon_update_available(false); }, nullptr);
         return;
     }
     const auto new_version_info = std::get<new_version_download_info>(version_info);
@@ -173,11 +175,13 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         // Cleanup old updates before downloading the latest
         updating::cleanup_updates();
 
-        if (download_new_version(new_version_info).get())
+        auto downloaded_installer = std::move(download_new_version_async(new_version_info)).get();
+        if (downloaded_installer)
         {
             state.state = UpdateState::readyToInstall;
             state.downloadedInstallerFilename = new_version_info.installer_filename;
             Trace::UpdateDownloadCompleted(true, new_version_info.version.toWstring());
+            dispatch_run_on_main_ui_thread([](PVOID) { set_tray_icon_update_available(true); }, nullptr);
             if (show_notifications)
             {
                 ShowNewVersionAvailable(new_version_info);
@@ -196,6 +200,7 @@ void ProcessNewVersionInfo(const github_version_info& version_info,
         Logger::trace(L"New version is ready to download, showing notification");
         state.state = UpdateState::readyToDownload;
         state.downloadedInstallerFilename = {};
+        dispatch_run_on_main_ui_thread([](PVOID) { set_tray_icon_update_available(true); }, nullptr);
         if (show_notifications)
         {
             ShowOpenSettingsForUpdate();
@@ -232,7 +237,7 @@ void PeriodicUpdateWorker()
         bool version_info_obtained = false;
         try
         {
-            const auto new_version_info = get_github_version_info_async().get();
+            const auto new_version_info = std::move(get_github_version_info_async()).get();
             if (new_version_info.has_value())
             {
                 version_info_obtained = true;
@@ -272,7 +277,7 @@ void CheckForUpdatesCallback()
     auto state = UpdateState::read();
     try
     {
-        auto new_version_info = get_github_version_info_async().get();
+        auto new_version_info = std::move(get_github_version_info_async()).get();
         if (!new_version_info)
         {
             // We couldn't get a new version from github for some reason, log error
