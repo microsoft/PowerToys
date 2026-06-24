@@ -146,7 +146,7 @@ public:
             }
         }
 
-        m_showEventWaiter = EventWaiter(CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_EVENT, [&](int err) {
+        m_showEventWaiter.start(CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_EVENT, [&](DWORD err) {
             if (m_enabled && err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_EVENT);
@@ -164,7 +164,7 @@ public:
             }
         });
 
-        m_showAdminEventWaiter = EventWaiter(CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT, [&](int err) {
+        m_showAdminEventWaiter.start(CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT, [&](DWORD err) {
             if (m_enabled && err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::SHOW_ENVIRONMENT_VARIABLES_ADMIN_EVENT);
@@ -224,6 +224,12 @@ public:
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
         return powertoys_gpo::getConfiguredEnvironmentVariablesEnabledValue();
+    }
+
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
     }
 
     virtual bool get_config(wchar_t* /*buffer*/, int* /*buffer_size*/) override

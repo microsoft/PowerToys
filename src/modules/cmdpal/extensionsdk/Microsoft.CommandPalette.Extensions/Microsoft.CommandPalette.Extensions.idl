@@ -160,6 +160,15 @@ namespace Microsoft.CommandPalette.Extensions
     [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsData {}
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum ContentSize
+    {
+        Small = 0,
+        Medium = 1,
+        Large = 2,
+    };
+
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IDetailsElement {
         String Key { get; };
@@ -339,6 +348,26 @@ namespace Microsoft.CommandPalette.Extensions
         IContent RootContent { get; };
         IContent[] GetChildren();
     }
+
+    enum FontFamily
+    {
+        UserInterface,
+        Monospace,
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IPlainTextContent requires IContent {
+        String Text { get; };
+        FontFamily FontFamily { get; };
+        Boolean WrapWords { get; };
+    }
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IImageContent requires IContent {
+        IIconInfo Image { get; };
+        Int32 MaxWidth { get; };
+        Int32 MaxHeight { get; };
+    }
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
     interface IContentPage requires IPage, INotifyItemsChanged {
@@ -361,6 +390,11 @@ namespace Microsoft.CommandPalette.Extensions
     interface IFallbackCommandItem requires ICommandItem {
         IFallbackHandler FallbackHandler{ get; };
         String DisplayTitle { get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IFallbackCommandItem2 requires IFallbackCommandItem {
+        String Id { get; };
     };
     
     [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
@@ -391,6 +425,60 @@ namespace Microsoft.CommandPalette.Extensions
     {
         Object[] GetApiExtensionStubs();
     };
-    
 
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider3 requires ICommandProvider2
+    {
+        ICommandItem[] GetDockBands();
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider4 requires ICommandProvider3
+    {
+        ICommandItem GetCommandItem(String id);
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    [uuid("a2590cc9-510c-4af7-b562-a6b56fe37f55")]
+    interface IParameterRun requires INotifyPropChanged
+    {
+
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ILabelRun requires IParameterRun
+    {
+        String Text{ get; };
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IParameterValueRun requires IParameterRun
+    {
+        String PlaceholderText{ get; };
+        Boolean NeedsValue{ get; }; // TODO! name is weird
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IStringParameterRun requires IParameterValueRun
+    {
+        String Text{ get; set; };
+
+        // TODO! do we need a way to validate string inputs?
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandParameterRun requires IParameterValueRun
+    {
+        String DisplayText{ get; };
+        ICommand GetSelectValueCommand(UInt64 hostHwnd);
+        IIconInfo Icon{ get; }; // ? maybe
+
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IParametersPage requires IPage
+    {
+        IParameterRun[] Parameters{ get; };
+        IListItem Command{ get; };
+    };
 }

@@ -18,18 +18,18 @@ namespace PowerAccent.Core.Tools
                 top < screen.Y ? caret.Y + 20 : top);
         }
 
-        public static Point GetRawCoordinatesFromPosition(Position position, Rect screen, Size window)
+        public static Point GetRawCoordinatesFromPosition(Position position, Rect screen, Size window, double dpi)
         {
             int offset = 24;
 
             double pointX = position switch
             {
                 Position.Top or Position.Bottom or Position.Center
-                    => screen.X + (screen.Width / 2) - (window.Width / 2),
+                    => screen.X + (screen.Width / 2) - (window.Width * dpi / 2),
                 Position.TopLeft or Position.Left or Position.BottomLeft
                     => screen.X + offset,
                 Position.TopRight or Position.Right or Position.BottomRight
-                    => screen.X + screen.Width - (window.Width + offset),
+                    => screen.X + screen.Width - ((window.Width * dpi) + offset),
                 _ => throw new NotImplementedException(),
             };
 
@@ -38,9 +38,9 @@ namespace PowerAccent.Core.Tools
                 Position.TopLeft or Position.Top or Position.TopRight
                     => screen.Y + offset,
                 Position.Left or Position.Center or Position.Right
-                    => screen.Y + (screen.Height / 2) - (window.Height / 2),
+                    => screen.Y + (screen.Height / 2) - (window.Height * dpi / 2),
                 Position.BottomLeft or Position.Bottom or Position.BottomRight
-                    => screen.Y + screen.Height - (window.Height + offset),
+                    => screen.Y + screen.Height - ((window.Height * dpi) + offset),
                 _ => throw new NotImplementedException(),
             };
 

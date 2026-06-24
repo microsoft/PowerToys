@@ -14,7 +14,7 @@ namespace CommonLibTest
     [TestClass]
     public class SettingsRepositoryTest
     {
-        private static Task<SettingsRepository<GeneralSettings>> GetSettingsRepository(ISettingsUtils settingsUtils)
+        private static Task<SettingsRepository<GeneralSettings>> GetSettingsRepository(SettingsUtils settingsUtils)
         {
             return Task.Run(() =>
             {

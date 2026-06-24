@@ -32,7 +32,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
         private readonly PowerOcrSettings _powerOcrSettings;
@@ -72,7 +72,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<string, int> SendConfigMSG { get; }
 
         public PowerOcrViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<PowerOcrSettings> powerOcrsettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)

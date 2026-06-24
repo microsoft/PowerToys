@@ -39,6 +39,10 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WIN7_VERSION		0x106
 #define WIN10_VERSION		0x206
 
+// Default recording format frame rates
+#define RECORDING_FORMAT_GIF_DEFAULT_FRAMERATE 15
+#define RECORDING_FORMAT_MP4_DEFAULT_FRAMERATE 30
+
 // Time that we'll cache live zoom window to avoid flicker
 // of live zooming on Vista/ws2k8
 #define LIVEZOOM_WINDOW_TIMEOUT	2*3600*1000
@@ -62,6 +66,7 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define WM_USER_MAGNIFY_CURSOR	WM_USER+108
 #define WM_USER_EXIT_MODE		WM_USER+109
 #define WM_USER_RELOAD_SETTINGS	WM_USER+110
+#define WM_USER_RECORDING_STARTED WM_USER+111
 
 typedef struct _TYPED_KEY {
     RECT		rc;
@@ -85,6 +90,8 @@ typedef struct {
 #define COLOR_ORANGE	RGB(255,128,0)
 #define COLOR_YELLOW	RGB(255, 255, 0 )
 #define COLOR_PINK		RGB(255,128,255)
+#define COLOR_WHITE		RGB(255,255,255)
+#define COLOR_BLACK		RGB(0,0,0)
 #define COLOR_BLUR		RGB(112,112,112)
 
 #define DRAW_RECTANGLE	1
@@ -97,6 +104,10 @@ typedef struct {
 #define LIVE_DRAW_ZOOM   3
 
 #define PEN_COLOR_HIGHLIGHT(Pencolor)	((Pencolor >> 24) != 0xFF)
+
+// Debug output — compiles to nothing in Release builds.
+void OutputDebug(const TCHAR* format, ...);
+
 #define PEN_COLOR_BLUR(Pencolor)        ((Pencolor & 0x00FFFFFF) == COLOR_BLUR)
 
 #define CURSOR_SAVE_MARGIN  4

@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
-using Microsoft.CmdPal.Core.ViewModels;
-using Microsoft.CmdPal.Core.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -58,6 +58,8 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
             IFormContent form => new ContentFormViewModel(form, context),
             IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
             ITreeContent tree => new ContentTreeViewModel(tree, context),
+            IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
+            IImageContent image => new ContentImageViewModel(image, context),
             _ => null,
         };
         return viewModel;

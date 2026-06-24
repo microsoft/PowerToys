@@ -11,7 +11,7 @@ Keyboard Manager consists of two main components:
 ## Development Environment Setup
 
 1. Clone the PowerToys repository
-2. Open `PowerToys.sln` in Visual Studio
+2. Open `PowerToys.slnx` in Visual Studio
 3. Ensure all NuGet packages are restored
 4. Build the entire solution in Debug configuration
 

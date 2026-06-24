@@ -9,7 +9,10 @@
     mc:Ignorable="d">
 
     <Grid>
-        <Button Click="ShortcutConflictBtn_Click" Style="{StaticResource SubtleButtonStyle}">
+        <Button
+            x:Uid="ShortcutConflictControl_Automation"
+            Click="ShortcutConflictBtn_Click"
+            Style="{StaticResource SubtleButtonStyle}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -20,7 +23,10 @@
                     AutomationProperties.AccessibilityView="Raw"
                     FontSize="20"
                     Glyph="&#xEDA7;" />
-                <StackPanel Grid.Column="1" Orientation="Vertical">
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Vertical"
+                    Spacing="1">
                     <TextBlock x:Uid="ShortcutConflictControl_Title" FontWeight="SemiBold" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"

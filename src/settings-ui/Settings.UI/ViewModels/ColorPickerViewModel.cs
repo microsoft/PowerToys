@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly System.Threading.Lock _delayedActionLock = new System.Threading.Lock();
 
         private readonly ColorPickerSettings _colorPickerSettings;
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Dictionary<string, string> _colorFormatsPreview;
 
         public ColorPickerViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             ISettingsRepository<ColorPickerSettings> colorPickerSettingsRepository,
             Func<string, int> ipcMSGCallBackFunc)

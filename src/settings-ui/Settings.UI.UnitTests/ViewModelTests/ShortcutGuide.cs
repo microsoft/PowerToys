@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO.Abstractions;
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -30,7 +31,7 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ShortcutGuideSettings.ModuleName, fileName);
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object, settingPathMock.Object);
             ShortcutGuideSettings originalSettings = mockSettingsUtils.GetSettingsOrDefault<ShortcutGuideSettings>(ShortcutGuideSettings.ModuleName);
@@ -47,7 +48,6 @@ namespace ViewModelTests
 
             // Verify that the old settings persisted
             Assert.AreEqual(originalGeneralSettings.Enabled.ShortcutGuide, viewModel.IsEnabled);
-            Assert.AreEqual(originalSettings.Properties.OverlayOpacity.Value, viewModel.OverlayOpacity);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
@@ -55,9 +55,9 @@ namespace ViewModelTests
             BackCompatTestProperties.VerifyGeneralSettingsIOProviderWasRead(mockGeneralIOProvider, expectedCallCount);
         }
 
-        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+        private Mock<SettingsUtils> mockGeneralSettingsUtils;
 
-        private Mock<ISettingsUtils> mockShortcutGuideSettingsUtils;
+        private Mock<SettingsUtils> mockShortcutGuideSettingsUtils;
 
         [TestInitialize]
         public void SetUpStubSettingUtils()
@@ -69,7 +69,7 @@ namespace ViewModelTests
         [TestMethod]
         public void IsEnabledShouldEnableModuleWhenSuccessful()
         {
-            var settingsUtilsMock = new Mock<SettingsUtils>();
+            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
 
             // Assert
             // Initialize mock function of sending IPC message.
@@ -91,7 +91,7 @@ namespace ViewModelTests
         public void ThemeIndexShouldSetThemeToDarkWhenSuccessful()
         {
             // Arrange
-            var settingsUtilsMock = new Mock<ISettingsUtils>();
+            var settingsUtilsMock = new Mock<SettingsUtils>(new FileSystem(), null);
             ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(settingsUtilsMock.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), msg => { return 0; }, ShortCutGuideTestFolderName);
 
             // Initialize shortcut guide settings theme to 'system' to be in sync with shortcut_guide.h.
@@ -103,22 +103,6 @@ namespace ViewModelTests
             // Assert
             Func<string, bool> isDark = s => JsonSerializer.Deserialize<ShortcutGuideSettings>(s).Properties.Theme.Value == "dark";
             settingsUtilsMock.Verify(x => x.SaveSettings(It.Is<string>(y => isDark(y)), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-        }
-
-        [TestMethod]
-        public void OverlayOpacityShouldSeOverlayOpacityToOneHundredWhenSuccessful()
-        {
-            // Arrange
-            var settingsUtilsMock = new Mock<ISettingsUtils>();
-            ShortcutGuideViewModel viewModel = new ShortcutGuideViewModel(settingsUtilsMock.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<ShortcutGuideSettings>.GetInstance(mockShortcutGuideSettingsUtils.Object), msg => { return 0; }, ShortCutGuideTestFolderName);
-            Assert.AreEqual(90, viewModel.OverlayOpacity);
-
-            // Act
-            viewModel.OverlayOpacity = 100;
-
-            // Assert
-            Func<string, bool> equal100 = s => JsonSerializer.Deserialize<ShortcutGuideSettings>(s).Properties.OverlayOpacity.Value == 100;
-            settingsUtilsMock.Verify(x => x.SaveSettings(It.Is<string>(y => equal100(y)), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
     }
 }

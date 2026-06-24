@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly DispatcherQueue _dispatcherQueue;
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
         private readonly PeekPreviewSettings _peekPreviewSettings;
         private PeekSettings _peekSettings;
 
@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private IFileSystemWatcher _watcher;
 
         public PeekViewModel(
-            ISettingsUtils settingsUtils,
+            SettingsUtils settingsUtils,
             ISettingsRepository<GeneralSettings> settingsRepository,
             Func<string, int> ipcMSGCallBackFunc,
             DispatcherQueue dispatcherQueue)
@@ -247,6 +247,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
                     OnPropertyChanged(nameof(EnableSpaceToActivate));
                     OnPropertyChanged(nameof(ActivationShortcut));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public bool ShowFilePreviewTooltip
+        {
+            get => _peekSettings.Properties.ShowFilePreviewTooltip.Value;
+            set
+            {
+                if (_peekSettings.Properties.ShowFilePreviewTooltip.Value != value)
+                {
+                    _peekSettings.Properties.ShowFilePreviewTooltip.Value = value;
+                    OnPropertyChanged(nameof(ShowFilePreviewTooltip));
                     NotifySettingsChanged();
                 }
             }

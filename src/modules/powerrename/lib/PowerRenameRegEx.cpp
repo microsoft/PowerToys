@@ -11,6 +11,52 @@
 using std::conditional_t;
 using std::regex_error;
 
+/// <summary>
+/// Sanitizes the input string by replacing non-breaking spaces with regular spaces and
+/// normalizes it to Unicode NFC (precomposed) form.
+/// </summary>
+/// <param name="input">The input wide string to sanitize and normalize. If empty, it is
+/// returned unchanged.</param>
+/// <returns>A new std::wstring containing the sanitized and NFC-normalized form of the
+/// input. If normalization fails, the function returns the sanitized string (with non-
+/// breaking spaces replaced) as-is.</returns>
+static std::wstring SanitizeAndNormalize(const std::wstring& input)
+{
+    if (input.empty())
+    {
+        return input;
+    }
+
+    std::wstring sanitized = input;
+    // Replace non-breaking spaces (0xA0) with regular spaces (0x20).
+    std::replace(sanitized.begin(), sanitized.end(), L'\u00A0', L' ');
+
+    // Normalize to NFC (Precomposed).
+    // Get the size needed for the normalized string, including null terminator.
+    int sizeEstimate = NormalizeString(NormalizationC, sanitized.c_str(), -1, nullptr, 0);
+    if (sizeEstimate <= 0)
+    {
+        return sanitized; // Return unaltered if normalization fails.
+    }
+
+    // Perform the normalization.
+    std::wstring normalized;
+    normalized.resize(sizeEstimate);
+    int actualSize = NormalizeString(NormalizationC, sanitized.c_str(), -1, &normalized[0], sizeEstimate);
+
+    if (actualSize <= 0)
+    {
+        // Normalization failed, return sanitized string.
+        return sanitized;
+    }
+
+    // Resize to actual size minus the null terminator.
+    // actualSize includes the null terminator when input length is -1.
+    normalized.resize(static_cast<size_t>(actualSize) - 1);
+
+    return normalized;
+}
+
 IFACEMETHODIMP_(ULONG)
 CPowerRenameRegEx::AddRef()
 {
@@ -94,18 +140,20 @@ IFACEMETHODIMP CPowerRenameRegEx::PutSearchTerm(_In_ PCWSTR searchTerm, bool for
     HRESULT hr = S_OK;
     if (searchTerm)
     {
+        std::wstring normalizedSearchTerm = SanitizeAndNormalize(searchTerm);
+
         CSRWExclusiveAutoLock lock(&m_lock);
-        if (m_searchTerm == nullptr || lstrcmp(searchTerm, m_searchTerm) != 0)
+        if (m_searchTerm == nullptr || lstrcmp(normalizedSearchTerm.c_str(), m_searchTerm) != 0)
         {
             changed = true;
             CoTaskMemFree(m_searchTerm);
-            if (lstrcmp(searchTerm, L"") == 0)
+            if (normalizedSearchTerm.empty())
             {
                 m_searchTerm = NULL;
             }
             else
             {
-                hr = SHStrDup(searchTerm, &m_searchTerm);
+                hr = SHStrDup(normalizedSearchTerm.c_str(), &m_searchTerm);
             }
         }
     }
@@ -238,17 +286,19 @@ IFACEMETHODIMP CPowerRenameRegEx::PutReplaceTerm(_In_ PCWSTR replaceTerm, bool f
     HRESULT hr = S_OK;
     if (replaceTerm)
     {
+        std::wstring normalizedReplaceTerm = SanitizeAndNormalize(replaceTerm);
+
         CSRWExclusiveAutoLock lock(&m_lock);
-        if (m_replaceTerm == nullptr || lstrcmp(replaceTerm, m_RawReplaceTerm.c_str()) != 0)
+        if (m_replaceTerm == nullptr || lstrcmp(normalizedReplaceTerm.c_str(), m_RawReplaceTerm.c_str()) != 0)
         {
             changed = true;
             CoTaskMemFree(m_replaceTerm);
-            m_RawReplaceTerm = replaceTerm;
+            m_RawReplaceTerm = normalizedReplaceTerm;
 
             if ((m_flags & RandomizeItems) || (m_flags & EnumerateItems))
                 hr = _OnEnumerateOrRandomizeItemsChanged();
             else
-                hr = SHStrDup(replaceTerm, &m_replaceTerm);
+                hr = SHStrDup(normalizedReplaceTerm.c_str(), &m_replaceTerm);
         }
     }
 
@@ -298,19 +348,13 @@ IFACEMETHODIMP CPowerRenameRegEx::PutFlags(_In_ DWORD flags)
 
 IFACEMETHODIMP CPowerRenameRegEx::PutFileTime(_In_ SYSTEMTIME fileTime)
 {
-    union timeunion
-    {
-        FILETIME fileTime;
-        ULARGE_INTEGER ul;
-    };
+    FILETIME ft1;
+    FILETIME ft2;
 
-    timeunion ft1;
-    timeunion ft2;
+    SystemTimeToFileTime(&m_fileTime, &ft1);
+    SystemTimeToFileTime(&fileTime, &ft2);
 
-    SystemTimeToFileTime(&m_fileTime, &ft1.fileTime);
-    SystemTimeToFileTime(&fileTime, &ft2.fileTime);
-
-    if (ft2.ul.QuadPart != ft1.ul.QuadPart)
+    if (ft2.dwLowDateTime != ft1.dwLowDateTime || ft2.dwHighDateTime != ft1.dwHighDateTime)
     {
         m_fileTime = fileTime;
         m_useFileTime = true;
@@ -325,6 +369,22 @@ IFACEMETHODIMP CPowerRenameRegEx::ResetFileTime()
     m_fileTime = ZERO;
     m_useFileTime = false;
     _OnFileTimeChanged();
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::PutMetadataPatterns(_In_ const PowerRenameLib::MetadataPatternMap& patterns)
+{
+    m_metadataPatterns = patterns;
+    m_useMetadata = true;
+    _OnMetadataChanged();
+    return S_OK;
+}
+
+IFACEMETHODIMP CPowerRenameRegEx::ResetMetadata()
+{
+    m_metadataPatterns.clear();
+    m_useMetadata = false;
+    _OnMetadataChanged();
     return S_OK;
 }
 
@@ -381,27 +441,58 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
     {
         return hr;
     }
-    std::wstring res = source;
+
+    std::wstring normalizedSource = SanitizeAndNormalize(source);
+
+    std::wstring res = normalizedSource;
     try
     {
         // TODO: creating the regex could be costly.  May want to cache this.
         wchar_t newReplaceTerm[MAX_PATH] = { 0 };
         bool fileTimeErrorOccurred = false;
-        if (m_useFileTime)
+        bool metadataErrorOccurred = false;
+        bool appliedTemplateTransform = false;
+
+        std::wstring replaceTemplate;
+        if (m_replaceTerm)
         {
-            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), m_replaceTerm, m_fileTime)))
-                fileTimeErrorOccurred = true;
+            replaceTemplate = m_replaceTerm;
         }
 
-        std::wstring sourceToUse;
+        if (m_useFileTime)
+        {
+            if (FAILED(GetDatedFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTemplate.c_str(), m_fileTime)))
+            {
+                fileTimeErrorOccurred = true;
+            }
+            else
+            {
+                replaceTemplate.assign(newReplaceTerm);
+                appliedTemplateTransform = true;
+            }
+        }
+
+        if (m_useMetadata)
+        {
+            if (FAILED(GetMetadataFileName(newReplaceTerm, ARRAYSIZE(newReplaceTerm), replaceTemplate.c_str(), m_metadataPatterns)))
+            {
+                metadataErrorOccurred = true;
+            }
+            else
+            {
+                replaceTemplate.assign(newReplaceTerm);
+                appliedTemplateTransform = true;
+            }
+        }
+
+        std::wstring sourceToUse = normalizedSource;
         sourceToUse.reserve(MAX_PATH);
-        sourceToUse = source;
 
         std::wstring searchTerm(m_searchTerm);
         std::wstring replaceTerm;
-        if (m_useFileTime && !fileTimeErrorOccurred)
+        if (appliedTemplateTransform)
         {
-            replaceTerm = newReplaceTerm;
+            replaceTerm = replaceTemplate;
         }
         else if (m_replaceTerm)
         {
@@ -491,7 +582,7 @@ HRESULT CPowerRenameRegEx::Replace(_In_ PCWSTR source, _Outptr_ PWSTR* result, u
             replaceTerm = regex_replace(replaceTerm, zeroGroupRegex, L"$1$$$0");
             replaceTerm = regex_replace(replaceTerm, otherGroupsRegex, L"$1$0$4");
 
-            res = RegexReplaceDispatch[_useBoostLib](source, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, isCaseInsensitive);
+            res = RegexReplaceDispatch[_useBoostLib](sourceToUse, m_searchTerm, replaceTerm, m_flags & MatchAllOccurrences, isCaseInsensitive);
 
             // Use regex search to determine if a match exists. This is the basis for incrementing
             // the counter.
@@ -605,4 +696,42 @@ void CPowerRenameRegEx::_OnFileTimeChanged()
             it.pEvents->OnFileTimeChanged(m_fileTime);
         }
     }
+}
+
+void CPowerRenameRegEx::_OnMetadataChanged()
+{
+    CSRWSharedAutoLock lock(&m_lockEvents);
+
+    for (auto it : m_renameRegExEvents)
+    {
+        if (it.pEvents)
+        {
+            it.pEvents->OnMetadataChanged();
+        }
+    }
+}
+
+PowerRenameLib::MetadataType CPowerRenameRegEx::_GetMetadataTypeFromFlags() const
+{
+    if (m_flags & MetadataSourceXMP)
+        return PowerRenameLib::MetadataType::XMP;
+
+    // Default to EXIF
+    return PowerRenameLib::MetadataType::EXIF;
+}
+
+// Interface method implementation
+IFACEMETHODIMP CPowerRenameRegEx::GetMetadataType(_Out_ PowerRenameLib::MetadataType* metadataType)
+{
+    if (metadataType == nullptr)
+        return E_POINTER;
+
+    *metadataType = _GetMetadataTypeFromFlags();
+    return S_OK;
+}
+
+// Convenience method for internal use
+PowerRenameLib::MetadataType CPowerRenameRegEx::GetMetadataType() const
+{
+    return _GetMetadataTypeFromFlags();
 }

@@ -1,7 +1,0 @@
-<Project>
-	<ItemDefinitionGroup>
-		<ClCompile>
-			<AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)expected-lite\include\nonstd\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-		</ClCompile>
-	</ItemDefinitionGroup>
-</Project>

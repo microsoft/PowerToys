@@ -18,13 +18,13 @@ public class CommandLineUtils
         return settingsLibraryAssembly.GetType(typeof(CommandLineUtils).Namespace + "." + settingsClassName);
     }
 
-    public static ISettingsConfig GetSettingsConfigFor(string moduleName, ISettingsUtils settingsUtils, Assembly settingsLibraryAssembly)
+    public static ISettingsConfig GetSettingsConfigFor(string moduleName, SettingsUtils settingsUtils, Assembly settingsLibraryAssembly)
     {
         return GetSettingsConfigFor(GetSettingsConfigType(moduleName, settingsLibraryAssembly), settingsUtils);
     }
 
     /// Executes SettingsRepository<moduleSettingsType>.GetInstance(settingsUtils).SettingsConfig
-    public static ISettingsConfig GetSettingsConfigFor(Type moduleSettingsType, ISettingsUtils settingsUtils)
+    public static ISettingsConfig GetSettingsConfigFor(Type moduleSettingsType, SettingsUtils settingsUtils)
     {
         var genericSettingsRepositoryType = typeof(SettingsRepository<>);
         var moduleSettingsRepositoryType = genericSettingsRepositoryType.MakeGenericType(moduleSettingsType);

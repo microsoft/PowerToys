@@ -188,4 +188,7 @@
   <data name="RegistryProvider_DisplayName" xml:space="preserve">
     <value>Windows Registry</value>
   </data>
+  <data name="RegistryProvider_BrowseTitle" xml:space="preserve">
+    <value>Browse the Windows registry</value>
+  </data>
 </root>

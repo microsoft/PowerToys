@@ -1,11 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-using System;
-using System.IO;
-using System.IO.Abstractions.TestingHelpers;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using Hosts.Tests.Mocks;
 using HostsUILib.Helpers;
@@ -19,6 +15,7 @@ namespace Hosts.FuzzTests
     {
         private static Mock<IUserSettings> _userSettings;
         private static Mock<IElevationHelper> _elevationHelper;
+        private static Mock<IBackupManager> _backupManager;
 
         // Case1： Fuzzing method for ValidIPv4
         public static void FuzzValidIPv4(ReadOnlySpan<byte> input)
@@ -73,9 +70,10 @@ namespace Hosts.FuzzTests
                 _userSettings = new Mock<IUserSettings>();
                 _elevationHelper = new Mock<IElevationHelper>();
                 _elevationHelper.Setup(m => m.IsElevated).Returns(true);
+                _backupManager = new Mock<IBackupManager>();
 
                 var fileSystem = new CustomMockFileSystem();
-                var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object);
+                var service = new HostsService(fileSystem, _userSettings.Object, _elevationHelper.Object, _backupManager.Object);
 
                 string input = System.Text.Encoding.UTF8.GetString(data);
 

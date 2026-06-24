@@ -25,6 +25,7 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Core;
 using MouseWithoutBorders.Properties;
 
+using Clipboard = MouseWithoutBorders.Core.Clipboard;
 using Timer = System.Windows.Forms.Timer;
 
 [module: SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Scope = "member", Target = "MouseWithoutBorders.frmScreen.#ShowMouseWithoutBordersUiOnWinLogonDesktop(System.Boolean)", Justification = "Dotnet port with style preservation")]
@@ -318,7 +319,7 @@ namespace MouseWithoutBorders
 
             try
             {
-                if (!Common.IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+                if (!WinAPI.IsMyDesktopActive() || Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
                 {
                     myDesktopNotActive = true;
 
@@ -348,7 +349,7 @@ namespace MouseWithoutBorders
                             Common.Hook?.ResetLastSwitchKeys();
                         });
 
-                        Common.CheckForDesktopSwitchEvent(true);
+                        WinAPI.CheckForDesktopSwitchEvent(true);
                     }
                 }
                 else
@@ -369,21 +370,21 @@ namespace MouseWithoutBorders
                             if (myDesktopNotActive)
                             {
                                 myDesktopNotActive = false;
-                                Common.MyKey = Setting.Values.MyKey;
+                                Encryption.MyKey = Setting.Values.MyKey;
                             }
 
                             MachineStuff.UpdateMachinePoolStringSetting();
 
-                            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && (Setting.Values.FirstRun || Common.KeyCorrupted))
+                            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && (Setting.Values.FirstRun || Encryption.KeyCorrupted))
                             {
                                 if (!shownSetupFormOneTime)
                                 {
                                     shownSetupFormOneTime = true;
                                     MachineStuff.ShowMachineMatrix();
 
-                                    if (Common.KeyCorrupted && !Setting.Values.FirstRun)
+                                    if (Encryption.KeyCorrupted && !Setting.Values.FirstRun)
                                     {
-                                        Common.KeyCorrupted = false;
+                                        Encryption.KeyCorrupted = false;
                                         string msg = "The security key is corrupted for some reason, please re-setup.";
                                         MessageBox.Show(msg, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                                     }
@@ -490,9 +491,9 @@ namespace MouseWithoutBorders
 
                     if (count == 600)
                     {
-                        if (!Common.GeneratedKey)
+                        if (!Encryption.GeneratedKey)
                         {
-                            Common.MyKey = Setting.Values.MyKey;
+                            Encryption.MyKey = Setting.Values.MyKey;
 
                             if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                             {
@@ -505,7 +506,7 @@ namespace MouseWithoutBorders
                                 Common.ShowToolTip("The security key must be auto generated in one of the machines.", 10000);
                             }
                         }
-                        else if (!Common.KeyCorrupted && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Setting.Values.FirstRun && Common.AtLeastOneSocketConnected())
+                        else if (!Encryption.KeyCorrupted && !Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && !Setting.Values.FirstRun && Common.AtLeastOneSocketConnected())
                         {
                             int myKeyDaysToExpire = Setting.Values.MyKeyDaysToExpire;
 
@@ -531,7 +532,7 @@ namespace MouseWithoutBorders
 #if SHOW_ON_WINLOGON
                     // if (Common.RunOnLogonDesktop) ShowMouseWithoutBordersUiOnWinLogonDesktop(false);
 #endif
-                    Common.CheckForDesktopSwitchEvent(true);
+                    WinAPI.CheckForDesktopSwitchEvent(true);
                     MachineStuff.UpdateClientSockets("helperTimer_Tick"); // Sockets may be closed by the remote host when both machines switch desktop at the same time.
                 }
 
@@ -550,7 +551,7 @@ namespace MouseWithoutBorders
 
                     if (count % 20 == 0)
                     {
-                        Logger.LogAll();
+                        Logger.LogStatistics();
 
                         // Need to review this code on why it is needed (moved from MoveToMyNeighbourIfNeeded(...))
                         for (int i = 0; i < MachineStuff.MachineMatrix.Length; i++)
@@ -582,7 +583,7 @@ namespace MouseWithoutBorders
 
                         int rv = 0;
 
-                        if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && Common.IsMyDesktopActive() && (rv = Helper.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
+                        if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop && WinAPI.IsMyDesktopActive() && (rv = Helper.SendMessageToHelper(0x400, IntPtr.Zero, IntPtr.Zero)) <= 0)
                         {
                             Logger.TelemetryLogTrace($"{Helper.HELPER_FORM_TEXT} not found: {rv}", SeverityLevel.Warning);
                         }
@@ -1215,7 +1216,29 @@ namespace MouseWithoutBorders
 
         private void MenuGenDumpFile_Click(object sender, EventArgs e)
         {
-            Logger.GenerateLog();
+            int l = Setting.Values.DumpObjectsLevel;
+            if (l is > 0 and < 10)
+            {
+                try
+                {
+                    string logFile = Path.Combine(Common.RunWithNoAdminRight ? Path.GetTempPath() : Path.GetDirectoryName(Application.ExecutablePath), "MagicMouse.log");
+                    var log = Logger.DumpObjects(l);
+                    File.WriteAllText(logFile, log);
+                    if (Common.RunOnLogonDesktop || Common.RunOnScrSaverDesktop)
+                    {
+                        _ = MessageBox.Show("Dump file created: " + logFile, Application.ProductName);
+                    }
+                    else
+                    {
+                        Common.ShowToolTip("Dump file created: " + logFile + " and placed in the Clipboard.", 10000);
+                        Clipboard.SetText(logFile);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _ = MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace, Application.ProductName);
+                }
+            }
         }
 
         private void MainMenu_Opening(object sender, CancelEventArgs e)

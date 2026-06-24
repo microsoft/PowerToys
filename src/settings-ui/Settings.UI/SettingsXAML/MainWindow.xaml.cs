@@ -3,13 +3,16 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerLauncher.Telemetry;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Views;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Data.Json;
@@ -18,9 +21,6 @@ using WinUIEx;
 
 namespace Microsoft.PowerToys.Settings.UI
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainWindow : WindowEx
     {
         public MainWindow(bool createHidden = false)
@@ -33,10 +33,12 @@ namespace Microsoft.PowerToys.Settings.UI
             App.ThemeService.ThemeChanged += OnThemeChanged;
             App.ThemeService.ApplyTheme();
 
+            this.ExtendsContentIntoTitleBar = true;
+
             ShellPage.SetElevationStatus(App.IsElevated);
             ShellPage.SetIsUserAnAdmin(App.IsUserAnAdmin);
 
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var hWnd = WindowNative.GetWindowHandle(this);
             var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
             if (createHidden)
             {
@@ -74,14 +76,14 @@ namespace Microsoft.PowerToys.Settings.UI
             // open main window
             ShellPage.SetOpenMainWindowCallback(type =>
             {
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+                DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Normal, () =>
                      App.OpenSettingsWindow(type));
             });
 
             // open main window
             ShellPage.SetUpdatingGeneralSettingsCallback((ModuleType moduleType, bool isEnabled) =>
             {
-                SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(new SettingsUtils());
+                SettingsRepository<GeneralSettings> repository = SettingsRepository<GeneralSettings>.GetInstance(SettingsUtils.Default);
                 GeneralSettings generalSettingsConfig = repository.SettingsConfig;
                 bool needToUpdate = ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType) != isEnabled;
 
@@ -89,78 +91,24 @@ namespace Microsoft.PowerToys.Settings.UI
                 {
                     ModuleHelper.SetIsModuleEnabled(generalSettingsConfig, moduleType, isEnabled);
                     var outgoing = new OutGoingGeneralSettings(generalSettingsConfig);
-                    this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
+
+                    // Save settings to file
+                    SettingsUtils.Default.SaveSettings(generalSettingsConfig.ToJsonString());
+
+                    // Send IPC message asynchronously to avoid blocking UI and potential recursive calls
+                    Task.Run(() =>
                     {
                         ShellPage.SendDefaultIPCMessage(outgoing.ToString());
-                        ShellPage.ShellHandler?.SignalGeneralDataUpdate();
                     });
+
+                    ShellPage.ShellHandler?.SignalGeneralDataUpdate();
                 }
 
                 return needToUpdate;
             });
 
-            // open oobe
-            ShellPage.SetOpenOobeCallback(() =>
-            {
-                if (App.GetOobeWindow() == null)
-                {
-                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.Overview));
-                }
-
-                App.GetOobeWindow().Activate();
-            });
-
-            // open whats new window
-            ShellPage.SetOpenWhatIsNewCallback(() =>
-            {
-                if (App.GetOobeWindow() == null)
-                {
-                    App.SetOobeWindow(new OobeWindow(OOBE.Enums.PowerToysModules.WhatsNew));
-                }
-                else
-                {
-                    App.GetOobeWindow().SetAppWindow(OOBE.Enums.PowerToysModules.WhatsNew);
-                }
-
-                App.GetOobeWindow().Activate();
-            });
-
-            // open flyout
-            ShellPage.SetOpenFlyoutCallback((POINT? p) =>
-            {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    if (App.GetFlyoutWindow() == null)
-                    {
-                        App.SetFlyoutWindow(new FlyoutWindow(p));
-                    }
-
-                    FlyoutWindow flyout = App.GetFlyoutWindow();
-                    flyout.FlyoutAppearPosition = p;
-                    flyout.Activate();
-
-                    // https://github.com/microsoft/microsoft-ui-xaml/issues/7595 - Activate doesn't bring window to the foreground
-                    // Need to call SetForegroundWindow to actually gain focus.
-                    WindowHelpers.BringToForeground(flyout.GetWindowHandle());
-                });
-            });
-
-            // disable flyout hiding
-            ShellPage.SetDisableFlyoutHidingCallback(() =>
-            {
-                this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
-                {
-                    if (App.GetFlyoutWindow() == null)
-                    {
-                        App.SetFlyoutWindow(new FlyoutWindow(null));
-                    }
-
-                    App.GetFlyoutWindow().ViewModel.DisableHiding();
-                });
-            });
-
             this.InitializeComponent();
-            SetAppTitleBar();
+            SetTitleBar();
 
             // receive IPC Message
             App.IPCMessageReceivedCallback = (string msg) =>
@@ -187,21 +135,22 @@ namespace Microsoft.PowerToys.Settings.UI
             PowerToysTelemetry.Log.WriteEvent(new SettingsBootEvent() { BootTimeMs = bootTime.ElapsedMilliseconds });
         }
 
-        private void SetAppTitleBar()
+        private void SetTitleBar()
         {
             // We need to assign the window here so it can configure the custom title bar area correctly.
             shellPage.TitleBar.Window = this;
+            this.ExtendsContentIntoTitleBar = true;
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(WindowNative.GetWindowHandle(this));
         }
 
-        public void NavigateToSection(System.Type type)
+        public void NavigateToSection(Type type)
         {
             ShellPage.Navigate(type);
         }
 
         public void CloseHiddenWindow()
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var hWnd = WindowNative.GetWindowHandle(this);
             if (!NativeMethods.IsWindowVisible(hWnd))
             {
                 Close();
@@ -210,10 +159,10 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var hWnd = WindowNative.GetWindowHandle(this);
             WindowHelper.SerializePlacement(hWnd);
 
-            if (App.GetOobeWindow() == null)
+            if (!App.IsSecondaryWindowOpen())
             {
                 App.ClearSettingsWindow();
             }
@@ -229,10 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)
         {
             // Set window icon
-            var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
-            WindowId windowId = Win32Interop.GetWindowIdFromWindow(hWnd);
-            AppWindow appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon("Assets\\Settings\\icon.ico");
+            this.SetIcon("Assets\\Settings\\icon.ico");
         }
 
         private void Window_Activated(object sender, WindowActivatedEventArgs args)
@@ -240,7 +186,7 @@ namespace Microsoft.PowerToys.Settings.UI
             if (args.WindowActivationState != WindowActivationState.Deactivated)
             {
                 this.Activated -= Window_Activated;
-                var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+                var hWnd = WindowNative.GetWindowHandle(this);
                 var placement = WindowHelper.DeserializePlacementOrDefault(hWnd);
                 NativeMethods.SetWindowPlacement(hWnd, ref placement);
             }

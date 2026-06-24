@@ -68,11 +68,22 @@ namespace AdvancedPaste.Pages
                             if (item.Content.Contains(StandardDataFormats.Text))
                             {
                                 string text = await item.Content.GetTextAsync();
-                                items.Add(new ClipboardItem { Content = text, Item = item });
+                                items.Add(new ClipboardItem
+                                {
+                                    Content = text,
+                                    Format = ClipboardFormat.Text,
+                                    Timestamp = item.Timestamp,
+                                    Item = item,
+                                });
                             }
                             else if (item.Content.Contains(StandardDataFormats.Bitmap))
                             {
-                                items.Add(new ClipboardItem { Item = item });
+                                items.Add(new ClipboardItem
+                                {
+                                    Format = ClipboardFormat.Image,
+                                    Timestamp = item.Timestamp,
+                                    Item = item,
+                                });
                             }
                         }
                     }
@@ -187,21 +198,14 @@ namespace AdvancedPaste.Pages
             }
         }
 
-        private async void ClipboardHistory_ItemClick(object sender, ItemClickEventArgs e)
+        private void ClipboardHistory_ItemInvoked(ItemsView sender, ItemsViewItemInvokedEventArgs args)
         {
-            var item = e.ClickedItem as ClipboardItem;
-            if (item is not null)
+            if (args.InvokedItem is ClipboardItem item && item.Item is not null)
             {
                 PowerToysTelemetry.Log.WriteEvent(new Telemetry.AdvancedPasteClipboardItemClicked());
-                if (!string.IsNullOrEmpty(item.Content))
-                {
-                    ClipboardHelper.SetTextContent(item.Content);
-                }
-                else if (item.Image is not null)
-                {
-                    RandomAccessStreamReference image = await item.Item.Content.GetBitmapAsync();
-                    ClipboardHelper.SetImageContent(image);
-                }
+
+                // Use SetHistoryItemAsContent to set the clipboard content without creating a new history entry
+                Clipboard.SetHistoryItemAsContent(item.Item);
             }
         }
     }

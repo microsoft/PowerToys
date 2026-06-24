@@ -61,7 +61,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to All Apps.
+        ///   Looks up a localized string similar to Search apps.
         /// </summary>
         internal static string all_apps {
             get {
@@ -106,7 +106,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include apps registered in the Registry.
+        ///   Looks up a localized string similar to Include apps registered in the Windows Registry.
         /// </summary>
         internal static string enable_registry_source {
             get {
@@ -115,7 +115,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include apps found in the Start Menu.
+        ///   Looks up a localized string similar to Include apps found in the Start menu.
         /// </summary>
         internal static string enable_start_menu_source {
             get {
@@ -138,6 +138,42 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string folder {
             get {
                 return ResourceManager.GetString("folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide app description in search results.
+        /// </summary>
+        internal static string hide_app_descriptions {
+            get {
+                return ResourceManager.GetString("hide_app_descriptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide description text next to app results for a cleaner look.
+        /// </summary>
+        internal static string hide_app_descriptions_description {
+            get {
+                return ResourceManager.GetString("hide_app_descriptions_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Also include non-app shortcuts from the Start menu.
+        /// </summary>
+        internal static string include_non_apps_in_start_menu {
+            get {
+                return ResourceManager.GetString("include_non_apps_in_start_menu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Also include non-app shortcuts from the desktop.
+        /// </summary>
+        internal static string include_non_apps_on_desktop {
+            get {
+                return ResourceManager.GetString("include_non_apps_on_desktop", resourceCulture);
             }
         }
         
@@ -201,6 +237,15 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         internal static string limit_5 {
             get {
                 return ResourceManager.GetString("limit_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default ({0}).
+        /// </summary>
+        internal static string limit_default {
+            get {
+                return ResourceManager.GetString("limit_default", resourceCulture);
             }
         }
         
@@ -313,16 +358,7 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search installed apps.
-        /// </summary>
-        internal static string search_installed_apps {
-            get {
-                return ResourceManager.GetString("search_installed_apps", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search installed apps....
+        ///   Looks up a localized string similar to Search apps....
         /// </summary>
         internal static string search_installed_apps_placeholder {
             get {

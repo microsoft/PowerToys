@@ -32,6 +32,11 @@ namespace ManagedCommon
         public static string CurrentVersionLogDirectoryPath { get; private set; }
 
         /// <summary>
+        /// Gets the path to the current log file.
+        /// </summary>
+        public static string CurrentLogFile { get; private set; }
+
+        /// <summary>
         /// Gets the path to the log directory for the app.
         /// </summary>
         public static string AppLogDirectoryPath { get; private set; }
@@ -55,7 +60,9 @@ namespace ManagedCommon
             AppLogDirectoryPath = basePath;
             CurrentVersionLogDirectoryPath = versionedPath;
 
-            var logFilePath = Path.Combine(versionedPath, "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log");
+            var logFile = "Log_" + DateTime.Now.ToString(@"yyyy-MM-dd", CultureInfo.InvariantCulture) + ".log";
+            var logFilePath = Path.Combine(versionedPath, logFile);
+            CurrentLogFile = logFilePath;
 
             Trace.Listeners.Add(new TextWriterTraceListener(logFilePath));
 

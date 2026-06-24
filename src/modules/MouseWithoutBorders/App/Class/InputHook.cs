@@ -109,7 +109,7 @@ namespace MouseWithoutBorders.Class
             // Install Mouse Hook
             mouseHookProcedure = new NativeMethods.HookProc(MouseHookProc);
             hMouseHook = NativeMethods.SetWindowsHookEx(
-                Common.WH_MOUSE_LL,
+                WM.WH_MOUSE_LL,
                 mouseHookProcedure,
                 Marshal.GetHINSTANCE(
                     Assembly.GetExecutingAssembly().GetModules()[0]),
@@ -126,7 +126,7 @@ namespace MouseWithoutBorders.Class
             // Install Keyboard Hook
             keyboardHookProcedure = new NativeMethods.HookProc(KeyboardHookProc);
             hKeyboardHook = NativeMethods.SetWindowsHookEx(
-                Common.WH_KEYBOARD_LL,
+                WM.WH_KEYBOARD_LL,
                 keyboardHookProcedure,
                 Marshal.GetHINSTANCE(
                 Assembly.GetExecutingAssembly().GetModules()[0]),
@@ -233,7 +233,7 @@ namespace MouseWithoutBorders.Class
 
                     if (nCode >= 0 && MouseEvent != null)
                     {
-                        if (wParam == Common.WM_LBUTTONUP && SkipMouseUpCount > 0)
+                        if (wParam == WM.WM_LBUTTONUP && SkipMouseUpCount > 0)
                         {
                             Logger.LogDebug($"{nameof(SkipMouseUpCount)}: {SkipMouseUpCount}.");
                             SkipMouseUpCount--;
@@ -241,7 +241,7 @@ namespace MouseWithoutBorders.Class
                             return rv;
                         }
 
-                        if ((wParam == Common.WM_LBUTTONUP || wParam == Common.WM_LBUTTONDOWN) && SkipMouseUpDown)
+                        if ((wParam == WM.WM_LBUTTONUP || wParam == WM.WM_LBUTTONDOWN) && SkipMouseUpDown)
                         {
                             rv = NativeMethods.CallNextHookEx(hMouseHook, nCode, wParam, lParam);
                             return rv;
@@ -370,7 +370,7 @@ namespace MouseWithoutBorders.Class
 
         private bool ProcessKeyEx(int vkCode, int flags, KEYBDDATA hookCallbackKeybdData)
         {
-            if ((flags & (int)Common.LLKHF.UP) == (int)Common.LLKHF.UP)
+            if ((flags & (int)WM.LLKHF.UP) == (int)WM.LLKHF.UP)
             {
                 EasyMouseKeyDown = false;
 
@@ -553,7 +553,7 @@ namespace MouseWithoutBorders.Class
                             KeyboardEvent(hookCallbackKeybdData);
                         }
 
-                        hookCallbackKeybdData.dwFlags |= (int)Common.LLKHF.UP;
+                        hookCallbackKeybdData.dwFlags |= (int)WM.LLKHF.UP;
 
                         foreach (var code in codes)
                         {

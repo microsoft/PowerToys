@@ -98,7 +98,7 @@ namespace Microsoft.PowerToys.Run.Plugin.PowerToys.Components
                     AcceleratorModifiers = ModifierKeys.Control | ModifierKeys.Shift,
                     Action = _ =>
                     {
-                        SettingsDeepLink.OpenSettings(settingsWindow.Value, false);
+                        SettingsDeepLink.OpenSettings(settingsWindow.Value);
                         return true;
                     },
                 });

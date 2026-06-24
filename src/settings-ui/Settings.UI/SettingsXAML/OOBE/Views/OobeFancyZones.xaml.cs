@@ -18,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeFancyZones()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.FancyZones]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.FancyZones);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(FancyZonesPage));
+                OobeWindow.OpenMainWindowCallback(typeof(FancyZonesPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
-            HotkeyControl.Keys = SettingsRepository<FancyZonesSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.GetKeysList();
+            HotkeyControl.Keys = SettingsRepository<FancyZonesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.FancyzonesEditorHotkey.Value.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

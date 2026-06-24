@@ -16,6 +16,12 @@ public static partial class Ole32
         CLSCTX dwClsContext,
         ref Guid riid,
         out IntPtr rReturnedComObject);
+
+    [LibraryImport("ole32.dll")]
+    internal static partial int CoInitializeEx(nint pvReserved, uint dwCoInit);
+
+    [LibraryImport("ole32.dll")]
+    internal static partial void CoUninitialize();
 }
 
 [Flags]

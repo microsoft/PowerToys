@@ -54,6 +54,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowColorName { get; set; }
 
         public override string ToString()
-            => JsonSerializer.Serialize(this);
+            => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.ColorPickerPropertiesVersion1);
     }
 }

@@ -34,7 +34,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public PowerLauncherPage()
         {
             InitializeComponent();
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             _lastIPCMessageSentTick = Environment.TickCount;
 
             PowerLauncherSettings settings = SettingsRepository<PowerLauncherSettings>.GetInstance(settingsUtils)?.SettingsConfig;
@@ -96,7 +96,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         private void NavigateCmdPalSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.CmdPal, true);
+            SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.CmdPal);
         }
 
         /*

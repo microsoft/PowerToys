@@ -25,7 +25,7 @@ public sealed class SetSettingCommandLineCommand
         return (parts[0], parts[1]);
     }
 
-    public static void Execute(string settingName, string settingValue, ISettingsUtils settingsUtils)
+    public static void Execute(string settingName, string settingValue, SettingsUtils settingsUtils)
     {
         Assembly settingsLibraryAssembly = CommandLineUtils.GetSettingsAssembly();
 

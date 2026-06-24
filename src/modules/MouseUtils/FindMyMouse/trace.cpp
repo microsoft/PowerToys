@@ -22,11 +22,12 @@ void Trace::EnableFindMyMouse(const bool enabled) noexcept
 }
 
 // Log that the user activated the module by focusing the mouse pointer
-void Trace::MousePointerFocused() noexcept
+void Trace::MousePointerFocused(const int activationMethod) noexcept
 {
     TraceLoggingWriteWrapper(
         g_hProvider,
         "FindMyMouse_MousePointerFocused",
         ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
-        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingInt32(activationMethod, "ActivationMethod"));
 }

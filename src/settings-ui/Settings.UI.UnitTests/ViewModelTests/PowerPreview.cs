@@ -17,9 +17,9 @@ namespace ViewModelTests
     [TestClass]
     public class PowerPreview
     {
-        private Mock<ISettingsUtils> mockPowerPreviewSettingsUtils;
+        private Mock<SettingsUtils> mockPowerPreviewSettingsUtils;
 
-        private Mock<ISettingsUtils> mockGeneralSettingsUtils;
+        private Mock<SettingsUtils> mockGeneralSettingsUtils;
 
         [TestInitialize]
         public void SetUpStubSettingUtils()
@@ -39,7 +39,7 @@ namespace ViewModelTests
         [DataRow("v0.22.0", "settings.json")]
         public void OriginalFilesModificationTest(string version, string fileName)
         {
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
             var fileMock = BackCompatTestProperties.GetModuleIOProvider(version, PowerPreviewSettings.ModuleName, fileName);
 
             var mockSettingsUtils = new SettingsUtils(fileMock.Object, settingPathMock.Object);

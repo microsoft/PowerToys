@@ -93,7 +93,7 @@ internal static class Receiver
         switch (package.Type)
         {
             case PackageType.Keyboard:
-                Common.PackageReceived.Keyboard++;
+                Package.PackageReceived.Keyboard++;
                 if (package.Des == Common.MachineID || package.Des == ID.ALL)
                 {
                     JustGotAKey = Common.GetTick();
@@ -102,7 +102,7 @@ internal static class Receiver
                     bool nonElevated = Common.RunWithNoAdminRight && false;
                     if (nonElevated && Setting.Values.OneWayControlMode)
                     {
-                        if ((package.Kd.dwFlags & (int)Common.LLKHF.UP) == (int)Common.LLKHF.UP)
+                        if ((package.Kd.dwFlags & (int)WM.LLKHF.UP) == (int)WM.LLKHF.UP)
                         {
                             Helper.ShowOneWayModeMessage();
                         }
@@ -116,7 +116,7 @@ internal static class Receiver
                 break;
 
             case PackageType.Mouse:
-                Common.PackageReceived.Mouse++;
+                Package.PackageReceived.Mouse++;
 
                 if (package.Des == Common.MachineID || package.Des == ID.ALL)
                 {
@@ -127,16 +127,16 @@ internal static class Receiver
 
                     // NOTE(@yuyoyuppe): disabled to drop elevation requirement
                     bool nonElevated = Common.RunWithNoAdminRight && false;
-                    if (nonElevated && Setting.Values.OneWayControlMode && package.Md.dwFlags != Common.WM_MOUSEMOVE)
+                    if (nonElevated && Setting.Values.OneWayControlMode && package.Md.dwFlags != WM.WM_MOUSEMOVE)
                     {
                         if (!DragDrop.IsDropping)
                         {
-                            if (package.Md.dwFlags is Common.WM_LBUTTONDOWN or Common.WM_RBUTTONDOWN)
+                            if (package.Md.dwFlags is WM.WM_LBUTTONDOWN or WM.WM_RBUTTONDOWN)
                             {
                                 Helper.ShowOneWayModeMessage();
                             }
                         }
-                        else if (package.Md.dwFlags is Common.WM_LBUTTONUP or Common.WM_RBUTTONUP)
+                        else if (package.Md.dwFlags is WM.WM_LBUTTONUP or WM.WM_RBUTTONUP)
                         {
                             DragDrop.IsDropping = false;
                         }
@@ -146,7 +146,7 @@ internal static class Receiver
 
                     if (Math.Abs(package.Md.X) >= Event.MOVE_MOUSE_RELATIVE && Math.Abs(package.Md.Y) >= Event.MOVE_MOUSE_RELATIVE)
                     {
-                        if (package.Md.dwFlags == Common.WM_MOUSEMOVE)
+                        if (package.Md.dwFlags == WM.WM_MOUSEMOVE)
                         {
                             InputSimulation.MoveMouseRelative(
                                 package.Md.X < 0 ? package.Md.X + Event.MOVE_MOUSE_RELATIVE : package.Md.X - Event.MOVE_MOUSE_RELATIVE,
@@ -203,19 +203,19 @@ internal static class Receiver
                 break;
 
             case PackageType.ExplorerDragDrop:
-                Common.PackageReceived.ExplorerDragDrop++;
+                Package.PackageReceived.ExplorerDragDrop++;
                 DragDrop.DragDropStep03(package);
                 break;
 
             case PackageType.Heartbeat:
             case PackageType.Heartbeat_ex:
-                Common.PackageReceived.Heartbeat++;
+                Package.PackageReceived.Heartbeat++;
 
-                Common.GeneratedKey = Common.GeneratedKey || package.Type == PackageType.Heartbeat_ex;
+                Encryption.GeneratedKey = Encryption.GeneratedKey || package.Type == PackageType.Heartbeat_ex;
 
-                if (Common.GeneratedKey)
+                if (Encryption.GeneratedKey)
                 {
-                    Setting.Values.MyKey = Common.MyKey;
+                    Setting.Values.MyKey = Encryption.MyKey;
                     Common.SendPackage(ID.ALL, PackageType.Heartbeat_ex_l2);
                 }
 
@@ -230,26 +230,26 @@ internal static class Receiver
                 break;
 
             case PackageType.Heartbeat_ex_l2:
-                Common.GeneratedKey = true;
-                Setting.Values.MyKey = Common.MyKey;
+                Encryption.GeneratedKey = true;
+                Setting.Values.MyKey = Encryption.MyKey;
                 Common.SendPackage(ID.ALL, PackageType.Heartbeat_ex_l3);
 
                 break;
 
             case PackageType.Heartbeat_ex_l3:
-                Common.GeneratedKey = true;
-                Setting.Values.MyKey = Common.MyKey;
+                Encryption.GeneratedKey = true;
+                Setting.Values.MyKey = Encryption.MyKey;
 
                 break;
 
             case PackageType.Awake:
-                Common.PackageReceived.Heartbeat++;
+                Package.PackageReceived.Heartbeat++;
                 _ = MachineStuff.AddToMachinePool(package);
                 Common.HumanBeingDetected();
                 break;
 
             case PackageType.Hello:
-                Common.PackageReceived.Hello++;
+                Package.PackageReceived.Hello++;
                 Common.SendHeartBeat();
                 string newMachine = MachineStuff.AddToMachinePool(package);
                 if (Setting.Values.MachineMatrixString == null)
@@ -262,16 +262,16 @@ internal static class Receiver
                 break;
 
             case PackageType.Hi:
-                Common.PackageReceived.Hello++;
+                Package.PackageReceived.Hello++;
                 break;
 
             case PackageType.ByeBye:
-                Common.PackageReceived.ByeBye++;
+                Package.PackageReceived.ByeBye++;
                 Common.ProcessByeByeMessage(package);
                 break;
 
             case PackageType.Clipboard:
-                Common.PackageReceived.Clipboard++;
+                Package.PackageReceived.Clipboard++;
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                 {
                     Clipboard.clipboardCopiedTime = Common.GetTick();
@@ -291,7 +291,7 @@ internal static class Receiver
                 break;
 
             case PackageType.ClipboardCapture:
-                Common.PackageReceived.Clipboard++;
+                Package.PackageReceived.Clipboard++;
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                 {
                     if (package.Des == Common.MachineID || package.Des == ID.ALL)
@@ -304,7 +304,7 @@ internal static class Receiver
                 break;
 
             case PackageType.CaptureScreenCommand:
-                Common.PackageReceived.Clipboard++;
+                Package.PackageReceived.Clipboard++;
                 if (package.Des == Common.MachineID || package.Des == ID.ALL)
                 {
                     Common.SendImage(package.Src, Common.CaptureScreen());
@@ -313,7 +313,7 @@ internal static class Receiver
                 break;
 
             case PackageType.ClipboardAsk:
-                Common.PackageReceived.ClipboardAsk++;
+                Package.PackageReceived.ClipboardAsk++;
 
                 if (package.Des == Common.MachineID)
                 {
@@ -344,17 +344,17 @@ internal static class Receiver
                 break;
 
             case PackageType.ClipboardDragDrop:
-                Common.PackageReceived.ClipboardDragDrop++;
+                Package.PackageReceived.ClipboardDragDrop++;
                 DragDrop.DragDropStep08(package);
                 break;
 
             case PackageType.ClipboardDragDropOperation:
-                Common.PackageReceived.ClipboardDragDrop++;
+                Package.PackageReceived.ClipboardDragDrop++;
                 DragDrop.DragDropStep08_2(package);
                 break;
 
             case PackageType.ClipboardDragDropEnd:
-                Common.PackageReceived.ClipboardDragDropEnd++;
+                Package.PackageReceived.ClipboardDragDropEnd++;
                 DragDrop.DragDropStep12();
                 break;
 
@@ -363,11 +363,11 @@ internal static class Receiver
                 Clipboard.clipboardCopiedTime = 0;
                 if (package.Type == PackageType.ClipboardImage)
                 {
-                    Common.PackageReceived.ClipboardImage++;
+                    Package.PackageReceived.ClipboardImage++;
                 }
                 else
                 {
-                    Common.PackageReceived.ClipboardText++;
+                    Package.PackageReceived.ClipboardText++;
                 }
 
                 if (tcp != null)
@@ -390,7 +390,7 @@ internal static class Receiver
             default:
                 if ((package.Type & PackageType.Matrix) == PackageType.Matrix)
                 {
-                    Common.PackageReceived.Matrix++;
+                    Package.PackageReceived.Matrix++;
                     MachineStuff.UpdateMachineMatrix(package);
                     break;
                 }

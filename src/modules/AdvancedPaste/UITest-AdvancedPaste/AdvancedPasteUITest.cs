@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -11,7 +12,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
-
 using Microsoft.AdvancedPaste.UITests.Helper;
 using Microsoft.CodeCoverage.Core.Reports.Coverage;
 using Microsoft.PowerToys.UITest;
@@ -55,7 +55,7 @@ namespace Microsoft.AdvancedPaste.UITests
         }
 
         public AdvancedPasteUITest()
-            : base(PowerToysModule.PowerToysSettings, size: WindowSize.Small)
+            : base(PowerToysModule.PowerToysSettings, size: WindowSize.Large_Vertical)
         {
             Type currentTestType = typeof(AdvancedPasteUITest);
             string? dirName = Path.GetDirectoryName(currentTestType.Assembly.Location);
@@ -254,13 +254,250 @@ namespace Microsoft.AdvancedPaste.UITests
 
         /*
          * Clipboard History
-           - [] Open Settings and Enable clipboard history (if not enabled already). Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry. Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
-           - [] Open Advanced Paste window with hotkey, click Clipboard history, and click any entry (but first). Observe that entry is put on top of clipboard history. Check OS clipboard history (Win+V), and confirm that the same entry is on top of the clipboard.
-           - [] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
+           - [x] Open Settings and Enable clipboard history (if not enabled already). Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry. Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
+           - [x] Open Advanced Paste window with hotkey, click Clipboard history, and click any entry (but first). Observe that entry is put on top of clipboard history. Check OS clipboard history (Win+V), and confirm that the same entry is on top of the clipboard.
+           - [x] Open Settings and Disable clipboard history. Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
          * Disable Advanced Paste, try different Advanced Paste hotkeys and confirm that it's disabled and nothing happens.
          */
-        private void TestCaseClipboardHistory()
+        [TestMethod]
+        [TestCategory("AdvancedPasteUITest")]
+        [TestCategory("TestCaseClipboardHistoryDeleteTest")]
+        public void TestCaseClipboardHistoryDeleteTest()
         {
+            RestartScopeExe();
+            Thread.Sleep(1500);
+
+            // Find the PowerToys Settings window
+            var settingsWindow = Find<Window>("PowerToys Settings", global: true);
+            Assert.IsNotNull(settingsWindow, "Failed to open PowerToys Settings window");
+
+            if (FindAll<NavigationViewItem>("Advanced Paste").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                Find<NavigationViewItem>("System Tools").Click();
+            }
+
+            Find<NavigationViewItem>("Advanced Paste").Click();
+
+            Find<ToggleSwitch>("Clipboard history").Toggle(true);
+
+            Session.CloseMainWindow();
+
+            // clear system clipboard
+            ClearSystemClipboardHistory();
+
+            // set test content to clipboard
+            const string textForTesting = "Test text";
+            SetClipboardTextInSTAMode(textForTesting);
+
+            // Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry.
+            this.SendKeys(Key.Win, Key.Shift, Key.V);
+            Thread.Sleep(1500);
+
+            var apWind = this.Find<Window>("Advanced Paste", global: true);
+            apWind.Find<PowerToys.UITest.Button>("Clipboard history").Click();
+
+            var textGroup = apWind.Find<Group>(textForTesting);
+            Assert.IsNotNull(textGroup, "Cannot find the test string from advanced paste clipboard history.");
+
+            textGroup.Find<PowerToys.UITest.Button>("More options").Click();
+            apWind.Find<TextBlock>("Delete").Click();
+
+            // Check OS clipboard history (Win+V), and confirm that the same entry no longer exist.
+            this.SendKeys(Key.Win, Key.V);
+
+            Thread.Sleep(1500);
+
+            var clipboardWindow = this.Find<Window>("Windows Input Experience", global: true);
+            Assert.IsNotNull(clipboardWindow, "Cannot find system clipboard window.");
+
+            var nothingText = clipboardWindow.Find<Group>("Nothing here, You'll see your clipboard history here once you've copied something.");
+            Assert.IsNotNull(nothingText, "System clipboard is not empty, which should be yes.");
+        }
+
+        [TestMethod]
+        [TestCategory("AdvancedPasteUITest")]
+        [TestCategory("TestCaseClipboardHistorySelectTest")]
+        public void TestCaseClipboardHistorySelectTest()
+        {
+            RestartScopeExe();
+            Thread.Sleep(1500);
+
+            // Find the PowerToys Settings window
+            var settingsWindow = Find<Window>("PowerToys Settings", global: true);
+            Assert.IsNotNull(settingsWindow, "Failed to open PowerToys Settings window");
+
+            if (FindAll<NavigationViewItem>("Advanced Paste").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                Find<NavigationViewItem>("System Tools").Click();
+            }
+
+            Find<NavigationViewItem>("Advanced Paste").Click();
+
+            Find<ToggleSwitch>("Clipboard history").Toggle(true);
+
+            Session.CloseMainWindow();
+
+            // clear system clipboard
+            ClearSystemClipboardHistory();
+
+            // set test content to clipboard
+            string[] textForTesting = { "Test text1", "Test text2", "Test text3", "Test text4", "Test text5", "Test text6", };
+            foreach (var str in textForTesting)
+            {
+                SetClipboardTextInSTAMode(str);
+                Thread.Sleep(1000);
+            }
+
+            // Open Advanced Paste window with hotkey
+            this.SendKeys(Key.Win, Key.Shift, Key.V);
+            Thread.Sleep(1500);
+
+            var apWind = this.Find<Window>("Advanced Paste", global: true);
+            apWind.Find<PowerToys.UITest.Button>("Clipboard history").Click();
+
+            // click the 3rd item
+            var textGroup = apWind.Find<Group>(textForTesting[0]);
+            Assert.IsNotNull(textGroup, "Cannot find the test string from advanced paste clipboard history.");
+            textGroup.Click();
+
+            // Check OS clipboard history (Win+V)
+            this.SendKeys(Key.Win, Key.V);
+
+            Thread.Sleep(1500);
+
+            var clipboardWindow = this.Find<Window>("Windows Input Experience", global: true);
+            Assert.IsNotNull(clipboardWindow, "Cannot find system clipboard window.");
+
+            var txtFound = clipboardWindow.Find<Element>(textForTesting[0]);
+            Assert.IsNotNull(txtFound, "Cannot find textblock");
+        }
+
+        // [x] Open Settings and Disable clipboard history.Open Advanced Paste window with hotkey and observe that Clipboard history button is disabled.
+        [TestMethod]
+        [TestCategory("AdvancedPasteUITest")]
+        [TestCategory("TestCaseClipboardHistoryDisableTest")]
+        public void TestCaseClipboardHistoryDisableTest()
+        {
+            RestartScopeExe();
+            Thread.Sleep(1500);
+
+            // Find the PowerToys Settings window
+            var settingsWindow = Find<Window>("PowerToys Settings", global: true);
+            Assert.IsNotNull(settingsWindow, "Failed to open PowerToys Settings window");
+
+            if (FindAll<NavigationViewItem>("Advanced Paste").Count == 0)
+            {
+                // Expand Advanced list-group if needed
+                Find<NavigationViewItem>("System Tools").Click();
+            }
+
+            Find<NavigationViewItem>("Advanced Paste").Click();
+
+            Find<ToggleSwitch>("Clipboard history").Toggle(false);
+
+            Session.CloseMainWindow();
+
+            // set test content to clipboard
+            const string textForTesting = "Test text";
+            SetClipboardTextInSTAMode(textForTesting);
+
+            // Open Advanced Paste window with hotkey, click Clipboard history and try deleting some entry.
+            this.SendKeys(Key.Win, Key.Shift, Key.V);
+            Thread.Sleep(1500);
+
+            var apWind = this.Find<Window>("Advanced Paste", global: true);
+
+            // Click the button (which should still exist but be disabled)
+            apWind.Find<PowerToys.UITest.Button>("Clipboard history").Click();
+
+            // Verify that the clipboard content doesn't appear
+            // Use a short timeout to avoid a long wait when the element doesn't exist
+            Assert.IsFalse(
+                Has<Group>(textForTesting),
+                "Clipboard content should not appear when clipboard history is disabled");
+        }
+
+        // Disable Advanced Paste, try different Advanced Paste hotkeys and confirm that it's disabled and nothing happens.
+        [TestMethod]
+        [TestCategory("AdvancedPasteUITest")]
+        [TestCategory("TestCaseDisableAdvancedPaste")]
+        public void TestCaseDisableAdvancedPaste()
+        {
+            RestartScopeExe();
+            Thread.Sleep(1500);
+
+            // Find the PowerToys Settings window
+            var settingsWindow = Find<Window>("PowerToys Settings", global: true);
+            Assert.IsNotNull(settingsWindow, "Failed to open PowerToys Settings window");
+
+            if (FindAll<NavigationViewItem>("Advanced Paste").Count == 0)
+            {
+                // Expand System Tools if needed
+                Find<NavigationViewItem>("System Tools").Click();
+            }
+
+            Find<NavigationViewItem>("Advanced Paste").Click();
+
+            // Disable Advanced Paste module
+            var moduleToggle = Find<ToggleSwitch>("Enable Advanced Paste");
+            moduleToggle.Toggle(false);
+
+            Session.CloseMainWindow();
+
+            // Prepare some text to test with
+            const string textForTesting = "Test text for disabled module";
+            SetClipboardTextInSTAMode(textForTesting);
+
+            // Try main Advanced Paste hotkey
+            this.SendKeys(Key.Win, Key.Shift, Key.V);
+            Thread.Sleep(500);
+
+            // Verify Advanced Paste window does not appear
+            Assert.IsFalse(
+                Has<Window>("Advanced Paste", global: true),
+                "Advanced Paste window should not appear when the module is disabled");
+
+            // Re-enable Advanced Paste for other tests
+            RestartScopeExe();
+            Thread.Sleep(1500);
+
+            settingsWindow = Find<Window>("PowerToys Settings", global: true);
+
+            if (FindAll<NavigationViewItem>("Advanced Paste").Count == 0)
+            {
+                Find<NavigationViewItem>("System Tools").Click();
+            }
+
+            Find<NavigationViewItem>("Advanced Paste").Click();
+            Find<ToggleSwitch>("Enable Advanced Paste").Toggle(true);
+
+            Session.CloseMainWindow();
+        }
+
+        private void ClearSystemClipboardHistory()
+        {
+            this.SendKeys(Key.Win, Key.V);
+
+            Thread.Sleep(1500);
+
+            var clipboardWindow = this.Find<Window>("Windows Input Experience", global: true);
+            Assert.IsNotNull(clipboardWindow, "Cannot find system clipboard window.");
+
+            clipboardWindow.Find<PowerToys.UITest.Button>("Clear all except pinned items").Click();
+        }
+
+        private void SetClipboardTextInSTAMode(string text)
+        {
+            var thread = new Thread(() =>
+            {
+                System.Windows.Forms.Clipboard.SetText(text);
+            });
+
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
         }
 
         private void ContentCopyAndPasteDirectly(string fileName, bool isRTF = false)

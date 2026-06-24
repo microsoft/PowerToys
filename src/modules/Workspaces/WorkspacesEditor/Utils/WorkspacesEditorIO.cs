@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using ManagedCommon;
-using WorkspacesEditor.Data;
+using WorkspacesCsharpLibrary.Data;
+using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.ViewModels;
 
@@ -81,7 +81,7 @@ namespace WorkspacesEditor.Utils
 
             foreach (Project project in workspaces)
             {
-                ProjectData.ProjectWrapper wrapper = new()
+                ProjectWrapper wrapper = new()
                 {
                     Id = project.Id,
                     Name = project.Name,
@@ -95,7 +95,7 @@ namespace WorkspacesEditor.Utils
 
                 foreach (Application app in project.Applications.Where(x => x.IsIncluded))
                 {
-                    wrapper.Applications.Add(new ProjectData.ApplicationWrapper
+                    wrapper.Applications.Add(new ApplicationWrapper
                     {
                         Id = app.Id,
                         Application = app.AppName,
@@ -110,7 +110,7 @@ namespace WorkspacesEditor.Utils
                         Version = app.Version,
                         Maximized = app.Maximized,
                         Minimized = app.Minimized,
-                        Position = new ProjectData.ApplicationWrapper.WindowPositionWrapper
+                        Position = new ApplicationWrapper.WindowPositionWrapper
                         {
                             X = app.Position.X,
                             Y = app.Position.Y,
@@ -123,20 +123,20 @@ namespace WorkspacesEditor.Utils
 
                 foreach (MonitorSetup monitor in project.Monitors)
                 {
-                    wrapper.MonitorConfiguration.Add(new ProjectData.MonitorConfigurationWrapper
+                    wrapper.MonitorConfiguration.Add(new MonitorConfigurationWrapper
                     {
                         Id = monitor.MonitorName,
                         InstanceId = monitor.MonitorInstanceId,
                         MonitorNumber = monitor.MonitorNumber,
                         Dpi = monitor.Dpi,
-                        MonitorRectDpiAware = new ProjectData.MonitorConfigurationWrapper.MonitorRectWrapper
+                        MonitorRectDpiAware = new MonitorConfigurationWrapper.MonitorRectWrapper
                         {
                             Left = (int)monitor.MonitorDpiAwareBounds.Left,
                             Top = (int)monitor.MonitorDpiAwareBounds.Top,
                             Width = (int)monitor.MonitorDpiAwareBounds.Width,
                             Height = (int)monitor.MonitorDpiAwareBounds.Height,
                         },
-                        MonitorRectDpiUnaware = new ProjectData.MonitorConfigurationWrapper.MonitorRectWrapper
+                        MonitorRectDpiUnaware = new MonitorConfigurationWrapper.MonitorRectWrapper
                         {
                             Left = (int)monitor.MonitorDpiUnawareBounds.Left,
                             Top = (int)monitor.MonitorDpiUnawareBounds.Top,
@@ -163,7 +163,7 @@ namespace WorkspacesEditor.Utils
 
         private bool AddWorkspaces(MainViewModel mainViewModel, WorkspacesData.WorkspacesListWrapper workspaces)
         {
-            foreach (ProjectData.ProjectWrapper project in workspaces.Workspaces)
+            foreach (ProjectWrapper project in workspaces.Workspaces)
             {
                 mainViewModel.Workspaces.Add(new Project(project));
             }

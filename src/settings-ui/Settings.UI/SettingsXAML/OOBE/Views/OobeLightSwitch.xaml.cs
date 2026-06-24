@@ -17,14 +17,14 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeLightSwitch()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.LightSwitch]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.LightSwitch);
         }
 
         private void SettingsLaunchButton_Click(object sender, RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(LightSwitchPage));
+                OobeWindow.OpenMainWindowCallback(typeof(LightSwitchPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();

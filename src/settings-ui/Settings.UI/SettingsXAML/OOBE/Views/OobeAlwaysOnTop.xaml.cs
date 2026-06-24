@@ -18,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeAlwaysOnTop()
         {
             InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.AlwaysOnTop]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.AlwaysOnTop);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(AlwaysOnTopPage));
+                OobeWindow.OpenMainWindowCallback(typeof(AlwaysOnTopPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -35,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
-            HotkeyControl.Keys = SettingsRepository<AlwaysOnTopSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.Hotkey.Value.GetKeysList();
+            HotkeyControl.Keys = SettingsRepository<AlwaysOnTopSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.Hotkey.Value.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

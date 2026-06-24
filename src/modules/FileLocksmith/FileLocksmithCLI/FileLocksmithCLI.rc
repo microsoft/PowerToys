@@ -1,0 +1,62 @@
+#include "resource.h"
+#include <windows.h>
+#include "../../../common/version/version.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+#include "winres.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION FILE_VERSION
+ PRODUCTVERSION PRODUCT_VERSION
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", COMPANY_NAME
+            VALUE "FileDescription", "File Locksmith CLI"
+            VALUE "FileVersion", FILE_VERSION_STRING
+            VALUE "InternalName", "FileLocksmithCLI.exe"
+            VALUE "LegalCopyright", COPYRIGHT_NOTE
+            VALUE "OriginalFilename", "FileLocksmithCLI.exe"
+            VALUE "ProductName", PRODUCT_NAME
+            VALUE "ProductVersion", PRODUCT_VERSION_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+STRINGTABLE
+BEGIN
+    IDS_USAGE               "Usage: FileLocksmithCLI.exe [options] <path1> [path2] ...\nOptions:\n  --kill      Kill processes locking the files\n  --json      Output results in JSON format\n  --wait      Wait for files to be unlocked\n  --timeout   Timeout in milliseconds for --wait\n  --help      Show this help message\n"
+    IDS_NO_PROCESSES        "No processes found locking the file(s).\n"
+    IDS_HEADER              "PID\tUser\tProcess\n"
+    IDS_TERMINATED          "Terminated process %1!d! (%2)\n"
+    IDS_FAILED_TERMINATE    "Failed to terminate process %1!d! (%2)\n"
+    IDS_FAILED_OPEN         "Failed to open process %1!d! (%2)\n"
+    IDS_ERROR_NO_PATHS      "Error: No paths specified.\n"
+    IDS_WARN_JSON_WAIT      "Warning: --wait is incompatible with --json. Ignoring --json.\n"
+    IDS_WAITING             "Waiting for files to be unlocked...\n"
+    IDS_UNLOCKED            "Files unlocked.\n"
+    IDS_TIMEOUT             "Timeout waiting for files to be unlocked.\n"
+    IDS_ERROR_INVALID_TIMEOUT "Error: Invalid timeout value.\n"
+    IDS_ERROR_TIMEOUT_ARG   "Error: --timeout requires an argument.\n"
+END

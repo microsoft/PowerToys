@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <!-- Images -->
-    <Content Include="$(SolutionDir)\src\modules\cmdpal\Microsoft.CmdPal.UI\Assets\$(CmdPalAssetSuffix)\**\*">
+    <Content Include=".\Assets\$(CmdPalAssetSuffix)\**\*">
       <DeploymentContent>true</DeploymentContent>
       <Link>Assets\%(RecursiveDir)%(FileName)%(Extension)</Link>
     </Content>
@@ -35,14 +35,10 @@
 
     <!-- In the future, when we actually want to support "preview" and "canary",
          add a Package-Pre.appxmanifest, etc. -->
-    <AppxManifest Include="Package.appxmanifest"
-                  Condition="'$(CommandPaletteBranding)'=='Release'" />
-    <AppxManifest Include="Package.appxmanifest"
-                  Condition="'$(CommandPaletteBranding)'=='Preview'" />
-    <AppxManifest Include="Package.appxmanifest"
-                  Condition="'$(CommandPaletteBranding)'=='Canary'" />
-    <AppxManifest Include="Package-Dev.appxmanifest"
-                  Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'" />
+    <AppxManifest Include="Package.appxmanifest" Condition="'$(CommandPaletteBranding)'=='Release'" />
+    <AppxManifest Include="Package.appxmanifest" Condition="'$(CommandPaletteBranding)'=='Preview'" />
+    <AppxManifest Include="Package.appxmanifest" Condition="'$(CommandPaletteBranding)'=='Canary'" />
+    <AppxManifest Include="Package-Dev.appxmanifest" Condition="'$(CommandPaletteBranding)'=='' or '$(CommandPaletteBranding)'=='Dev'" />
   </ItemGroup>
 
 </Project>

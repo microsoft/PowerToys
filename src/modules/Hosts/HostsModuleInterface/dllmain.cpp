@@ -155,7 +155,7 @@ public:
             }
         }
 
-        m_showEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_EVENT, [&](int err)
+        m_showEventWaiter.start(CommonSharedConstants::SHOW_HOSTS_EVENT, [&](DWORD err)
         {
             if (m_enabled && err == ERROR_SUCCESS)
             {
@@ -174,7 +174,7 @@ public:
             }
         });
 
-        m_showAdminEventWaiter = EventWaiter(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT, [&](int err)
+        m_showAdminEventWaiter.start(CommonSharedConstants::SHOW_HOSTS_ADMIN_EVENT, [&](DWORD err)
         {
             if (m_enabled && err == ERROR_SUCCESS)
             {
@@ -241,6 +241,12 @@ public:
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
         return powertoys_gpo::getConfiguredHostsFileEditorEnabledValue();
+    }
+
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
     }
 
     virtual bool get_config(wchar_t* /*buffer*/, int* /*buffer_size*/) override

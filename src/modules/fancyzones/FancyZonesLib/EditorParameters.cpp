@@ -191,27 +191,22 @@ bool EditorParameters::Save(const WorkAreaConfiguration& configuration, OnThread
 
             monitorJson.dpi = dpi;
             
-            MONITORINFOEX monitorInfo{};
+            // Get DPI-unaware values for dimensions (virtual coordinates for WPF sizing)
+            MONITORINFOEX monitorInfoUnaware{};
             dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] {
-                monitorInfo.cbSize = sizeof(monitorInfo);
-                if (!GetMonitorInfo(monitor, &monitorInfo))
-                {
-                    return;
-                }
+                monitorInfoUnaware.cbSize = sizeof(monitorInfoUnaware);
+                GetMonitorInfo(monitor, &monitorInfoUnaware);
             } }).wait();
 
-            float width = static_cast<float>(monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left);
-            float height = static_cast<float>(monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top);
-            DPIAware::Convert(monitor, width, height);
+            // Dimensions in virtual coordinates (from DPI-unaware thread)
+            monitorJson.monitorWidth = monitorInfoUnaware.rcMonitor.right - monitorInfoUnaware.rcMonitor.left;
+            monitorJson.monitorHeight = monitorInfoUnaware.rcMonitor.bottom - monitorInfoUnaware.rcMonitor.top;
+            monitorJson.workAreaWidth = monitorInfoUnaware.rcWork.right - monitorInfoUnaware.rcWork.left;
+            monitorJson.workAreaHeight = monitorInfoUnaware.rcWork.bottom - monitorInfoUnaware.rcWork.top;
 
-            monitorJson.monitorWidth = static_cast<int>(std::roundf(width));
-            monitorJson.monitorHeight = static_cast<int>(std::roundf(height));
-
-            // use dpi-unaware values
-            monitorJson.top = monitorInfo.rcWork.top;
-            monitorJson.left = monitorInfo.rcWork.left;
-            monitorJson.workAreaWidth = monitorInfo.rcWork.right - monitorInfo.rcWork.left;
-            monitorJson.workAreaHeight = monitorInfo.rcWork.bottom - monitorInfo.rcWork.top;
+            // Position in virtual coordinates (matched by DPI-unaware context in WPF editor)
+            monitorJson.left = monitorInfoUnaware.rcWork.left;
+            monitorJson.top = monitorInfoUnaware.rcWork.top;
 
             argsJson.monitors.emplace_back(std::move(monitorJson));
         }

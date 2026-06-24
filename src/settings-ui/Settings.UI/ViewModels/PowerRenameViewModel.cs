@@ -5,9 +5,12 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows.Input;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -18,7 +21,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
     {
         private GeneralSettings GeneralSettingsConfig { get; set; }
 
-        private readonly ISettingsUtils _settingsUtils;
+        private readonly SettingsUtils _settingsUtils;
 
         private const string ModuleName = PowerRenameSettings.ModuleName;
 
@@ -28,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private Func<string, int> SendConfigMSG { get; }
 
-        public PowerRenameViewModel(ISettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
+        public PowerRenameViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, string configFileSubfolder = "")
         {
             // Update Settings file folder:
             _settingsConfigFileFolder = configFileSubfolder;
@@ -66,6 +69,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _powerRenameMaxDispListNumValue = Settings.Properties.MaxMRUSize.Value;
             _autoComplete = Settings.Properties.MRUEnabled.Value;
             _powerRenameUseBoostLib = Settings.Properties.UseBoostLib.Value;
+
+            // Initialize extension helpers
+            HeifExtension = new StoreExtensionHelper(
+                "Microsoft.HEIFImageExtension_8wekyb3d8bbwe",
+                "ms-windows-store://pdp/?ProductId=9PMMSR1CGPWG",
+                "HEIF");
+
+            AvifExtension = new StoreExtensionHelper(
+                "Microsoft.AV1VideoExtension_8wekyb3d8bbwe",
+                "ms-windows-store://pdp/?ProductId=9MVZQVXJBQ9V",
+                "AV1");
 
             InitializeEnabledValue();
         }
@@ -269,6 +283,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
             OnPropertyChanged(nameof(GlobalAndMruEnabled));
+        }
+
+        // Store extension helpers
+        public StoreExtensionHelper HeifExtension { get; private set; }
+
+        public StoreExtensionHelper AvifExtension { get; private set; }
+
+        // Convenience properties for XAML binding
+        public bool IsHeifExtensionInstalled => HeifExtension.IsInstalled;
+
+        public bool IsAvifExtensionInstalled => AvifExtension.IsInstalled;
+
+        public ICommand InstallHeifExtensionCommand => HeifExtension.InstallCommand;
+
+        public ICommand InstallAvifExtensionCommand => AvifExtension.InstallCommand;
+
+        public void RefreshHeifExtensionStatus()
+        {
+            HeifExtension.RefreshStatus();
+            OnPropertyChanged(nameof(IsHeifExtensionInstalled));
+        }
+
+        public void RefreshAvifExtensionStatus()
+        {
+            AvifExtension.RefreshStatus();
+            OnPropertyChanged(nameof(IsAvifExtensionInstalled));
         }
     }
 }

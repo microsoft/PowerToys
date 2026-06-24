@@ -3,15 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text.Json.Serialization;
-
-using Workspaces.Data;
-
 using static WorkspacesLauncherUI.Data.AppLaunchData;
 using static WorkspacesLauncherUI.Data.AppLaunchInfosData;
 
 namespace WorkspacesLauncherUI.Data
 {
-    public class AppLaunchData : WorkspacesUIData<AppLaunchDataWrapper>
+    public class AppLaunchData : WorkspacesCsharpLibrary.Data.WorkspacesEditorData<AppLaunchDataWrapper>
     {
         public struct AppLaunchDataWrapper
         {

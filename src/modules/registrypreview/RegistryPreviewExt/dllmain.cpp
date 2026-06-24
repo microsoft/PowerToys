@@ -161,7 +161,7 @@ public:
         init_settings();
 
         triggerEvent = CreateEvent(nullptr, false, false, CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT);
-        triggerEventWaiter = EventWaiter(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT, [this](int) {
+        triggerEventWaiter.start(CommonSharedConstants::REGISTRY_PREVIEW_TRIGGER_EVENT, [this](DWORD) {
             on_hotkey(0);
         });
     }
@@ -197,6 +197,12 @@ public:
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration() override
     {
         return powertoys_gpo::getConfiguredRegistryPreviewEnabledValue();
+    }
+
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
     }
 
     // Return JSON with the configuration options.

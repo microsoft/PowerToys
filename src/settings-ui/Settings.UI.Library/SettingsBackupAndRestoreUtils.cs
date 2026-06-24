@@ -592,7 +592,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) DryRunBackup()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             var appBasePath = Path.GetDirectoryName(settingsUtils.GetSettingsFilePath());
             string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
             var results = BackupSettings(appBasePath, settingsBackupAndRestoreDir, true);
@@ -705,7 +705,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         else
                         {
                             // this has never been backed up, we need to do it now.
-                            Logger.LogInfo($"BackupSettings, {currentFile.Value} does not exists.");
+                            Logger.LogInfo($"BackupSettings, {currentFile.Value} does not exist.");
                             doBackup = true;
                         }
 

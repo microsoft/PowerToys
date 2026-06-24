@@ -1,6 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information.
 
-#include "precomp.h"
+#include "pch.h"
 #include "BalBaseBAFunctions.h"
 #include "BalBaseBAFunctionsProc.h"
 
@@ -31,6 +31,11 @@ public: // IBAFunctions
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION SYSTEM ACTIVE *** Running plan begin BA function. cPackages=%u, fCancel=%d", cPackages, *pfCancel);
 
+        //-------------------------------------------------------------------------------------------------
+        // YOUR CODE GOES HERE
+        // BalExitOnFailure(hr, "Change this message to represent real error handling.");
+        //-------------------------------------------------------------------------------------------------
+
         return hr;
     }
 
@@ -51,12 +56,11 @@ public: // IBAFunctions
         __in DWORD cFiles,
         __in_ecount_z(cFiles) LPCWSTR* rgwzFiles,
         __in int nRecommendation,
-        __in BOOTSTRAPPER_FILES_IN_USE_TYPE source,
+        __in BOOTSTRAPPER_FILES_IN_USE_TYPE /* source */,
         __inout int* pResult
         )
     {
         HRESULT hr = S_OK;
-        UNREFERENCED_PARAMETER(source);
 
         BalLog(BOOTSTRAPPER_LOG_LEVEL_STANDARD, "*** CUSTOM BA FUNCTION CALLED *** Running OnExecuteFilesInUse BA function. packageId=%ls, cFiles=%u, recommendation=%d", wzPackageId, cFiles, nRecommendation);
         

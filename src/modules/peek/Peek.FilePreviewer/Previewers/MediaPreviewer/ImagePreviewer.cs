@@ -54,8 +54,6 @@ namespace Peek.FilePreviewer.Previewers
 
         private bool IsPng() => Item.Extension == ".png";
 
-        private bool IsSvg() => Item.Extension == ".svg";
-
         private bool IsQoi() => Item.Extension == ".qoi";
 
         private DispatcherQueue Dispatcher { get; }
@@ -63,7 +61,7 @@ namespace Peek.FilePreviewer.Previewers
         private static readonly HashSet<string> _supportedFileTypes =
             BitmapDecoder.GetDecoderInformationEnumerator()
                 .SelectMany(di => di.FileExtensions)
-                .Union([".svg", ".qoi"])
+                .Union([".qoi"])
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         public static bool IsItemSupported(IFileSystemItem item)
@@ -75,15 +73,7 @@ namespace Peek.FilePreviewer.Previewers
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (IsSvg())
-            {
-                var size = await Task.Run(Item.GetSvgSize);
-                if (size != null)
-                {
-                    ImageSize = size.Value;
-                }
-            }
-            else if (IsQoi())
+            if (IsQoi())
             {
                 var size = await Task.Run(Item.GetQoiSize);
                 if (size != null)
@@ -176,31 +166,16 @@ namespace Peek.FilePreviewer.Previewers
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    using FileStream stream = ReadHelper.OpenReadOnly(Item.Path);
-
-                    if (IsSvg())
+                    if (IsQoi())
                     {
-                        var source = new SvgImageSource();
-                        source.RasterizePixelHeight = ImageSize?.Height ?? 0;
-                        source.RasterizePixelWidth = ImageSize?.Width ?? 0;
-
-                        var loadStatus = await source.SetSourceAsync(stream.AsRandomAccessStream());
-                        if (loadStatus != SvgImageSourceLoadStatus.Success)
-                        {
-                            Logger.LogError("Error loading SVG: " + loadStatus.ToString());
-                            throw new ImageLoadingException(nameof(source));
-                        }
-
-                        Preview = source;
-                    }
-                    else if (IsQoi())
-                    {
+                        using FileStream stream = ReadHelper.OpenReadOnly(Item.Path);
                         using var bitmap = QoiImage.FromStream(stream);
 
                         Preview = await BitmapHelper.BitmapToImageSource(bitmap, true, cancellationToken);
                     }
                     else
                     {
+                        using FileStream stream = ReadHelper.OpenReadOnly(Item.Path);
                         Preview = new BitmapImage();
                         await ((BitmapImage)Preview).SetSourceAsync(stream.AsRandomAccessStream());
                     }

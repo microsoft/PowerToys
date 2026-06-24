@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <optional>
 #include <vector>
+#include <string>
 
 namespace powertoys_gpo
 {
@@ -31,6 +32,8 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_COLOR_PICKER = L"ConfigureEnabledUtilityColorPicker";
     const std::wstring POLICY_CONFIGURE_ENABLED_CROP_AND_LOCK = L"ConfigureEnabledUtilityCropAndLock";
     const std::wstring POLICY_CONFIGURE_ENABLED_LIGHT_SWITCH = L"ConfigureEnabledUtilityLightSwitch";
+    const std::wstring POLICY_CONFIGURE_ENABLED_POWER_DISPLAY = L"ConfigureEnabledUtilityPowerDisplay";
+    const std::wstring POLICY_CONFIGURE_ENABLED_GRAB_AND_MOVE = L"ConfigureEnabledUtilityGrabAndMove";
     const std::wstring POLICY_CONFIGURE_ENABLED_FANCYZONES = L"ConfigureEnabledUtilityFancyZones";
     const std::wstring POLICY_CONFIGURE_ENABLED_FILE_LOCKSMITH = L"ConfigureEnabledUtilityFileLocksmith";
     const std::wstring POLICY_CONFIGURE_ENABLED_SVG_PREVIEW = L"ConfigureEnabledUtilityFileExplorerSVGPreview";
@@ -51,6 +54,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_HIGHLIGHTER = L"ConfigureEnabledUtilityMouseHighlighter";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_JUMP = L"ConfigureEnabledUtilityMouseJump";
     const std::wstring POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS = L"ConfigureEnabledUtilityMousePointerCrosshairs";
+    const std::wstring POLICY_CONFIGURE_ENABLED_CURSOR_WRAP = L"ConfigureEnabledUtilityCursorWrap";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_RENAME = L"ConfigureEnabledUtilityPowerRename";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER = L"ConfigureEnabledUtilityPowerLauncher";
     const std::wstring POLICY_CONFIGURE_ENABLED_QUICK_ACCENT = L"ConfigureEnabledUtilityQuickAccent";
@@ -82,6 +86,13 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_RUN_AT_STARTUP = L"ConfigureRunAtStartup";
     const std::wstring POLICY_CONFIGURE_ENABLED_POWER_LAUNCHER_ALL_PLUGINS = L"PowerLauncherAllPluginsEnabledState";
     const std::wstring POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS = L"AllowPowerToysAdvancedPasteOnlineAIModels";
+    const std::wstring POLICY_ALLOW_ADVANCED_PASTE_OPENAI = L"AllowAdvancedPasteOpenAI";
+    const std::wstring POLICY_ALLOW_ADVANCED_PASTE_AZURE_OPENAI = L"AllowAdvancedPasteAzureOpenAI";
+    const std::wstring POLICY_ALLOW_ADVANCED_PASTE_AZURE_AI_INFERENCE = L"AllowAdvancedPasteAzureAIInference";
+    const std::wstring POLICY_ALLOW_ADVANCED_PASTE_MISTRAL = L"AllowAdvancedPasteMistral";
+    const std::wstring POLICY_ALLOW_ADVANCED_PASTE_GOOGLE = L"AllowAdvancedPasteGoogle";
+    const std::wstring POLICY_ALLOW_ADVANCED_PASTE_OLLAMA = L"AllowAdvancedPasteOllama";
+    const std::wstring POLICY_ALLOW_ADVANCED_PASTE_FOUNDRY_LOCAL = L"AllowAdvancedPasteFoundryLocal";
     const std::wstring POLICY_MWB_CLIPBOARD_SHARING_ENABLED = L"MwbClipboardSharingEnabled";
     const std::wstring POLICY_MWB_FILE_TRANSFER_ENABLED = L"MwbFileTransferEnabled";
     const std::wstring POLICY_MWB_USE_ORIGINAL_USER_INTERFACE = L"MwbUseOriginalUserInterface";
@@ -93,6 +104,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_MWB_POLICY_DEFINED_IP_MAPPING_RULES = L"MwbPolicyDefinedIpMappingRules";
     const std::wstring POLICY_NEW_PLUS_HIDE_TEMPLATE_FILENAME_EXTENSION = L"NewPlusHideTemplateFilenameExtension";
     const std::wstring POLICY_NEW_PLUS_REPLACE_VARIABLES = L"NewPlusReplaceVariablesInTemplateFilenames";
+    const std::wstring POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU = L"NewPlusHideBuiltInNewContextMenu";
 
     // Methods used for reading the registry
 #pragma region ReadRegistryMethods
@@ -249,7 +261,7 @@ namespace powertoys_gpo
             }
         }
 
-        // No list exists for machine and user, or no value was found in the list, or an error ocurred while reading the value.
+        // No list exists for machine and user, or no value was found in the list, or an error occurred while reading the value.
         return std::nullopt;
     }
 
@@ -299,6 +311,16 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredLightSwitchEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_LIGHT_SWITCH);
+    }
+
+    inline gpo_rule_configured_t getConfiguredPowerDisplayEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_POWER_DISPLAY);
+    }
+
+    inline gpo_rule_configured_t getConfiguredGrabAndMoveEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_GRAB_AND_MOVE);
     }
 
     inline gpo_rule_configured_t getConfiguredFancyZonesEnabledValue()
@@ -399,6 +421,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredMousePointerCrosshairsEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_MOUSE_POINTER_CROSSHAIRS);
+    }
+
+    inline gpo_rule_configured_t getConfiguredCursorWrapEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_CURSOR_WRAP);
     }
 
     inline gpo_rule_configured_t getConfiguredPowerRenameEnabledValue()
@@ -575,6 +602,41 @@ namespace powertoys_gpo
         return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_ONLINE_AI_MODELS);
     }
 
+    inline gpo_rule_configured_t getAllowedAdvancedPasteOpenAIValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_OPENAI);
+    }
+
+    inline gpo_rule_configured_t getAllowedAdvancedPasteAzureOpenAIValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_AZURE_OPENAI);
+    }
+
+    inline gpo_rule_configured_t getAllowedAdvancedPasteAzureAIInferenceValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_AZURE_AI_INFERENCE);
+    }
+
+    inline gpo_rule_configured_t getAllowedAdvancedPasteMistralValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_MISTRAL);
+    }
+
+    inline gpo_rule_configured_t getAllowedAdvancedPasteGoogleValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_GOOGLE);
+    }
+
+    inline gpo_rule_configured_t getAllowedAdvancedPasteOllamaValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_OLLAMA);
+    }
+
+    inline gpo_rule_configured_t getAllowedAdvancedPasteFoundryLocalValue()
+    {
+        return getConfiguredValue(POLICY_ALLOW_ADVANCED_PASTE_FOUNDRY_LOCAL);
+    }
+
     inline gpo_rule_configured_t getConfiguredMwbClipboardSharingEnabledValue()
     {
         return getConfiguredValue(POLICY_MWB_CLIPBOARD_SHARING_ENABLED);
@@ -645,5 +707,10 @@ namespace powertoys_gpo
         return getConfiguredValue(POLICY_NEW_PLUS_REPLACE_VARIABLES);
     }
     
+    inline gpo_rule_configured_t getConfiguredNewPlusHideBuiltInNewContextMenuValue()
+    {
+        return getConfiguredValue(POLICY_NEW_PLUS_HIDE_BUILT_IN_NEW_CONTEXT_MENU);
+    }
+
 #pragma endregion IndividualModuleSettingPolicies
 }

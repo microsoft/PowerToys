@@ -64,8 +64,6 @@ public partial class OCROverlay : Window
 
         InitializeComponent();
 
-        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this, Wpf.Ui.Controls.WindowBackdropType.None);
-
         PopulateLanguageMenu();
     }
 
@@ -426,7 +424,7 @@ public partial class OCROverlay : Window
     private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
     {
         WindowUtilities.CloseAllOCROverlays();
-        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.PowerOCR, false);
+        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.PowerOCR);
     }
 
     private static bool CheckIfCheckingOrUnchecking(object? sender)

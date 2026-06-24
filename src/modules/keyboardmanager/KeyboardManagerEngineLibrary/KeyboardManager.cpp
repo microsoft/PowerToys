@@ -70,7 +70,7 @@ KeyboardManager::KeyboardManager()
     };
 
     editorIsRunningEvent = CreateEvent(nullptr, true, false, KeyboardManagerConstants::EditorWindowEventName.c_str());
-    settingsEventWaiter = EventWaiter(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
+    settingsEventWaiter.start(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 }
 
 void KeyboardManager::LoadSettings()

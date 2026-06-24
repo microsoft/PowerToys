@@ -18,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobeCropAndLock()
         {
             InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.CropAndLock]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.CropAndLock);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(CropAndLockPage));
+                OobeWindow.OpenMainWindowCallback(typeof(CropAndLockPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -35,8 +35,10 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
-            ReparentHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ReparentHotkey.Value.GetKeysList();
-            ThumbnailHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ThumbnailHotkey.Value.GetKeysList();
+
+            ReparentHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ReparentHotkey.Value.GetKeysList();
+            ThumbnailHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ThumbnailHotkey.Value.GetKeysList();
+            ScreenshotHotkeyControl.Keys = SettingsRepository<CropAndLockSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ScreenshotHotkey.Value.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

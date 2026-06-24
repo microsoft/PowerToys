@@ -17,6 +17,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("bool_show_extended_menu")]
         public BoolProperty ExtendedContextMenuOnly { get; set; }
 
-        public override string ToString() => JsonSerializer.Serialize(this);
+        public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.FileLocksmithProperties);
     }
 }

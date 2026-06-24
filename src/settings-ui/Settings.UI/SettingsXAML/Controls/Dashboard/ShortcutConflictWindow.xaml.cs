@@ -2,16 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using CommunityToolkit.WinUI.Controls;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts;
 using Microsoft.PowerToys.Settings.UI.Services;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.PowerToys.Settings.UI.Views;
-using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,7 +23,11 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
 
         public ShortcutConflictWindow()
         {
-            var settingsUtils = new SettingsUtils();
+            App.ThemeService.ThemeChanged += OnThemeChanged;
+            App.ThemeService.ApplyTheme();
+
+            var settingsUtils = SettingsUtils.Default;
+
             ViewModel = new ShortcutConflictViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
@@ -50,6 +51,11 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
             ViewModel.OnPageLoaded();
         }
 
+        private void OnThemeChanged(object sender, ElementTheme theme)
+        {
+            WindowHelper.SetTheme(this, theme);
+        }
+
         private void CenterOnScreen()
         {
             var displayArea = DisplayArea.GetFromWindowId(this.AppWindow.Id, DisplayAreaFallback.Nearest);
@@ -71,7 +77,7 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
                 settingsCard.DataContext is ModuleHotkeyData moduleData)
             {
                 var moduleType = moduleData.ModuleType;
-                NavigationService.Navigate(ModuleHelper.GetModulePageType(moduleType));
+                NavigationService.Navigate(ModuleGpoHelper.GetModulePageType(moduleType));
                 this.Close();
             }
         }
@@ -127,6 +133,14 @@ namespace Microsoft.PowerToys.Settings.UI.SettingsXAML.Controls.Dashboard
         private void WindowEx_Closed(object sender, WindowEventArgs args)
         {
             ViewModel?.Dispose();
+
+            var mainWindow = App.GetSettingsWindow();
+            if (mainWindow != null)
+            {
+                mainWindow.CloseHiddenWindow();
+            }
+
+            App.ThemeService.ThemeChanged -= OnThemeChanged;
         }
 
         private void Window_Activated_SetIcon(object sender, WindowActivatedEventArgs args)

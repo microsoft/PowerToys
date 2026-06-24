@@ -27,7 +27,8 @@ $versionExceptions = @(
     "WyHash.dll",
     "Microsoft.Recognizers.Text.DataTypes.TimexExpression.dll",
     "ObjectModelCsProjection.dll",
-    "RendererCsProjection.dll") -join '|';
+    "RendererCsProjection.dll",
+    "Microsoft.ML.OnnxRuntime.dll") -join '|';
 $nullVersionExceptions = @(
     "SkiaSharp.Views.WinUI.Native.dll",
     "libSkiaSharp.dll",
@@ -52,7 +53,12 @@ $nullVersionExceptions = @(
     "System.Diagnostics.EventLog.Messages.dll",
     "Microsoft.Windows.Widgets.dll",
     "AdaptiveCards.ObjectModel.WinUI3.dll",
-    "AdaptiveCards.Rendering.WinUI3.dll") -join '|';
+    "AdaptiveCards.Rendering.WinUI3.dll",
+    "boost_regex_vc143_mt_gd_x32_1_87.dll",
+    "boost_regex_vc143_mt_gd_x64_1_87.dll",
+    "boost_regex_vc143_mt_x32_1_87.dll",
+    "boost_regex_vc143_mt_x64_1_87.dll"
+    ) -join '|';
 $totalFailure = 0;
 
 Write-Host $DirPath;

@@ -34,7 +34,7 @@ namespace Settings.UI.Library
 
         public string ToJsonString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, Microsoft.PowerToys.Settings.UI.Library.SettingsSerializationContext.Default.PeekPreviewSettings);
         }
 
         public string GetModuleName()

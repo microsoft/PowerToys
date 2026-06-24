@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using static FancyZonesEditorCommon.Data.CustomLayouts;
 
@@ -15,7 +16,7 @@ namespace FancyZonesEditorCommon.Data
         {
             get
             {
-                return GetDataFolder() + "\\Microsoft\\PowerToys\\FancyZones\\custom-layouts.json";
+                return FancyZonesPaths.CustomLayouts;
             }
         }
 
@@ -23,8 +24,10 @@ namespace FancyZonesEditorCommon.Data
         {
             public struct CanvasZoneWrapper
             {
+                [JsonPropertyName("X")]
                 public int X { get; set; }
 
+                [JsonPropertyName("Y")]
                 public int Y { get; set; }
 
                 public int Width { get; set; }
@@ -78,24 +81,24 @@ namespace FancyZonesEditorCommon.Data
 
         public JsonElement ToJsonElement(CanvasInfoWrapper info)
         {
-            string json = JsonSerializer.Serialize(info, this.JsonOptions);
+            string json = JsonSerializer.Serialize(info, FancyZonesJsonContext.Default.CanvasInfoWrapper);
             return JsonSerializer.Deserialize<JsonElement>(json);
         }
 
         public JsonElement ToJsonElement(GridInfoWrapper info)
         {
-            string json = JsonSerializer.Serialize(info, this.JsonOptions);
+            string json = JsonSerializer.Serialize(info, FancyZonesJsonContext.Default.GridInfoWrapper);
             return JsonSerializer.Deserialize<JsonElement>(json);
         }
 
         public CanvasInfoWrapper CanvasFromJsonElement(string json)
         {
-            return JsonSerializer.Deserialize<CanvasInfoWrapper>(json, this.JsonOptions);
+            return JsonSerializer.Deserialize(json, FancyZonesJsonContext.Default.CanvasInfoWrapper);
         }
 
         public GridInfoWrapper GridFromJsonElement(string json)
         {
-            return JsonSerializer.Deserialize<GridInfoWrapper>(json, this.JsonOptions);
+            return JsonSerializer.Deserialize(json, FancyZonesJsonContext.Default.GridInfoWrapper);
         }
     }
 }

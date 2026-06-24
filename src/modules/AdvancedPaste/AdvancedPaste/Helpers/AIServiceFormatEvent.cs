@@ -18,6 +18,7 @@ namespace AdvancedPaste.Helpers
             PromptTokens = semanticKernelFormatEvent.PromptTokens;
             CompletionTokens = semanticKernelFormatEvent.CompletionTokens;
             ModelName = semanticKernelFormatEvent.ModelName;
+            ProviderType = semanticKernelFormatEvent.ProviderType;
             ActionChain = semanticKernelFormatEvent.ActionChain;
         }
 
@@ -37,6 +38,8 @@ namespace AdvancedPaste.Helpers
         public int CompletionTokens { get; set; }
 
         public string ModelName { get; set; }
+
+        public string ProviderType { get; set; }
 
         public string ActionChain { get; set; }
 

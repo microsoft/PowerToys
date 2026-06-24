@@ -6,13 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 
 using ManagedCommon;
 using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Models;
-using WorkspacesLauncherUI.Utils;
 
 namespace WorkspacesLauncherUI.ViewModels
 {

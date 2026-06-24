@@ -11,9 +11,6 @@ using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class OobePeek : Page
     {
         public OobePowerToysModule ViewModel { get; set; }
@@ -21,15 +18,15 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         public OobePeek()
         {
             this.InitializeComponent();
-            ViewModel = new OobePowerToysModule(OobeShellPage.OobeShellHandler.Modules[(int)PowerToysModules.Peek]);
+            ViewModel = App.OobeShellViewModel.GetModule(PowerToysModules.Peek);
             DataContext = ViewModel;
         }
 
         private void SettingsLaunchButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (OobeShellPage.OpenMainWindowCallback != null)
+            if (OobeWindow.OpenMainWindowCallback != null)
             {
-                OobeShellPage.OpenMainWindowCallback(typeof(PeekPage));
+                OobeWindow.OpenMainWindowCallback(typeof(PeekPage));
             }
 
             ViewModel.LogOpeningSettingsEvent();
@@ -38,7 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             ViewModel.LogOpeningModuleEvent();
-            HotkeyControl.Keys = SettingsRepository<PeekSettings>.GetInstance(new SettingsUtils()).SettingsConfig.Properties.ActivationShortcut.GetKeysList();
+            HotkeyControl.Keys = SettingsRepository<PeekSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.GetKeysList();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

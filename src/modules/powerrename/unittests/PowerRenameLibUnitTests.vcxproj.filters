@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <ClCompile Include="HelpersTests.cpp" />
     <ClCompile Include="MockPowerRenameItem.cpp" />
     <ClCompile Include="MockPowerRenameManagerEvents.cpp" />
     <ClCompile Include="MockPowerRenameRegExEvents.cpp" />
@@ -30,6 +31,9 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{d34a343a-52ef-4296-83c9-a94fa62062ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="testdata">
+      <UniqueIdentifier>{8c9f3e2d-1a4b-4e5f-9c7d-2b8a6f3e1d4c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PowerRenameUnitTests.rc">
@@ -38,5 +42,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="testdata\exif_test.jpg">
+      <Filter>testdata</Filter>
+    </None>
+    <None Include="testdata\exif_test_2.jpg">
+      <Filter>testdata</Filter>
+    </None>
+    <None Include="testdata\xmp_test.jpg">
+      <Filter>testdata</Filter>
+    </None>
+    <None Include="testdata\xmp_test_2.jpg">
+      <Filter>testdata</Filter>
+    </None>
+    <None Include="testdata\ATTRIBUTION.md">
+      <Filter>testdata</Filter>
+    </None>
   </ItemGroup>
 </Project>

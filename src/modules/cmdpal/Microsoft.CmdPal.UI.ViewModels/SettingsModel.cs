@@ -1,175 +1,383 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Collections.Immutable;
 using System.Text.Json.Serialization;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
-using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Foundation;
+using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class SettingsModel : ObservableObject
+public record SettingsModel
 {
-    [JsonIgnore]
-    public static readonly string FilePath;
-
-    public event TypedEventHandler<SettingsModel, object?>? SettingsChanged;
-
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
-    public HotkeySettings? Hotkey { get; set; } = DefaultActivationShortcut;
+    public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
 
-    public bool UseLowLevelGlobalHotkey { get; set; }
+    public bool UseLowLevelGlobalHotkey { get; init; }
 
-    public bool ShowAppDetails { get; set; }
+    public bool ShowAppDetails { get; init; }
 
-    public bool HotkeyGoesHome { get; set; }
+    public bool BackspaceGoesBack { get; init; }
 
-    public bool BackspaceGoesBack { get; set; }
+    public bool SingleClickActivates { get; init; }
 
-    public bool SingleClickActivates { get; set; }
+    public bool HighlightSearchOnActivate { get; init; } = true;
 
-    public bool HighlightSearchOnActivate { get; set; } = true;
+    public bool KeepPreviousQuery { get; init; }
 
-    public bool ShowSystemTrayIcon { get; set; } = true;
+    public bool ShowSystemTrayIcon { get; init; } = true;
 
-    public bool IgnoreShortcutWhenFullscreen { get; set; }
+    public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
-    public bool AllowExternalReload { get; set; }
+    public bool IgnoreShortcutWhenBusy { get; init; }
 
-    public Dictionary<string, ProviderSettings> ProviderSettings { get; set; } = [];
+    public bool AllowBreakthroughShortcut { get; init; }
 
-    public Dictionary<string, CommandAlias> Aliases { get; set; } = [];
+    public ImmutableList<PinnedCommandSettings> PinnedCommands { get; init; }
+        = ImmutableList<PinnedCommandSettings>.Empty;
 
-    public List<TopLevelHotkey> CommandHotkeys { get; set; } = [];
+    public bool AllowExternalReload { get; init; }
 
-    public MonitorBehavior SummonOn { get; set; } = MonitorBehavior.ToMouse;
+    private ImmutableDictionary<string, ProviderSettings>? _providerSettings
+        = ImmutableDictionary<string, ProviderSettings>.Empty;
 
-    public bool DisableAnimations { get; set; } = true;
+    public ImmutableDictionary<string, ProviderSettings> ProviderSettings
+    {
+        get => _providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        init => _providerSettings = value;
+    }
 
-    public WindowPosition? LastWindowPosition { get; set; }
+    private string[]? _fallbackRanks = [];
+
+    public string[] FallbackRanks
+    {
+        get => _fallbackRanks ?? [];
+        init => _fallbackRanks = value;
+    }
+
+    private ImmutableDictionary<string, CommandAlias>? _aliases
+        = ImmutableDictionary<string, CommandAlias>.Empty;
+
+    public ImmutableDictionary<string, CommandAlias> Aliases
+    {
+        get => _aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        init => _aliases = value;
+    }
+
+    private ImmutableList<TopLevelHotkey>? _commandHotkeys
+        = ImmutableList<TopLevelHotkey>.Empty;
+
+    public ImmutableList<TopLevelHotkey> CommandHotkeys
+    {
+        get => _commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        init => _commandHotkeys = value;
+    }
+
+    public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
+
+    public bool DisableAnimations { get; init; } = true;
+
+    public WindowPosition? LastWindowPosition { get; init; }
+
+    public TimeSpan AutoGoHomeInterval { get; init; } = Timeout.InfiniteTimeSpan;
+
+    public EscapeKeyBehavior EscapeKeyBehaviorSetting { get; init; } = EscapeKeyBehavior.ClearSearchFirstThenGoBack;
+
+    public bool EnableDock { get; init; }
+
+    private DockSettings? _dockSettings = new();
+
+    public DockSettings DockSettings
+    {
+        get => _dockSettings ?? new();
+        init => _dockSettings = value;
+    }
+
+    // Theme settings
+    public UserTheme Theme { get; init; } = UserTheme.Default;
+
+    public ColorizationMode ColorizationMode { get; init; }
+
+    public Color CustomThemeColor { get; init; } = new() { A = 0, R = 255, G = 255, B = 255 }; // Transparent — avoids WinUI3 COM dependency on Colors.Transparent
+
+    public int CustomThemeColorIntensity { get; init; } = 100;
+
+    public int BackgroundImageTintIntensity { get; init; }
+
+    public int BackgroundImageOpacity { get; init; } = 20;
+
+    public int BackgroundImageBlurAmount { get; init; }
+
+    public int BackgroundImageBrightness { get; init; }
+
+    public BackgroundImageFit BackgroundImageFit { get; init; }
+
+    public string? BackgroundImagePath { get; init; }
+
+    public BackdropStyle BackdropStyle { get; init; }
+
+    public int BackdropOpacity { get; init; } = 100;
+
+    // </Theme settings>
+
+    // Extension Gallery settings
+
+    /// <summary>
+    /// Gets the URL of the custom gallery feed <strong>for development only</strong>. This feed is currently only enabled in
+    /// development builds and is used for testing purposes. <strong>It is not used in CI builds.</strong>
+    /// </summary>
+    /// <remarks>
+    /// We do not want to allow this to be changed in retail builds to prevent the injection of a malicious feed.
+    /// </remarks>
+    public string? GalleryFeedUrl { get; init; }
+
+    // </Gallery settings>
 
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
 
-    static SettingsModel()
+    [JsonConstructor]
+    public SettingsModel(
+          ImmutableList<PinnedCommandSettings>? pinnedCommands = null,
+          ImmutableDictionary<string, ProviderSettings>? providerSettings = null,
+          string[]? fallbackRanks = null,
+          ImmutableDictionary<string, CommandAlias>? aliases = null,
+          ImmutableList<TopLevelHotkey>? commandHotkeys = null)
     {
-        FilePath = SettingsJsonPath();
+        PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
+        ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        FallbackRanks = fallbackRanks ?? [];
+        Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
     }
 
-    public ProviderSettings GetProviderSettings(CommandProviderWrapper provider)
+    public SettingsModel()
     {
-        ProviderSettings? settings;
-        if (!ProviderSettings.TryGetValue(provider.ProviderId, out settings))
-        {
-            settings = new ProviderSettings(provider);
-            settings.Connect(provider);
-            ProviderSettings[provider.ProviderId] = settings;
-        }
-        else
-        {
-            settings.Connect(provider);
-        }
-
-        return settings;
     }
 
-    public static SettingsModel LoadSettings()
+    public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
-        if (string.IsNullOrEmpty(FilePath))
+        if (!ProviderSettings.TryGetValue(provider.ProviderId, out var settings))
         {
-            throw new InvalidOperationException($"You must set a valid {nameof(SettingsModel.FilePath)} before calling {nameof(LoadSettings)}");
+            settings = new ProviderSettings();
         }
 
-        if (!File.Exists(FilePath))
+        var connected = settings.WithConnection(provider);
+
+        // If WithConnection returned the same instance, nothing changed — skip SetItem
+        if (ReferenceEquals(connected, settings))
         {
-            Debug.WriteLine("The provided settings file does not exist");
-            return new();
+            return (this, connected);
         }
 
-        try
+        var newModel = this with
         {
-            // Read the JSON content from the file
-            var jsonContent = File.ReadAllText(FilePath);
-
-            var loaded = JsonSerializer.Deserialize<SettingsModel>(jsonContent, JsonSerializationContext.Default.SettingsModel);
-
-            Debug.WriteLine(loaded is not null ? "Loaded settings file" : "Failed to parse");
-
-            return loaded ?? new();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex.ToString());
-        }
-
-        return new();
+            ProviderSettings = ProviderSettings.SetItem(provider.ProviderId, connected),
+        };
+        return (newModel, connected);
     }
 
-    public static void SaveSettings(SettingsModel model)
+    public SettingsModel NormalizePinnedCommands()
     {
-        if (string.IsNullOrEmpty(FilePath))
+        var pinnedCommands = PinnedCommands;
+        if (pinnedCommands.Count == 0)
         {
-            throw new InvalidOperationException($"You must set a valid {nameof(FilePath)} before calling {nameof(SaveSettings)}");
-        }
-
-        try
-        {
-            // Serialize the main dictionary to JSON and save it to the file
-            var settingsJson = JsonSerializer.Serialize(model, JsonSerializationContext.Default.SettingsModel);
-
-            // Is it valid JSON?
-            if (JsonNode.Parse(settingsJson) is JsonObject newSettings)
+            var migratedPins = ImmutableList.CreateBuilder<PinnedCommandSettings>();
+            foreach (var (providerId, providerSettings) in ProviderSettings.OrderBy(static kvp => kvp.Key, StringComparer.Ordinal))
             {
-                // Now, read the existing content from the file
-                var oldContent = File.Exists(FilePath) ? File.ReadAllText(FilePath) : "{}";
-
-                // Is it valid JSON?
-                if (JsonNode.Parse(oldContent) is JsonObject savedSettings)
+                foreach (var commandId in providerSettings.PinnedCommandIds)
                 {
-                    foreach (var item in newSettings)
-                    {
-                        savedSettings[item.Key] = item.Value?.DeepClone();
-                    }
-
-                    var serialized = savedSettings.ToJsonString(JsonSerializationContext.Default.Options);
-                    File.WriteAllText(FilePath, serialized);
-
-                    // TODO: Instead of just raising the event here, we should
-                    // have a file change watcher on the settings file, and
-                    // reload the settings then
-                    model.SettingsChanged?.Invoke(model, null);
-                }
-                else
-                {
-                    Debug.WriteLine("Failed to parse settings file as JsonObject.");
+                    migratedPins.Add(new PinnedCommandSettings(providerId, commandId));
                 }
             }
-            else
-            {
-                Debug.WriteLine("Failed to parse settings file as JsonObject.");
-            }
+
+            pinnedCommands = migratedPins.ToImmutable();
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex.ToString());
-        }
+
+        return WithPinnedCommands(pinnedCommands);
     }
 
-    internal static string SettingsJsonPath()
+    public SettingsModel WithPinnedCommands(ImmutableList<PinnedCommandSettings> pinnedCommands)
     {
-        var directory = Utilities.BaseSettingsPath("Microsoft.CmdPal");
-        Directory.CreateDirectory(directory);
+        var groupedPinnedCommands = pinnedCommands
+            .GroupBy(static pin => pin.ProviderId, StringComparer.Ordinal)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(static pin => pin.CommandId).ToImmutableList(),
+                StringComparer.Ordinal);
 
-        // now, the settings is just next to the exe
-        return Path.Combine(directory, "settings.json");
+        var allProviderIds = ProviderSettings.Keys.Union(groupedPinnedCommands.Keys, StringComparer.Ordinal).ToArray();
+        var providerSettingsAlreadyMatch = allProviderIds.All(providerId =>
+        {
+            ProviderSettings.TryGetValue(providerId, out var currentProviderSettings);
+            groupedPinnedCommands.TryGetValue(providerId, out var desiredPinnedIds);
+
+            var currentPinnedIds = currentProviderSettings?.PinnedCommandIds ?? ImmutableList<string>.Empty;
+            desiredPinnedIds ??= ImmutableList<string>.Empty;
+
+            return currentPinnedIds.SequenceEqual(desiredPinnedIds);
+        });
+
+        if (PinnedCommands.SequenceEqual(pinnedCommands) && providerSettingsAlreadyMatch)
+        {
+            return this;
+        }
+
+        var providerSettingsBuilder = ProviderSettings.ToBuilder();
+        foreach (var providerId in allProviderIds)
+        {
+            providerSettingsBuilder.TryGetValue(providerId, out var providerSettings);
+            providerSettings ??= new ProviderSettings();
+
+            groupedPinnedCommands.TryGetValue(providerId, out var desiredPinnedIds);
+            desiredPinnedIds ??= ImmutableList<string>.Empty;
+
+            providerSettingsBuilder[providerId] = providerSettings with { PinnedCommandIds = desiredPinnedIds };
+        }
+
+        return this with
+        {
+            PinnedCommands = pinnedCommands,
+            ProviderSettings = providerSettingsBuilder.ToImmutable(),
+        };
+    }
+
+    public bool IsCommandPinned(string providerId, string commandId)
+    {
+        foreach (var pinnedCommand in PinnedCommands)
+        {
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public List<string> GetPinnedCommandIds(string providerId)
+    {
+        List<string> pinnedCommandIds = [];
+        foreach (var pinnedCommand in PinnedCommands)
+        {
+            if (pinnedCommand.ProviderId == providerId)
+            {
+                pinnedCommandIds.Add(pinnedCommand.CommandId);
+            }
+        }
+
+        return pinnedCommandIds;
+    }
+
+    public SettingsModel TryPinCommand(string providerId, string commandId)
+    {
+        if (IsCommandPinned(providerId, commandId))
+        {
+            return this;
+        }
+
+        return WithPinnedCommands(PinnedCommands.Add(new PinnedCommandSettings(providerId, commandId)));
+    }
+
+    public SettingsModel TryUnpinCommand(string providerId, string commandId)
+    {
+        for (var i = 0; i < PinnedCommands.Count; i++)
+        {
+            var pinnedCommand = PinnedCommands[i];
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return WithPinnedCommands(PinnedCommands.RemoveAt(i));
+            }
+        }
+
+        return this;
+    }
+
+    public SettingsModel TryMovePinnedCommand(string providerId, string commandId, bool moveUp, Func<PinnedCommandSettings, bool>? isVisible = null)
+    {
+        var index = FindPinnedCommandIndex(providerId, commandId);
+        if (index < 0)
+        {
+            return this;
+        }
+
+        // Find the next visible neighbor in the move direction, skipping
+        // stale entries (removed/disabled/failed extensions).
+        var direction = moveUp ? -1 : 1;
+        var targetIndex = index + direction;
+        while (targetIndex >= 0 && targetIndex < PinnedCommands.Count &&
+               isVisible != null && !isVisible(PinnedCommands[targetIndex]))
+        {
+            targetIndex += direction;
+        }
+
+        if (targetIndex < 0 || targetIndex >= PinnedCommands.Count)
+        {
+            return this;
+        }
+
+        // Remove and re-insert rather than swap so that stale entries
+        // between index and targetIndex keep their relative positions.
+        var pinnedCommand = PinnedCommands[index];
+        var pinnedCommands = PinnedCommands.RemoveAt(index);
+        pinnedCommands = pinnedCommands.Insert(targetIndex, pinnedCommand);
+
+        return WithPinnedCommands(pinnedCommands);
+    }
+
+    public SettingsModel TryMovePinnedCommandToTop(string providerId, string commandId)
+    {
+        var index = FindPinnedCommandIndex(providerId, commandId);
+        if (index <= 0)
+        {
+            return this;
+        }
+
+        var pinnedCommand = PinnedCommands[index];
+        var pinnedCommands = PinnedCommands.RemoveAt(index);
+        pinnedCommands = pinnedCommands.Insert(0, pinnedCommand);
+
+        return WithPinnedCommands(pinnedCommands);
+    }
+
+    private int FindPinnedCommandIndex(string providerId, string commandId)
+    {
+        for (var i = 0; i < PinnedCommands.Count; i++)
+        {
+            var pinnedCommand = PinnedCommands[i];
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public string[] GetGlobalFallbacks()
+    {
+        var globalFallbacks = new HashSet<string>();
+
+        foreach (var provider in ProviderSettings.Values)
+        {
+            foreach (var fallback in provider.FallbackCommands)
+            {
+                var fallbackSetting = fallback.Value;
+                if (fallbackSetting.IsEnabled && fallbackSetting.IncludeInGlobalResults)
+                {
+                    globalFallbacks.Add(fallback.Key);
+                }
+            }
+        }
+
+        return globalFallbacks.ToArray();
     }
 
     // [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "<Pending>")]
@@ -191,6 +399,7 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(int))]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(bool))]
+[JsonSerializable(typeof(Color))]
 [JsonSerializable(typeof(HistoryItem))]
 [JsonSerializable(typeof(SettingsModel))]
 [JsonSerializable(typeof(WindowPosition))]
@@ -198,7 +407,18 @@ public partial class SettingsModel : ObservableObject
 [JsonSerializable(typeof(RecentCommandsManager))]
 [JsonSerializable(typeof(List<string>), TypeInfoPropertyName = "StringList")]
 [JsonSerializable(typeof(List<HistoryItem>), TypeInfoPropertyName = "HistoryList")]
+[JsonSerializable(typeof(ImmutableList<HistoryItem>), TypeInfoPropertyName = "ImmutableHistoryList")]
+[JsonSerializable(typeof(ImmutableDictionary<string, FallbackSettings>), TypeInfoPropertyName = "ImmutableFallbackDictionary")]
+[JsonSerializable(typeof(ImmutableList<string>), TypeInfoPropertyName = "ImmutableStringList")]
+[JsonSerializable(typeof(ImmutableList<PinnedCommandSettings>), TypeInfoPropertyName = "ImmutablePinnedCommandSettingsList")]
+[JsonSerializable(typeof(ImmutableList<DockBandSettings>), TypeInfoPropertyName = "ImmutableDockBandSettingsList")]
+[JsonSerializable(typeof(DockMonitorConfig))]
+[JsonSerializable(typeof(ImmutableList<DockMonitorConfig>), TypeInfoPropertyName = "ImmutableDockMonitorConfigList")]
+[JsonSerializable(typeof(ImmutableDictionary<string, ProviderSettings>), TypeInfoPropertyName = "ImmutableProviderSettingsDictionary")]
+[JsonSerializable(typeof(ImmutableDictionary<string, CommandAlias>), TypeInfoPropertyName = "ImmutableAliasDictionary")]
+[JsonSerializable(typeof(ImmutableList<TopLevelHotkey>), TypeInfoPropertyName = "ImmutableTopLevelHotkeyList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
+[JsonSerializable(typeof(PinnedCommandSettings))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
 internal sealed partial class JsonSerializationContext : JsonSerializerContext
@@ -212,4 +432,12 @@ public enum MonitorBehavior
     ToFocusedWindow = 2,
     InPlace = 3,
     ToLast = 4,
+}
+
+public enum EscapeKeyBehavior
+{
+    ClearSearchFirstThenGoBack = 0,
+    AlwaysGoBack = 1,
+    AlwaysDismiss = 2,
+    AlwaysHide = 3,
 }

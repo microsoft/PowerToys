@@ -36,7 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
             _fileSystem = new FileSystem();
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.Default;
             _sendConfigMsg = ShellPage.SendDefaultIPCMessage;
 
             ViewModel = new AwakeViewModel();

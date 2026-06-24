@@ -92,6 +92,12 @@ public:
         return powertoys_gpo::getConfiguredWorkspacesEnabledValue();
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     // Return JSON with the configuration options.
     // These are the settings shown on the settings page along with their current values.
     virtual bool get_config(_Out_ PWSTR buffer, _Out_ int* buffer_size) override
@@ -201,7 +207,7 @@ public:
                 Logger::error(message.value());
             }
         }
-        m_toggleEditorEventWaiter = EventWaiter(CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT, [&](int err) {
+        m_toggleEditorEventWaiter.start(CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT, [&](DWORD err) {
             if (err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT);

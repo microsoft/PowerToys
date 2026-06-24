@@ -3,9 +3,9 @@
 - [ ] The plugin is a project under `modules\launcher\Plugins`
 - [ ] Microsoft plugin project name pattern: `Microsoft.PowerToys.Run.Plugin.{PluginName}`
 - [ ] Community plugin project name pattern: `Community.PowerToys.Run.Plugin.{PluginName}`
-- [ ] The plugin target framework should be `net9.0-windows10.0.22621.0`
+- [ ] The plugin target framework should be `net10.0-windows10.0.22621.0`
 - [ ] If the plugin uses any 3rd party dependencies the project file should import `DynamicPlugin.props`
-- [ ] 3rd party dependencies must be compatible with .NET 9
+- [ ] 3rd party dependencies must be compatible with .NET 10
 - [ ] The plugin has to contain a `plugin.json` file of the following format in its root folder:
 
 ```json
@@ -42,4 +42,4 @@ In the PR that adds a new plugin, reference a new issue to track the work for fu
 
 - [ ] Add the resource folder to https://github.com/microsoft/PowerToys/blob/21247c0bb09a1bee3d14d6efa53d0c247f7236af/installer/PowerToysSetup/Product.wxs#L825
 - [ ] Add the resource files under the section https://github.com/microsoft/PowerToys/blob/21247c0bb09a1bee3d14d6efa53d0c247f7236af/installer/PowerToysSetup/Product.wxs#L882
-- [ ] Your plugin's executable file (DLL) has to have correct version informations after building it. (This version information will be shown on the settings page.)
+- [ ] Your plugin's executable file (DLL) has to have correct version information after building it. (This version information will be shown on the settings page.)

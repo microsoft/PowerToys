@@ -89,8 +89,8 @@ namespace MouseWithoutBorders
         {
             if (GetSecureKey() != SecurityCodeField.Text)
             {
-                Common.MyKey = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
-                SecurityCode = Common.MyKey;
+                Encryption.MyKey = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
+                SecurityCode = Encryption.MyKey;
             }
 
             MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { ComputerNameField.Text.Trim().ToUpper(CultureInfo.CurrentCulture), Common.MachineName.Trim(), string.Empty, string.Empty };

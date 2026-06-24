@@ -4,20 +4,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Management.Deployment;
-using Windows.Foundation.Metadata;
 
 namespace Microsoft.CmdPal.Ext.WinGet.Pages;
 
 public partial class InstallPackageListItem : ListItem
 {
+    private readonly IWinGetPackageManagerService _winGetPackageManagerService;
+    private readonly IWinGetOperationTrackerService _winGetOperationTrackerService;
+    private readonly TaskScheduler _uiScheduler;
     private readonly CatalogPackage _package;
 
     // Lazy-init the details
@@ -26,10 +28,18 @@ public partial class InstallPackageListItem : ListItem
     public override IDetails? Details { get => _details.Value; set => base.Details = value; }
 
     private InstallPackageCommand? _installCommand;
+    private bool? _skipDependencies;
 
-    public InstallPackageListItem(CatalogPackage package)
+    public InstallPackageListItem(
+        CatalogPackage package,
+        IWinGetPackageManagerService winGetPackageManagerService,
+        IWinGetOperationTrackerService winGetOperationTrackerService,
+        TaskScheduler uiScheduler)
         : base(new NoOpCommand())
     {
+        _winGetPackageManagerService = winGetPackageManagerService;
+        _winGetOperationTrackerService = winGetOperationTrackerService;
+        _uiScheduler = uiScheduler;
         _package = package;
 
         PackageVersionInfo? version = null;
@@ -75,11 +85,7 @@ public partial class InstallPackageListItem : ListItem
             {
                 if (metadata.Tags[i].Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (_installCommand is not null)
-                    {
-                        _installCommand.SkipDependencies = true;
-                    }
-
+                    _skipDependencies = true;
                     break;
                 }
             }
@@ -132,12 +138,20 @@ public partial class InstallPackageListItem : ListItem
             // These can be l o n g
             { Properties.Resources.winget_release_notes, (metadata.ReleaseNotes, string.Empty) },
         };
-        var docs = metadata.Documentations;
-        var count = docs.Count;
-        for (var i = 0; i < count; i++)
+
+        try
         {
-            var item = docs[i];
-            simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
+            var docs = metadata.Documentations;
+            var count = docs.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var item = docs[i];
+                simpleData.Add(item.DocumentLabel, (string.Empty, item.DocumentUrl));
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to retrieve documentations from metadata: {ex.Message}");
         }
 
         UriCreationOptions options = default;
@@ -159,14 +173,28 @@ public partial class InstallPackageListItem : ListItem
             }
         }
 
-        if (metadata.Tags.Count > 0)
+        try
         {
-            DetailsElement pair = new()
+            if (metadata.Tags.Count > 0)
             {
-                Key = "Tags",
-                Data = new DetailsTags() { Tags = metadata.Tags.Select(t => new Tag(t)).ToArray() },
-            };
-            detailsElements.Add(pair);
+                var tags = new ITag[metadata.Tags.Count];
+                for (var i = 0; i < metadata.Tags.Count; i++)
+                {
+                    var tag = new Tag(metadata.Tags[i]);
+                    tags[i] = tag;
+                }
+
+                DetailsElement pair = new()
+                {
+                    Key = "Tags",
+                    Data = new DetailsTags { Tags = tags },
+                };
+                detailsElements.Add(pair);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to retrieve tags from metadata: {ex}");
         }
 
         return detailsElements;
@@ -194,81 +222,139 @@ public partial class InstallPackageListItem : ListItem
         var isInstalled = _package.InstalledVersion is not null;
 
         var installedState = isInstalled ?
-            (_package.IsUpdateAvailable ?
-                PackageInstallCommandState.Update : PackageInstallCommandState.Uninstall) :
+            (_package.IsUpdateAvailable ? PackageInstallCommandState.Update : PackageInstallCommandState.Uninstall) :
             PackageInstallCommandState.Install;
 
         // might be an uninstall command
-        InstallPackageCommand installCommand = new(_package, installedState);
-
-        if (isInstalled)
+        InstallPackageCommand installCommand = new(_winGetPackageManagerService, _winGetOperationTrackerService, _uiScheduler, _package, installedState)
         {
-            this.Icon = installCommand.Icon;
-            this.Command = new NoOpCommand();
+            SkipDependencies = ShouldSkipDependencies(),
+        };
+
+        if (_package.InstalledVersion is not null)
+        {
+#if DEBUG
+            var installerType = _package.InstalledVersion.GetMetadata(PackageVersionMetadataField.InstallerType);
+            Subtitle = installerType + " | " + Subtitle;
+#endif
+
             List<IContextItem> contextMenu = [];
-            CommandContextItem uninstallContextItem = new(installCommand)
+            Command = installCommand;
+            Icon = installedState switch
             {
-                IsCritical = true,
-                Icon = Icons.DeleteIcon,
+                PackageInstallCommandState.Install => Icons.DownloadIcon,
+                PackageInstallCommandState.Update => Icons.UpdateIcon,
+                PackageInstallCommandState.Uninstall => Icons.CompletedIcon,
+                _ => Icons.DownloadIcon,
             };
 
-            if (WinGetStatics.AppSearchCallback is not null)
+            TryLocateAndAppendActionForApp(contextMenu);
+
+            MoreCommands = contextMenu.ToArray();
+        }
+        else
+        {
+            _installCommand = installCommand;
+            _installCommand.InstallStateChanged += InstallStateChangedHandler;
+            Command = _installCommand;
+            Icon = _installCommand.Icon;
+        }
+    }
+
+    private void TryLocateAndAppendActionForApp(List<IContextItem> contextMenu)
+    {
+        try
+        {
+            // Let's try to connect it to an installed app if possible
+            // This is a bit of dark magic, since there's no direct link between
+            // WinGet packages and installed apps.
+            var lookupByPackageName = WinGetStatics.AppSearchByPackageFamilyNameCallback;
+            if (lookupByPackageName is not null)
             {
-                var callback = WinGetStatics.AppSearchCallback;
-                var installedApp = callback(_package.DefaultInstallVersion is null ? _package.Name : _package.DefaultInstallVersion.DisplayName);
-                if (installedApp is not null)
+                var names = _package.InstalledVersion.PackageFamilyNames;
+                for (var i = 0; i < names.Count; i++)
                 {
-                    this.Command = installedApp.Command;
-                    contextMenu = [.. installedApp.MoreCommands];
+                    var installedAppByPfn = lookupByPackageName(names[i]);
+                    if (installedAppByPfn is not null)
+                    {
+                        contextMenu.Add(new Separator());
+                        contextMenu.Add(new CommandContextItem(installedAppByPfn.Command));
+                        foreach (var item in installedAppByPfn.MoreCommands)
+                        {
+                            contextMenu.Add(item);
+                        }
+
+                        return;
+                    }
                 }
             }
 
-            contextMenu.Add(uninstallContextItem);
-            this.MoreCommands = contextMenu.ToArray();
-            return;
+            var lookupByProductCode = WinGetStatics.AppSearchByProductCodeCallback;
+            if (lookupByProductCode is not null)
+            {
+                var productCodes = _package.InstalledVersion.ProductCodes;
+                for (var i = 0; i < productCodes.Count; i++)
+                {
+                    var installedAppByProductCode = lookupByProductCode(productCodes[i]);
+                    if (installedAppByProductCode is not null)
+                    {
+                        contextMenu.Add(new Separator());
+                        contextMenu.Add(new CommandContextItem(installedAppByProductCode.Command));
+                        foreach (var item in installedAppByProductCode.MoreCommands)
+                        {
+                            contextMenu.Add(item);
+                        }
+
+                        return;
+                    }
+                }
+            }
         }
-
-        // didn't find the app
-        _installCommand = new InstallPackageCommand(_package, installedState);
-        this.Command = _installCommand;
-
-        Icon = _installCommand.Icon;
-        _installCommand.InstallStateChanged += InstallStateChangedHandler;
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to retrieve app context menu items for package '{_package?.Name ?? "Unknown"}'", ex);
+        }
     }
 
     private void InstallStateChangedHandler(object? sender, InstallPackageCommand e)
     {
-        if (!ApiInformation.IsApiContractPresent("Microsoft.Management.Deployment.WindowsPackageManagerContract", 12))
+        UpdatedInstalledStatus();
+    }
+
+    private bool ShouldSkipDependencies()
+    {
+        if (_skipDependencies.HasValue)
         {
-            Logger.LogError($"RefreshPackageCatalogAsync isn't available");
-            e.FakeChangeStatus();
-            Command = e;
-            Icon = (IconInfo?)Command.Icon;
-            return;
+            return _skipDependencies.Value;
         }
 
-        _ = Task.Run(() =>
+        CatalogPackageMetadata? metadata = null;
+        try
         {
-            Stopwatch s = new();
-            Logger.LogDebug($"Starting RefreshPackageCatalogAsync");
-            s.Start();
-            var refs = WinGetStatics.AvailableCatalogs;
-            for (var i = 0; i < refs.Count; i++)
-            {
-                var catalog = refs[i];
-                var operation = catalog.RefreshPackageCatalogAsync();
-                operation.Wait();
-            }
+            var version = _package.DefaultInstallVersion ?? _package.InstalledVersion;
+            metadata = version?.GetCatalogPackageMetadata();
+        }
+        catch (COMException ex)
+        {
+            Logger.LogWarning($"GetCatalogPackageMetadata error {ex.ErrorCode}");
+        }
 
-            s.Stop();
-            Logger.LogDebug($"RefreshPackageCatalogAsync took {s.ElapsedMilliseconds}ms");
-        }).ContinueWith((previous) =>
+        if (metadata is null)
         {
-            if (previous.IsCompletedSuccessfully)
+            _skipDependencies = false;
+            return false;
+        }
+
+        for (var i = 0; i < metadata.Tags.Count; i++)
+        {
+            if (metadata.Tags[i].Equals(WinGetExtensionPage.ExtensionsTag, StringComparison.OrdinalIgnoreCase))
             {
-                Logger.LogDebug($"Updating InstalledStatus");
-                UpdatedInstalledStatus();
+                _skipDependencies = true;
+                return true;
             }
-        });
+        }
+
+        _skipDependencies = false;
+        return false;
     }
 }

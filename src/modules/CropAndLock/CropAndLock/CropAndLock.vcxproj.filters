@@ -12,6 +12,7 @@
     <ClCompile Include="ReparentCropAndLockWindow.cpp" />
     <ClCompile Include="ChildWindow.cpp" />
     <ClCompile Include="trace.cpp" />
+    <ClCompile Include="ScreenshotCropAndLockWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -28,6 +29,7 @@
     <ClInclude Include="trace.h" />
     <ClInclude Include="ModuleConstants.h" />
     <ClInclude Include="DispatcherQueue.desktop.interop.h" />
+    <ClInclude Include="ScreenshotCropAndLockWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CropAndLock.rc" />

@@ -14,7 +14,7 @@ namespace AdvancedPaste.Telemetry;
 
 [EventData]
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
-public class AdvancedPasteSemanticKernelFormatEvent(bool cacheUsed, bool isSavedQuery, int promptTokens, int completionTokens, string modelName, string actionChain) : EventBase, IEvent
+public class AdvancedPasteSemanticKernelFormatEvent(bool cacheUsed, bool isSavedQuery, int promptTokens, int completionTokens, string modelName, string providerType, string actionChain) : EventBase, IEvent
 {
     public static string FormatActionChain(IEnumerable<ActionChainItem> actionChain) => FormatActionChain(actionChain.Select(item => item.Format));
 
@@ -29,6 +29,8 @@ public class AdvancedPasteSemanticKernelFormatEvent(bool cacheUsed, bool isSaved
     public int CompletionTokens { get; set; } = completionTokens;
 
     public string ModelName { get; set; } = modelName;
+
+    public string ProviderType { get; set; } = providerType;
 
     /// <summary>
     /// Gets or sets a comma-separated list of paste formats used - in the same order they were executed.

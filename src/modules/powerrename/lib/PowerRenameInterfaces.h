@@ -1,7 +1,10 @@
 #pragma once
 #include "pch.h"
+#include "MetadataTypes.h"
+#include "MetadataPatternExtractor.h"
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 enum PowerRenameFlags
 {
@@ -22,6 +25,9 @@ enum PowerRenameFlags
     CreationTime = 0x4000,
     ModificationTime = 0x8000,
     AccessTime = 0x10000,
+    // Metadata source flags
+    MetadataSourceEXIF = 0x20000,    // Default
+    MetadataSourceXMP = 0x40000,
 };
 
 enum PowerRenameFilters
@@ -47,6 +53,7 @@ public:
     IFACEMETHOD(OnReplaceTermChanged)(_In_ PCWSTR replaceTerm) = 0;
     IFACEMETHOD(OnFlagsChanged)(_In_ DWORD flags) = 0;
     IFACEMETHOD(OnFileTimeChanged)(_In_ SYSTEMTIME fileTime) = 0;
+    IFACEMETHOD(OnMetadataChanged)() = 0;
 };
 
 interface __declspec(uuid("E3ED45B5-9CE0-47E2-A595-67EB950B9B72")) IPowerRenameRegEx : public IUnknown
@@ -62,6 +69,9 @@ public:
     IFACEMETHOD(PutFlags)(_In_ DWORD flags) = 0;
     IFACEMETHOD(PutFileTime)(_In_ SYSTEMTIME fileTime) = 0;
     IFACEMETHOD(ResetFileTime)() = 0;
+    IFACEMETHOD(PutMetadataPatterns)(_In_ const PowerRenameLib::MetadataPatternMap& patterns) = 0;
+    IFACEMETHOD(ResetMetadata)() = 0;
+    IFACEMETHOD(GetMetadataType)(_Out_ PowerRenameLib::MetadataType* metadataType) = 0;
     IFACEMETHOD(Replace)(_In_ PCWSTR source, _Outptr_ PWSTR* result, unsigned long& enumIndex) = 0;
 };
 

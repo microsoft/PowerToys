@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="LayerOnAcrylicPrimaryBackgroundBrush" Color="#50202020" />
+            <SolidColorBrush x:Key="LayerOnAcrylicSecondaryBackgroundBrush" Color="Transparent" />
+            <StaticResource x:Key="CmdPal.CommandBarBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="CmdPal.TopBarBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="CmdPal.DividerStrokeColorDefaultBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <!--
+                TextBox caret is rendered as inverted and needs clearly-defined background
+                https://github.com/zadjii-msft/PowerToys/issues/348
+                Because we are tweaking the LayerOnAcrylicPrimaryBackgroundBrush, we need to tweak the command bar background too. If not, it's too bright.
+            -->
+            <SolidColorBrush x:Key="LayerOnAcrylicPrimaryBackgroundBrush" Color="#A0FFFFFF" />
+            <SolidColorBrush x:Key="LayerOnAcrylicSecondaryBackgroundBrush" Color="#66FFFFFF" />
+            <StaticResource x:Key="CmdPal.CommandBarBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="CmdPal.TopBarBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+            <StaticResource x:Key="CmdPal.DividerStrokeColorDefaultBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="LayerOnAcrylicPrimaryBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="LayerOnAcrylicSecondaryBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="CmdPal.CommandBarBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="CmdPal.TopBarBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="CmdPal.DividerStrokeColorDefaultBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

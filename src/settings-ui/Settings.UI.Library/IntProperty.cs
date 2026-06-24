@@ -42,7 +42,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // Returns a JSON version of the class settings configuration class.
         public override string ToString()
         {
-            return JsonSerializer.Serialize(this);
+            return JsonSerializer.Serialize(this, SettingsSerializationContext.Default.IntProperty);
         }
 
         public static implicit operator IntProperty(int v)

@@ -7,6 +7,7 @@ UINT WM_PRIV_MOVESIZEEND;
 UINT WM_PRIV_LOCATIONCHANGE;
 UINT WM_PRIV_NAMECHANGE;
 UINT WM_PRIV_WINDOWCREATED;
+UINT WM_PRIV_WINDOWDESTROYED;
 UINT WM_PRIV_INIT;
 UINT WM_PRIV_VD_SWITCH;
 UINT WM_PRIV_EDITOR;
@@ -18,6 +19,7 @@ UINT WM_PRIV_DEFAULT_LAYOUTS_FILE_UPDATE;
 UINT WM_PRIV_SNAP_HOTKEY;
 UINT WM_PRIV_QUICK_LAYOUT_KEY;
 UINT WM_PRIV_SETTINGS_CHANGED;
+UINT WM_PRIV_SAVE_EDITOR_PARAMETERS;
 
 std::once_flag init_flag;
 
@@ -29,6 +31,7 @@ void InitializeWinhookEventIds()
         WM_PRIV_LOCATIONCHANGE = RegisterWindowMessage(L"{d56c5ee7-58e5-481c-8c4f-8844cf4d0347}");
         WM_PRIV_NAMECHANGE = RegisterWindowMessage(L"{b7b30c61-bfa0-4d95-bcde-fc4f2cbf6d76}");
         WM_PRIV_WINDOWCREATED = RegisterWindowMessage(L"{bdb10669-75da-480a-9ec4-eeebf09a02d7}");
+        WM_PRIV_WINDOWDESTROYED = RegisterWindowMessage(L"{567612f4-549d-4975-989f-84f6692749f0}");
         WM_PRIV_INIT = RegisterWindowMessage(L"{469818a8-00fa-4069-b867-a1da484fcd9a}");
         WM_PRIV_VD_SWITCH = RegisterWindowMessage(L"{128c2cb0-6bdf-493e-abbe-f8705e04aa95}");
         WM_PRIV_EDITOR = RegisterWindowMessage(L"{87543824-7080-4e91-9d9c-0404642fc7b6}");
@@ -40,5 +43,6 @@ void InitializeWinhookEventIds()
         WM_PRIV_SNAP_HOTKEY = RegisterWindowMessage(L"{72f4fd8e-23f1-43ab-bbbc-029363df9a84}");
         WM_PRIV_QUICK_LAYOUT_KEY = RegisterWindowMessage(L"{15baab3d-c67b-4a15-aFF0-13610e05e947}");
         WM_PRIV_SETTINGS_CHANGED = RegisterWindowMessage(L"{89ca3Daa-bf2d-4e73-9f3f-c60716364e27}");
+        WM_PRIV_SAVE_EDITOR_PARAMETERS = RegisterWindowMessage(L"{d8f9c0e3-5d77-4e83-8a4f-7c704c2bfb4a}");
     });
 }

@@ -9,13 +9,6 @@ namespace SamplePagesExtension;
 
 internal sealed partial class SampleGalleryListPage : ListPage
 {
-    public SampleGalleryListPage()
-    {
-        Icon = new IconInfo("\uE7C5");
-        Name = "Sample Gallery List Page";
-        GridProperties = new GalleryGridLayout();
-    }
-
     public override IListItem[] GetItems()
     {
         return [

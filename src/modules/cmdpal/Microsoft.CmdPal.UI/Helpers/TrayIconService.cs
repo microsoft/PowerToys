@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,8 +6,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.UI.Messages;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -25,7 +25,7 @@ internal sealed partial class TrayIconService
     private const uint MY_NOTIFY_ID = 1000;
     private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
 
-    private readonly SettingsModel _settingsModel;
+    private readonly ISettingsService _settingsService;
     private readonly uint WM_TASKBAR_RESTART;
 
     private Window? _window;
@@ -36,9 +36,9 @@ internal sealed partial class TrayIconService
     private DestroyIconSafeHandle? _largeIcon;
     private DestroyMenuSafeHandle? _popupMenu;
 
-    public TrayIconService(SettingsModel settingsModel)
+    public TrayIconService(ISettingsService settingsService)
     {
-        _settingsModel = settingsModel;
+        _settingsService = settingsService;
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
@@ -48,7 +48,7 @@ internal sealed partial class TrayIconService
 
     public void SetupTrayIcon(bool? showSystemTrayIcon = null)
     {
-        if (showSystemTrayIcon ?? _settingsModel.ShowSystemTrayIcon)
+        if (showSystemTrayIcon ?? _settingsService.Settings.ShowSystemTrayIcon)
         {
             if (_window is null)
             {
@@ -135,9 +135,15 @@ internal sealed partial class TrayIconService
     private DestroyIconSafeHandle GetAppIconHandle()
     {
         var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
-        DestroyIconSafeHandle largeIcon;
-        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
-        return largeIcon;
+
+        Span<HICON> large = new([default]); // 1 size array to accept icon
+        var extractedIconCount = PInvoke.ExtractIconEx(exePath, 0, large);
+        if ((extractedIconCount < 1) || (large[0] == HICON.Null))
+        {
+            return new DestroyIconSafeHandle(HICON.Null);
+        }
+
+        return new DestroyIconSafeHandle(large[0]);
     }
 
     private LRESULT WindowProc(
@@ -152,7 +158,7 @@ internal sealed partial class TrayIconService
                 {
                     if (wParam == PInvoke.WM_USER + 1)
                     {
-                        WeakReferenceMessenger.Default.Send<OpenSettingsMessage>();
+                        WeakReferenceMessenger.Default.Send(new OpenSettingsMessage());
                     }
                     else if (wParam == PInvoke.WM_USER + 2)
                     {

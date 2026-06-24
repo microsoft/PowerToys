@@ -33,9 +33,12 @@ The **Light Switch** module lets users automatically transition between light an
 
   > **Note:** Using the shortcut overrides the current schedule until the next transition event.
 
-* **LightSwitchService**
-  Reads settings and applies theming. Runs a check every minute to ensure the state is correct.
-
+* **LightSwitchService.cpp**
+  is the heart beat of the module. Controls ticking every minute and depending on user actions (manual override, settings changing, etc) triggers the state manager to perform the corresponding operation.
+  
+* **LightSwitchStateManager.cpp**
+  handles updating the state based on the signals sent by LightSwitchService.
+  
 * **SettingsXAML/LightSwitch**
   Provides the settings UI for configuring schedules, syncing location, and customizing shortcuts.
 
@@ -89,7 +92,7 @@ The module’s settings are exposed in the PowerToys Settings UI. Options includ
 3. Build the solution:
 
    ```sh
-   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.sln
+   msbuild -restore -p:RestorePackagesConfig=true -p:Platform=ARM64 -m PowerToys.slnx
    ```
 
    > Note: This may take some time.

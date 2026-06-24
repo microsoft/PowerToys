@@ -65,21 +65,28 @@ if (-not (Test-Path $outputDir)) {
     New-Item -Path $outputDir -ItemType Directory -Force | Out-Null
 }
 
-Write-Host "DSC manifests will be generated to: '$outputDir'"
+# DSC v3 manifests go to DSCModules subfolder
+$dscOutputDir = Join-Path $outputDir 'DSCModules'
+if (-not (Test-Path $dscOutputDir)) {
+    Write-Host "Creating DSCModules subfolder at '$dscOutputDir'."
+    New-Item -Path $dscOutputDir -ItemType Directory -Force | Out-Null
+}
 
-Write-Host "Cleaning previously generated DSC manifest files from '$outputDir'."
-Get-ChildItem -Path $outputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction SilentlyContinue | Remove-Item -Force
+Write-Host "DSC manifests will be generated to: '$dscOutputDir'"
 
-$arguments = @('manifest', '--resource', 'settings', '--outputDir', $outputDir)
+Write-Host "Cleaning previously generated DSC manifest files from '$dscOutputDir'."
+Get-ChildItem -Path $dscOutputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction SilentlyContinue | Remove-Item -Force
+
+$arguments = @('manifest', '--resource', 'settings', '--outputDir', $dscOutputDir)
 Write-Host "Invoking DSC manifest generator: '$exePath' $($arguments -join ' ')"
 & $exePath @arguments
 if ($LASTEXITCODE -ne 0) {
     throw "PowerToys.DSC.exe exited with code $LASTEXITCODE"
 }
 
-$generatedFiles = Get-ChildItem -Path $outputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction Stop
+$generatedFiles = Get-ChildItem -Path $dscOutputDir -Filter 'microsoft.powertoys.*.settings.dsc.resource.json' -ErrorAction Stop
 if ($generatedFiles.Count -eq 0) {
-    throw "No DSC manifest files were generated in '$outputDir'."
+    throw "No DSC manifest files were generated in '$dscOutputDir'."
 }
 
 Write-Host "Generated $($generatedFiles.Count) DSC manifest file(s):"

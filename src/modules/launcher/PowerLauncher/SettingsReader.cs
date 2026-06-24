@@ -38,7 +38,7 @@ namespace PowerLauncher
 
         public SettingsReader(PowerToysRunSettings settings, ThemeManager themeManager)
         {
-            _settingsUtils = new SettingsUtils();
+            _settingsUtils = SettingsUtils.Default;
             _settings = settings;
             _themeManager = themeManager;
 

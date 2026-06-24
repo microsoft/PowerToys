@@ -14,7 +14,6 @@ SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" x64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
-call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
@@ -25,7 +24,6 @@ SET PTRoot=$(SolutionDir)\..
 call "..\..\..\publish.cmd" arm64
 )
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
-call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateDscResourcesWxs.ps1 -dscWxsFile "$(MSBuildThisFileDirectory)\DscResources.wxs" -Platform "$(Platform)" -Configuration "$(Configuration)"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
@@ -37,6 +35,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
       call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
       call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
+      call move /Y ..\..\..\DscResources.wxs.bk ..\..\..\DscResources.wxs
       call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
       call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
       call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
@@ -48,6 +47,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\NewPlus.wxs.bk ..\..\..\NewPlus.wxs
       call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
       call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
+      call move /Y ..\..\..\PowerDisplay.wxs.bk ..\..\..\PowerDisplay.wxs
       call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
       call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
       call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
@@ -124,6 +124,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="KeyboardManager.wxs" />
     <Compile Include="Peek.wxs" />
     <Compile Include="PowerRename.wxs" />
+    <Compile Include="PowerDisplay.wxs" />
     <Compile Include="DscResources.wxs" />
     <Compile Include="RegistryPreview.wxs" />
     <Compile Include="Run.wxs" />

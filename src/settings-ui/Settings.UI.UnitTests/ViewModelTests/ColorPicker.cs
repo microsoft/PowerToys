@@ -27,7 +27,7 @@ namespace ViewModelTests
         {
             // Arrange
             var mockIOProvider = BackCompatTestProperties.GetModuleIOProvider(version, ColorPickerSettings.ModuleName, fileName);
-            var settingPathMock = new Mock<ISettingsPath>();
+            var settingPathMock = new Mock<SettingPath>();
 
             var mockSettingsUtils = new SettingsUtils(mockIOProvider.Object, settingPathMock.Object);
             ColorPickerSettings originalSettings = mockSettingsUtils.GetSettingsOrDefault<ColorPickerSettings>(ColorPickerSettings.ModuleName);
@@ -67,7 +67,7 @@ namespace ViewModelTests
             using (var viewModel = new ColorPickerViewModel(
                 ISettingsUtilsMocks.GetStubSettingsUtils<ColorPickerSettings>().Object,
                 SettingsRepository<GeneralSettings>.GetInstance(ISettingsUtilsMocks.GetStubSettingsUtils<GeneralSettings>().Object),
-                SettingsRepository<ColorPickerSettings>.GetInstance(new SettingsUtils()),
+                SettingsRepository<ColorPickerSettings>.GetInstance(SettingsUtils.Default),
                 ColorPickerIsEnabledByDefaultIPC))
             {
                 Assert.IsTrue(viewModel.IsEnabled);

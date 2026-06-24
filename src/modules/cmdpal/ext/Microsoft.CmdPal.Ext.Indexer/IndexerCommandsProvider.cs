@@ -33,7 +33,6 @@ public partial class IndexerCommandsProvider : CommandProvider
             new CommandItem(new IndexerPage())
             {
                 Title = Resources.Indexer_Title,
-                Subtitle = Resources.Indexer_Subtitle,
             }
         ];
     }

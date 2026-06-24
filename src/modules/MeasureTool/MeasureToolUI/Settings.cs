@@ -11,7 +11,7 @@ namespace MeasureToolUI
 {
     public sealed class Settings
     {
-        private static readonly SettingsUtils ModuleSettings = new();
+        private static readonly SettingsUtils ModuleSettings = SettingsUtils.Default;
 
         public MeasureToolMeasureStyle DefaultMeasureStyle
         {

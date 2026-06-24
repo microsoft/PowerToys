@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using ABI.Windows.Foundation;
 using Microsoft.PowerToys.UITest;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
@@ -69,7 +68,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Gets a value indicating whether the UI element is Enabled or not.
+        /// Gets a value indicating whether or not the UI element is Enabled.
         /// </summary>
         public bool Enabled
         {

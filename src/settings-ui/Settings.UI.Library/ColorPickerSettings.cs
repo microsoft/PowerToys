@@ -33,7 +33,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             WriteIndented = true,
         };
 
-        public virtual void Save(ISettingsUtils settingsUtils)
+        public virtual void Save(SettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = _serializerOptions;

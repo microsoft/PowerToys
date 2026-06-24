@@ -2,49 +2,84 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.CmdPal.Core.Common.Services;
+using System.Collections.Immutable;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Ext.Run;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 
 namespace Microsoft.CmdPal.UI;
 
 internal sealed class RunHistoryService : IRunHistoryService
 {
-    private readonly AppStateModel _appStateModel;
+    private readonly IAppStateService _appStateService;
 
-    public RunHistoryService(AppStateModel appStateModel)
+    public RunHistoryService(IAppStateService appStateService)
     {
-        _appStateModel = appStateModel;
+        _appStateService = appStateService;
     }
 
     public IReadOnlyList<string> GetRunHistory()
     {
-        if (_appStateModel.RunHistory.Count == 0)
+        if (_appStateService.State.RunHistory.IsEmpty)
         {
             var history = Microsoft.Terminal.UI.RunHistory.CreateRunHistory();
-            _appStateModel.RunHistory.AddRange(history);
+
+            // Copy the WinRT-projected IVector<string> into a plain List<string>
+            // before building the ImmutableList. ImmutableList.CreateRange tries to
+            // cast the source to IReadOnlyCollection<string>, which requires a WinRT
+            // helper type that isn't available in AOT builds and throws
+            // NotSupportedException.
+            var historyList = new List<string>(history.Count);
+            for (var i = 0; i < history.Count; i++)
+            {
+                historyList.Add(history[i]);
+            }
+
+            _appStateService.UpdateState(state => state with
+            {
+                RunHistory = historyList.ToImmutableList(),
+            });
         }
 
-        return _appStateModel.RunHistory;
+        return _appStateService.State.RunHistory;
     }
 
     public void ClearRunHistory()
     {
-        _appStateModel.RunHistory.Clear();
+        _appStateService.UpdateState(state => state with
+        {
+            RunHistory = ImmutableList<string>.Empty,
+        });
     }
 
     public void AddRunHistoryItem(string item)
     {
-        // insert at the beginning of the list
         if (string.IsNullOrWhiteSpace(item))
         {
-            return; // Do not add empty or whitespace items
+            return;
         }
 
-        _appStateModel.RunHistory.Remove(item);
+        _appStateService.UpdateState(state => state with
+        {
+            RunHistory = state.RunHistory
+                .Remove(item)
+                .Insert(0, item),
+        });
+    }
 
-        // Add the item to the front of the history
-        _appStateModel.RunHistory.Insert(0, item);
+    public long RunCommand(string commandLine, string workingDir, bool asAdmin, ulong hwnd)
+    {
+        return RunHistory.ExecuteCommandline(commandLine, workingDir, hwnd, asAdmin);
+    }
 
-        AppStateModel.SaveState(_appStateModel);
+    public ParseCommandlineResult ParseCommandline(string commandLine, string workingDirectory)
+    {
+        return RunHistory.ParseCommandline(commandLine, workingDirectory);
+    }
+
+    public string QualifyCommandLineDirectory(string commandLine, string fullFilePath, string defaultDirectory)
+    {
+        return RunHistory.QualifyCommandLineDirectory(commandLine, fullFilePath, defaultDirectory);
     }
 }

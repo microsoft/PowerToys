@@ -69,7 +69,11 @@ namespace FancyZonesEditor.Utils
                 }
                 else
                 {
-                    return ScreenBoundsWidth + " × " + ScreenBoundsHeight;
+                    // Convert virtual coordinates to physical resolution by applying DPI scale
+                    double scale = DPI / 96.0;
+                    int physicalWidth = (int)Math.Round(ScreenBoundsWidth * scale);
+                    int physicalHeight = (int)Math.Round(ScreenBoundsHeight * scale);
+                    return physicalWidth + " × " + physicalHeight;
                 }
             }
         }

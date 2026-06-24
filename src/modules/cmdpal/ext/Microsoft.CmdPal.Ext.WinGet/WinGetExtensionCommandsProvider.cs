@@ -3,7 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.IO;
+using System.Threading.Tasks;
+using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -11,36 +12,29 @@ namespace Microsoft.CmdPal.Ext.WinGet;
 
 public partial class WinGetExtensionCommandsProvider : CommandProvider
 {
-    public WinGetExtensionCommandsProvider()
+    private readonly ICommandItem[] _commands;
+
+    public WinGetExtensionCommandsProvider(
+        IWinGetPackageManagerService winGetPackageManagerService,
+        IWinGetOperationTrackerService winGetOperationTrackerService,
+        TaskScheduler uiScheduler)
     {
         DisplayName = Properties.Resources.winget_display_name;
         Id = "WinGet";
         Icon = Icons.WinGetIcon;
 
-        _ = WinGetStatics.Manager;
+        _commands = [
+            new ListItem(new WinGetExtensionPage(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler)),
+        ];
     }
-
-    private readonly ICommandItem[] _commands = [
-        new ListItem(new WinGetExtensionPage()),
-
-         new ListItem(
-            new WinGetExtensionPage(WinGetExtensionPage.ExtensionsTag) { Title = Properties.Resources.winget_install_extensions_title })
-         {
-            Title = Properties.Resources.winget_install_extensions_title,
-            Subtitle = Properties.Resources.winget_install_extensions_subtitle,
-         },
-
-        new ListItem(
-            new OpenUrlCommand("ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette"))
-         {
-            Title = Properties.Resources.winget_search_store_title,
-            Icon = Icons.StoreIcon,
-         },
-    ];
 
     public override ICommandItem[] TopLevelCommands() => _commands;
 
     public override void InitializeWithHost(IExtensionHost host) => WinGetExtensionHost.Instance.Initialize(host);
 
-    public void SetAllLookup(Func<string, ICommandItem?> callback) => WinGetStatics.AppSearchCallback = callback;
+    public void SetAllLookup(Func<string, ICommandItem?> lookupByPackageName, Func<string, ICommandItem?> lookupByProductCode)
+    {
+        WinGetStatics.AppSearchByPackageFamilyNameCallback = lookupByPackageName;
+        WinGetStatics.AppSearchByProductCodeCallback = lookupByProductCode;
+    }
 }

@@ -41,7 +41,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             // Assert
             Assert.IsNotNull(provider);
             Assert.IsNotNull(provider.DisplayName);
-            Assert.AreEqual("DateTime", provider.Id);
+            Assert.AreEqual("com.microsoft.cmdpal.builtin.datetime", provider.Id);
             Assert.IsNotNull(provider.Icon);
             Assert.IsNotNull(provider.Settings);
         }
@@ -89,21 +89,6 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
 
             // Assert
             Assert.IsFalse(string.IsNullOrEmpty(displayName));
-        }
-
-        [TestMethod]
-        public void GetTranslatedPluginDescriptionTest()
-        {
-            // Setup
-            var provider = new TimeDateCommandsProvider();
-
-            // Act
-            var commands = provider.TopLevelCommands();
-            var subtitle = commands[0].Subtitle;
-
-            // Assert
-            Assert.IsFalse(string.IsNullOrEmpty(subtitle));
-            Assert.IsTrue(subtitle.Contains("Provides time and date values in different formats"));
         }
     }
 }

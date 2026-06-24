@@ -2,11 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Xml.Linq;
-using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
+using System.Text;
 using Microsoft.CmdPal.Ext.WindowsSettings.Commands;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
@@ -16,13 +14,15 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.Pages;
 
 internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
 {
+    private const string _id = "com.microsoft.cmdpal.builtin.windows.settings.fallback";
+
     private readonly Classes.WindowsSettings _windowsSettings;
 
-    private readonly string _title = Resources.settings_fallback_title;
+    private static readonly CompositeFormat _titleFormat = CompositeFormat.Parse(Resources.settings_fallback_title);
     private readonly string _subtitle = Resources.settings_fallback_subtitle;
 
     public FallbackWindowsSettingsItem(Classes.WindowsSettings windowsSettings)
-        : base(new NoOpCommand(), Resources.settings_title)
+        : base(new NoOpCommand(), Resources.settings_title, _id)
     {
         Icon = Icons.WindowsSettingsIcon;
         _windowsSettings = windowsSettings;
@@ -79,9 +79,9 @@ internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
         // We found more than one result. Make our command take
         // us to the Windows Settings search page, prepopulated with this search.
         var settingsPage = new WindowsSettingsListPage(_windowsSettings, query);
-        Title = string.Format(CultureInfo.CurrentCulture, _title, query);
+        Title = _subtitle;
         Icon = Icons.WindowsSettingsIcon;
-        Subtitle = _subtitle;
+        Subtitle = string.Format(CultureInfo.CurrentCulture, _titleFormat, query);
         Command = settingsPage;
 
         return;

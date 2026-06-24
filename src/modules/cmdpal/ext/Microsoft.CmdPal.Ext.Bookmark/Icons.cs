@@ -6,7 +6,9 @@ namespace Microsoft.CmdPal.Ext.Bookmarks;
 
 internal static class Icons
 {
-    internal static IconInfo BookmarkIcon { get; } = IconHelpers.FromRelativePath("Assets\\Bookmark.svg");
+    internal static IconInfo BookmarksExtensionIcon { get; } = IconHelpers.FromRelativePath("Assets\\Bookmarks.svg");
+
+    internal static IconInfo AddBookmarkIcon { get; } = IconHelpers.FromRelativePath("Assets\\Bookmark.svg");
 
     internal static IconInfo DeleteIcon { get; } = new("\uE74D"); // Delete
 

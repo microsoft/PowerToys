@@ -19,7 +19,7 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -133,6 +133,33 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Peek preview.
+        /// </summary>
+        internal static string Indexer_Command_Peek {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to launch Peek.
+        /// </summary>
+        internal static string Indexer_Command_Peek_Failed {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PowerToys Peek is not available.
+        /// </summary>
+        internal static string Indexer_Command_Peek_NotAvailable {
+            get {
+                return ResourceManager.GetString("Indexer_Command_Peek_NotAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Search all files.
         /// </summary>
         internal static string Indexer_Command_SearchAllFiles {
@@ -147,6 +174,15 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Command_ShowInFolder {
             get {
                 return ResourceManager.GetString("Indexer_Command_ShowInFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The query matches multiple items.
+        /// </summary>
+        internal static string Indexer_Fallback_MultipleResults_Subtitle {
+            get {
+                return ResourceManager.GetString("Indexer_Fallback_MultipleResults_Subtitle", resourceCulture);
             }
         }
         
@@ -260,6 +296,60 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search couldn&apos;t be completed.
+        /// </summary>
+        internal static string Indexer_SearchFailedMessage {
+            get {
+                return ResourceManager.GetString("Indexer_SearchFailedMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Search returned an unexpected error. Try again, or open Windows Search settings if the problem continues..
+        /// </summary>
+        internal static string Indexer_SearchFailedMessageTip {
+            get {
+                return ResourceManager.GetString("Indexer_SearchFailedMessageTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Search is still indexing files.
+        /// </summary>
+        internal static string Indexer_SearchIndexingMessage {
+            get {
+                return ResourceManager.GetString("Indexer_SearchIndexingMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are still {0:N0} items waiting to be indexed, so some files and folders might not appear yet..
+        /// </summary>
+        internal static string Indexer_SearchIndexingMessageTip {
+            get {
+                return ResourceManager.GetString("Indexer_SearchIndexingMessageTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Windows Search is unavailable.
+        /// </summary>
+        internal static string Indexer_SearchUnavailableMessage {
+            get {
+                return ResourceManager.GetString("Indexer_SearchUnavailableMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The Windows Search service or connection is unavailable right now. Start the service, then try your search again..
+        /// </summary>
+        internal static string Indexer_SearchUnavailableMessageTip {
+            get {
+                return ResourceManager.GetString("Indexer_SearchUnavailableMessageTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Always on.
         /// </summary>
         internal static string Indexer_Settings_FallbackCommand_AlwaysOn {
@@ -292,15 +382,6 @@ namespace Microsoft.CmdPal.Ext.Indexer.Properties {
         internal static string Indexer_Settings_FallbackCommand_Off {
             get {
                 return ResourceManager.GetString("Indexer_Settings_FallbackCommand_Off", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Search files on this device.
-        /// </summary>
-        internal static string Indexer_Subtitle {
-            get {
-                return ResourceManager.GetString("Indexer_Subtitle", resourceCulture);
             }
         }
         

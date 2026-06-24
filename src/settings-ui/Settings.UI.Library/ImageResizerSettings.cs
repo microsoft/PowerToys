@@ -37,8 +37,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public override string ToJsonString()
         {
-            var options = _serializerOptions;
-            return JsonSerializer.Serialize(this, options);
+            return JsonSerializer.Serialize(this, SettingsSerializationContext.Default.ImageResizerSettings);
         }
 
         public string GetModuleName()

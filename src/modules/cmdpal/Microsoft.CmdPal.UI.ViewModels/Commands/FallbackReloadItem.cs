@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
@@ -11,10 +10,13 @@ internal sealed partial class FallbackReloadItem : FallbackCommandItem
 {
     private readonly ReloadExtensionsCommand _reloadCommand;
 
+    private const string _id = "com.microsoft.cmdpal.reload";
+
     public FallbackReloadItem()
         : base(
-            new ReloadExtensionsCommand() { Id = "com.microsoft.cmdpal.reload" },
-            Properties.Resources.builtin_reload_display_title)
+            new ReloadExtensionsCommand() { Id = _id },
+            Properties.Resources.builtin_reload_display_title,
+            _id)
     {
         _reloadCommand = (ReloadExtensionsCommand)Command!;
         Title = string.Empty;

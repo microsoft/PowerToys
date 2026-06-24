@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
 
         public PowerOcrPage()
         {
-            var settingsUtils = new SettingsUtils();
+            var settingsUtils = SettingsUtils.Default;
             ViewModel = new PowerOcrViewModel(
                 settingsUtils,
                 SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             /**
           * UWP hack
           * because UWP load the bound ItemSource of the ComboBox asynchronous,
-          * so after InitializeComponent() the ItemSource is still empty and can't automatically select a entry.
+          * so after InitializeComponent() the ItemSource is still empty and can't automatically select an entry.
           * Selection via SelectedItem and SelectedValue is still not working too
           */
             ViewModel.UpdateLanguages();

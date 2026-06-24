@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         public NewPlusPage()
         {
             InitializeComponent();
-            var settings_utils = new SettingsUtils();
+            var settings_utils = SettingsUtils.Default;
             ViewModel = new NewPlusViewModel(settings_utils, SettingsRepository<GeneralSettings>.GetInstance(settings_utils), ShellPage.SendDefaultIPCMessage);
             DataContext = ViewModel;
         }

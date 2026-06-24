@@ -18,7 +18,7 @@ namespace PowerToys.DSC.Models.FunctionData;
 public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, ISettingsFunctionData
     where TSettingsConfig : ISettingsConfig, new()
 {
-    private static readonly SettingsUtils _settingsUtils = new();
+    private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
     private static readonly TSettingsConfig _settingsConfig = new();
 
     private readonly SettingsResourceObject<TSettingsConfig> _input;

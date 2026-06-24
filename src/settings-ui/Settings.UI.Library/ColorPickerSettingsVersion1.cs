@@ -28,7 +28,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Name = ModuleName;
         }
 
-        public virtual void Save(ISettingsUtils settingsUtils)
+        public virtual void Save(SettingsUtils settingsUtils)
         {
             // Save settings to file
             var options = _serializerOptions;

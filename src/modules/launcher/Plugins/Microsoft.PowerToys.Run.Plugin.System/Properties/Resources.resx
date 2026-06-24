@@ -362,15 +362,15 @@
     <comment>Means type like category. Here it means network interface type (ethernet, wifi, ...).</comment>
   </data>
   <data name="Microsoft_plugin_sys_uefi" xml:space="preserve">
-    <value>UEFI Firmware Settings</value>
+    <value>UEFI firmware settings</value>
     <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
   </data>
   <data name="Microsoft_plugin_sys_uefi_confirmation" xml:space="preserve">
-    <value>You are about to reboot this computer into UEFI Firmware Settings menu, are you sure?</value>
+    <value>You are about to reboot this computer into UEFI firmware settings menu, are you sure?</value>
     <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
   </data>
   <data name="Microsoft_plugin_sys_uefi_description" xml:space="preserve">
-    <value>Reboot computer into UEFI Firmware Settings (Requires administrative permissions.)</value>
+    <value>Reboot computer into UEFI firmware settings (Requires administrative permissions.)</value>
     <comment>This should align to the action in Windows Recovery Environment that restart into uefi settings.</comment>
   </data>
   <data name="Microsoft_plugin_sys_Unknown" xml:space="preserve">

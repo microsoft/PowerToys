@@ -25,6 +25,8 @@ namespace Peek.FilePreviewer.Previewers
 {
     public partial class VideoPreviewer : ObservableObject, IVideoPreviewer, IDisposable
     {
+        private MediaSource? _mediaSource;
+
         [ObservableProperty]
         private MediaSource? preview;
 
@@ -56,6 +58,7 @@ namespace Peek.FilePreviewer.Previewers
 
         public void Dispose()
         {
+            Unload();
             GC.SuppressFinalize(this);
         }
 
@@ -145,7 +148,8 @@ namespace Peek.FilePreviewer.Previewers
                         MissingCodecName = missingCodecName;
                     }
 
-                    Preview = MediaSource.CreateFromStorageFile(storageFile);
+                    _mediaSource = MediaSource.CreateFromStorageFile(storageFile);
+                    Preview = _mediaSource;
                 });
             });
         }
@@ -153,6 +157,16 @@ namespace Peek.FilePreviewer.Previewers
         private bool HasFailedLoadingPreview()
         {
             return !(VideoTask?.Result ?? true);
+        }
+
+        /// <summary>
+        /// Explicitly unloads the preview and releases file resources.
+        /// </summary>
+        public void Unload()
+        {
+            _mediaSource?.Dispose();
+            _mediaSource = null;
+            Preview = null;
         }
 
         private static readonly HashSet<string> _supportedFileTypes = new()

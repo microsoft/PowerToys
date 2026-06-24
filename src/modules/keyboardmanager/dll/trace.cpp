@@ -20,3 +20,14 @@ void Trace::EnableKeyboardManager(const bool enabled) noexcept
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
         TraceLoggingBoolean(enabled, "Enabled"));
 }
+
+// Log when the editor is launched
+void Trace::LaunchEditor(const bool viaHotkey) noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "KeyboardManager_LaunchEditor",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingBoolean(viaHotkey, "ViaHotkey"));
+}
