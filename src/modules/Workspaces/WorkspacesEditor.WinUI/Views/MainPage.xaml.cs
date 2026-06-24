@@ -22,7 +22,6 @@ namespace WorkspacesEditor.Views
         {
             this.InitializeComponent();
 
-            // Set localized strings that can't use x:Uid on complex content
             WorkspacesHeaderBlock.Text = ResourceLoaderInstance.ResourceLoader?.GetString("Workspaces") ?? "Workspaces";
             CreateWorkspaceText.Text = ResourceLoaderInstance.ResourceLoader?.GetString("CreateWorkspace") ?? "Create Workspace";
             SortByLabel.Text = ResourceLoaderInstance.ResourceLoader?.GetString("SortBy") ?? "Sort by";
@@ -76,11 +75,6 @@ namespace WorkspacesEditor.Views
                     ViewModel.DeleteProject(selectedProject);
                 }
             }
-        }
-
-        private void MoreButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Flyout handles itself in WinUI — no manual popup management needed
         }
 
         private void LaunchButton_Click(object sender, RoutedEventArgs e)

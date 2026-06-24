@@ -165,7 +165,6 @@
                                         Click="LaunchButton_Click"
                                         x:Uid="LaunchBtn" />
                                     <Button
-                                        Click="MoreButton_Click"
                                         Padding="8"
                                         AutomationProperties.Name="More options">
                                         <TextBlock
