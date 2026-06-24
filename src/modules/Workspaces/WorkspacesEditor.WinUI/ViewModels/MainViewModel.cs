@@ -189,6 +189,7 @@ namespace WorkspacesEditor.ViewModels
             _editedProject.OnPropertyChanged(new PropertyChangedEventArgs("AppsCountString"));
             _editedProject.InitializePreview();
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
+            ApplyShortcut(_editedProject);
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
@@ -242,12 +243,14 @@ namespace WorkspacesEditor.ViewModels
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             TempProjectData.DeleteTempFile();
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
+            ApplyShortcut(project);
         }
 
         public void DeleteProject(Project selectedProject)
         {
             Workspaces.Remove(selectedProject);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
+            RemoveShortcut(selectedProject);
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
         }
 
@@ -438,6 +441,100 @@ namespace WorkspacesEditor.ViewModels
         private static string GetString(string key)
         {
             return ResourceLoaderInstance.ResourceLoader?.GetString(key) ?? key;
+        }
+
+        private static string GetDesktopShortcutAddress(Project project) => Path.Combine(WorkspacesCsharpLibrary.Utils.FolderUtils.Desktop(), project.Name + ".lnk");
+
+        private static string GetShortcutStoreAddress(Project project)
+        {
+            var dataFolder = WorkspacesCsharpLibrary.Utils.FolderUtils.DataFolder();
+            Directory.CreateDirectory(dataFolder);
+            var shortcutStoreFolder = Path.Combine(dataFolder, "WorkspacesIcons");
+            Directory.CreateDirectory(shortcutStoreFolder);
+            return Path.Combine(shortcutStoreFolder, project.Id + ".ico");
+        }
+
+        private static void ApplyShortcut(Project project)
+        {
+            if (!project.IsShortcutNeeded)
+            {
+                RemoveShortcut(project);
+                return;
+            }
+
+            try
+            {
+                var basePath = Path.GetDirectoryName(Path.GetDirectoryName(Environment.ProcessPath));
+                var shortcutAddress = GetDesktopShortcutAddress(project);
+                var shortcutIconFilename = GetShortcutStoreAddress(project);
+
+                bool isDarkTheme = true;
+                try
+                {
+                    var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize");
+                    if (key?.GetValue("AppsUseLightTheme") is int val && val == 0)
+                    {
+                        isDarkTheme = true;
+                    }
+                    else
+                    {
+                        isDarkTheme = false;
+                    }
+                }
+                catch
+                {
+                }
+
+                var icon = Utils.WorkspacesIcon.DrawIcon(Utils.WorkspacesIcon.IconTextFromProjectName(project.Name), isDarkTheme);
+                Utils.WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
+
+                File.WriteAllBytes(shortcutAddress, Array.Empty<byte>());
+
+                Shell32.Shell shell = new Shell32.Shell();
+                Shell32.Folder dir = shell.NameSpace(WorkspacesCsharpLibrary.Utils.FolderUtils.Desktop());
+                Shell32.FolderItem folderItem = dir.Items().Item($"{project.Name}.lnk");
+                Shell32.ShellLinkObject link = (Shell32.ShellLinkObject)folderItem.GetLink;
+
+                link.Description = $"Project Launcher {project.Id}";
+                link.Path = Path.Combine(basePath, "PowerToys.WorkspacesLauncher.exe");
+                link.Arguments = $"{project.Id} {(int)InvokePoint.Shortcut}";
+                link.WorkingDirectory = basePath;
+                link.SetIconLocation(shortcutIconFilename, 0);
+                link.Save(shortcutAddress);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Shortcut creation error: {ex.Message}");
+            }
+        }
+
+        private static void RemoveShortcut(Project project)
+        {
+            string shortcutAddress = GetDesktopShortcutAddress(project);
+            string shortcutIconFilename = GetShortcutStoreAddress(project);
+
+            Logger.LogInfo($"RemoveShortcut: trying to delete '{shortcutAddress}' (exists: {File.Exists(shortcutAddress)})");
+
+            if (File.Exists(shortcutIconFilename))
+            {
+                File.Delete(shortcutIconFilename);
+            }
+
+            if (File.Exists(shortcutAddress))
+            {
+                File.Delete(shortcutAddress);
+                Logger.LogInfo("RemoveShortcut: deleted successfully");
+            }
+            else
+            {
+                Logger.LogInfo("RemoveShortcut: file not found at expected path");
+            }
+        }
+
+        private static void CheckShortcutPresence(Project project)
+        {
+            string shortcutAddress = Path.Combine(WorkspacesCsharpLibrary.Utils.FolderUtils.Desktop(), project.Name + ".lnk");
+            project.IsShortcutNeeded = File.Exists(shortcutAddress);
         }
 
         public void Dispose()

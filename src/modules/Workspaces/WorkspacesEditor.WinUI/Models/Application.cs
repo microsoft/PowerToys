@@ -292,7 +292,15 @@ namespace WorkspacesEditor.Models
         {
             get
             {
-                _iconImage ??= IconHelper.TryGetExecutableIcon(AppPath);
+                if (_iconImage == null)
+                {
+                    _iconImage = IconHelper.TryGetExecutableIcon(AppPath);
+                    if (_iconImage == null && !string.IsNullOrEmpty(AppPath))
+                    {
+                        IsNotFound = true;
+                    }
+                }
+
                 return _iconImage;
             }
         }
