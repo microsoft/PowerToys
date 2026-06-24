@@ -294,7 +294,7 @@ jobs:
 
               // If already draft and still inactive → check whether to warn or close.
               if (pr.draft) {
-                const BOT_DRAFT_MARKER = 'has been marked as requiring author feedback';
+                const BOT_DRAFT_MARKER = 'requiring author feedback';
                 // Only consider bot warnings posted AFTER the label was (re-)applied.
                 const botWarningComment = allComments.find(c =>
                   c.user?.type === 'Bot' &&
