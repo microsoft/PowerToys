@@ -149,9 +149,9 @@ public class BookmarkPathHandlingTests
 
             // Should have launched a classification targeting the existing parent directory
             Assert.IsNotNull(mockLauncher.LastLaunchedClassification, "Expected a launch to be captured");
-            Assert.AreEqual(CommandKind.Directory, mockLauncher.LastLaunchedClassification.Value.Kind);
+            Assert.AreEqual(CommandKind.Directory, mockLauncher.LastLaunchedClassification.Kind);
             Assert.IsTrue(Directory.Exists(parent));
-            Assert.AreEqual(Path.GetFullPath(parent), mockLauncher.LastLaunchedClassification.Value.Target, StringComparer.OrdinalIgnoreCase);
+            Assert.AreEqual(Path.GetFullPath(parent), mockLauncher.LastLaunchedClassification.Target, StringComparer.OrdinalIgnoreCase);
         }
         finally
         {

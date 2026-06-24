@@ -165,9 +165,9 @@ public class BookmarksCommandProviderTests
         // Assert
         Assert.AreEqual(bookmarkAddress, resolver.LastClassifyInput);
         Assert.IsNotNull(mockLauncher.LastLaunchedClassification);
-        Assert.AreEqual(expectedClassification.Target, mockLauncher.LastLaunchedClassification.Value.Target);
-        Assert.AreEqual(expectedClassification.Kind, mockLauncher.LastLaunchedClassification.Value.Kind);
-        Assert.AreEqual(expectedClassification.Launch, mockLauncher.LastLaunchedClassification.Value.Launch);
+        Assert.AreEqual(expectedClassification.Target, mockLauncher.LastLaunchedClassification.Target);
+        Assert.AreEqual(expectedClassification.Kind, mockLauncher.LastLaunchedClassification.Kind);
+        Assert.AreEqual(expectedClassification.Launch, mockLauncher.LastLaunchedClassification.Launch);
     }
 
     private sealed class MockProcessLauncher : IProcessLauncher
