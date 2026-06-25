@@ -100,7 +100,6 @@
     <Compile Remove="Models\**\*.cs" />
     <Compile Remove="Settings\**\*.cs" />
     <Compile Remove="Telemetry\**\*.cs" />
-    <Compile Remove="NativeMethods.cs" />
     <Compile Remove="MainWindow.xaml.cs" />
     <Compile Remove="ColorEditorWindow.xaml.cs" />
     <Compile Remove="ZoomWindow.xaml.cs" />
@@ -123,6 +122,8 @@
   <!-- Foundation Helpers that ARE migrated (re-included past the Helpers quarantine) -->
   <ItemGroup>
     <Compile Include="Helpers\ResourceLoaderInstance.cs" />
+    <!-- D6 native interop foundation -->
+    <Compile Include="Helpers\NativeMethodsHelper.cs" />
   </ItemGroup>
 
 </Project>

@@ -6,9 +6,9 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
-using System.Windows;
-using System.Windows.Interop;
 
+// System.Windows / System.Windows.Interop removed: WinUI 3 has no WindowInteropHelper.
+// HandleRef lives in System.Runtime.InteropServices (already imported).
 namespace ColorPicker
 {
     // https://learn.microsoft.com/visualstudio/code-quality/ca1060?view=vs-2019
@@ -117,7 +117,7 @@ namespace ColorPicker
             public int X;
             public int Y;
 
-            public static explicit operator System.Windows.Point(PointInter point) => new System.Windows.Point(point.X, point.Y);
+            public static explicit operator Windows.Foundation.Point(PointInter point) => new Windows.Foundation.Point(point.X, point.Y);
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -226,9 +226,10 @@ namespace ColorPicker
         [DllImport("user32.dll")]
         internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
-        internal static void SetToolWindowStyle(Window win)
+        // WinUI 3 has no WindowInteropHelper; the caller (sub-project C overlay window)
+        // obtains the HWND via WinRT.Interop.WindowNative.GetWindowHandle(window) and passes it.
+        internal static void SetToolWindowStyle(IntPtr hwnd)
         {
-            var hwnd = new WindowInteropHelper(win).Handle;
             _ = SetWindowLong(hwnd, GWL_EX_STYLE, GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
         }
 
