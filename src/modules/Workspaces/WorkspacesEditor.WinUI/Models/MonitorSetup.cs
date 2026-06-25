@@ -2,20 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
 using Windows.Foundation;
 
 namespace WorkspacesEditor.Models
 {
-    public partial class MonitorSetup : Monitor, INotifyPropertyChanged
+    public partial class MonitorSetup : Monitor
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
-
         public string MonitorInfo => MonitorName;
 
         public string MonitorInfoWithResolution => $"{MonitorName}    {MonitorDpiAwareBounds.Width}x{MonitorDpiAwareBounds.Height}";
