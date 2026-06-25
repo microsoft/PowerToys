@@ -36,12 +36,7 @@ public partial class App : Application, IDisposable
     public App()
     {
         this.InitializeComponent();
-    }
-
-    private TrayIcon? TrayIcon
-    {
-        get;
-        set;
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
     /// <summary>
