@@ -239,6 +239,16 @@ namespace ShortcutGuide
         {
             try
             {
+                // During the reentrant Hide -> Activate -> BringToFront chain triggered from
+                // section selection, this window's own AppWindow can briefly be null. Any WinUIEx
+                // size access below (e.g. MaxHeight -> get_Height) would dereference it and throw an
+                // NRE from inside WinUIEx (issue #48773). Skip this pass and keep the previous layout;
+                // a later AppWindow.Changed / Activated event reruns this once the window settles.
+                if (AppWindow is null)
+                {
+                    return;
+                }
+
                 if (!this._hasMovedToRightMonitor)
                 {
                     NativeMethods.GetCursorPos(out NativeMethods.POINT lpPoint);
