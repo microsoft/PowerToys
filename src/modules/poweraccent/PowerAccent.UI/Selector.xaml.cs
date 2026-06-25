@@ -5,11 +5,11 @@
 using System;
 
 using CommunityToolkit.WinUI.Animations;
+using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Flyout;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
-using Windows.Foundation;
 using Windows.Graphics;
 using CoreSize = PowerAccent.Core.Size;
 
@@ -17,14 +17,38 @@ namespace PowerAccent.UI;
 
 public sealed partial class Selector : TransparentWindow, IDisposable
 {
+    // Deterministic accent-bar geometry (DIP). We deliberately do NOT measure the ListView to
+    // size the window: a ListView wraps its items in a ScrollViewer (whose DesiredSize does not
+    // reflect content size), and measuring it before/while its item containers realize is racy
+    // (it intermittently reports 0, yielding a blank/clipped bar). Instead the popup is a fixed
+    // one-row bar up to the monitor's max width; the ListView scrolls horizontally and
+    // ScrollIntoView reveals the selected glyph.
+    private const double RowHeightDip = 52;          // one row of accent pills (item Height=48 + card border)
+    private const double DescriptionHeightDip = 48;  // extra row shown when the Unicode description is on
+
     private readonly Core.PowerAccent _powerAccent;
     private int _selectedIndex = -1;
+    private bool _active;
 
     public SelectorViewModel ViewModel { get; } = new();
 
     public Selector()
     {
         InitializeComponent();
+
+        // The accent popup overlays the app being typed into and must never steal focus
+        // (TransparentWindow.Show uses SW_SHOWNA). Without always-on-top it is shown correctly
+        // sized and positioned but BEHIND the foreground app, so it is effectively invisible.
+        // The WPF original set Window.Topmost on every show; the WinUI 3 equivalent is the
+        // presenter's IsAlwaysOnTop.
+        if (AppWindow.Presenter is OverlappedPresenter presenter)
+        {
+            presenter.IsAlwaysOnTop = true;
+        }
+        else
+        {
+            Logger.LogWarning($"Quick Accent selector presenter is not an OverlappedPresenter ({AppWindow.Presenter?.GetType().Name}); the popup cannot be made always-on-top and may appear behind the active app.");
+        }
 
         // No animations: instant show/hide for typing-aid responsiveness.
         ShowAnimations = new ImplicitAnimationSet();
@@ -39,12 +63,14 @@ public sealed partial class Selector : TransparentWindow, IDisposable
     {
         if (!isActive)
         {
+            _active = false;
             Hide();
             ViewModel.Characters.Clear();
             _selectedIndex = -1;
             return;
         }
 
+        _active = true;
         ViewModel.ShowDescription = _powerAccent.ShowUnicodeDescription;
 
         ViewModel.Characters.Clear();
@@ -59,8 +85,19 @@ public sealed partial class Selector : TransparentWindow, IDisposable
             ? _powerAccent.CharacterDescriptions[_selectedIndex]
             : string.Empty;
 
+        // Size to a deterministic one-row accent bar and show on-screen (the window is already
+        // always-on-top). No content measurement / off-screen probe: the ListView scrolls and we
+        // bring the selected glyph into view once its containers realize.
         SizeAndPosition();
         Show();
+
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        {
+            if (_active && _selectedIndex >= 0 && _selectedIndex < CharactersList.Items.Count)
+            {
+                CharactersList.ScrollIntoView(CharactersList.Items[_selectedIndex]);
+            }
+        });
 
         Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Core.Telemetry.PowerAccentShowAccentMenuEvent());
     }
@@ -84,16 +121,13 @@ public sealed partial class Selector : TransparentWindow, IDisposable
 
     private void SizeAndPosition()
     {
-        double maxWidthDip = _powerAccent.GetDisplayMaxWidth();
+        // Deterministic accent-bar size (DIP): full monitor max width, one row (+ description row).
+        double widthDip = _powerAccent.GetDisplayMaxWidth();
+        double heightDip = RowHeightDip + (ViewModel.ShowDescription ? DescriptionHeightDip : 0);
 
-        // Measure the realized card content to get the natural popup size (DIP).
-        RootContent.UpdateLayout();
-        RootContent.Measure(new Size(maxWidthDip, double.PositiveInfinity));
-        var desired = RootContent.DesiredSize;
-
-        // Calculation works in physical pixels; it multiplies the DIP size by the active
-        // monitor's DPI internally and returns the physical top-left for the chosen anchor.
-        var coordinates = _powerAccent.GetDisplayCoordinates(new CoreSize(desired.Width, desired.Height));
+        // Calculation works in physical pixels; GetDisplayCoordinates multiplies the DIP size by
+        // the active monitor's DPI internally and returns the physical top-left for the anchor.
+        var coordinates = _powerAccent.GetDisplayCoordinates(new CoreSize(widthDip, heightDip));
 
         var display = DisplayArea.GetFromPoint(
             new PointInt32((int)Math.Round(coordinates.X), (int)Math.Round(coordinates.Y)),
@@ -101,17 +135,11 @@ public sealed partial class Selector : TransparentWindow, IDisposable
 
         double dpiScale = FlyoutWindowHelper.GetDpiScale(display);
 
-        // Ceil the physical size so the popup never clips its content. The resulting
-        // sub-pixel difference vs the anchor offset (which Calculation derives from the
-        // unrounded DIP*DPI) is well within the 24px anchor margin, so it is harmless.
-        int widthPhysical = (int)Math.Ceiling(desired.Width * dpiScale);
-        int heightPhysical = (int)Math.Ceiling(desired.Height * dpiScale);
-
         var rect = new RectInt32(
             (int)Math.Round(coordinates.X),
             (int)Math.Round(coordinates.Y),
-            widthPhysical,
-            heightPhysical);
+            (int)Math.Ceiling(widthDip * dpiScale),
+            (int)Math.Ceiling(heightDip * dpiScale));
 
         FlyoutWindowHelper.MoveAndResizeOnDisplay(this, display, rect);
     }
