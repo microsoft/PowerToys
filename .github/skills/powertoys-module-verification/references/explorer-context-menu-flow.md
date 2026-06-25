@@ -29,7 +29,7 @@ Net: for a context-menu module, **most items are behavior → CLI-first**; the *
 **Hard prerequisite — unlocked interactive desktop.** Synthetic right-click injects into the session input stream, so it requires foreground. If the workstation is locked / RDP minimized (`GetForegroundWindow()=0`), this flow is `BLK-ENV` — there is no foreground-free way to open a context menu. `Open-PtExplorerContextMenu` throws a clear BLK-ENV error in that case. (A 4-hour idle auto-lock is the common culprit — see `references/environment-setup.md`.)
 
 **Other constraints:**
-- **Settings for these modules live in a module-OWNED file, not the PT-store `settings.json`** — see `SKILL.md` pitfall #18. The context-menu handler reads e.g. `power-rename-settings.json` / `file-locksmith-settings.json` / `image-resizer-settings.json` / `New\settings.json` at launch; editing the PT-store `<Module>\settings.json` (what `Get-PtModuleSettings` reads) often has **no effect** on the live handler. Drive icon/extended-menu/feature toggles via the module-owned file + relaunch (restart runner+Explorer for the menu handlers), then restore.
+- **Settings for these modules live in a module-OWNED file, not the PT-store `settings.json`** — see `SKILL.md` pitfall #18. The context-menu handler reads e.g. `power-rename-settings.json` / `file-locksmith-settings.json` / `image-resizer-settings.json` / `NewPlus\settings.json` at launch; editing the PT-store `<Module>\settings.json` (what `Get-PtModuleSettings` reads) often has **no effect** on the live handler. Drive icon/extended-menu/feature toggles via the module-owned file + relaunch (restart runner+Explorer for the menu handlers), then restore.
 - This is the **Win11 packaged** context menu (`Microsoft.UI.Content.PopupWindowSiteBridge` / "PopupHost"). The packaged module commands appear **only** here — not in classic `Shell.Application.Verbs()` and not via `CoCreate` of the command CLSID (`REGDB_E_CLASSNOTREGISTERED`). On Win10, or under "Show more options", you'd get the classic menu instead (different structure).
 - The menu exists in the UIA tree **only while open** — you must open it with real input first; you can't enumerate it cold.
 - A menu-launched module UI runs **non-elevated** (Explorer's integrity), even if your agent shell is elevated. Mind elevation-visibility (e.g. a non-elevated File Locksmith can't see higher-IL processes — match locker integrity with `scripts/pt-nonelevated.ps1`).
@@ -79,7 +79,7 @@ Match the **visible caption**, not the AutomationId (Explorer assigns per-sessio
 |---|---|---|
 | File Locksmith | `PowerToys.FileLocksmithUI.exe` | ✓ `Unlock with File Locksmith` (NB: **not** the checklist's "What's using this file?") |
 | PowerRename | `PowerToys.PowerRename.exe` | ✓ `Rename with PowerRename` |
-| Image Resizer | `PowerToys.ImageResizer.exe` | `Resize images` (verify via `Get-PtContextMenuItems` — caption shifted across versions) |
+| Image Resizer | `PowerToys.ImageResizer.exe` | ✓ `Resize with Image Resizer` (source string `ImageResizer_Context_Menu_Entry`; verify via `Get-PtContextMenuItems` — caption shifted across versions) |
 | New+ | (creates from template) | `New+` (submenu) |
 
 > Tip: if a module's caption is unknown, enable the module, open the menu on an applicable file, and run `Get-PtContextMenuItems` to read the exact string — then hard-match it for present/absent assertions.

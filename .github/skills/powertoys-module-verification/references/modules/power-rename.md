@@ -37,9 +37,14 @@ Use the canonical flow from `references/explorer-context-menu-flow.md` Recipe. T
 
 ```powershell
 . "$skill\scripts\pt-explorer-contextmenu.ps1"
-$hwnd = Open-PtExplorerContextMenu -FolderPath 'D:\fixtures' -FileNames 'a.txt'
-$items = Get-PtContextMenuItems -MenuHwnd $hwnd
-$has = $items | Where-Object Name -match 'Rename with PowerRename'
+# Open Explorer on the fixtures folder and grab its CabinetWClass HWND
+Start-Process explorer.exe 'D:\fixtures'; Start-Sleep 4
+$hwnd = (winapp ui list-windows --json | ConvertFrom-Json |
+    Where-Object { $_.className -eq 'CabinetWClass' -and $_.title -match 'fixtures' } |
+    Select-Object -First 1).hwnd
+$menu  = Open-PtExplorerContextMenu -ExplorerHwnd $hwnd -FileName 'a.txt'
+$items = Get-PtContextMenuItems -MenuHwnd $menu        # returns MenuItem name strings
+$has   = $items | Where-Object { $_ -match 'Rename with PowerRename' }
 # assert $has -> entry present
 ```
 

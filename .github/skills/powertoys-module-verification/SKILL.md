@@ -326,7 +326,7 @@ Step 6 verifier loop → `references/pre-flight.md` §Final wrap-up → Step 7 a
 | Module | Module-owned file (under `…\PowerToys\<Module>\`) | Key style | PT-store `settings.json` keys (UI/`Get-PtModuleSettings`) |
 |---|---|---|---|
 | PowerRename | `power-rename-settings.json` (+ `power-rename-last-run-data.json`, `search-mru.json`, `replace-mru.json`) | `ShowIcon`, `ExtendedContextMenuOnly`, `PersistState`, `MRUEnabled`, `MaxMRUSize`, `UseBoostLib` | `bool_show_icon_on_menu`, `bool_show_extended_menu`, `bool_persist_input`, `bool_mru_enabled`, `int_max_mru_size`, `bool_use_boost_lib` |
-| File Locksmith | `file-locksmith-settings.json` | `ShowInExtendedContextMenu` | `bool_show_extended_context_menu` |
+| File Locksmith | `file-locksmith-settings.json` | `showInExtendedContextMenu` | `bool_show_extended_context_menu` |
 | Image Resizer | `image-resizer-settings.json` | (resize sizes/encoder/etc.) | mirrored `imageresizer*` keys |
 | New+ | `NewPlus\settings.json` (sub-folder **`NewPlus`**, verified on disk + `constants.h` `powertoy_name=L"NewPlus"`) | `HideFileExtension`, `HideStartingDigits`, `TemplateLocation`, `ReplaceVariables`, `BuiltInNewHidePreference` | mirrored `newplus*` keys |
 
