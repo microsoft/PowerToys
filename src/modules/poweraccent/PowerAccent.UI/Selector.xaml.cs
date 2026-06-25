@@ -101,6 +101,10 @@ public sealed partial class Selector : TransparentWindow, IDisposable
             DisplayAreaFallback.Nearest);
 
         double dpiScale = FlyoutWindowHelper.GetDpiScale(display);
+
+        // Ceil the physical size so the popup never clips its content. The resulting
+        // sub-pixel difference vs the anchor offset (which Calculation derives from the
+        // unrounded DIP*DPI) is well within the 24px anchor margin, so it is harmless.
         int widthPhysical = (int)Math.Ceiling(desired.Width * dpiScale);
         int heightPhysical = (int)Math.Ceiling(desired.Height * dpiScale);
 
@@ -117,5 +121,6 @@ public sealed partial class Selector : TransparentWindow, IDisposable
     {
         _powerAccent.SaveUsageInfo();
         _powerAccent.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
