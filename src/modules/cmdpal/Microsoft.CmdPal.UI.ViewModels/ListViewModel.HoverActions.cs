@@ -17,10 +17,34 @@ public partial class ListViewModel
         var max = -1;
         var visibility = HoverActionsVisibility.Default;
 
-        if (TryGetCommandProvider() is ICommandProvider5 provider5)
+        if (IsMainPage && row.Model.Unsafe is TopLevelViewModel topLevel)
         {
-            mode = provider5.DefaultHoverActionsMode;
-            max = provider5.DefaultMaxHoverActions;
+            var commandItem = topLevel.ItemViewModel.Model.Unsafe;
+            if (commandItem is ICommandItem2 commandItem2)
+            {
+                if (commandItem2.HomeHoverActionsMode != HoverActionsMode.Default)
+                {
+                    mode = commandItem2.HomeHoverActionsMode;
+                }
+
+                if (commandItem2.HomeMaxHoverActions > 0)
+                {
+                    max = commandItem2.HomeMaxHoverActions;
+                }
+            }
+        }
+
+        if (TryGetCommandProviderForRow(row) is ICommandProvider5 provider5)
+        {
+            if (mode == HoverActionsMode.Default)
+            {
+                mode = provider5.DefaultHoverActionsMode;
+            }
+
+            if (max < 0 && provider5.DefaultMaxHoverActions > 0)
+            {
+                max = provider5.DefaultMaxHoverActions;
+            }
         }
 
         if (_model.Unsafe is IListPage2 listPage2)
@@ -41,34 +65,12 @@ public partial class ListViewModel
             }
         }
 
-        if (IsMainPage && row.Model.Unsafe is TopLevelViewModel topLevel)
-        {
-            var commandItem = topLevel.ItemViewModel.Model.Unsafe;
-            if (commandItem is ICommandItem2 commandItem2)
-            {
-                if (commandItem2.HomeHoverActionsMode != HoverActionsMode.Default)
-                {
-                    mode = commandItem2.HomeHoverActionsMode;
-                }
-
-                if (commandItem2.HomeMaxHoverActions > 0)
-                {
-                    max = commandItem2.HomeMaxHoverActions;
-                }
-            }
-        }
-
         return new HoverActionSettings(mode, max, visibility);
     }
 
     public void RefreshAllHoverActions()
     {
         foreach (var item in Items)
-        {
-            item.RefreshHoverActions();
-        }
-
-        foreach (var item in FilteredItems)
         {
             item.RefreshHoverActions();
         }
@@ -82,6 +84,17 @@ public partial class ListViewModel
         }
 
         return null;
+    }
+
+    private ICommandProvider? TryGetCommandProviderForRow(ListItemViewModel row)
+    {
+        if (IsMainPage && row.Model.Unsafe is TopLevelViewModel topLevel &&
+            topLevel.ExtensionHost is CommandPaletteHost rowHost)
+        {
+            return rowHost.CommandProvider;
+        }
+
+        return TryGetCommandProvider();
     }
 
     private void SettingsService_SettingsChanged(ISettingsService sender, SettingsModel settings)

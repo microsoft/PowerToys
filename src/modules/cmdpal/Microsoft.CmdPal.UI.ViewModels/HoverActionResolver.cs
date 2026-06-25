@@ -29,17 +29,32 @@ public static class HoverActionResolver
             return [];
         }
 
-        var candidates = FilterHomeHostCommands(ctx.IsHomeSurface, visible);
+        var candidates = FilterHostInjectedCommands(visible);
 
         return mode switch
         {
-            HoverActionsMode.Explicit => candidates
-                .Where(static c => c.ShowInHoverActions)
-                .OrderBy(static c => c.HoverOrder)
-                .ToArray(),
+            HoverActionsMode.Explicit => ResolveExplicit(candidates, ctx.MaxHoverActions),
             HoverActionsMode.AllMoreCommands => candidates,
             _ => TakeFirstN(candidates, ctx.MaxHoverActions),
         };
+    }
+
+    private static IReadOnlyList<CommandContextItemViewModel> ResolveExplicit(
+        List<CommandContextItemViewModel> commands,
+        int maxHoverActions)
+    {
+        var explicitActions = commands
+            .Where(static c => c.ShowInHoverActions)
+            .OrderBy(static c => c.HoverOrder)
+            .ToList();
+
+        if (explicitActions.Count > 0)
+        {
+            return ApplyMax(explicitActions, maxHoverActions);
+        }
+
+        // Extension chose Explicit but did not flag any commands yet — keep legacy first-N behavior.
+        return TakeFirstN(commands, maxHoverActions);
     }
 
     public static bool ShouldShowHoverStrip(HoverActionResolveContext ctx, bool hasHoverActions)
@@ -61,6 +76,9 @@ public static class HoverActionResolver
         {
             HoverActionsVisibility.OnHoverOnly => ctx.IsRowHovered,
             HoverActionsVisibility.HoverOrSelected => ctx.IsRowHovered || ctx.IsListSelected,
+
+            // Safe fallback for any future enum values: treat as HoverOrSelected so the
+            // strip is still reachable (vs. always hidden or always visible).
             _ => ctx.IsRowHovered || ctx.IsListSelected,
         };
     }
@@ -82,19 +100,23 @@ public static class HoverActionResolver
         return mode;
     }
 
-    private static List<CommandContextItemViewModel> FilterHomeHostCommands(
-        bool isHomeSurface,
-        List<CommandContextItemViewModel> commands)
+    private static IReadOnlyList<CommandContextItemViewModel> ApplyMax(
+        List<CommandContextItemViewModel> commands,
+        int maxHoverActions)
     {
-        if (!isHomeSurface)
+        if (maxHoverActions <= 0)
         {
             return commands;
         }
 
-        return commands
+        return commands.Take(maxHoverActions).ToArray();
+    }
+
+    private static List<CommandContextItemViewModel> FilterHostInjectedCommands(
+        List<CommandContextItemViewModel> commands) =>
+        commands
             .Where(static c => !c.IsHostInjected || c.ShowInHoverActions)
             .ToList();
-    }
 
     private static IReadOnlyList<CommandContextItemViewModel> TakeFirstN(
         List<CommandContextItemViewModel> commands,

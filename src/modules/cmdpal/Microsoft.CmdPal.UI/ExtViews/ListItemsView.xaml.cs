@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.IO;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
@@ -327,14 +326,12 @@ public sealed partial class ListItemsView : UserControl,
         var rowGrid = GetRowContentGrid(listItemContainer);
         if (rowGrid is null)
         {
-            HoverDebugLog($"Hook failed (no row grid): '{vm.Title}' templateRoot={listItemContainer.ContentTemplateRoot?.GetType().Name ?? "null"}");
             return false;
         }
 
         UnhookListItemRow(listItemContainer);
         rowGrid.Tag = vm;
         rowGrid.AddHandler(UIElement.TappedEvent, _listItemRowTappedHandler, handledEventsToo: true);
-        HoverDebugLog($"Hooked row '{vm.Title}'");
         return true;
     }
 
@@ -361,9 +358,9 @@ public sealed partial class ListItemsView : UserControl,
         return FindRowContentGrid(listItemContainer);
     }
 
-    private static Grid? FindRowContentGrid(DependencyObject? parent)
+    private static Grid? FindRowContentGrid(DependencyObject? parent, int maxDepth = 8)
     {
-        if (parent is null)
+        if (parent is null || maxDepth == 0)
         {
             return null;
         }
@@ -376,7 +373,7 @@ public sealed partial class ListItemsView : UserControl,
         var count = VisualTreeHelper.GetChildrenCount(parent);
         for (var i = 0; i < count; i++)
         {
-            var match = FindRowContentGrid(VisualTreeHelper.GetChild(parent, i));
+            var match = FindRowContentGrid(VisualTreeHelper.GetChild(parent, i), maxDepth - 1);
             if (match is not null)
             {
                 return match;
@@ -390,36 +387,42 @@ public sealed partial class ListItemsView : UserControl,
     {
         if (sender is not Grid { Tag: ListItemViewModel vm })
         {
-            HoverDebugLog("Tapped: sender is not a hooked row grid");
             return;
         }
 
         var hoverList = FindRowHoverActionsList(sender as DependencyObject);
         if (hoverList is null || hoverList.Visibility != Visibility.Visible)
         {
-            HoverDebugLog($"Tapped '{vm.Title}': hover list missing or hidden");
             return;
         }
 
         var point = e.GetPosition(hoverList);
         if (!HoverActionClickHelper.IsPointInsideHoverList(point.X, point.Y, hoverList.ActualWidth, hoverList.ActualHeight))
         {
-            HoverDebugLog($"Tapped '{vm.Title}': outside hover strip ({point.X:F0},{point.Y:F0})");
             return;
         }
 
         var action = ResolveHoverAction(vm, hoverList, point);
         if (action is null)
         {
-            HoverDebugLog($"Tapped '{vm.Title}': no action at ({point.X:F0},{point.Y:F0})");
             return;
         }
 
-        HoverDebugLog($"Tapped '{vm.Title}': resolved '{action.Title}' at ({point.X:F0},{point.Y:F0})");
         e.Handled = true;
         _hoverActionClickInProgress = true;
-        InvokeHoverAction(action, vm);
-        _ = DispatcherQueue.TryEnqueue(() => _hoverActionClickInProgress = false);
+        try
+        {
+            InvokeHoverAction(action, vm);
+        }
+        finally
+        {
+            // Low priority: lets any queued Items_ItemClick handler fire first so it sees
+            // _hoverActionClickInProgress == true and can skip its default activation.
+            _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                _hoverActionClickInProgress = false;
+            });
+        }
     }
 
     private static CommandContextItemViewModel? ResolveHoverAction(
@@ -438,9 +441,9 @@ public sealed partial class ListItemsView : UserControl,
         return HoverActionClickHelper.TryGetActionAtIndex(row.HoverActions, positionInHoverList.X);
     }
 
-    private static ListView? FindRowHoverActionsList(DependencyObject? parent)
+    private static ListView? FindRowHoverActionsList(DependencyObject? parent, int maxDepth = 8)
     {
-        if (parent is null)
+        if (parent is null || maxDepth == 0)
         {
             return null;
         }
@@ -454,7 +457,7 @@ public sealed partial class ListItemsView : UserControl,
                 return listView;
             }
 
-            var match = FindRowHoverActionsList(child);
+            var match = FindRowHoverActionsList(child, maxDepth - 1);
             if (match is not null)
             {
                 return match;
@@ -473,7 +476,15 @@ public sealed partial class ListItemsView : UserControl,
 
         CancelHoverExitTimer(vm);
         vm.SetRowHovered(true);
-        _ = Task.Run(vm.EnsureHoverActionsLoaded);
+        var dispatcherQueue = DispatcherQueue;
+        _ = Task.Run(() =>
+        {
+            // SlowInitOnly runs the slow extension init off the UI thread.
+            // UpdateHoverActions (via RefreshHoverActions) is then dispatched back so
+            // _hoverActions is only written on the UI thread, avoiding torn reads.
+            vm.SlowInitOnly();
+            _ = dispatcherQueue.TryEnqueue(() => vm.RefreshHoverActions());
+        });
 
         if (sender is ListViewItem container)
         {
@@ -491,7 +502,7 @@ public sealed partial class ListItemsView : UserControl,
         CancelHoverExitTimer(vm);
 
         var timer = DispatcherQueue.CreateTimer();
-        timer.Interval = TimeSpan.FromMilliseconds(200);
+        timer.Interval = TimeSpan.FromMilliseconds(25);
         timer.IsRepeating = false;
         timer.Tick += (_, _) =>
         {
@@ -521,27 +532,23 @@ public sealed partial class ListItemsView : UserControl,
             ViewModel?.UpdateSelectedItemCommand.Execute(parentItem);
         }
 
-        HoverDebugLog($"Invoke '{action.Title}' commandId={action.Command.Id} row='{parentItem?.Title ?? "(null)"}'");
+        PerformCommandMessage message;
 
-        // Same path as CommandBarViewModel.PerformCommand / context menu InvokeCommand.
-        WeakReferenceMessenger.Default.Send(new PerformCommandMessage(action.Command.Model, action.Model));
-    }
+        // Home top-level rows (TopLevelViewModel) need the row as IListItem context so
+        // GetHostForCommand resolves the extension host for IPage navigation (Settings,
+        // Create shortcut, etc.). Context-menu invokables (Run as admin, Copy path, …)
+        // must keep the ICommandContextItem context — passing AppListItem across the
+        // extension boundary crashes out-of-proc invokables.
+        if (parentItem?.Model.Unsafe is TopLevelViewModel)
+        {
+            message = new PerformCommandMessage(action.Command.Model, parentItem.Model);
+        }
+        else
+        {
+            message = new PerformCommandMessage(action.Command.Model, action.Model);
+        }
 
-    private static void HoverDebugLog(string message)
-    {
-        var line = $"[HoverAction] {message}";
-        Logger.LogDebug(line);
-#if DEBUG
-        try
-        {
-            var path = Path.Combine(Path.GetTempPath(), "cmdpal-hover-debug.log");
-            File.AppendAllText(path, $"{DateTime.Now:O} {line}{Environment.NewLine}");
-        }
-        catch
-        {
-            // ignore logging failures
-        }
-#endif
+        WeakReferenceMessenger.Default.Send(message);
     }
 
     private void ScrollToItem(ListItemViewModel li)
@@ -1363,7 +1370,7 @@ public sealed partial class ListItemsView : UserControl,
     }
 
     /// <summary>
-    ///  Code stealed from <see cref="Controls.ContextMenu.NavigateUp"/>
+    ///  Code stolen from <see cref="Controls.ContextMenu.NavigateUp"/>
     /// </summary>
     private void NavigateUp()
     {
@@ -1471,7 +1478,7 @@ public sealed partial class ListItemsView : UserControl,
     }
 
     /// <summary>
-    ///  Code stealed from <see cref="Controls.ContextMenu.NavigateDown"/>
+    ///  Code stolen from <see cref="Controls.ContextMenu.NavigateDown"/>
     /// </summary>
     private void NavigateDown()
     {

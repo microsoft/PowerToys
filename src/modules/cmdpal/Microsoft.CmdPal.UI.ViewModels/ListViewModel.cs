@@ -1121,11 +1121,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void Dispose()
     {
-        if (_settingsService is not null)
-        {
-            _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
-        }
-
+        DetachSettingsServiceHandler();
         GC.SuppressFinalize(this);
         CancelAndDisposeTokenSource(ref _cancellationTokenSource);
         CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
@@ -1136,6 +1132,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     protected override void UnsafeCleanup()
     {
         base.UnsafeCleanup();
+        DetachSettingsServiceHandler();
 
         EmptyContent?.SafeCleanup();
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null); // necessary?
@@ -1173,6 +1170,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
         if (model is not null)
         {
             model.ItemsChanged -= Model_ItemsChanged;
+        }
+    }
+
+    private void DetachSettingsServiceHandler()
+    {
+        if (_settingsService is not null)
+        {
+            _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
         }
     }
 

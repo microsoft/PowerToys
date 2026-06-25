@@ -375,7 +375,6 @@
                     <ColumnDefinition Width="28" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
                 <cpcontrols:IconBox
@@ -424,59 +423,60 @@
                 </Grid>
 
                 <!--
-                    An 8px right margin is added to visually match the spacing between the icon
-                    and the left margin of the list.
-                    Tags are capped at 3 with a [+N] overflow badge to prevent
-                    unbounded growth that pushes the title out of view.
+                    Tags and hover actions share one trailing column so the rightmost
+                    hover button lines up with static tags (??, file type, etc.).
                 -->
-                <ItemsRepeater
+                <Grid
                     Grid.Column="2"
                     Margin="0,0,8,0"
-                    VerticalAlignment="Center"
-                    IsHitTestVisible="False"
-                    IsTabStop="False"
-                    ItemTemplate="{StaticResource TagTemplate}"
-                    ItemsSource="{x:Bind VisibleTags, Mode=OneWay}"
-                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowTagsWhenNotHovering), Mode=OneWay, FallbackValue=Collapsed}">
-                    <ItemsRepeater.Layout>
-                        <StackLayout Orientation="Horizontal" Spacing="4" />
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+                    <ItemsRepeater
+                        HorizontalAlignment="Right"
+                        IsHitTestVisible="False"
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource TagTemplate}"
+                        ItemsSource="{x:Bind VisibleTags, Mode=OneWay}"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowTagsWhenNotHovering), Mode=OneWay, FallbackValue=Collapsed}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="4" />
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
 
-                <ListView
-                    x:Name="HoverActionsList"
-                    Grid.Column="3"
-                    Margin="0,0,8,0"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    IsHitTestVisible="True"
-                    IsItemClickEnabled="True"
-                    IsTabStop="False"
-                    ItemTemplate="{StaticResource ListItemHoverActionTemplate}"
-                    ItemsSource="{x:Bind HoverActions, Mode=OneWay}"
-                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                    SelectionMode="None"
-                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(AreHoverActionsVisible), Mode=OneWay, FallbackValue=Collapsed}">
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="2" />
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="Padding" Value="0" />
-                            <Setter Property="MinHeight" Value="0" />
-                            <Setter Property="MinWidth" Value="0" />
-                            <Setter Property="HorizontalContentAlignment" Value="Center" />
-                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                    <ListView.ItemContainerTransitions>
-                        <TransitionCollection />
-                    </ListView.ItemContainerTransitions>
-                </ListView>
+                    <ListView
+                        x:Name="HoverActionsList"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        IsHitTestVisible="True"
+                        IsItemClickEnabled="True"
+                        IsTabStop="False"
+                        ItemTemplate="{StaticResource ListItemHoverActionTemplate}"
+                        ItemsSource="{x:Bind HoverActions, Mode=OneWay}"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        SelectionMode="None"
+                        Visibility="{x:Bind help:BindTransformers.BoolToVisibility(AreHoverActionsVisible), Mode=OneWay, FallbackValue=Collapsed}">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Padding" Value="0" />
+                                <Setter Property="MinHeight" Value="0" />
+                                <Setter Property="MinWidth" Value="0" />
+                                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.ItemContainerTransitions>
+                            <TransitionCollection />
+                        </ListView.ItemContainerTransitions>
+                    </ListView>
+                </Grid>
             </Grid>
         </DataTemplate>
 

@@ -22,12 +22,20 @@ public partial class ListItemViewModel
 
     public bool ShowTagsWhenNotHovering => HasTags && !AreHoverActionsVisible;
 
-    public void EnsureHoverActionsLoaded()
+    // Called from a background thread: only runs the slow extension init.
+    // Caller must then dispatch RefreshHoverActions() back to the UI thread.
+    public void SlowInitOnly()
     {
         if (!IsSelectedInitialized)
         {
             SafeSlowInit();
         }
+    }
+
+    public void EnsureHoverActionsLoaded()
+    {
+        SlowInitOnly();
+        UpdateHoverActions();
     }
 
     public void SetRowHovered(bool isHovered)
@@ -52,7 +60,7 @@ public partial class ListItemViewModel
         UpdateHoverVisibilityProperties();
     }
 
-    internal void RefreshHoverActions() => UpdateHoverActions();
+    public void RefreshHoverActions() => UpdateHoverActions();
 
     private void UpdateHoverActions()
     {

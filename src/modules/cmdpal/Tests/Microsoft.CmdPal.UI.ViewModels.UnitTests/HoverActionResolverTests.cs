@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
@@ -150,6 +151,64 @@ public class HoverActionResolverTests
         Assert.AreEqual(2, result.Count);
         Assert.AreEqual("Three", result[0].Title);
         Assert.AreEqual("Two", result[1].Title);
+    }
+
+    [TestMethod]
+    public void Resolve_ExplicitMode_FallsBackToFirstNWhenNothingFlagged()
+    {
+        var commands = new[]
+        {
+            CreateContextItem("One"),
+            CreateContextItem("Two"),
+            CreateContextItem("Three"),
+            CreateContextItem("Four"),
+        };
+
+        var result = HoverActionResolver.Resolve(CreateContext(mode: HoverActionsMode.Explicit, commands: commands));
+
+        Assert.AreEqual(3, result.Count);
+        Assert.AreEqual("One", result[0].Title);
+    }
+
+    [TestMethod]
+    public void Resolve_ExtensionSurface_SkipsHostInjectedCommands()
+    {
+        var commands = new[]
+        {
+            CreateContextItem("Pin to top", hostInjected: true),
+            CreateContextItem("One"),
+            CreateContextItem("Two"),
+            CreateContextItem("Three"),
+            CreateContextItem("Four"),
+        };
+
+        var result = HoverActionResolver.Resolve(CreateContext(isHome: false, commands: commands));
+
+        Assert.AreEqual(3, result.Count);
+        Assert.AreEqual("One", result[0].Title);
+        Assert.AreEqual("Two", result[1].Title);
+        Assert.AreEqual("Three", result[2].Title);
+    }
+
+    [TestMethod]
+    public void Resolve_AllMoreCommandsMode_ReturnsAllNonHostInjected()
+    {
+        var commands = new[]
+        {
+            CreateContextItem("One"),
+            CreateContextItem("Two"),
+            CreateContextItem("Three"),
+            CreateContextItem("Four"),
+            CreateContextItem("Five"),
+            CreateContextItem("Injected", hostInjected: true),
+        };
+
+        var result = HoverActionResolver.Resolve(CreateContext(mode: HoverActionsMode.AllMoreCommands, commands: commands));
+
+        Assert.AreEqual(5, result.Count);
+        Assert.IsFalse(result.Any(c => c.IsHostInjected));
+        Assert.AreEqual("One", result[0].Title);
+        Assert.AreEqual("Five", result[4].Title);
     }
 
     [TestMethod]
