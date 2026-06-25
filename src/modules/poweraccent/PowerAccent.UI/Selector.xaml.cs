@@ -13,6 +13,8 @@ public sealed partial class Selector : TransparentWindow, IDisposable
 {
     private readonly Core.PowerAccent _powerAccent;
 
+    public SelectorViewModel ViewModel { get; } = new();
+
     public Selector()
     {
         InitializeComponent();
