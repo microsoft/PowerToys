@@ -7,6 +7,7 @@ only four axes. **Pick the scenario first, read its doc, then run the shared eng
 
 | Axis | A — Module checklist | B — Release/hotfix PR sign-off | C — Active PR validation |
 |---|---|---|---|
+| **PR state** | n/a | **merged** PRs already in a shipped/draft build | **unmerged / open** PR not yet in any build |
 | **Checklist source** | Supplied file (`../release-checklist/<module>.md`) | **Derived** from the PRs in a release/hotfix | **Derived** from one PR's description + diff |
 | **Bits under test** | Installed shipped artifact (READ-ONLY) | Installed shipped artifact (READ-ONLY) | **Your local build, sideloaded** (the point is unreleased code) |
 | **Discipline** | Mutate only via user-facing UI; restore in `finally{}` | Same as A | **Inverted** — you MUST build & deploy unreleased bits |
@@ -16,10 +17,13 @@ only four axes. **Pick the scenario first, read its doc, then run the shared eng
 |---|---|---|
 | "verify all `<Module>` checklist items", "sign off Color Picker", a supplied checklist file | **A** | [`module-checklist.md`](./module-checklist.md) |
 | "verify the PRs in this release / hotfix / draft release / milestone", "sign off 0.X.Y" | **B** | [`release-pr-signoff.md`](./release-pr-signoff.md) |
-| "validate PR #N", "verify this open/unmerged PR", "build it and test the fix" | **C** | [`active-pr-validation.md`](./active-pr-validation.md) |
+| "validate an **unmerged / open** PR #N", "review this PR's fix before merge", "build it and test the fix" | **C** | [`active-pr-validation.md`](./active-pr-validation.md) |
 
-If the task is ambiguous between B and C, the deciding question is **"are the bits already
-installed, or do I need to build them?"** — installed ⇒ B, must-build ⇒ C.
+If the task is ambiguous between B and C, the deciding question is **"is this PR already merged
+and shipped in the installed build, or is it still open/unmerged?"** — merged & installed ⇒ B
+(drive the shipped bits), open/unmerged ⇒ C (build & sideload it first). A bare "validate PR #N" is
+**C** when the PR is still open; if it has already merged into the build under test, treat it as a
+one-PR Scenario B instead.
 
 ---
 
