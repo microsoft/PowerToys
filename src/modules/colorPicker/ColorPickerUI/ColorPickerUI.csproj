@@ -42,7 +42,7 @@
 
   <!-- Allow the test project to access internal types (moved from Bootstrapper.cs) -->
   <ItemGroup>
-    <InternalsVisibleTo Include="UnitTest-ColorPickerUI" />
+    <InternalsVisibleTo Include="ColorPickerUI.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
