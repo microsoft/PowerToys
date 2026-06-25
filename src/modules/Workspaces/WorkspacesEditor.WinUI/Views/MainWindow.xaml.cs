@@ -54,10 +54,10 @@ namespace WorkspacesEditor
 
             // Wire ViewModel navigation
             var vm = App.MainViewModel;
-            vm.NavigateAction = (pageType, param) =>
+            WeakReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) =>
             {
-                ContentFrame.Navigate(pageType, (vm, param));
-            };
+                ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
+            });
             vm.GoBackAction = () =>
             {
                 if (ContentFrame.CanGoBack)

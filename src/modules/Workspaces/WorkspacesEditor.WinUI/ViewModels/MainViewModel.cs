@@ -26,7 +26,6 @@ using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Utils;
-using WorkspacesEditor.Views;
 
 namespace WorkspacesEditor.ViewModels
 {
@@ -122,9 +121,6 @@ namespace WorkspacesEditor.ViewModels
             _settings.Properties.SortBy = (WorkspacesProperties.SortByProperty)value;
             _settings.Save(SettingsUtils.Default);
         }
-
-        // Navigation action — set by MainWindow
-        public Action<Type, object> NavigateAction { get; set; }
 
         public Action GoBackAction { get; set; }
 
@@ -227,7 +223,7 @@ namespace WorkspacesEditor.ViewModels
             _lastUpdatedTimer.Stop();
 
             // Navigate to editor page, passing the project as parameter
-            NavigateAction?.Invoke(typeof(Views.WorkspacesEditorPage), selectedProject);
+            WeakReferenceMessenger.Default.Send(new NavigateToEditorMessage(selectedProject));
         }
 
         public void AddNewProject(Project project)
@@ -338,7 +334,7 @@ namespace WorkspacesEditor.ViewModels
                     project.EditorWindowTitle = GetString("EditWorkspace");
 
                     // Navigate to editor page with the updated project
-                    NavigateAction?.Invoke(typeof(WorkspacesEditorPage), project);
+                    WeakReferenceMessenger.Default.Send(new NavigateToEditorMessage(project));
                 }
                 else
                 {
@@ -360,7 +356,7 @@ namespace WorkspacesEditor.ViewModels
             if (_projectBeforeLaunch != null)
             {
                 _projectBeforeLaunch.InitializePreview();
-                NavigateAction?.Invoke(typeof(WorkspacesEditorPage), _projectBeforeLaunch);
+                WeakReferenceMessenger.Default.Send(new NavigateToEditorMessage(_projectBeforeLaunch));
             }
         }
 
