@@ -4,10 +4,13 @@
 
 using System;
 
+using CommunityToolkit.Mvvm.Messaging;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using WorkspacesEditor.Messages;
 using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
@@ -57,6 +60,12 @@ namespace WorkspacesEditor
 
             _mainWindow = new MainWindow();
             _mainWindow.Activate();
+
+            WeakReferenceMessenger.Default.Register<CloseApplicationMessage>(this, (r, m) =>
+            {
+                Logger.LogInfo("CloseApplicationMessage received. Shutting down.");
+                ((App)r).Exit();
+            });
         }
 
         private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)

@@ -295,7 +295,7 @@ namespace WorkspacesEditor.ViewModels
             }
 
             Logger.LogInfo($"Launched the Workspace {project.Name}. Exiting.");
-            Environment.Exit(0);
+            WeakReferenceMessenger.Default.Send(new CloseApplicationMessage());
         }
 
         public void EnterSnapshotMode(bool isExistingProjectLaunched)

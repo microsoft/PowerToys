@@ -143,7 +143,7 @@ namespace WorkspacesEditor
                         {
                             if (ApplicationIsInFocus())
                             {
-                                Environment.Exit(0);
+                                WeakReferenceMessenger.Default.Send(new CloseApplicationMessage());
                             }
                             else
                             {
