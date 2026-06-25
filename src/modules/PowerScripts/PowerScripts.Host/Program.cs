@@ -45,6 +45,8 @@ internal static class Program
                 "list" => RunList(registry, options.ContainsKey("json")),
                 "run" => RunScript(registry, positional, options),
                 "kbm" => RunKbm(registry, positional, options.ContainsKey("json")),
+                "shell-install" => ShellRegistration.Install(registry, Environment.ProcessPath ?? "PowerScripts.Host.exe"),
+                "shell-uninstall" => ShellRegistration.Uninstall(registry),
                 "-h" or "--help" or "help" => PrintUsage(),
                 _ => Unknown(args[0]),
             };
@@ -260,6 +262,8 @@ internal static class Program
         Console.WriteLine("  list [--json] [--root <dir>]");
         Console.WriteLine("  run <id> [--files <f1> <f2> ...] [--set name=value ...] [--root <dir>]");
         Console.WriteLine("  kbm <id> [--json] [--root <dir>]    (Keyboard Manager 'Run Program' mapping)");
+        Console.WriteLine("  shell-install [--root <dir>]        (register the Explorer right-click submenu)");
+        Console.WriteLine("  shell-uninstall [--root <dir>]      (remove the Explorer right-click submenu)");
         return 0;
     }
 }
