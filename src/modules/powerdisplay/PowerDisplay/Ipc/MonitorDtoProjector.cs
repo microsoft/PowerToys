@@ -8,6 +8,7 @@ using System.Globalization;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Contracts;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Ipc;
@@ -58,7 +59,8 @@ public static class MonitorDtoProjector
         IReadOnlySet<string> hiddenIds,
         int? number,
         string? id,
-        string? settingFilter)
+        string? settingFilter,
+        IReadOnlyList<CustomVcpValueMapping>? customMappings = null)
     {
         var visible = ExcludeHidden(monitors, hiddenIds);
 
@@ -73,7 +75,7 @@ public static class MonitorDtoProjector
             foreach (var monitor in visible)
             {
                 var monRef = ToRef(monitor);
-                allEntries.Add(BuildGetEntry(monitor, monRef, settingFilter, out _)!);
+                allEntries.Add(BuildGetEntry(monitor, monRef, settingFilter, customMappings, out _)!);
             }
 
             return (new CliGetResult { Monitors = allEntries }, null);
@@ -86,7 +88,7 @@ public static class MonitorDtoProjector
         }
 
         var mRef = ToRef(selected!);
-        var entry = BuildGetEntry(selected!, mRef, settingFilter, out var settingError);
+        var entry = BuildGetEntry(selected!, mRef, settingFilter, customMappings, out var settingError);
         if (settingError is not null)
         {
             return (null, new CliErrorResult { Command = CliCommandNames.Get, Monitor = mRef, Error = settingError });
@@ -103,7 +105,9 @@ public static class MonitorDtoProjector
         IReadOnlyList<Monitor> monitors,
         IReadOnlySet<string> hiddenIds,
         int? number,
-        string? id)
+        string? id,
+        string? settingFilter = null,
+        IReadOnlyList<CustomVcpValueMapping>? customMappings = null)
     {
         var visible = ExcludeHidden(monitors, hiddenIds);
 
@@ -113,6 +117,26 @@ public static class MonitorDtoProjector
             return (null, new CliErrorResult { Command = CliCommandNames.Capabilities, Error = resolveError });
         }
 
+        // Optional --setting filter: restrict the result to a single discrete setting's VCP code.
+        byte? filterCode = null;
+        if (settingFilter is not null)
+        {
+            filterCode = VcpCodeForDiscreteSetting(settingFilter);
+            if (filterCode is null)
+            {
+                return (null, new CliErrorResult
+                {
+                    Command = CliCommandNames.Capabilities,
+                    Error = new CliError
+                    {
+                        Code = CliErrorCodes.ArgumentError,
+                        Message = string.Format(CultureInfo.InvariantCulture, "--setting '{0}' is not a discrete VCP setting", settingFilter),
+                        Hint = "valid discrete settings: color-temperature, input-source, power-state",
+                    },
+                });
+            }
+        }
+
         var caps = selected!.VcpCapabilitiesInfo;
         var vcpCodes = new List<CliVcpCodeInfo>();
 
@@ -120,13 +144,18 @@ public static class MonitorDtoProjector
         {
             foreach (var code in caps.GetSortedVcpCodes())
             {
+                if (filterCode is not null && code.Code != filterCode.Value)
+                {
+                    continue;
+                }
+
                 List<string>? discreteValues = null;
                 if (code.HasDiscreteValues)
                 {
                     discreteValues = new List<string>(code.SupportedValues.Count);
                     foreach (var v in code.SupportedValues)
                     {
-                        discreteValues.Add(FormatDiscrete(code.Code, v));
+                        discreteValues.Add(FormatDiscrete(code.Code, v, customMappings, selected.Id));
                     }
                 }
 
@@ -276,6 +305,7 @@ public static class MonitorDtoProjector
         Monitor monitor,
         CliMonitorRef monitorRef,
         string? settingFilter,
+        IReadOnlyList<CustomVcpValueMapping>? customMappings,
         out CliError? error)
     {
         if (TryGetUnknownSettingError(settingFilter, out error))
@@ -290,7 +320,7 @@ public static class MonitorDtoProjector
         var results = new List<CliSettingValue>();
         foreach (var name in settingNames)
         {
-            results.Add(BuildSettingValue(monitor, name)!);
+            results.Add(BuildSettingValue(monitor, name, customMappings)!);
         }
 
         return new CliGetMonitorEntry
@@ -332,14 +362,14 @@ public static class MonitorDtoProjector
     /// actually read it (<see cref="Monitor.ReadValues"/>) — a default/stale field is
     /// never passed off as a live reading.
     /// </summary>
-    private static CliSettingValue? BuildSettingValue(Monitor monitor, string settingName) => settingName switch
+    private static CliSettingValue? BuildSettingValue(Monitor monitor, string settingName, IReadOnlyList<CustomVcpValueMapping>? customMappings) => settingName switch
     {
         "brightness" => Reading("brightness", monitor.SupportsBrightness, monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness), monitor.CurrentBrightness, v => v + "%"),
         "contrast" => Reading("contrast", monitor.SupportsContrast, monitor.ReadValues.HasFlag(MonitorReadFlags.Contrast), monitor.CurrentContrast, v => v + "%"),
         "volume" => Reading("volume", monitor.SupportsVolume, monitor.ReadValues.HasFlag(MonitorReadFlags.Volume), monitor.CurrentVolume, v => v + "%"),
-        "color-temperature" => Reading("color-temperature", monitor.SupportsColorTemperature, monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature), monitor.CurrentColorTemperature, v => FormatDiscrete(0x14, v)),
-        "input-source" => Reading("input-source", monitor.SupportsInputSource, monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource), monitor.CurrentInputSource, v => FormatDiscrete(0x60, v)),
-        "power-state" => Reading("power-state", monitor.SupportsPowerState, monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState), monitor.CurrentPowerState, v => FormatDiscrete(0xD6, v)),
+        "color-temperature" => Reading("color-temperature", monitor.SupportsColorTemperature, monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature), monitor.CurrentColorTemperature, v => FormatDiscrete(0x14, v, customMappings, monitor.Id)),
+        "input-source" => Reading("input-source", monitor.SupportsInputSource, monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource), monitor.CurrentInputSource, v => FormatDiscrete(0x60, v, customMappings, monitor.Id)),
+        "power-state" => Reading("power-state", monitor.SupportsPowerState, monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState), monitor.CurrentPowerState, v => FormatDiscrete(0xD6, v, customMappings, monitor.Id)),
 
         // raw is the orientation in degrees; the display string is derived from the index.
         // The formatter ignores its int argument and calls OrientationDegrees(index) directly,
@@ -367,13 +397,25 @@ public static class MonitorDtoProjector
     /// Formats a discrete VCP value as "Name (0xNN)" or "0xNN" when the name is unknown.
     /// Mirrors <c>SetCommand.FormatDiscrete</c>.
     /// </summary>
-    internal static string FormatDiscrete(byte vcpCode, int value)
+    internal static string FormatDiscrete(byte vcpCode, int value, IReadOnlyList<CustomVcpValueMapping>? customMappings = null, string monitorId = "")
     {
-        var name = VcpNames.GetValueName(vcpCode, value);
+        var name = VcpNames.GetValueName(vcpCode, value, customMappings, monitorId);
         return name is null
             ? $"0x{value:X2}"
             : $"{name} (0x{value:X2})";
     }
+
+    /// <summary>
+    /// Maps a CLI discrete setting name to its VCP code, or null when the name is not one of the
+    /// three discrete VCP settings (color-temperature 0x14, input-source 0x60, power-state 0xD6).
+    /// </summary>
+    internal static byte? VcpCodeForDiscreteSetting(string setting) => setting.ToLowerInvariant() switch
+    {
+        "color-temperature" => 0x14,
+        "input-source" => 0x60,
+        "power-state" => 0xD6,
+        _ => null,
+    };
 
     /// <summary>
     /// Returns the human-readable orientation string for a GDI orientation index (0–3).

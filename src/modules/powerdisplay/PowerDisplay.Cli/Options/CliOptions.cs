@@ -61,21 +61,21 @@ public static class CliOptions
     // --- set: discrete ---
     public static readonly Option<string?> ColorTemperature = new(
         ["--color-temperature"],
-        "Color preset name (e.g. 6500K, sRGB) or hex VCP value (e.g. 0x05).")
+        "Hex VCP value (e.g. 0x05). Run 'powerdisplay capabilities --setting color-temperature' to list supported values.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
 
     public static readonly Option<string?> InputSource = new(
         ["--input-source"],
-        "Input source name (e.g. HDMI-1, USB-C) or hex VCP value (e.g. 0x11).")
+        "Hex VCP value (e.g. 0x11). Run 'powerdisplay capabilities --setting input-source' to list supported values.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };
 
     public static readonly Option<string?> PowerState = new(
         ["--power-state"],
-        "Power state name (On, Standby, Suspend, \"Off (DPM)\", \"Off (Hard)\") or hex VCP value.")
+        "Hex VCP value (e.g. 0x01=On, 0x04=Off (DPM)). Run 'powerdisplay capabilities --setting power-state' to list supported values.")
     {
         Arity = ArgumentArity.ExactlyOne,
     };

@@ -403,8 +403,10 @@ public static class SetCommandExecutor
     }
 
     /// <summary>
-    /// Resolves a discrete VCP value from a friendly name or hex literal, then verifies it
-    /// against the monitor's supported set. Mirrors <c>DiscreteValueResolver.TryResolve</c>.
+    /// Resolves a discrete VCP value from a hex literal (0x??), then verifies it against the
+    /// monitor's supported set. Friendly names are intentionally NOT accepted: the generic VCP name
+    /// table can disagree with a specific monitor's value mapping, so the CLI requires an
+    /// unambiguous hex value (use 'capabilities --setting &lt;name&gt;' to discover them).
     /// </summary>
     private static int? TryResolveDiscrete(
         byte vcpCode,
@@ -421,7 +423,7 @@ public static class SetCommandExecutor
             return null;
         }
 
-        int? parsedValue = TryParseHex(raw) ?? TryParseFriendlyName(vcpCode, raw);
+        int? parsedValue = TryParseHex(raw);
 
         if (parsedValue is null)
         {
@@ -449,24 +451,6 @@ public static class SetCommandExecutor
             && hex is >= 0x00 and <= 0xFF)
         {
             return hex;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Reverse-looks up a friendly name in the VCP names table. Mirrors
-    /// <c>DiscreteValueResolver.TryParseFriendlyName</c>.
-    /// </summary>
-    private static int? TryParseFriendlyName(byte vcpCode, string raw)
-    {
-        for (int value = 0; value <= 0xFF; value++)
-        {
-            var name = VcpNames.GetValueName(vcpCode, value);
-            if (name is not null && string.Equals(name, raw, StringComparison.OrdinalIgnoreCase))
-            {
-                return value;
-            }
         }
 
         return null;
@@ -575,7 +559,7 @@ public static class SetCommandExecutor
             Code = CliErrorCodes.InvalidDiscreteValue,
             Supported = BuildSupportedList(vcpCode, supportedValues),
             Message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid value for {1}", raw, settingName),
-            Hint = "use a hex literal (0x??) or a friendly name from the supported list",
+            Hint = "use a hex VCP value (0x??); run 'powerdisplay capabilities -n N --setting <name>' to list supported values",
         };
     }
 
@@ -591,7 +575,7 @@ public static class SetCommandExecutor
             Code = CliErrorCodes.InvalidDiscreteValue,
             Supported = BuildSupportedList(vcpCode, supportedValues),
             Message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not in the monitor's supported set for {1}", raw, settingName),
-            Hint = "use a hex literal (0x??) or a friendly name from the supported list",
+            Hint = "use a hex VCP value (0x??); run 'powerdisplay capabilities -n N --setting <name>' to list supported values",
         };
     }
 

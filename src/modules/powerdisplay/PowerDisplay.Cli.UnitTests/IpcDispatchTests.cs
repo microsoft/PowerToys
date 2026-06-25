@@ -115,7 +115,7 @@ public class IpcDispatchTests
     {
         var output = new CaptureOutput();
         var dispatcher = MakeDispatcher(null, output);
-        var exit = await dispatcher.SendCapabilitiesAsync(CliRequestBuilder.BuildCapabilities(1, null), CancellationToken.None);
+        var exit = await dispatcher.SendCapabilitiesAsync(CliRequestBuilder.BuildCapabilities(1, null, null), CancellationToken.None);
         Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
     }
 

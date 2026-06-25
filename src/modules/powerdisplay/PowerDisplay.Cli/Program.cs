@@ -231,11 +231,14 @@ public static class Program
         {
             var monitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber);
             var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
+            var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
 
             WarnIfMonitorNumberIgnored(output, monitorNumber, monitorId);
 
+            // An out-of-range --setting (not one of the 3 discrete settings) is validated app-side
+            // and comes back as a single ARGUMENT_ERROR envelope.
             return await dispatcher.SendCapabilitiesAsync(
-                CliRequestBuilder.BuildCapabilities(monitorNumber, monitorId),
+                CliRequestBuilder.BuildCapabilities(monitorNumber, monitorId, settingFilter),
                 cancellationToken);
         }
 

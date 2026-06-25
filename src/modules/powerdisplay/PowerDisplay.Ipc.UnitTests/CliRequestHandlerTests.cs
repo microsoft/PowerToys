@@ -100,6 +100,7 @@ public class CliRequestHandlerTests
             envelope,
             monitors ?? new[] { MakeMon() },
             NoHidden,
+            Array.Empty<CustomVcpValueMapping>(),
             new FakeManager(),
             profiles ?? EmptyProfiles,
             applyProfile ?? ((_, _) => Task.FromResult<IReadOnlyList<ProfileApplyOutcome>?>(Array.Empty<ProfileApplyOutcome>())),
@@ -226,6 +227,28 @@ public class CliRequestHandlerTests
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliCapabilitiesResult);
         Assert.IsNotNull(result, "should deserialize to CliCapabilitiesResult");
         Assert.AreEqual("capabilities", result.Command);
+    }
+
+    [TestMethod]
+    public async Task Capabilities_WithSettingFilter_ReturnsOnlyMatchingCode()
+    {
+        var mon = MakeMon(1, "A");
+        var caps = new VcpCapabilities();
+        caps.SupportedVcpCodes[0x14] = new VcpCodeInfo(0x14, "Color Preset", new List<int> { 0x05 });
+        caps.SupportedVcpCodes[0x60] = new VcpCodeInfo(0x60, "Input Source", new List<int> { 0x11 });
+        mon.VcpCapabilitiesInfo = caps;
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.Capabilities,
+            Capabilities = new CapabilitiesRequest { MonitorNumber = 1, SettingFilter = "input-source" },
+        };
+
+        var json = await Dispatch(envelope, monitors: new[] { mon });
+
+        var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliCapabilitiesResult);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(1, result!.VcpCodes.Count);
+        Assert.AreEqual("0x60", result.VcpCodes[0].Code);
     }
 
     // ─── profiles command ─────────────────────────────────────────────────────

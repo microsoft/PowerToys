@@ -56,9 +56,10 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
 
     private static Command BuildCapabilities()
     {
-        var cmd = new Command("capabilities", "Print the VCP capabilities advertised by the monitor.");
+        var cmd = new Command("capabilities", "Print the VCP capabilities advertised by the monitor. Use --setting to restrict to one discrete setting (color-temperature, input-source, power-state).");
         cmd.AddOption(CliOptions.MonitorNumber);
         cmd.AddOption(CliOptions.MonitorId);
+        cmd.AddOption(CliOptions.SettingFilter);
         return cmd;
     }
 

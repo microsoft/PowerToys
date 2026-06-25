@@ -67,13 +67,14 @@ public static class CliRequestBuilder
     }
 
     /// <summary>Builds a <c>capabilities</c> request envelope.</summary>
-    public static CliRequestEnvelope BuildCapabilities(int? monitorNumber, string? monitorId) => new()
+    public static CliRequestEnvelope BuildCapabilities(int? monitorNumber, string? monitorId, string? settingFilter) => new()
     {
         Command = CliCommandNames.Capabilities,
         Capabilities = new CapabilitiesRequest
         {
             MonitorNumber = monitorNumber,
             MonitorId = monitorId,
+            SettingFilter = settingFilter,
         },
     };
 

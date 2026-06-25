@@ -106,6 +106,7 @@ public sealed class CliRequestHandler
         CliRequestEnvelope envelope,
         IReadOnlyList<Monitor> snapshot,
         IReadOnlySet<string> hiddenIds,
+        IReadOnlyList<CustomVcpValueMapping> customMappings,
         IMonitorManager manager,
         PowerDisplayProfiles profiles,
         Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>> applyProfileAsync,
@@ -129,7 +130,8 @@ public sealed class CliRequestHandler
                     hiddenIds,
                     req.MonitorNumber,
                     req.MonitorId,
-                    req.SettingFilter);
+                    req.SettingFilter,
+                    customMappings);
 
                 if (error is not null)
                 {
@@ -170,7 +172,9 @@ public sealed class CliRequestHandler
                     snapshot,
                     hiddenIds,
                     req.MonitorNumber,
-                    req.MonitorId);
+                    req.MonitorId,
+                    req.SettingFilter,
+                    customMappings);
 
                 if (error is not null)
                 {
@@ -244,6 +248,7 @@ public sealed class CliRequestHandler
             // _monitors which are UI-thread-owned.
             var snapshot = _vm.SnapshotMonitors();
             var hiddenIds = _vm.GetHiddenMonitorIds();
+            var customMappings = _vm.CustomVcpMappings;
             var manager = _vm.MonitorManager;
             var profiles = ProfileService.LoadProfiles();
 
@@ -251,6 +256,7 @@ public sealed class CliRequestHandler
                 envelope,
                 snapshot,
                 hiddenIds,
+                customMappings,
                 manager,
                 profiles,
                 (name, token) => _vm.ApplyProfileWithOutcomesAsync(name),

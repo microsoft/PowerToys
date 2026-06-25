@@ -207,6 +207,73 @@ public class SetCommandExecutorTests
         Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, error.Error.ExitCode);
     }
 
+    // ─── Discrete settings are hex-only: friendly names are rejected ──────────
+    [TestMethod]
+    public async Task Set_ColorTemperature_ByFriendlyName_ReturnsInvalidDiscreteValue()
+    {
+        var monitor = new Monitor
+        {
+            Id = "C",
+            MonitorNumber = 3,
+            Name = "ColorMon",
+            SupportsColorTemperature = true,
+            ReadValues = MonitorReadFlags.ColorTemperature,
+            CurrentColorTemperature = 0x05,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 3, Setting = "color-temperature", RawValue = "6500K" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
+    }
+
+    [TestMethod]
+    public async Task Set_InputSource_ByFriendlyName_ReturnsInvalidDiscreteValue()
+    {
+        var monitor = new Monitor
+        {
+            Id = "E",
+            MonitorNumber = 5,
+            Name = "InputMon",
+            VcpCapabilitiesInfo = VcpCapsWithCodes(0x60),
+            ReadValues = MonitorReadFlags.InputSource,
+            CurrentInputSource = 0x11,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 5, Setting = "input-source", RawValue = "HDMI-1" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
+    }
+
+    [TestMethod]
+    public async Task Set_PowerState_ByFriendlyName_ReturnsInvalidDiscreteValue()
+    {
+        var monitor = new Monitor
+        {
+            Id = "I",
+            MonitorNumber = 9,
+            Name = "PowerMon",
+            VcpCapabilitiesInfo = VcpCapsWithCodes(0xD6),
+            ReadValues = MonitorReadFlags.PowerState,
+            CurrentPowerState = 0x01,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 9, Setting = "power-state", RawValue = "On" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
+    }
+
     // ─── UnsupportedFeature (exit code 4) ────────────────────────────────────
     [TestMethod]
     public async Task Set_Brightness_NotSupported_ReturnsUnsupportedFeature()

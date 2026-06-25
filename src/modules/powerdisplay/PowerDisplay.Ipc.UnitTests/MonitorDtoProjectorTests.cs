@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Contracts;
 using PowerDisplay.Ipc;
+using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Ipc.UnitTests;
@@ -397,6 +398,88 @@ public class MonitorDtoProjectorTests
 
         // FormatDiscrete(0x14, 0x05) → "6500K (0x05)"
         Assert.AreEqual("6500K (0x05)", colorTemp.DiscreteValues[0]);
+    }
+
+    [TestMethod]
+    public void BuildCapabilitiesResult_SettingFilter_ReturnsOnlyMatchingCode()
+    {
+        var monitor = MakeMon(1, "A");
+        var caps = new VcpCapabilities();
+        caps.SupportedVcpCodes[0x14] = new VcpCodeInfo(0x14, "Select Color Preset", new List<int> { 0x05 });
+        caps.SupportedVcpCodes[0x60] = new VcpCodeInfo(0x60, "Input Source", new List<int> { 0x11 });
+        monitor.VcpCapabilitiesInfo = caps;
+        var monitors = new List<Monitor> { monitor };
+
+        var (result, error) = MonitorDtoProjector.BuildCapabilitiesResult(
+            monitors, EmptyHidden, number: 1, id: null, settingFilter: "input-source", customMappings: null);
+
+        Assert.IsNull(error);
+        Assert.AreEqual(1, result!.VcpCodes.Count);
+        Assert.AreEqual("0x60", result.VcpCodes[0].Code);
+    }
+
+    [TestMethod]
+    public void BuildCapabilitiesResult_SettingFilter_NonDiscrete_ReturnsArgumentError()
+    {
+        var monitor = MakeMon(1, "A");
+        var caps = new VcpCapabilities();
+        caps.SupportedVcpCodes[0x10] = new VcpCodeInfo(0x10, "Brightness");
+        monitor.VcpCapabilitiesInfo = caps;
+        var monitors = new List<Monitor> { monitor };
+
+        var (result, error) = MonitorDtoProjector.BuildCapabilitiesResult(
+            monitors, EmptyHidden, number: 1, id: null, settingFilter: "brightness", customMappings: null);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error!.Error.Code);
+    }
+
+    [TestMethod]
+    public void BuildCapabilitiesResult_CustomMapping_UsesCustomName()
+    {
+        var monitor = MakeMon(1, "A");
+        var caps = new VcpCapabilities();
+        caps.SupportedVcpCodes[0x60] = new VcpCodeInfo(0x60, "Input Source", new List<int> { 0x11 });
+        monitor.VcpCapabilitiesInfo = caps;
+        var monitors = new List<Monitor> { monitor };
+        var custom = new List<CustomVcpValueMapping>
+        {
+            new() { VcpCode = 0x60, Value = 0x11, CustomName = "Living Room TV", ApplyToAll = true },
+        };
+
+        var (result, error) = MonitorDtoProjector.BuildCapabilitiesResult(
+            monitors, EmptyHidden, number: 1, id: null, settingFilter: null, customMappings: custom);
+
+        Assert.IsNull(error);
+        var inputCode = result!.VcpCodes[0];
+        Assert.AreEqual("0x60", inputCode.Code);
+        Assert.IsNotNull(inputCode.DiscreteValues);
+        Assert.AreEqual("Living Room TV (0x11)", inputCode.DiscreteValues![0]);
+    }
+
+    [TestMethod]
+    public void BuildGetResult_CustomMapping_UsesCustomName()
+    {
+        var monitor = MakeMon(1, "A");
+        var caps = new VcpCapabilities();
+        caps.SupportedVcpCodes[0x60] = new VcpCodeInfo(0x60, "Input Source", new List<int> { 0x11 });
+        monitor.VcpCapabilitiesInfo = caps;
+        monitor.ReadValues |= MonitorReadFlags.InputSource;
+        monitor.CurrentInputSource = 0x11;
+        var monitors = new List<Monitor> { monitor };
+        var custom = new List<CustomVcpValueMapping>
+        {
+            new() { VcpCode = 0x60, Value = 0x11, CustomName = "Living Room TV", ApplyToAll = true },
+        };
+
+        var (result, error) = MonitorDtoProjector.BuildGetResult(
+            monitors, EmptyHidden, number: null, id: null, settingFilter: "input-source", customMappings: custom);
+
+        Assert.IsNull(error);
+        var setting = result!.Monitors[0].Settings[0];
+        Assert.AreEqual("input-source", setting.Setting);
+        Assert.AreEqual("Living Room TV (0x11)", setting.Display);
     }
 
     // ─── ResolveMonitor ───────────────────────────────────────────────────────
