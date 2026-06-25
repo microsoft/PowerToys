@@ -40,6 +40,10 @@ namespace ColorPicker.Foundation
             // SINGLETON: replaces the WPF [Export(typeof(IThrottledActionInvoker))]; holds a single
             // UI-thread DispatcherQueueTimer. Resolve only on the UI thread (ctor binds the timer).
             services.AddSingleton<IThrottledActionInvoker, ThrottledActionInvoker>();
+
+            // D7 settings singleton: holds the live settings.json FileSystemWatcher + in-memory
+            // ColorHistory. SINGLETON, registered AFTER IThrottledActionInvoker (its ctor dep).
+            services.AddSingleton<ColorPicker.Settings.IUserSettings, ColorPicker.Settings.UserSettings>();
         }
     }
 }

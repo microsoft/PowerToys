@@ -131,6 +131,9 @@
     <Compile Include="Helpers\SessionEventHelper.cs" />
     <Compile Include="Telemetry\ColorPickerSession.cs" />
     <Compile Include="Telemetry\ColorPickerSettings.cs" />
+    <Compile Include="Settings\SettingItem`1.cs" />
+    <Compile Include="Settings\IUserSettings.cs" />
+    <Compile Include="Settings\UserSettings.cs" />
   </ItemGroup>
 
 </Project>
