@@ -85,7 +85,7 @@ namespace WorkspacesEditor.Views
         {
             _captured = true;
             this.Close();
-            _mainViewModel.SnapWorkspace();
+            _ = _mainViewModel.SnapWorkspaceAsync();
         }
 
         private void CancelButtonClicked(object sender, RoutedEventArgs e)

@@ -13,6 +13,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
@@ -25,7 +28,7 @@ using WorkspacesEditor.Views;
 
 namespace WorkspacesEditor.ViewModels
 {
-    public partial class MainViewModel : INotifyPropertyChanged, IDisposable
+    public partial class MainViewModel : ObservableObject, IDisposable
     {
         private WorkspacesEditorIO _workspacesEditorIO;
         private Project _editedProject;
@@ -45,7 +48,7 @@ namespace WorkspacesEditor.ViewModels
             {
                 IEnumerable<Project> workspaces = GetFilteredWorkspaces();
                 IsWorkspacesViewEmpty = !(workspaces != null && workspaces.Any());
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsWorkspacesViewEmpty)));
+                OnPropertyChanged(nameof(IsWorkspacesViewEmpty));
                 if (IsWorkspacesViewEmpty)
                 {
                     if (Workspaces != null && Workspaces.Any())
@@ -57,12 +60,12 @@ namespace WorkspacesEditor.ViewModels
                         EmptyWorkspacesViewMessage = GetString("No_Workspaces_Message");
                     }
 
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(EmptyWorkspacesViewMessage)));
+                    OnPropertyChanged(nameof(EmptyWorkspacesViewMessage));
 
                     return new List<Project>();
                 }
 
-                WorkspacesData.OrderBy orderBy = (WorkspacesData.OrderBy)_orderByIndex;
+                WorkspacesData.OrderBy orderBy = (WorkspacesData.OrderBy)OrderByIndex;
                 if (orderBy == WorkspacesData.OrderBy.LastViewed)
                 {
                     return workspaces.OrderByDescending(x => x.LastLaunchedTime).ToList();
@@ -84,14 +87,14 @@ namespace WorkspacesEditor.ViewModels
 
         private IEnumerable<Project> GetFilteredWorkspaces()
         {
-            if (string.IsNullOrEmpty(_searchTerm))
+            if (string.IsNullOrEmpty(SearchTerm))
             {
                 return Workspaces;
             }
 
             return Workspaces.Where(x =>
             {
-                if (x.Name.Contains(_searchTerm, StringComparison.InvariantCultureIgnoreCase))
+                if (x.Name.Contains(SearchTerm, StringComparison.InvariantCultureIgnoreCase))
                 {
                     return true;
                 }
@@ -101,41 +104,22 @@ namespace WorkspacesEditor.ViewModels
                     return false;
                 }
 
-                return x.Applications.Any(app => app.AppName.Contains(_searchTerm, StringComparison.InvariantCultureIgnoreCase));
+                return x.Applications.Any(app => app.AppName.Contains(SearchTerm, StringComparison.InvariantCultureIgnoreCase));
             });
         }
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(WorkspacesView))]
         private string _searchTerm;
 
-        public string SearchTerm
-        {
-            get => _searchTerm;
-            set
-            {
-                _searchTerm = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
-            }
-        }
-
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(WorkspacesView))]
         private int _orderByIndex;
 
-        public int OrderByIndex
+        partial void OnOrderByIndexChanged(int value)
         {
-            get => _orderByIndex;
-            set
-            {
-                _orderByIndex = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
-                _settings.Properties.SortBy = (WorkspacesProperties.SortByProperty)value;
-                _settings.Save(SettingsUtils.Default);
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
+            _settings.Properties.SortBy = (WorkspacesProperties.SortByProperty)value;
+            _settings.Save(SettingsUtils.Default);
         }
 
         // Navigation action — set by MainWindow
@@ -154,7 +138,7 @@ namespace WorkspacesEditor.ViewModels
         public MainViewModel(WorkspacesEditorIO workspacesEditorIO)
         {
             _settings = Utils.Settings.ReadSettings();
-            _orderByIndex = (int)_settings.Properties.SortBy;
+            OrderByIndex = (int)_settings.Properties.SortBy;
             _workspacesEditorIO = workspacesEditorIO;
             _lastUpdatedTimer = new Timer();
             _lastUpdatedTimer.Interval = 1000;
@@ -169,7 +153,7 @@ namespace WorkspacesEditor.ViewModels
                 project.InitializePreview();
             }
 
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
+            OnPropertyChanged(nameof(WorkspacesView));
         }
 
         public void SaveProject(Project projectToSave)
@@ -244,7 +228,7 @@ namespace WorkspacesEditor.ViewModels
             Workspaces.Add(project);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             TempProjectData.DeleteTempFile();
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
+            OnPropertyChanged(nameof(WorkspacesView));
             ApplyShortcut(project);
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.CreateEvent
@@ -263,7 +247,7 @@ namespace WorkspacesEditor.ViewModels
             Workspaces.Remove(selectedProject);
             _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
             RemoveShortcut(selectedProject);
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
+            OnPropertyChanged(nameof(WorkspacesView));
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.DeleteEvent { Successful = true });
         }
@@ -272,12 +256,13 @@ namespace WorkspacesEditor.ViewModels
         {
             GoBackAction?.Invoke();
             SearchTerm = string.Empty;
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(SearchTerm)));
+            OnPropertyChanged(nameof(SearchTerm));
             _lastUpdatedTimer.Start();
             _editedProject = null;
         }
 
-        public async void LaunchProject(Project project, bool exitAfterLaunch = false)
+        [RelayCommand]
+        public async Task LaunchProjectAsync(Project project)
         {
             if (project == null)
             {
@@ -287,14 +272,25 @@ namespace WorkspacesEditor.ViewModels
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(WorkspacesView)));
+                OnPropertyChanged(nameof(WorkspacesView));
+            }
+        }
+
+        public async Task LaunchProjectAndExitAsync(Project project)
+        {
+            if (project == null)
+            {
+                return;
             }
 
-            if (exitAfterLaunch)
+            await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
+            if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
-                Logger.LogInfo($"Launched the Workspace {project.Name}. Exiting.");
-                Environment.Exit(0);
+                OnPropertyChanged(nameof(WorkspacesView));
             }
+
+            Logger.LogInfo($"Launched the Workspace {project.Name}. Exiting.");
+            Environment.Exit(0);
         }
 
         public void EnterSnapshotMode(bool isExistingProjectLaunched)
@@ -314,7 +310,8 @@ namespace WorkspacesEditor.ViewModels
             RestoreMainWindowAction?.Invoke();
         }
 
-        internal async void SnapWorkspace()
+        [RelayCommand]
+        internal async Task SnapWorkspaceAsync()
         {
             // Restore window immediately so user sees feedback
             RestoreMainWindowAction?.Invoke();
@@ -342,7 +339,8 @@ namespace WorkspacesEditor.ViewModels
             }
         }
 
-        internal async void LaunchAndEdit(Project project)
+        [RelayCommand]
+        internal async Task LaunchAndEditAsync(Project project)
         {
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.LaunchAndEdit));
             _projectBeforeLaunch = new Project(project);

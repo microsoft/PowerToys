@@ -201,7 +201,7 @@ namespace WorkspacesEditor.Views
         {
             if (this.DataContext is Project project)
             {
-                _mainViewModel.LaunchAndEdit(project);
+                _ = _mainViewModel.LaunchAndEditAsync(project);
             }
         }
 

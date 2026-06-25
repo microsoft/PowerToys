@@ -81,7 +81,7 @@ namespace WorkspacesEditor.Views
         {
             if (sender is FrameworkElement element && element.DataContext is Project project)
             {
-                ViewModel.LaunchProject(project);
+                _ = ViewModel.LaunchProjectAsync(project);
             }
         }
     }
