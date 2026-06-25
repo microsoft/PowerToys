@@ -5,6 +5,7 @@
 using System;
 using System.Threading;
 
+using ColorPicker.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ColorPicker.Foundation
@@ -35,9 +36,10 @@ namespace ColorPicker.Foundation
             services.AddSingleton(typeof(CancellationToken), sp =>
                 (object)sp.GetRequiredService<CancellationTokenSource>().Token);
 
-            // B/C/D add their singletons here, e.g.:
-            //   services.AddSingleton<IUserSettings, UserSettings>();
-            //   services.AddSingleton<IMainViewModel, MainViewModel>();
+            // D6 infrastructure singletons.
+            // SINGLETON: replaces the WPF [Export(typeof(IThrottledActionInvoker))]; holds a single
+            // UI-thread DispatcherQueueTimer. Resolve only on the UI thread (ctor binds the timer).
+            services.AddSingleton<IThrottledActionInvoker, ThrottledActionInvoker>();
         }
     }
 }

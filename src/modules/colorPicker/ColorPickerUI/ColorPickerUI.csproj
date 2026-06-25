@@ -125,6 +125,8 @@
     <!-- D6 native interop foundation -->
     <Compile Include="Helpers\NativeMethodsHelper.cs" />
     <Compile Include="Helpers\MonitorResolutionHelper.cs" />
+    <Compile Include="Helpers\IThrottledActionInvoker.cs" />
+    <Compile Include="Helpers\ThrottledActionInvoker.cs" />
   </ItemGroup>
 
 </Project>
