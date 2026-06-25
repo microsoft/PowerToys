@@ -197,10 +197,10 @@
   <data name="DiskUsage_Widget_Template.Disk_Usage" xml:space="preserve">
     <value>Utilization</value>
   </data>
-  <data name="DiskUsage_Widget_Template.Sent" xml:space="preserve">
+  <data name="DiskUsage_Widget_Template.Read" xml:space="preserve">
     <value>Read</value>
   </data>
-  <data name="DiskUsage_Widget_Template.Received" xml:space="preserve">
+  <data name="DiskUsage_Widget_Template.Write" xml:space="preserve">
     <value>Write</value>
   </data>
   <data name="DiskUsage_Widget_Template.Disk_Name" xml:space="preserve">

@@ -43,7 +43,7 @@ internal sealed class SettingsManager : JsonSettingsManager
     public DiskSpeedUnit DiskSpeedUnit =>
         Enum.TryParse<DiskSpeedUnit>(_diskSpeedUnit.Value, out var unit)
             ? unit
-            : DiskSpeedUnit.BitsPerSecond;
+            : DiskSpeedUnit.BytesPerSecond;
 
     private static string SettingsJsonPath()
     {
