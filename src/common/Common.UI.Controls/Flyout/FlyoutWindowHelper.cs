@@ -187,16 +187,13 @@ public static partial class FlyoutWindowHelper
     }
 
     /// <summary>
-    /// Two-step move that avoids WM_DPICHANGED double-scaling. First teleports a 1×1
-    /// window into the target display (which may trigger an auto-rescale, but on a 1×1
-    /// rect the effect is invisible). Then sets the real position+size while the window
-    /// is already on the target monitor — no DPI boundary crossing, so WinUI's auto
-    /// handler doesn't fire and overwrite our computed rect.
-    ///
-    /// Skips the teleport when the window is already on the target display, since there
-    /// is no boundary to cross.
+    /// Move and resize <paramref name="window"/> to <paramref name="finalRect"/> (absolute
+    /// screen physical-pixel coordinates) on <paramref name="targetDisplay"/>. Performs a
+    /// two-step move that avoids WM_DPICHANGED double-scaling: first a 1×1 teleport into the
+    /// target display (invisible at that size), then the real position+size while the window
+    /// is already on that monitor. Skips the teleport when already on the target display.
     /// </summary>
-    private static void MoveAndResizeOnDisplay(WindowEx window, DisplayArea targetDisplay, RectInt32 finalRect)
+    public static void MoveAndResizeOnDisplay(WindowEx window, DisplayArea targetDisplay, RectInt32 finalRect)
     {
         var currentDisplay = DisplayArea.GetFromWindowId(window.AppWindow.Id, DisplayAreaFallback.Nearest);
         bool needsTeleport = currentDisplay is null || currentDisplay.DisplayId.Value != targetDisplay.DisplayId.Value;
