@@ -9,6 +9,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 
+using CommunityToolkit.Mvvm.ComponentModel;
+
 using Microsoft.UI.Xaml.Media.Imaging;
 
 using Windows.Foundation;
@@ -17,25 +19,16 @@ using WorkspacesEditor.Helpers;
 
 namespace WorkspacesEditor.Models
 {
-    public partial class Project : INotifyPropertyChanged
+    public partial class Project : ObservableObject
     {
         [JsonIgnore]
         public string EditorWindowTitle { get; set; }
 
         public string Id { get; private set; }
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanBeSaved))]
         private string _name;
-
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                _name = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(Name)));
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(CanBeSaved)));
-            }
-        }
 
         public long CreationTime { get; }
 
@@ -116,33 +109,12 @@ namespace WorkspacesEditor.Models
 
         public bool CanBeSaved => Name.Length > 0 && Applications.Count > 0;
 
+        [ObservableProperty]
         private bool _isRevertEnabled;
 
-        public bool IsRevertEnabled
-        {
-            get => _isRevertEnabled;
-            set
-            {
-                if (_isRevertEnabled != value)
-                {
-                    _isRevertEnabled = value;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsRevertEnabled)));
-                }
-            }
-        }
-
+        [ObservableProperty]
+        [property: JsonIgnore]
         private bool _isPopupVisible;
-
-        [JsonIgnore]
-        public bool IsPopupVisible
-        {
-            get => _isPopupVisible;
-            set
-            {
-                _isPopupVisible = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsPopupVisible)));
-            }
-        }
 
         public List<Application> Applications { get; set; }
 
@@ -191,8 +163,16 @@ namespace WorkspacesEditor.Models
 
         public bool IsPositionChangedManually { get; set; }
 
+        [ObservableProperty]
+        [property: JsonIgnore]
         private BitmapImage _previewIcons;
+
+        [ObservableProperty]
+        [property: JsonIgnore]
         private BitmapImage _previewImage;
+
+        [ObservableProperty]
+        [property: JsonIgnore]
         private double _previewImageWidth;
 
         public Project()
@@ -277,41 +257,12 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public BitmapImage PreviewIcons
+        /// <summary>
+        /// Public override to maintain external caller compatibility.
+        /// </summary>
+        public new void OnPropertyChanged(PropertyChangedEventArgs e)
         {
-            get => _previewIcons;
-            set
-            {
-                _previewIcons = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(PreviewIcons)));
-            }
-        }
-
-        public BitmapImage PreviewImage
-        {
-            get => _previewImage;
-            set
-            {
-                _previewImage = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(PreviewImage)));
-            }
-        }
-
-        public double PreviewImageWidth
-        {
-            get => _previewImageWidth;
-            set
-            {
-                _previewImageWidth = value;
-                OnPropertyChanged(new PropertyChangedEventArgs(nameof(PreviewImageWidth)));
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
+            base.OnPropertyChanged(e);
         }
 
         public void InitializePreview()
