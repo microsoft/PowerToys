@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window"
     xmlns:converters="using:CommunityToolkit.WinUI.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PowerAccent.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -56,7 +57,7 @@
                     <TextBlock
                         VerticalAlignment="Center"
                         FontSize="18"
-                        Text="{x:Bind}"
+                        Text="{x:Bind Mode=OneTime}"
                         TextAlignment="Center" />
                 </DataTemplate>
             </ListView.ItemTemplate>
