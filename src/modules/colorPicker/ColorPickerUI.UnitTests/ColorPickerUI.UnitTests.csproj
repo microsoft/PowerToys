@@ -36,6 +36,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
     <ProjectReference Include="..\ColorPickerUI\ColorPickerUI.csproj" />
+    <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
   </ItemGroup>
 
   <!-- MIGRATION QUARANTINE (tests): re-enable in sub-project B when the color
