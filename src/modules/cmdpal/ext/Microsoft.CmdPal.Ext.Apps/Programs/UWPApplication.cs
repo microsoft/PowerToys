@@ -122,13 +122,16 @@ public class UWPApplication : IUWPApplication
             RequestedShortcut = KeyChords.OpenInConsole,
         });
 
-        commands.Add(
-            new CommandContextItem(
-                new UninstallApplicationConfirmation(this))
-            {
-                RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
-                IsCritical = true,
-            });
+        if (!Package.IsNonRemovable)
+        {
+            commands.Add(
+                new CommandContextItem(
+                    new UninstallApplicationConfirmation(this))
+                {
+                    RequestedShortcut = KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete),
+                    IsCritical = true,
+                });
+        }
 
         return commands;
     }
