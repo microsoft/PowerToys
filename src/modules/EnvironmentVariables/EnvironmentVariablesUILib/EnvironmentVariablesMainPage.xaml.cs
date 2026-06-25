@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 using CommunityToolkit.Mvvm.Input;
+using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
 using EnvironmentVariablesUILib.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -66,6 +67,8 @@ namespace EnvironmentVariablesUILib
 
             var clone = variable.Clone();
             EditVariableDialog.DataContext = clone;
+
+            UpdateEditVariableDialogPrimaryButtonState();
 
             await EditVariableDialog.ShowAsync();
         }
@@ -148,7 +151,8 @@ namespace EnvironmentVariablesUILib
                 if (AddVariableSwitchPresenter.Value as string == "NewVariable")
                 {
                     var variable = new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile);
-                    if (variable.Validate() && !profile.Variables.Any(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase)))
+                    if (variable.Validate() && !profile.Variables.Any(x =>
+                        EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)))
                     {
                         profile.Variables.Add(variable);
                     }
@@ -157,7 +161,8 @@ namespace EnvironmentVariablesUILib
                 {
                     foreach (Variable variable in ExistingVariablesListView.SelectedItems)
                     {
-                        if (!profile.Variables.Any(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase)))
+                        if (!profile.Variables.Any(x =>
+                            EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)))
                         {
                             var clone = variable.Clone(true);
                             profile.Variables.Add(clone);
@@ -243,7 +248,8 @@ namespace EnvironmentVariablesUILib
 
                 ConfirmAddVariableBtn.IsEnabled =
                     variable.Validate()
-                    && !profile.Variables.Any(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase));
+                    && !profile.Variables.Any(x =>
+                        EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
 
                 return;
             }
@@ -251,8 +257,7 @@ namespace EnvironmentVariablesUILib
             ConfirmAddVariableBtn.IsEnabled = ExistingVariablesListView.SelectedItems
                 .OfType<Variable>()
                 .Any(variable => !profile.Variables.Any(x =>
-                    x.Name.Equals(variable.Name, StringComparison.Ordinal)
-                    && x.Values.Equals(variable.Values, StringComparison.Ordinal)));
+                    EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)));
         }
 
         private void ReloadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -270,7 +275,8 @@ namespace EnvironmentVariablesUILib
             if (e.AddedItems.Count > 0)
             {
                 var list = sender as ListView;
-                var duplicates = list.SelectedItems.GroupBy(x => ((Variable)x).Name.ToLowerInvariant()).Where(g => g.Count() > 1).ToList();
+                var duplicates = EnvironmentVariableComparisonHelper.GetDuplicateNameGroups(
+                    list.SelectedItems.Cast<Variable>()).ToList();
 
                 foreach (var dup in duplicates)
                 {
@@ -285,7 +291,7 @@ namespace EnvironmentVariablesUILib
                 Variable removedVariable = e.RemovedItems[0] as Variable;
                 for (int i = 0; i < profile.Variables.Count; i++)
                 {
-                    if (profile.Variables[i].Name == removedVariable.Name && profile.Variables[i].Values == removedVariable.Values)
+                    if (EnvironmentVariableComparisonHelper.EntriesEqual(profile.Variables[i], removedVariable))
                     {
                         toRemove = i;
                         break;
@@ -330,9 +336,10 @@ namespace EnvironmentVariablesUILib
                 {
                     foreach (var profileItem in profile.Variables)
                     {
-                        if (profileItem.Name == item.Name && profileItem.Values == item.Values)
+                        if (EnvironmentVariableComparisonHelper.EntriesEqual(profileItem, item))
                         {
-                            if (ExistingVariablesListView.SelectedItems.Where(x => ((Variable)x).Name.Equals(profileItem.Name, StringComparison.OrdinalIgnoreCase)).Any())
+                            if (ExistingVariablesListView.SelectedItems.Any(x =>
+                                EnvironmentVariableComparisonHelper.NamesEqual(((Variable)x).Name, profileItem.Name)))
                             {
                                 continue;
                             }
@@ -377,6 +384,15 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariableDialogNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            var txtBox = sender as TextBox;
+            var variable = EditVariableDialog.DataContext as Variable;
+
+            // Ensure Name is current regardless of binding timing.
+            if (variable != null)
+            {
+                variable.Name = txtBox.Text;
+            }
+
             UpdateEditVariableDialogPrimaryButtonState();
         }
 
@@ -418,7 +434,8 @@ namespace EnvironmentVariablesUILib
             }
 
             var defaultSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
-            bool isDuplicate = defaultSet.Variables.Any(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase));
+            bool isDuplicate = defaultSet.Variables.Any(x =>
+                EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
             AddDefaultVariableDialog.IsPrimaryButtonEnabled = !isDuplicate && variable.Validate();
         }
 
@@ -453,7 +470,7 @@ namespace EnvironmentVariablesUILib
             bool hasDuplicate = variableSet != null
                 && variableSet.Variables.Any(x =>
                     !ReferenceEquals(x, param.Variable)
-                    && x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase));
+                    && EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name));
 
             EditVariableDialog.IsPrimaryButtonEnabled = !hasDuplicate && variable.Validate();
         }

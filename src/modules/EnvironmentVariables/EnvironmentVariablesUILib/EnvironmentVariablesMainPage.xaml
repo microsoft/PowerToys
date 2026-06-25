@@ -436,7 +436,6 @@
         <ContentDialog
             x:Name="EditVariableDialog"
             x:Uid="EditVariableDialog"
-            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>

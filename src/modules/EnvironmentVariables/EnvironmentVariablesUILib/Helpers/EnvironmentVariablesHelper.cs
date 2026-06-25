@@ -33,7 +33,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
             foreach (var variable in userSet.Variables)
             {
-                if (variable.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                if (EnvironmentVariableComparisonHelper.NamesEqual(variable.Name, variableName))
                 {
                     return new Variable(variable.Name, variable.Values, VariablesSetType.User);
                 }
@@ -44,7 +44,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
             foreach (var variable in systemSet.Variables)
             {
-                if (variable.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                if (EnvironmentVariableComparisonHelper.NamesEqual(variable.Name, variableName))
                 {
                     return new Variable(variable.Name, variable.Values, VariablesSetType.System);
                 }
@@ -171,7 +171,10 @@ namespace EnvironmentVariablesUILib.Helpers
         // When applying profile, this would take num_of_variables * 1s to propagate the changes. We do manually SendNotifyMessage with no timeout where needed.
         private static bool SetEnvironmentVariableFromRegistryWithoutNotify(string variable, string value, bool fromMachine, bool enforceAuthoringLimits = true)
         {
-            if (!TryValidateVariable(variable, value, out string errorMessage, enforceAuthoringLimits))
+            // Deletion (value == null) must always be allowed so variables with
+            // pre-existing invalid names (older builds, regedit, external tools)
+            // can still be removed. Only validate when writing a value.
+            if (value != null && !TryValidateVariable(variable, value, out string errorMessage, enforceAuthoringLimits))
             {
                 LoggerInstance.Logger.LogError(
                     $"Can't apply variable '{variable}': {errorMessage}");

@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -73,11 +72,24 @@ namespace EnvironmentVariablesUILib.ViewModels
                 DefaultVariables.Variables.Add(variable);
                 if (AppliedProfile != null)
                 {
-                    if (AppliedProfile.Variables.Where(
-                        x => (x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase) && x.Values.Equals(variable.Values, StringComparison.OrdinalIgnoreCase))
-                            || variable.Name.Equals(EnvironmentVariablesHelper.GetBackupVariableName(x, AppliedProfile.Name), StringComparison.OrdinalIgnoreCase)).Any())
+                    // This check only drives the "applied from profile" UI state for an existing
+                    // user variable. It intentionally uses a looser value comparison than
+                    // EntriesEqual: if the current value differs from the profile only by casing,
+                    // we still want to treat it as profile-applied for display purposes.
+                    bool isDirectlyApplied = AppliedProfile.Variables.Any(x =>
+                        EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)
+                        && x.Values.Equals(variable.Values, StringComparison.OrdinalIgnoreCase));
+
+                    // When a profile overrides an existing user variable, the original user entry
+                    // is renamed to "<name>_PowerToys_<profileName>" and kept as a backup. Detect
+                    // those renamed backup entries so they can also be marked as profile-applied.
+                    bool isDisplacedToBackup = AppliedProfile.Variables.Any(x =>
+                        EnvironmentVariableComparisonHelper.NamesEqual(
+                            variable.Name,
+                            EnvironmentVariablesHelper.GetBackupVariableName(x, AppliedProfile.Name)));
+
+                    if (isDirectlyApplied || isDisplacedToBackup)
                     {
-                        // If it's a user variable that's also in the profile or is a backup variable, mark it as applied from profile.
                         variable.IsAppliedFromProfile = true;
                     }
                 }
@@ -164,9 +176,15 @@ namespace EnvironmentVariablesUILib.ViewModels
                                  .ToList();
 
             // Handle PATH variable - add USER value to the end of the SYSTEM value
-            var profilePath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.Profile).FirstOrDefault();
-            var userPath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.User).FirstOrDefault();
-            var systemPath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.System).FirstOrDefault();
+            var profilePath = variables.FirstOrDefault(x =>
+                EnvironmentVariableComparisonHelper.NamesEqual(x.Name, "PATH") &&
+                x.ParentType == VariablesSetType.Profile);
+            var userPath = variables.FirstOrDefault(x =>
+                EnvironmentVariableComparisonHelper.NamesEqual(x.Name, "PATH") &&
+                x.ParentType == VariablesSetType.User);
+            var systemPath = variables.FirstOrDefault(x =>
+                EnvironmentVariableComparisonHelper.NamesEqual(x.Name, "PATH") &&
+                x.ParentType == VariablesSetType.System);
 
             if (systemPath != null)
             {
@@ -188,10 +206,11 @@ namespace EnvironmentVariablesUILib.ViewModels
                 variables.Remove(systemPath);
             }
 
-            variables = variables.GroupBy(x => x.Name).Select(y => y.First()).ToList();
-
-            // Find duplicates
-            var duplicates = variables.Where(x => !x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase)).GroupBy(x => x.Name.ToLower(CultureInfo.InvariantCulture)).Where(g => g.Count() > 1);
+            // NB: we treat names case-insensitively when authoring and flagging conflicts, but we
+            // do not de-deupe loaded entries here because they may still contain multiple variables
+            // whose names differ only by case, and the user still needs to review/delete each entry.
+            var duplicates = EnvironmentVariableComparisonHelper.GetDuplicateNameGroups(
+                variables.Where(x => !EnvironmentVariableComparisonHelper.NamesEqual(x.Name, "PATH")));
             foreach (var duplicate in duplicates)
             {
                 var userVar = duplicate.ElementAt(0);
