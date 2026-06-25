@@ -263,18 +263,15 @@ namespace EnvironmentVariablesUILib.Helpers
         // variable's ParentType. These helpers centralize that behavior for the apply/unapply/edit paths.
         internal static bool SetProfileVariableWithoutNotify(Variable variable)
         {
-            bool fromMachine = variable.ParentType switch
-            {
-                VariablesSetType.Profile => false,
-                VariablesSetType.User => false,
-                VariablesSetType.System => true,
-                _ => throw new NotImplementedException(),
-            };
-
-            return SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
+            return SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine: false);
         }
 
         internal static bool UnsetProfileVariableWithoutNotify(Variable variable)
+        {
+            return SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine: false);
+        }
+
+        internal static bool SetVariable(Variable variable)
         {
             bool fromMachine = variable.ParentType switch
             {
@@ -291,22 +288,6 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             return success;
-        }
-
-        internal static bool SetVariable(Variable variable)
-        {
-            bool fromMachine = variable.ParentType switch
-            {
-                VariablesSetType.Profile => false,
-                VariablesSetType.User => false,
-                VariablesSetType.System => true,
-                _ => throw new NotImplementedException(),
-            };
-
-            SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
-            NotifyEnvironmentChange();
-
-            return true;
         }
 
         internal static bool UnsetVariable(Variable variable)
