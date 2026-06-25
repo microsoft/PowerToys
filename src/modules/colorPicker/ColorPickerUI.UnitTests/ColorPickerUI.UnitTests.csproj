@@ -37,5 +37,12 @@
     <ProjectReference Include="..\ColorPickerUI\ColorPickerUI.csproj" />
   </ItemGroup>
 
+  <!-- MIGRATION QUARANTINE (tests): re-enable in sub-project B when the color
+       helpers they cover are migrated to WinUI 3. -->
+  <ItemGroup>
+    <Compile Remove="Helpers\ColorConverterTest.cs" />
+    <Compile Remove="Helpers\ColorFormatConversionTest.cs" />
+    <Compile Remove="Helpers\ColorRepresentationHelperTest.cs" />
+  </ItemGroup>
 
 </Project>
