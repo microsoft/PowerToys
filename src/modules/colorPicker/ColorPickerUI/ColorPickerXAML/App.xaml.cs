@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Threading;
 
 using ManagedCommon;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 
 namespace ColorPicker
@@ -87,12 +86,11 @@ namespace ColorPicker
             Window.Activate();
         }
 
-        // Replaced in Task 3 with the real service graph.
+        public static System.Threading.CancellationToken ExitToken =>
+            GetService<System.Threading.CancellationTokenSource>().Token;
+
         private static IServiceProvider ConfigureServices()
-        {
-            var services = new ServiceCollection();
-            return services.BuildServiceProvider();
-        }
+            => ColorPicker.Foundation.AppServices.Configure();
 
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
