@@ -40,6 +40,12 @@ public static class TestHelper
     // "PowerToys.ScreenRuler", but the PROCESS name winappcli's -a flag needs is "PowerToys.MeasureToolUI".
     public const string ScreenRulerProcess = "PowerToys.MeasureToolUI";
 
+    // The module's key in the global settings.json "enabled" section (note the space). Pass this to
+    // the UITestBase ctor's enableModules so the runner boots ONLY this module — much faster on a
+    // fresh profile (CI), where otherwise all ~30 modules start, and more isolated (no other module's
+    // hotkeys/overlays interfere).
+    public const string ModuleSettingsKey = "Measure Tool";
+
     /// <summary>Navigate to the Screen Ruler settings page, enable the toggle, and read the shortcut.</summary>
     public static Key[] InitializeTest(UITestBase testBase, string testName)
     {

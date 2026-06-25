@@ -196,16 +196,33 @@ instead of its HEX), `GetValue()` still reads the underlying Text/Value binding:
 string displayed = Find<TextBlock>(By.AccessibilityId("SomeLabel")).GetValue();   // the real text, not the Name
 ```
 
-## Recipe 9 — Seed a deterministic module baseline
+## Recipe 9 — Enable ONLY the module under test (deterministic, faster, isolated)
 
-Instead of assuming whatever `settings.json` currently holds, pass `enableModules` to the base ctor so
-exactly those modules are on before launch:
+Pass `enableModules` to the base ctor so exactly those modules are on before launch — and for a
+single-module suite, pass **just the one you're testing**. `ConfigureGlobalModuleSettings` enables the
+named modules and **disables every other one**, so the runner boots only what you need:
 
 ```csharp
-public MyTests() : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "ColorPicker" }) { }
+// All five ScreenRuler test classes do this; ColorPicker too. The key is the settings.json
+// "enabled" name (note spaces, e.g. "Measure Tool", "PowerToys Run") — see the enabled section of
+// %LocalAppData%\Microsoft\PowerToys\settings.json or ModuleConfigData.
+public MyTests() : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "Measure Tool" }) { }
 ```
 
-For a per-module setting (not just enable/disable), edit the module's own settings file before launch:
+Why it's worth doing on every per-module suite:
+
+- **Faster on a fresh profile (CI).** The runner's `start_enabled_powertoys` phase starts each enabled
+  module; on a clean CI profile that's ~15 default-on modules (~10s). Enabling one cuts that to ~1s
+  (~9s saved per cold start). *(The hotkey register/unregister loop runs over all modules regardless,
+  so it's unchanged — the win is the start phase.)* Locally it's timing-neutral.
+- **Isolated + deterministic.** No other module's global hotkey, overlay, or tray behavior can
+  interfere with your gesture, and the test starts from a known on/off baseline instead of whatever
+  `settings.json` happened to hold.
+
+It's compatible with tests that toggle the module themselves (e.g. ColorPicker toggles OFF→ON to check
+the process lifecycle) — the module just starts already-enabled.
+
+For a per-module *setting* (not just enable/disable), edit the module's own settings file before launch:
 
 ```csharp
 SettingsConfigHelper.UpdateModuleSettings(

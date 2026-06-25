@@ -16,10 +16,12 @@ namespace Microsoft.__MODULE__.UITests;
 public class __MODULE__EndToEndTests : UITestBase
 {
     // Drive overlay/utility modules through the Settings scope so the runner owns the activation
-    // hotkey and module toggles. Pass `enableModules:` for a deterministic on/off baseline, and/or a
-    // WindowSize if the test needs a fixed size.
+    // hotkey and module toggles. `enableModules` enables ONLY the listed modules (disabling the rest)
+    // before launch — pass just the one under test so the runner boots a single module (faster on a
+    // fresh CI profile + isolated from other modules' hotkeys/overlays). The name is the settings.json
+    // "enabled" key (note spaces, e.g. "Measure Tool", "PowerToys Run"). Add a WindowSize if needed.
     public __MODULE__EndToEndTests()
-        : base(PowerToysModule.PowerToysSettings)
+        : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "__MODULE_SETTINGS_KEY__" })
     {
     }
 

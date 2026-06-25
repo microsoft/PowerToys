@@ -11,7 +11,7 @@ namespace ScreenRuler.UITests.Next;
 public class TestBounds : UITestBase
 {
     public TestBounds()
-        : base(PowerToysModule.PowerToysSettings, WindowSize.Large)
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Large, enableModules: new[] { TestHelper.ModuleSettingsKey })
     {
     }
 

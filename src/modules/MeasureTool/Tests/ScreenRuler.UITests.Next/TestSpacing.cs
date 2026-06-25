@@ -11,7 +11,7 @@ namespace ScreenRuler.UITests.Next;
 public class TestSpacing : UITestBase
 {
     public TestSpacing()
-        : base(PowerToysModule.PowerToysSettings, WindowSize.Large)
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Large, enableModules: new[] { TestHelper.ModuleSettingsKey })
     {
     }
 

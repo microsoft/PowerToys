@@ -11,7 +11,7 @@ namespace ScreenRuler.UITests.Next;
 public class TestShortcutActivation : UITestBase
 {
     public TestShortcutActivation()
-        : base(PowerToysModule.PowerToysSettings, WindowSize.Large)
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Large, enableModules: new[] { TestHelper.ModuleSettingsKey })
     {
     }
 
