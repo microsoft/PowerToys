@@ -24,8 +24,6 @@ namespace WorkspacesEditor.Views
     {
         private MainViewModel _mainViewModel;
 
-        public Project ViewModel { get; private set; }
-
         public WorkspacesEditorPage()
         {
             this.InitializeComponent();
@@ -48,7 +46,6 @@ namespace WorkspacesEditor.Views
             if (e.Parameter is (MainViewModel vm, Project project))
             {
                 _mainViewModel = vm;
-                ViewModel = project;
                 this.DataContext = project;
             }
         }

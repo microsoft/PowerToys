@@ -46,16 +46,52 @@ namespace WorkspacesEditor.Views
 
         private void EditButtonClicked(object sender, RoutedEventArgs e)
         {
-            ViewModel.CloseAllPopups();
-            if (sender is FrameworkElement element && element.DataContext is Project selectedProject)
+            try
             {
-                ViewModel.EditProject(selectedProject);
+                ViewModel.CloseAllPopups();
+                Project selectedProject = GetProjectFromSender(sender);
+                ManagedCommon.Logger.LogInfo($"EditButtonClicked: project={selectedProject?.Name ?? "NULL"}");
+                if (selectedProject != null)
+                {
+                    ViewModel.EditProject(selectedProject);
+                }
             }
+            catch (System.Exception ex)
+            {
+                ManagedCommon.Logger.LogError($"EditButtonClicked crashed: {ex}");
+            }
+        }
+
+        private static Project GetProjectFromSender(object sender)
+        {
+            if (sender is FrameworkElement element)
+            {
+                // Direct DataContext (works for card button with DataContext="{x:Bind}")
+                if (element.DataContext is Project project)
+                {
+                    return project;
+                }
+
+                // For MenuFlyoutItems inside a flyout, walk up the visual tree
+                var parent = element;
+                while (parent != null)
+                {
+                    if (parent.DataContext is Project p)
+                    {
+                        return p;
+                    }
+
+                    parent = Microsoft.UI.Xaml.Media.VisualTreeHelper.GetParent(parent) as FrameworkElement;
+                }
+            }
+
+            return null;
         }
 
         private async void DeleteButtonClicked(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement element && element.DataContext is Project selectedProject)
+            Project selectedProject = GetProjectFromSender(sender);
+            if (selectedProject != null)
             {
                 selectedProject.IsPopupVisible = false;
 
@@ -79,9 +115,10 @@ namespace WorkspacesEditor.Views
 
         private void LaunchButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement element && element.DataContext is Project project)
+            Project selectedProject = GetProjectFromSender(sender);
+            if (selectedProject != null)
             {
-                _ = ViewModel.LaunchProjectAsync(project);
+                _ = ViewModel.LaunchProjectAsync(selectedProject);
             }
         }
     }

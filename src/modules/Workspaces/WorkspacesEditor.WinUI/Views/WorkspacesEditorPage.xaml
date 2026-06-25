@@ -18,7 +18,7 @@
                     VerticalAlignment="Center"
                     FontWeight="SemiBold"
                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"
-                    Text="{x:Bind MonitorName}" />
+                    Text="{Binding MonitorName}" />
             </Border>
         </DataTemplate>
 
@@ -27,10 +27,10 @@
                 <Expander
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch"
-                    AutomationProperties.AutomationId="{x:Bind AppName}"
-                    AutomationProperties.Name="{x:Bind AppName}"
-                    IsEnabled="{x:Bind IsIncluded, Mode=OneWay}"
-                    IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}">
+                    AutomationProperties.AutomationId="{Binding AppName}"
+                    AutomationProperties.Name="{Binding AppName}"
+                    IsEnabled="{Binding IsIncluded, Mode=OneWay}"
+                    IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
                     <Expander.Header>
                         <Grid HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
@@ -46,36 +46,36 @@
                                 Height="20"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Source="{x:Bind IconImage, Mode=OneWay}" />
+                                Source="{Binding IconImage, Mode=OneWay}" />
 
                             <StackPanel Grid.Column="3" VerticalAlignment="Center">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{x:Bind AppName}" />
+                                    <TextBlock Text="{Binding AppName}" />
                                     <TextBlock
                                         Margin="8,0,0,0"
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                        Text="{x:Bind RepeatIndexString, Mode=OneWay}" />
+                                        Text="{Binding RepeatIndexString, Mode=OneWay}" />
                                     <TextBlock
                                         Margin="8,0,0,0"
                                         VerticalAlignment="Center"
                                         FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Foreground="{ThemeResource SystemFillColorCautionBrush}"
                                         Text="&#xE7BA;"
-                                        Visibility="{x:Bind IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
+                                        Visibility="{Binding IsNotFound, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
                                 </StackPanel>
                                 <TextBlock
                                     FontSize="12"
                                     Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                    Text="{x:Bind AppMainParams, Mode=OneWay}"
-                                    Visibility="{x:Bind IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
+                                    Text="{Binding AppMainParams, Mode=OneWay}"
+                                    Visibility="{Binding IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
                             </StackPanel>
                             <Button
                                 Grid.Column="4"
                                 Width="Auto"
                                 Margin="12,4"
                                 Click="DeleteButtonClicked"
-                                Content="{x:Bind DeleteButtonContent, Mode=OneWay}"
+                                Content="{Binding DeleteButtonContent, Mode=OneWay}"
                                 IsEnabled="True" />
                         </Grid>
                     </Expander.Header>
@@ -87,8 +87,8 @@
                         </Grid.RowDefinitions>
                         <CheckBox
                             MinWidth="12"
-                            IsChecked="{x:Bind IsElevated, Mode=TwoWay}"
-                            IsEnabled="{x:Bind CanLaunchElevated, Mode=OneWay}">
+                            IsChecked="{Binding IsElevated, Mode=TwoWay}"
+                            IsEnabled="{Binding CanLaunchElevated, Mode=OneWay}">
                             <TextBlock x:Uid="LaunchAsAdminLabel" />
                         </CheckBox>
                         <StackPanel
@@ -105,7 +105,7 @@
                                 MinWidth="200"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
-                                Text="{x:Bind CommandLineArguments, Mode=TwoWay}"
+                                Text="{Binding CommandLineArguments, Mode=TwoWay}"
                                 TextChanged="CommandLineTextBox_TextChanged" />
                         </StackPanel>
 
@@ -120,7 +120,7 @@
                             <ComboBox
                                 x:Uid="WindowPositionComboBox"
                                 VerticalAlignment="Center"
-                                SelectedIndex="{x:Bind PositionComboboxIndex, Mode=TwoWay}">
+                                SelectedIndex="{Binding PositionComboboxIndex, Mode=TwoWay}">
                                 <ComboBoxItem x:Uid="CustomItem" />
                                 <ComboBoxItem x:Uid="MaximizedItem" />
                                 <ComboBoxItem x:Uid="MinimizedItem" />
@@ -129,29 +129,29 @@
                             <TextBox
                                 x:Uid="LeftTextBox"
                                 MinWidth="60"
-                                IsEnabled="{x:Bind EditPositionEnabled, Mode=OneWay}"
-                                Text="{x:Bind Position.X, Mode=OneWay}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
+                                Text="{Binding Position.X, Mode=OneWay}"
                                 TextChanged="LeftTextBox_TextChanged" />
                             <TextBlock VerticalAlignment="Center" x:Uid="TopLabel" />
                             <TextBox
                                 x:Uid="TopTextBox"
                                 MinWidth="60"
-                                IsEnabled="{x:Bind EditPositionEnabled, Mode=OneWay}"
-                                Text="{x:Bind Position.Y, Mode=OneWay}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
+                                Text="{Binding Position.Y, Mode=OneWay}"
                                 TextChanged="TopTextBox_TextChanged" />
                             <TextBlock VerticalAlignment="Center" x:Uid="WidthLabel" />
                             <TextBox
                                 x:Uid="WidthTextBox"
                                 MinWidth="60"
-                                IsEnabled="{x:Bind EditPositionEnabled, Mode=OneWay}"
-                                Text="{x:Bind Position.Width, Mode=OneWay}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
+                                Text="{Binding Position.Width, Mode=OneWay}"
                                 TextChanged="WidthTextBox_TextChanged" />
                             <TextBlock VerticalAlignment="Center" x:Uid="HeightLabel" />
                             <TextBox
                                 x:Uid="HeightTextBox"
                                 MinWidth="60"
-                                IsEnabled="{x:Bind EditPositionEnabled, Mode=OneWay}"
-                                Text="{x:Bind Position.Height, Mode=OneWay}"
+                                IsEnabled="{Binding EditPositionEnabled, Mode=OneWay}"
+                                Text="{Binding Position.Height, Mode=OneWay}"
                                 TextChanged="HeightTextBox_TextChanged" />
                         </StackPanel>
                     </Grid>
@@ -200,7 +200,7 @@
                     FontWeight="SemiBold"
                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                     AutomationProperties.HeadingLevel="Level1"
-                    Text="{x:Bind ViewModel.EditorWindowTitle, Mode=OneWay}" />
+                    Text="{Binding EditorWindowTitle, Mode=OneWay}" />
             </StackPanel>
             <StackPanel
                 Grid.Column="1"
@@ -210,7 +210,7 @@
                     x:Name="SaveButton"
                     x:Uid="SaveBtn"
                     Click="SaveButtonClicked"
-                    IsEnabled="{x:Bind ViewModel.CanBeSaved, Mode=OneWay}"
+                    IsEnabled="{Binding CanBeSaved, Mode=OneWay}"
                     Style="{ThemeResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock
@@ -253,16 +253,16 @@
                     HorizontalAlignment="Left"
                     GotFocus="EditNameTextBox_GotFocus"
                     KeyDown="EditNameTextBoxKeyDown"
-                    Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     TextChanged="EditNameTextBox_TextChanged" />
                 <CheckBox
                     VerticalAlignment="Bottom"
-                    IsChecked="{x:Bind ViewModel.IsShortcutNeeded, Mode=TwoWay}">
+                    IsChecked="{Binding IsShortcutNeeded, Mode=TwoWay}">
                     <TextBlock x:Name="CreateShortcutLabel" Text="Create desktop shortcut" />
                 </CheckBox>
                 <CheckBox
                     VerticalAlignment="Bottom"
-                    IsChecked="{x:Bind ViewModel.MoveExistingWindows, Mode=TwoWay}">
+                    IsChecked="{Binding MoveExistingWindows, Mode=TwoWay}">
                     <TextBlock x:Name="MoveIfExistLabel" Text="Move existing windows" />
                 </CheckBox>
             </StackPanel>
@@ -283,7 +283,7 @@
             <Button
                 x:Name="RevertButton"
                 Click="RevertButtonClicked"
-                IsEnabled="{x:Bind ViewModel.IsRevertEnabled, Mode=OneWay}">
+                IsEnabled="{Binding IsRevertEnabled, Mode=OneWay}">
                 <TextBlock x:Name="RevertText" Text="Revert" />
             </Button>
         </StackPanel>
@@ -298,8 +298,10 @@
                     x:Name="CapturedAppList"
                     x:Uid="CapturedAppListControl"
                     ItemTemplateSelector="{StaticResource AppListDataTemplateSelector}"
-                    ItemsSource="{x:Bind ViewModel.ApplicationsListed, Mode=OneWay}" />
+                    ItemsSource="{Binding ApplicationsListed, Mode=OneWay}" />
             </StackPanel>
         </ScrollViewer>
     </Grid>
 </Page>
+
+

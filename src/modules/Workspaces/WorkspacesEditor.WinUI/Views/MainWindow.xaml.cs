@@ -52,30 +52,41 @@ namespace WorkspacesEditor
             // Listen for hotkey toggle event
             StartHotkeyEventLoop(hwnd);
 
-            // Wire ViewModel navigation
+            // Wire ViewModel navigation via messenger
+            // Use StrongReferenceMessenger for MainWindow since Window is not rooted
+            // in the visual tree and WeakReferenceMessenger may GC the registration.
             var vm = App.MainViewModel;
-            WeakReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) =>
+            StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) =>
             {
-                ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
+                try
+                {
+                    Logger.LogInfo($"Navigating to editor for: {m.Project?.Name}");
+                    ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
+                    Logger.LogInfo("Navigation completed");
+                }
+                catch (System.Exception ex)
+                {
+                    Logger.LogError($"Navigation crashed: {ex}");
+                }
             });
-            WeakReferenceMessenger.Default.Register<GoBackMessage>(this, (r, m) =>
+            StrongReferenceMessenger.Default.Register<GoBackMessage>(this, (r, m) =>
             {
                 if (ContentFrame.CanGoBack)
                 {
                     ContentFrame.GoBack();
                 }
             });
-            WeakReferenceMessenger.Default.Register<MinimizeWindowMessage>(this, (r, m) =>
+            StrongReferenceMessenger.Default.Register<MinimizeWindowMessage>(this, (r, m) =>
             {
                 ShowWindow(WindowNative.GetWindowHandle(this), 6); // SW_MINIMIZE
             });
-            WeakReferenceMessenger.Default.Register<RestoreWindowMessage>(this, (r, m) =>
+            StrongReferenceMessenger.Default.Register<RestoreWindowMessage>(this, (r, m) =>
             {
                 ShowWindow(WindowNative.GetWindowHandle(this), 9); // SW_RESTORE
             });
 
             // Listen for snapshot window requests from ViewModel
-            WeakReferenceMessenger.Default.Register<ShowSnapshotWindowMessage>(this, (r, m) =>
+            StrongReferenceMessenger.Default.Register<ShowSnapshotWindowMessage>(this, (r, m) =>
             {
                 var snapshotWindow = new Views.SnapshotWindow();
                 snapshotWindow.Activate();
@@ -145,7 +156,7 @@ namespace WorkspacesEditor
                         {
                             if (ApplicationIsInFocus())
                             {
-                                WeakReferenceMessenger.Default.Send(new CloseApplicationMessage());
+                                StrongReferenceMessenger.Default.Send(new CloseApplicationMessage());
                             }
                             else
                             {

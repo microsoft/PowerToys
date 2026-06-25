@@ -135,8 +135,8 @@ namespace WorkspacesEditor.ViewModels
             _lastUpdatedTimer.Elapsed += LastUpdatedTimerElapsed;
             _lastUpdatedTimer.Start();
 
-            WeakReferenceMessenger.Default.Register<SnapshotCapturedMessage>(this, (r, m) => ((MainViewModel)r).OnSnapshotCaptured());
-            WeakReferenceMessenger.Default.Register<SnapshotCancelledMessage>(this, (r, m) => ((MainViewModel)r).CancelSnapshot());
+            StrongReferenceMessenger.Default.Register<SnapshotCapturedMessage>(this, (r, m) => ((MainViewModel)r).OnSnapshotCaptured());
+            StrongReferenceMessenger.Default.Register<SnapshotCancelledMessage>(this, (r, m) => ((MainViewModel)r).CancelSnapshot());
         }
 
         private void OnSnapshotCaptured()
@@ -216,7 +216,7 @@ namespace WorkspacesEditor.ViewModels
             _lastUpdatedTimer.Stop();
 
             // Navigate to editor page, passing the project as parameter
-            WeakReferenceMessenger.Default.Send(new NavigateToEditorMessage(selectedProject));
+            StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(selectedProject));
         }
 
         public void AddNewProject(Project project)
@@ -252,7 +252,7 @@ namespace WorkspacesEditor.ViewModels
 
         public void SwitchToMainView()
         {
-            WeakReferenceMessenger.Default.Send(new GoBackMessage());
+            StrongReferenceMessenger.Default.Send(new GoBackMessage());
             SearchTerm = string.Empty;
             OnPropertyChanged(nameof(SearchTerm));
             _lastUpdatedTimer.Start();
@@ -288,7 +288,7 @@ namespace WorkspacesEditor.ViewModels
             }
 
             Logger.LogInfo($"Launched the Workspace {project.Name}. Exiting.");
-            WeakReferenceMessenger.Default.Send(new CloseApplicationMessage());
+            StrongReferenceMessenger.Default.Send(new CloseApplicationMessage());
         }
 
         public void EnterSnapshotMode(bool isExistingProjectLaunched)
@@ -296,22 +296,22 @@ namespace WorkspacesEditor.ViewModels
             _isExistingProjectLaunched = isExistingProjectLaunched;
 
             // Minimize the main window
-            WeakReferenceMessenger.Default.Send(new MinimizeWindowMessage());
+            StrongReferenceMessenger.Default.Send(new MinimizeWindowMessage());
 
             // Request the View layer to show the snapshot window
-            WeakReferenceMessenger.Default.Send(new ShowSnapshotWindowMessage());
+            StrongReferenceMessenger.Default.Send(new ShowSnapshotWindowMessage());
         }
 
         internal void CancelSnapshot()
         {
-            WeakReferenceMessenger.Default.Send(new RestoreWindowMessage());
+            StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
         }
 
         [RelayCommand]
         internal async Task SnapWorkspaceAsync()
         {
             // Restore window immediately so user sees feedback
-            WeakReferenceMessenger.Default.Send(new RestoreWindowMessage());
+            StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
             IsLoading = true;
 
             await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
@@ -327,7 +327,7 @@ namespace WorkspacesEditor.ViewModels
                     project.EditorWindowTitle = GetString("EditWorkspace");
 
                     // Navigate to editor page with the updated project
-                    WeakReferenceMessenger.Default.Send(new NavigateToEditorMessage(project));
+                    StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(project));
                 }
                 else
                 {
@@ -349,7 +349,7 @@ namespace WorkspacesEditor.ViewModels
             if (_projectBeforeLaunch != null)
             {
                 _projectBeforeLaunch.InitializePreview();
-                WeakReferenceMessenger.Default.Send(new NavigateToEditorMessage(_projectBeforeLaunch));
+                StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(_projectBeforeLaunch));
             }
         }
 
@@ -552,7 +552,7 @@ namespace WorkspacesEditor.ViewModels
             {
                 _lastUpdatedTimer?.Stop();
                 _lastUpdatedTimer?.Dispose();
-                WeakReferenceMessenger.Default.UnregisterAll(this);
+                StrongReferenceMessenger.Default.UnregisterAll(this);
                 _isDisposed = true;
             }
 

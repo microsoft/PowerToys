@@ -113,6 +113,7 @@
                 <ItemsRepeater.ItemTemplate>
                     <DataTemplate x:DataType="models:Project">
                         <Button
+                            DataContext="{x:Bind}"
                             Margin="0,4,0,0"
                             Padding="1"
                             HorizontalAlignment="Stretch"

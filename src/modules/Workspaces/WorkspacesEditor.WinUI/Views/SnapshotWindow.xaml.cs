@@ -85,7 +85,7 @@ namespace WorkspacesEditor.Views
         {
             _captured = true;
             this.Close();
-            WeakReferenceMessenger.Default.Send(new SnapshotCapturedMessage());
+            StrongReferenceMessenger.Default.Send(new SnapshotCapturedMessage());
         }
 
         private void CancelButtonClicked(object sender, RoutedEventArgs e)
@@ -98,7 +98,7 @@ namespace WorkspacesEditor.Views
             _pulseTimer.Stop();
             if (!_captured)
             {
-                WeakReferenceMessenger.Default.Send(new SnapshotCancelledMessage());
+                StrongReferenceMessenger.Default.Send(new SnapshotCancelledMessage());
             }
         }
 

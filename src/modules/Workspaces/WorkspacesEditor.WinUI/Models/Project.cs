@@ -107,7 +107,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public bool CanBeSaved => Name.Length > 0 && Applications.Count > 0;
+        public bool CanBeSaved => !string.IsNullOrEmpty(Name) && Applications.Count > 0;
 
         [ObservableProperty]
         private bool _isRevertEnabled;

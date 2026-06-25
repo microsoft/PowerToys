@@ -61,7 +61,7 @@ namespace WorkspacesEditor
             _mainWindow = new MainWindow();
             _mainWindow.Activate();
 
-            WeakReferenceMessenger.Default.Register<CloseApplicationMessage>(this, (r, m) =>
+            StrongReferenceMessenger.Default.Register<CloseApplicationMessage>(this, (r, m) =>
             {
                 Logger.LogInfo("CloseApplicationMessage received. Shutting down.");
                 ((App)r).Exit();
