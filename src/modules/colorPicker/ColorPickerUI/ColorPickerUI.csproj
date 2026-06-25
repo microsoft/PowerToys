@@ -128,6 +128,7 @@
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ClipboardHelper.cs" />
+    <Compile Include="Helpers\NativeEventWaiter.cs" />
     <Compile Include="Helpers\SessionEventHelper.cs" />
     <Compile Include="Telemetry\ColorPickerSession.cs" />
     <Compile Include="Telemetry\ColorPickerSettings.cs" />
