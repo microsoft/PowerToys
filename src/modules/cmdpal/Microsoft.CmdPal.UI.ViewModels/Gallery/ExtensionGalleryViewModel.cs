@@ -344,12 +344,6 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         bool refreshInstalledExtensions = false,
         bool refreshWinGetCatalogs = false)
     {
-        List<ExtensionGalleryItemViewModel> snapshot = [];
-        lock (_entriesLock)
-        {
-            snapshot = [.. _allEntries];
-        }
-
         try
         {
             var installedExtensions = refreshInstalledExtensions
@@ -367,6 +361,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
                     .Where(pfn => !string.IsNullOrEmpty(pfn)),
                 StringComparer.OrdinalIgnoreCase);
 
+            List<ExtensionGalleryItemViewModel> snapshot = [];
             lock (_entriesLock)
             {
                 snapshot = [.. _allEntries];
@@ -418,6 +413,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
 
             try
             {
+                List<ExtensionGalleryItemViewModel> snapshot = [];
                 lock (_entriesLock)
                 {
                     snapshot = [.. _allEntries];
@@ -474,6 +470,7 @@ public sealed partial class ExtensionGalleryViewModel : ObservableObject, IDispo
         {
             try
             {
+                List<ExtensionGalleryItemViewModel> snapshot = [];
                 lock (_entriesLock)
                 {
                     snapshot = [.. _allEntries];
