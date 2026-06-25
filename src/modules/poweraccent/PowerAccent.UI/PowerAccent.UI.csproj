@@ -56,10 +56,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
-    <PackageReference Include="Microsoft.Windows.CsWin32">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
