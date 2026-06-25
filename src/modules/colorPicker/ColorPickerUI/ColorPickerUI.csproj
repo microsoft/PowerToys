@@ -124,6 +124,7 @@
     <Compile Include="Helpers\ResourceLoaderInstance.cs" />
     <!-- D6 native interop foundation -->
     <Compile Include="Helpers\NativeMethodsHelper.cs" />
+    <Compile Include="Helpers\MonitorResolutionHelper.cs" />
   </ItemGroup>
 
 </Project>
