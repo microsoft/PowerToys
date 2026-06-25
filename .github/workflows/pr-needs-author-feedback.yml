@@ -1,17 +1,16 @@
 name: PR Needs-Author-Feedback lifecycle
 
 # Handles the lifecycle of the "Needs-Author-Feedback" label on pull requests:
-# 1. New non-draft PRs automatically get "Needs-Triage" label.
-# 2. When "Needs-Author-Feedback" is added to a PR:
+# 1. When "Needs-Author-Feedback" is added to a PR:
 #    - After 7 days of author inactivity (measured from label application or last
 #      author activity, whichever is later) → convert PR to draft + comment.
 #    - After 14 days → close PR + comment.
-# 3. When the author pushes commits, comments, or submits a review →
-#    remove "Needs-Author-Feedback", add back "Needs-Triage".
+# 2. When the author pushes commits, comments, or submits a review →
+#    remove "Needs-Author-Feedback".
 
 on:
   pull_request_target:
-    types: [opened, synchronize, ready_for_review]
+    types: [synchronize]
   issue_comment:
     types: [created]
   pull_request_review:
@@ -42,40 +41,7 @@ concurrency:
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 1: Add "Needs-Triage" to newly opened non-draft PRs
-  # ─────────────────────────────────────────────────────────────────────────────
-  label-new-pr:
-    if: >-
-      github.event_name == 'pull_request_target' &&
-      (github.event.action == 'opened' || github.event.action == 'ready_for_review') &&
-      !github.event.pull_request.draft
-    runs-on: ubuntu-latest
-    steps:
-      - name: Add Needs-Triage label
-        uses: actions/github-script@v9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const labels = (await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            })).data.map(l => l.name);
-
-            if (!labels.includes('Needs-Triage')) {
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                labels: ['Needs-Triage'],
-              });
-              console.log(`Added Needs-Triage to PR #${prNumber}`);
-            }
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Job 2: When author pushes commits → remove "Needs-Author-Feedback", add
-  #         "Needs-Triage"
+  # Job 1: When author pushes commits → remove "Needs-Author-Feedback"
   # ─────────────────────────────────────────────────────────────────────────────
   author-responded-push:
     if: >-
@@ -84,7 +50,7 @@ jobs:
       github.event.sender.id == github.event.pull_request.user.id
     runs-on: ubuntu-latest
     steps:
-      - name: Remove Needs-Author-Feedback and add Needs-Triage
+      - name: Remove Needs-Author-Feedback
         uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -97,16 +63,6 @@ jobs:
             })).data.map(l => l.name);
 
             if (labels.includes('Needs-Author-Feedback')) {
-              if (!labels.includes('Needs-Triage')) {
-                await github.rest.issues.addLabels({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                  labels: ['Needs-Triage'],
-                });
-                console.log(`Added Needs-Triage to PR #${prNumber}`);
-              }
-
               await github.rest.issues.removeLabel({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -116,9 +72,8 @@ jobs:
               console.log(`Removed Needs-Author-Feedback from PR #${prNumber}`);
             }
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 3: When author comments (issue comment, review submission,
-  #         or inline review comment) → remove "Needs-Author-Feedback", add
-  #         "Needs-Triage"
+  # Job 2: When author comments (issue comment, review submission,
+  #         or inline review comment) → remove "Needs-Author-Feedback"
   # ─────────────────────────────────────────────────────────────────────────────
   author-responded-comment:
     if: >-
@@ -134,7 +89,7 @@ jobs:
        github.event.sender.id == github.event.pull_request.user.id)
     runs-on: ubuntu-latest
     steps:
-      - name: Remove Needs-Author-Feedback and add Needs-Triage
+      - name: Remove Needs-Author-Feedback
         uses: actions/github-script@v9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -147,16 +102,6 @@ jobs:
             })).data.map(l => l.name);
 
             if (labels.includes('Needs-Author-Feedback')) {
-              if (!labels.includes('Needs-Triage')) {
-                await github.rest.issues.addLabels({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: prNumber,
-                  labels: ['Needs-Triage'],
-                });
-                console.log(`Added Needs-Triage to PR #${prNumber}`);
-              }
-
               await github.rest.issues.removeLabel({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -167,7 +112,7 @@ jobs:
             }
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 4: Scheduled check — convert to draft after 7 days, close after 14 days
+  # Job 3: Scheduled check — convert to draft after 7 days, close after 14 days
   # ─────────────────────────────────────────────────────────────────────────────
   check-stale-prs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
