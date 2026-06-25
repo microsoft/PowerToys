@@ -21,7 +21,7 @@ namespace WorkspacesEditor.Models
         Minimized = 2,
     }
 
-    public class Application : BaseApplication, IDisposable
+    public partial class Application : BaseApplication, IDisposable
     {
         private bool _isInitialized;
 

@@ -7,7 +7,7 @@ using Windows.Foundation;
 
 namespace WorkspacesEditor.Models
 {
-    public class MonitorSetup : Monitor, INotifyPropertyChanged
+    public partial class MonitorSetup : Monitor, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

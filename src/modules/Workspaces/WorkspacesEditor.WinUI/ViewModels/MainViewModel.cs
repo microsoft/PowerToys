@@ -25,7 +25,7 @@ using WorkspacesEditor.Views;
 
 namespace WorkspacesEditor.ViewModels
 {
-    public class MainViewModel : INotifyPropertyChanged, IDisposable
+    public partial class MainViewModel : INotifyPropertyChanged, IDisposable
     {
         private WorkspacesEditorIO _workspacesEditorIO;
         private Project _editedProject;

@@ -17,7 +17,7 @@ using WorkspacesEditor.Helpers;
 
 namespace WorkspacesEditor.Models
 {
-    public class Project : INotifyPropertyChanged
+    public partial class Project : INotifyPropertyChanged
     {
         [JsonIgnore]
         public string EditorWindowTitle { get; set; }
