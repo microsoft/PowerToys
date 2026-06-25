@@ -20,7 +20,7 @@ public partial class Selector : Window, IDisposable, INotifyPropertyChanged
     private const SET_WINDOW_POS_FLAGS WindowPosFlags =
         SET_WINDOW_POS_FLAGS.SWP_NOZORDER | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE;
 
-    private readonly Core.PowerAccent _powerAccent = new();
+    private readonly Core.PowerAccent _powerAccent = new(action => System.Windows.Application.Current.Dispatcher.Invoke(action));
 
     private Visibility _characterNameVisibility = Visibility.Visible;
 

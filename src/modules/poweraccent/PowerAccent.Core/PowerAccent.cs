@@ -42,8 +42,12 @@ public partial class PowerAccent : IDisposable
 
     private readonly CharactersUsageInfo _usageInfo;
 
-    public PowerAccent()
+    private readonly Action<Action> _runOnUiThread;
+
+    public PowerAccent(Action<Action> runOnUiThread)
     {
+        _runOnUiThread = runOnUiThread ?? throw new ArgumentNullException(nameof(runOnUiThread));
+
         Logger.InitializeLogger("\\QuickAccent\\Logs");
 
         LoadUnicodeInfoCache();
@@ -65,7 +69,7 @@ public partial class PowerAccent : IDisposable
     {
         _keyboardListener.SetShowToolbarEvent(new PowerToys.PowerAccentKeyboardService.ShowToolbar((LetterKey letterKey) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            _runOnUiThread(() =>
             {
                 ShowToolbar(letterKey);
             });
@@ -73,7 +77,7 @@ public partial class PowerAccent : IDisposable
 
         _keyboardListener.SetHideToolbarEvent(new PowerToys.PowerAccentKeyboardService.HideToolbar((InputType inputType) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            _runOnUiThread(() =>
             {
                 SendInputAndHideToolbar(inputType);
             });
@@ -81,7 +85,7 @@ public partial class PowerAccent : IDisposable
 
         _keyboardListener.SetNextCharEvent(new PowerToys.PowerAccentKeyboardService.NextChar((TriggerKey triggerKey, bool shiftPressed) =>
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            _runOnUiThread(() =>
             {
                 ProcessNextChar(triggerKey, shiftPressed);
             });

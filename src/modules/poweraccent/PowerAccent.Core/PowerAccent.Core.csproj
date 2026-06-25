@@ -8,7 +8,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <PropertyGroup>
