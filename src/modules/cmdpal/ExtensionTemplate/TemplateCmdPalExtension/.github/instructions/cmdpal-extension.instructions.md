@@ -307,6 +307,63 @@ new IconInfo("https://example.com/icon.svg")
 new IconInfo("%systemroot%\\system32\\shell32.dll,3")
 ```
 
+## List Hover Actions
+
+Extensions can configure quick-action icons shown when hovering list rows.
+
+### Page-level defaults (`IListPage2`)
+
+Implement on your `ListPage` subclass:
+
+```csharp
+public partial class MyPage : ListPage
+{
+    public MyPage()
+    {
+        HoverActionsMode = HoverActionsMode.Explicit;
+        MaxHoverActions = -1; // uncapped in Explicit mode
+        HoverActionsVisibility = HoverActionsVisibility.HoverOrSelected;
+    }
+}
+```
+
+Modes: `Default` (host fallback), `None`, `FirstN`, `Explicit`, `AllMoreCommands`.
+
+### Per-command flags (`ICommandContextItem2`)
+
+Set on context menu items in `MoreCommands`:
+
+```csharp
+new CommandContextItem(editCommand)
+{
+    ShowInHoverActions = true,
+    HoverOrder = 10,
+}
+```
+
+### Home row overrides (`ICommandItem2`)
+
+For top-level commands shown on CmdPal home:
+
+```csharp
+new CommandItem(new MyPage())
+{
+    Title = "My Extension",
+    HomeHoverActionsMode = HoverActionsMode.None,
+}
+```
+
+### Provider defaults (`ICommandProvider5`)
+
+Override on your `CommandProvider`:
+
+```csharp
+public override HoverActionsMode DefaultHoverActionsMode => HoverActionsMode.FirstN;
+public override int DefaultMaxHoverActions => 3;
+```
+
+When unset, extensions keep today's behavior: first three visible context commands on list pages; on home, host pin/dock commands are excluded from hover.
+
 ## Dynamic Updates
 
 - Call `RaiseItemsChanged()` on any page to trigger a UI refresh of its items
