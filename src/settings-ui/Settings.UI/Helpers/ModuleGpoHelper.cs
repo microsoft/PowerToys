@@ -59,6 +59,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.AdvancedPaste => typeof(AdvancedPastePage),
                 ModuleType.AlwaysOnTop => typeof(AlwaysOnTopPage),
                 ModuleType.Awake => typeof(AwakePage),
+                ModuleType.PowerScripts => typeof(PowerScriptsPage),
                 ModuleType.CmdPal => typeof(CmdPalPage),
                 ModuleType.ColorPicker => typeof(ColorPickerPage),
                 ModuleType.CropAndLock => typeof(CropAndLockPage),

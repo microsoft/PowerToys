@@ -199,6 +199,12 @@
                             AutomationProperties.AutomationId="AwakeNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/Awake.png}" />
                         <NavigationViewItem
+                            x:Name="PowerScriptsNavigationItem"
+                            Content="PowerScripts"
+                            helpers:NavHelper.NavigateTo="views:PowerScriptsPage"
+                            AutomationProperties.AutomationId="PowerScriptsNavItem"
+                            Icon="{ui:FontIcon Glyph=&#xE756;}" />
+                        <NavigationViewItem
                             x:Name="CmdPalNavigationItem"
                             x:Uid="Shell_CmdPal"
                             helpers:NavHelper.NavigateTo="views:CmdPalPage"

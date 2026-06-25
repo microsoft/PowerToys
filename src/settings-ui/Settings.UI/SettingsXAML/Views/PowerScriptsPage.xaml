@@ -1,0 +1,64 @@
+﻿<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.PowerScriptsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewModels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewModels:PowerScriptsViewModel}"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <controls:SettingsPageControl
+        x:Name="PowerScriptsSettingsPage"
+        ModuleDescription="Write a small script once and surface it everywhere — the Explorer right-click menu and Keyboard Manager. This is an experimental prototype."
+        ModuleTitle="PowerScripts"
+        IsTabStop="False">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <tkcontrols:SettingsCard
+                    Name="PowerScriptsEnableSettingsCard"
+                    Description="Enable PowerScripts"
+                    Header="PowerScripts"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE756;}">
+                    <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                </tkcontrols:SettingsCard>
+
+                <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <InfoBar
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.HasScripts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                        Message="No PowerScripts found. Add a script folder (with a manifest.json) under %LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts."
+                        Severity="Informational" />
+
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.Scripts, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="viewModels:PowerScriptListItem">
+                                <tkcontrols:SettingsCard
+                                    Margin="0,2,0,2"
+                                    Description="{x:Bind Description}"
+                                    Header="{x:Bind Name}">
+                                    <tkcontrols:SettingsCard.HeaderIcon>
+                                        <FontIcon Glyph="{x:Bind KindGlyph}" />
+                                    </tkcontrols:SettingsCard.HeaderIcon>
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="{x:Bind Kind}" />
+                                </tkcontrols:SettingsCard>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+        <controls:SettingsPageControl.PrimaryLinks>
+            <controls:PageLink Link="https://aka.ms/PowerToysOverview" Text="Documentation" />
+        </controls:SettingsPageControl.PrimaryLinks>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

@@ -218,6 +218,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool powerScripts; // defaulting to off
+
+        [JsonPropertyName("PowerScripts")]
+        public bool PowerScripts
+        {
+            get => powerScripts;
+            set
+            {
+                if (powerScripts != value)
+                {
+                    LogTelemetryEvent(value);
+                    powerScripts = value;
+                }
+            }
+        }
+
         private bool mouseHighlighter = true;
 
         [JsonPropertyName("MouseHighlighter")]
