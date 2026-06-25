@@ -56,7 +56,7 @@ internal static class Program
         Task.Run(
             () =>
             {
-                EventWaitHandle eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
+                using EventWaitHandle eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.PowerAccentExitEvent());
                 if (eventHandle.WaitOne())
                 {
                     Terminate();
@@ -89,6 +89,7 @@ internal static class Program
         app?.DispatcherQueueForApp?.TryEnqueue(() =>
         {
             _tokenSource.Cancel();
+            app.Dispose();   // disposes ETWTrace (idempotent via _disposed guard)
             app.Exit();
         });
     }

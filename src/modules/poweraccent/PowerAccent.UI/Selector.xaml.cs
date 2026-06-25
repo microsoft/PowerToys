@@ -27,5 +27,6 @@ public sealed partial class Selector : TransparentWindow, IDisposable
     public void Dispose()
     {
         _powerAccent?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
