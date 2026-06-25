@@ -16,8 +16,6 @@ public sealed class CliGetResult
     // Response discriminator (see CliResponseHeader): false on success DTOs, true only on CliErrorResult.
     public bool IsError { get; init; }
 
-    public bool Ok { get; init; } = true;
-
     public string Version { get; init; } = CliSchema.Version;
 
     public string Command { get; init; } = "get";

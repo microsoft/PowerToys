@@ -13,18 +13,4 @@ public sealed class CliListMonitor
     public string Name { get; init; } = string.Empty;
 
     public string Method { get; init; } = string.Empty;
-
-    public bool SupportsBrightness { get; init; }
-
-    public bool SupportsContrast { get; init; }
-
-    public bool SupportsVolume { get; init; }
-
-    public bool SupportsColorTemperature { get; init; }
-
-    public bool SupportsInputSource { get; init; }
-
-    public bool SupportsPowerState { get; init; }
-
-    public bool SupportsOrientation { get; init; }
 }

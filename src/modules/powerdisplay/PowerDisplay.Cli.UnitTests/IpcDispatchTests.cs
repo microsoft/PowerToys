@@ -51,7 +51,7 @@ public class IpcDispatchTests
 
         public void WriteProfileListResult(CliProfileListResult r) => this.stdoutLines.Add("profiles");
 
-        public void WriteApplyProfileResult(CliApplyProfileResult r) => this.stdoutLines.Add("apply-profile:" + r.Ok);
+        public void WriteApplyProfileResult(CliApplyProfileResult r) => this.stdoutLines.Add("apply-profile:" + r.ExitCode);
 
         public void WriteError(CliErrorResult r) => this.stderrLines.Add("error:" + r.Error.Code + ":" + r.Error.ExitCode);
 
@@ -142,7 +142,7 @@ public class IpcDispatchTests
     public async Task Success_list_renders_result_exits_0()
     {
         var output = new CaptureOutput();
-        var responseJson = SerializeSuccess(new CliListResult { Ok = true, Monitors = [] }, ContractsJsonContext.Default.CliListResult);
+        var responseJson = SerializeSuccess(new CliListResult { Monitors = [] }, ContractsJsonContext.Default.CliListResult);
         var dispatcher = MakeDispatcher(responseJson, output);
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
@@ -155,7 +155,7 @@ public class IpcDispatchTests
     public async Task Success_get_renders_result_exits_0()
     {
         var output = new CaptureOutput();
-        var responseJson = SerializeSuccess(new CliGetResult { Ok = true, Monitors = [] }, ContractsJsonContext.Default.CliGetResult);
+        var responseJson = SerializeSuccess(new CliGetResult { Monitors = [] }, ContractsJsonContext.Default.CliGetResult);
         var dispatcher = MakeDispatcher(responseJson, output);
         var exit = await dispatcher.SendGetAsync(CliRequestBuilder.BuildGet(null, null, null), CancellationToken.None);
 
@@ -168,7 +168,7 @@ public class IpcDispatchTests
     {
         var output = new CaptureOutput();
         var responseJson = SerializeSuccess(
-            new CliSetResult { Ok = true, Setting = "brightness", Monitor = new CliMonitorRef { Number = 1, Id = "x", Name = "N" }, AfterRaw = 80, AfterDisplay = "80%" },
+            new CliSetResult { Setting = "brightness", Monitor = new CliMonitorRef { Number = 1, Id = "x", Name = "N" }, AfterDisplay = "80%" },
             ContractsJsonContext.Default.CliSetResult);
         var dispatcher = MakeDispatcher(responseJson, output);
         var inputs = new SetCommandInputs { Brightness = 80 };
@@ -186,7 +186,6 @@ public class IpcDispatchTests
         var output = new CaptureOutput();
         var errorResponse = new CliErrorResult
         {
-            Ok = false,
             Command = "list",
             Error = new CliError
             {
@@ -209,7 +208,6 @@ public class IpcDispatchTests
         var output = new CaptureOutput();
         var errorResponse = new CliErrorResult
         {
-            Ok = false,
             Command = "set",
             Error = new CliError
             {
@@ -228,7 +226,7 @@ public class IpcDispatchTests
     // ── apply-profile exit-code carried through IPC ───────────────────────────
 
     /// <summary>
-    /// Verifies that when the app returns a canned CliApplyProfileResult with Ok=false and
+    /// Verifies that when the app returns a canned CliApplyProfileResult with
     /// ExitCode=2 (OutOfRange), the CLI dispatcher returns exit 2, NOT the old hardcoded 5
     /// (HardwareFailure). This is the regression test for the apply-profile exit-code bug.
     /// </summary>
@@ -239,7 +237,6 @@ public class IpcDispatchTests
         var responseJson = SerializeSuccess(
             new CliApplyProfileResult
             {
-                Ok = false,
                 ExitCode = CliExitCodes.OutOfRange,
                 Profile = "Night",
                 Monitors = new List<CliProfileMonitorOutcome>
@@ -270,7 +267,6 @@ public class IpcDispatchTests
         var responseJson = SerializeSuccess(
             new CliApplyProfileResult
             {
-                Ok = false,
                 ExitCode = CliExitCodes.HardwareFailure,
                 Profile = "Gaming",
                 Monitors = new List<CliProfileMonitorOutcome>(),
@@ -289,7 +285,6 @@ public class IpcDispatchTests
         var responseJson = SerializeSuccess(
             new CliApplyProfileResult
             {
-                Ok = true,
                 ExitCode = CliExitCodes.Ok,
                 Profile = "Work",
                 Monitors = new List<CliProfileMonitorOutcome>(),
@@ -333,7 +328,7 @@ public class IpcDispatchTests
         // A partial-failure apply-profile result is a SUCCESS envelope (isError=false) carrying a
         // non-zero ExitCode. The dispatcher must route it through the success renderer and return
         // ExitCode — never the error path — purely on the explicit discriminator.
-        var result = new CliApplyProfileResult { Ok = false, ExitCode = CliExitCodes.OutOfRange, Profile = "Night", Monitors = [] };
+        var result = new CliApplyProfileResult { ExitCode = CliExitCodes.OutOfRange, Profile = "Night", Monitors = [] };
         Assert.IsFalse(result.IsError, "apply-profile result must not be flagged as an error envelope");
 
         var output = new CaptureOutput();

@@ -157,7 +157,6 @@ public static class ProfileDtoProjector
 
         return new CliApplyProfileResult
         {
-            Ok = exitCode == CliExitCodes.Ok,
             ExitCode = exitCode,
             Profile = profileName ?? string.Empty,
             Monitors = monitorOutcomes,

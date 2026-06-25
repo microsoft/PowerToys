@@ -55,13 +55,6 @@ public class CliRequestHandlerTests
 
         public string FailureMessage { get; set; } = "hardware error";
 
-        public void SetMaxCompatibilityMode(bool enabled)
-        {
-        }
-
-        public Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<Monitor>>(Array.Empty<Monitor>());
-
         public Task<MonitorOperationResult> SetBrightnessAsync(string id, int v, CancellationToken ct = default)
             => Respond();
 
@@ -123,7 +116,6 @@ public class CliRequestHandlerTests
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliListResult);
         Assert.IsNotNull(result, "should deserialize to CliListResult");
-        Assert.IsTrue(result!.Ok);
         Assert.AreEqual("list", result.Command);
         Assert.AreEqual(1, result.Monitors.Count);
     }
@@ -142,7 +134,6 @@ public class CliRequestHandlerTests
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliGetResult);
         Assert.IsNotNull(result, "should deserialize to CliGetResult");
-        Assert.IsTrue(result!.Ok);
         Assert.AreEqual("get", result.Command);
         Assert.AreEqual(2, result.Monitors.Count);
     }
@@ -160,7 +151,6 @@ public class CliRequestHandlerTests
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
-        Assert.IsFalse(error!.Ok);
         Assert.AreEqual(CliErrorCodes.MonitorNotFound, error.Error.Code);
         Assert.AreEqual(CliExitCodes.MonitorNotFound, error.Error.ExitCode);
     }
@@ -185,7 +175,6 @@ public class CliRequestHandlerTests
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
         Assert.IsNotNull(result, "should deserialize to CliSetResult");
-        Assert.IsTrue(result!.Ok);
         Assert.AreEqual("set", result.Command);
     }
 
@@ -202,7 +191,6 @@ public class CliRequestHandlerTests
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
-        Assert.IsFalse(error!.Ok);
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
     }
 
@@ -220,7 +208,6 @@ public class CliRequestHandlerTests
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
-        Assert.IsFalse(error!.Ok);
         Assert.AreEqual(CliErrorCodes.SelectorMissing, error.Error.Code);
     }
 
@@ -238,7 +225,6 @@ public class CliRequestHandlerTests
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliCapabilitiesResult);
         Assert.IsNotNull(result, "should deserialize to CliCapabilitiesResult");
-        Assert.IsTrue(result!.Ok);
         Assert.AreEqual("capabilities", result.Command);
     }
 
@@ -259,7 +245,6 @@ public class CliRequestHandlerTests
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliProfileListResult);
         Assert.IsNotNull(result, "should deserialize to CliProfileListResult");
-        Assert.IsTrue(result!.Ok);
         Assert.AreEqual("profiles", result.Command);
         Assert.AreEqual(1, result.Profiles.Count);
         Assert.AreEqual("Night", result.Profiles[0].Name);
@@ -286,7 +271,6 @@ public class CliRequestHandlerTests
 
         var result = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
         Assert.IsNotNull(result, "should deserialize to CliApplyProfileResult");
-        Assert.IsTrue(result!.Ok);
         Assert.AreEqual("apply-profile", result.Command);
         Assert.AreEqual("Night", result.Profile);
     }
@@ -308,7 +292,6 @@ public class CliRequestHandlerTests
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
-        Assert.IsFalse(error!.Ok);
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
         Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
         Assert.AreEqual("apply-profile", error.Command);
@@ -328,7 +311,6 @@ public class CliRequestHandlerTests
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
-        Assert.IsFalse(error!.Ok);
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
     }
 
@@ -342,7 +324,6 @@ public class CliRequestHandlerTests
 
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
-        Assert.IsFalse(error!.Ok);
         Assert.AreEqual(CliErrorCodes.InternalError, error.Error.Code);
         Assert.AreEqual(CliExitCodes.InternalError, error.Error.ExitCode);
         Assert.AreEqual("unknown", error.Command);

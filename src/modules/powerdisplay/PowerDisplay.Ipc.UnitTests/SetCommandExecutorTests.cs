@@ -108,7 +108,6 @@ public class SetCommandExecutorTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.OutOfRange, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.OutOfRange, error.Error.ExitCode);
-        Assert.AreEqual("brightness", error.Error.Setting);
         Assert.IsNotNull(error.Error.ExpectedRange);
         StringAssert.Contains(error.Error.ExpectedRange, "100");
     }
@@ -136,7 +135,6 @@ public class SetCommandExecutorTests
         Assert.IsNull(result);
         Assert.AreEqual(CliErrorCodes.OutOfRange, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.OutOfRange, error.Error.ExitCode);
-        Assert.AreEqual("contrast", error.Error.Setting);
     }
 
     // ─── InvalidDiscreteValue (exit code 3) ───────────────────────────────────
@@ -161,7 +159,6 @@ public class SetCommandExecutorTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, error.Error.ExitCode);
-        Assert.AreEqual("color-temperature", error.Error.Setting);
     }
 
     [TestMethod]
@@ -183,7 +180,6 @@ public class SetCommandExecutorTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, error.Error.ExitCode);
-        Assert.AreEqual("orientation", error.Error.Setting);
     }
 
     [TestMethod]
@@ -232,7 +228,6 @@ public class SetCommandExecutorTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
-        Assert.AreEqual("brightness", error.Error.Setting);
         Assert.IsNotNull(error.Error.Hint);
     }
 
@@ -256,7 +251,6 @@ public class SetCommandExecutorTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
-        Assert.AreEqual("orientation", error.Error.Setting);
     }
 
     [TestMethod]
@@ -285,8 +279,6 @@ public class SetCommandExecutorTests
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.HardwareFailure, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.HardwareFailure, error.Error.ExitCode);
-        Assert.AreEqual("brightness", error.Error.Setting);
-        Assert.AreEqual("50", error.Error.Requested);
     }
 
     [TestMethod]
@@ -316,9 +308,7 @@ public class SetCommandExecutorTests
         Assert.IsNull(error);
         Assert.IsNotNull(result);
         Assert.AreEqual("brightness", result!.Setting);
-        Assert.AreEqual(30, result.BeforeRaw);
         Assert.AreEqual("30%", result.BeforeDisplay);
-        Assert.AreEqual(70, result.AfterRaw);
         Assert.AreEqual("70%", result.AfterDisplay);
         Assert.AreEqual(1, result.Monitor.Number);
     }
@@ -332,8 +322,7 @@ public class SetCommandExecutorTests
         var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
 
         Assert.IsNull(error);
-        Assert.AreEqual(0, result!.AfterRaw);
-        Assert.AreEqual("0%", result.AfterDisplay);
+        Assert.AreEqual("0%", result!.AfterDisplay);
     }
 
     [TestMethod]
@@ -345,8 +334,7 @@ public class SetCommandExecutorTests
         var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
 
         Assert.IsNull(error);
-        Assert.AreEqual(100, result!.AfterRaw);
-        Assert.AreEqual("100%", result.AfterDisplay);
+        Assert.AreEqual("100%", result!.AfterDisplay);
     }
 
     [TestMethod]
@@ -360,14 +348,12 @@ public class SetCommandExecutorTests
         Assert.IsNull(error);
         Assert.IsNotNull(result);
         Assert.AreEqual("contrast", result!.Setting);
-        Assert.AreEqual(55, result.BeforeRaw);
         Assert.AreEqual("55%", result.BeforeDisplay);
-        Assert.AreEqual(80, result.AfterRaw);
         Assert.AreEqual("80%", result.AfterDisplay);
     }
 
     [TestMethod]
-    public async Task Set_Brightness_BeforeUnknown_OmitsBeforeRawAndDisplay()
+    public async Task Set_Brightness_BeforeUnknown_OmitsBeforeDisplay()
     {
         var monitor = new Monitor
         {
@@ -385,9 +371,7 @@ public class SetCommandExecutorTests
 
         Assert.IsNull(error);
         Assert.IsNotNull(result);
-        Assert.IsNull(result!.BeforeRaw);
-        Assert.IsNull(result.BeforeDisplay);
-        Assert.AreEqual(60, result.AfterRaw);
+        Assert.IsNull(result!.BeforeDisplay);
     }
 
     [TestMethod]
@@ -410,9 +394,7 @@ public class SetCommandExecutorTests
         Assert.IsNull(error);
         Assert.IsNotNull(result);
         Assert.AreEqual("orientation", result!.Setting);
-        Assert.AreEqual(0, result.BeforeRaw);    // 0 degrees
         Assert.AreEqual("0°", result.BeforeDisplay);
-        Assert.AreEqual(90, result.AfterRaw);    // 90 degrees
         Assert.AreEqual("90°", result.AfterDisplay);
     }
 
@@ -496,13 +478,6 @@ public class SetCommandExecutorTests
     /// <summary>Always returns Success for all write operations.</summary>
     private sealed class NoOpManager : IMonitorManager
     {
-        public void SetMaxCompatibilityMode(bool enabled)
-        {
-        }
-
-        public Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<Monitor>>(new List<Monitor>());
-
         public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
             => Task.FromResult(MonitorOperationResult.Success());
 
@@ -534,13 +509,6 @@ public class SetCommandExecutorTests
         {
             _errorMessage = errorMessage;
         }
-
-        public void SetMaxCompatibilityMode(bool enabled)
-        {
-        }
-
-        public Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<Monitor>>(new List<Monitor>());
 
         public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
             => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));

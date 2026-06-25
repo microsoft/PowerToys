@@ -13,13 +13,6 @@ public sealed class CliApplyProfileResult
     public bool IsError { get; init; }
 
     /// <summary>
-    /// True when every requested setting that the hardware supports applied successfully. Unsupported
-    /// settings are skipped without failing; a hardware-failure or out-of-range value sets this false
-    /// (and the process exit code reflects it).
-    /// </summary>
-    public bool Ok { get; init; } = true;
-
-    /// <summary>
     /// The process exit code that reflects the worst outcome across all applied settings.
     /// Precedence: HardwareFailure (5) &gt; OutOfRange (2) &gt; Ok (0).
     /// Defaults to <see cref="CliExitCodes.Ok"/> (0) when all settings applied successfully.

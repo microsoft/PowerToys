@@ -80,21 +80,6 @@ public class MonitorDtoProjectorTests
 
     // ─── List entry projection ────────────────────────────────────────────────
     [TestMethod]
-    public void BuildListResult_SupportsOrientationTrueWhenGdiNamePresent()
-    {
-        var monitors = new List<Monitor>
-        {
-            MakeMon(1, "A", gdi: @"\\.\DISPLAY1"),
-            MakeMon(2, "B", gdi: string.Empty),
-        };
-
-        var result = MonitorDtoProjector.BuildListResult(monitors, EmptyHidden);
-
-        Assert.IsTrue(result.Monitors[0].SupportsOrientation);
-        Assert.IsFalse(result.Monitors[1].SupportsOrientation);
-    }
-
-    [TestMethod]
     public void BuildListResult_EntryCopiesMonitorFields()
     {
         var monitor = new Monitor
@@ -114,10 +99,6 @@ public class MonitorDtoProjectorTests
         Assert.AreEqual("MON-3", entry.Id);
         Assert.AreEqual("Dell U2722D", entry.Name);
         Assert.AreEqual("DDC/CI", entry.Method);
-        Assert.IsTrue(entry.SupportsBrightness);
-        Assert.IsTrue(entry.SupportsContrast);
-        Assert.IsFalse(entry.SupportsVolume);
-        Assert.IsTrue(entry.SupportsOrientation);
     }
 
     // ─── BuildGetResult — no selector path ───────────────────────────────────
@@ -233,16 +214,14 @@ public class MonitorDtoProjectorTests
     }
 
     [TestMethod]
-    public void BuildGetResult_BothSelectors_IdWins_WarningIsSet()
+    public void BuildGetResult_BothSelectors_IdWins()
     {
         var monitors = new List<Monitor> { MakeMon(1, "A"), MakeMon(2, "B") };
 
-        var (result, error, warning) = MonitorDtoProjector.BuildGetResultWithWarning(monitors, EmptyHidden, number: 1, id: "B", settingFilter: null);
+        var (result, error) = MonitorDtoProjector.BuildGetResult(monitors, EmptyHidden, number: 1, id: "B", settingFilter: null);
 
         Assert.IsNull(error);
         Assert.AreEqual("B", result!.Monitors[0].Monitor.Id);
-        Assert.IsNotNull(warning);
-        StringAssert.Contains(warning, "1"); // number that was ignored
     }
 
     // ─── BuildGetResult — setting projection ─────────────────────────────────
@@ -268,12 +247,11 @@ public class MonitorDtoProjectorTests
         var setting = result!.Monitors[0].Settings[0];
         Assert.AreEqual("brightness", setting.Setting);
         Assert.IsTrue(setting.Supported);
-        Assert.AreEqual(75, setting.Raw);
         Assert.AreEqual("75%", setting.Display);
     }
 
     [TestMethod]
-    public void BuildGetResult_SupportedButUnread_OmitsRawAndDisplay()
+    public void BuildGetResult_SupportedButUnread_OmitsDisplay()
     {
         var monitor = new Monitor
         {
@@ -289,7 +267,6 @@ public class MonitorDtoProjectorTests
 
         var setting = result!.Monitors[0].Settings[0];
         Assert.IsTrue(setting.Supported);
-        Assert.IsNull(setting.Raw);
         Assert.IsNull(setting.Display);
     }
 
@@ -310,12 +287,11 @@ public class MonitorDtoProjectorTests
 
         var setting = result!.Monitors[0].Settings[0];
         Assert.IsFalse(setting.Supported);
-        Assert.IsNull(setting.Raw);
         Assert.IsNull(setting.Display);
     }
 
     [TestMethod]
-    public void BuildGetResult_OrientationRaw_IsDegreesNotIndex()
+    public void BuildGetResult_OrientationDisplay_IsDegreesNotIndex()
     {
         var monitor = MakeMon(1, "A");
         monitor.Orientation = 1; // index 1 = 90 degrees
@@ -325,7 +301,6 @@ public class MonitorDtoProjectorTests
 
         var setting = result!.Monitors[0].Settings[0];
         Assert.AreEqual("orientation", setting.Setting);
-        Assert.AreEqual(90, setting.Raw);
         Assert.AreEqual("90°", setting.Display);
     }
 
@@ -430,10 +405,9 @@ public class MonitorDtoProjectorTests
     {
         var monitors = new List<Monitor> { MakeMon(1, "A") };
 
-        var (monitor, warning, error) = MonitorDtoProjector.ResolveMonitor(monitors, null, null);
+        var (monitor, error) = MonitorDtoProjector.ResolveMonitor(monitors, null, null);
 
         Assert.IsNull(monitor);
-        Assert.IsNull(warning);
         Assert.AreEqual(CliErrorCodes.SelectorMissing, error!.Code);
     }
 
@@ -442,10 +416,9 @@ public class MonitorDtoProjectorTests
     {
         var monitors = new List<Monitor> { MakeMon(1, "A"), MakeMon(2, "B") };
 
-        var (monitor, warning, error) = MonitorDtoProjector.ResolveMonitor(monitors, 2, null);
+        var (monitor, error) = MonitorDtoProjector.ResolveMonitor(monitors, 2, null);
 
         Assert.IsNull(error);
-        Assert.IsNull(warning);
         Assert.AreEqual("B", monitor!.Id);
     }
 
@@ -454,34 +427,31 @@ public class MonitorDtoProjectorTests
     {
         var monitors = new List<Monitor> { MakeMon(1, "A"), MakeMon(2, "B") };
 
-        var (monitor, warning, error) = MonitorDtoProjector.ResolveMonitor(monitors, null, "B");
+        var (monitor, error) = MonitorDtoProjector.ResolveMonitor(monitors, null, "B");
 
         Assert.IsNull(error);
-        Assert.IsNull(warning);
         Assert.AreEqual("B", monitor!.Id);
     }
 
     [TestMethod]
-    public void ResolveMonitor_BothSelectors_IdWins_WarningSet()
+    public void ResolveMonitor_BothSelectors_IdWins()
     {
         var monitors = new List<Monitor> { MakeMon(1, "A"), MakeMon(2, "B") };
 
-        var (monitor, warning, error) = MonitorDtoProjector.ResolveMonitor(monitors, 1, "B");
+        var (monitor, error) = MonitorDtoProjector.ResolveMonitor(monitors, 1, "B");
 
         Assert.IsNull(error);
         Assert.AreEqual("B", monitor!.Id);
-        Assert.IsNotNull(warning);
     }
 
     [TestMethod]
-    public void ResolveMonitor_BothSelectors_IdNotFound_WarningAndError()
+    public void ResolveMonitor_BothSelectors_IdNotFound_ReturnsError()
     {
         var monitors = new List<Monitor> { MakeMon(1, "A") };
 
-        var (monitor, warning, error) = MonitorDtoProjector.ResolveMonitor(monitors, 1, "Z");
+        var (monitor, error) = MonitorDtoProjector.ResolveMonitor(monitors, 1, "Z");
 
         Assert.IsNull(monitor);
-        Assert.IsNotNull(warning); // "-n ignored" warning still present on not-found
         Assert.AreEqual(CliErrorCodes.MonitorNotFound, error!.Code);
     }
 

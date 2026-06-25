@@ -57,13 +57,13 @@ public static class SetCommandExecutor
         var visible = MonitorDtoProjector.ExcludeHidden(snapshot, hidden);
 
         // --- 2. Resolve the target monitor ---
-        var (monitor, _, resolveError) = MonitorDtoProjector.ResolveMonitor(visible, req.MonitorNumber, req.MonitorId);
+        var (monitor, resolveError) = MonitorDtoProjector.ResolveMonitor(visible, req.MonitorNumber, req.MonitorId);
         if (resolveError is not null)
         {
             return (null, new CliErrorResult { Command = CliCommandNames.Set, Error = resolveError });
         }
 
-        var monitorRef = ToRef(monitor!);
+        var monitorRef = MonitorDtoProjector.ToRef(monitor!);
         var setting = req.Setting?.Trim().ToLowerInvariant() ?? string.Empty;
 
         // --- 3. Dispatch to the per-setting handler (mirrors SetCommand.RunAsync if-chain) ---
@@ -72,11 +72,11 @@ public static class SetCommandExecutor
             case "brightness":
                 return await ApplyContinuousAsync(
                     manager,
-                    monitor!,
+                    monitor!.Id,
                     monitorRef,
                     "brightness",
                     req.RawValue,
-                    monitor!.SupportsBrightness,
+                    monitor.SupportsBrightness,
                     monitor.CurrentBrightness,
                     monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness),
                     "monitor exposed neither a WMI brightness interface nor DDC/CI brightness (0x10)",
@@ -86,11 +86,11 @@ public static class SetCommandExecutor
             case "contrast":
                 return await ApplyContinuousAsync(
                     manager,
-                    monitor!,
+                    monitor!.Id,
                     monitorRef,
                     "contrast",
                     req.RawValue,
-                    monitor!.SupportsContrast,
+                    monitor.SupportsContrast,
                     monitor.CurrentContrast,
                     monitor.ReadValues.HasFlag(MonitorReadFlags.Contrast),
                     "monitor's VCP capabilities did not advertise contrast (0x12)",
@@ -100,11 +100,11 @@ public static class SetCommandExecutor
             case "volume":
                 return await ApplyContinuousAsync(
                     manager,
-                    monitor!,
+                    monitor!.Id,
                     monitorRef,
                     "volume",
                     req.RawValue,
-                    monitor!.SupportsVolume,
+                    monitor.SupportsVolume,
                     monitor.CurrentVolume,
                     monitor.ReadValues.HasFlag(MonitorReadFlags.Volume),
                     "monitor's VCP capabilities did not advertise audio speaker volume (0x62)",
@@ -114,55 +114,52 @@ public static class SetCommandExecutor
             case "color-temperature":
                 return await ApplyDiscreteAsync(
                     manager,
-                    monitor!,
+                    monitor!.Id,
                     monitorRef,
                     "color-temperature",
                     0x14,
                     req.RawValue,
-                    monitor!.SupportsColorTemperature,
+                    monitor.SupportsColorTemperature,
                     monitor.CurrentColorTemperature,
                     monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature),
                     monitor.VcpCapabilitiesInfo?.GetSupportedValues(0x14),
                     "monitor's VCP capabilities did not advertise color preset (0x14)",
                     (mm, id, v, c) => mm.SetColorTemperatureAsync(id, v, c),
                     confirmIfDisplayBlanking: false,
-                    confirmationSetting: null,
                     ct);
 
             case "input-source":
                 return await ApplyDiscreteAsync(
                     manager,
-                    monitor!,
+                    monitor!.Id,
                     monitorRef,
                     "input-source",
                     0x60,
                     req.RawValue,
-                    monitor!.SupportsInputSource,
+                    monitor.SupportsInputSource,
                     monitor.CurrentInputSource,
                     monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource),
                     monitor.SupportedInputSources,
                     "monitor's VCP capabilities did not advertise input source (0x60)",
                     (mm, id, v, c) => mm.SetInputSourceAsync(id, v, c),
                     confirmIfDisplayBlanking: false,
-                    confirmationSetting: null,
                     ct);
 
             case "power-state":
                 return await ApplyDiscreteAsync(
                     manager,
-                    monitor!,
+                    monitor!.Id,
                     monitorRef,
                     "power-state",
                     0xD6,
                     req.RawValue,
-                    monitor!.SupportsPowerState,
+                    monitor.SupportsPowerState,
                     monitor.CurrentPowerState,
                     monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState),
                     monitor.SupportedPowerStates,
                     "monitor's VCP capabilities did not advertise power mode (0xD6)",
                     (mm, id, v, c) => mm.SetPowerStateAsync(id, v, c),
                     confirmIfDisplayBlanking: !req.ConfirmPowerOff,
-                    confirmationSetting: "power-state",
                     ct);
 
             case "orientation":
@@ -174,10 +171,8 @@ public static class SetCommandExecutor
                     Command = CliCommandNames.Set,
                     Error = new CliError
                     {
-                        Code = CliErrorCodes.ArgumentError,
-                        Setting = req.Setting,
-
                         // TODO(M4): app should set Code-only; CLI maps Code->localized message
+                        Code = CliErrorCodes.ArgumentError,
                         Message = string.Format(CultureInfo.InvariantCulture, "unknown setting '{0}'", req.Setting),
                         Hint = string.Format(
                             CultureInfo.InvariantCulture,
@@ -191,7 +186,7 @@ public static class SetCommandExecutor
     // ─── Continuous settings (brightness / contrast / volume) ─────────────────
     private static async Task<(CliSetResult? Result, CliErrorResult? Error)> ApplyContinuousAsync(
         IMonitorManager manager,
-        Monitor monitor,
+        string monitorId,
         CliMonitorRef monitorRef,
         string settingName,
         string rawValue,
@@ -219,20 +214,18 @@ public static class SetCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.ArgumentError,
-                    Setting = settingName,
-                    Requested = rawValue,
                     Message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid integer for {1}", rawValue, settingName),
                 },
             });
         }
 
-        var rangeError = ValidateContinuous(settingName, requested, rawValue);
+        var rangeError = ValidateContinuous(settingName, requested);
         if (rangeError is not null)
         {
             return (null, new CliErrorResult { Command = CliCommandNames.Set, Monitor = monitorRef, Error = rangeError });
         }
 
-        var op = await apply(manager, monitor.Id, requested, ct);
+        var op = await apply(manager, monitorId, requested, ct);
 
         // A blocking write that overran --timeout (or Ctrl+C) cancels the token but cannot be
         // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
@@ -240,15 +233,13 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, MakeHardwareFailureError(monitorRef, settingName, requested.ToString(CultureInfo.InvariantCulture), op.ErrorMessage, "hardware write failed"));
+            return (null, MakeHardwareFailureError(monitorRef, op.ErrorMessage, "hardware write failed"));
         }
 
         return (new CliSetResult
         {
             Monitor = monitorRef,
             Setting = settingName,
-            BeforeRaw = beforeKnown ? beforeValue : null,
-            AfterRaw = requested,
             BeforeDisplay = beforeKnown ? beforeValue + "%" : null,
             AfterDisplay = requested + "%",
         }, null);
@@ -257,7 +248,7 @@ public static class SetCommandExecutor
     // ─── Discrete settings (color-temperature / input-source / power-state) ───
     private static async Task<(CliSetResult? Result, CliErrorResult? Error)> ApplyDiscreteAsync(
         IMonitorManager manager,
-        Monitor monitor,
+        string monitorId,
         CliMonitorRef monitorRef,
         string settingName,
         byte vcpCode,
@@ -269,7 +260,6 @@ public static class SetCommandExecutor
         string unsupportedReason,
         Func<IMonitorManager, string, int, CancellationToken, Task<MonitorOperationResult>> apply,
         bool confirmIfDisplayBlanking,
-        string? confirmationSetting,
         CancellationToken ct)
     {
         if (!supportsCheck)
@@ -296,8 +286,6 @@ public static class SetCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.ArgumentError,
-                    Setting = confirmationSetting,
-                    Requested = rawValue,
                     Message = string.Format(
                         CultureInfo.InvariantCulture,
                         "monitor {0} ({1}): add --confirm-power-off to apply a display-blanking power state",
@@ -308,7 +296,7 @@ public static class SetCommandExecutor
             });
         }
 
-        var op = await apply(manager, monitor.Id, resolved.Value, ct);
+        var op = await apply(manager, monitorId, resolved.Value, ct);
 
         // A blocking write that overran --timeout (or Ctrl+C) cancels the token but cannot be
         // interrupted mid-call; surface it as TIMEOUT rather than reporting a false success.
@@ -316,15 +304,13 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, MakeHardwareFailureError(monitorRef, settingName, rawValue, op.ErrorMessage, "hardware write failed"));
+            return (null, MakeHardwareFailureError(monitorRef, op.ErrorMessage, "hardware write failed"));
         }
 
         return (new CliSetResult
         {
             Monitor = monitorRef,
             Setting = settingName,
-            BeforeRaw = beforeKnown ? beforeValue : null,
-            AfterRaw = resolved.Value,
             BeforeDisplay = beforeKnown ? MonitorDtoProjector.FormatDiscrete(vcpCode, beforeValue) : null,
             AfterDisplay = MonitorDtoProjector.FormatDiscrete(vcpCode, resolved.Value),
         }, null);
@@ -348,7 +334,6 @@ public static class SetCommandExecutor
                 Error = new CliError
                 {
                     Code = CliErrorCodes.UnsupportedFeature,
-                    Setting = "orientation",
                     Message = string.Format(
                         CultureInfo.InvariantCulture,
                         "monitor {0} ({1}): rotation is not supported (no GDI device name)",
@@ -374,15 +359,13 @@ public static class SetCommandExecutor
 
         if (!op.IsSuccess)
         {
-            return (null, MakeHardwareFailureError(monitorRef, "orientation", rawValue, op.ErrorMessage, "ChangeDisplaySettingsEx failed"));
+            return (null, MakeHardwareFailureError(monitorRef, op.ErrorMessage, "ChangeDisplaySettingsEx failed"));
         }
 
         return (new CliSetResult
         {
             Monitor = monitorRef,
             Setting = "orientation",
-            BeforeRaw = beforeKnown ? MonitorDtoProjector.OrientationDegreesValue(beforeIndex) : null,
-            AfterRaw = MonitorDtoProjector.OrientationDegreesValue(index.Value),
             BeforeDisplay = beforeKnown ? MonitorDtoProjector.OrientationDegrees(beforeIndex) : null,
             AfterDisplay = MonitorDtoProjector.OrientationDegrees(index.Value),
         }, null);
@@ -394,7 +377,7 @@ public static class SetCommandExecutor
     /// Validates that a continuous value (brightness/contrast/volume) is in [0, 100].
     /// Mirrors <c>ContinuousValueValidator.Validate</c>.
     /// </summary>
-    private static CliError? ValidateContinuous(string settingName, int value, string rawString)
+    private static CliError? ValidateContinuous(string settingName, int value)
     {
         const int Min = 0;
         const int Max = 100;
@@ -405,8 +388,6 @@ public static class SetCommandExecutor
             return new CliError
             {
                 Code = CliErrorCodes.OutOfRange,
-                Setting = settingName,
-                Requested = rawString,
                 ExpectedRange = $"[{Min}, {Max}]",
                 Message = string.Format(
                     CultureInfo.InvariantCulture,
@@ -553,7 +534,6 @@ public static class SetCommandExecutor
             Error = new CliError
             {
                 Code = CliErrorCodes.UnsupportedFeature,
-                Setting = settingName,
                 Message = string.Format(
                     CultureInfo.InvariantCulture,
                     "monitor {0} ({1}): {2} is not supported",
@@ -567,8 +547,6 @@ public static class SetCommandExecutor
 
     private static CliErrorResult MakeHardwareFailureError(
         CliMonitorRef monitorRef,
-        string settingName,
-        string requested,
         string? errorMessage,
         string fallback)
     {
@@ -580,8 +558,6 @@ public static class SetCommandExecutor
             Error = new CliError
             {
                 Code = CliErrorCodes.HardwareFailure,
-                Setting = settingName,
-                Requested = requested,
                 Message = errorMessage ?? fallback,
             },
         };
@@ -597,8 +573,6 @@ public static class SetCommandExecutor
         return new CliError
         {
             Code = CliErrorCodes.InvalidDiscreteValue,
-            Setting = settingName,
-            Requested = raw,
             Supported = BuildSupportedList(vcpCode, supportedValues),
             Message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not a valid value for {1}", raw, settingName),
             Hint = "use a hex literal (0x??) or a friendly name from the supported list",
@@ -615,8 +589,6 @@ public static class SetCommandExecutor
         return new CliError
         {
             Code = CliErrorCodes.InvalidDiscreteValue,
-            Setting = settingName,
-            Requested = raw,
             Supported = BuildSupportedList(vcpCode, supportedValues),
             Message = string.Format(CultureInfo.InvariantCulture, "'{0}' is not in the monitor's supported set for {1}", raw, settingName),
             Hint = "use a hex literal (0x??) or a friendly name from the supported list",
@@ -629,8 +601,6 @@ public static class SetCommandExecutor
         return new CliError
         {
             Code = CliErrorCodes.InvalidDiscreteValue,
-            Setting = "orientation",
-            Requested = raw,
             Message = string.Format(
                 CultureInfo.InvariantCulture,
                 "'{0}' is not a valid orientation; accepted values are: 0, 90, 180, 270",
@@ -659,15 +629,4 @@ public static class SetCommandExecutor
 
         return list;
     }
-
-    // ─── CliMonitorRef projection ──────────────────────────────────────────────
-
-    /// <summary>Mirrors <c>SetCommand.ToRef</c> and <c>MonitorDtoProjector.ToRef</c>.</summary>
-    private static CliMonitorRef ToRef(Monitor m) => new()
-    {
-        Number = m.MonitorNumber,
-        Id = m.Id,
-        Name = m.Name,
-        Method = m.CommunicationMethod,
-    };
 }

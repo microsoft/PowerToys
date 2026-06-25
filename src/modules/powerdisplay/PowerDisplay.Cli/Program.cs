@@ -31,7 +31,7 @@ public static class Program
         // … ellipsis) and any UTF-8 JSON render correctly instead of as '?' on legacy code pages.
         TrySetUtf8Output();
 
-        var root = BuildRootCommand();
+        var root = new PowerDisplayRootCommand();
         var parser = new Parser(root);
         var parseResult = parser.Parse(args);
 
@@ -114,10 +114,9 @@ public static class Program
                     Timeout.InfiniteTimeSpan);
             }
 
-            var command = parseResult.CommandResult.Command;
             var dispatcher = new IpcDispatcher(output, timeout);
 
-            return await DispatchAsync(root, args, command, parseResult, dispatcher, output, cts.Token);
+            return await DispatchAsync(root, args, parseResult, dispatcher, output, cts.Token);
         }
         catch (OperationCanceledException)
         {
@@ -152,12 +151,13 @@ public static class Program
     internal static async Task<int> DispatchAsync(
         PowerDisplayRootCommand root,
         string[] args,
-        Command command,
         ParseResult parseResult,
         IpcDispatcher dispatcher,
         ICliOutput output,
         CancellationToken cancellationToken)
     {
+        var command = parseResult.CommandResult.Command;
+
         // ── list ──────────────────────────────────────────────────────────────
         if (command == root.ListCommand)
         {
@@ -176,17 +176,10 @@ public static class Program
             if (settingFilter is not null
                 && System.Array.IndexOf(CliSettingNames.All, settingFilter.ToLowerInvariant()) < 0)
             {
-                output.WriteError(new CliErrorResult
-                {
-                    Command = CliCommandNames.Get,
-                    Error = new CliError
-                    {
-                        Code = CliErrorCodes.ArgumentError,
-                        Setting = settingFilter,
-                        Message = Resources.Error_UnknownSetting(settingFilter),
-                        Hint = Resources.Hint_ValidSettings(string.Join(", ", CliSettingNames.All)),
-                    },
-                });
+                output.WriteError(ArgumentError(
+                    CliCommandNames.Get,
+                    Resources.Error_UnknownSetting(settingFilter),
+                    Resources.Hint_ValidSettings(string.Join(", ", CliSettingNames.All))));
                 return CliExitCodes.ArgumentError;
             }
 
@@ -218,30 +211,13 @@ public static class Program
             var selected = SetCommand.CountSelectedSettings(inputs);
             if (selected == 0)
             {
-                output.WriteError(new CliErrorResult
-                {
-                    Command = CliCommandNames.Set,
-                    Error = new CliError
-                    {
-                        Code = CliErrorCodes.ArgumentError,
-                        Message = Resources.Error_NoSettingSpecified,
-                    },
-                });
+                output.WriteError(ArgumentError(CliCommandNames.Set, Resources.Error_NoSettingSpecified));
                 return CliExitCodes.ArgumentError;
             }
 
             if (selected > 1)
             {
-                output.WriteError(new CliErrorResult
-                {
-                    Command = CliCommandNames.Set,
-                    Error = new CliError
-                    {
-                        Code = CliErrorCodes.ArgumentError,
-                        Message = Resources.Error_OnlyOneSetting,
-                        Hint = Resources.Hint_OnlyOneSetting,
-                    },
-                });
+                output.WriteError(ArgumentError(CliCommandNames.Set, Resources.Error_OnlyOneSetting, Resources.Hint_OnlyOneSetting));
                 return CliExitCodes.ArgumentError;
             }
 
@@ -320,16 +296,22 @@ public static class Program
     public static CliErrorResult BuildParseErrorResult(string command, IEnumerable<string> messages)
     {
         var combined = string.Join("; ", messages.Where(m => !string.IsNullOrWhiteSpace(m)));
-        return new CliErrorResult
+        return ArgumentError(command, combined.Length == 0 ? Resources.Error_InvalidArguments : combined);
+    }
+
+    // Single ARGUMENT_ERROR envelope shape, shared by the syntactic-validation sites in
+    // DispatchAsync and by BuildParseErrorResult. Setting/Hint default to null (omitted from JSON).
+    private static CliErrorResult ArgumentError(string command, string message, string? hint = null)
+        => new()
         {
             Command = command,
             Error = new CliError
             {
                 Code = CliErrorCodes.ArgumentError,
-                Message = combined.Length == 0 ? Resources.Error_InvalidArguments : combined,
+                Message = message,
+                Hint = hint,
             },
         };
-    }
 
     // Shared TIMEOUT envelope for both the OperationCanceledException catch path.
     private static CliErrorResult BuildTimeoutErrorResult(string command, bool timedOut, int timeoutSeconds)
@@ -362,6 +344,4 @@ public static class Program
             // Host policy forbids changing console encoding; not fatal for the operation.
         }
     }
-
-    private static PowerDisplayRootCommand BuildRootCommand() => new();
 }

@@ -73,13 +73,13 @@ public sealed class CliRequestHandler
         catch (OperationCanceledException)
         {
             // Cancellation during execution — return timeout error
-            var timeoutErr = MakeInternalError("unknown", "request was cancelled");
+            var timeoutErr = MakeError("unknown", CliErrorCodes.InternalError, "request was cancelled");
             return Serialize(timeoutErr);
         }
         catch (Exception ex)
         {
             Logger.LogError($"[CliRequestHandler] Unexpected exception in HandleAsync: {ex.GetType().Name}: {ex.Message}");
-            var errorResult = MakeInternalError("unknown", $"unexpected error: {ex.Message}");
+            var errorResult = MakeError("unknown", CliErrorCodes.InternalError, $"unexpected error: {ex.Message}");
             return Serialize(errorResult);
         }
     }
@@ -124,7 +124,7 @@ public sealed class CliRequestHandler
             case CliCommandNames.Get:
             {
                 var req = envelope.Get ?? new GetRequest();
-                var (result, error, _) = MonitorDtoProjector.BuildGetResultWithWarning(
+                var (result, error) = MonitorDtoProjector.BuildGetResult(
                     snapshot,
                     hiddenIds,
                     req.MonitorNumber,
@@ -144,7 +144,7 @@ public sealed class CliRequestHandler
             {
                 if (envelope.Set is null)
                 {
-                    return Serialize(MakeArgumentError("set", "missing 'set' payload"));
+                    return Serialize(MakeError("set", CliErrorCodes.ArgumentError, "missing 'set' payload"));
                 }
 
                 var (result, error) = await SetCommandExecutor.ExecuteAsync(
@@ -193,7 +193,7 @@ public sealed class CliRequestHandler
                 var profileName = envelope.ApplyProfile?.ProfileName ?? string.Empty;
                 if (string.IsNullOrWhiteSpace(profileName))
                 {
-                    return Serialize(MakeArgumentError("apply-profile", "profile name must not be empty"));
+                    return Serialize(MakeError("apply-profile", CliErrorCodes.ArgumentError, "profile name must not be empty"));
                 }
 
                 var outcomes = await applyProfileAsync(profileName, ct).ConfigureAwait(false);
@@ -201,16 +201,11 @@ public sealed class CliRequestHandler
                 if (outcomes is null)
                 {
                     // Profile not found — mirrors ApplyProfileCommand.RunAsync (exit code 7)
-                    return Serialize(new CliErrorResult
-                    {
-                        Command = CliCommandNames.ApplyProfile,
-                        Error = new CliError
-                        {
-                            Code = CliErrorCodes.ArgumentError,
-                            Message = $"profile '{profileName}' not found",
-                            Hint = "run 'powerdisplay profiles' to see available profiles",
-                        },
-                    });
+                    return Serialize(MakeError(
+                        CliCommandNames.ApplyProfile,
+                        CliErrorCodes.ArgumentError,
+                        $"profile '{profileName}' not found",
+                        "run 'powerdisplay profiles' to see available profiles"));
                 }
 
                 var applyResult = ProfileDtoProjector.BuildApplyProfileResult(profileName, outcomes);
@@ -219,7 +214,7 @@ public sealed class CliRequestHandler
 
             // ── unknown command ───────────────────────────────────────────────
             default:
-                return Serialize(MakeInternalError("unknown", $"unknown command '{envelope.Command}'"));
+                return Serialize(MakeError("unknown", CliErrorCodes.InternalError, $"unknown command '{envelope.Command}'"));
         }
     }
 
@@ -238,7 +233,7 @@ public sealed class CliRequestHandler
 
         if (envelope is null || string.IsNullOrEmpty(envelope.Command))
         {
-            return Serialize(MakeInternalError("unknown", "could not parse request envelope"));
+            return Serialize(MakeError("unknown", CliErrorCodes.InternalError, "could not parse request envelope"));
         }
 
         // Marshal all ViewModel/MonitorManager access onto the UI thread.
@@ -330,26 +325,16 @@ public sealed class CliRequestHandler
     private static string Serialize(CliErrorResult v)
         => JsonSerializer.Serialize(v, ContractsJsonContext.Default.CliErrorResult);
 
-    // ─── Error factories ──────────────────────────────────────────────────────
-    private static CliErrorResult MakeInternalError(string command, string message)
+    // ─── Error factory ────────────────────────────────────────────────────────
+    private static CliErrorResult MakeError(string command, string code, string message, string? hint = null)
         => new()
         {
             Command = command,
             Error = new CliError
             {
-                Code = CliErrorCodes.InternalError,
+                Code = code,
                 Message = message,
-            },
-        };
-
-    private static CliErrorResult MakeArgumentError(string command, string message)
-        => new()
-        {
-            Command = command,
-            Error = new CliError
-            {
-                Code = CliErrorCodes.ArgumentError,
-                Message = message,
+                Hint = hint,
             },
         };
 }

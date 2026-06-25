@@ -106,13 +106,6 @@ public class RoundTripTests
                     Id = "DISPLAY\\DEL0A8C\\4&1a2b3c4d&0&UID12345",
                     Name = "Dell U2722D",
                     Method = "DDC/CI",
-                    SupportsBrightness = true,
-                    SupportsContrast = true,
-                    SupportsVolume = false,
-                    SupportsColorTemperature = true,
-                    SupportsInputSource = true,
-                    SupportsPowerState = true,
-                    SupportsOrientation = false,
                 },
             },
         };
@@ -121,13 +114,10 @@ public class RoundTripTests
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliListResult);
 
         Assert.IsNotNull(back);
-        Assert.IsTrue(back!.Ok);
-        Assert.AreEqual("list", back.Command);
+        Assert.AreEqual("list", back!.Command);
         Assert.AreEqual(1, back.Monitors.Count);
         Assert.AreEqual("Dell U2722D", back.Monitors[0].Name);
         Assert.AreEqual("DDC/CI", back.Monitors[0].Method);
-        Assert.IsTrue(back.Monitors[0].SupportsBrightness);
-        Assert.IsFalse(back.Monitors[0].SupportsVolume);
         Assert.IsFalse(back.IsError, "success DTOs carry isError=false");
         Assert.AreEqual(CliSchema.Version, back.Version);
     }
@@ -144,8 +134,8 @@ public class RoundTripTests
                     Monitor = new CliMonitorRef { Number = 1, Id = "MON1", Name = "Monitor A", Method = "DDC/CI" },
                     Settings = new List<CliSettingValue>
                     {
-                        new CliSettingValue { Setting = "brightness", Raw = 75, Display = "75%", Supported = true },
-                        new CliSettingValue { Setting = "contrast", Raw = 50, Display = "50%", Supported = true },
+                        new CliSettingValue { Setting = "brightness", Display = "75%", Supported = true },
+                        new CliSettingValue { Setting = "contrast", Display = "50%", Supported = true },
                         new CliSettingValue { Setting = "volume", Supported = false },
                     },
                 },
@@ -156,14 +146,11 @@ public class RoundTripTests
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliGetResult);
 
         Assert.IsNotNull(back);
-        Assert.IsTrue(back!.Ok);
-        Assert.AreEqual("get", back.Command);
+        Assert.AreEqual("get", back!.Command);
         Assert.AreEqual(1, back.Monitors.Count);
         Assert.AreEqual("MON1", back.Monitors[0].Monitor.Id);
         Assert.AreEqual(3, back.Monitors[0].Settings.Count);
-        Assert.AreEqual(75, back.Monitors[0].Settings[0].Raw);
         Assert.AreEqual("75%", back.Monitors[0].Settings[0].Display);
-        Assert.IsNull(back.Monitors[0].Settings[2].Raw);
         Assert.IsFalse(back.Monitors[0].Settings[2].Supported);
     }
 
@@ -174,8 +161,6 @@ public class RoundTripTests
         {
             Monitor = new CliMonitorRef { Number = 1, Id = "MON1", Name = "Monitor A", Method = "DDC/CI" },
             Setting = "brightness",
-            BeforeRaw = 50,
-            AfterRaw = 75,
             BeforeDisplay = "50%",
             AfterDisplay = "75%",
         };
@@ -184,11 +169,8 @@ public class RoundTripTests
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliSetResult);
 
         Assert.IsNotNull(back);
-        Assert.IsTrue(back!.Ok);
-        Assert.AreEqual("set", back.Command);
+        Assert.AreEqual("set", back!.Command);
         Assert.AreEqual("brightness", back.Setting);
-        Assert.AreEqual(50, back.BeforeRaw);
-        Assert.AreEqual(75, back.AfterRaw);
         Assert.AreEqual("50%", back.BeforeDisplay);
         Assert.AreEqual("75%", back.AfterDisplay);
         Assert.AreEqual("MON1", back.Monitor.Id);
@@ -215,8 +197,7 @@ public class RoundTripTests
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliCapabilitiesResult);
 
         Assert.IsNotNull(back);
-        Assert.IsTrue(back!.Ok);
-        Assert.AreEqual("capabilities", back.Command);
+        Assert.AreEqual("capabilities", back!.Command);
         Assert.AreEqual("DDC/CI", back.CommunicationMethod);
         Assert.AreEqual(result.RawCapabilities, back.RawCapabilities);
         Assert.AreEqual("U2722D", back.Model);
@@ -245,8 +226,7 @@ public class RoundTripTests
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliProfileListResult);
 
         Assert.IsNotNull(back);
-        Assert.IsTrue(back!.Ok);
-        Assert.AreEqual("profiles", back.Command);
+        Assert.AreEqual("profiles", back!.Command);
         Assert.AreEqual(2, back.Profiles.Count);
         Assert.AreEqual("Gaming", back.Profiles[0].Name);
         Assert.AreEqual(2, back.Profiles[0].MonitorCount);
@@ -286,8 +266,7 @@ public class RoundTripTests
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
 
         Assert.IsNotNull(back);
-        Assert.IsTrue(back!.Ok);
-        Assert.AreEqual(CliExitCodes.Ok, back.ExitCode);
+        Assert.AreEqual(CliExitCodes.Ok, back!.ExitCode);
         Assert.AreEqual("apply-profile", back.Command);
         Assert.AreEqual("Gaming", back.Profile);
         Assert.AreEqual(2, back.Monitors.Count);
@@ -307,7 +286,6 @@ public class RoundTripTests
         // deserialization. This is the Contracts-layer gate for the apply-profile exit-code bug fix.
         var result = new CliApplyProfileResult
         {
-            Ok = false,
             ExitCode = CliExitCodes.OutOfRange,
             Profile = "Night",
             Monitors = new List<CliProfileMonitorOutcome>
@@ -328,8 +306,7 @@ public class RoundTripTests
         var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliApplyProfileResult);
 
         Assert.IsNotNull(back);
-        Assert.IsFalse(back!.Ok);
-        Assert.IsFalse(back.IsError, "an apply-profile partial failure is still a success envelope (isError=false)");
+        Assert.IsFalse(back!.IsError, "an apply-profile partial failure is still a success envelope (isError=false)");
         Assert.AreEqual(CliExitCodes.OutOfRange, back.ExitCode, "ExitCode=2 (OutOfRange) must survive the JSON round-trip");
         Assert.AreEqual("Night", back.Profile);
     }

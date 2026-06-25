@@ -2,24 +2,19 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerDisplay.Common.Models;
-using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Common.Services;
 
 /// <summary>
-/// The slice of <see cref="MonitorManager"/> the CLI commands depend on. Exists purely so
-/// commands can be unit-tested against a fake without real hardware.
+/// The hardware-write slice of <see cref="MonitorManager"/> the CLI set/apply-profile commands
+/// depend on. Exists purely so those commands can be unit-tested against a fake without real
+/// hardware. Discovery and compatibility-mode toggling stay on the concrete <see cref="MonitorManager"/>.
 /// </summary>
 public interface IMonitorManager
 {
-    void SetMaxCompatibilityMode(bool enabled);
-
-    Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default);
-
     Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default);
 
     Task<MonitorOperationResult> SetContrastAsync(string monitorId, int contrast, CancellationToken cancellationToken = default);

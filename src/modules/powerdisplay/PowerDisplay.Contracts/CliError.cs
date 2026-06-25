@@ -22,10 +22,6 @@ public sealed class CliError
     /// JSON consumers; recomputed from <see cref="Code"/> on deserialization.</summary>
     public int ExitCode => CliExitCodes.ForErrorCode(Code);
 
-    public string? Setting { get; init; }
-
-    public string? Requested { get; init; }
-
     public string? ExpectedRange { get; init; }
 
     public IReadOnlyList<CliSupportedValue>? Supported { get; init; }

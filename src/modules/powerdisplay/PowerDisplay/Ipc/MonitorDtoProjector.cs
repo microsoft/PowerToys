@@ -60,29 +60,13 @@ public static class MonitorDtoProjector
         string? id,
         string? settingFilter)
     {
-        // Convenience overload: delegate to the warning-aware projector and drop the warning
-        // (the single source of get-resolution logic lives in BuildGetResultWithWarning).
-        var (result, error, _) = BuildGetResultWithWarning(monitors, hiddenIds, number, id, settingFilter);
-        return (result, error);
-    }
-
-    /// <summary>
-    /// Builds the result DTO for the <c>get</c> command, also returning any selector warning.
-    /// </summary>
-    public static (CliGetResult? Result, CliErrorResult? Error, string? Warning) BuildGetResultWithWarning(
-        IReadOnlyList<Monitor> monitors,
-        IReadOnlySet<string> hiddenIds,
-        int? number,
-        string? id,
-        string? settingFilter)
-    {
         var visible = ExcludeHidden(monitors, hiddenIds);
 
         if (!number.HasValue && string.IsNullOrEmpty(id))
         {
             if (TryGetUnknownSettingError(settingFilter, out var settingErr))
             {
-                return (null, new CliErrorResult { Command = CliCommandNames.Get, Error = settingErr! }, null);
+                return (null, new CliErrorResult { Command = CliCommandNames.Get, Error = settingErr! });
             }
 
             var allEntries = new List<CliGetMonitorEntry>(visible.Count);
@@ -92,23 +76,23 @@ public static class MonitorDtoProjector
                 allEntries.Add(BuildGetEntry(monitor, monRef, settingFilter, out _)!);
             }
 
-            return (new CliGetResult { Monitors = allEntries }, null, null);
+            return (new CliGetResult { Monitors = allEntries }, null);
         }
 
-        var (selected, warning, resolveError) = ResolveMonitor(visible, number, id);
+        var (selected, resolveError) = ResolveMonitor(visible, number, id);
         if (resolveError is not null)
         {
-            return (null, new CliErrorResult { Command = CliCommandNames.Get, Error = resolveError }, warning);
+            return (null, new CliErrorResult { Command = CliCommandNames.Get, Error = resolveError });
         }
 
         var mRef = ToRef(selected!);
         var entry = BuildGetEntry(selected!, mRef, settingFilter, out var settingError);
         if (settingError is not null)
         {
-            return (null, new CliErrorResult { Command = CliCommandNames.Get, Monitor = mRef, Error = settingError }, warning);
+            return (null, new CliErrorResult { Command = CliCommandNames.Get, Monitor = mRef, Error = settingError });
         }
 
-        return (new CliGetResult { Monitors = [entry!] }, null, warning);
+        return (new CliGetResult { Monitors = [entry!] }, null);
     }
 
     /// <summary>
@@ -123,7 +107,7 @@ public static class MonitorDtoProjector
     {
         var visible = ExcludeHidden(monitors, hiddenIds);
 
-        var (selected, _, resolveError) = ResolveMonitor(visible, number, id);
+        var (selected, resolveError) = ResolveMonitor(visible, number, id);
         if (resolveError is not null)
         {
             return (null, new CliErrorResult { Command = CliCommandNames.Capabilities, Error = resolveError });
@@ -207,11 +191,11 @@ public static class MonitorDtoProjector
     /// Mirrors <c>MonitorResolver.Resolve</c> + <c>MonitorFiltering.ResolveSelected</c>.
     /// <list type="bullet">
     ///   <item>No selector → <c>SelectorMissing</c> error.</item>
-    ///   <item>Both selectors → id wins; warning string is set.</item>
+    ///   <item>Both selectors → id wins (the CLI surfaces the "-n ignored" note locally).</item>
     ///   <item>Not found → <c>MonitorNotFound</c> error.</item>
     /// </list>
     /// </summary>
-    internal static (Monitor? Monitor, string? Warning, CliError? Error) ResolveMonitor(
+    internal static (Monitor? Monitor, CliError? Error) ResolveMonitor(
         IReadOnlyList<Monitor> monitors,
         int? monitorNumber,
         string? monitorId)
@@ -221,21 +205,12 @@ public static class MonitorDtoProjector
 
         if (!hasNumber && !hasId)
         {
-            return (null, null, new CliError
+            return (null, new CliError
             {
                 Code = CliErrorCodes.SelectorMissing,
                 Message = "one of --monitor-number/-n or --monitor-id/-i is required",
                 Hint = "run 'powerdisplay list' to see available monitors",
             });
-        }
-
-        string? warning = null;
-        if (hasNumber && hasId)
-        {
-            warning = string.Format(
-                CultureInfo.InvariantCulture,
-                "warning: --monitor-number {0} ignored because --monitor-id was also provided",
-                monitorNumber!.GetValueOrDefault());
         }
 
         if (hasId)
@@ -244,12 +219,11 @@ public static class MonitorDtoProjector
             {
                 if (string.Equals(monitors[i].Id, monitorId, StringComparison.OrdinalIgnoreCase))
                 {
-                    return (monitors[i], warning, null);
+                    return (monitors[i], null);
                 }
             }
 
-            // Carry the "-n ignored" warning even on not-found: spec says the note still applies.
-            return (null, warning, new CliError
+            return (null, new CliError
             {
                 Code = CliErrorCodes.MonitorNotFound,
                 Message = string.Format(CultureInfo.InvariantCulture, "no monitor found with id '{0}'", monitorId),
@@ -262,11 +236,11 @@ public static class MonitorDtoProjector
         {
             if (monitors[i].MonitorNumber == number)
             {
-                return (monitors[i], null, null);
+                return (monitors[i], null);
             }
         }
 
-        return (null, null, new CliError
+        return (null, new CliError
         {
             Code = CliErrorCodes.MonitorNotFound,
             Message = string.Format(CultureInfo.InvariantCulture, "no monitor found with number {0}", number),
@@ -276,8 +250,8 @@ public static class MonitorDtoProjector
 
     // ─── Private helpers ───────────────────────────────────────────────────────
 
-    /// <summary>Mirrors <c>SetCommand.ToRef</c>.</summary>
-    private static CliMonitorRef ToRef(Monitor m) => new()
+    /// <summary>Mirrors <c>SetCommand.ToRef</c>. Shared with <see cref="SetCommandExecutor"/>.</summary>
+    internal static CliMonitorRef ToRef(Monitor m) => new()
     {
         Number = m.MonitorNumber,
         Id = m.Id,
@@ -292,13 +266,6 @@ public static class MonitorDtoProjector
         Id = m.Id,
         Name = m.Name,
         Method = m.CommunicationMethod,
-        SupportsBrightness = m.SupportsBrightness,
-        SupportsContrast = m.SupportsContrast,
-        SupportsVolume = m.SupportsVolume,
-        SupportsColorTemperature = m.SupportsColorTemperature,
-        SupportsInputSource = m.SupportsInputSource,
-        SupportsPowerState = m.SupportsPowerState,
-        SupportsOrientation = !string.IsNullOrEmpty(m.GdiDeviceName),
     };
 
     /// <summary>
@@ -350,7 +317,6 @@ public static class MonitorDtoProjector
         error = new CliError
         {
             Code = CliErrorCodes.ArgumentError,
-            Setting = settingFilter,
             Message = string.Format(CultureInfo.InvariantCulture, "unknown setting '{0}'", settingFilter),
             Hint = string.Format(
                 CultureInfo.InvariantCulture,
@@ -393,7 +359,6 @@ public static class MonitorDtoProjector
         {
             Setting = name,
             Supported = supported,
-            Raw = known ? raw : null,
             Display = known ? format(raw) : null,
         };
     }

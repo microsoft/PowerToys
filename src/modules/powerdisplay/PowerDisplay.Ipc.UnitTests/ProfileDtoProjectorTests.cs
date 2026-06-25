@@ -81,7 +81,6 @@ public class ProfileDtoProjectorTests
         var result = ProfileDtoProjector.BuildApplyProfileResult("Day", outcomes);
 
         Assert.AreEqual(CliExitCodes.Ok, result.ExitCode);
-        Assert.IsTrue(result.Ok);
         Assert.AreEqual("Day", result.Profile);
     }
 
@@ -104,7 +103,6 @@ public class ProfileDtoProjectorTests
         var result = ProfileDtoProjector.BuildApplyProfileResult("Night", outcomes);
 
         Assert.AreEqual(CliExitCodes.HardwareFailure, result.ExitCode);
-        Assert.IsFalse(result.Ok);
     }
 
     [TestMethod]
@@ -122,7 +120,6 @@ public class ProfileDtoProjectorTests
         var result = ProfileDtoProjector.BuildApplyProfileResult("Cinema", outcomes);
 
         Assert.AreEqual(CliExitCodes.OutOfRange, result.ExitCode);
-        Assert.IsFalse(result.Ok);
     }
 
     [TestMethod]
@@ -159,7 +156,6 @@ public class ProfileDtoProjectorTests
         var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
 
         Assert.AreEqual(CliExitCodes.Ok, result.ExitCode);
-        Assert.IsTrue(result.Ok);
     }
 
     // ─── BuildApplyProfileResult — unconnected monitor ────────────────────────
@@ -174,7 +170,6 @@ public class ProfileDtoProjectorTests
         var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
 
         Assert.AreEqual(CliExitCodes.Ok, result.ExitCode);
-        Assert.IsTrue(result.Ok);
         Assert.AreEqual(1, result.Monitors.Count);
 
         var mon = result.Monitors[0];

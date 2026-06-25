@@ -9,8 +9,6 @@ public sealed class CliErrorResult
     // Response discriminator (see CliResponseHeader): always true on an error envelope.
     public bool IsError { get; init; } = true;
 
-    public bool Ok { get; init; }
-
     public string Version { get; init; } = CliSchema.Version;
 
     public string Command { get; init; } = string.Empty;

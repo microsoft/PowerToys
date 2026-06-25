@@ -4,6 +4,7 @@
 
 using System;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerDisplay.Cli.Output;
@@ -48,73 +49,34 @@ public sealed class IpcDispatcher
 
     // ── per-command dispatch helpers ─────────────────────────────────────────
     public Task<int> SendListAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(
-            envelope,
-            respJson => Deserialize(respJson, ContractsJsonContext.Default.CliListResult, result =>
-            {
-                _output.WriteListResult(result);
-                return CliExitCodes.Ok;
-            }),
-            ct);
+        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliListResult, _output.WriteListResult, _ => CliExitCodes.Ok, ct);
 
     public Task<int> SendGetAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(
-            envelope,
-            respJson => Deserialize(respJson, ContractsJsonContext.Default.CliGetResult, result =>
-            {
-                _output.WriteGetResult(result);
-                return CliExitCodes.Ok;
-            }),
-            ct);
+        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliGetResult, _output.WriteGetResult, _ => CliExitCodes.Ok, ct);
 
     public Task<int> SendSetAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(
-            envelope,
-            respJson => Deserialize(respJson, ContractsJsonContext.Default.CliSetResult, result =>
-            {
-                _output.WriteSetResult(result);
-                return CliExitCodes.Ok;
-            }),
-            ct);
+        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliSetResult, _output.WriteSetResult, _ => CliExitCodes.Ok, ct);
 
     public Task<int> SendCapabilitiesAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(
-            envelope,
-            respJson => Deserialize(respJson, ContractsJsonContext.Default.CliCapabilitiesResult, result =>
-            {
-                _output.WriteCapabilitiesResult(result);
-                return CliExitCodes.Ok;
-            }),
-            ct);
+        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliCapabilitiesResult, _output.WriteCapabilitiesResult, _ => CliExitCodes.Ok, ct);
 
     public Task<int> SendProfilesAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(
-            envelope,
-            respJson => Deserialize(respJson, ContractsJsonContext.Default.CliProfileListResult, result =>
-            {
-                _output.WriteProfileListResult(result);
-                return CliExitCodes.Ok;
-            }),
-            ct);
+        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliProfileListResult, _output.WriteProfileListResult, _ => CliExitCodes.Ok, ct);
 
+    // apply-profile is the one success envelope whose exit code is data-driven: it returns the
+    // worst-outcome code carried by the DTO (0=Ok, 2=OutOfRange, 5=HardwareFailure) instead of a
+    // constant Ok, so OutOfRange(2) partial failures are not lost.
     public Task<int> SendApplyProfileAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(
-            envelope,
-            respJson => Deserialize(respJson, ContractsJsonContext.Default.CliApplyProfileResult, result =>
-            {
-                _output.WriteApplyProfileResult(result);
-
-                // Return the worst-outcome exit code carried by the DTO (0=Ok, 2=OutOfRange, 5=HardwareFailure).
-                // Previously this was hardcoded to HardwareFailure when Ok=false, losing OutOfRange(2) partials.
-                return result.ExitCode;
-            }),
-            ct);
+        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliApplyProfileResult, _output.WriteApplyProfileResult, result => result.ExitCode, ct);
 
     // ── core flow ────────────────────────────────────────────────────────────
-    private async Task<int> SendAndRenderAsync(
+    private async Task<int> SendAndRenderAsync<T>(
         CliRequestEnvelope envelope,
-        Func<string, int> renderSuccess,
+        JsonTypeInfo<T> typeInfo,
+        Action<T> write,
+        Func<T, int> exitCode,
         CancellationToken ct)
+        where T : class
     {
         var requestJson = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
         var respJson = await _send(requestJson, _timeout, ct);
@@ -152,7 +114,10 @@ public sealed class IpcDispatcher
 
         try
         {
-            return renderSuccess(respJson);
+            var result = JsonSerializer.Deserialize(respJson, typeInfo)
+                ?? throw new JsonException($"Deserialized {typeof(T).Name} was null.");
+            write(result);
+            return exitCode(result);
         }
         catch (JsonException)
         {
@@ -175,22 +140,10 @@ public sealed class IpcDispatcher
         }
     }
 
-    private static int Deserialize<T>(
-        string respJson,
-        System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo,
-        Func<T, int> render)
-        where T : class
-    {
-        var result = JsonSerializer.Deserialize(respJson, typeInfo)
-            ?? throw new JsonException($"Deserialized {typeof(T).Name} was null.");
-        return render(result);
-    }
-
     private int WriteProviderUnavailable(string command)
     {
         _output.WriteError(new CliErrorResult
         {
-            Ok = false,
             Command = command,
             Error = new CliError
             {
