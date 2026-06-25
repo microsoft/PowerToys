@@ -100,8 +100,6 @@
     <Compile Remove="Models\**\*.cs" />
     <Compile Remove="Settings\**\*.cs" />
     <Compile Remove="Telemetry\**\*.cs" />
-    <Compile Remove="Common\ViewModelBase.cs" />
-    <Compile Remove="Common\RelayCommand.cs" />
     <Compile Remove="NativeMethods.cs" />
     <Compile Remove="MainWindow.xaml.cs" />
     <Compile Remove="ColorEditorWindow.xaml.cs" />
