@@ -6,12 +6,15 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+using CommunityToolkit.Mvvm.Messaging;
+
 using ManagedCommon;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using WinRT.Interop;
 using WorkspacesEditor.Helpers;
+using WorkspacesEditor.Messages;
 
 namespace WorkspacesEditor
 {
@@ -80,6 +83,13 @@ namespace WorkspacesEditor
                 LoadingRing.IsActive = false;
                 LoadingRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
             };
+
+            // Listen for snapshot window requests from ViewModel
+            WeakReferenceMessenger.Default.Register<ShowSnapshotWindowMessage>(this, (r, m) =>
+            {
+                var snapshotWindow = new Views.SnapshotWindow();
+                snapshotWindow.Activate();
+            });
 
             // Navigate to main page
             ContentFrame.Navigate(typeof(Views.MainPage), vm);

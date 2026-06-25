@@ -15,6 +15,7 @@ using System.Timers;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -22,6 +23,7 @@ using Microsoft.PowerToys.Telemetry;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Helpers;
+using WorkspacesEditor.Messages;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.Views;
@@ -38,7 +40,6 @@ namespace WorkspacesEditor.ViewModels
         private WorkspacesSettings _settings;
         private bool _isDisposed;
         private bool _isExistingProjectLaunched;
-        private SnapshotWindow _snapshotWindow;
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
@@ -144,6 +145,14 @@ namespace WorkspacesEditor.ViewModels
             _lastUpdatedTimer.Interval = 1000;
             _lastUpdatedTimer.Elapsed += LastUpdatedTimerElapsed;
             _lastUpdatedTimer.Start();
+
+            WeakReferenceMessenger.Default.Register<SnapshotCapturedMessage>(this, (r, m) => ((MainViewModel)r).OnSnapshotCaptured());
+            WeakReferenceMessenger.Default.Register<SnapshotCancelledMessage>(this, (r, m) => ((MainViewModel)r).CancelSnapshot());
+        }
+
+        private void OnSnapshotCaptured()
+        {
+            _ = SnapWorkspaceAsync();
         }
 
         public void Initialize()
@@ -300,9 +309,8 @@ namespace WorkspacesEditor.ViewModels
             // Minimize the main window
             MinimizeMainWindowAction?.Invoke();
 
-            // Show snapshot dialog
-            _snapshotWindow = new SnapshotWindow(this);
-            _snapshotWindow.Activate();
+            // Request the View layer to show the snapshot window
+            WeakReferenceMessenger.Default.Send(new ShowSnapshotWindowMessage());
         }
 
         internal void CancelSnapshot()
@@ -555,6 +563,7 @@ namespace WorkspacesEditor.ViewModels
             {
                 _lastUpdatedTimer?.Stop();
                 _lastUpdatedTimer?.Dispose();
+                WeakReferenceMessenger.Default.UnregisterAll(this);
                 _isDisposed = true;
             }
 

@@ -4,26 +4,26 @@
 
 using System;
 
+using CommunityToolkit.Mvvm.Messaging;
+
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
 using WinRT.Interop;
 using WorkspacesEditor.Helpers;
-using WorkspacesEditor.ViewModels;
+using WorkspacesEditor.Messages;
 
 namespace WorkspacesEditor.Views
 {
     public sealed partial class SnapshotWindow : Window
     {
-        private readonly MainViewModel _mainViewModel;
         private readonly Microsoft.UI.Xaml.DispatcherTimer _pulseTimer;
         private bool _captured;
         private bool _dotVisible = true;
 
-        public SnapshotWindow(MainViewModel mainViewModel)
+        public SnapshotWindow()
         {
-            _mainViewModel = mainViewModel;
             this.InitializeComponent();
 
             this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotWindowTitle") ?? "Snapshot Creator";
@@ -85,7 +85,7 @@ namespace WorkspacesEditor.Views
         {
             _captured = true;
             this.Close();
-            _ = _mainViewModel.SnapWorkspaceAsync();
+            WeakReferenceMessenger.Default.Send(new SnapshotCapturedMessage());
         }
 
         private void CancelButtonClicked(object sender, RoutedEventArgs e)
@@ -98,7 +98,7 @@ namespace WorkspacesEditor.Views
             _pulseTimer.Stop();
             if (!_captured)
             {
-                _mainViewModel.CancelSnapshot();
+                WeakReferenceMessenger.Default.Send(new SnapshotCancelledMessage());
             }
         }
 
