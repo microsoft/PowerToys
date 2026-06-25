@@ -105,10 +105,12 @@
     <Compile Remove="NativeMethods.cs" />
     <Compile Remove="MainWindow.xaml.cs" />
     <Compile Remove="ColorEditorWindow.xaml.cs" />
+    <Compile Remove="ZoomWindow.xaml.cs" />
     <Compile Remove="Properties\Resources.Designer.cs" />
 
     <Page Remove="MainWindow.xaml" />
     <Page Remove="ColorEditorWindow.xaml" />
+    <Page Remove="ZoomWindow.xaml" />
     <Page Remove="Controls\**\*.xaml" />
     <Page Remove="Views\**\*.xaml" />
     <Page Remove="Resources\**\*.xaml" />
