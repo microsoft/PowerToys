@@ -9,8 +9,6 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListItemViewModel
 {
-    private const int MaxHoverActions = 3;
-
     private bool _isRowHovered;
     private bool _isListSelected;
     private IReadOnlyList<CommandContextItemViewModel> _hoverActions = [];
@@ -19,7 +17,8 @@ public partial class ListItemViewModel
 
     public bool HasHoverActions => _hoverActions.Count > 0;
 
-    public bool AreHoverActionsVisible => (_isRowHovered || _isListSelected) && HasHoverActions;
+    public bool AreHoverActionsVisible =>
+        HoverActionResolver.ShouldShowHoverStrip(BuildHoverActionContext(), HasHoverActions);
 
     public bool ShowTagsWhenNotHovering => HasTags && !AreHoverActionsVisible;
 
@@ -27,7 +26,7 @@ public partial class ListItemViewModel
     {
         if (!IsSelectedInitialized)
         {
-            SafeSlowInitSynchronous();
+            SafeSlowInit();
         }
     }
 
@@ -53,6 +52,8 @@ public partial class ListItemViewModel
         UpdateHoverVisibilityProperties();
     }
 
+    internal void RefreshHoverActions() => UpdateHoverActions();
+
     private void UpdateHoverActions()
     {
         if (!IsSelectedInitialized)
@@ -62,13 +63,39 @@ public partial class ListItemViewModel
             return;
         }
 
-        _hoverActions = MoreCommands
-            .OfType<CommandContextItemViewModel>()
-            .Where(action => action.ShouldBeVisible)
-            .Take(MaxHoverActions)
-            .ToArray();
-
+        var context = BuildHoverActionContext();
+        _hoverActions = HoverActionResolver.Resolve(context);
         UpdateHoverVisibilityProperties();
+    }
+
+    private HoverActionResolveContext BuildHoverActionContext()
+    {
+        var commands = MoreCommands.OfType<CommandContextItemViewModel>().ToList();
+        var enableHover = true;
+        var isHome = false;
+        var mode = Microsoft.CommandPalette.Extensions.HoverActionsMode.Default;
+        var max = -1;
+        var visibility = Microsoft.CommandPalette.Extensions.HoverActionsVisibility.Default;
+
+        if (PageContext.TryGetTarget(out var pageContext) && pageContext is ListViewModel listViewModel)
+        {
+            enableHover = listViewModel.EnableListHoverActions;
+            isHome = listViewModel.IsMainPage;
+            var settings = listViewModel.GetHoverActionSettings(this);
+            mode = settings.Mode;
+            max = settings.MaxHoverActions;
+            visibility = settings.Visibility;
+        }
+
+        return new HoverActionResolveContext(
+            enableHover,
+            isHome,
+            mode,
+            max,
+            visibility,
+            _isRowHovered,
+            _isListSelected,
+            commands);
     }
 
     private void UpdateHoverVisibilityProperties()

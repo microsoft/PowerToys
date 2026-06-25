@@ -11,6 +11,7 @@ using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
+using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
@@ -43,6 +44,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private readonly Lock _fetchStateLock = new();
     private readonly Lock _listLock = new();
     private readonly IContextMenuFactory _contextMenuFactory;
+
+    private readonly ISettingsService? _settingsService;
 
     // Reentrancy guard for FilteredItems mutations. WinUI3's ListView processes
     // CollectionChanged synchronously, and its layout pass can pump the message
@@ -128,12 +131,18 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
     }
 
-    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory)
+    public ListViewModel(IListPage model, TaskScheduler scheduler, AppExtensionHost host, ICommandProviderContext providerContext, IContextMenuFactory contextMenuFactory, ISettingsService? settingsService = null)
         : base(model, scheduler, host, providerContext)
     {
         _model = new(model);
         _contextMenuFactory = contextMenuFactory;
+        _settingsService = settingsService;
         EmptyContent = new(new(null), PageContext, contextMenuFactory: null);
+
+        if (_settingsService is not null)
+        {
+            _settingsService.SettingsChanged += SettingsService_SettingsChanged;
+        }
     }
 
     private void FiltersPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -1112,6 +1121,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     public void Dispose()
     {
+        if (_settingsService is not null)
+        {
+            _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
+        }
+
         GC.SuppressFinalize(this);
         CancelAndDisposeTokenSource(ref _cancellationTokenSource);
         CancelAndDisposeTokenSource(ref filterCancellationTokenSource);

@@ -107,6 +107,8 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         {
             var model = _commandProvider.Unsafe!;
 
+            ExtensionHost.SetCommandProvider(model);
+
             // Hook the extension back into us
             model.InitializeWithHost(ExtensionHost);
             model.ItemsChanged += CommandProvider_ItemsChanged;

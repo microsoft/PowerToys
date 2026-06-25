@@ -25,6 +25,8 @@ public record SettingsModel
 
     public bool SingleClickActivates { get; init; }
 
+    public bool EnableListHoverActions { get; init; } = true;
+
     public bool HighlightSearchOnActivate { get; init; } = true;
 
     public bool KeepPreviousQuery { get; init; }

@@ -285,7 +285,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         Dock,
     }
 
-    private sealed partial class PinToContextItem : CommandContextItem
+    private sealed partial class PinToContextItem : CommandContextItem, IHostContextItem
     {
         private readonly PinToCommand _command;
         private readonly CommandItemViewModel _commandItem;
@@ -310,7 +310,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         }
     }
 
-    private sealed partial class MovePinnedContextItem : CommandContextItem
+    private sealed partial class MovePinnedContextItem : CommandContextItem, IHostContextItem
     {
         private readonly MovePinnedCommand _command;
         private readonly CommandItemViewModel _commandItem;
