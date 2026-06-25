@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="power_mode_display_name" xml:space="preserve"><value>Power mode</value></data>
+  <data name="power_mode_page_title" xml:space="preserve"><value>Power mode</value></data>
+  <data name="power_mode_dock_band_title" xml:space="preserve"><value>Power mode</value></data>
+  <data name="power_mode_status_title" xml:space="preserve"><value>Power mode: Current status</value></data>
+  <data name="power_mode_battery_status_title" xml:space="preserve"><value>Battery status</value></data>
+  <data name="power_mode_battery_charging" xml:space="preserve"><value>Charging</value></data>
+  <data name="power_mode_battery_not_charging" xml:space="preserve"><value>Not charging</value></data>
+  <data name="power_mode_battery_nonexistent" xml:space="preserve"><value>No battery</value></data>
+  <data name="power_mode_status_command_name" xml:space="preserve"><value>Refresh power mode status</value></data>
+  <data name="power_mode_set_efficiency_title" xml:space="preserve"><value>Power mode: Best power efficiency</value></data>
+  <data name="power_mode_set_balanced_title" xml:space="preserve"><value>Power mode: Balanced</value></data>
+  <data name="power_mode_set_performance_title" xml:space="preserve"><value>Power mode: Best performance</value></data>
+  <data name="power_mode_set_efficiency_toast" xml:space="preserve"><value>Power mode set to best power efficiency</value></data>
+  <data name="power_mode_set_balanced_toast" xml:space="preserve"><value>Power mode set to balanced</value></data>
+  <data name="power_mode_set_performance_toast" xml:space="preserve"><value>Power mode set to best performance</value></data>
+  <data name="power_mode_set_mode_subtitle_desktop" xml:space="preserve"><value>Set this PC to </value></data>
+  <data name="power_mode_set_mode_subtitle_plugged_in" xml:space="preserve"><value>Set plugged-in power mode to </value></data>
+  <data name="power_mode_set_mode_subtitle_on_battery" xml:space="preserve"><value>Set on-battery power mode to </value></data>
+  <data name="power_mode_best_efficiency" xml:space="preserve"><value>Best power efficiency</value></data>
+  <data name="power_mode_balanced" xml:space="preserve"><value>Balanced</value></data>
+  <data name="power_mode_best_performance" xml:space="preserve"><value>Best performance</value></data>
+  <data name="power_mode_best_efficiency_short" xml:space="preserve"><value>Efficiency</value></data>
+  <data name="power_mode_balanced_short" xml:space="preserve"><value>Balanced</value></data>
+  <data name="power_mode_best_performance_short" xml:space="preserve"><value>Performance</value></data>
+  <data name="power_mode_unknown" xml:space="preserve"><value>Unknown power mode</value></data>
+  <data name="power_mode_unknown_short" xml:space="preserve"><value>Unknown</value></data>
+  <data name="power_mode_no_battery" xml:space="preserve"><value>No battery</value></data>
+  <data name="power_mode_on_ac" xml:space="preserve"><value>Plugged in</value></data>
+  <data name="power_mode_plugged_in_charging" xml:space="preserve"><value>Plugged in (charging)</value></data>
+  <data name="power_mode_on_battery" xml:space="preserve"><value>On battery</value></data>
+  <data name="power_mode_power_source_unknown" xml:space="preserve"><value>Power source unknown</value></data>
+  <data name="power_mode_profile_plugged_in" xml:space="preserve"><value>Plugged-in profile</value></data>
+  <data name="power_mode_profile_on_battery" xml:space="preserve"><value>On-battery profile</value></data>
+  <data name="power_mode_set_failed" xml:space="preserve"><value>Failed to change power mode.</value></data>
+  <data name="power_mode_not_supported" xml:space="preserve"><value>Power mode control is not available on this device.</value></data>
+  <data name="power_mode_fallback_title" xml:space="preserve"><value>Power mode</value></data>
+  <data name="power_mode_fallback_subtitle" xml:space="preserve"><value>View and change Windows power mode</value></data>
+  <data name="power_mode_fallback_search_tags" xml:space="preserve"><value>power mode;powermode;best performance;best efficiency;balanced;performance mode;efficiency mode;energy saver</value></data>
+</root>
