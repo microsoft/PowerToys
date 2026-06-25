@@ -229,7 +229,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerMode/Microsoft.CmdPal.Ext.PowerMode.csproj">
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.Power/Microsoft.CmdPal.Ext.Power.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -329,7 +329,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PowerMode.UnitTests/Microsoft.CmdPal.Ext.PowerMode.UnitTests.csproj">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.PowerMode.UnitTests/Microsoft.CmdPal.Ext.Power.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

@@ -4,11 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.CmdPal.Ext.PowerMode.Helpers;
-using Microsoft.CmdPal.Ext.PowerMode.Properties;
+using Microsoft.CmdPal.Ext.Power.Helpers;
+using Microsoft.CmdPal.Ext.Power.Properties;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.CmdPal.Ext.PowerMode.UnitTests;
+namespace Microsoft.CmdPal.Ext.Power.UnitTests;
 
 [TestClass]
 public sealed class PowerPlanCatalogTests

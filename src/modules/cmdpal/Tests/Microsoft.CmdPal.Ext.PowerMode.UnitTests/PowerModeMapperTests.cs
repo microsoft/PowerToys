@@ -3,11 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using Microsoft.CmdPal.Ext.PowerMode.Helpers;
+using Microsoft.CmdPal.Ext.Power.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Win32.System.Power;
 
-namespace Microsoft.CmdPal.Ext.PowerMode.UnitTests;
+namespace Microsoft.CmdPal.Ext.Power.UnitTests;
 
 [TestClass]
 public sealed class PowerModeMapperTests
