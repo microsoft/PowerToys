@@ -117,7 +117,7 @@
                             Padding="1"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch"
-                            AutomationProperties.Name="{Binding Name}"
+                            AutomationProperties.Name="{x:Bind Name}"
                             Click="EditButtonClicked">
                             <Grid HorizontalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
@@ -132,16 +132,16 @@
                                         Margin="0,0,0,8"
                                         FontSize="16"
                                         FontWeight="SemiBold"
-                                        Text="{Binding Name, Mode=OneWay}" />
+                                        Text="{x:Bind Name, Mode=OneWay}" />
                                     <StackPanel Margin="0,0,0,8" Orientation="Horizontal">
                                         <Image
                                             Height="16"
-                                            Source="{Binding PreviewIcons, Mode=OneWay}" />
+                                            Source="{x:Bind PreviewIcons, Mode=OneWay}" />
                                         <TextBlock
                                             Margin="8,0,8,0"
                                             VerticalAlignment="Center"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{Binding AppsCountString}" />
+                                            Text="{x:Bind AppsCountString, Mode=OneWay}" />
                                     </StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock
@@ -153,7 +153,7 @@
                                         <TextBlock
                                             FontSize="12"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                            Text="{Binding LastLaunched, Mode=OneWay}" />
+                                            Text="{x:Bind LastLaunched, Mode=OneWay}" />
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel
