@@ -104,8 +104,6 @@
     <Compile Remove="MainWindow.xaml.cs" />
     <Compile Remove="ColorEditorWindow.xaml.cs" />
     <Compile Remove="ZoomWindow.xaml.cs" />
-    <Compile Remove="Properties\Resources.Designer.cs" />
-
     <Page Remove="MainWindow.xaml" />
     <Page Remove="ColorEditorWindow.xaml" />
     <Page Remove="ZoomWindow.xaml" />
@@ -118,6 +116,9 @@
     <!-- Re-exclude the .ico/.cur lines above from the catch-all Resource glob conflicts -->
   </ItemGroup>
 
-  <!-- Keep an explicitly-included, WinUI3-safe Helper out of the Helpers quarantine.
-       (ResourceLoaderInstance.cs is added in Task 6 and explicitly re-included there.) -->
+  <!-- Foundation Helpers that ARE migrated (re-included past the Helpers quarantine) -->
+  <ItemGroup>
+    <Compile Include="Helpers\ResourceLoaderInstance.cs" />
+  </ItemGroup>
+
 </Project>
