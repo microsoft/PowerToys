@@ -3,62 +3,57 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Threading;
-using System.Windows;
 
 using ManagedCommon;
-using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml;
 
-namespace PowerAccent.UI
+namespace PowerAccent.UI;
+
+public partial class App : Application, IDisposable
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application, IDisposable
+    private readonly ETWTrace _etwTrace = new ETWTrace();
+    private bool _disposed;
+
+    public static new App Current => (App)Application.Current;
+
+    public DispatcherQueue DispatcherQueueForApp { get; private set; }
+
+    public static Selector Window { get; private set; }
+
+    public App()
     {
-        private static Mutex _mutex;
-        private bool _disposed;
-        private ETWTrace _etwTrace = new ETWTrace();
+        InitializeComponent();
+        UnhandledException += (s, e) => Logger.LogError("Unhandled exception", e.Exception);
+    }
 
-        protected override void OnStartup(StartupEventArgs e)
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    {
+        DispatcherQueueForApp = DispatcherQueue.GetForCurrentThread();
+        Window = new Selector();
+
+        // Quick Accent has no visible main window until summoned by the keyboard hook;
+        // the Selector keeps itself hidden (TransparentWindow hides its AppWindow on init).
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed)
         {
-            _mutex = new Mutex(true, "QuickAccent", out bool createdNew);
-
-            if (!createdNew)
-            {
-                Logger.LogWarning("Another running QuickAccent instance was detected. Exiting QuickAccent");
-                Application.Current.Shutdown();
-            }
-
-            base.OnStartup(e);
+            return;
         }
 
-        protected override void OnExit(ExitEventArgs e)
+        if (disposing)
         {
-            _mutex?.ReleaseMutex();
-            base.OnExit(e);
+            _etwTrace?.Dispose();
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-            {
-                return;
-            }
+        _disposed = true;
+    }
 
-            if (disposing)
-            {
-                _mutex?.Dispose();
-                _etwTrace?.Dispose();
-            }
-
-            _disposed = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }

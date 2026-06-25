@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,9 +6,9 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using PowerToys.Interop;
 
 namespace PowerAccent.UI;
@@ -16,13 +16,14 @@ namespace PowerAccent.UI;
 internal static class Program
 {
     private static readonly CancellationTokenSource _tokenSource = new CancellationTokenSource();
-    private static App _application;
+    private static Mutex _mutex;
     private static int _powerToysRunnerPid;
 
     [STAThread]
     public static void Main(string[] args)
     {
         Logger.InitializeLogger("\\QuickAccent\\Logs");
+        WinRT.ComWrappersSupport.InitializeComWrappers();
 
         if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredQuickAccentEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
         {
@@ -30,16 +31,27 @@ internal static class Program
             return;
         }
 
+        _mutex = new Mutex(true, "QuickAccent", out bool createdNew);
+        if (!createdNew)
+        {
+            Logger.LogWarning("Another running QuickAccent instance was detected. Exiting QuickAccent");
+            return;
+        }
+
         Arguments(args);
+        InitExitListener();
 
-        InitEvents();
+        Microsoft.UI.Xaml.Application.Start((p) =>
+        {
+            var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+            SynchronizationContext.SetSynchronizationContext(context);
+            _ = new App();
+        });
 
-        _application = new App();
-        _application.InitializeComponent();
-        _application.Run();
+        _mutex?.ReleaseMutex();
     }
 
-    private static void InitEvents()
+    private static void InitExitListener()
     {
         Task.Run(
             () =>
@@ -55,39 +67,29 @@ internal static class Program
 
     private static void Arguments(string[] args)
     {
-        if (args?.Length > 0)
+        if (args?.Length > 0 && int.TryParse(args[0], out _powerToysRunnerPid))
         {
-            try
+            Logger.LogInfo($"QuickAccent started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
+            RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
             {
-                if (int.TryParse(args[0], out _powerToysRunnerPid))
-                {
-                    Logger.LogInfo($"QuickAccent started from the PowerToys Runner. Runner pid={_powerToysRunnerPid}");
-
-                    RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
-                    {
-                        Logger.LogInfo("PowerToys Runner exited. Exiting QuickAccent");
-                        Terminate();
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
+                Logger.LogInfo("PowerToys Runner exited. Exiting QuickAccent");
+                Terminate();
+            });
         }
         else
         {
-            Logger.LogInfo($"QuickAccent started detached from PowerToys Runner.");
+            Logger.LogInfo("QuickAccent started detached from PowerToys Runner.");
             _powerToysRunnerPid = -1;
         }
     }
 
     private static void Terminate()
     {
-        Application.Current.Dispatcher.BeginInvoke(() =>
+        var app = App.Current;
+        app?.DispatcherQueueForApp?.TryEnqueue(() =>
         {
             _tokenSource.Cancel();
-            Application.Current.Shutdown();
+            app.Exit();
         });
     }
 }
