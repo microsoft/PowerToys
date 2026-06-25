@@ -146,13 +146,7 @@ public sealed partial class MainListPage : DynamicListPage,
         // The all apps page will kick off a BG thread to start loading apps.
         // We just want to know when it is done.
         var allApps = AllAppsCommandProvider.Page;
-        allApps.PropChanged += (s, p) =>
-        {
-            if (p.PropertyName == nameof(allApps.IsLoading))
-            {
-                IsLoading = ActuallyLoading();
-            }
-        };
+        allApps.PropChanged += AllApps_PropChanged;
 
         WeakReferenceMessenger.Default.Register<ClearSearchMessage>(this);
         WeakReferenceMessenger.Default.Register<UpdateFallbackItemsMessage>(this);
@@ -167,6 +161,14 @@ public sealed partial class MainListPage : DynamicListPage,
     private void TlcManager_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(IsLoading))
+        {
+            IsLoading = ActuallyLoading();
+        }
+    }
+
+    private void AllApps_PropChanged(object? sender, IPropChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AllAppsCommandProvider.Page.IsLoading))
         {
             IsLoading = ActuallyLoading();
         }
@@ -781,6 +783,8 @@ public sealed partial class MainListPage : DynamicListPage,
         _tlcManager.PropertyChanged -= TlcManager_PropertyChanged;
         _tlcManager.TopLevelCommands.CollectionChanged -= Commands_CollectionChanged;
         _tlcManager.PinnedCommands.CollectionChanged -= PinnedCommands_CollectionChanged;
+
+        AllAppsCommandProvider.Page.PropChanged -= AllApps_PropChanged;
 
         if (_settingsService is not null)
         {

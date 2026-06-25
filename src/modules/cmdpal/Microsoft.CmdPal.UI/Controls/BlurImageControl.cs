@@ -94,6 +94,7 @@ internal sealed partial class BlurImageControl : Control
     private SpriteVisual? _effectVisual;
     private CompositionEffectBrush? _effectBrush;
     private CompositionSurfaceBrush? _imageBrush;
+    private LoadedImageSurface? _lastLoadedSurface;
 
     public BlurImageControl()
     {
@@ -379,7 +380,15 @@ internal sealed partial class BlurImageControl : Control
             }
 
             Logger.LogDebug($"Starting load of BlurImageControl from '{bitmapImage.UriSource}'");
+
+            // Unsubscribe from previous surface to prevent event handler accumulation
+            if (_lastLoadedSurface is not null)
+            {
+                _lastLoadedSurface.LoadCompleted -= OnLoadedSurfaceOnLoadCompleted;
+            }
+
             var loadedSurface = LoadedImageSurface.StartLoadFromUri(bitmapImage.UriSource);
+            _lastLoadedSurface = loadedSurface;
             loadedSurface.LoadCompleted += OnLoadedSurfaceOnLoadCompleted;
             SetLoadedSurfaceToBrush(loadedSurface);
             _effectBrush?.SetSourceParameter(ImageSourceParameterName, _imageBrush);

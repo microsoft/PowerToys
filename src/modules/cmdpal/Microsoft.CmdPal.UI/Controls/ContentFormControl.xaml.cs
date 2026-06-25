@@ -94,6 +94,12 @@ public sealed partial class ContentFormControl : UserControl
 
     private void DisplayCard(AdaptiveCardParseResult result)
     {
+        // Unsubscribe from the previous rendered card to prevent memory leaks
+        if (_renderedCard is not null)
+        {
+            _renderedCard.Action -= Rendered_Action;
+        }
+
         _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
         ContentGrid.Children.Clear();
         if (_renderedCard.FrameworkElement is not null)
