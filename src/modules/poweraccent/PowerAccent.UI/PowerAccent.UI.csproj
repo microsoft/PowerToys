@@ -10,6 +10,13 @@
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <UseWinUI>true</UseWinUI>
+    <!--
+      App.xaml lives at the project root, where the WinUI SDK's default glob already
+      includes it as the ApplicationDefinition. Disable that default so the explicit
+      <ApplicationDefinition Include="App.xaml" /> below is the single one (siblings such
+      as Hosts avoid this by nesting App.xaml in a subfolder; QuickAccess.UI uses this flag).
+    -->
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
@@ -25,13 +32,14 @@
 
   <PropertyGroup>
     <!--
-      Only project GPOWrapper here: Program.cs calls PowerToys.GPOWrapper.GPOWrapper directly
-      (mirroring Hosts). The keyboard service (KeyboardListener) is consumed solely by
-      PowerAccent.Core, whose own CsWinRTIncludes projects PowerToys.PowerAccentKeyboardService
-      transitively - just as the original WPF UI had no CsWinRTIncludes at all. Do NOT add the
-      keyboard service here, or its projection would need a winmd CsWinRTInputs the UI never produces.
+      Do NOT set CsWinRTIncludes here. Both WinRT components the UI touches - PowerToys.GPOWrapper
+      (called directly from Program.cs) and PowerToys.PowerAccentKeyboardService (used by Core) -
+      are already projected by PowerAccent.Core, which the UI references, so their managed
+      projections arrive transitively. Listing either here generates a SECOND copy of the same
+      types and breaks the build with CS0436 (e.g. GpoRuleConfigured defined both in this project's
+      generated files and in PowerAccent.Core). This matches the original WPF UI, which had no
+      CsWinRTIncludes at all.
     -->
-    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>

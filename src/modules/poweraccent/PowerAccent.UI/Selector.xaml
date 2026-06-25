@@ -4,16 +4,12 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window"
-    xmlns:converters="using:CommunityToolkit.WinUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PowerAccent.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
     <Grid x:Name="RootContent">
-        <Grid.Resources>
-            <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
-        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -67,7 +63,7 @@
             Grid.Row="1"
             MinWidth="600"
             Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-            Visibility="{x:Bind ViewModel.ShowDescription, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+            Visibility="{x:Bind ViewModel.DescriptionVisibility, Mode=OneWay}">
             <TextBlock
                 x:Name="CharacterName"
                 MaxHeight="36"

@@ -5,6 +5,7 @@
 using System.Collections.ObjectModel;
 
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml;
 
 namespace PowerAccent.UI;
 
@@ -19,6 +20,12 @@ public partial class SelectorViewModel : ObservableObject
     [ObservableProperty]
     private string _description = string.Empty;
 
+    // Bound directly as a Visibility (no value converter). The Selector's XAML root is a
+    // Window (TransparentWindow), and x:Bind's {StaticResource} converter resolution requires
+    // a FrameworkElement root, so a BoolToVisibilityConverter cannot be used here.
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DescriptionVisibility))]
     private bool _showDescription;
+
+    public Visibility DescriptionVisibility => ShowDescription ? Visibility.Visible : Visibility.Collapsed;
 }

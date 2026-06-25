@@ -141,7 +141,8 @@ internal static class WindowsFunctions
 
         double dpi = dpiRaw / 96d;
         var location = new Point(monitorInfo.rcWork.left, monitorInfo.rcWork.top);
-        return (location, monitorInfo.rcWork.Size, dpi);
+        var size = new Size(monitorInfo.rcWork.right - monitorInfo.rcWork.left, monitorInfo.rcWork.bottom - monitorInfo.rcWork.top);
+        return (location, size, dpi);
     }
 
     public static bool IsCapsLockState()
