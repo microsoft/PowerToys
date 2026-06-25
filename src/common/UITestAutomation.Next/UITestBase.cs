@@ -296,8 +296,9 @@ public class UITestBase : IDisposable
 
     /// <summary>
     /// Bring the desktop to a known state before launching: minimize every window, dismiss any
-    /// lingering popup with <c>Esc</c>, and kill the stale PowerToys processes in
-    /// <see cref="StaleProcessNames"/>. Best-effort — never blocks a test from starting.
+    /// lingering popup with <c>Esc</c>, kill the stale PowerToys processes in
+    /// <see cref="StaleProcessNames"/>, and suppress the first-run Welcome/What's-new windows.
+    /// Best-effort — never blocks a test from starting.
     /// </summary>
     private void PreTestHygiene()
     {
@@ -314,6 +315,10 @@ public class UITestBase : IDisposable
             {
                 WindowControl.TryKillProcessByName(processName);
             }
+
+            // Stop the runner popping the centered "Welcome to PowerToys" / "What's new" window on a
+            // fresh profile (e.g. CI) — it steals centre-screen mouse gestures from module overlays.
+            SettingsConfigHelper.SuppressFirstRunExperience();
         }
         catch
         {

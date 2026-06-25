@@ -327,3 +327,14 @@ MouseHelper.LeftClick();               // or Drag(...) for a free-form box
     You do **not** need to minimize or move the covering window — an overlay module like the Measure
     Tool captures the gesture even with the Settings window underneath (verified); the failure was the
     off-screen position, not the window covering the centre.
+17. **The first-run "Welcome to PowerToys" / "What's new" window appears on a fresh profile (CI) and
+    eats centre-screen gestures.** On a clean profile the runner opens the OOBE (Welcome) or SCOOBE
+    (what's-new) window — **centered and topmost** — so a coordinate measurement at screen-centre lands
+    on it instead of the module overlay (empty clipboard). It never shows on a dev box because your
+    profile already marked them seen — the *same* local-passes/CI-fails trap as Pitfall 16, and the
+    hardest to spot because the runner log still shows the hotkey firing and the module activating. The
+    harness now suppresses both in `PreTestHygiene` via
+    `SettingsConfigHelper.SuppressFirstRunExperience()` (seeds `oobe_settings.json`
+    `openedAtFirstLaunch=true` + `settings.json` `show_whats_new_after_updates=false`, mirroring the
+    runner's own gating). If you drive coordinate gestures and see "passes local, empty result on CI",
+    suspect a stray fresh-run window first.
