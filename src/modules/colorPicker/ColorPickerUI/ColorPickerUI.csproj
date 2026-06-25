@@ -10,7 +10,7 @@
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
     <RootNamespace>ColorPicker</RootNamespace>
     <AssemblyName>PowerToys.ColorPickerUI</AssemblyName>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationManifest>App.manifest</ApplicationManifest>
     <UseWinUI>true</UseWinUI>
     <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -104,6 +104,10 @@
     <Compile Remove="MainWindow.xaml.cs" />
     <Compile Remove="ColorEditorWindow.xaml.cs" />
     <Compile Remove="ZoomWindow.xaml.cs" />
+    <!-- NOTE: the quarantined root MainWindow.xaml declares the SAME x:Class
+         "ColorPicker.MainWindow" as the live ColorPickerXAML\MainWindow.xaml. When
+         sub-project C ports the WPF picking tooltip, DELETE or RENAME this root file
+         (do not merely un-quarantine it) to avoid a duplicate-partial-class build break. -->
     <Page Remove="MainWindow.xaml" />
     <Page Remove="ColorEditorWindow.xaml" />
     <Page Remove="ZoomWindow.xaml" />

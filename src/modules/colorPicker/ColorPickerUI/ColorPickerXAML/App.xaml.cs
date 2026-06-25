@@ -59,6 +59,8 @@ namespace ColorPicker
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             // Allow only one instance of Color Picker.
+            // Single-instance guard. The mutex is intentionally released by OS process
+            // exit (this is an unpackaged single-process app); no explicit ReleaseMutex.
             _instanceMutex = new Mutex(true, @"Local\PowerToys_ColorPicker_InstanceMutex", out bool createdNew);
             if (!createdNew)
             {
@@ -74,6 +76,7 @@ namespace ColorPicker
                 RunnerHelper.WaitForPowerToysRunner(_powerToysRunnerPid, () =>
                 {
                     Logger.LogInfo("PowerToys Runner exited. Exiting ColorPicker");
+                    GetService<System.Threading.CancellationTokenSource>()?.Cancel();
                     Environment.Exit(0);
                 });
             }
@@ -86,6 +89,12 @@ namespace ColorPicker
             Window.Activate();
         }
 
+        /// <summary>
+        /// Gets the application-wide cancellation token (replaces the WPF
+        /// <c>[Export] ExitToken</c>). Valid only after the <see cref="App"/> has been
+        /// constructed (the DI provider is built in the constructor); do not read it
+        /// from a static initializer.
+        /// </summary>
         public static System.Threading.CancellationToken ExitToken =>
             GetService<System.Threading.CancellationTokenSource>().Token;
 
