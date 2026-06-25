@@ -11,7 +11,6 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Windows.Foundation;
 using Windows.Graphics;
-using CorePoint = PowerAccent.Core.Point;
 using CoreSize = PowerAccent.Core.Size;
 
 namespace PowerAccent.UI;

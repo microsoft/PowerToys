@@ -24,7 +24,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CsWinRTIncludes>PowerToys.GPOWrapper;PowerToys.PowerAccentKeyboardService</CsWinRTIncludes>
+    <!--
+      Only project GPOWrapper here: Program.cs calls PowerToys.GPOWrapper.GPOWrapper directly
+      (mirroring Hosts). The keyboard service (KeyboardListener) is consumed solely by
+      PowerAccent.Core, whose own CsWinRTIncludes projects PowerToys.PowerAccentKeyboardService
+      transitively - just as the original WPF UI had no CsWinRTIncludes at all. Do NOT add the
+      keyboard service here, or its projection would need a winmd CsWinRTInputs the UI never produces.
+    -->
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
     <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>

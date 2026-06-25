@@ -216,7 +216,7 @@
             "WinUI3Apps\\PowerToys.PowerAccent.dll",
             "WinUI3Apps\\PowerToys.PowerAccent.exe",
             "PowerToys.PowerAccentModuleInterface.dll",
-            "PowerToys.PowerAccentKeyboardService.dll",
+            "WinUI3Apps\\PowerToys.PowerAccentKeyboardService.dll",
 
             "PowerToys.PowerDisplayModuleInterface.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.dll",
