@@ -127,6 +127,8 @@ public partial class ListItemViewModel : CommandItemViewModel
 
         TextToSuggest = model.TextToSuggest;
         UpdateProperty(nameof(TextToSuggest));
+
+        UpdateHoverActions();
     }
 
     protected override void FetchProperty(string propertyName)
@@ -166,6 +168,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 break;
             case nameof(model.MoreCommands):
                 AddShowDetailsCommands();
+                UpdateHoverActions();
                 break;
             case nameof(model.Title):
                 UpdateProperty(nameof(Title));

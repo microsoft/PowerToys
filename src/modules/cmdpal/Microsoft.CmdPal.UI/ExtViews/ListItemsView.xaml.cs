@@ -220,6 +220,11 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        foreach (var removed in e.RemovedItems.OfType<ListItemViewModel>())
+        {
+            removed.SetListSelected(false);
+        }
+
         var vm = ViewModel;
         var li = ItemView.SelectedItem as ListItemViewModel;
 
@@ -230,6 +235,7 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        li.SetListSelected(true);
         _stickySelectedItem = li;
 
         // User explicitly changed selection — any pending force-first intent
@@ -255,6 +261,71 @@ public sealed partial class ListItemsView : UserControl,
                 li.Title,
                 "CommandPaletteSelectedItemChanged");
         }
+    }
+
+    private void ItemsList_ContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+    {
+        if (args.InRecycleQueue)
+        {
+            if (args.ItemContainer is ListViewItem recycledContainer)
+            {
+                recycledContainer.PointerEntered -= ListItemContainer_PointerEntered;
+                recycledContainer.PointerExited -= ListItemContainer_PointerExited;
+                recycledContainer.Tag = null;
+            }
+
+            return;
+        }
+
+        if (args.Item is not ListItemViewModel vm || !vm.IsInteractive)
+        {
+            return;
+        }
+
+        if (args.Phase == 0)
+        {
+            args.RegisterUpdateCallback(ItemsList_ContainerContentChanging);
+            return;
+        }
+
+        if (args.ItemContainer is ListViewItem listItemContainer)
+        {
+            listItemContainer.PointerEntered -= ListItemContainer_PointerEntered;
+            listItemContainer.PointerExited -= ListItemContainer_PointerExited;
+            listItemContainer.PointerEntered += ListItemContainer_PointerEntered;
+            listItemContainer.PointerExited += ListItemContainer_PointerExited;
+            listItemContainer.Tag = vm;
+        }
+    }
+
+    private void ListItemContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is not ListViewItem { Tag: ListItemViewModel vm })
+        {
+            return;
+        }
+
+        vm.SetRowHovered(true);
+        _ = Task.Run(vm.EnsureHoverActionsLoaded);
+    }
+
+    private void ListItemContainer_PointerExited(object sender, PointerRoutedEventArgs e)
+    {
+        if (sender is ListViewItem { Tag: ListItemViewModel vm })
+        {
+            vm.SetRowHovered(false);
+        }
+    }
+
+    private void HoverActionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { DataContext: CommandContextItemViewModel action })
+        {
+            return;
+        }
+
+        WeakReferenceMessenger.Default.Send(new PerformCommandMessage(action));
+        e.Handled = true;
     }
 
     private void ScrollToItem(ListItemViewModel li)

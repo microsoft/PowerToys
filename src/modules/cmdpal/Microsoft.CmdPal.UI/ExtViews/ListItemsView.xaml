@@ -349,6 +349,23 @@
             Separator="{StaticResource GridViewSeparatorItemStyle}"
             Small="{StaticResource IconGridViewItemStyle}" />
 
+        <DataTemplate x:Key="ListItemHoverActionTemplate" x:DataType="viewModels:CommandContextItemViewModel">
+            <Button
+                Width="28"
+                Height="28"
+                Padding="0"
+                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                Click="HoverActionButton_Click"
+                Style="{StaticResource SubtleButtonStyle}"
+                ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
+                <cpcontrols:IconBox
+                    Width="16"
+                    Height="16"
+                    SourceKey="{x:Bind Icon, Mode=OneWay}"
+                    SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
+            </Button>
+        </DataTemplate>
+
         <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
             <Grid
                 AutomationProperties.AutomationId="{x:Bind Command.Id, Mode=OneWay}"
@@ -357,6 +374,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="28" />
                     <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
@@ -419,9 +437,21 @@
                     IsTabStop="False"
                     ItemTemplate="{StaticResource TagTemplate}"
                     ItemsSource="{x:Bind VisibleTags, Mode=OneWay}"
-                    Visibility="{x:Bind HasTags, Mode=OneWay}">
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ShowTagsWhenNotHovering), Mode=OneWay, FallbackValue=Collapsed}">
                     <ItemsRepeater.Layout>
                         <StackLayout Orientation="Horizontal" Spacing="4" />
+                    </ItemsRepeater.Layout>
+                </ItemsRepeater>
+
+                <ItemsRepeater
+                    Grid.Column="3"
+                    Margin="0,0,8,0"
+                    VerticalAlignment="Center"
+                    ItemTemplate="{StaticResource ListItemHoverActionTemplate}"
+                    ItemsSource="{x:Bind HoverActions, Mode=OneWay}"
+                    Visibility="{x:Bind help:BindTransformers.BoolToVisibility(AreHoverActionsVisible), Mode=OneWay, FallbackValue=Collapsed}">
+                    <ItemsRepeater.Layout>
+                        <StackLayout Orientation="Horizontal" Spacing="2" />
                     </ItemsRepeater.Layout>
                 </ItemsRepeater>
             </Grid>
@@ -618,6 +648,7 @@
                             CanDragItems="True"
                             ContextCanceled="Items_OnContextCanceled"
                             ContextRequested="Items_OnContextRequested"
+                            ContainerContentChanging="ItemsList_ContainerContentChanging"
                             DoubleTapped="Items_DoubleTapped"
                             DragItemsCompleted="Items_DragItemsCompleted"
                             DragItemsStarting="Items_DragItemsStarting"
