@@ -1,9 +1,24 @@
 # PowerScripts (prototype)
 
 > **Status: prototype.** Write a small script once and surface it across PowerToys.
-> This folder currently contains the **working core**: the manifest schema, the registry, and the
-> shared executor (`PowerScripts.Host.exe`), plus two sample scripts. Surface integrations
-> (Explorer right-click and Keyboard Manager) are specified below and wired against this core.
+> This folder contains the **working core** (manifest schema, registry, shared executor
+> `PowerScripts.Host.exe`) plus sample scripts, and three **implemented surfaces**:
+> a Settings module page, the Explorer right-click menu, and the Keyboard Manager editor.
+
+## Implemented surfaces (prototype)
+
+| Surface | What it does | How |
+| --- | --- | --- |
+| **Settings module** | New "PowerScripts" page in the Settings app that lists installed scripts and has an enable toggle. Enabling/disabling installs/removes the Explorer context-menu entries. | `src/settings-ui/.../Views/PowerScriptsPage.xaml(.cs)` + `PowerScriptsViewModel`; reads `Host.exe list --json`; toggle runs `Host.exe shell-install`/`shell-uninstall`. |
+| **Explorer right-click** | Right-click a file → "PowerScript" submenu lists scripts whose manifest declares that extension; clicking runs the script on the file. | `Host.exe shell-install` writes `HKCU\Software\Classes\SystemFileAssociations\<ext>\shell\PowerScripts` cascading verbs → `Host.exe run <id> --files "%1"`. |
+| **Keyboard Manager** | A new "PowerScript" action in the KBM editor; pick a system script and assign it to a hotkey. | `KeyboardManagerEditorUI` action picker saves an ordinary `RunProgram` mapping → `Host.exe run <id>`. |
+
+### End-to-end demo
+
+1. **Settings**: open Settings → PowerScripts → see `convert_md_to_txt`, `volume_up`, etc.; toggle on.
+2. **Context menu**: right-click a `.md` file → PowerScript → "Convert Markdown to Text" → a `.txt` is written next to it.
+3. **Keyboard Manager**: KBM editor → add mapping → action "PowerScript" → pick "Volume Up" → assign a shortcut.
+
 
 ## The idea
 
@@ -35,7 +50,7 @@ authored once and appears everywhere it's declared.
   executor (`Execution/`).
 - **`PowerScripts.Host`** — the CLI every surface points at. `list --json` is the structured catalogue
   the KBM editor picker and future agents/MCP consume; `run <id>` executes.
-- **`samples/`** — `system-snapshot` (system) and `sha256-checksum` (file).
+- **`samples/`** — `system-snapshot` & `volume_up` (system), `sha256-checksum` & `convert_md_to_txt` (file).
 
 ### Scripts root
 
