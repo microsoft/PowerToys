@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Helpers;
 using PowerDisplay.Models;
 using Monitor = PowerDisplay.Common.Models.Monitor;
@@ -191,4 +192,28 @@ public partial class MainViewModel
                 .Where(m => m.IsHidden)
                 .Select(m => m.Id),
             MonitorIdComparer.Instance);
+
+    /// <summary>
+    /// Returns the set of monitor IDs that are currently hidden in persisted settings.
+    /// Uses a case-insensitive comparer consistent with the rest of the settings layer.
+    /// Intended for IPC reads; does NOT trigger monitor hardware discovery.
+    /// </summary>
+    public IReadOnlySet<string> GetHiddenMonitorIds()
+    {
+        var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+        return GetHiddenMonitorIds(settings);
+    }
+
+    /// <summary>
+    /// Returns the app's already-discovered monitor list (cache snapshot) for IPC reads.
+    /// Does NOT trigger hardware discovery. Hidden-monitor filtering is applied by the caller.
+    /// </summary>
+    public IReadOnlyList<Monitor> SnapshotMonitors()
+        => _monitorManager.Monitors;
+
+    /// <summary>
+    /// The app's live MonitorManager — used by the IPC set executor to perform hardware writes
+    /// (SetBrightnessAsync, SetContrastAsync, etc.) on the single hardware-owning instance.
+    /// </summary>
+    public MonitorManager MonitorManager => _monitorManager;
 }

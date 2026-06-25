@@ -221,6 +221,8 @@
             "PowerToys.PowerDisplayModuleInterface.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.exe",
+            "WinUI3Apps\\PowerToys.PowerDisplay.Cli.exe",
+            "WinUI3Apps\\PowerToys.PowerDisplay.Cli.dll",
             "PowerDisplay.Lib.dll",
             "PowerDisplay.Models.dll",
 

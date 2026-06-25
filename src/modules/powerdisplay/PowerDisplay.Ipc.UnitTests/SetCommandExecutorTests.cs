@@ -1,0 +1,566 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
+using PowerDisplay.Contracts;
+using PowerDisplay.Ipc;
+using Monitor = PowerDisplay.Common.Models.Monitor;
+
+namespace PowerDisplay.Ipc.UnitTests;
+
+/// <summary>
+/// Unit tests for <see cref="SetCommandExecutor"/>. Uses fake <see cref="IMonitorManager"/>
+/// implementations to cover all structured error categories (exit codes 1–5) and the
+/// success path (exit code 0 with before→after values).
+/// </summary>
+[TestClass]
+public class SetCommandExecutorTests
+{
+    // ─── Shared test fixtures ─────────────────────────────────────────────────
+    private static readonly IReadOnlySet<string> EmptyHidden =
+        new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Builds a <see cref="VcpCapabilities"/> that advertises the given VCP codes (no discrete values).
+    /// Used to make <see cref="Monitor.SupportsPowerState"/> / <see cref="Monitor.SupportsInputSource"/> return true.
+    /// </summary>
+    private static VcpCapabilities VcpCapsWithCodes(params byte[] codes)
+    {
+        var caps = new VcpCapabilities();
+        foreach (var code in codes)
+        {
+            caps.SupportedVcpCodes[code] = new VcpCodeInfo(code, $"0x{code:X2}");
+        }
+
+        return caps;
+    }
+
+    /// <summary>A monitor with brightness support, current value 42, GDI device name present.</summary>
+    private static Monitor BrightnessMon() => new()
+    {
+        Id = "A",
+        MonitorNumber = 1,
+        Name = "TestMon",
+        CommunicationMethod = "DDC/CI",
+        GdiDeviceName = @"\\.\DISPLAY1",
+        Capabilities = MonitorCapabilities.Brightness,
+        ReadValues = MonitorReadFlags.Brightness,
+        CurrentBrightness = 42,
+    };
+
+    /// <summary>A monitor with contrast support, current value 55.</summary>
+    private static Monitor ContrastMon() => new()
+    {
+        Id = "B",
+        MonitorNumber = 2,
+        Name = "ContrastMon",
+        CommunicationMethod = "DDC/CI",
+        Capabilities = MonitorCapabilities.Contrast,
+        ReadValues = MonitorReadFlags.Contrast,
+        CurrentContrast = 55,
+    };
+
+    // ─── MonitorNotFound (exit code 1) ────────────────────────────────────────
+    [TestMethod]
+    public async Task Set_UnknownMonitorNumber_ReturnsMonitorNotFound()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var req = new SetRequest { MonitorNumber = 9, Setting = "brightness", RawValue = "50" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.MonitorNotFound, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.MonitorNotFound, error.Error.ExitCode);
+    }
+
+    [TestMethod]
+    public async Task Set_HiddenMonitor_ReturnsMonitorNotFound()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var hidden = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "A" };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "brightness", RawValue = "50" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, hidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliExitCodes.MonitorNotFound, error!.Error.ExitCode);
+    }
+
+    // ─── OutOfRange (exit code 2) ─────────────────────────────────────────────
+    [TestMethod]
+    public async Task Set_Brightness_OutOfRange_High_ReturnsOutOfRange()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "brightness", RawValue = "999" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.OutOfRange, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.OutOfRange, error.Error.ExitCode);
+        Assert.AreEqual("brightness", error.Error.Setting);
+        Assert.IsNotNull(error.Error.ExpectedRange);
+        StringAssert.Contains(error.Error.ExpectedRange, "100");
+    }
+
+    [TestMethod]
+    public async Task Set_Brightness_OutOfRange_Negative_ReturnsOutOfRange()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "brightness", RawValue = "-1" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliExitCodes.OutOfRange, error!.Error.ExitCode);
+    }
+
+    [TestMethod]
+    public async Task Set_Contrast_OutOfRange_ReturnsOutOfRange()
+    {
+        var snapshot = new List<Monitor> { ContrastMon() };
+        var req = new SetRequest { MonitorNumber = 2, Setting = "contrast", RawValue = "101" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliErrorCodes.OutOfRange, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.OutOfRange, error.Error.ExitCode);
+        Assert.AreEqual("contrast", error.Error.Setting);
+    }
+
+    // ─── InvalidDiscreteValue (exit code 3) ───────────────────────────────────
+    [TestMethod]
+    public async Task Set_ColorTemperature_InvalidValue_ReturnsInvalidDiscreteValue()
+    {
+        var monitor = new Monitor
+        {
+            Id = "C",
+            MonitorNumber = 3,
+            Name = "ColorMon",
+            SupportsColorTemperature = true,
+            ReadValues = MonitorReadFlags.ColorTemperature,
+            CurrentColorTemperature = 0x05,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 3, Setting = "color-temperature", RawValue = "not-a-color" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, error.Error.ExitCode);
+        Assert.AreEqual("color-temperature", error.Error.Setting);
+    }
+
+    [TestMethod]
+    public async Task Set_Orientation_InvalidDegrees_ReturnsInvalidDiscreteValue()
+    {
+        var monitor = new Monitor
+        {
+            Id = "D",
+            MonitorNumber = 4,
+            Name = "OrientMon",
+            GdiDeviceName = @"\\.\DISPLAY4",
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 4, Setting = "orientation", RawValue = "45" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, error.Error.ExitCode);
+        Assert.AreEqual("orientation", error.Error.Setting);
+    }
+
+    [TestMethod]
+    public async Task Set_InputSource_ValueNotInSupportedList_ReturnsInvalidDiscreteValue()
+    {
+        var monitor = new Monitor
+        {
+            Id = "E",
+            MonitorNumber = 5,
+            Name = "InputMon",
+            VcpCapabilitiesInfo = VcpCapsWithCodes(0x60), // makes SupportsInputSource == true
+            ReadValues = MonitorReadFlags.InputSource,
+            CurrentInputSource = 0x11,
+        };
+
+        // SupportsInputSource is true (0x60 in VcpCapabilitiesInfo), so the support check passes.
+        // The raw value "0xZZ" fails hex-parse → executor returns InvalidDiscreteValue (exit 3).
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 5, Setting = "input-source", RawValue = "0xZZ" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliErrorCodes.InvalidDiscreteValue, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.InvalidDiscreteValue, error.Error.ExitCode);
+    }
+
+    // ─── UnsupportedFeature (exit code 4) ────────────────────────────────────
+    [TestMethod]
+    public async Task Set_Brightness_NotSupported_ReturnsUnsupportedFeature()
+    {
+        // Monitor with NO brightness capability flag
+        var monitor = new Monitor
+        {
+            Id = "F",
+            MonitorNumber = 6,
+            Name = "NoBrightnessMon",
+            Capabilities = MonitorCapabilities.None,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 6, Setting = "brightness", RawValue = "50" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
+        Assert.AreEqual("brightness", error.Error.Setting);
+        Assert.IsNotNull(error.Error.Hint);
+    }
+
+    [TestMethod]
+    public async Task Set_Orientation_NoGdiDevice_ReturnsUnsupportedFeature()
+    {
+        // Monitor with empty GdiDeviceName — orientation cannot be rotated
+        var monitor = new Monitor
+        {
+            Id = "G",
+            MonitorNumber = 7,
+            Name = "NoGdiMon",
+            GdiDeviceName = string.Empty,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 7, Setting = "orientation", RawValue = "90" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
+        Assert.AreEqual("orientation", error.Error.Setting);
+    }
+
+    [TestMethod]
+    public async Task Set_Contrast_NotSupported_ReturnsUnsupportedFeature()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() }; // Brightness only, no contrast
+        var req = new SetRequest { MonitorNumber = 1, Setting = "contrast", RawValue = "50" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliErrorCodes.UnsupportedFeature, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.UnsupportedFeature, error.Error.ExitCode);
+    }
+
+    // ─── HardwareFailure (exit code 5) ────────────────────────────────────────
+    [TestMethod]
+    public async Task Set_Brightness_HardwareFailure_ReturnsHardwareFailure()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "brightness", RawValue = "50" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new FailingManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.HardwareFailure, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.HardwareFailure, error.Error.ExitCode);
+        Assert.AreEqual("brightness", error.Error.Setting);
+        Assert.AreEqual("50", error.Error.Requested);
+    }
+
+    [TestMethod]
+    public async Task Set_Contrast_HardwareFailure_MessageFromManager()
+    {
+        var snapshot = new List<Monitor> { ContrastMon() };
+        var req = new SetRequest { MonitorNumber = 2, Setting = "contrast", RawValue = "60" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new FailingManager("DDC write timed out"), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.AreEqual(CliExitCodes.HardwareFailure, error!.Error.ExitCode);
+        Assert.AreEqual("DDC write timed out", error.Error.Message);
+    }
+
+    // ─── Success paths (exit code 0) ──────────────────────────────────────────
+    [TestMethod]
+    public async Task Set_Brightness_Success_ReturnsBeforeAfterValues()
+    {
+        var monitor = BrightnessMon();
+        monitor.CurrentBrightness = 30;
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "brightness", RawValue = "70" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(error);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("brightness", result!.Setting);
+        Assert.AreEqual(30, result.BeforeRaw);
+        Assert.AreEqual("30%", result.BeforeDisplay);
+        Assert.AreEqual(70, result.AfterRaw);
+        Assert.AreEqual("70%", result.AfterDisplay);
+        Assert.AreEqual(1, result.Monitor.Number);
+    }
+
+    [TestMethod]
+    public async Task Set_Brightness_BoundaryMin_Success()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "brightness", RawValue = "0" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(error);
+        Assert.AreEqual(0, result!.AfterRaw);
+        Assert.AreEqual("0%", result.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task Set_Brightness_BoundaryMax_Success()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "brightness", RawValue = "100" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(error);
+        Assert.AreEqual(100, result!.AfterRaw);
+        Assert.AreEqual("100%", result.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task Set_Contrast_Success_BeforeAfterDisplay()
+    {
+        var snapshot = new List<Monitor> { ContrastMon() };
+        var req = new SetRequest { MonitorNumber = 2, Setting = "contrast", RawValue = "80" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(error);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("contrast", result!.Setting);
+        Assert.AreEqual(55, result.BeforeRaw);
+        Assert.AreEqual("55%", result.BeforeDisplay);
+        Assert.AreEqual(80, result.AfterRaw);
+        Assert.AreEqual("80%", result.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task Set_Brightness_BeforeUnknown_OmitsBeforeRawAndDisplay()
+    {
+        var monitor = new Monitor
+        {
+            Id = "A",
+            MonitorNumber = 1,
+            Name = "TestMon",
+            Capabilities = MonitorCapabilities.Brightness,
+            ReadValues = MonitorReadFlags.None, // supported but not read → before is unknown
+            CurrentBrightness = 0, // default, should not be reported
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "brightness", RawValue = "60" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(error);
+        Assert.IsNotNull(result);
+        Assert.IsNull(result!.BeforeRaw);
+        Assert.IsNull(result.BeforeDisplay);
+        Assert.AreEqual(60, result.AfterRaw);
+    }
+
+    [TestMethod]
+    public async Task Set_Orientation_Success_BeforeAfterInDegrees()
+    {
+        var monitor = new Monitor
+        {
+            Id = "H",
+            MonitorNumber = 8,
+            Name = "OrientMon",
+            GdiDeviceName = @"\\.\DISPLAY8",
+            Orientation = 0, // currently 0°
+            ReadValues = MonitorReadFlags.Orientation,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 8, Setting = "orientation", RawValue = "90" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(error);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("orientation", result!.Setting);
+        Assert.AreEqual(0, result.BeforeRaw);    // 0 degrees
+        Assert.AreEqual("0°", result.BeforeDisplay);
+        Assert.AreEqual(90, result.AfterRaw);    // 90 degrees
+        Assert.AreEqual("90°", result.AfterDisplay);
+    }
+
+    [TestMethod]
+    public async Task Set_ByMonitorId_Success()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var req = new SetRequest { MonitorId = "A", Setting = "brightness", RawValue = "55" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(error);
+        Assert.IsNotNull(result);
+        Assert.AreEqual("A", result!.Monitor.Id);
+    }
+
+    // ─── PowerState confirmation gate ────────────────────────────────────────
+    [TestMethod]
+    public async Task Set_PowerState_BlankingWithoutConfirm_ReturnsArgumentError()
+    {
+        var monitor = new Monitor
+        {
+            Id = "I",
+            MonitorNumber = 9,
+            Name = "PowerMon",
+            VcpCapabilitiesInfo = VcpCapsWithCodes(0xD6), // makes SupportsPowerState == true
+            ReadValues = MonitorReadFlags.PowerState,
+            CurrentPowerState = 0x01, // On
+        };
+        var snapshot = new List<Monitor> { monitor };
+
+        // 0x04 = Off (DPM) — a display-blanking state
+        var req = new SetRequest { MonitorNumber = 9, Setting = "power-state", RawValue = "0x04", ConfirmPowerOff = false };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
+    }
+
+    [TestMethod]
+    public async Task Set_PowerState_BlankingWithConfirm_Proceeds()
+    {
+        var monitor = new Monitor
+        {
+            Id = "I",
+            MonitorNumber = 9,
+            Name = "PowerMon",
+            VcpCapabilitiesInfo = VcpCapsWithCodes(0xD6), // makes SupportsPowerState == true
+            ReadValues = MonitorReadFlags.PowerState,
+            CurrentPowerState = 0x01,
+        };
+        var snapshot = new List<Monitor> { monitor };
+        var req = new SetRequest { MonitorNumber = 9, Setting = "power-state", RawValue = "0x04", ConfirmPowerOff = true };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        // No error — the confirmation flag was provided
+        Assert.IsNull(error);
+        Assert.IsNotNull(result);
+    }
+
+    // ─── Unknown setting name ─────────────────────────────────────────────────
+    [TestMethod]
+    public async Task Set_UnknownSetting_ReturnsArgumentError()
+    {
+        var snapshot = new List<Monitor> { BrightnessMon() };
+        var req = new SetRequest { MonitorNumber = 1, Setting = "flicker-rate", RawValue = "60" };
+
+        var (result, error) = await SetCommandExecutor.ExecuteAsync(new NoOpManager(), snapshot, EmptyHidden, req, default);
+
+        Assert.IsNull(result);
+        Assert.IsNotNull(error);
+        Assert.AreEqual(CliErrorCodes.ArgumentError, error!.Error.Code);
+        Assert.AreEqual(CliExitCodes.ArgumentError, error.Error.ExitCode);
+    }
+
+    // ─── Fake IMonitorManager implementations ────────────────────────────────
+    /// <summary>Always returns Success for all write operations.</summary>
+    private sealed class NoOpManager : IMonitorManager
+    {
+        public void SetMaxCompatibilityMode(bool enabled)
+        {
+        }
+
+        public Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Monitor>>(new List<Monitor>());
+
+        public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetContrastAsync(string monitorId, int contrast, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetVolumeAsync(string monitorId, int volume, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetColorTemperatureAsync(string monitorId, int colorTemperature, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetInputSourceAsync(string monitorId, int inputSource, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Success());
+
+        public Task<MonitorOperationResult> SetRotationAsync(string monitorId, int orientation, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Success());
+    }
+
+    /// <summary>Always returns Failure for all write operations.</summary>
+    private sealed class FailingManager : IMonitorManager
+    {
+        private readonly string _errorMessage;
+
+        public FailingManager(string errorMessage = "simulated hardware failure")
+        {
+            _errorMessage = errorMessage;
+        }
+
+        public void SetMaxCompatibilityMode(bool enabled)
+        {
+        }
+
+        public Task<IReadOnlyList<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Monitor>>(new List<Monitor>());
+
+        public Task<MonitorOperationResult> SetBrightnessAsync(string monitorId, int brightness, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
+
+        public Task<MonitorOperationResult> SetContrastAsync(string monitorId, int contrast, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
+
+        public Task<MonitorOperationResult> SetVolumeAsync(string monitorId, int volume, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
+
+        public Task<MonitorOperationResult> SetColorTemperatureAsync(string monitorId, int colorTemperature, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
+
+        public Task<MonitorOperationResult> SetInputSourceAsync(string monitorId, int inputSource, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
+
+        public Task<MonitorOperationResult> SetPowerStateAsync(string monitorId, int powerState, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
+
+        public Task<MonitorOperationResult> SetRotationAsync(string monitorId, int orientation, CancellationToken cancellationToken = default)
+            => Task.FromResult(MonitorOperationResult.Failure(_errorMessage));
+    }
+}
