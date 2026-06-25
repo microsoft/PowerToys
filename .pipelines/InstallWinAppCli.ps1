@@ -11,8 +11,9 @@ $ErrorActionPreference = 'Stop'
 # the standalone CLI zip (rather than the MSIX / winget) keeps this working on agents that lack
 # the App Installer and avoids MSIX registration entirely.
 $Version = 'v0.3.2'
+$NormalizedPlatform = if ([string]::IsNullOrWhiteSpace($Platform)) { 'x64' } else { $Platform.ToLowerInvariant() }
 
-switch ($Platform)
+switch ($NormalizedPlatform)
 {
     'arm64'
     {
