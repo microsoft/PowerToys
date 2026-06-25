@@ -1,0 +1,3 @@
+<Project>
+  <!-- Empty: stops MSBuild from walking up to the repo-root targets for the prototype. -->
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PowerScripts.Host</RootNamespace>
+    <AssemblyName>PowerScripts.Host</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PowerScripts.Core\PowerScripts.Core.csproj" />
+  </ItemGroup>
+</Project>

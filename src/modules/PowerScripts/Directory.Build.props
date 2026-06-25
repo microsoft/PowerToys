@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    PROTOTYPE-ONLY build props for the PowerScripts module.
+    Intentionally does NOT import the repo-root Directory.Build.props so the
+    prototype stays isolated from StyleCop / TreatWarningsAsErrors / Central
+    Package Management while we iterate. Before promoting PowerScripts out of
+    prototype status, delete this file so the projects inherit the standard
+    PowerToys build configuration and analyzers.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+</Project>

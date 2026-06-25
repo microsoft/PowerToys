@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "system-snapshot",
+  "name": "System Snapshot",
+  "description": "Show computer name, OS and uptime.",
+  "kind": "system",
+  "runtime": "powershell",
+  "entry": "run.ps1",
+  "surfaces": ["keyboardManager", "commandPalette"],
+  "capabilities": ["systemInfo"],
+  "elevation": "asInvoker"
+}

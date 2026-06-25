@@ -1,0 +1,77 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerScripts.Core.Manifest;
+
+namespace PowerScripts.Core.Tests;
+
+[TestClass]
+public class ManifestTests
+{
+    [TestMethod]
+    public void Serializer_RoundTrips_WithCamelCaseEnums()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Id = "demo",
+            Name = "Demo",
+            Kind = ScriptKind.File,
+            Runtime = ScriptRuntime.PowerShell,
+            Entry = "run.ps1",
+            Input = new ScriptInput { Extensions = { ".png" }, MinFiles = 1, MaxFiles = 0 },
+            Output = new ScriptOutput { Type = ScriptOutputType.SideEffect },
+            Surfaces = { "contextMenu" },
+        };
+
+        var json = ManifestSerializer.Serialize(manifest);
+        StringAssert.Contains(json, "\"kind\": \"file\"");
+        StringAssert.Contains(json, "\"runtime\": \"powerShell\"");
+
+        var back = ManifestSerializer.Deserialize(json);
+        Assert.IsNotNull(back);
+        Assert.AreEqual(ScriptKind.File, back!.Kind);
+        Assert.AreEqual(ScriptOutputType.SideEffect, back.Output!.Type);
+        Assert.AreEqual(".png", back.Input!.Extensions[0]);
+    }
+
+    [TestMethod]
+    public void Validator_Flags_IdFolderMismatch()
+    {
+        var manifest = new PowerScriptManifest { Id = "abc", Name = "x", Entry = "run.ps1" };
+        var errors = ManifestValidator.Validate(manifest, folderName: "different");
+        Assert.IsTrue(errors.Any(e => e.Contains("must match the folder name")));
+    }
+
+    [TestMethod]
+    public void Validator_Flags_FileKind_WithoutExtensions()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Id = "abc",
+            Name = "x",
+            Entry = "run.ps1",
+            Kind = ScriptKind.File,
+        };
+
+        var errors = ManifestValidator.Validate(manifest, "abc");
+        Assert.IsTrue(errors.Any(e => e.Contains("input.extensions")));
+    }
+
+    [TestMethod]
+    public void Validator_Flags_MaxFiles_LessThanMin()
+    {
+        var manifest = new PowerScriptManifest
+        {
+            Id = "abc",
+            Name = "x",
+            Entry = "run.ps1",
+            Kind = ScriptKind.File,
+            Input = new ScriptInput { Extensions = { ".png" }, MinFiles = 3, MaxFiles = 2 },
+        };
+
+        var errors = ManifestValidator.Validate(manifest, "abc");
+        Assert.IsTrue(errors.Any(e => e.Contains("maxFiles")));
+    }
+}

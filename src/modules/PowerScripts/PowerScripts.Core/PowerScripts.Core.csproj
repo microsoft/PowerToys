@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PowerScripts.Core</RootNamespace>
+    <AssemblyName>PowerScripts.Core</AssemblyName>
+  </PropertyGroup>
+</Project>

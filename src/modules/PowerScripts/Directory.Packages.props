@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    PROTOTYPE-ONLY: stops NuGet from discovering the repo-root Directory.Packages.props and
+    disables Central Package Management so the prototype projects can pin their own PackageReference
+    versions in isolation. Remove together with the local Directory.Build.props when promoting the
+    module to the standard PowerToys build.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>
