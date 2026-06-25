@@ -208,13 +208,13 @@ public partial class PowerAccent : IDisposable
 
             case InputType.Right:
                 {
-                    SendKeys.SendWait("{RIGHT}");
+                    WindowsFunctions.SendArrowKey(left: false);
                     break;
                 }
 
             case InputType.Left:
                 {
-                    SendKeys.SendWait("{LEFT}");
+                    WindowsFunctions.SendArrowKey(left: true);
                     break;
                 }
 
