@@ -34,28 +34,12 @@
 #ifndef DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
 #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
 #endif
-// Undocumented but stable composition API used by the shell for acrylic.
-enum ACCENT_STATE
-{
-    ACCENT_DISABLED = 0,
-    ACCENT_ENABLE_BLURBEHIND = 3,
-    ACCENT_ENABLE_ACRYLICBLURBEHIND = 4,
-};
-struct ACCENT_POLICY
-{
-    DWORD AccentState;
-    DWORD AccentFlags;
-    DWORD GradientColor; // 0xAABBGGRR
-    DWORD AnimationId;
-};
-struct WINDOWCOMPOSITIONATTRIBDATA
-{
-    DWORD Attrib;
-    PVOID pvData;
-    SIZE_T cbData;
-};
-#define WCA_ACCENT_POLICY 19
-typedef BOOL(WINAPI* PFN_SetWindowCompositionAttribute)(HWND, WINDOWCOMPOSITIONATTRIBDATA*);
+#ifndef DWMWA_SYSTEMBACKDROP_TYPE
+#define DWMWA_SYSTEMBACKDROP_TYPE 38
+#endif
+#ifndef DWMSBT_TRANSIENTWINDOW
+#define DWMSBT_TRANSIENTWINDOW 3
+#endif
 
 namespace AltTabStyle
 {
@@ -86,9 +70,15 @@ namespace AltTabStyle
         return value != 0;
     }
 
-    constexpr DWORD AcrylicGradientABGR(bool light)
+    // Opaque approximation of the acrylic tint (alpha dropped), used as the
+    // backdrop fill on OS builds without the public system-backdrop API.
+    constexpr COLORREF AbgrToRef(DWORD abgr)
     {
-        return light ? AcrylicThinGradientLightABGR : AcrylicThinGradientDarkABGR;
+        return RGB(abgr & 0xFF, (abgr >> 8) & 0xFF, (abgr >> 16) & 0xFF);
+    }
+    constexpr COLORREF BackdropSolidRef(bool light)
+    {
+        return AbgrToRef(light ? AcrylicThinGradientLightABGR : AcrylicThinGradientDarkABGR);
     }
 
     inline COLORREF AccentFallbackRef() { return RGB(0, 120, 215); }
@@ -141,22 +131,67 @@ namespace AltTabStyle
     }
 }
 
-static void EnableAcrylic(HWND hwnd, DWORD gradientColorABGR)
+// True on Windows 11 22H2+ (build 22621), where DWMWA_SYSTEMBACKDROP_TYPE is a
+// public, documented way to get acrylic. Below that (Windows 10, Windows 11
+// 21H2) we fall back to an opaque solid fill instead of the private composition
+// API. RtlGetVersion is used because GetVersionEx is shimmed by app compat.
+static bool SupportsSystemBackdrop()
 {
-    static PFN_SetWindowCompositionAttribute fn =
-        reinterpret_cast<PFN_SetWindowCompositionAttribute>(
-            GetProcAddress(GetModuleHandleW(L"user32.dll"), "SetWindowCompositionAttribute"));
-    if (!fn)
-        return;
-    ACCENT_POLICY accent = {};
-    accent.AccentState = ACCENT_ENABLE_ACRYLICBLURBEHIND;
-    accent.AccentFlags = 0;
-    accent.GradientColor = gradientColorABGR;
-    WINDOWCOMPOSITIONATTRIBDATA data = {};
-    data.Attrib = WCA_ACCENT_POLICY;
-    data.pvData = &accent;
-    data.cbData = sizeof(accent);
-    fn(hwnd, &data);
+    using RtlGetVersionPtr = LONG(WINAPI*)(PRTL_OSVERSIONINFOW);
+    static const DWORD build = []() -> DWORD {
+        if (HMODULE nt = GetModuleHandleW(L"ntdll.dll"))
+        {
+            auto fn = reinterpret_cast<RtlGetVersionPtr>(GetProcAddress(nt, "RtlGetVersion"));
+            RTL_OSVERSIONINFOW vi{};
+            vi.dwOSVersionInfoSize = sizeof(vi);
+            if (fn && fn(&vi) == 0)
+                return vi.dwBuildNumber;
+        }
+        return 0;
+    }();
+    return build >= 22621;
+}
+
+// thumbHost fallback-fill state. On the acrylic path thumbHost paints nothing so
+// the system backdrop shows through; on the fallback path ThumbHostProc fills it
+// opaque with this tinted brush.
+static HBRUSH g_thumbSolidBrush = nullptr;
+static bool g_thumbSolidMode = false;
+
+static LRESULT CALLBACK ThumbHostProc(HWND h, UINT msg, WPARAM w, LPARAM l)
+{
+    if (msg == WM_ERASEBKGND)
+    {
+        if (g_thumbSolidMode && g_thumbSolidBrush)
+        {
+            RECT rc{};
+            GetClientRect(h, &rc);
+            FillRect(reinterpret_cast<HDC>(w), &rc, g_thumbSolidBrush);
+        }
+        return 1;
+    }
+    return DefWindowProcW(h, msg, w, l);
+}
+
+// Apply the overlay backdrop to thumbHost. Win11 22H2+ gets public acrylic via
+// DWMWA_SYSTEMBACKDROP_TYPE; older builds get an opaque tinted fill.
+static void ApplyBackdrop(HWND hwnd, bool light)
+{
+    if (SupportsSystemBackdrop())
+    {
+        g_thumbSolidMode = false;
+        MARGINS glass{ -1, -1, -1, -1 };
+        DwmExtendFrameIntoClientArea(hwnd, &glass);
+        int backdrop = DWMSBT_TRANSIENTWINDOW;
+        DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop, sizeof(backdrop));
+    }
+    else
+    {
+        g_thumbSolidMode = true;
+        if (g_thumbSolidBrush)
+            DeleteObject(g_thumbSolidBrush);
+        g_thumbSolidBrush = CreateSolidBrush(AltTabStyle::BackdropSolidRef(light));
+    }
 }
 
 // =================== Window enumeration / activation ===================
@@ -396,7 +431,7 @@ bool Switcher::Init(HINSTANCE instance)
 
     WNDCLASSW hc = {};
     hc.style = CS_HREDRAW | CS_VREDRAW;
-    hc.lpfnWndProc = &DefWindowProcW;
+    hc.lpfnWndProc = &ThumbHostProc;
     hc.hInstance = hinst;
     hc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     hc.hbrBackground = nullptr;
@@ -451,6 +486,11 @@ void Switcher::Shutdown()
     }
     UnregisterClassW(L"AltWindowCycleOverlay", hinst);
     UnregisterClassW(L"AltWindowCycleThumbHost", hinst);
+    if (g_thumbSolidBrush)
+    {
+        DeleteObject(g_thumbSolidBrush);
+        g_thumbSolidBrush = nullptr;
+    }
     g_switcherActive.store(false);
     state = St::Idle;
 }
@@ -649,7 +689,7 @@ void Switcher::ShowOverlayWindow()
 
     SetWindowPos(thumbHost, HWND_TOPMOST, x, y, panelW, panelH,
                  SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-    EnableAcrylic(thumbHost, AltTabStyle::AcrylicGradientABGR(AltTabStyle::IsLightTheme()));
+    ApplyBackdrop(thumbHost, AltTabStyle::IsLightTheme());
     DWORD cornerPref = DWMWCP_ROUND;
     DwmSetWindowAttribute(thumbHost, DWMWA_WINDOW_CORNER_PREFERENCE,
                           &cornerPref, sizeof(cornerPref));
@@ -687,12 +727,12 @@ void Switcher::SetSelection(int index)
 }
 
 // React to a live OS Light/Dark theme switch while the overlay is visible:
-// re-tint the acrylic backdrop and repaint the layered chrome.
+// refresh the backdrop (re-tints the solid fallback) and repaint the chrome.
 void Switcher::OnThemeChanged()
 {
     if (state != St::Visible)
         return;
-    EnableAcrylic(thumbHost, AltTabStyle::AcrylicGradientABGR(AltTabStyle::IsLightTheme()));
+    ApplyBackdrop(thumbHost, AltTabStyle::IsLightTheme());
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RenderLayered();
