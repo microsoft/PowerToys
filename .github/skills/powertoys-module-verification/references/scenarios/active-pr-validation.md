@@ -31,7 +31,7 @@ Derive the observable claim(s) → 1–3 checklist items (same as Scenario B Ste
 `--json files`, identify the **affected project(s)** (`.csproj` / `.vcxproj`) so you build only what
 changed, not the whole repo.
 
-## Step 1 — Get the code + build (delegate the heavy lifting)
+## Step 1 — Get the code + build
 
 **Preferred (repo-portable):** materialize the PR's branch as an isolated worktree with the
 in-repo helper, then build only the affected project (mirrors `AGENTS.md` → Build):
@@ -45,10 +45,6 @@ tools\build\build-essentials.cmd                            # first build / NuGe
 # then build ONLY the affected project folder:
 tools\build\build.ps1 -Platform x64 -Configuration Release  # run from the changed .csproj/.vcxproj dir
 ```
-
-> **Optional convenience:** if your environment provides a worktree/build agent (e.g. a personal
-> `PrepareWorktree` agent — **not shipped in this repo**), you may delegate the checkout+build to it
-> instead. Do not depend on it; the commands above are the portable path every contributor has.
 
 **Exit code 0 = success (treat as absolute).** On non-zero, read
 `build.<config>.<platform>.errors.log` next to the project, fix or report. If the environment lacks
