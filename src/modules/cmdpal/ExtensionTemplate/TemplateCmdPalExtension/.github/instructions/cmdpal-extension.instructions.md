@@ -1,5 +1,5 @@
 ---
-description: 'Comprehensive guide for developing Command Palette extensions — covers pages, content, commands, items, icons, settings, dock, and debugging'
+description: 'Comprehensive guide for developing Command Palette extensions — covers pages, content, commands, items, icons, settings, list hover actions, dock, and debugging'
 applyTo: '**/*.cs'
 ---
 
@@ -309,7 +309,57 @@ new IconInfo("%systemroot%\\system32\\shell32.dll,3")
 
 ## List Hover Actions
 
-Extensions can configure quick-action icons shown when hovering list rows.
+Quick-action icon buttons at the trailing edge of list rows on hover or keyboard selection.
+
+### User master toggle
+
+CmdPal exposes **List hover actions** in Settings → Appearance (`EnableListHoverActions`, default on). When disabled, no extension can show hover strips regardless of SDK configuration.
+
+### Configuration layers
+
+| Layer | API | Properties |
+|-------|-----|------------|
+| User (CmdPal host) | Settings | `EnableListHoverActions` |
+| Home top-level row | `ICommandItem2` on the `CommandItem` in `TopLevelCommands()` | `HomeHoverActionsMode`, `HomeMaxHoverActions` |
+| Extension provider | `ICommandProvider5` on your `CommandProvider` | `DefaultHoverActionsMode`, `DefaultMaxHoverActions` |
+| List page | `IListPage2` on your `ListPage` / `DynamicListPage` | `HoverActionsMode`, `MaxHoverActions`, `HoverActionsVisibility` |
+| Context command | `ICommandContextItem2` on each `CommandContextItem` in `MoreCommands` | `ShowInHoverActions`, `HoverOrder` |
+
+### Settings resolution order
+
+When the host builds the hover strip for a row, it merges settings in this order (later steps override earlier defaults only when non-default):
+
+1. **Home row** — if the row is a top-level extension entry on CmdPal home, read `ICommandItem2.HomeHoverActionsMode` / `HomeMaxHoverActions`.
+2. **Provider** — if mode is still `Default`, use `ICommandProvider5.DefaultHoverActionsMode`; if max is unset (`<= 0`), use `DefaultMaxHoverActions`.
+3. **Page** — if the current list is an `IListPage2`, its `HoverActionsMode`, `MaxHoverActions`, and `HoverActionsVisibility` override provider defaults when set to non-default values.
+
+Provider lookup for home rows uses that extension's own host, not the main list host.
+
+### HoverActionsMode behavior
+
+| Mode | Resolved behavior |
+|------|-------------------|
+| `Default` | Treated as `FirstN` (see below). |
+| `FirstN` | First N **visible** `MoreCommands`, after host filtering. If **any** visible command has `ShowInHoverActions = true`, mode upgrades to `Explicit` automatically. |
+| `Explicit` | Only commands with `ShowInHoverActions = true`, ordered by `HoverOrder` ascending. If none are flagged, **falls back to first-N** (legacy compatibility). |
+| `AllMoreCommands` | All visible `MoreCommands` after host filtering (respects `MaxHoverActions` when `> 0`). |
+| `None` | No hover strip. |
+
+Default N is **3** when `MaxHoverActions` is unset or `<= 0`. Set `MaxHoverActions = -1` to mean uncapped in Explicit / AllMoreCommands modes.
+
+### Host-injected commands
+
+The CmdPal host injects pin, unpin, move, and similar commands into `MoreCommands` on some surfaces. These are **excluded from hover** unless the command sets `ShowInHoverActions = true`. Extension-authored commands are always eligible (subject to mode rules).
+
+On **CmdPal home**, host pin/dock/move commands are filtered out of hover by default so extension rows show extension actions only.
+
+### HoverActionsVisibility
+
+| Value | When strip is shown |
+|-------|---------------------|
+| `Default` | **Home rows:** `OnHoverOnly`. **Extension list pages:** `HoverOrSelected`. |
+| `OnHoverOnly` | Pointer is over the row. |
+| `HoverOrSelected` | Pointer over row **or** row is keyboard-selected. |
 
 ### Page-level defaults (`IListPage2`)
 
@@ -321,13 +371,11 @@ public partial class MyPage : ListPage
     public MyPage()
     {
         HoverActionsMode = HoverActionsMode.Explicit;
-        MaxHoverActions = -1; // uncapped in Explicit mode
+        MaxHoverActions = -1; // uncapped in Explicit when no positive max
         HoverActionsVisibility = HoverActionsVisibility.HoverOrSelected;
     }
 }
 ```
-
-Modes: `Default` (host fallback), `None`, `FirstN`, `Explicit`, `AllMoreCommands`.
 
 ### Per-command flags (`ICommandContextItem2`)
 
@@ -336,10 +384,18 @@ Set on context menu items in `MoreCommands`:
 ```csharp
 new CommandContextItem(editCommand)
 {
+    Title = "Edit",
     ShowInHoverActions = true,
-    HoverOrder = 10,
+    HoverOrder = 10, // lower appears further left in LTR locales
+}
+
+new CommandContextItem(exportCommand)
+{
+    ShowInHoverActions = false, // hide from hover; still in context menu
 }
 ```
+
+Use negative `HoverOrder` to pin actions to the left of the strip (e.g. reorder before edit).
 
 ### Home row overrides (`ICommandItem2`)
 
@@ -349,9 +405,25 @@ For top-level commands shown on CmdPal home:
 new CommandItem(new MyPage())
 {
     Title = "My Extension",
-    HomeHoverActionsMode = HoverActionsMode.None,
+    HomeHoverActionsMode = HoverActionsMode.Explicit,
+    HomeMaxHoverActions = -1,
+    MoreCommands =
+    [
+        new CommandContextItem(createCommand)
+        {
+            ShowInHoverActions = true,
+            HoverOrder = 0,
+        },
+        new CommandContextItem(settingsPage)
+        {
+            ShowInHoverActions = true,
+            HoverOrder = 10,
+        },
+    ],
 }
 ```
+
+Home-row hover invokes `IPage` commands with the **top-level row** as context so the host resolves the correct extension. Context-menu invokables (Run as administrator, etc.) use the **context item** as context — same as the right-click menu.
 
 ### Provider defaults (`ICommandProvider5`)
 
@@ -362,7 +434,15 @@ public override HoverActionsMode DefaultHoverActionsMode => HoverActionsMode.Fir
 public override int DefaultMaxHoverActions => 3;
 ```
 
-When unset, extensions keep today's behavior: first three visible context commands on list pages; on home, host pin/dock commands are excluded from hover.
+When unset, extensions keep legacy behavior: first three visible context commands on list pages; on home, host pin/dock commands are excluded from hover.
+
+### Agent checklist
+
+- Do not assume hover works on every user's CmdPal — check the user setting.
+- Prefer `Explicit` + `ShowInHoverActions` when you need specific actions rather than relying on first-N order.
+- Flag destructive or rare actions with `ShowInHoverActions = false` if they should stay context-menu only.
+- Set page `HoverActionsVisibility` explicitly if home-like behavior is needed inside an extension list.
+- Call `RaiseItemsChanged()` after mutating `MoreCommands` so hover strips refresh.
 
 ## Dynamic Updates
 
