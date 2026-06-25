@@ -127,6 +127,7 @@
     <Compile Include="Helpers\MonitorResolutionHelper.cs" />
     <Compile Include="Helpers\IThrottledActionInvoker.cs" />
     <Compile Include="Helpers\ThrottledActionInvoker.cs" />
+    <Compile Include="Helpers\ClipboardHelper.cs" />
   </ItemGroup>
 
 </Project>

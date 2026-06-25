@@ -4,9 +4,8 @@
 
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows;
-
 using ManagedCommon;
+using Windows.ApplicationModel.DataTransfer;
 
 using static ColorPicker.NativeMethods;
 
@@ -21,35 +20,40 @@ namespace ColorPicker.Helpers
 
         public static void CopyToClipboard(string colorRepresentationToCopy)
         {
-            if (!string.IsNullOrEmpty(colorRepresentationToCopy))
+            if (string.IsNullOrEmpty(colorRepresentationToCopy))
             {
-                // nasty hack - sometimes clipboard can be in use and it will raise and exception
-                for (int i = 0; i < 10; i++)
+                return;
+            }
+
+            // nasty hack - sometimes clipboard can be in use and it will raise and exception
+            for (int i = 0; i < 10; i++)
+            {
+                try
                 {
-                    try
-                    {
-                        Clipboard.SetDataObject(colorRepresentationToCopy);
-                        break;
-                    }
-                    catch (COMException ex)
-                    {
-                        var hwnd = GetOpenClipboardWindow();
-                        var sb = new StringBuilder(501);
-                        _ = GetWindowText(hwnd.ToInt32(), sb, 500);
-                        var applicationUsingClipboard = sb.ToString();
-
-                        if ((uint)ex.ErrorCode != ErrorCodeClipboardCantOpen)
-                        {
-                            Logger.LogError("Failed to set text into clipboard", ex);
-                        }
-                        else
-                        {
-                            Logger.LogError("Failed to set text into clipboard, application that is locking clipboard - " + applicationUsingClipboard, ex);
-                        }
-                    }
-
-                    System.Threading.Thread.Sleep(10);
+                    var data = new DataPackage();
+                    data.SetText(colorRepresentationToCopy);
+                    Clipboard.SetContent(data);
+                    Clipboard.Flush(); // persist after this process exits (Color Picker may close immediately)
+                    break;
                 }
+                catch (COMException ex)
+                {
+                    var hwnd = GetOpenClipboardWindow();
+                    var sb = new StringBuilder(501);
+                    _ = GetWindowText(hwnd.ToInt32(), sb, 500);
+                    var applicationUsingClipboard = sb.ToString();
+
+                    if ((uint)ex.ErrorCode != ErrorCodeClipboardCantOpen)
+                    {
+                        Logger.LogError("Failed to set text into clipboard", ex);
+                    }
+                    else
+                    {
+                        Logger.LogError("Failed to set text into clipboard, application that is locking clipboard - " + applicationUsingClipboard, ex);
+                    }
+                }
+
+                System.Threading.Thread.Sleep(10);
             }
         }
     }
