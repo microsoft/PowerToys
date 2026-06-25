@@ -33,6 +33,7 @@ public sealed partial class SettingsWindow : WindowEx,
     private readonly LocalKeyboardListener _localKeyboardListener;
 
     private readonly NavigationViewItem? _internalNavItem;
+    private readonly PointerEventHandler _rootElementPointerPressedHandler;
 
     private Storyboard? _breadcrumbStoryboard;
     private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
@@ -69,7 +70,8 @@ public sealed partial class SettingsWindow : WindowEx,
         _localKeyboardListener.Start();
         Closed += SettingsWindow_Closed;
         RootElement.SizeChanged += RootElement_SizeChanged;
-        RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
+        _rootElementPointerPressedHandler = new PointerEventHandler(RootElement_OnPointerPressed);
+        RootElement.AddHandler(UIElement.PointerPressedEvent, _rootElementPointerPressedHandler, true);
 
         if (!BuildInfo.IsCiBuild)
         {
@@ -380,6 +382,11 @@ public sealed partial class SettingsWindow : WindowEx,
     {
         CloseScreenshotViewer();
         WinGetOperationsButtonControl?.Dispose();
+
+        RootElement.SizeChanged -= RootElement_SizeChanged;
+        RootElement.RemoveHandler(UIElement.PointerPressedEvent, _rootElementPointerPressedHandler);
+        _localKeyboardListener.KeyPressed -= LocalKeyboardListener_OnKeyPressed;
+
         _localKeyboardListener?.Dispose();
     }
 

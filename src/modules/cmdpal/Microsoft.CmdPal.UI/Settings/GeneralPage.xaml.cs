@@ -92,6 +92,7 @@ public sealed partial class GeneralPage : Page, INotifyPropertyChanged
     private void GeneralPage_Unloaded(object sender, RoutedEventArgs e)
     {
         _notificationStateTimer.Stop();
+        _notificationStateTimer.Tick -= NotificationStateTimer_Tick;
         _settingsService.SettingsChanged -= SettingsService_SettingsChanged;
     }
 
