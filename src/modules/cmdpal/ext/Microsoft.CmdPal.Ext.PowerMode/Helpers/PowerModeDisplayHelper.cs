@@ -67,4 +67,20 @@ internal static class PowerModeDisplayHelper
             ? Resources.power_mode_set_mode_subtitle_plugged_in + modeLabel
             : Resources.power_mode_set_mode_subtitle_on_battery + modeLabel;
     }
+
+    internal static string GetEnergySaverStatusLabel(EnergySaverSnapshot snapshot)
+    {
+        if (!snapshot.CanReadStatus)
+        {
+            return Resources.power_mode_energy_saver_unknown;
+        }
+
+        return snapshot.State switch
+        {
+            ResolvedEnergySaverState.On => Resources.power_mode_energy_saver_on,
+            ResolvedEnergySaverState.Off => Resources.power_mode_energy_saver_off,
+            ResolvedEnergySaverState.NotAvailable => Resources.power_mode_energy_saver_not_available,
+            _ => Resources.power_mode_energy_saver_unknown,
+        };
+    }
 }

@@ -9,8 +9,7 @@ namespace Microsoft.CmdPal.Ext.PowerMode;
 
 internal sealed class Icons
 {
-    // Matches CmdPal settings UI (SettingsXAML/Views/CmdPalPage.xaml).
-    internal static IconInfo PowerModeIcon { get; } = new IconInfo("\uE945");
+    internal static IconInfo PowerModeIcon { get; } = new IconInfo("\uE7E8");
 
     internal static IconInfo EfficiencyIcon { get; } = new IconInfo("\uE8BE");
 
@@ -25,6 +24,8 @@ internal sealed class Icons
     internal static IconInfo BatteryDischargingIcon { get; } = new IconInfo("\uEBA0");
 
     internal static IconInfo BatteryChargingIcon { get; } = new IconInfo("\uEBAB");
+
+    internal static IconInfo EnergySaverIcon { get; } = new IconInfo("\uEC0A");
 
     internal static IconInfo BatteryStatusGlyph(PowerModeSnapshot snapshot)
     {

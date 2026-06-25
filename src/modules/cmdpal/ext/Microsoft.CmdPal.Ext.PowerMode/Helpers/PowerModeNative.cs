@@ -26,6 +26,9 @@ internal static partial class PowerModeNative
     [DllImport("powrprof.dll", EntryPoint = "PowerGetActualOverlayScheme")]
     internal static extern uint PowerGetActualOverlayScheme(out Guid actualOverlayGuid);
 
+    [DllImport("powrprof.dll", EntryPoint = "PowerGetEffectiveOverlayScheme")]
+    internal static extern uint PowerGetEffectiveOverlayScheme(out Guid effectiveOverlayGuid);
+
     [DllImport("powrprof.dll", EntryPoint = "PowerSetActiveOverlayScheme")]
     internal static extern uint PowerSetActiveOverlayScheme(ref Guid overlaySchemeGuid);
 }

@@ -96,4 +96,23 @@
   <data name="power_mode_fallback_title" xml:space="preserve"><value>Power mode</value></data>
   <data name="power_mode_fallback_subtitle" xml:space="preserve"><value>View and change Windows power mode</value></data>
   <data name="power_mode_fallback_search_tags" xml:space="preserve"><value>power mode;powermode;best performance;best efficiency;balanced;performance mode;efficiency mode;energy saver</value></data>
+  <data name="power_mode_energy_saver_status_title" xml:space="preserve"><value>Energy saver: Current status</value></data>
+  <data name="power_mode_energy_saver_title" xml:space="preserve"><value>Energy saver</value></data>
+  <data name="power_mode_energy_saver_status_command_name" xml:space="preserve"><value>Refresh energy saver status</value></data>
+  <data name="power_mode_energy_saver_turn_on_title" xml:space="preserve"><value>Energy saver: Turn on</value></data>
+  <data name="power_mode_energy_saver_turn_off_title" xml:space="preserve"><value>Energy saver: Turn off</value></data>
+  <data name="power_mode_energy_saver_turn_on_subtitle" xml:space="preserve"><value>Reduce background activity and save energy</value></data>
+  <data name="power_mode_energy_saver_turn_off_subtitle" xml:space="preserve"><value>Restore normal power usage</value></data>
+  <data name="power_mode_energy_saver_turn_on_toast" xml:space="preserve"><value>Energy saver turned on</value></data>
+  <data name="power_mode_energy_saver_turn_off_toast" xml:space="preserve"><value>Energy saver turned off</value></data>
+  <data name="power_mode_energy_saver_on" xml:space="preserve"><value>On</value></data>
+  <data name="power_mode_energy_saver_off" xml:space="preserve"><value>Off</value></data>
+  <data name="power_mode_energy_saver_not_available" xml:space="preserve"><value>Not available</value></data>
+  <data name="power_mode_energy_saver_unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="power_mode_energy_saver_already_on" xml:space="preserve"><value>Energy saver is already on</value></data>
+  <data name="power_mode_energy_saver_already_off" xml:space="preserve"><value>Energy saver is already off</value></data>
+  <data name="power_mode_energy_saver_set_failed" xml:space="preserve"><value>Could not change energy saver. Approve the administrator prompt if it appears behind Command Palette.</value></data>
+  <data name="power_mode_energy_saver_requires_settings" xml:space="preserve"><value>Energy saver did not change. Use Quick Settings (Win+A) or Settings &gt; System &gt; Power.</value></data>
+  <data name="power_mode_energy_saver_elevation_cancelled" xml:space="preserve"><value>Energy saver change was cancelled.</value></data>
+  <data name="power_mode_energy_saver_admin_required" xml:space="preserve"><value>Approve the permission prompt to change energy saver on this PC.</value></data>
 </root>

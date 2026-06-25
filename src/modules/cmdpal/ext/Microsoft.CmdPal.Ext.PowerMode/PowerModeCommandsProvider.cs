@@ -14,6 +14,7 @@ namespace Microsoft.CmdPal.Ext.PowerMode;
 public sealed partial class PowerModeCommandsProvider : CommandProvider, IDisposable
 {
     private readonly PowerModeService _powerModeService = new();
+    private readonly EnergySaverService _energySaverService = new();
     private readonly PowerModeDataManager _dataManager;
     private readonly CommandItem _command;
     private readonly CommandItem _dockBand;
@@ -27,8 +28,11 @@ public sealed partial class PowerModeCommandsProvider : CommandProvider, IDispos
         Icon = Icons.PowerModeIcon;
 
         PowerModeListPage? listPage = null;
-        _dataManager = new PowerModeDataManager(_powerModeService, () => listPage!.HandleLiveStateChanged());
-        listPage = new PowerModeListPage(_powerModeService, _dataManager);
+        _dataManager = new PowerModeDataManager(
+            _powerModeService,
+            _energySaverService,
+            () => listPage!.HandleLiveStateChanged());
+        listPage = new PowerModeListPage(_powerModeService, _energySaverService, _dataManager);
         _listPage = listPage;
         _listPage.LiveStateChanged += UpdateDockPresentation;
         _fallback = new FallbackPowerModeItem(_listPage);
@@ -60,6 +64,7 @@ public sealed partial class PowerModeCommandsProvider : CommandProvider, IDispos
         _listPage.LiveStateChanged -= UpdateDockPresentation;
         _dataManager.PopActivate();
         _dataManager.Dispose();
+        _energySaverService.Dispose();
         _powerModeService.Dispose();
         GC.SuppressFinalize(this);
         base.Dispose();

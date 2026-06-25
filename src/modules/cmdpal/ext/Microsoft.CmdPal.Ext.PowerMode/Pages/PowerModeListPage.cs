@@ -17,9 +17,11 @@ internal sealed partial class PowerModeListPage : OnLoadStaticListPage
     public override string Id => "com.microsoft.cmdpal.powermode";
 
     private readonly PowerModeService _powerModeService;
+    private readonly EnergySaverService _energySaverService;
     private readonly PowerModeDataManager _dataManager;
     private readonly ListItem _statusItem;
     private readonly ListItem _batteryStatusItem;
+    private readonly ListItem _energySaverItem;
 
     private ListItem? _efficiencyItem;
     private ListItem? _balancedItem;
@@ -30,9 +32,13 @@ internal sealed partial class PowerModeListPage : OnLoadStaticListPage
 
     internal event Action? LiveStateChanged;
 
-    internal PowerModeListPage(PowerModeService powerModeService, PowerModeDataManager dataManager)
+    internal PowerModeListPage(
+        PowerModeService powerModeService,
+        EnergySaverService energySaverService,
+        PowerModeDataManager dataManager)
     {
         _powerModeService = powerModeService;
+        _energySaverService = energySaverService;
         _dataManager = dataManager;
         Title = Resources.power_mode_page_title;
         Name = Resources.power_mode_page_title;
@@ -53,6 +59,12 @@ internal sealed partial class PowerModeListPage : OnLoadStaticListPage
         {
             Title = Resources.power_mode_battery_status_title,
             Icon = Icons.BatteryUnknownIcon,
+        };
+
+        _energySaverItem = new ListItem(new ToggleEnergySaverCommand(_energySaverService, RefreshPresentation))
+        {
+            Title = Resources.power_mode_energy_saver_title,
+            Icon = Icons.EnergySaverIcon,
         };
 
         RebuildItemListIfNeeded(force: true);
@@ -109,7 +121,13 @@ internal sealed partial class PowerModeListPage : OnLoadStaticListPage
             return;
         }
 
-        var list = new List<ListItem> { _statusItem, _batteryStatusItem };
+        var list = new List<ListItem>
+        {
+            _statusItem,
+            _batteryStatusItem,
+            _energySaverItem,
+        };
+
         if (supportsControl)
         {
             _efficiencyItem = CreateModeItem(
@@ -160,10 +178,15 @@ internal sealed partial class PowerModeListPage : OnLoadStaticListPage
     private void RefreshPresentation()
     {
         var snapshot = _powerModeService.GetSnapshot();
+        var energySaverSnapshot = _energySaverService.GetSnapshot();
+
         _statusItem.Subtitle = PowerModeDisplayHelper.GetStatusSubtitle(snapshot);
         _statusItem.Icon = Icons.PowerModeIcon;
         _batteryStatusItem.Subtitle = PowerModeDisplayHelper.GetBatteryStatusLabel(snapshot);
         _batteryStatusItem.Icon = Icons.BatteryStatusGlyph(snapshot);
+
+        _energySaverItem.Subtitle = PowerModeDisplayHelper.GetEnergySaverStatusLabel(energySaverSnapshot);
+        _energySaverItem.Icon = Icons.EnergySaverIcon;
 
         if (_efficiencyItem is not null)
         {

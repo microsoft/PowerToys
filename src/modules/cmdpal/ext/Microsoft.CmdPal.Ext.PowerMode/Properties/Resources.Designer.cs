@@ -401,5 +401,119 @@ namespace Microsoft.CmdPal.Ext.PowerMode.Properties {
                 return ResourceManager.GetString("power_mode_unknown_short", resourceCulture);
             }
         }
+
+        public static string power_mode_energy_saver_status_title {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_status_title", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_title {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_title", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_status_command_name {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_status_command_name", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_turn_on_title {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_turn_on_title", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_turn_off_title {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_turn_off_title", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_turn_on_subtitle {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_turn_on_subtitle", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_turn_off_subtitle {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_turn_off_subtitle", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_turn_on_toast {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_turn_on_toast", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_turn_off_toast {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_turn_off_toast", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_on {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_on", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_off {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_off", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_not_available {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_not_available", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_unknown {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_unknown", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_already_on {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_already_on", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_already_off {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_already_off", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_set_failed {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_set_failed", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_requires_settings {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_requires_settings", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_elevation_cancelled {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_elevation_cancelled", resourceCulture);
+            }
+        }
+
+        public static string power_mode_energy_saver_admin_required {
+            get {
+                return ResourceManager.GetString("power_mode_energy_saver_admin_required", resourceCulture);
+            }
+        }
     }
 }

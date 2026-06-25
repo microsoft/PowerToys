@@ -41,7 +41,8 @@ public sealed class FallbackPowerModeItemTests
     private static PowerModeListPage CreateListPage()
     {
         var service = new PowerModeService();
-        var dataManager = new PowerModeDataManager(service, () => { });
-        return new PowerModeListPage(service, dataManager);
+        var energySaverService = new EnergySaverService();
+        var dataManager = new PowerModeDataManager(service, energySaverService, () => { });
+        return new PowerModeListPage(service, energySaverService, dataManager);
     }
 }
