@@ -1,5 +1,5 @@
 ---
-name: powertoys-module-verification
+name: powertoys-verification
 description: "Verify PowerToys behavior end-to-end with the winapp CLI across three scenarios: (A) a single module's full release checklist; (B) sign-off of the PRs in a release or hotfix (derive each PR's checklist from its description + diff, drive the installed build); (C) an active/unmerged PR (build + sideload the affected module, then validate). Drive each item via UIA invoke / Named Events / settings.json edits / clipboard / GPO / SendInput, and emit a structured PASS / FAIL / BLOCKED verdict per item with evidence (FAIL distinguishes product defects from stale/ambiguous checklist items). Use when asked to verify a PowerToys module checklist, sign off a release or hotfix's PRs, validate a PowerToys PR, or QA installed/sideloaded PowerToys bits. Combines generic winapp ui mechanics (references/winapp-ui-testing.md) with PT-specific recipes, per-scenario playbooks (references/scenarios/), and the helper .ps1 files shipped with this skill."
 license: Complete terms in LICENSE.txt
 ---
@@ -22,7 +22,7 @@ and the test discipline:
 > router + the per-scenario "bits under test" contract + the verdict-vocabulary mapping), then read
 > the one matching scenario doc (`references/scenarios/{module-checklist,release-pr-signoff,active-pr-validation}.md`).
 > This `SKILL.md` is the *shared engine* (drive techniques, helpers, taxonomy, pitfalls) common to
-> all three. (The skill name is historical — it is no longer module-only.)
+> all three.
 
 Each item produces a PASS / FAIL / BLOCKED verdict with evidence. For **A** the checklist is
 supplied; for **B / C** you derive it from the PR(s). The skill is the *how* — independent of any
@@ -61,7 +61,7 @@ specific checklist.
 
 Dot-source them **all** at once in your bootstrap (the `Get-ChildItem` loop loads every helper — see **Step 1 — Bootstrap**):
 ```powershell
-$skill = '<this skill folder>'   # the folder containing SKILL.md, e.g. <PT-repo>\.github\skills\powertoys-module-verification
+$skill = '<this skill folder>'   # the folder containing SKILL.md, e.g. <PT-repo>\.github\skills\powertoys-verification
 Get-ChildItem "$skill\scripts" -Filter '*.ps1' | ForEach-Object { . $_.FullName }
 ```
 
