@@ -212,6 +212,12 @@
                         <TextBlock x:Uid="ActionType_Disable_Text" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem Tag="PowerScript">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE756;" />
+                        <TextBlock Text="PowerScript" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <!--
                 <ComboBoxItem x:Uid="ActionType_MouseClick" Tag="MouseClick">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -397,6 +403,27 @@
                         x:Uid="DisableDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
+                </tkcontrols:Case>
+                <!--  PowerScript Action  -->
+                <tkcontrols:Case Value="PowerScript">
+                    <StackPanel Orientation="Vertical" Spacing="8">
+                        <TextBlock
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="Run a PowerScript when this shortcut is pressed."
+                            TextWrapping="Wrap" />
+                        <ComboBox
+                            x:Name="PowerScriptComboBox"
+                            HorizontalAlignment="Stretch"
+                            DisplayMemberPath="Name"
+                            PlaceholderText="Select a PowerScript"
+                            SelectionChanged="PowerScriptComboBox_SelectionChanged" />
+                        <TextBlock
+                            x:Name="PowerScriptEmptyHint"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="No PowerScripts found. Enable the PowerScripts module and add a system script."
+                            TextWrapping="Wrap"
+                            Visibility="Collapsed" />
+                    </StackPanel>
                 </tkcontrols:Case>
             </tkcontrols:SwitchPresenter>
         </StackPanel>

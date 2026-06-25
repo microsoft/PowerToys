@@ -34,6 +34,8 @@ namespace KeyboardManagerEditorUI.Controls
         private readonly ObservableCollection<string> _triggerKeys = new();
         private readonly ObservableCollection<string> _actionKeys = new();
 
+        private readonly ObservableCollection<Helpers.PowerScriptInfo> _powerScripts = new();
+
         private bool _disposed;
         private bool _internalUpdate;
 
@@ -79,6 +81,7 @@ namespace KeyboardManagerEditorUI.Controls
             OpenApp,
             MouseClick,
             Disable,
+            PowerScript,
         }
 
         /// <summary>
@@ -132,6 +135,7 @@ namespace KeyboardManagerEditorUI.Controls
                         "OpenApp" => ActionType.OpenApp,
                         "MouseClick" => ActionType.MouseClick,
                         "Disable" => ActionType.Disable,
+                        "PowerScript" => ActionType.PowerScript,
                         _ => ActionType.KeyOrShortcut,
                     };
                 }
@@ -150,6 +154,14 @@ namespace KeyboardManagerEditorUI.Controls
 
             TriggerKeys.ItemsSource = _triggerKeys;
             ActionKeys.ItemsSource = _actionKeys;
+
+            // Populate the PowerScripts picker (system scripts). Empty when PowerScripts isn't installed.
+            foreach (var script in Helpers.PowerScriptsCatalog.GetSystemScripts())
+            {
+                _powerScripts.Add(script);
+            }
+
+            PowerScriptComboBox.ItemsSource = _powerScripts;
 
             _triggerKeys.CollectionChanged += (_, _) =>
             {
@@ -264,6 +276,18 @@ namespace KeyboardManagerEditorUI.Controls
             }
 
             HideValidationMessage();
+            RaiseValidationStateChanged();
+        }
+
+        private void PowerScriptComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PowerScriptEmptyHint != null)
+            {
+                PowerScriptEmptyHint.Visibility = _powerScripts.Count == 0
+                    ? Microsoft.UI.Xaml.Visibility.Visible
+                    : Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+
             RaiseValidationStateChanged();
         }
 
@@ -751,6 +775,26 @@ namespace KeyboardManagerEditorUI.Controls
         /// Gets the URL (for OpenUrl action type).
         /// </summary>
         public string GetUrl() => UrlPathInput?.Text ?? string.Empty;
+
+        /// <summary>
+        /// Gets the selected PowerScript (for the PowerScript action type), or null if none selected.
+        /// </summary>
+        public Helpers.PowerScriptInfo? GetSelectedPowerScript() => PowerScriptComboBox?.SelectedItem as Helpers.PowerScriptInfo;
+
+        /// <summary>
+        /// Selects the PowerScript with the given id in the picker, if present.
+        /// </summary>
+        public void SelectPowerScript(string id)
+        {
+            foreach (var script in _powerScripts)
+            {
+                if (string.Equals(script.Id, id, StringComparison.OrdinalIgnoreCase))
+                {
+                    PowerScriptComboBox.SelectedItem = script;
+                    return;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the program path (for OpenApp action type).
