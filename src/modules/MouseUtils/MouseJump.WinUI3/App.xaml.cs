@@ -2,10 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Windows.Threading;
-
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 
 using MouseJump.Common.Helpers;
@@ -23,9 +22,11 @@ namespace MouseJump.WinUI3;
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public partial class App : Application, IDisposable
 {
-    private static readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+    private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    private readonly DispatcherQueue _dispatcherQueue;
+    private bool disposedValue;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="App"/> class.
@@ -51,35 +52,30 @@ public partial class App : Application
     {
         try
         {
-            Logger.InitializeLogger("\\MouseJump\\Logs");
-            Logger.LogInfo("app launched");
-
-            // make sure we're in the right high dpi mode otherwise pixel positions and sizes for
-            // screen captures get distorted and various coordinates aren't calculated correctly.
-            Logger.LogInfo("checking high dpi mode");
-            DpiModeHelper.EnsurePerMonitorV2Enabled();
-            Logger.LogInfo("high dpi mode is ok");
+            Logger.LogInfo("entering App.OnLaunched");
 
             var etwTrace = new ETWTrace();
 
             var settingsHelper = new SettingsHelper();
             var previewWindow = new PreviewWindow(settingsHelper);
 
-            Logger.LogInfo("Starting 'show preview' event handler");
-            MouseJumpEventLoop.RunEventHandler(
+            // start the handler that listens for the "show preview" event
+            Logger.LogInfo("starting 'show preview' event handler");
+            MouseJumpEventLoop.RunAsyncEventHandler(
                 Constants.MouseJumpShowPreviewEvent(),
                 previewWindow.ShowPreviewAsync,
-                Dispatcher.CurrentDispatcher,
-                App.CancellationTokenSource.Token);
+                _dispatcherQueue,
+                _cancellationTokenSource.Token);
 
-            Logger.LogInfo("Starting 'terminate' event loop");
+            // start the handler that listens for the "terminate app" event
+            Logger.LogInfo("starting 'terminate' event loop");
             MouseJumpEventLoop.RunEventHandler(
                 Constants.TerminateMouseJumpSharedEvent(),
-                App.TerminateAppAsync,
-                Dispatcher.CurrentDispatcher,
-                App.CancellationTokenSource.Token);
+                this.TerminateApp,
+                _dispatcherQueue,
+                _cancellationTokenSource.Token);
 
-            Logger.LogInfo("Starting application loop");
+            Logger.LogInfo("leaving App.OnLaunched");
 
             etwTrace?.Dispose();
         }
@@ -90,9 +86,32 @@ public partial class App : Application
         }
     }
 
-    private static async Task TerminateAppAsync()
+    internal void TerminateApp()
     {
-        Logger.LogInfo("Exiting Mouse Jump.");
-        await App.CancellationTokenSource.CancelAsync();
+        Logger.LogInfo("exiting Mouse Jump.");
+        _cancellationTokenSource.Cancel();
+        _dispatcherQueue.TryEnqueue(this.Exit);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposedValue)
+        {
+            return;
+        }
+
+        if (disposing)
+        {
+            this._cancellationTokenSource.Cancel();
+        }
+
+        disposedValue = true;
+    }
+
+    public void Dispose()
+    {
+        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+        this.Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 }
