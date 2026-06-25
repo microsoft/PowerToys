@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.IO;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Helpers;
@@ -39,6 +40,8 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<ActivateSelectedListItemMessage>,
     IRecipient<ActivateSecondaryCommandMessage>
 {
+    private readonly Dictionary<ListItemViewModel, Microsoft.UI.Dispatching.DispatcherQueueTimer> _hoverExitTimers = new();
+
     private InputSource _lastInputSource;
 
     private int _itemsUpdatedVersion;
@@ -58,6 +61,8 @@ public sealed partial class ListItemsView : UserControl,
     // force-first and is only cleared once selection stabilizes.
     private bool _forceFirstPending;
 
+    private bool _hoverActionClickInProgress;
+
     private bool _isLoaded;
     private bool _isMessengerRegistered;
 
@@ -73,8 +78,11 @@ public sealed partial class ListItemsView : UserControl,
 
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
+    private readonly TappedEventHandler _listItemRowTappedHandler;
+
     public ListItemsView()
     {
+        _listItemRowTappedHandler = ListItemRow_Tapped;
         this.InitializeComponent();
         this.ItemView.Loaded += Items_Loaded;
         this.ItemView.PreviewKeyDown += Items_PreviewKeyDown;
@@ -176,6 +184,11 @@ public sealed partial class ListItemsView : UserControl,
     [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "VS is too aggressive at pruning methods bound in XAML")]
     private void Items_ItemClick(object sender, ItemClickEventArgs e)
     {
+        if (_hoverActionClickInProgress)
+        {
+            return;
+        }
+
         if (e.ClickedItem is ListItemViewModel item)
         {
             if (_lastInputSource == InputSource.Keyboard)
@@ -271,6 +284,13 @@ public sealed partial class ListItemsView : UserControl,
             {
                 recycledContainer.PointerEntered -= ListItemContainer_PointerEntered;
                 recycledContainer.PointerExited -= ListItemContainer_PointerExited;
+
+                if (recycledContainer.Tag is ListItemViewModel recycledVm)
+                {
+                    CancelHoverExitTimer(recycledVm);
+                }
+
+                UnhookListItemRow(recycledContainer);
                 recycledContainer.Tag = null;
             }
 
@@ -295,7 +315,153 @@ public sealed partial class ListItemsView : UserControl,
             listItemContainer.PointerEntered += ListItemContainer_PointerEntered;
             listItemContainer.PointerExited += ListItemContainer_PointerExited;
             listItemContainer.Tag = vm;
+            if (!TryHookListItemRow(listItemContainer, vm) && args.Phase < 3)
+            {
+                args.RegisterUpdateCallback(ItemsList_ContainerContentChanging);
+            }
         }
+    }
+
+    private bool TryHookListItemRow(ListViewItem listItemContainer, ListItemViewModel vm)
+    {
+        var rowGrid = GetRowContentGrid(listItemContainer);
+        if (rowGrid is null)
+        {
+            HoverDebugLog($"Hook failed (no row grid): '{vm.Title}' templateRoot={listItemContainer.ContentTemplateRoot?.GetType().Name ?? "null"}");
+            return false;
+        }
+
+        UnhookListItemRow(listItemContainer);
+        rowGrid.Tag = vm;
+        rowGrid.AddHandler(UIElement.TappedEvent, _listItemRowTappedHandler, handledEventsToo: true);
+        HoverDebugLog($"Hooked row '{vm.Title}'");
+        return true;
+    }
+
+    private void UnhookListItemRow(ListViewItem listItemContainer)
+    {
+        var rowGrid = GetRowContentGrid(listItemContainer);
+        if (rowGrid is null)
+        {
+            return;
+        }
+
+        rowGrid.RemoveHandler(UIElement.TappedEvent, _listItemRowTappedHandler);
+        rowGrid.Tag = null;
+    }
+
+    private static Grid? GetRowContentGrid(ListViewItem listItemContainer)
+    {
+        if (listItemContainer.ContentTemplateRoot is Grid templateRoot &&
+            FindRowHoverActionsList(templateRoot) is not null)
+        {
+            return templateRoot;
+        }
+
+        return FindRowContentGrid(listItemContainer);
+    }
+
+    private static Grid? FindRowContentGrid(DependencyObject? parent)
+    {
+        if (parent is null)
+        {
+            return null;
+        }
+
+        if (parent is Grid grid && FindRowHoverActionsList(grid) is not null)
+        {
+            return grid;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var match = FindRowContentGrid(VisualTreeHelper.GetChild(parent, i));
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+
+    private void ListItemRow_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (sender is not Grid { Tag: ListItemViewModel vm })
+        {
+            HoverDebugLog("Tapped: sender is not a hooked row grid");
+            return;
+        }
+
+        var hoverList = FindRowHoverActionsList(sender as DependencyObject);
+        if (hoverList is null || hoverList.Visibility != Visibility.Visible)
+        {
+            HoverDebugLog($"Tapped '{vm.Title}': hover list missing or hidden");
+            return;
+        }
+
+        var point = e.GetPosition(hoverList);
+        if (!HoverActionClickHelper.IsPointInsideHoverList(point.X, point.Y, hoverList.ActualWidth, hoverList.ActualHeight))
+        {
+            HoverDebugLog($"Tapped '{vm.Title}': outside hover strip ({point.X:F0},{point.Y:F0})");
+            return;
+        }
+
+        var action = ResolveHoverAction(vm, hoverList, point);
+        if (action is null)
+        {
+            HoverDebugLog($"Tapped '{vm.Title}': no action at ({point.X:F0},{point.Y:F0})");
+            return;
+        }
+
+        HoverDebugLog($"Tapped '{vm.Title}': resolved '{action.Title}' at ({point.X:F0},{point.Y:F0})");
+        e.Handled = true;
+        _hoverActionClickInProgress = true;
+        InvokeHoverAction(action, vm);
+        _ = DispatcherQueue.TryEnqueue(() => _hoverActionClickInProgress = false);
+    }
+
+    private static CommandContextItemViewModel? ResolveHoverAction(
+        ListItemViewModel row,
+        ListView hoverList,
+        Point positionInHoverList)
+    {
+        foreach (var element in VisualTreeHelper.FindElementsInHostCoordinates(positionInHoverList, hoverList))
+        {
+            if (element is ListViewItem { DataContext: CommandContextItemViewModel actionFromItem })
+            {
+                return actionFromItem;
+            }
+        }
+
+        return HoverActionClickHelper.TryGetActionAtIndex(row.HoverActions, positionInHoverList.X);
+    }
+
+    private static ListView? FindRowHoverActionsList(DependencyObject? parent)
+    {
+        if (parent is null)
+        {
+            return null;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(parent);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is ListView listView)
+            {
+                return listView;
+            }
+
+            var match = FindRowHoverActionsList(child);
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 
     private void ListItemContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -305,27 +471,77 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
+        CancelHoverExitTimer(vm);
         vm.SetRowHovered(true);
         _ = Task.Run(vm.EnsureHoverActionsLoaded);
+
+        if (sender is ListViewItem container)
+        {
+            _ = DispatcherQueue.TryEnqueue(() => TryHookListItemRow(container, vm));
+        }
     }
 
     private void ListItemContainer_PointerExited(object sender, PointerRoutedEventArgs e)
     {
-        if (sender is ListViewItem { Tag: ListItemViewModel vm })
-        {
-            vm.SetRowHovered(false);
-        }
-    }
-
-    private void HoverActionButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is not Button { DataContext: CommandContextItemViewModel action })
+        if (sender is not ListViewItem { Tag: ListItemViewModel vm })
         {
             return;
         }
 
-        WeakReferenceMessenger.Default.Send(new PerformCommandMessage(action));
-        e.Handled = true;
+        CancelHoverExitTimer(vm);
+
+        var timer = DispatcherQueue.CreateTimer();
+        timer.Interval = TimeSpan.FromMilliseconds(200);
+        timer.IsRepeating = false;
+        timer.Tick += (_, _) =>
+        {
+            timer.Stop();
+            _hoverExitTimers.Remove(vm);
+            vm.SetRowHovered(false);
+        };
+
+        _hoverExitTimers[vm] = timer;
+        timer.Start();
+    }
+
+    private void CancelHoverExitTimer(ListItemViewModel vm)
+    {
+        if (_hoverExitTimers.Remove(vm, out var timer))
+        {
+            timer.Stop();
+        }
+    }
+
+    private void InvokeHoverAction(CommandContextItemViewModel action, ListItemViewModel? parentItem)
+    {
+        if (parentItem is not null)
+        {
+            CancelHoverExitTimer(parentItem);
+            parentItem.SetRowHovered(true);
+            ViewModel?.UpdateSelectedItemCommand.Execute(parentItem);
+        }
+
+        HoverDebugLog($"Invoke '{action.Title}' commandId={action.Command.Id} row='{parentItem?.Title ?? "(null)"}'");
+
+        // Same path as CommandBarViewModel.PerformCommand / context menu InvokeCommand.
+        WeakReferenceMessenger.Default.Send(new PerformCommandMessage(action.Command.Model, action.Model));
+    }
+
+    private static void HoverDebugLog(string message)
+    {
+        var line = $"[HoverAction] {message}";
+        Logger.LogDebug(line);
+#if DEBUG
+        try
+        {
+            var path = Path.Combine(Path.GetTempPath(), "cmdpal-hover-debug.log");
+            File.AppendAllText(path, $"{DateTime.Now:O} {line}{Environment.NewLine}");
+        }
+        catch
+        {
+            // ignore logging failures
+        }
+#endif
     }
 
     private void ScrollToItem(ListItemViewModel li)

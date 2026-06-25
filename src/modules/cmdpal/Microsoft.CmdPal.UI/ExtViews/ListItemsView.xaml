@@ -350,20 +350,20 @@
             Small="{StaticResource IconGridViewItemStyle}" />
 
         <DataTemplate x:Key="ListItemHoverActionTemplate" x:DataType="viewModels:CommandContextItemViewModel">
-            <Button
+            <Grid
                 Width="28"
                 Height="28"
-                Padding="0"
                 AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
-                Click="HoverActionButton_Click"
-                Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
                 <cpcontrols:IconBox
                     Width="16"
                     Height="16"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    IsHitTestVisible="False"
                     SourceKey="{x:Bind Icon, Mode=OneWay}"
                     SourceRequested="{x:Bind help:IconProvider.SourceRequested20}" />
-            </Button>
+            </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="ListItemSingleRowViewModelTemplate" x:DataType="viewModels:ListItemViewModel">
@@ -443,17 +443,40 @@
                     </ItemsRepeater.Layout>
                 </ItemsRepeater>
 
-                <ItemsRepeater
+                <ListView
+                    x:Name="HoverActionsList"
                     Grid.Column="3"
                     Margin="0,0,8,0"
                     VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    IsHitTestVisible="True"
+                    IsItemClickEnabled="True"
+                    IsTabStop="False"
                     ItemTemplate="{StaticResource ListItemHoverActionTemplate}"
                     ItemsSource="{x:Bind HoverActions, Mode=OneWay}"
+                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                    SelectionMode="None"
                     Visibility="{x:Bind help:BindTransformers.BoolToVisibility(AreHoverActionsVisible), Mode=OneWay, FallbackValue=Collapsed}">
-                    <ItemsRepeater.Layout>
-                        <StackLayout Orientation="Horizontal" Spacing="2" />
-                    </ItemsRepeater.Layout>
-                </ItemsRepeater>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="2" />
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="MinHeight" Value="0" />
+                            <Setter Property="MinWidth" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                            <Setter Property="VerticalContentAlignment" Value="Center" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemContainerTransitions>
+                        <TransitionCollection />
+                    </ListView.ItemContainerTransitions>
+                </ListView>
             </Grid>
         </DataTemplate>
 
