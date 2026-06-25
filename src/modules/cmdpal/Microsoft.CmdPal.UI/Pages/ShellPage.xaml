@@ -28,6 +28,7 @@
 
             <cmdpalUI:DetailsSizeToGridLengthConverter x:Key="SizeToWidthConverter" />
             <cmdpalUI:MessageStateToSeverityConverter x:Key="MessageStateToSeverityConverter" />
+            <cmdpalUI:BoolToStarOrAutoGridLengthConverter x:Key="ExpandedModeToRowHeightConverter" />
 
             <cmdpalUI:DetailsDataTemplateSelector
                 x:Key="DetailsDataTemplateSelector"
@@ -84,6 +85,7 @@
                         Name="Command"
                         HorizontalAlignment="Stretch"
                         HorizontalContentAlignment="Left"
+                        AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
                         Click="Command_Click"
                         Style="{StaticResource SubtleButtonStyle}"
                         UseSystemFocusVisuals="{StaticResource UseSystemFocusVisuals}">
@@ -166,7 +168,12 @@
             <tkcontrols:MarkdownThemes
                 x:Key="DefaultMarkdownThemeConfig"
                 H3FontSize="12"
-                H3FontWeight="Normal" />
+                H3FontWeight="Normal"
+                InlineCodeBackground="{StaticResource ControlFillColorDefaultBrush}"
+                InlineCodeBorderBrush="{StaticResource ControlElevationBorderBrush}"
+                InlineCodeCornerRadius="2"
+                InlineCodeForeground="{StaticResource TextFillColorSecondaryBrush}"
+                InlineCodePadding="2,0,2,1" />
             <markdownImageProviders:ImageProvider x:Key="ImageProvider" />
             <tkcontrols:MarkdownConfig
                 x:Key="DefaultMarkdownConfig"
@@ -177,14 +184,18 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <!--
+                In compact mode this row collapses to Auto so the card can shrink to just the
+                search box. A star row would otherwise reserve space during measure even when
+                its only child (the collapsed content) is hidden.
+            -->
+            <RowDefinition Height="{x:Bind ExpandedMode, Mode=OneWay, Converter={StaticResource ExpandedModeToRowHeightConverter}}" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0" Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
@@ -377,6 +388,18 @@
                 </animations:Implicit.HideAnimations>
             </ProgressBar>
 
+        </Grid>
+
+        <Grid
+            Grid.Row="1"
+            Background="{ThemeResource LayerOnAcrylicPrimaryBackgroundBrush}"
+            Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
             <Grid x:Name="ContentGrid" Grid.Row="1">
 
                 <Grid.ColumnDefinitions>
@@ -510,12 +533,13 @@
             See https://github.com/microsoft/microsoft-ui-xaml/issues/5741
         -->
         <StackPanel
-            Grid.Row="0"
+            Grid.Row="1"
             Margin="16,8,16,8"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Bottom"
             Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-            CornerRadius="{ThemeResource ControlCornerRadius}">
+            CornerRadius="{ThemeResource ControlCornerRadius}"
+            Visibility="Collapsed">
             <InfoBar
                 CornerRadius="{ThemeResource ControlCornerRadius}"
                 IsOpen="{x:Bind ViewModel.CurrentPage.HasStatusMessage, Mode=OneWay}"
@@ -534,10 +558,11 @@
         </StackPanel>
 
         <Grid
-            Grid.Row="1"
+            Grid.Row="2"
             Background="{ThemeResource LayerOnAcrylicSecondaryBackgroundBrush}"
             BorderBrush="{ThemeResource CmdPal.DividerStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0">
+            BorderThickness="0,1,0,0"
+            Visibility="{x:Bind ExpandedMode, Mode=OneWay}">
             <cpcontrols:CommandBar CurrentPageViewModel="{x:Bind ViewModel.CurrentPage, Mode=OneWay}" />
         </Grid>
 

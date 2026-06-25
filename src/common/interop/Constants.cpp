@@ -259,6 +259,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::TERMINATE_POWER_DISPLAY_EVENT;
     }
+    hstring Constants::AutoDisablePowerDisplayEvent()
+    {
+        return CommonSharedConstants::POWER_DISPLAY_AUTO_DISABLE_EVENT;
+    }
     hstring Constants::RefreshPowerDisplayMonitorsEvent()
     {
         return CommonSharedConstants::REFRESH_POWER_DISPLAY_MONITORS_EVENT;
@@ -274,6 +278,10 @@ namespace winrt::PowerToys::Interop::implementation
     hstring Constants::HotkeyUpdatedPowerDisplayEvent()
     {
         return CommonSharedConstants::HOTKEY_UPDATED_POWER_DISPLAY_EVENT;
+    }
+    hstring Constants::RescanPowerDisplayMonitorsEvent()
+    {
+        return CommonSharedConstants::RESCAN_POWER_DISPLAY_MONITORS_EVENT;
     }
     hstring Constants::PowerDisplayToggleMessage()
     {

@@ -35,8 +35,6 @@ namespace EnvironmentVariablesUILib.Models
             {
                 foreach (var variable in Variables)
                 {
-                    var applyToSystem = variable.ApplyToSystem;
-
                     // Get existing variable with the same name if it exist
                     var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
 
@@ -52,7 +50,7 @@ namespace EnvironmentVariablesUILib.Models
                         }
                     }
 
-                    if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variable))
+                    if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variable))
                     {
                         LoggerInstance.Logger.LogError("Failed to set profile variable.");
                     }
@@ -78,7 +76,7 @@ namespace EnvironmentVariablesUILib.Models
         public void UnapplyVariable(Variable variable)
         {
             // Unset the variable
-            if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(variable))
+            if (!EnvironmentVariablesHelper.UnsetProfileVariableWithoutNotify(variable))
             {
                 LoggerInstance.Logger.LogError("Failed to unset variable.");
             }
@@ -98,7 +96,7 @@ namespace EnvironmentVariablesUILib.Models
                     LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                 }
 
-                if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
+                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToRestore))
                 {
                     LoggerInstance.Logger.LogError("Failed to restore backup variable.");
                 }

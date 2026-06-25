@@ -149,7 +149,7 @@ namespace EnvironmentVariablesUILib.Models
                                     LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                                 }
 
-                                if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
+                                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToRestore))
                                 {
                                     LoggerInstance.Logger.LogError("Failed to restore backup variable.");
                                 }

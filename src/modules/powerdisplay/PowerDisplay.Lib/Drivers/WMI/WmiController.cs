@@ -9,9 +9,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using WmiLight;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
@@ -71,31 +72,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Extract hardware ID from WMI InstanceName.
-        /// InstanceName format: "DISPLAY\BOE0900\4&amp;10fd3ab1&amp;0&amp;UID265988_0"
-        /// Returns the second segment (e.g., "BOE0900") which is the manufacturer+product code.
-        /// </summary>
-        /// <param name="instanceName">The WMI InstanceName.</param>
-        /// <returns>The EDID ID extracted from the InstanceName, or empty string if extraction fails.</returns>
-        private static string ExtractEdidIdFromInstanceName(string instanceName)
-        {
-            if (string.IsNullOrEmpty(instanceName))
-            {
-                return string.Empty;
-            }
-
-            // Split by backslash: ["DISPLAY", "BOE0900", "4&10fd3ab1&0&UID265988_0"]
-            var parts = instanceName.Split('\\');
-            if (parts.Length >= 2 && !string.IsNullOrEmpty(parts[1]))
-            {
-                // Return the second part (e.g., "BOE0900")
-                return parts[1];
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Build a WMI query filtered by monitor instance name.
         /// </summary>
         /// <param name="wmiClass">The WMI class to query.</param>
@@ -106,33 +82,6 @@ namespace PowerDisplay.Common.Drivers.WMI
         {
             var escapedInstanceName = EscapeWmiString(instanceName);
             return $"SELECT {selectClause} FROM {wmiClass} WHERE InstanceName = '{escapedInstanceName}'";
-        }
-
-        /// <summary>
-        /// Get MonitorDisplayInfo from dictionary by matching EdidId.
-        /// Uses QueryDisplayConfig path index which matches Windows Display Settings "Identify" feature.
-        /// </summary>
-        /// <param name="edidId">The EDID ID to match (e.g., "LEN4038", "BOE0900").</param>
-        /// <param name="monitorDisplayInfos">Dictionary of monitor display info from QueryDisplayConfig.</param>
-        /// <returns>MonitorDisplayInfo if found, or null if not found.</returns>
-        private static Drivers.DDC.MonitorDisplayInfo? GetMonitorDisplayInfoByEdidId(string edidId, Dictionary<string, Drivers.DDC.MonitorDisplayInfo> monitorDisplayInfos)
-        {
-            if (string.IsNullOrEmpty(edidId) || monitorDisplayInfos == null || monitorDisplayInfos.Count == 0)
-            {
-                return null;
-            }
-
-            var match = monitorDisplayInfos.Values.FirstOrDefault(
-                v => edidId.Equals(v.EdidId, StringComparison.OrdinalIgnoreCase));
-
-            // Check if match was found (struct default has null/empty EdidId)
-            if (!string.IsNullOrEmpty(match.EdidId))
-            {
-                return match;
-            }
-
-            Logger.LogWarning($"WMI: Could not find MonitorDisplayInfo for EdidId '{edidId}'");
-            return null;
         }
 
         public string Name => "WMI Monitor Controller";
@@ -210,13 +159,16 @@ namespace PowerDisplay.Common.Drivers.WMI
                                     inParams,
                                     out WmiMethodParameters outParams);
 
-                                // Check return value (0 indicates success)
-                                if (result == 0)
+                                using (outParams)
                                 {
-                                    return MonitorOperationResult.Success();
-                                }
+                                    // Check return value (0 indicates success)
+                                    if (result == 0)
+                                    {
+                                        return MonitorOperationResult.Success();
+                                    }
 
-                                return MonitorOperationResult.Failure($"WMI method returned error code: {result}", (int)result);
+                                    return MonitorOperationResult.Failure($"WMI method returned error code: {result}", (int)result);
+                                }
                             }
                         }
 
@@ -241,73 +193,90 @@ namespace PowerDisplay.Common.Drivers.WMI
         }
 
         /// <summary>
-        /// Discover supported monitors.
-        /// WMI brightness control is typically only available on internal laptop displays,
-        /// which don't have meaningful UserFriendlyName in WmiMonitorID, so we use "Built-in Display".
+        /// Discover the panels the WMI brightness provider exposes, pairing each against the
+        /// active-display inventory. A display present in <c>WmiMonitorBrightness</c> is treated
+        /// as an internal panel by <see cref="MonitorManager"/>, regardless of the OutputTechnology
+        /// the active GPU reports — this is what lets a built-in panel driven by the discrete GPU
+        /// (reported as DisplayPort-External) still be found. See issue #48587.
         /// </summary>
-        public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
+        /// <param name="targets">The full active-display inventory from QueryDisplayConfig.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>WMI-managed monitors (those present in both WMI and the inventory).</returns>
+        public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
+            IReadOnlyList<MonitorDisplayInfo> targets,
+            CancellationToken cancellationToken = default)
         {
+            // No active displays at all — nothing to pair WMI brightness instances against.
+            if (targets.Count == 0)
+            {
+                return Enumerable.Empty<Monitor>();
+            }
+
             return await Task.Run(
                 () =>
                 {
                 var monitors = new List<Monitor>();
 
+                // Key the inventory by canonical Monitor.Id (FromDevicePath). A WMI InstanceName
+                // reduces to the same Id via FromInstanceName, so pairing is a single exact lookup
+                // that also disambiguates dual-internal-panel devices without a separate pass.
+                var byId = targets
+                    .Select(t => (Id: MonitorIdentity.FromDevicePath(t.DevicePath), Info: t))
+                    .Where(p => !string.IsNullOrEmpty(p.Id))
+                    .ToDictionary(p => p.Id, p => p.Info, MonitorIdComparer.Instance);
+
                 try
                 {
                     using var connection = new WmiConnection(WmiNamespace);
 
-                    // Query WMI brightness support - only internal displays typically support this
+                    // System-wide query: returns every panel the driver exposes for WMI
+                    // brightness, regardless of which GPU currently drives it.
                     var brightnessQuery = $"SELECT InstanceName, CurrentBrightness FROM {BrightnessQueryClass}";
                     var brightnessResults = connection.CreateQuery(brightnessQuery).ToList();
 
-                    if (brightnessResults.Count == 0)
-                    {
-                        return monitors;
-                    }
-
-                    // Get MonitorDisplayInfo from QueryDisplayConfig - this provides the correct monitor numbers
-                    var monitorDisplayInfos = Drivers.DDC.DdcCiNative.GetAllMonitorDisplayInfo();
-
-                    // Create monitor objects for each supported brightness instance
+                    // Check cancellation per iteration: WMI work inside Task.Run doesn't
+                    // respond to the token once the loop has started.
                     foreach (var obj in brightnessResults)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         try
                         {
                             var instanceName = obj.GetPropertyValue<string>("InstanceName") ?? string.Empty;
                             var currentBrightness = obj.GetPropertyValue<byte>("CurrentBrightness");
 
-                            // Extract EDID ID from InstanceName
-                            // e.g., "DISPLAY\LEN4038\4&40f4dee&0&UID8388688_0" -> "LEN4038"
-                            var edidId = ExtractEdidIdFromInstanceName(instanceName);
+                            // Pair on the canonical Monitor.Id. A miss means this WMI instance is
+                            // not an active display (e.g. a disconnected panel still cached by the
+                            // provider) — skip it.
+                            var lookupId = MonitorIdentity.FromInstanceName(instanceName);
+                            if (string.IsNullOrEmpty(lookupId) || !byId.TryGetValue(lookupId, out var displayInfo))
+                            {
+                                Logger.LogInfo(
+                                    $"WMI exposed brightness for instance '{instanceName}' with no matching " +
+                                    "active display — skipping");
+                                continue;
+                            }
 
-                            // Get MonitorDisplayInfo from QueryDisplayConfig by matching EDID ID
-                            // This provides MonitorNumber and GdiDeviceName for display settings APIs
-                            var displayInfo = GetMonitorDisplayInfoByEdidId(edidId, monitorDisplayInfos);
-                            int monitorNumber = displayInfo?.MonitorNumber ?? 0;
-                            string gdiDeviceName = displayInfo?.GdiDeviceName ?? string.Empty;
-
-                            // Generate unique ID: "WMI_{EdidId}_{MonitorNumber}"
-                            string uniqueId = !string.IsNullOrEmpty(edidId)
-                                ? $"WMI_{edidId}_{monitorNumber}"
-                                : $"WMI_Unknown_{monitorNumber}";
-
-                            // Get display name from PnP manufacturer ID (e.g., "Lenovo Built-in Display")
-                            var displayName = PnpIdHelper.GetBuiltInDisplayName(edidId);
-
+                            // Derive the Id from the matched entry's DevicePath, not the
+                            // reconstructed lookupId. The persisted Monitor.Id ALWAYS comes from this
+                            // single source (FromDevicePath), so a WMI panel's Id stays byte-identical
+                            // to the DDC route and to prior releases. FromInstanceName is only the
+                            // lookup key; every Id comparison/key elsewhere goes through MonitorIdComparer
+                            // (case-insensitive), so an InstanceName/DevicePath casing difference can
+                            // never orphan per-monitor settings.
+                            // Name is left blank: MonitorViewModel injects a localized
+                            // "Built-in Display" string for internal displays.
                             var monitor = new Monitor
                             {
-                                Id = uniqueId,
-                                Name = displayName,
+                                Id = MonitorIdentity.FromDevicePath(displayInfo.DevicePath),
+                                Name = string.Empty,
                                 CurrentBrightness = currentBrightness,
-                                MinBrightness = 0,
-                                MaxBrightness = 100,
-                                IsAvailable = true,
                                 InstanceName = instanceName,
                                 Capabilities = MonitorCapabilities.Brightness | MonitorCapabilities.Wmi,
                                 CommunicationMethod = "WMI",
                                 SupportsColorTemperature = false,
-                                MonitorNumber = monitorNumber,
-                                GdiDeviceName = gdiDeviceName,
+                                MonitorNumber = displayInfo.MonitorNumber,
+                                GdiDeviceName = displayInfo.GdiDeviceName ?? string.Empty,
                             };
 
                             monitors.Add(monitor);
@@ -320,9 +289,12 @@ namespace PowerDisplay.Common.Drivers.WMI
                 }
                 catch (WmiException ex)
                 {
-                    Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message} (HResult: 0x{ex.HResult:X})");
+                    // On a system with no WMI-controllable panel the provider may be absent or
+                    // throw 0x1068 ("feature not supported"); those displays are handled by
+                    // DDC/CI instead, so this is informational rather than an error.
+                    Logger.LogInfo($"WMI brightness query unavailable: {ex.Message} (HResult: 0x{ex.HResult:X})");
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException)
                 {
                     Logger.LogError($"WMI DiscoverMonitors failed: {ex.Message}");
                 }
@@ -330,51 +302,6 @@ namespace PowerDisplay.Common.Drivers.WMI
                 return monitors;
             },
                 cancellationToken);
-        }
-
-        // Extended features not supported by WMI
-        public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(MonitorOperationResult.Failure("Contrast control not supported via WMI"));
-        }
-
-        public Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(MonitorOperationResult.Failure("Volume control not supported via WMI"));
-        }
-
-        public Task<VcpFeatureValue> GetColorTemperatureAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(VcpFeatureValue.Invalid);
-        }
-
-        public Task<MonitorOperationResult> SetColorTemperatureAsync(Monitor monitor, int colorTemperature, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(MonitorOperationResult.Failure("Color temperature control not supported via WMI"));
-        }
-
-        public Task<VcpFeatureValue> GetInputSourceAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            // Input source switching not supported for internal displays
-            return Task.FromResult(VcpFeatureValue.Invalid);
-        }
-
-        public Task<MonitorOperationResult> SetInputSourceAsync(Monitor monitor, int inputSource, CancellationToken cancellationToken = default)
-        {
-            // Input source switching not supported for internal displays
-            return Task.FromResult(MonitorOperationResult.Failure("Input source switching not supported via WMI"));
-        }
-
-        public Task<MonitorOperationResult> SetPowerStateAsync(Monitor monitor, int powerState, CancellationToken cancellationToken = default)
-        {
-            // Power state control not supported for internal displays via WMI
-            return Task.FromResult(MonitorOperationResult.Failure("Power state control not supported via WMI"));
-        }
-
-        public Task<VcpFeatureValue> GetPowerStateAsync(Monitor monitor, CancellationToken cancellationToken = default)
-        {
-            // Power state control not supported for internal displays via WMI
-            return Task.FromResult(VcpFeatureValue.Invalid);
         }
 
         public void Dispose()

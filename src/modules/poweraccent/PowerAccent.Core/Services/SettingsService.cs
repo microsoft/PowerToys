@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -11,6 +11,7 @@ using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerAccent.Core.SerializationContext;
 using PowerToys.PowerAccentKeyboardService;
+using Language = global::PowerAccent.Common.Language;
 
 namespace PowerAccent.Core.Services;
 
@@ -61,10 +62,35 @@ public class SettingsService
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
 
-                        SelectedLang = settings.Properties.SelectedLang.Value
+                        var selectedLangEntries = settings.Properties.SelectedLang.Value
                             .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                            .Select(lang => Enum.TryParse(lang, out Language selectedLangValue) ? selectedLangValue : Language.SPECIAL)
+                            .Select(lang => lang.Trim())
                             .ToArray();
+
+                        // Either select all languages if "ALL" is specified, or parse
+                        // the specified languages while ignoring unrecognized values.
+                        bool isAllSelected = selectedLangEntries.Any(lang =>
+                            lang.Equals("ALL", StringComparison.OrdinalIgnoreCase));
+                        SelectedLang = isAllSelected
+                            ? Enum.GetValues<Language>()
+                            : selectedLangEntries
+                                .Select(lang =>
+                                {
+                                    if (Enum.TryParse(lang, ignoreCase: true, out Language parsedLang))
+                                    {
+                                        return (Language?)parsedLang;
+                                    }
+
+                                    // Skip unrecognized values.
+                                    Logger.LogWarning($"Unknown language value '{lang}' in settings, skipping.");
+                                    return null;
+                                })
+                                .Where(lang => lang.HasValue)
+                                .Select(lang => lang!.Value)
+                                .ToArray();
+
+                        Logger.LogInfo(
+                            $"Languages selected: {(isAllSelected ? "ALL" : string.Join(", ", SelectedLang))}");
 
                         switch (settings.Properties.ToolbarPosition.Value)
                         {

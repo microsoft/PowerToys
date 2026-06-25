@@ -39,7 +39,7 @@ const static wchar_t* MODULE_DESC = L"A utility to manage display brightness and
 class PowerDisplayModule : public PowertoyModuleIface
 {
 private:
-    bool m_enabled = false;
+    std::atomic<bool> m_enabled = false;
 
     // Process manager handles Named Pipe communication and process lifecycle
     PowerDisplayProcessManager m_processManager;
@@ -54,6 +54,8 @@ private:
     HANDLE m_hToggleEvent = nullptr;
     HANDLE m_hStopEvent = nullptr;  // Manual-reset event to signal thread termination
     std::thread m_toggleEventThread;
+    HANDLE m_hAutoDisableEvent = nullptr;
+    std::thread m_autoDisableEventThread;
 
 public:
     PowerDisplayModule()
@@ -70,28 +72,32 @@ public:
         Logger::trace(L"Created SEND_SETTINGS_TELEMETRY_EVENT: handle={}", reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent));
 
         // Create Toggle event for Quick Access support
-        // This allows Quick Access to launch PowerDisplay even when module is not enabled
+        // Listener registration is tied to enable()/disable() so activation still
+        // flows through the module's runtime enable/GPO checks.
         m_hToggleEvent = CreateDefaultEvent(CommonSharedConstants::TOGGLE_POWER_DISPLAY_EVENT);
         Logger::trace(L"Created TOGGLE_EVENT: handle={}", reinterpret_cast<void*>(m_hToggleEvent));
+
+        m_hAutoDisableEvent = CreateDefaultEvent(CommonSharedConstants::POWER_DISPLAY_AUTO_DISABLE_EVENT);
+        Logger::trace(L"Created AUTO_DISABLE_EVENT: handle={}", reinterpret_cast<void*>(m_hAutoDisableEvent));
 
         // Create manual-reset stop event for clean thread termination
         m_hStopEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
         Logger::trace(L"Created STOP_EVENT: handle={}", reinterpret_cast<void*>(m_hStopEvent));
 
-        if (!m_hRefreshEvent || !m_hSendSettingsTelemetryEvent || !m_hToggleEvent || !m_hStopEvent)
+        if (!m_hRefreshEvent || !m_hSendSettingsTelemetryEvent || !m_hToggleEvent || !m_hStopEvent || !m_hAutoDisableEvent)
         {
-            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}, Toggle={}",
+            Logger::error(L"Failed to create one or more event handles: Refresh={}, SettingsTelemetry={}, Toggle={}, Stop={}, AutoDisable={}",
                          reinterpret_cast<void*>(m_hRefreshEvent),
                          reinterpret_cast<void*>(m_hSendSettingsTelemetryEvent),
-                         reinterpret_cast<void*>(m_hToggleEvent));
+                         reinterpret_cast<void*>(m_hToggleEvent),
+                         reinterpret_cast<void*>(m_hStopEvent),
+                         reinterpret_cast<void*>(m_hAutoDisableEvent));
         }
         else
         {
             Logger::info(L"All Windows Events created successfully");
         }
 
-        // Start toggle event listener thread for Quick Access support
-        StartToggleEventListener();
     }
 
     ~PowerDisplayModule()
@@ -100,9 +106,6 @@ public:
         {
             disable();
         }
-
-        // Stop toggle event listener thread
-        StopToggleEventListener();
 
         // Clean up event handles
         if (m_hRefreshEvent)
@@ -120,6 +123,11 @@ public:
             CloseHandle(m_hToggleEvent);
             m_hToggleEvent = nullptr;
         }
+        if (m_hAutoDisableEvent)
+        {
+            CloseHandle(m_hAutoDisableEvent);
+            m_hAutoDisableEvent = nullptr;
+        }
         if (m_hStopEvent)
         {
             CloseHandle(m_hStopEvent);
@@ -129,7 +137,7 @@ public:
 
     void StartToggleEventListener()
     {
-        if (!m_hToggleEvent || !m_hStopEvent)
+        if (!m_hToggleEvent || !m_hStopEvent || m_toggleEventThread.joinable())
         {
             return;
         }
@@ -152,7 +160,7 @@ public:
                 if (result == WAIT_OBJECT_0 + TOGGLE_EVENT_INDEX)
                 {
                     Logger::trace(L"Toggle event received");
-                    TogglePowerDisplay();
+                    TryTogglePowerDisplay(L"Toggle event");
                 }
                 else if (result == WAIT_OBJECT_0 + STOP_EVENT_INDEX)
                 {
@@ -172,6 +180,34 @@ public:
         });
     }
 
+    bool IsActivationAllowed(const wchar_t* source)
+    {
+        if (gpo_policy_enabled_configuration() == powertoys_gpo::gpo_rule_configured_t::gpo_rule_configured_disabled)
+        {
+            Logger::warn(L"{} ignored because PowerDisplay is disabled by GPO", source);
+            return false;
+        }
+
+        if (!m_enabled)
+        {
+            Logger::info(L"{} ignored because PowerDisplay module is disabled", source);
+            return false;
+        }
+
+        return true;
+    }
+
+    bool TrySendMessage(const std::wstring& message_type, const std::wstring& message_arg, const wchar_t* source)
+    {
+        if (!IsActivationAllowed(source))
+        {
+            return false;
+        }
+
+        m_processManager.send_message(message_type, message_arg);
+        return true;
+    }
+
     void StopToggleEventListener()
     {
         if (m_hStopEvent)
@@ -186,13 +222,75 @@ public:
         }
     }
 
+    void StartAutoDisableEventListener()
+    {
+        if (!m_hAutoDisableEvent || !m_hStopEvent || m_autoDisableEventThread.joinable())
+        {
+            return;
+        }
+
+        // m_hStopEvent is shared with the toggle listener; both start/stop together.
+        ResetEvent(m_hStopEvent);
+
+        m_autoDisableEventThread = std::thread([this]() {
+            Logger::info(L"AutoDisable listener thread started");
+
+            HANDLE handles[] = { m_hAutoDisableEvent, m_hStopEvent };
+            constexpr DWORD AUTO_DISABLE_INDEX = 0;
+            constexpr DWORD STOP_INDEX = 1;
+
+            DWORD result = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+            if (result == WAIT_OBJECT_0 + AUTO_DISABLE_INDEX)
+            {
+                Logger::warn(L"PowerDisplay AutoDisable event received - disabling module");
+                // Calling disable() updates m_enabled (which runner queries via is_enabled())
+                // and stops the process manager. PowerDisplay.exe Phase 0 already wrote
+                // settings.json; we don't touch it here.
+                this->disable();
+            }
+            else if (result == WAIT_OBJECT_0 + STOP_INDEX)
+            {
+                Logger::trace(L"AutoDisable listener: stop event signaled");
+            }
+            else
+            {
+                Logger::warn(L"AutoDisable listener: WaitForMultipleObjects returned unexpected result: {}", result);
+            }
+
+            Logger::info(L"AutoDisable listener thread stopped");
+        });
+    }
+
+    void StopAutoDisableEventListener()
+    {
+        if (!m_autoDisableEventThread.joinable())
+        {
+            return;
+        }
+
+        // Listener invokes this->disable() → here on its own thread; join() would deadlock.
+        if (m_autoDisableEventThread.get_id() == std::this_thread::get_id())
+        {
+            m_autoDisableEventThread.detach();
+        }
+        else
+        {
+            m_autoDisableEventThread.join();
+        }
+    }
+
     /// <summary>
     /// Toggle PowerDisplay window visibility.
     /// If process is running, launches again to trigger redirect activation (OnActivated handles toggle).
     /// If process is not running, starts it via Named Pipe and sends toggle message.
     /// </summary>
-    void TogglePowerDisplay()
+    bool TryTogglePowerDisplay(const wchar_t* source)
     {
+        if (!IsActivationAllowed(source))
+        {
+            return false;
+        }
+
         if (m_processManager.is_running())
         {
             // Process running - launch to trigger single instance redirect, OnActivated will toggle
@@ -208,6 +306,7 @@ public:
             m_processManager.send_message(CommonSharedConstants::POWER_DISPLAY_TOGGLE_MESSAGE);
         }
         Trace::ActivatePowerDisplay();
+        return true;
     }
 
     virtual void destroy() override
@@ -231,6 +330,12 @@ public:
         return powertoys_gpo::getConfiguredPowerDisplayEnabledValue();
     }
 
+    // Returns whether the PowerToys should be enabled by default
+    virtual bool is_enabled_by_default() const override
+    {
+        return false;
+    }
+
     virtual bool get_config(wchar_t* buffer, int* buffer_size) override
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
@@ -251,7 +356,7 @@ public:
             if (action_object.get_name() == L"Launch")
             {
                 Logger::trace(L"Launch action received");
-                TogglePowerDisplay();
+                TryTogglePowerDisplay(L"Launch action");
             }
             else if (action_object.get_name() == L"RefreshMonitors")
             {
@@ -274,7 +379,7 @@ public:
                 Logger::trace(L"ApplyProfile: profile name = '{}'", profileName);
 
                 // Send ApplyProfile message with profile name via Named Pipe
-                m_processManager.send_message(CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE, profileName);
+                TrySendMessage(CommonSharedConstants::POWER_DISPLAY_APPLY_PROFILE_MESSAGE, profileName, L"ApplyProfile action");
             }
         }
         catch (std::exception&)
@@ -297,6 +402,9 @@ public:
         m_enabled = true;
         Trace::EnablePowerDisplay(true);
 
+        StartToggleEventListener();
+        StartAutoDisableEventListener();
+
         // Start the process manager (launches PowerDisplay.exe with Named Pipe)
         m_processManager.start();
 
@@ -307,13 +415,13 @@ public:
     {
         Logger::trace(L"PowerDisplay::disable()");
 
-        if (m_enabled)
-        {
-            // Stop the process manager (sends terminate message and waits for exit)
-            m_processManager.stop();
-        }
-
         m_enabled = false;
+
+        StopToggleEventListener();
+        StopAutoDisableEventListener();
+
+        // Stop the process manager (sends terminate message and waits for exit)
+        m_processManager.stop();
         Trace::EnablePowerDisplay(false);
     }
 

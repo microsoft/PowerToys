@@ -37,18 +37,53 @@ public record SettingsModel
 
     public bool AllowBreakthroughShortcut { get; init; }
 
+    public ImmutableList<PinnedCommandSettings> PinnedCommands { get; init; }
+        = ImmutableList<PinnedCommandSettings>.Empty;
+
     public bool AllowExternalReload { get; init; }
 
-    public ImmutableDictionary<string, ProviderSettings> ProviderSettings { get; init; }
+    public bool CompactMode { get; set; } = true;
+
+    // When compact mode is on and the palette is centered on launch, this is the relative
+    // height from the bottom of the screen (as a percentage) at which the collapsed search
+    // box is vertically centered. 75 places it in the upper portion of the display. Ignored
+    // when compact mode is off.
+    public int CompactCenterHeightPercentage { get; set; } = 75;
+
+    private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
 
-    public string[] FallbackRanks { get; init; } = [];
+    public ImmutableDictionary<string, ProviderSettings> ProviderSettings
+    {
+        get => _providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        init => _providerSettings = value;
+    }
 
-    public ImmutableDictionary<string, CommandAlias> Aliases { get; init; }
+    private string[]? _fallbackRanks = [];
+
+    public string[] FallbackRanks
+    {
+        get => _fallbackRanks ?? [];
+        init => _fallbackRanks = value;
+    }
+
+    private ImmutableDictionary<string, CommandAlias>? _aliases
         = ImmutableDictionary<string, CommandAlias>.Empty;
 
-    public ImmutableList<TopLevelHotkey> CommandHotkeys { get; init; }
+    public ImmutableDictionary<string, CommandAlias> Aliases
+    {
+        get => _aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        init => _aliases = value;
+    }
+
+    private ImmutableList<TopLevelHotkey>? _commandHotkeys
         = ImmutableList<TopLevelHotkey>.Empty;
+
+    public ImmutableList<TopLevelHotkey> CommandHotkeys
+    {
+        get => _commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        init => _commandHotkeys = value;
+    }
 
     public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
 
@@ -62,7 +97,13 @@ public record SettingsModel
 
     public bool EnableDock { get; init; }
 
-    public DockSettings DockSettings { get; init; } = new();
+    private DockSettings? _dockSettings = new();
+
+    public DockSettings DockSettings
+    {
+        get => _dockSettings ?? new();
+        init => _dockSettings = value;
+    }
 
     // Theme settings
     public UserTheme Theme { get; init; } = UserTheme.Default;
@@ -91,8 +132,52 @@ public record SettingsModel
 
     // </Theme settings>
 
+    // Extension Gallery settings
+
+    /// <summary>
+    /// Gets the URL of the custom gallery feed <strong>for development only</strong>. This feed is currently only enabled in
+    /// development builds and is used for testing purposes. <strong>It is not used in CI builds.</strong>
+    /// </summary>
+    /// <remarks>
+    /// We do not want to allow this to be changed in retail builds to prevent the injection of a malicious feed.
+    /// </remarks>
+    public string? GalleryFeedUrl { get; init; }
+
+    // </Gallery settings>
+
+    // Internal diagnostics settings
+
+    /// <summary>
+    /// Gets a value indicating whether the main window's HWND chrome (title bar, border,
+    /// system-drawn rounded corners) is visible. <strong>For internal debugging only.</strong>
+    /// Off by default. The setting is persisted but only honored in non-CI builds; release /
+    /// CI builds always force the borderless / transparent host window.
+    /// </summary>
+    public bool ShowHwndFrame { get; init; }
+
+    // </Internal diagnostics settings>
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
+
+    [JsonConstructor]
+    public SettingsModel(
+          ImmutableList<PinnedCommandSettings>? pinnedCommands = null,
+          ImmutableDictionary<string, ProviderSettings>? providerSettings = null,
+          string[]? fallbackRanks = null,
+          ImmutableDictionary<string, CommandAlias>? aliases = null,
+          ImmutableList<TopLevelHotkey>? commandHotkeys = null)
+    {
+        PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
+        ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        FallbackRanks = fallbackRanks ?? [];
+        Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+    }
+
+    public SettingsModel()
+    {
+    }
 
     public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
@@ -114,6 +199,186 @@ public record SettingsModel
             ProviderSettings = ProviderSettings.SetItem(provider.ProviderId, connected),
         };
         return (newModel, connected);
+    }
+
+    public SettingsModel NormalizePinnedCommands()
+    {
+        var pinnedCommands = PinnedCommands;
+        if (pinnedCommands.Count == 0)
+        {
+            var migratedPins = ImmutableList.CreateBuilder<PinnedCommandSettings>();
+            foreach (var (providerId, providerSettings) in ProviderSettings.OrderBy(static kvp => kvp.Key, StringComparer.Ordinal))
+            {
+                foreach (var commandId in providerSettings.PinnedCommandIds)
+                {
+                    migratedPins.Add(new PinnedCommandSettings(providerId, commandId));
+                }
+            }
+
+            pinnedCommands = migratedPins.ToImmutable();
+        }
+
+        return WithPinnedCommands(pinnedCommands);
+    }
+
+    public SettingsModel WithPinnedCommands(ImmutableList<PinnedCommandSettings> pinnedCommands)
+    {
+        var groupedPinnedCommands = pinnedCommands
+            .GroupBy(static pin => pin.ProviderId, StringComparer.Ordinal)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(static pin => pin.CommandId).ToImmutableList(),
+                StringComparer.Ordinal);
+
+        var allProviderIds = ProviderSettings.Keys.Union(groupedPinnedCommands.Keys, StringComparer.Ordinal).ToArray();
+        var providerSettingsAlreadyMatch = allProviderIds.All(providerId =>
+        {
+            ProviderSettings.TryGetValue(providerId, out var currentProviderSettings);
+            groupedPinnedCommands.TryGetValue(providerId, out var desiredPinnedIds);
+
+            var currentPinnedIds = currentProviderSettings?.PinnedCommandIds ?? ImmutableList<string>.Empty;
+            desiredPinnedIds ??= ImmutableList<string>.Empty;
+
+            return currentPinnedIds.SequenceEqual(desiredPinnedIds);
+        });
+
+        if (PinnedCommands.SequenceEqual(pinnedCommands) && providerSettingsAlreadyMatch)
+        {
+            return this;
+        }
+
+        var providerSettingsBuilder = ProviderSettings.ToBuilder();
+        foreach (var providerId in allProviderIds)
+        {
+            providerSettingsBuilder.TryGetValue(providerId, out var providerSettings);
+            providerSettings ??= new ProviderSettings();
+
+            groupedPinnedCommands.TryGetValue(providerId, out var desiredPinnedIds);
+            desiredPinnedIds ??= ImmutableList<string>.Empty;
+
+            providerSettingsBuilder[providerId] = providerSettings with { PinnedCommandIds = desiredPinnedIds };
+        }
+
+        return this with
+        {
+            PinnedCommands = pinnedCommands,
+            ProviderSettings = providerSettingsBuilder.ToImmutable(),
+        };
+    }
+
+    public bool IsCommandPinned(string providerId, string commandId)
+    {
+        foreach (var pinnedCommand in PinnedCommands)
+        {
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public List<string> GetPinnedCommandIds(string providerId)
+    {
+        List<string> pinnedCommandIds = [];
+        foreach (var pinnedCommand in PinnedCommands)
+        {
+            if (pinnedCommand.ProviderId == providerId)
+            {
+                pinnedCommandIds.Add(pinnedCommand.CommandId);
+            }
+        }
+
+        return pinnedCommandIds;
+    }
+
+    public SettingsModel TryPinCommand(string providerId, string commandId)
+    {
+        if (IsCommandPinned(providerId, commandId))
+        {
+            return this;
+        }
+
+        return WithPinnedCommands(PinnedCommands.Add(new PinnedCommandSettings(providerId, commandId)));
+    }
+
+    public SettingsModel TryUnpinCommand(string providerId, string commandId)
+    {
+        for (var i = 0; i < PinnedCommands.Count; i++)
+        {
+            var pinnedCommand = PinnedCommands[i];
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return WithPinnedCommands(PinnedCommands.RemoveAt(i));
+            }
+        }
+
+        return this;
+    }
+
+    public SettingsModel TryMovePinnedCommand(string providerId, string commandId, bool moveUp, Func<PinnedCommandSettings, bool>? isVisible = null)
+    {
+        var index = FindPinnedCommandIndex(providerId, commandId);
+        if (index < 0)
+        {
+            return this;
+        }
+
+        // Find the next visible neighbor in the move direction, skipping
+        // stale entries (removed/disabled/failed extensions).
+        var direction = moveUp ? -1 : 1;
+        var targetIndex = index + direction;
+        while (targetIndex >= 0 && targetIndex < PinnedCommands.Count &&
+               isVisible != null && !isVisible(PinnedCommands[targetIndex]))
+        {
+            targetIndex += direction;
+        }
+
+        if (targetIndex < 0 || targetIndex >= PinnedCommands.Count)
+        {
+            return this;
+        }
+
+        // Remove and re-insert rather than swap so that stale entries
+        // between index and targetIndex keep their relative positions.
+        var pinnedCommand = PinnedCommands[index];
+        var pinnedCommands = PinnedCommands.RemoveAt(index);
+        pinnedCommands = pinnedCommands.Insert(targetIndex, pinnedCommand);
+
+        return WithPinnedCommands(pinnedCommands);
+    }
+
+    public SettingsModel TryMovePinnedCommandToTop(string providerId, string commandId)
+    {
+        var index = FindPinnedCommandIndex(providerId, commandId);
+        if (index <= 0)
+        {
+            return this;
+        }
+
+        var pinnedCommand = PinnedCommands[index];
+        var pinnedCommands = PinnedCommands.RemoveAt(index);
+        pinnedCommands = pinnedCommands.Insert(0, pinnedCommand);
+
+        return WithPinnedCommands(pinnedCommands);
+    }
+
+    private int FindPinnedCommandIndex(string providerId, string commandId)
+    {
+        for (var i = 0; i < PinnedCommands.Count; i++)
+        {
+            var pinnedCommand = PinnedCommands[i];
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public string[] GetGlobalFallbacks()
@@ -165,11 +430,15 @@ public record SettingsModel
 [JsonSerializable(typeof(ImmutableList<HistoryItem>), TypeInfoPropertyName = "ImmutableHistoryList")]
 [JsonSerializable(typeof(ImmutableDictionary<string, FallbackSettings>), TypeInfoPropertyName = "ImmutableFallbackDictionary")]
 [JsonSerializable(typeof(ImmutableList<string>), TypeInfoPropertyName = "ImmutableStringList")]
+[JsonSerializable(typeof(ImmutableList<PinnedCommandSettings>), TypeInfoPropertyName = "ImmutablePinnedCommandSettingsList")]
 [JsonSerializable(typeof(ImmutableList<DockBandSettings>), TypeInfoPropertyName = "ImmutableDockBandSettingsList")]
+[JsonSerializable(typeof(DockMonitorConfig))]
+[JsonSerializable(typeof(ImmutableList<DockMonitorConfig>), TypeInfoPropertyName = "ImmutableDockMonitorConfigList")]
 [JsonSerializable(typeof(ImmutableDictionary<string, ProviderSettings>), TypeInfoPropertyName = "ImmutableProviderSettingsDictionary")]
 [JsonSerializable(typeof(ImmutableDictionary<string, CommandAlias>), TypeInfoPropertyName = "ImmutableAliasDictionary")]
 [JsonSerializable(typeof(ImmutableList<TopLevelHotkey>), TypeInfoPropertyName = "ImmutableTopLevelHotkeyList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
+[JsonSerializable(typeof(PinnedCommandSettings))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
 internal sealed partial class JsonSerializationContext : JsonSerializerContext

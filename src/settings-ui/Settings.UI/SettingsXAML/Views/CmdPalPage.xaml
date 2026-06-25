@@ -39,9 +39,9 @@
                             <Rectangle>
                                 <Rectangle.Fill>
                                     <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                        <GradientStop Offset="0.50" Color="Black" />
-                                        <GradientStop Offset="0.75" Color="#80000000" />
-                                        <GradientStop Offset="0.95" Color="Transparent" />
+                                        <GradientStop Offset="0.80" Color="Black" />
+                                        <GradientStop Offset="0.90" Color="#80000000" />
+                                        <GradientStop Offset="0.99" Color="Transparent" />
                                     </LinearGradientBrush>
                                 </Rectangle.Fill>
                             </Rectangle>
@@ -50,52 +50,92 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Grid.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <!--  Top-left: light cyan/blue  -->
-                                    <GradientStop Offset="0.0" Color="#5FAFC9" />
-
-                                    <!--  Mid transition  -->
-                                    <GradientStop Offset="0.45" Color="#3E7FB0" />
-
-                                    <!--  Bottom-right: deep blue  -->
-                                    <GradientStop Offset="1.0" Color="#2C3E8F" />
-                                </LinearGradientBrush>
+                                <ImageBrush ImageSource="/Assets/Settings/Modules/Wallpaper.png" />
                             </Grid.Background>
+                            <Grid Height="28" RequestedTheme="Dark">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid
+                                    Grid.ColumnSpan="3"
+                                    Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                                    Opacity="0.6" />
+
+                                <Viewbox
+                                    Height="20"
+                                    Margin="4,0,0,0"
+                                    HorizontalAlignment="Left">
+                                    <Image Source="/Assets/Settings/CmdPal/Dock-Left.png" />
+                                </Viewbox>
+
+                                <Viewbox Grid.Column="1" Height="24">
+                                    <Image Source="/Assets/Settings/CmdPal/Dock-Center.png" />
+                                </Viewbox>
+
+                                <Viewbox
+                                    Grid.Column="2"
+                                    Height="24"
+                                    Margin="0,0,4,0"
+                                    HorizontalAlignment="Right">
+                                    <Image Source="/Assets/Settings/CmdPal/Dock-Right.png" />
+                                </Viewbox>
+                            </Grid>
                             <TextBlock
                                 x:Uid="CmdPal_HeroTitle"
-                                Margin="0,24,0,12"
+                                Grid.Row="1"
+                                Margin="0,24,0,4"
                                 HorizontalAlignment="Center"
                                 FontSize="36"
-                                FontWeight="Bold">
+                                FontWeight="Bold"
+                                RequestedTheme="Dark">
                                 <TextBlock.Foreground>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                        <GradientStop Offset="0.0" Color="#FFB9EBFF" />
-                                        <GradientStop Offset="0.49" Color="#FF86CBFF" />
-                                        <GradientStop Offset="1.0" Color="#FFA1E7FF" />
+                                    <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
+                                        <GradientStop Offset="0" Color="#978D9B" />
+                                        <GradientStop Offset="1" Color="#415A69" />
                                     </LinearGradientBrush>
                                 </TextBlock.Foreground>
                             </TextBlock>
-                            <TextBlock
-                                Grid.Row="1"
-                                HorizontalAlignment="Center"
-                                Foreground="White"
-                                TextAlignment="Center"
-                                TextWrapping="Wrap">
-                                <Run x:Uid="CmdPal_Description" />
-                                <Hyperlink NavigateUri="">
-                                    <Run x:Uid="LearnMore_CmdPal.Text" Foreground="White" />
-                                </Hyperlink>
-                            </TextBlock>
-                            <Image
+                            <StackPanel
                                 Grid.Row="2"
-                                Margin="0,16,0,0"
+                                Orientation="Vertical"
+                                Spacing="8">
+                                <TextBlock
+                                    x:Uid="CmdPal_Description"
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    Foreground="#313131"
+                                    RequestedTheme="Dark"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap" />
+
+                                <HyperlinkButton
+                                    x:Uid="LearnMore_CmdPalContent"
+                                    Padding="0"
+                                    HorizontalAlignment="Center"
+                                    FontSize="12"
+                                    NavigateUri="https://aka.ms/PowerToysOverview_CmdPal" />
+                            </StackPanel>
+
+                            <Grid
+                                Grid.Row="3"
+                                Width="480"
+                                Margin="0,32,0,0"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Top"
-                                Source="/Assets/Settings/Modules/CmdPal.png"
-                                Stretch="Uniform" />
+                                Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource OverlayCornerRadius}"
+                                RequestedTheme="Dark">
+                                <Image Source="/Assets/Settings/CmdPal/CmdPal.png" Stretch="Uniform" />
+                            </Grid>
+
                         </Grid>
                     </tkcontrols:OpacityMaskView>
 
@@ -116,7 +156,7 @@
                         <FontIcon
                             HorizontalAlignment="Center"
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                            Glyph="&#xEB3B;" />
+                            Glyph="&#xEA86;" />
                         <TextBlock
                             Grid.Row="1"
                             HorizontalAlignment="Center"
