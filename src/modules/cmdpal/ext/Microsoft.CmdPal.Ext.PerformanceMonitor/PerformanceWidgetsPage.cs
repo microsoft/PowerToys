@@ -134,13 +134,32 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage.Commands,
             };
 
+            if (isBandPage)
+            {
+                _networkUpItem = new ListItem(_networkPage)
+                {
+                    Title = $"{_networkUpSpeed}",
+                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                    Icon = Icons.NetworkUpIcon,
+                    MoreCommands = _networkPage.Commands,
+                };
+
+                _networkDownItem = new ListItem(_networkPage)
+                {
+                    Title = $"{_networkDownSpeed}",
+                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                    Icon = Icons.NetworkDownIcon,
+                    MoreCommands = _networkPage.Commands,
+                };
+            }
+
             _networkPage.Updated += (s, e) =>
             {
                 _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
                 _networkUpSpeed = _networkPage.GetUpSpeed();
                 _networkDownSpeed = _networkPage.GetDownSpeed();
-                _networkDownItem?.Title = $"{_networkDownSpeed}";
                 _networkUpItem?.Title = $"{_networkUpSpeed}";
+                _networkDownItem?.Title = $"{_networkDownSpeed}";
             };
         }
 
@@ -253,22 +272,6 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         }
         else
         {
-            _networkUpItem = new ListItem(_networkPage!)
-            {
-                Title = $"{_networkUpSpeed}",
-                Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                Icon = Icons.NetworkUpIcon,
-                MoreCommands = _networkPage!.Commands,
-            };
-
-            _networkDownItem = new ListItem(_networkPage!)
-            {
-                Title = $"{_networkDownSpeed}",
-                Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                Icon = Icons.NetworkDownIcon,
-                MoreCommands = _networkPage!.Commands,
-            };
-
             return _batteryItem is not null
                 ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem!, _batteryItem! }
                 : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem! };
