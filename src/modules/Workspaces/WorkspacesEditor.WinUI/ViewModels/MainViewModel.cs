@@ -122,15 +122,8 @@ namespace WorkspacesEditor.ViewModels
             _settings.Save(SettingsUtils.Default);
         }
 
-        public Action GoBackAction { get; set; }
-
-        public Action MinimizeMainWindowAction { get; set; }
-
-        public Action RestoreMainWindowAction { get; set; }
-
-        public Action ShowLoadingAction { get; set; }
-
-        public Action HideLoadingAction { get; set; }
+        [ObservableProperty]
+        private bool _isLoading;
 
         public MainViewModel(WorkspacesEditorIO workspacesEditorIO)
         {
@@ -259,7 +252,7 @@ namespace WorkspacesEditor.ViewModels
 
         public void SwitchToMainView()
         {
-            GoBackAction?.Invoke();
+            WeakReferenceMessenger.Default.Send(new GoBackMessage());
             SearchTerm = string.Empty;
             OnPropertyChanged(nameof(SearchTerm));
             _lastUpdatedTimer.Start();
@@ -303,7 +296,7 @@ namespace WorkspacesEditor.ViewModels
             _isExistingProjectLaunched = isExistingProjectLaunched;
 
             // Minimize the main window
-            MinimizeMainWindowAction?.Invoke();
+            WeakReferenceMessenger.Default.Send(new MinimizeWindowMessage());
 
             // Request the View layer to show the snapshot window
             WeakReferenceMessenger.Default.Send(new ShowSnapshotWindowMessage());
@@ -311,19 +304,19 @@ namespace WorkspacesEditor.ViewModels
 
         internal void CancelSnapshot()
         {
-            RestoreMainWindowAction?.Invoke();
+            WeakReferenceMessenger.Default.Send(new RestoreWindowMessage());
         }
 
         [RelayCommand]
         internal async Task SnapWorkspaceAsync()
         {
             // Restore window immediately so user sees feedback
-            RestoreMainWindowAction?.Invoke();
-            ShowLoadingAction?.Invoke();
+            WeakReferenceMessenger.Default.Send(new RestoreWindowMessage());
+            IsLoading = true;
 
             await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
 
-            HideLoadingAction?.Invoke();
+            IsLoading = false;
 
             Project project = _workspacesEditorIO.ParseTempProject();
             if (project != null)

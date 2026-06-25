@@ -58,31 +58,21 @@ namespace WorkspacesEditor
             {
                 ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
             });
-            vm.GoBackAction = () =>
+            WeakReferenceMessenger.Default.Register<GoBackMessage>(this, (r, m) =>
             {
                 if (ContentFrame.CanGoBack)
                 {
                     ContentFrame.GoBack();
                 }
-            };
-            vm.MinimizeMainWindowAction = () =>
+            });
+            WeakReferenceMessenger.Default.Register<MinimizeWindowMessage>(this, (r, m) =>
             {
                 ShowWindow(WindowNative.GetWindowHandle(this), 6); // SW_MINIMIZE
-            };
-            vm.RestoreMainWindowAction = () =>
+            });
+            WeakReferenceMessenger.Default.Register<RestoreWindowMessage>(this, (r, m) =>
             {
                 ShowWindow(WindowNative.GetWindowHandle(this), 9); // SW_RESTORE
-            };
-            vm.ShowLoadingAction = () =>
-            {
-                LoadingRing.IsActive = true;
-                LoadingRing.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-            };
-            vm.HideLoadingAction = () =>
-            {
-                LoadingRing.IsActive = false;
-                LoadingRing.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-            };
+            });
 
             // Listen for snapshot window requests from ViewModel
             WeakReferenceMessenger.Default.Register<ShowSnapshotWindowMessage>(this, (r, m) =>
@@ -90,6 +80,18 @@ namespace WorkspacesEditor
                 var snapshotWindow = new Views.SnapshotWindow();
                 snapshotWindow.Activate();
             });
+
+            // Bind loading ring to ViewModel.IsLoading
+            vm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(vm.IsLoading))
+                {
+                    LoadingRing.IsActive = vm.IsLoading;
+                    LoadingRing.Visibility = vm.IsLoading
+                        ? Microsoft.UI.Xaml.Visibility.Visible
+                        : Microsoft.UI.Xaml.Visibility.Collapsed;
+                }
+            };
 
             // Navigate to main page
             ContentFrame.Navigate(typeof(Views.MainPage), vm);
