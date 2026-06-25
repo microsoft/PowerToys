@@ -158,8 +158,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
                 _networkUpSpeed = _networkPage.GetUpSpeed();
                 _networkDownSpeed = _networkPage.GetDownSpeed();
-                _networkUpItem?.Title = $"{_networkUpSpeed}";
                 _networkDownItem?.Title = $"{_networkDownSpeed}";
+                _networkUpItem?.Title = $"{_networkUpSpeed}";
             };
         }
 
