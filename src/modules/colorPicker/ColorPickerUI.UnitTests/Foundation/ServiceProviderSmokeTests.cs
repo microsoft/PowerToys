@@ -22,5 +22,29 @@ namespace ColorPicker.UnitTests.Foundation
             Assert.IsNotNull(a);
             Assert.AreSame(a, b);
         }
+
+        [TestMethod]
+        public void Container_resolves_the_exit_token_as_the_sources_token()
+        {
+            var provider = AppServices.Configure();
+
+            var source = provider.GetRequiredService<System.Threading.CancellationTokenSource>();
+            var token = provider.GetRequiredService<System.Threading.CancellationToken>();
+
+            // CancellationToken is a struct; equality compares the underlying source.
+            Assert.AreEqual(source.Token, token);
+        }
+
+        [TestMethod]
+        public void Resolved_token_observes_source_cancellation()
+        {
+            var provider = AppServices.Configure();
+
+            var source = provider.GetRequiredService<System.Threading.CancellationTokenSource>();
+            source.Cancel();
+
+            var token = provider.GetRequiredService<System.Threading.CancellationToken>();
+            Assert.IsTrue(token.IsCancellationRequested);
+        }
     }
 }
