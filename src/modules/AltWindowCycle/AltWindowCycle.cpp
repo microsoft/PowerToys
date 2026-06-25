@@ -1,7 +1,7 @@
 // AltWindowCycle.cpp
-// Adapts the POC overlay (C:\Users\crutkas\source\AltWindowCycle\cpp\AltWindowCycle.cpp)
-// for the PowerToys in-proc module. All overlay windows and the Switcher state machine
-// live on a dedicated UI thread; the runner's on_hotkey callback only posts a message.
+// Adapts an Alt+` window-cycling overlay proof-of-concept for the PowerToys in-proc module.
+// All overlay windows and the Switcher state machine live on a dedicated UI thread;
+// the runner's on_hotkey callback only posts a message.
 // Thumbnail previews default to DWM compositor thumbnails for visual fidelity.
 
 #include "pch.h"
