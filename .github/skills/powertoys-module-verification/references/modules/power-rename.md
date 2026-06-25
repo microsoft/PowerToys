@@ -37,10 +37,13 @@ Use the canonical flow from `references/explorer-context-menu-flow.md` Recipe. T
 
 ```powershell
 . "$skill\scripts\pt-explorer-contextmenu.ps1"
-# Open Explorer on the fixtures folder and grab its CabinetWClass HWND
-Start-Process explorer.exe 'D:\fixtures'; Start-Sleep 4
+# Disposable fixtures folder (same convention as Entry-path 1)
+$fx = New-Item -ItemType Directory -Path "$env:TEMP\pr-fixture-$(Get-Random)"
+'x' | Set-Content "$($fx.FullName)\a.txt"
+# Open Explorer on it and grab its CabinetWClass HWND
+Start-Process explorer.exe $fx.FullName; Start-Sleep 4
 $hwnd = (winapp ui list-windows --json | ConvertFrom-Json |
-    Where-Object { $_.className -eq 'CabinetWClass' -and $_.title -match 'fixtures' } |
+    Where-Object { $_.className -eq 'CabinetWClass' -and $_.title -match [regex]::Escape($fx.Name) } |
     Select-Object -First 1).hwnd
 $menu  = Open-PtExplorerContextMenu -ExplorerHwnd $hwnd -FileName 'a.txt'
 $items = Get-PtContextMenuItems -MenuHwnd $menu        # returns MenuItem name strings
@@ -50,7 +53,7 @@ $has   = $items | Where-Object { $_ -match 'Rename with PowerRename' }
 
 ### 3. Shell COM classic verb (does NOT work on Win11 stock install)
 ```powershell
-Invoke-PtShellVerb -Path 'D:\fixtures\a.txt' -NamePattern 'PowerRename'  # -> False
+Invoke-PtShellVerb -Path "$($fx.FullName)\a.txt" -NamePattern 'PowerRename'  # -> False (reuses $fx from Entry-path 2)
 ```
 Returns False on Win11 because PT registers PR only via IExplorerCommand, not as a classic HKCR shell verb. **Use only for negative checks** (and prefer the synthetic-menu enumeration above, which observes the actual Tier-1 menu).
 
