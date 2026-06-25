@@ -15,6 +15,7 @@ public sealed partial class PowerModeCommandsProvider : CommandProvider, IDispos
 {
     private readonly PowerModeService _powerModeService = new();
     private readonly EnergySaverService _energySaverService = new();
+    private readonly PowerPlanService _powerPlanService = new();
     private readonly PowerModeDataManager _dataManager;
     private readonly CommandItem _command;
     private readonly CommandItem _dockBand;
@@ -32,7 +33,7 @@ public sealed partial class PowerModeCommandsProvider : CommandProvider, IDispos
             _powerModeService,
             _energySaverService,
             () => listPage!.HandleLiveStateChanged());
-        listPage = new PowerModeListPage(_powerModeService, _energySaverService, _dataManager);
+        listPage = new PowerModeListPage(_powerModeService, _energySaverService, _powerPlanService, _dataManager);
         _listPage = listPage;
         _listPage.LiveStateChanged += UpdateDockPresentation;
         _fallback = new FallbackPowerModeItem(_listPage);

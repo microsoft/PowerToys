@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Microsoft.CmdPal.Ext.PowerMode.Helpers;
 
@@ -31,4 +32,38 @@ internal static partial class PowerModeNative
 
     [DllImport("powrprof.dll", EntryPoint = "PowerSetActiveOverlayScheme")]
     internal static extern uint PowerSetActiveOverlayScheme(ref Guid overlaySchemeGuid);
+
+    internal const uint AccessScheme = 16;
+
+    internal const uint ErrorMoreData = 234;
+
+    internal const uint ErrorNoMoreItems = 259;
+
+    [DllImport("powrprof.dll", CharSet = CharSet.Unicode)]
+    internal static extern uint PowerGetActiveScheme(IntPtr userRootPowerKey, out IntPtr activePolicyGuid);
+
+    [DllImport("powrprof.dll", CharSet = CharSet.Unicode)]
+    internal static extern uint PowerSetActiveScheme(IntPtr userRootPowerKey, ref Guid schemeGuid);
+
+    [DllImport("powrprof.dll", SetLastError = true)]
+    internal static extern uint PowerEnumerate(
+        IntPtr rootPowerKey,
+        IntPtr schemeGuid,
+        IntPtr subGroupOfPowerSettingsGuid,
+        uint accessFlags,
+        uint index,
+        byte[]? buffer,
+        ref uint bufferSize);
+
+    [DllImport("powrprof.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    internal static extern uint PowerReadFriendlyName(
+        IntPtr rootPowerKey,
+        ref Guid schemeGuid,
+        IntPtr subGroupOfPowerSettingsGuid,
+        IntPtr powerSettingGuid,
+        StringBuilder? buffer,
+        ref uint bufferSize);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    internal static extern IntPtr LocalFree(IntPtr hMem);
 }

@@ -57,15 +57,12 @@ internal static class PowerModeDisplayHelper
 
     internal static string GetSetModeSubtitle(UserPowerMode mode, PowerModeSnapshot snapshot)
     {
-        var modeLabel = GetUserModeLabel(mode);
-        if (!snapshot.HasBattery)
+        if (snapshot.CanReadUserMode && snapshot.UserMode == mode)
         {
-            return Resources.power_mode_set_mode_subtitle_desktop + modeLabel;
+            return Resources.power_list_current;
         }
 
-        return snapshot.UseAcPowerProfile
-            ? Resources.power_mode_set_mode_subtitle_plugged_in + modeLabel
-            : Resources.power_mode_set_mode_subtitle_on_battery + modeLabel;
+        return string.Empty;
     }
 
     internal static string GetEnergySaverStatusLabel(EnergySaverSnapshot snapshot)

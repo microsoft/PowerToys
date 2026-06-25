@@ -54,12 +54,19 @@ public sealed class PowerModeDisplayHelperTests
     }
 
     [TestMethod]
-    public void GetSetModeSubtitle_OnBattery_UsesBatteryProfileText()
+    public void GetSetModeSubtitle_WhenActiveMode_ShowsCurrent()
     {
         var snapshot = CreateSnapshot(PowerSourceKind.OnBattery, hasBattery: true, isOnAcPower: false, isCharging: false);
         var subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(UserPowerMode.Balanced, snapshot);
-        StringAssert.Contains(subtitle, Resources.power_mode_balanced);
-        StringAssert.Contains(subtitle, "battery");
+        Assert.AreEqual(Resources.power_list_current, subtitle);
+    }
+
+    [TestMethod]
+    public void GetSetModeSubtitle_WhenInactiveMode_ShowsEmpty()
+    {
+        var snapshot = CreateSnapshot(PowerSourceKind.OnBattery, hasBattery: true, isOnAcPower: false, isCharging: false);
+        var subtitle = PowerModeDisplayHelper.GetSetModeSubtitle(UserPowerMode.BestPerformance, snapshot);
+        Assert.AreEqual(string.Empty, subtitle);
     }
 
     [TestMethod]
