@@ -4,11 +4,15 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class CommandContextItem : CommandItem, ICommandContextItem
+public partial class CommandContextItem : CommandItem, ICommandContextItem, ICommandContextItem2
 {
     public virtual bool IsCritical { get; set => SetProperty(ref field, value); }
 
     public virtual KeyChord RequestedShortcut { get; set => SetProperty(ref field, value); }
+
+    public virtual bool ShowInHoverActions { get; set => SetProperty(ref field, value); }
+
+    public virtual int HoverOrder { get; set => SetProperty(ref field, value); }
 
     public CommandContextItem(ICommand command)
         : base(command)

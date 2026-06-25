@@ -481,4 +481,46 @@ namespace Microsoft.CommandPalette.Extensions
         IParameterRun[] Parameters{ get; };
         IListItem Command{ get; };
     };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum HoverActionsMode {
+        Default = 0,
+        None = 1,
+        FirstN = 2,
+        Explicit = 3,
+        AllMoreCommands = 4,
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    enum HoverActionsVisibility {
+        Default = 0,
+        OnHoverOnly = 1,
+        HoverOrSelected = 2,
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandContextItem2 requires ICommandContextItem {
+        Boolean ShowInHoverActions;
+        Int32 HoverOrder;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface IListPage2 requires IListPage {
+        HoverActionsMode HoverActionsMode;
+        Int32 MaxHoverActions;
+        HoverActionsVisibility HoverActionsVisibility;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandItem2 requires ICommandItem {
+        HoverActionsMode HomeHoverActionsMode;
+        Int32 HomeMaxHoverActions;
+    };
+
+    [contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+    interface ICommandProvider5 requires ICommandProvider4
+    {
+        HoverActionsMode DefaultHoverActionsMode;
+        Int32 DefaultMaxHoverActions;
+    };
 }
