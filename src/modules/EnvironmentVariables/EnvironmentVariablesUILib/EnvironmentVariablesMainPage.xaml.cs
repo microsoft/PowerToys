@@ -774,8 +774,7 @@ namespace EnvironmentVariablesUILib
             }
 
             return string.Equals((left.Name ?? string.Empty).Trim(), (right.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase)
-                && string.Equals(left.Values, right.Values, StringComparison.Ordinal)
-                && left.ParentType == right.ParentType;
+                && string.Equals(left.Values, right.Values, StringComparison.Ordinal);
         }
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
