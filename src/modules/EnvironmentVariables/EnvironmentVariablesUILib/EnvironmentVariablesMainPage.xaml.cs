@@ -93,7 +93,7 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariable(RelayCommandParameter param)
         {
-            if (param == null)
+            if (param == null || ViewModel == null)
             {
                 return;
             }
@@ -129,7 +129,7 @@ namespace EnvironmentVariablesUILib
 
         private void AddProfile()
         {
-            if (AddProfileDialog == null)
+            if (AddProfileDialog == null || ViewModel == null)
             {
                 return;
             }
@@ -145,7 +145,7 @@ namespace EnvironmentVariablesUILib
 
         private void UpdateProfile()
         {
-            if (AddProfileDialog == null)
+            if (AddProfileDialog == null || ViewModel == null)
             {
                 return;
             }
@@ -161,6 +161,11 @@ namespace EnvironmentVariablesUILib
 
         private async void RemoveProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
             var button = sender as MenuFlyoutItem;
             if (button == null)
             {
@@ -308,7 +313,7 @@ namespace EnvironmentVariablesUILib
 
         private void AddDefaultVariable(DefaultVariablesSet set)
         {
-            if (AddDefaultVariableDialog == null)
+            if (AddDefaultVariableDialog == null || ViewModel == null)
             {
                 return;
             }
@@ -330,6 +335,11 @@ namespace EnvironmentVariablesUILib
 
         private async void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
             MenuFlyoutItem selectedItem = sender as MenuFlyoutItem;
             if (selectedItem == null || RootPage == null)
             {
@@ -423,6 +433,11 @@ namespace EnvironmentVariablesUILib
 
         private void ReloadButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
             ViewModel.LoadEnvironmentVariables();
             ViewModel.EnvironmentState = EnvironmentState.Unchanged;
         }
@@ -1013,6 +1028,11 @@ namespace EnvironmentVariablesUILib
 
         private void InvalidStateInfoBar_CloseButtonClick(InfoBar sender, object args)
         {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
             ViewModel.EnvironmentState = EnvironmentState.Unchanged;
         }
 
