@@ -5,7 +5,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Windows;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
