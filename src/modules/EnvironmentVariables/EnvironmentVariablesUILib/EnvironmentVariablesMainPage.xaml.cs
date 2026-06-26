@@ -164,24 +164,25 @@ namespace EnvironmentVariablesUILib
                 }
             }
 
-            AddNewVariableName.Text = string.Empty;
-            AddNewVariableValue.Text = string.Empty;
-            ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-            ExistingVariablesListView.SelectedItems.Clear();
-            ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
-            AddVariableFlyout.Hide();
+            ResetAddVariableInputs();
+            AddVariableDialog.Hide();
         }
 
         private void CancelAddVariable()
         {
+            ResetAddVariableInputs();
+            AddVariableDialog.Hide();
+        }
+
+        private void ResetAddVariableInputs()
+        {
             AddNewVariableName.Text = string.Empty;
             AddNewVariableValue.Text = string.Empty;
+            AddVariableDialog.IsPrimaryButtonEnabled = false;
 
             ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
             ExistingVariablesListView.SelectedItems.Clear();
             ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
-
-            AddVariableFlyout.Hide();
         }
 
         private void AddDefaultVariable(DefaultVariablesSet set)
@@ -263,11 +264,11 @@ namespace EnvironmentVariablesUILib
             {
                 if (nameTxtBox.Text.Length == 0 || nameTxtBox.Text.Length >= 255 || profile.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
                 {
-                    ConfirmAddVariableBtn.IsEnabled = false;
+                    AddVariableDialog.IsPrimaryButtonEnabled = false;
                 }
                 else
                 {
-                    ConfirmAddVariableBtn.IsEnabled = true;
+                    AddVariableDialog.IsPrimaryButtonEnabled = true;
                 }
             }
         }
@@ -315,14 +316,14 @@ namespace EnvironmentVariablesUILib
                 }
             }
 
-            ConfirmAddVariableBtn.IsEnabled = false;
+            AddVariableDialog.IsPrimaryButtonEnabled = false;
             foreach (Variable variable in ExistingVariablesListView.SelectedItems)
             {
                 if (variable != null)
                 {
                     if (!profile.Variables.Where(x => x.Name.Equals(variable.Name, StringComparison.Ordinal) && x.Values.Equals(variable.Values, StringComparison.Ordinal)).Any())
                     {
-                        ConfirmAddVariableBtn.IsEnabled = true;
+                        AddVariableDialog.IsPrimaryButtonEnabled = true;
                         break;
                     }
                 }
@@ -346,6 +347,20 @@ namespace EnvironmentVariablesUILib
                 AddProfileDialog.DataContext = profile.Clone();
                 await AddProfileDialog.ShowAsync();
             }
+        }
+
+        private async void AddVariableBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            AddVariableDialog.Title = resourceLoader.GetString("AddVariable_Title");
+            AddVariableDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
+            AddVariableDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
+            AddVariableDialog.PrimaryButtonCommand = AddVariableCommand;
+            AddVariableDialog.SecondaryButtonCommand = CancelAddVariableCommand;
+            ResetAddVariableInputs();
+            SwitchViewsSegmentedView.SelectedIndex = 0;
+            AddVariableDialog.DataContext = AddProfileDialog.DataContext;
+            await AddVariableDialog.ShowAsync();
         }
 
         private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -620,10 +635,9 @@ namespace EnvironmentVariablesUILib
             ViewModel.EnvironmentState = EnvironmentState.Unchanged;
         }
 
-        private void AddVariableFlyout_Closed(object sender, object e)
+        private void AddVariableDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
         {
-            CancelAddVariable();
-            ConfirmAddVariableBtn.IsEnabled = false;
+            ResetAddVariableInputs();
         }
     }
 }

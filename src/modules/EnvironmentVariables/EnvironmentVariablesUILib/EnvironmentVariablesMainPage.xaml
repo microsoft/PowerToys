@@ -635,7 +635,7 @@
 
                     </Grid>
 
-                    <Button>
+                    <Button Click="AddVariableBtn_Click">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon
                                 x:Name="AddVariableIcon"
@@ -644,131 +644,111 @@
                                 Glyph="&#xe710;" />
                             <TextBlock x:Uid="AddVariableBtn" />
                         </StackPanel>
-                        <Button.Flyout>
-                            <Flyout
-                                x:Name="AddVariableFlyout"
-                                Closed="AddVariableFlyout_Closed"
-                                Placement="Right"
-                                ShouldConstrainToRootBounds="False">
-                                <Grid Width="320" Height="480">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-
-                                    <tkcontrols:Segmented
-                                        x:Name="SwitchViewsSegmentedView"
-                                        MaxWidth="500"
-                                        HorizontalAlignment="Stretch"
-                                        SelectionMode="Single">
-                                        <tkcontrols:SegmentedItem
-                                            x:Name="AddNewVariableSegmentedItem"
-                                            x:Uid="NewVariableSegmentedButton"
-                                            Tag="NewVariable" />
-                                        <tkcontrols:SegmentedItem
-                                            x:Name="AddExistingVariableSegmentedItem"
-                                            x:Uid="ExistingVariableSegmentedButton"
-                                            Tag="ExistingVariable" />
-                                    </tkcontrols:Segmented>
-
-                                    <tkcontrols:SwitchPresenter
-                                        x:Name="AddVariableSwitchPresenter"
-                                        Grid.Row="1"
-                                        Value="{Binding SelectedItem.Tag, ElementName=SwitchViewsSegmentedView}">
-                                        <tkcontrols:Case Value="NewVariable">
-                                            <StackPanel Grid.Row="1" Orientation="Vertical">
-
-                                                <!--  Adding new variable  -->
-                                                <TextBox
-                                                    x:Name="AddNewVariableName"
-                                                    x:Uid="AddNewVariableName"
-                                                    Margin="0,16,0,0"
-                                                    TextChanged="AddNewVariableName_TextChanged" />
-
-                                                <TextBox
-                                                    x:Name="AddNewVariableValue"
-                                                    x:Uid="AddNewVariableValue"
-                                                    Margin="0,16,0,0" />
-                                            </StackPanel>
-                                        </tkcontrols:Case>
-                                        <tkcontrols:Case Value="ExistingVariable">
-                                            <!--  Adding existing variables  -->
-                                            <ListView
-                                                x:Name="ExistingVariablesListView"
-                                                Grid.Row="1"
-                                                Margin="-12,12,0,12"
-                                                HorizontalAlignment="Stretch"
-                                                ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
-                                                Loaded="ExistingVariablesListView_Loaded"
-                                                SelectionChanged="ExistingVariablesListView_SelectionChanged"
-                                                SelectionMode="Multiple">
-
-                                                <ListView.ItemTemplate>
-                                                    <DataTemplate x:DataType="models:Variable">
-                                                        <Grid Height="48" ColumnSpacing="8">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="20" />
-                                                                <ColumnDefinition />
-                                                            </Grid.ColumnDefinitions>
-                                                            <FontIcon
-                                                                Grid.Column="0"
-                                                                VerticalAlignment="Center"
-                                                                FontSize="14"
-                                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                                                Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
-                                                            <StackPanel
-                                                                Grid.Column="1"
-                                                                VerticalAlignment="Center"
-                                                                Orientation="Vertical">
-                                                                <TextBlock
-                                                                    Text="{x:Bind Name}"
-                                                                    TextTrimming="CharacterEllipsis"
-                                                                    TextWrapping="NoWrap" />
-                                                                <TextBlock
-                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                                                    Text="{x:Bind Values}"
-                                                                    TextTrimming="CharacterEllipsis"
-                                                                    TextWrapping="NoWrap" />
-                                                            </StackPanel>
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </ListView.ItemTemplate>
-                                            </ListView>
-
-                                        </tkcontrols:Case>
-                                    </tkcontrols:SwitchPresenter>
-                                    <Grid Grid.Row="2" HorizontalAlignment="Stretch">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <Button
-                                            x:Name="ConfirmAddVariableBtn"
-                                            x:Uid="ConfirmAddVariableBtn"
-                                            Margin="4,0,4,0"
-                                            HorizontalAlignment="Stretch"
-                                            Command="{x:Bind AddVariableCommand}"
-                                            IsEnabled="False"
-                                            Style="{StaticResource AccentButtonStyle}" />
-
-                                        <Button
-                                            x:Name="CancelAddVariableBtn"
-                                            x:Uid="CancelAddVariableBtn"
-                                            Grid.Column="1"
-                                            Margin="4,0,4,0"
-                                            HorizontalAlignment="Stretch"
-                                            Command="{x:Bind CancelAddVariableCommand}" />
-
-                                    </Grid>
-                                </Grid>
-
-                            </Flyout>
-                        </Button.Flyout>
                     </Button>
                 </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog
+            x:Name="AddVariableDialog"
+            x:Uid="AddVariableDialog"
+            IsPrimaryButtonEnabled="False"
+            IsSecondaryButtonEnabled="True"
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+            Closed="AddVariableDialog_Closed">
+            <ContentDialog.DataContext>
+                <models:ProfileVariablesSet />
+            </ContentDialog.DataContext>
+            <ScrollViewer>
+                <Grid Width="320" Height="480">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <tkcontrols:Segmented
+                        x:Name="SwitchViewsSegmentedView"
+                        MaxWidth="500"
+                        HorizontalAlignment="Stretch"
+                        SelectionMode="Single">
+                        <tkcontrols:SegmentedItem
+                            x:Name="AddNewVariableSegmentedItem"
+                            x:Uid="NewVariableSegmentedButton"
+                            Tag="NewVariable" />
+                        <tkcontrols:SegmentedItem
+                            x:Name="AddExistingVariableSegmentedItem"
+                            x:Uid="ExistingVariableSegmentedButton"
+                            Tag="ExistingVariable" />
+                    </tkcontrols:Segmented>
+
+                    <tkcontrols:SwitchPresenter
+                        x:Name="AddVariableSwitchPresenter"
+                        Grid.Row="1"
+                        Value="{Binding SelectedItem.Tag, ElementName=SwitchViewsSegmentedView}">
+                        <tkcontrols:Case Value="NewVariable">
+                            <StackPanel Grid.Row="1" Orientation="Vertical">
+
+                                <!--  Adding new variable  -->
+                                <TextBox
+                                    x:Name="AddNewVariableName"
+                                    x:Uid="AddNewVariableName"
+                                    Margin="0,16,0,0"
+                                    TextChanged="AddNewVariableName_TextChanged" />
+
+                                <TextBox
+                                    x:Name="AddNewVariableValue"
+                                    x:Uid="AddNewVariableValue"
+                                    Margin="0,16,0,0" />
+                            </StackPanel>
+                        </tkcontrols:Case>
+                        <tkcontrols:Case Value="ExistingVariable">
+                            <!--  Adding existing variables  -->
+                            <ListView
+                                x:Name="ExistingVariablesListView"
+                                Grid.Row="1"
+                                Margin="-12,12,0,12"
+                                HorizontalAlignment="Stretch"
+                                ItemsSource="{x:Bind ViewModel.DefaultVariables.Variables, Mode=OneWay}"
+                                Loaded="ExistingVariablesListView_Loaded"
+                                SelectionChanged="ExistingVariablesListView_SelectionChanged"
+                                SelectionMode="Multiple">
+
+                                <ListView.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Variable">
+                                        <Grid Height="48" ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="20" />
+                                                <ColumnDefinition />
+                                            </Grid.ColumnDefinitions>
+                                            <FontIcon
+                                                Grid.Column="0"
+                                                VerticalAlignment="Center"
+                                                FontSize="14"
+                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                                Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
+                                            <StackPanel
+                                                Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Orientation="Vertical">
+                                                <TextBlock
+                                                    Text="{x:Bind Name}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
+                                                <TextBlock
+                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind Values}"
+                                                    TextTrimming="CharacterEllipsis"
+                                                    TextWrapping="NoWrap" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+
+                        </tkcontrols:Case>
+                    </tkcontrols:SwitchPresenter>
+                </Grid>
             </ScrollViewer>
         </ContentDialog>
     </Grid>
