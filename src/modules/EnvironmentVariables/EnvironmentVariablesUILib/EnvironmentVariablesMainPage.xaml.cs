@@ -796,7 +796,20 @@ namespace EnvironmentVariablesUILib
             }
 
             return string.Equals((left.Name ?? string.Empty).Trim(), (right.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase)
-                && string.Equals(left.Values, right.Values, StringComparison.Ordinal);
+                && IsEquivalentVariableValue(left.Values, right.Values);
+        }
+
+        private static bool IsEquivalentVariableValue(string candidateValue, string compareValue)
+        {
+            var candidate = candidateValue ?? string.Empty;
+            var compare = compareValue ?? string.Empty;
+            var expandedCandidate = Environment.ExpandEnvironmentVariables(candidate);
+            var expandedCompare = Environment.ExpandEnvironmentVariables(compare);
+
+            return string.Equals(candidate, compare, StringComparison.Ordinal) ||
+                string.Equals(expandedCandidate, compare, StringComparison.Ordinal) ||
+                string.Equals(candidate, expandedCompare, StringComparison.Ordinal) ||
+                string.Equals(expandedCandidate, expandedCompare, StringComparison.Ordinal);
         }
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
