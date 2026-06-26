@@ -779,7 +779,13 @@ namespace EnvironmentVariablesUILib
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+            if (menuFlyoutItem == null)
+            {
+                return;
+            }
+
+            var listItem = menuFlyoutItem.DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -802,7 +808,13 @@ namespace EnvironmentVariablesUILib
 
         private void ReorderButtonDown_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+            if (menuFlyoutItem == null)
+            {
+                return;
+            }
+
+            var listItem = menuFlyoutItem.DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -825,7 +837,13 @@ namespace EnvironmentVariablesUILib
 
         private void RemoveListVariableButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+            if (menuFlyoutItem == null)
+            {
+                return;
+            }
+
+            var listItem = menuFlyoutItem.DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -886,7 +904,13 @@ namespace EnvironmentVariablesUILib
 
         private void InsertListEntryBeforeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+            if (menuFlyoutItem == null)
+            {
+                return;
+            }
+
+            var listItem = menuFlyoutItem.DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -911,7 +935,13 @@ namespace EnvironmentVariablesUILib
 
         private void InsertListEntryAfterButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;
+            var menuFlyoutItem = sender as MenuFlyoutItem;
+            if (menuFlyoutItem == null)
+            {
+                return;
+            }
+
+            var listItem = menuFlyoutItem.DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -966,6 +996,11 @@ namespace EnvironmentVariablesUILib
         private void RefreshEditVariableDialogValueTextFromList(Variable variable)
         {
             if (variable?.ValuesList == null)
+            {
+                return;
+            }
+
+            if (EditVariableDialogValueTxtBox == null)
             {
                 return;
             }
