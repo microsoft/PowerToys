@@ -73,15 +73,24 @@ public static class Program
         }
 
         var timeoutSeconds = parseResult.GetValueForOption(CliOptions.TimeoutSeconds) ?? DefaultTimeoutSeconds;
-        var timeout = timeoutSeconds > 0 ? TimeSpan.FromSeconds(timeoutSeconds) : TimeSpan.FromMilliseconds(int.MaxValue);
+
+        // No --timeout (0/unset) → effectively unbounded. int.MaxValue ms (~24 days) is used rather
+        // than Timeout.InfiniteTimeSpan because this span is later cast to int milliseconds for
+        // NamedPipeClientStream.ConnectAsync, which rejects a negative (infinite) value.
+        var timeout = timeoutSeconds > 0
+            ? TimeSpan.FromSeconds(timeoutSeconds)
+            : TimeSpan.FromMilliseconds(int.MaxValue);
         var timedOut = false;
         Timer? timeoutTimer = null;
+        ConsoleCancelEventHandler? cancelHandler = null;
 
+        using var cts = new CancellationTokenSource();
         try
         {
-            using var cts = new CancellationTokenSource();
-
-            Console.CancelKeyPress += (_, e) =>
+            // Captured in a local so the finally can unsubscribe it. Console.CancelKeyPress is a
+            // process-global static event; leaving the handler attached would leak a closure over a
+            // disposed cts across repeated DispatchAsync/Main invocations (e.g. in tests).
+            cancelHandler = (_, e) =>
             {
                 e.Cancel = true;
                 try
@@ -92,6 +101,7 @@ public static class Program
                 {
                 }
             };
+            Console.CancelKeyPress += cancelHandler;
 
             if (timeoutSeconds > 0)
             {
@@ -139,6 +149,11 @@ public static class Program
         }
         finally
         {
+            if (cancelHandler is not null)
+            {
+                Console.CancelKeyPress -= cancelHandler;
+            }
+
             timeoutTimer?.Dispose();
         }
     }

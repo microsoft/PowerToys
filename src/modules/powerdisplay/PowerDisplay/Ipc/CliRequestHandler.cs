@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -28,9 +29,9 @@ namespace PowerDisplay.Ipc;
 /// <see cref="MainViewModel"/>.
 /// </para>
 /// <para>
-/// <b>Error contract:</b> <see cref="HandleAsync"/> never throws. Any unexpected exception is
-/// caught and returned as a serialized <see cref="CliErrorResult"/> with
-/// <see cref="CliErrorCodes.InternalError"/> / <see cref="CliExitCodes.InternalError"/> (exit 9).
+/// <b>Error contract:</b> <see cref="HandleAsync"/> never throws. Cancellation (Ctrl+C / overrun
+/// of <c>--timeout</c>) is reported as <see cref="CliErrorCodes.Timeout"/> / exit 8; any other
+/// unexpected exception is reported as <see cref="CliErrorCodes.InternalError"/> / exit 9.
 /// </para>
 /// </summary>
 public sealed class CliRequestHandler
@@ -61,8 +62,9 @@ public sealed class CliRequestHandler
     /// <param name="requestJson">One-line JSON request from the pipe client.</param>
     /// <param name="ct">Cancellation token (Ctrl-C / server timeout).</param>
     /// <returns>
-    /// A one-line JSON string. Always a valid response — never throws. On any unexpected exception,
-    /// returns a <see cref="CliErrorResult"/> with code <see cref="CliErrorCodes.InternalError"/>.
+    /// A one-line JSON string. Always a valid response — never throws. Cancellation maps to
+    /// <see cref="CliErrorCodes.Timeout"/>; any other unexpected exception maps to
+    /// <see cref="CliErrorCodes.InternalError"/>.
     /// </returns>
     public async Task<string> HandleAsync(string requestJson, CancellationToken ct)
     {
@@ -72,15 +74,16 @@ public sealed class CliRequestHandler
         }
         catch (OperationCanceledException)
         {
-            // Cancellation during execution — return timeout error
-            var timeoutErr = MakeError("unknown", CliErrorCodes.InternalError, "request was cancelled");
-            return Serialize(timeoutErr);
+            // Cancellation while marshalling onto the UI thread (before the command ran). Mirror the
+            // command-execution timeout contract: report TIMEOUT (exit 8), not INTERNAL_ERROR.
+            var timeoutErr = MakeError("unknown", CliErrorCodes.Timeout, "request timed out or was cancelled");
+            return Serialize(timeoutErr, ContractsJsonContext.Default.CliErrorResult);
         }
         catch (Exception ex)
         {
             Logger.LogError($"[CliRequestHandler] Unexpected exception in HandleAsync: {ex.GetType().Name}: {ex.Message}");
             var errorResult = MakeError("unknown", CliErrorCodes.InternalError, $"unexpected error: {ex.Message}");
-            return Serialize(errorResult);
+            return Serialize(errorResult, ContractsJsonContext.Default.CliErrorResult);
         }
     }
 
@@ -94,7 +97,10 @@ public sealed class CliRequestHandler
     /// <param name="snapshot">Pre-fetched monitor list from <c>MainViewModel.SnapshotMonitors()</c>.</param>
     /// <param name="hiddenIds">Pre-fetched hidden-ID set from <c>MainViewModel.GetHiddenMonitorIds()</c>.</param>
     /// <param name="manager">The live <see cref="IMonitorManager"/> for hardware writes.</param>
-    /// <param name="profiles">Pre-loaded profiles for the <c>profiles</c> command.</param>
+    /// <param name="loadProfiles">
+    /// Lazy profile loader, invoked only by the <c>profiles</c> command so the read commands do not
+    /// pay for synchronous disk I/O they never use. Maps to <c>ProfileService.LoadProfiles</c>.
+    /// </param>
     /// <param name="applyProfileAsync">
     /// Delegate that applies a profile by name and returns structured outcomes, or null when the
     /// profile is not found. Receives the profile name and a <see cref="CancellationToken"/>.
@@ -108,117 +114,131 @@ public sealed class CliRequestHandler
         IReadOnlySet<string> hiddenIds,
         IReadOnlyList<CustomVcpValueMapping> customMappings,
         IMonitorManager manager,
-        PowerDisplayProfiles profiles,
+        Func<PowerDisplayProfiles> loadProfiles,
         Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>> applyProfileAsync,
         CancellationToken ct)
     {
-        switch (envelope.Command)
+        try
         {
-            // ── list ──────────────────────────────────────────────────────────
-            case CliCommandNames.List:
+            switch (envelope.Command)
             {
-                var result = MonitorDtoProjector.BuildListResult(snapshot, hiddenIds);
-                return Serialize(result);
-            }
-
-            // ── get ───────────────────────────────────────────────────────────
-            case CliCommandNames.Get:
-            {
-                var req = envelope.Get ?? new GetRequest();
-                var (result, error) = MonitorDtoProjector.BuildGetResult(
-                    snapshot,
-                    hiddenIds,
-                    req.MonitorNumber,
-                    req.MonitorId,
-                    req.SettingFilter,
-                    customMappings);
-
-                if (error is not null)
+                // ── list ──────────────────────────────────────────────────────────
+                case CliCommandNames.List:
                 {
-                    return Serialize(error);
+                    var result = MonitorDtoProjector.BuildListResult(snapshot, hiddenIds);
+                    return Serialize(result, ContractsJsonContext.Default.CliListResult);
                 }
 
-                return Serialize(result!);
-            }
-
-            // ── set ───────────────────────────────────────────────────────────
-            case CliCommandNames.Set:
-            {
-                if (envelope.Set is null)
+                // ── get ───────────────────────────────────────────────────────────
+                case CliCommandNames.Get:
                 {
-                    return Serialize(MakeError("set", CliErrorCodes.ArgumentError, "missing 'set' payload"));
+                    var req = envelope.Get ?? new GetRequest();
+                    var (result, error) = MonitorDtoProjector.BuildGetResult(
+                        snapshot,
+                        hiddenIds,
+                        req.MonitorNumber,
+                        req.MonitorId,
+                        req.SettingFilter,
+                        customMappings);
+
+                    if (error is not null)
+                    {
+                        return Serialize(error, ContractsJsonContext.Default.CliErrorResult);
+                    }
+
+                    return Serialize(result!, ContractsJsonContext.Default.CliGetResult);
                 }
 
-                var (result, error) = await SetCommandExecutor.ExecuteAsync(
-                    manager,
-                    snapshot,
-                    hiddenIds,
-                    envelope.Set,
-                    ct).ConfigureAwait(false);
-
-                if (error is not null)
+                // ── set ───────────────────────────────────────────────────────────
+                case CliCommandNames.Set:
                 {
-                    return Serialize(error);
+                    if (envelope.Set is null)
+                    {
+                        return Serialize(MakeError("set", CliErrorCodes.ArgumentError, "missing 'set' payload"), ContractsJsonContext.Default.CliErrorResult);
+                    }
+
+                    var (result, error) = await SetCommandExecutor.ExecuteAsync(
+                        manager,
+                        snapshot,
+                        hiddenIds,
+                        envelope.Set,
+                        ct).ConfigureAwait(false);
+
+                    if (error is not null)
+                    {
+                        return Serialize(error, ContractsJsonContext.Default.CliErrorResult);
+                    }
+
+                    return Serialize(result!, ContractsJsonContext.Default.CliSetResult);
                 }
 
-                return Serialize(result!);
-            }
-
-            // ── capabilities ──────────────────────────────────────────────────
-            case CliCommandNames.Capabilities:
-            {
-                var req = envelope.Capabilities ?? new CapabilitiesRequest();
-                var (result, error) = MonitorDtoProjector.BuildCapabilitiesResult(
-                    snapshot,
-                    hiddenIds,
-                    req.MonitorNumber,
-                    req.MonitorId,
-                    req.SettingFilter,
-                    customMappings);
-
-                if (error is not null)
+                // ── capabilities ──────────────────────────────────────────────────
+                case CliCommandNames.Capabilities:
                 {
-                    return Serialize(error);
+                    var req = envelope.Capabilities ?? new CapabilitiesRequest();
+                    var (result, error) = MonitorDtoProjector.BuildCapabilitiesResult(
+                        snapshot,
+                        hiddenIds,
+                        req.MonitorNumber,
+                        req.MonitorId,
+                        req.SettingFilter,
+                        customMappings);
+
+                    if (error is not null)
+                    {
+                        return Serialize(error, ContractsJsonContext.Default.CliErrorResult);
+                    }
+
+                    return Serialize(result!, ContractsJsonContext.Default.CliCapabilitiesResult);
                 }
 
-                return Serialize(result!);
-            }
-
-            // ── profiles ──────────────────────────────────────────────────────
-            case CliCommandNames.Profiles:
-            {
-                var result = ProfileDtoProjector.BuildProfileListResult(profiles);
-                return Serialize(result);
-            }
-
-            // ── apply-profile ─────────────────────────────────────────────────
-            case CliCommandNames.ApplyProfile:
-            {
-                var profileName = envelope.ApplyProfile?.ProfileName ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(profileName))
+                // ── profiles ──────────────────────────────────────────────────────
+                case CliCommandNames.Profiles:
                 {
-                    return Serialize(MakeError("apply-profile", CliErrorCodes.ArgumentError, "profile name must not be empty"));
+                    var result = ProfileDtoProjector.BuildProfileListResult(loadProfiles());
+                    return Serialize(result, ContractsJsonContext.Default.CliProfileListResult);
                 }
 
-                var outcomes = await applyProfileAsync(profileName, ct).ConfigureAwait(false);
-
-                if (outcomes is null)
+                // ── apply-profile ─────────────────────────────────────────────────
+                case CliCommandNames.ApplyProfile:
                 {
-                    // Profile not found — return ARGUMENT_ERROR / exit code 7.
-                    return Serialize(MakeError(
-                        CliCommandNames.ApplyProfile,
-                        CliErrorCodes.ArgumentError,
-                        $"profile '{profileName}' not found",
-                        "run 'powerdisplay profiles' to see available profiles"));
+                    var profileName = envelope.ApplyProfile?.ProfileName ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(profileName))
+                    {
+                        return Serialize(MakeError("apply-profile", CliErrorCodes.ArgumentError, "profile name must not be empty"), ContractsJsonContext.Default.CliErrorResult);
+                    }
+
+                    var outcomes = await applyProfileAsync(profileName, ct).ConfigureAwait(false);
+
+                    if (outcomes is null)
+                    {
+                        // Profile not found — return ARGUMENT_ERROR / exit code 7.
+                        return Serialize(
+                            MakeError(
+                                CliCommandNames.ApplyProfile,
+                                CliErrorCodes.ArgumentError,
+                                $"profile '{profileName}' not found",
+                                "run 'powerdisplay profiles' to see available profiles"),
+                            ContractsJsonContext.Default.CliErrorResult);
+                    }
+
+                    var applyResult = ProfileDtoProjector.BuildApplyProfileResult(profileName, outcomes);
+                    return Serialize(applyResult, ContractsJsonContext.Default.CliApplyProfileResult);
                 }
 
-                var applyResult = ProfileDtoProjector.BuildApplyProfileResult(profileName, outcomes);
-                return Serialize(applyResult);
+                // ── unknown command ───────────────────────────────────────────────
+                default:
+                    return Serialize(MakeError("unknown", CliErrorCodes.InternalError, $"unknown command '{envelope.Command}'"), ContractsJsonContext.Default.CliErrorResult);
             }
-
-            // ── unknown command ───────────────────────────────────────────────
-            default:
-                return Serialize(MakeError("unknown", CliErrorCodes.InternalError, $"unknown command '{envelope.Command}'"));
+        }
+        catch (OperationCanceledException)
+        {
+            // A blocking hardware write (set / apply-profile) overran --timeout or was cancelled
+            // (Ctrl+C). The partial write cannot be rolled back, so report TIMEOUT (exit 8) rather
+            // than a false success — this honours the contract documented in SetCommandExecutor.
+            return Serialize(
+                MakeError(envelope.Command, CliErrorCodes.Timeout, "operation timed out or was cancelled"),
+                ContractsJsonContext.Default.CliErrorResult);
         }
     }
 
@@ -237,7 +257,7 @@ public sealed class CliRequestHandler
 
         if (envelope is null || string.IsNullOrEmpty(envelope.Command))
         {
-            return Serialize(MakeError("unknown", CliErrorCodes.InternalError, "could not parse request envelope"));
+            return Serialize(MakeError("unknown", CliErrorCodes.InternalError, "could not parse request envelope"), ContractsJsonContext.Default.CliErrorResult);
         }
 
         // Marshal all ViewModel/MonitorManager access onto the UI thread.
@@ -245,12 +265,12 @@ public sealed class CliRequestHandler
         return await RunOnUiThreadAsync(async () =>
         {
             // Snapshot VM state on the UI thread — these reads touch _settingsUtils and
-            // _monitors which are UI-thread-owned.
+            // _monitors which are UI-thread-owned. Profiles are loaded lazily (only the
+            // 'profiles' command pays for the disk read).
             var snapshot = _vm.SnapshotMonitors();
             var hiddenIds = _vm.GetHiddenMonitorIds();
             var customMappings = _vm.CustomVcpMappings;
             var manager = _vm.MonitorManager;
-            var profiles = ProfileService.LoadProfiles();
 
             return await BuildResponseAsync(
                 envelope,
@@ -258,8 +278,8 @@ public sealed class CliRequestHandler
                 hiddenIds,
                 customMappings,
                 manager,
-                profiles,
-                (name, token) => _vm.ApplyProfileWithOutcomesAsync(name),
+                ProfileService.LoadProfiles,
+                (name, token) => _vm.ApplyProfileWithOutcomesAsync(name, token),
                 ct).ConfigureAwait(false);
         }).ConfigureAwait(false);
     }
@@ -301,35 +321,15 @@ public sealed class CliRequestHandler
         return tcs.Task;
     }
 
-    // ─── Serialization helpers ────────────────────────────────────────────────
+    // ─── Serialization helper ─────────────────────────────────────────────────
 
-    /// <summary>Serializes a <see cref="CliListResult"/> to one-line JSON.</summary>
-    private static string Serialize(CliListResult v)
-        => JsonSerializer.Serialize(v, ContractsJsonContext.Default.CliListResult);
-
-    /// <summary>Serializes a <see cref="CliGetResult"/> to one-line JSON.</summary>
-    private static string Serialize(CliGetResult v)
-        => JsonSerializer.Serialize(v, ContractsJsonContext.Default.CliGetResult);
-
-    /// <summary>Serializes a <see cref="CliSetResult"/> to one-line JSON.</summary>
-    private static string Serialize(CliSetResult v)
-        => JsonSerializer.Serialize(v, ContractsJsonContext.Default.CliSetResult);
-
-    /// <summary>Serializes a <see cref="CliCapabilitiesResult"/> to one-line JSON.</summary>
-    private static string Serialize(CliCapabilitiesResult v)
-        => JsonSerializer.Serialize(v, ContractsJsonContext.Default.CliCapabilitiesResult);
-
-    /// <summary>Serializes a <see cref="CliProfileListResult"/> to one-line JSON.</summary>
-    private static string Serialize(CliProfileListResult v)
-        => JsonSerializer.Serialize(v, ContractsJsonContext.Default.CliProfileListResult);
-
-    /// <summary>Serializes a <see cref="CliApplyProfileResult"/> to one-line JSON.</summary>
-    private static string Serialize(CliApplyProfileResult v)
-        => JsonSerializer.Serialize(v, ContractsJsonContext.Default.CliApplyProfileResult);
-
-    /// <summary>Serializes a <see cref="CliErrorResult"/> to one-line JSON.</summary>
-    private static string Serialize(CliErrorResult v)
-        => JsonSerializer.Serialize(v, ContractsJsonContext.Default.CliErrorResult);
+    /// <summary>
+    /// Serializes a response DTO to one-line JSON using its source-generated
+    /// <see cref="JsonTypeInfo{T}"/> (AOT/trim safe). One generic helper replaces a per-type
+    /// overload set, so a new result DTO needs no new method here.
+    /// </summary>
+    private static string Serialize<T>(T value, JsonTypeInfo<T> typeInfo)
+        => JsonSerializer.Serialize(value, typeInfo);
 
     // ─── Error factory ────────────────────────────────────────────────────────
     private static CliErrorResult MakeError(string command, string code, string message, string? hint = null)

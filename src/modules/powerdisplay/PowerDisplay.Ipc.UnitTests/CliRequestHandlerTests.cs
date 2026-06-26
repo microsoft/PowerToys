@@ -94,7 +94,8 @@ public class CliRequestHandlerTests
         CliRequestEnvelope envelope,
         IReadOnlyList<Monitor>? monitors = null,
         PowerDisplayProfiles? profiles = null,
-        Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>>? applyProfile = null)
+        Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>>? applyProfile = null,
+        CancellationToken ct = default)
     {
         return CliRequestHandler.BuildResponseAsync(
             envelope,
@@ -102,9 +103,9 @@ public class CliRequestHandlerTests
             NoHidden,
             Array.Empty<CustomVcpValueMapping>(),
             new FakeManager(),
-            profiles ?? EmptyProfiles,
+            () => profiles ?? EmptyProfiles,
             applyProfile ?? ((_, _) => Task.FromResult<IReadOnlyList<ProfileApplyOutcome>?>(Array.Empty<ProfileApplyOutcome>())),
-            CancellationToken.None);
+            ct);
     }
 
     // ─── list command ─────────────────────────────────────────────────────────
@@ -193,6 +194,34 @@ public class CliRequestHandlerTests
         var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error, "should deserialize to CliErrorResult");
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);
+    }
+
+    [TestMethod]
+    public async Task Set_Cancelled_ReturnsTimeoutError()
+    {
+        // A write that overruns --timeout (or Ctrl+C) cancels the token after the hardware call;
+        // SetCommandExecutor surfaces it as OperationCanceledException, which must be reported as
+        // TIMEOUT (exit 8) — not INTERNAL_ERROR (exit 9).
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.Set,
+            Set = new SetRequest
+            {
+                MonitorNumber = 1,
+                Setting = "brightness",
+                RawValue = "75",
+            },
+        };
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        var json = await Dispatch(envelope, monitors: new[] { MakeMon() }, ct: cts.Token);
+
+        var error = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliErrorResult);
+        Assert.IsNotNull(error, "should deserialize to CliErrorResult");
+        Assert.AreEqual(CliErrorCodes.Timeout, error.Error.Code);
+        Assert.AreEqual(CliExitCodes.Timeout, error.Error.ExitCode);
     }
 
     // ─── capabilities command ─────────────────────────────────────────────────

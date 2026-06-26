@@ -7,6 +7,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -110,7 +111,28 @@ public sealed class CliPipeServer
         using var reader = new StreamReader(server, CliPipeProtocol.PipeEncoding, detectEncodingFromByteOrderMarks: false, bufferSize: CliPipeProtocol.BufferSize, leaveOpen: true);
         using var writer = new StreamWriter(server, CliPipeProtocol.PipeEncoding, bufferSize: CliPipeProtocol.BufferSize, leaveOpen: true) { AutoFlush = true };
 
-        var requestJson = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+        // Bound the read by both time and length so a client that connects but never sends a
+        // (complete) line cannot stall the single-threaded accept loop or balloon memory.
+        using var readCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        readCts.CancelAfter(CliPipeProtocol.ReadTimeoutMilliseconds);
+
+        string? requestJson;
+        try
+        {
+            requestJson = await ReadBoundedLineAsync(reader, CliPipeProtocol.MaxRequestChars, readCts.Token).ConfigureAwait(false);
+        }
+        catch (InvalidDataException)
+        {
+            Logger.LogWarning($"[PowerDisplay CLI IPC] Request exceeded {CliPipeProtocol.MaxRequestChars} chars; closing connection.");
+            return;
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            // Read timeout (not app shutdown — that propagates to break the accept loop).
+            Logger.LogWarning("[PowerDisplay CLI IPC] Request read timed out; closing connection.");
+            return;
+        }
+
         if (string.IsNullOrEmpty(requestJson))
         {
             Logger.LogWarning("[PowerDisplay CLI IPC] Received empty/null request line; closing connection.");
@@ -119,5 +141,52 @@ public sealed class CliPipeServer
 
         var responseJson = await _handler.HandleAsync(requestJson, ct).ConfigureAwait(false);
         await writer.WriteLineAsync(responseJson.AsMemory(), ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Reads one <c>'\n'</c>-delimited line, swallowing a trailing <c>'\r'</c>, but never buffering
+    /// more than <paramref name="maxChars"/> characters. Returns the line (without its terminator),
+    /// or <see langword="null"/> at end-of-stream with no data. Throws <see cref="InvalidDataException"/>
+    /// when the line would exceed <paramref name="maxChars"/>.
+    /// </summary>
+    internal static async Task<string?> ReadBoundedLineAsync(TextReader reader, int maxChars, CancellationToken ct)
+    {
+        var builder = new StringBuilder();
+        var buffer = new char[CliPipeProtocol.BufferSize];
+
+        while (true)
+        {
+            // Honour the read deadline / app shutdown even if the underlying reader does not observe
+            // the token between chunks.
+            ct.ThrowIfCancellationRequested();
+
+            int read = await reader.ReadAsync(buffer.AsMemory(), ct).ConfigureAwait(false);
+            if (read == 0)
+            {
+                // End of stream: null when nothing was read, otherwise the (unterminated) tail.
+                return builder.Length == 0 ? null : builder.ToString();
+            }
+
+            for (int i = 0; i < read; i++)
+            {
+                char c = buffer[i];
+                if (c == '\n')
+                {
+                    return builder.ToString();
+                }
+
+                if (c == '\r')
+                {
+                    continue;
+                }
+
+                if (builder.Length >= maxChars)
+                {
+                    throw new InvalidDataException("CLI request line exceeded the maximum allowed length.");
+                }
+
+                builder.Append(c);
+            }
+        }
     }
 }

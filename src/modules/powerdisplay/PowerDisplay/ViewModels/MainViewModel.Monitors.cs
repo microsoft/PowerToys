@@ -205,15 +205,20 @@ public partial class MainViewModel
     }
 
     /// <summary>
-    /// Returns the app's already-discovered monitor list (cache snapshot) for IPC reads.
+    /// Returns a point-in-time copy of the app's already-discovered monitor list for IPC reads.
     /// Does NOT trigger hardware discovery. Hidden-monitor filtering is applied by the caller.
+    /// A materialized copy (rather than the live <c>_monitorManager.Monitors</c> view) is returned so
+    /// callers can iterate it safely even if a concurrent discovery rebuilds the underlying list.
     /// </summary>
     public IReadOnlyList<Monitor> SnapshotMonitors()
-        => _monitorManager.Monitors;
+        => _monitorManager.Monitors.ToList();
 
     /// <summary>
-    /// The app's live MonitorManager — used by the IPC set executor to perform hardware writes
-    /// (SetBrightnessAsync, SetContrastAsync, etc.) on the single hardware-owning instance.
+    /// The app's live monitor manager exposed through the <see cref="IMonitorManager"/> hardware-write
+    /// abstraction — used by the IPC set/apply-profile executors to perform hardware writes
+    /// (SetBrightnessAsync, SetContrastAsync, etc.) on the single hardware-owning instance. Returning
+    /// the interface (not the concrete <c>MonitorManager</c>) keeps the IPC path decoupled and fakeable,
+    /// which is the reason the interface exists.
     /// </summary>
-    public MonitorManager MonitorManager => _monitorManager;
+    public IMonitorManager MonitorManager => _monitorManager;
 }

@@ -3,11 +3,7 @@
 // See the LICENSE file in the project root for more information.
 namespace PowerDisplay.Contracts;
 
-public sealed class GetRequest
+/// <summary>Payload for <c>powerdisplay get</c>. See <see cref="MonitorSelectorRequest"/>.</summary>
+public sealed class GetRequest : MonitorSelectorRequest
 {
-    public int? MonitorNumber { get; set; }
-
-    public string? MonitorId { get; set; }
-
-    public string? SettingFilter { get; set; }
 }

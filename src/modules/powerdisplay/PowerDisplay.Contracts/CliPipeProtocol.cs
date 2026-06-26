@@ -22,4 +22,18 @@ public static class CliPipeProtocol
 
     /// <summary>Stream reader/writer buffer size used by both pipe ends.</summary>
     public const int BufferSize = 1024;
+
+    /// <summary>
+    /// Maximum length (in characters) the server will accept for a single request line. The
+    /// protocol carries one short JSON object, so this is a generous sanity bound that prevents an
+    /// unbounded read from buffering arbitrary amounts of memory in the app process.
+    /// </summary>
+    public const int MaxRequestChars = 64 * 1024;
+
+    /// <summary>
+    /// How long the server waits for a connected client to send its request line before abandoning
+    /// the connection. Without this a client that connects but never sends a line would stall the
+    /// single-threaded accept loop for every other CLI invocation.
+    /// </summary>
+    public const int ReadTimeoutMilliseconds = 10_000;
 }

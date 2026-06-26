@@ -32,6 +32,29 @@ public class RoundTripTests
     }
 
     [TestMethod]
+    public void GetRequest_envelope_round_trips_inherited_selector_fields()
+    {
+        // GetRequest/CapabilitiesRequest derive their selector fields from MonitorSelectorRequest;
+        // verify source-gen serializes the inherited properties on both payload slots.
+        var envelope = new CliRequestEnvelope
+        {
+            Command = CliCommandNames.Get,
+            Get = new GetRequest { MonitorNumber = 2, MonitorId = "MON2", SettingFilter = "brightness" },
+            Capabilities = new CapabilitiesRequest { MonitorNumber = 3, SettingFilter = "input-source" },
+        };
+
+        var json = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
+        var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliRequestEnvelope);
+
+        Assert.IsNotNull(back);
+        Assert.AreEqual(2, back!.Get!.MonitorNumber);
+        Assert.AreEqual("MON2", back.Get.MonitorId);
+        Assert.AreEqual("brightness", back.Get.SettingFilter);
+        Assert.AreEqual(3, back.Capabilities!.MonitorNumber);
+        Assert.AreEqual("input-source", back.Capabilities.SettingFilter);
+    }
+
+    [TestMethod]
     public void ErrorResult_round_trips_and_preserves_exit_code()
     {
         var error = new CliErrorResult

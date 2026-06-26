@@ -114,13 +114,19 @@ public partial class MainViewModel
     /// <c>v =&gt; MonitorDtoProjector.FormatDiscrete(0x14, v)</c> for color-temperature).
     /// </param>
     /// <param name="applyAsync">Hardware-write delegate returning a <see cref="MonitorOperationResult"/>.</param>
+    /// <param name="ct">
+    /// Cancellation token plumbed from the IPC request (Ctrl+C / <c>--timeout</c>). Cancellation
+    /// propagates as <see cref="OperationCanceledException"/> so the caller can report TIMEOUT,
+    /// rather than being swallowed into a hardware-failure outcome.
+    /// </param>
     private static async Task<CliProfileChange?> TryRestoreWithOutcomeAsync(
         int? savedValue,
         bool supportsHardware,
         string settingName,
         string monitorId,
         Func<int, string?> formatDisplay,
-        Func<string, int, CancellationToken, Task<MonitorOperationResult>> applyAsync)
+        Func<string, int, CancellationToken, Task<MonitorOperationResult>> applyAsync,
+        CancellationToken ct)
     {
         if (!savedValue.HasValue)
         {
@@ -152,7 +158,7 @@ public partial class MainViewModel
 
         try
         {
-            var result = await applyAsync(monitorId, value, default);
+            var result = await applyAsync(monitorId, value, ct);
             if (result.IsSuccess)
             {
                 return new CliProfileChange { Setting = settingName, Value = value, Display = formatDisplay(value), Status = CliProfileChange.StatusApplied, Error = null };
@@ -161,6 +167,12 @@ public partial class MainViewModel
             {
                 return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = result.ErrorMessage };
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancellation (Ctrl+C / --timeout) must surface as TIMEOUT to the caller, not be
+            // captured as a per-setting hardware-failure outcome.
+            throw;
         }
         catch (Exception ex)
         {
@@ -289,7 +301,7 @@ public partial class MainViewModel
     /// <c>CliErrorCodes.ArgumentError</c> / <c>CliExitCodes.ArgumentError</c> (exit code 7).
     /// </para>
     /// </returns>
-    public async Task<IReadOnlyList<ProfileApplyOutcome>?> ApplyProfileWithOutcomesAsync(string profileName)
+    public async Task<IReadOnlyList<ProfileApplyOutcome>?> ApplyProfileWithOutcomesAsync(string profileName, CancellationToken ct = default)
     {
         try
         {
@@ -304,7 +316,7 @@ public partial class MainViewModel
                 return null;
             }
 
-            var outcomes = await ApplyProfileWithOutcomesInternalAsync(profile.MonitorSettings);
+            var outcomes = await ApplyProfileWithOutcomesInternalAsync(profile.MonitorSettings, ct);
             Logger.LogInfo($"[Profile] Completed apply with outcomes: {profileName}, {outcomes.Count} monitor(s)");
             return outcomes;
         }
@@ -449,7 +461,8 @@ public partial class MainViewModel
     /// </para>
     /// </summary>
     private async Task<IReadOnlyList<ProfileApplyOutcome>> ApplyProfileWithOutcomesInternalAsync(
-        List<ProfileMonitorSetting> monitorSettings)
+        List<ProfileMonitorSetting> monitorSettings,
+        CancellationToken ct)
     {
         if (LinkedLevelsActive)
         {
@@ -491,7 +504,8 @@ public partial class MainViewModel
                 CliSettingNames.Brightness,
                 monitorId,
                 v => v + "%",
-                _monitorManager.SetBrightnessAsync);
+                _monitorManager.SetBrightnessAsync,
+                ct);
             if (brightnessOutcome is not null)
             {
                 changes.Add(brightnessOutcome);
@@ -503,7 +517,8 @@ public partial class MainViewModel
                 CliSettingNames.Contrast,
                 monitorId,
                 v => v + "%",
-                _monitorManager.SetContrastAsync);
+                _monitorManager.SetContrastAsync,
+                ct);
             if (contrastOutcome is not null)
             {
                 changes.Add(contrastOutcome);
@@ -515,7 +530,8 @@ public partial class MainViewModel
                 CliSettingNames.Volume,
                 monitorId,
                 v => v + "%",
-                _monitorManager.SetVolumeAsync);
+                _monitorManager.SetVolumeAsync,
+                ct);
             if (volumeOutcome is not null)
             {
                 changes.Add(volumeOutcome);
@@ -527,7 +543,8 @@ public partial class MainViewModel
                 CliSettingNames.ColorTemperature,
                 monitorId,
                 v => MonitorDtoProjector.FormatDiscrete(0x14, v),
-                _monitorManager.SetColorTemperatureAsync);
+                _monitorManager.SetColorTemperatureAsync,
+                ct);
             if (colorTempOutcome is not null)
             {
                 changes.Add(colorTempOutcome);
