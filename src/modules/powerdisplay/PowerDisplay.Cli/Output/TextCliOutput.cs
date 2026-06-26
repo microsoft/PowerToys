@@ -53,7 +53,7 @@ public sealed class TextCliOutput : ICliOutput
         var via = string.IsNullOrEmpty(result.Monitor.Method)
             ? string.Empty
             : $" [{result.Monitor.Method}]";
-        var monitor = $"Monitor {result.Monitor.Number} ({result.Monitor.Name}){via}";
+        var monitor = $"{MonitorLabel(result.Monitor)}{via}";
         var before = result.BeforeDisplay ?? "?";
         _stdout.WriteLine($"{monitor}: {result.Setting} {before} → {result.AfterDisplay}");
     }
@@ -74,7 +74,7 @@ public sealed class TextCliOutput : ICliOutput
                 _stdout.WriteLine();
             }
 
-            _stdout.WriteLine($"Monitor {entry.Monitor.Number} ({entry.Monitor.Name})");
+            _stdout.WriteLine(MonitorLabel(entry.Monitor));
             _stdout.WriteLine($"  protocol           {entry.Monitor.Method}");
             _stdout.WriteLine($"  id                 {entry.Monitor.Id}");
             foreach (var s in entry.Settings)
@@ -90,7 +90,7 @@ public sealed class TextCliOutput : ICliOutput
 
     public void WriteCapabilitiesResult(CliCapabilitiesResult result)
     {
-        var monitor = $"Monitor {result.Monitor.Number} ({result.Monitor.Name})";
+        var monitor = MonitorLabel(result.Monitor);
         _stdout.WriteLine($"{monitor} via {result.CommunicationMethod}");
         if (!string.IsNullOrEmpty(result.Model))
         {
@@ -158,7 +158,7 @@ public sealed class TextCliOutput : ICliOutput
                 continue;
             }
 
-            var label = $"Monitor {m.Monitor.Number} ({m.Monitor.Name})";
+            var label = MonitorLabel(m.Monitor);
             if (m.Changes.Count == 0)
             {
                 _stdout.WriteLine($"  {label}: {Resources.Text_NoSettingsInProfile}");
@@ -186,7 +186,7 @@ public sealed class TextCliOutput : ICliOutput
 
         if (result.Monitor is { Number: > 0 })
         {
-            _stderr.WriteLine($"  monitor: Monitor {result.Monitor.Number} ({result.Monitor.Name})");
+            _stderr.WriteLine($"  monitor: {MonitorLabel(result.Monitor)}");
         }
 
         if (!string.IsNullOrEmpty(result.Error.ExpectedRange))
@@ -212,6 +212,8 @@ public sealed class TextCliOutput : ICliOutput
             _stderr.WriteLine(message);
         }
     }
+
+    private static string MonitorLabel(CliMonitorRef m) => $"Monitor {m.Number} ({m.Name})";
 
     private static string Truncate(string s, int max)
     {

@@ -49,25 +49,30 @@ public sealed class IpcDispatcher
 
     // ── per-command dispatch helpers ─────────────────────────────────────────
     public Task<int> SendListAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliListResult, _output.WriteListResult, _ => CliExitCodes.Ok, ct);
+        => SendAsync(envelope, ContractsJsonContext.Default.CliListResult, _output.WriteListResult, ct);
 
     public Task<int> SendGetAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliGetResult, _output.WriteGetResult, _ => CliExitCodes.Ok, ct);
+        => SendAsync(envelope, ContractsJsonContext.Default.CliGetResult, _output.WriteGetResult, ct);
 
     public Task<int> SendSetAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliSetResult, _output.WriteSetResult, _ => CliExitCodes.Ok, ct);
+        => SendAsync(envelope, ContractsJsonContext.Default.CliSetResult, _output.WriteSetResult, ct);
 
     public Task<int> SendCapabilitiesAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliCapabilitiesResult, _output.WriteCapabilitiesResult, _ => CliExitCodes.Ok, ct);
+        => SendAsync(envelope, ContractsJsonContext.Default.CliCapabilitiesResult, _output.WriteCapabilitiesResult, ct);
 
     public Task<int> SendProfilesAsync(CliRequestEnvelope envelope, CancellationToken ct)
-        => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliProfileListResult, _output.WriteProfileListResult, _ => CliExitCodes.Ok, ct);
+        => SendAsync(envelope, ContractsJsonContext.Default.CliProfileListResult, _output.WriteProfileListResult, ct);
 
     // apply-profile is the one success envelope whose exit code is data-driven: it returns the
     // worst-outcome code carried by the DTO (0=Ok, 2=OutOfRange, 5=HardwareFailure) instead of a
     // constant Ok, so OutOfRange(2) partial failures are not lost.
     public Task<int> SendApplyProfileAsync(CliRequestEnvelope envelope, CancellationToken ct)
         => SendAndRenderAsync(envelope, ContractsJsonContext.Default.CliApplyProfileResult, _output.WriteApplyProfileResult, result => result.ExitCode, ct);
+
+    // Most success envelopes map to exit 0; SendApplyProfileAsync above is the only data-driven one.
+    private Task<int> SendAsync<T>(CliRequestEnvelope envelope, JsonTypeInfo<T> typeInfo, Action<T> write, CancellationToken ct)
+        where T : class
+        => SendAndRenderAsync(envelope, typeInfo, write, static _ => CliExitCodes.Ok, ct);
 
     // ── core flow ────────────────────────────────────────────────────────────
     private async Task<int> SendAndRenderAsync<T>(

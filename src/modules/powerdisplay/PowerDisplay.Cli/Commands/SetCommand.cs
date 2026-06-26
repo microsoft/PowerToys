@@ -2,52 +2,31 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Linq;
+
 namespace PowerDisplay.Cli.Commands;
 
 public static class SetCommand
 {
     /// <summary>
     /// Counts how many settings are specified in <paramref name="inputs"/>.
-    /// Exactly one must be non-null/non-zero for a valid <c>set</c> invocation.
+    /// Exactly one must be non-null for a valid <c>set</c> invocation.
     /// </summary>
     public static int CountSelectedSettings(SetCommandInputs inputs)
     {
-        int count = 0;
-        if (inputs.Brightness.HasValue)
-        {
-            count++;
-        }
+        // A continuous int? of 0 still boxes to a non-null object, so zero-valued
+        // settings are counted just like the discrete string settings.
+        object?[] settings =
+        [
+            inputs.Brightness,
+            inputs.Contrast,
+            inputs.Volume,
+            inputs.ColorTemperature,
+            inputs.InputSource,
+            inputs.PowerState,
+            inputs.Orientation,
+        ];
 
-        if (inputs.Contrast.HasValue)
-        {
-            count++;
-        }
-
-        if (inputs.Volume.HasValue)
-        {
-            count++;
-        }
-
-        if (inputs.ColorTemperature is not null)
-        {
-            count++;
-        }
-
-        if (inputs.InputSource is not null)
-        {
-            count++;
-        }
-
-        if (inputs.PowerState is not null)
-        {
-            count++;
-        }
-
-        if (inputs.Orientation is not null)
-        {
-            count++;
-        }
-
-        return count;
+        return settings.Count(s => s is not null);
     }
 }

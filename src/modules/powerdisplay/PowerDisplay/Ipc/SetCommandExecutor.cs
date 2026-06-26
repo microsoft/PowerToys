@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerDisplay.Common.Drivers;
@@ -431,7 +432,7 @@ public static class SetCommandExecutor
         }
 
         // If the monitor reports a supported-value set, the resolved value must be in it.
-        if (supportedValues is { Count: > 0 } && !ContainsValue(supportedValues, parsedValue.Value))
+        if (supportedValues is { Count: > 0 } && !supportedValues.Contains(parsedValue.Value))
         {
             error = MakeDiscreteUnsupportedError(settingName, raw, supportedValues, vcpCode);
             return null;
@@ -486,22 +487,6 @@ public static class SetCommandExecutor
     /// VCP 0xD6 states that leave a headless caller staring at a dark panel.
     /// </summary>
     private static bool IsDisplayBlanking(int powerState) => powerState is 0x02 or 0x03 or 0x04 or 0x05;
-
-    /// <summary>
-    /// Linear scan for <paramref name="value"/> in <paramref name="list"/>.
-    /// </summary>
-    private static bool ContainsValue(IReadOnlyList<int> list, int value)
-    {
-        for (int i = 0; i < list.Count; i++)
-        {
-            if (list[i] == value)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     // ─── Shared CliError factory helpers ─────────────────────────────────────
     private static CliErrorResult MakeUnsupportedError(CliMonitorRef monitorRef, string settingName, string unsupportedReason)
