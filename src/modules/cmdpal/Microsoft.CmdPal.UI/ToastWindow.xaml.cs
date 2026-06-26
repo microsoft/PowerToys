@@ -17,11 +17,14 @@ using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 namespace Microsoft.CmdPal.UI;
 
 /// <summary>
-/// CmdPal's transient toast banner. Inherits all of its chrome, click-through,
-/// acrylic, and fade/slide animations from
-/// <see cref="TransparentWindow"/>; adds only the bits that are bespoke to
-/// CmdPal toasts: a bound message <c>TextBlock</c>, a 2.5 s auto-dismiss timer,
-/// bottom-center positioning, and <see cref="QuitMessage"/> handling.
+/// CmdPal's transient toast notification. It is a bare
+/// <see cref="TransparentWindow"/> host whose content is a
+/// <see cref="Microsoft.PowerToys.Common.UI.Controls.TransientSurface"/> — the
+/// surface supplies the acrylic, border, corners, shadow, and the fade/slide
+/// animation, driven automatically off the window's show/hide events. This class
+/// adds only the bits bespoke to CmdPal toasts: a bound message <c>TextBlock</c>,
+/// a 2.5 s auto-dismiss timer, bottom-center positioning, and
+/// <see cref="QuitMessage"/> handling.
 /// </summary>
 public sealed partial class ToastWindow : TransparentWindow,
     IRecipient<QuitMessage>
@@ -39,13 +42,10 @@ public sealed partial class ToastWindow : TransparentWindow,
         AppWindow.Title = RS_.GetString("ToastWindowTitle");
         this.SetWindowSize(600, 180);
 
-        // Pin the chrome card to bottom-center with the toast's classic 560-wide
-        // pill shape. The window itself stays 600x180 so the slide animations
-        // have headroom and we don't have to chase SizeToContent.
-        Card.HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center;
-        Card.VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Bottom;
-        Card.MaxWidth = 560;
-        Card.Margin = new Microsoft.UI.Xaml.Thickness(24, 24, 24, 16);
+        // Let the surface animate itself in/out in response to this window's
+        // Show()/Hide(). The 600x180 window leaves the bottom-center 560-wide
+        // pill (positioned in XAML) room for its slide + shadow.
+        Surface.SubscribeTo(this);
 
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
     }
