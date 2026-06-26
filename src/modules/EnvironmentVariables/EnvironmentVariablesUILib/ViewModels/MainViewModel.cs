@@ -108,15 +108,28 @@ namespace EnvironmentVariablesUILib.ViewModels
         {
             try
             {
-                var profiles = _environmentVariablesService.ReadProfiles();
+                var profiles = _environmentVariablesService?.ReadProfiles() ?? new List<ProfileVariablesSet>();
+                if (profiles == null)
+                {
+                    profiles = new List<ProfileVariablesSet>();
+                }
+
                 foreach (var profile in profiles)
                 {
+                    if (profile == null || profile.Variables == null)
+                    {
+                        continue;
+                    }
+
                     DeduplicateProfileVariables(profile);
                     profile.PropertyChanged += Profile_PropertyChanged;
 
                     foreach (var variable in profile.Variables)
                     {
-                        variable.ParentType = VariablesSetType.Profile;
+                        if (variable != null)
+                        {
+                            variable.ParentType = VariablesSetType.Profile;
+                        }
                     }
                 }
 
@@ -262,6 +275,11 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
+            if (Profiles == null)
+            {
+                Profiles = new ObservableCollection<ProfileVariablesSet>();
+            }
+
             DeduplicateProfileVariables(profile);
             profile.PropertyChanged += Profile_PropertyChanged;
             if (profile.IsEnabled)
@@ -278,6 +296,11 @@ namespace EnvironmentVariablesUILib.ViewModels
         internal void UpdateProfile(ProfileVariablesSet updatedProfile)
         {
             if (updatedProfile == null)
+            {
+                return;
+            }
+
+            if (Profiles == null)
             {
                 return;
             }
@@ -459,6 +482,11 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
+            if (Profiles == null)
+            {
+                return;
+            }
+
             if (profile.IsEnabled)
             {
                 UnsetAppliedProfile();
@@ -497,11 +525,11 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
             else
             {
-                if (variable.ParentType == VariablesSetType.User)
+                if (variable.ParentType == VariablesSetType.User && UserDefaultSet?.Variables != null)
                 {
                     UserDefaultSet.Variables.Remove(variable);
                 }
-                else if (variable.ParentType == VariablesSetType.System)
+                else if (variable.ParentType == VariablesSetType.System && SystemDefaultSet?.Variables != null)
                 {
                     SystemDefaultSet.Variables.Remove(variable);
                 }
