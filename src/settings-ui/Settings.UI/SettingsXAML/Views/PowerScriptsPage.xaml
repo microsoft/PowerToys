@@ -28,11 +28,30 @@
                     <ToggleSwitch IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
                 </tkcontrols:SettingsCard>
 
+                <tkcontrols:SettingsCard
+                    Name="PowerScriptsFolderSettingsCard"
+                    Description="{x:Bind ViewModel.ScriptsFolder, Mode=OneWay}"
+                    Header="Scripts folder"
+                    HeaderIcon="{ui:FontIcon Glyph=&#xE8B7;}"
+                    IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button
+                            x:Name="BrowseScriptsFolderButton"
+                            Click="BrowseScriptsFolderButton_Click"
+                            Content="Browse..." />
+                        <Button
+                            x:Name="ResetScriptsFolderButton"
+                            Click="ResetScriptsFolderButton_Click"
+                            Content="Reset"
+                            IsEnabled="{x:Bind ViewModel.IsCustomFolder, Mode=OneWay}" />
+                    </StackPanel>
+                </tkcontrols:SettingsCard>
+
                 <controls:SettingsGroup Header="Installed scripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <InfoBar
                         IsClosable="False"
                         IsOpen="{x:Bind ViewModel.HasScripts, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
-                        Message="No PowerScripts found. Add a script folder (with a manifest.json) under %LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts."
+                        Message="No PowerScripts found. Pick a scripts folder above (or use the default) that contains script subfolders, each with a manifest.json."
                         Severity="Informational" />
 
                     <ItemsControl ItemsSource="{x:Bind ViewModel.Scripts, Mode=OneWay}">

@@ -21,10 +21,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
+        private static readonly JsonSerializerOptions WriteJsonOptions = new() { WriteIndented = true };
+
         private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
         private readonly Func<string, int> _sendConfigMsg;
 
         private bool _isEnabled;
+        private string _scriptsFolder;
 
         public PowerScriptsViewModel(ISettingsRepository<GeneralSettings> generalSettingsRepository, Func<string, int> sendConfigMsg)
         {
@@ -33,6 +36,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             _generalSettingsRepository = generalSettingsRepository;
             _sendConfigMsg = sendConfigMsg;
             _isEnabled = generalSettingsRepository.SettingsConfig.Enabled.PowerScripts;
+            _scriptsFolder = ResolveScriptsFolder();
 
             Scripts = new ObservableCollection<PowerScriptListItem>();
             ReloadScripts();
@@ -41,6 +45,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ObservableCollection<PowerScriptListItem> Scripts { get; }
 
         public bool HasScripts => Scripts.Count > 0;
+
+        /// <summary>
+        /// The folder PowerScripts scans for <c>&lt;id&gt;\manifest.json</c> script folders. Persisted to
+        /// the shared <c>config.json</c> so every surface (Settings, the Explorer context menu, and the
+        /// Keyboard Manager mapping) resolves the same folder.
+        /// </summary>
+        public string ScriptsFolder
+        {
+            get => _scriptsFolder;
+            private set
+            {
+                if (_scriptsFolder != value)
+                {
+                    _scriptsFolder = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsCustomFolder));
+                }
+            }
+        }
+
+        public bool IsCustomFolder =>
+            !string.Equals(ScriptsFolder, DefaultScriptsFolder, StringComparison.OrdinalIgnoreCase);
 
         public bool IsEnabled
         {
@@ -79,6 +105,89 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
 
             OnPropertyChanged(nameof(HasScripts));
+        }
+
+        /// <summary>Persists a user-chosen scripts folder and refreshes every surface that reads it.</summary>
+        public void SetScriptsFolder(string folder)
+        {
+            if (string.IsNullOrWhiteSpace(folder))
+            {
+                return;
+            }
+
+            SaveConfiguredScriptsRoot(folder.Trim());
+            ScriptsFolder = ResolveScriptsFolder();
+            ReloadScripts();
+
+            // Re-register the Explorer submenu so right-click entries reflect the new folder's scripts.
+            if (_isEnabled)
+            {
+                RunHostShellCommand("shell-install");
+            }
+        }
+
+        /// <summary>Clears the override so the default folder under %LOCALAPPDATA% is used again.</summary>
+        public void ResetScriptsFolder()
+        {
+            SaveConfiguredScriptsRoot(null);
+            ScriptsFolder = ResolveScriptsFolder();
+            ReloadScripts();
+
+            if (_isEnabled)
+            {
+                RunHostShellCommand("shell-install");
+            }
+        }
+
+        private static string ModuleDirectory => Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "PowerToys",
+            "PowerScripts");
+
+        private static string ConfigFilePath => Path.Combine(ModuleDirectory, "config.json");
+
+        private static string DefaultScriptsFolder => Path.Combine(ModuleDirectory, "scripts");
+
+        private static string ResolveScriptsFolder()
+        {
+            var fromEnv = Environment.GetEnvironmentVariable("POWERSCRIPTS_ROOT");
+            if (!string.IsNullOrWhiteSpace(fromEnv))
+            {
+                return fromEnv;
+            }
+
+            try
+            {
+                if (File.Exists(ConfigFilePath))
+                {
+                    using var stream = File.OpenRead(ConfigFilePath);
+                    using var document = JsonDocument.Parse(stream);
+                    if (document.RootElement.TryGetProperty("scriptsRoot", out var value) &&
+                        value.ValueKind == JsonValueKind.String)
+                    {
+                        var root = value.GetString();
+                        if (!string.IsNullOrWhiteSpace(root))
+                        {
+                            return root;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // A corrupt or unreadable config falls back to the default.
+            }
+
+            return DefaultScriptsFolder;
+        }
+
+        private static void SaveConfiguredScriptsRoot(string folder)
+        {
+            Directory.CreateDirectory(ModuleDirectory);
+            var normalized = string.IsNullOrWhiteSpace(folder) ? string.Empty : folder.Trim();
+            var json = JsonSerializer.Serialize(new { scriptsRoot = normalized }, WriteJsonOptions);
+            File.WriteAllText(ConfigFilePath, json);
         }
 
         private static string ResolveHostPath()
