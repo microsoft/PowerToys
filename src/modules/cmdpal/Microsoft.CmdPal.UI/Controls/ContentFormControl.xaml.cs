@@ -305,7 +305,16 @@ public sealed partial class ContentFormControl : UserControl
             if (submitAction != null)
             {
                 e.Handled = true;
-                ViewModel?.HandleSubmit(submitAction, _renderedCard.UserInputs.AsJson());
+
+                // Validate (and gather) the inputs before submitting. AsJson() only
+                // returns the values cached by a successful ValidateInputs() call, so
+                // skipping this would submit an empty payload. This mirrors what the
+                // renderer does internally when a submit button is clicked.
+                var inputs = _renderedCard.UserInputs;
+                if (inputs.ValidateInputs(submitAction))
+                {
+                    ViewModel?.HandleSubmit(submitAction, inputs.AsJson());
+                }
             }
         }
     }
