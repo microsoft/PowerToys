@@ -36,10 +36,10 @@ public static class MonitorDtoProjector
         IReadOnlySet<string> hiddenIds)
     {
         var visible = ExcludeHidden(monitors, hiddenIds);
-        var entries = new List<CliListMonitor>(visible.Count);
+        var entries = new List<CliMonitorRef>(visible.Count);
         foreach (var m in visible)
         {
-            entries.Add(BuildListEntry(m));
+            entries.Add(ToRef(m));
         }
 
         return new CliListResult { Monitors = entries };
@@ -279,15 +279,6 @@ public static class MonitorDtoProjector
 
     /// <summary>Builds the compact monitor reference embedded in every response. Shared with <see cref="SetCommandExecutor"/>.</summary>
     internal static CliMonitorRef ToRef(Monitor m) => new()
-    {
-        Number = m.MonitorNumber,
-        Id = m.Id,
-        Name = m.Name,
-        Method = m.CommunicationMethod,
-    };
-
-    /// <summary>Projects a monitor to its <c>list</c> entry.</summary>
-    private static CliListMonitor BuildListEntry(Monitor m) => new()
     {
         Number = m.MonitorNumber,
         Id = m.Id,

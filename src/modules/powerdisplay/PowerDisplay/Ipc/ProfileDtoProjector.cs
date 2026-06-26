@@ -110,25 +110,10 @@ public static class ProfileDtoProjector
                 continue;
             }
 
-            var changes = new List<CliProfileChange>(outcome.Changes.Count);
+            // outcome.Changes are already Contracts DTOs; scan them for the worst-outcome flags
+            // (HardwareFailure > OutOfRange; "unsupported" sets neither — intentional).
             foreach (var change in outcome.Changes)
             {
-                // Populate all CliProfileChange fields:
-                //   Value  — always the raw requested integer (percentage or VCP byte).
-                //   Display — human-readable string only when status is "applied" (e.g. "50%",
-                //             "6500K (0x05)"); null otherwise.
-                //   Error  — hardware error text only when status is "hardware-failure"; null
-                //             otherwise.
-                changes.Add(new CliProfileChange
-                {
-                    Setting = change.Setting,
-                    Value = change.Value,
-                    Display = change.Display,
-                    Status = change.Status,
-                    Error = change.Error,
-                });
-
-                // Accumulate worst-outcome flags.
                 if (change.Status == CliProfileChange.StatusHardwareFailure)
                 {
                     anyHardwareFailure = true;
@@ -137,15 +122,13 @@ public static class ProfileDtoProjector
                 {
                     anyOutOfRange = true;
                 }
-
-                // "unsupported" does not set any failure flag — intentional.
             }
 
             monitorOutcomes.Add(new CliProfileMonitorOutcome
             {
                 Monitor = new CliMonitorRef { Id = outcome.MonitorId },
                 Connected = true,
-                Changes = changes,
+                Changes = outcome.Changes,
             });
         }
 

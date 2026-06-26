@@ -19,7 +19,6 @@ public static class CliRequestBuilder
     public static CliRequestEnvelope BuildList() => new()
     {
         Command = CliCommandNames.List,
-        List = new ListRequest(),
     };
 
     /// <summary>Builds a <c>get</c> request envelope.</summary>
@@ -82,7 +81,6 @@ public static class CliRequestBuilder
     public static CliRequestEnvelope BuildProfiles() => new()
     {
         Command = CliCommandNames.Profiles,
-        Profiles = new ProfilesRequest(),
     };
 
     /// <summary>Builds an <c>apply-profile</c> request envelope.</summary>

@@ -98,9 +98,9 @@ public class RoundTripTests
     {
         var result = new CliListResult
         {
-            Monitors = new List<CliListMonitor>
+            Monitors = new List<CliMonitorRef>
             {
-                new CliListMonitor
+                new CliMonitorRef
                 {
                     Number = 1,
                     Id = "DISPLAY\\DEL0A8C\\4&1a2b3c4d&0&UID12345",
@@ -312,23 +312,6 @@ public class RoundTripTests
     }
 
     [TestMethod]
-    public void ListRequest_envelope_round_trips_through_source_gen()
-    {
-        var envelope = new CliRequestEnvelope
-        {
-            Command = CliCommandNames.List,
-            List = new ListRequest(),
-        };
-
-        var json = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
-        var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliRequestEnvelope);
-
-        Assert.IsNotNull(back);
-        Assert.AreEqual(CliCommandNames.List, back!.Command);
-        Assert.IsNotNull(back.List);
-    }
-
-    [TestMethod]
     public void GetRequest_envelope_round_trips_through_source_gen()
     {
         var envelope = new CliRequestEnvelope
@@ -362,23 +345,6 @@ public class RoundTripTests
         Assert.AreEqual(CliCommandNames.Capabilities, back!.Command);
         Assert.AreEqual(1, back.Capabilities!.MonitorNumber);
         Assert.AreEqual("MON1", back.Capabilities.MonitorId);
-    }
-
-    [TestMethod]
-    public void ProfilesRequest_envelope_round_trips_through_source_gen()
-    {
-        var envelope = new CliRequestEnvelope
-        {
-            Command = CliCommandNames.Profiles,
-            Profiles = new ProfilesRequest(),
-        };
-
-        var json = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
-        var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliRequestEnvelope);
-
-        Assert.IsNotNull(back);
-        Assert.AreEqual(CliCommandNames.Profiles, back!.Command);
-        Assert.IsNotNull(back.Profiles);
     }
 
     [TestMethod]

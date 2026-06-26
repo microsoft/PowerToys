@@ -11,15 +11,11 @@ public sealed class CliRequestEnvelope
 
     public string Command { get; set; } = string.Empty;
 
-    public ListRequest? List { get; set; }
-
     public GetRequest? Get { get; set; }
 
     public SetRequest? Set { get; set; }
 
     public CapabilitiesRequest? Capabilities { get; set; }
-
-    public ProfilesRequest? Profiles { get; set; }
 
     public ApplyProfileRequest? ApplyProfile { get; set; }
 }

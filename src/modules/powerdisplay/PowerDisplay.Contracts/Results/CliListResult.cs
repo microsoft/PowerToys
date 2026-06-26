@@ -15,5 +15,5 @@ public sealed class CliListResult
 
     public string Command { get; init; } = CliCommandNames.List;
 
-    public IReadOnlyList<CliListMonitor> Monitors { get; init; } = [];
+    public IReadOnlyList<CliMonitorRef> Monitors { get; init; } = [];
 }

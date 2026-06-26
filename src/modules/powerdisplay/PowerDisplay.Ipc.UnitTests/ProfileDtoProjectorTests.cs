@@ -73,8 +73,8 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("brightness", 50, "50%",  CliProfileChange.StatusApplied,     null),
-                new ProfileChangeOutcome("contrast",   70, "70%",  CliProfileChange.StatusApplied,     null),
+                new CliProfileChange { Setting = "brightness", Value = 50, Display = "50%", Status = CliProfileChange.StatusApplied, Error = null },
+                new CliProfileChange { Setting = "contrast", Value = 70, Display = "70%", Status = CliProfileChange.StatusApplied, Error = null },
             }),
         };
 
@@ -92,11 +92,11 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("brightness", 50, "50%", CliProfileChange.StatusApplied,        null),
+                new CliProfileChange { Setting = "brightness", Value = 50, Display = "50%", Status = CliProfileChange.StatusApplied, Error = null },
             }),
             new("MON-B", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("contrast",   70, null,  CliProfileChange.StatusHardwareFailure, "DDC write timed out"),
+                new CliProfileChange { Setting = "contrast", Value = 70, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = "DDC write timed out" },
             }),
         };
 
@@ -112,8 +112,8 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("brightness", 50,  "50%", CliProfileChange.StatusApplied,    null),
-                new ProfileChangeOutcome("volume",     150, null,  CliProfileChange.StatusOutOfRange,  null),
+                new CliProfileChange { Setting = "brightness", Value = 50, Display = "50%", Status = CliProfileChange.StatusApplied, Error = null },
+                new CliProfileChange { Setting = "volume", Value = 150, Display = null, Status = CliProfileChange.StatusOutOfRange, Error = null },
             }),
         };
 
@@ -130,8 +130,8 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("brightness", 150, null,  CliProfileChange.StatusOutOfRange,      null),
-                new ProfileChangeOutcome("contrast",   70,  null,  CliProfileChange.StatusHardwareFailure, "I2C error"),
+                new CliProfileChange { Setting = "brightness", Value = 150, Display = null, Status = CliProfileChange.StatusOutOfRange, Error = null },
+                new CliProfileChange { Setting = "contrast", Value = 70, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = "I2C error" },
             }),
         };
 
@@ -148,8 +148,8 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("brightness",       50, null, CliProfileChange.StatusUnsupported, null),
-                new ProfileChangeOutcome("contrast",         70, null, CliProfileChange.StatusUnsupported, null),
+                new CliProfileChange { Setting = "brightness", Value = 50, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null },
+                new CliProfileChange { Setting = "contrast", Value = 70, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null },
             }),
         };
 
@@ -164,7 +164,7 @@ public class ProfileDtoProjectorTests
     {
         var outcomes = new List<ProfileApplyOutcome>
         {
-            new("MON-OFFLINE", Connected: false, Changes: Array.Empty<ProfileChangeOutcome>()),
+            new("MON-OFFLINE", Connected: false, Changes: Array.Empty<CliProfileChange>()),
         };
 
         var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
@@ -183,8 +183,8 @@ public class ProfileDtoProjectorTests
     {
         var outcomes = new List<ProfileApplyOutcome>
         {
-            new("MON-A",       Connected: true,  Changes: new[] { new ProfileChangeOutcome("brightness", 50, "50%", CliProfileChange.StatusApplied, null) }),
-            new("MON-OFFLINE", Connected: false, Changes: Array.Empty<ProfileChangeOutcome>()),
+            new("MON-A",       Connected: true,  Changes: new[] { new CliProfileChange { Setting = "brightness", Value = 50, Display = "50%", Status = CliProfileChange.StatusApplied, Error = null } }),
+            new("MON-OFFLINE", Connected: false, Changes: Array.Empty<CliProfileChange>()),
         };
 
         var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
@@ -210,8 +210,8 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("brightness",        50, "50%", CliProfileChange.StatusApplied,     null),
-                new ProfileChangeOutcome("color-temperature", 5,  null,  CliProfileChange.StatusUnsupported,  null),
+                new CliProfileChange { Setting = "brightness", Value = 50, Display = "50%", Status = CliProfileChange.StatusApplied, Error = null },
+                new CliProfileChange { Setting = "color-temperature", Value = 5, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null },
             }),
         };
 
@@ -236,7 +236,7 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("brightness", 75, "75%", CliProfileChange.StatusApplied, null),
+                new CliProfileChange { Setting = "brightness", Value = 75, Display = "75%", Status = CliProfileChange.StatusApplied, Error = null },
             }),
         };
 
@@ -261,7 +261,7 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("contrast", 60, null, CliProfileChange.StatusHardwareFailure, errorMsg),
+                new CliProfileChange { Setting = "contrast", Value = 60, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = errorMsg },
             }),
         };
 
@@ -285,7 +285,7 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("volume", 150, null, CliProfileChange.StatusOutOfRange, null),
+                new CliProfileChange { Setting = "volume", Value = 150, Display = null, Status = CliProfileChange.StatusOutOfRange, Error = null },
             }),
         };
 
@@ -309,7 +309,7 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("brightness", 40, null, CliProfileChange.StatusUnsupported, null),
+                new CliProfileChange { Setting = "brightness", Value = 40, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null },
             }),
         };
 
@@ -325,7 +325,7 @@ public class ProfileDtoProjectorTests
     /// <summary>
     /// Verifies that color-temperature applied display uses
     /// MonitorDtoProjector.FormatDiscrete(0x14, value) format (e.g. "6500K (0x05)").
-    /// The projector simply passes through whatever Display string is set in ProfileChangeOutcome,
+    /// The projector simply passes through whatever Display string is set in CliProfileChange,
     /// so this test confirms the contract is carried end-to-end.
     /// </summary>
     [TestMethod]
@@ -336,7 +336,7 @@ public class ProfileDtoProjectorTests
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new ProfileChangeOutcome("color-temperature", 0x05, "6500K (0x05)", CliProfileChange.StatusApplied, null),
+                new CliProfileChange { Setting = "color-temperature", Value = 0x05, Display = "6500K (0x05)", Status = CliProfileChange.StatusApplied, Error = null },
             }),
         };
 

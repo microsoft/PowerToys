@@ -95,7 +95,7 @@ public partial class MainViewModel
     /// <see cref="ApplyProfileWithOutcomesInternalAsync"/>. Calls <paramref name="applyAsync"/>
     /// directly on the monitor manager (returning a <see cref="MonitorOperationResult"/>) so that
     /// hardware failures are captured rather than swallowed. Returns a
-    /// <see cref="ProfileChangeOutcome"/> (with <c>Value</c>, optional <c>Display</c>, status,
+    /// <see cref="CliProfileChange"/> (with <c>Value</c>, optional <c>Display</c>, status,
     /// and optional <c>Error</c>) for one setting, or <c>null</c> when the setting was not
     /// present in the profile entry.
     /// </summary>
@@ -114,7 +114,7 @@ public partial class MainViewModel
     /// <c>v =&gt; MonitorDtoProjector.FormatDiscrete(0x14, v)</c> for color-temperature).
     /// </param>
     /// <param name="applyAsync">Hardware-write delegate returning a <see cref="MonitorOperationResult"/>.</param>
-    private static async Task<ProfileChangeOutcome?> TryRestoreWithOutcomeAsync(
+    private static async Task<CliProfileChange?> TryRestoreWithOutcomeAsync(
         int? savedValue,
         bool supportsHardware,
         string settingName,
@@ -135,7 +135,7 @@ public partial class MainViewModel
             // Hardware does not support this setting — report unsupported regardless of whether
             // it is hidden in the GUI (gated on the hardware-capability flags
             // monitor.SupportsBrightness / SupportsContrast / SupportsVolume / SupportsColorTemperature).
-            return new ProfileChangeOutcome(settingName, value, Display: null, CliProfileChange.StatusUnsupported, Error: null);
+            return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null };
         }
 
         // Basic range guard (0–100 for
@@ -147,7 +147,7 @@ public partial class MainViewModel
 
         if (outOfRange)
         {
-            return new ProfileChangeOutcome(settingName, value, Display: null, CliProfileChange.StatusOutOfRange, Error: null);
+            return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusOutOfRange, Error = null };
         }
 
         try
@@ -155,17 +155,17 @@ public partial class MainViewModel
             var result = await applyAsync(monitorId, value, default);
             if (result.IsSuccess)
             {
-                return new ProfileChangeOutcome(settingName, value, Display: formatDisplay(value), CliProfileChange.StatusApplied, Error: null);
+                return new CliProfileChange { Setting = settingName, Value = value, Display = formatDisplay(value), Status = CliProfileChange.StatusApplied, Error = null };
             }
             else
             {
-                return new ProfileChangeOutcome(settingName, value, Display: null, CliProfileChange.StatusHardwareFailure, Error: result.ErrorMessage);
+                return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = result.ErrorMessage };
             }
         }
         catch (Exception ex)
         {
             Logger.LogWarning($"[Profile] Hardware write failed for {settingName}: {ex.Message}");
-            return new ProfileChangeOutcome(settingName, value, Display: null, CliProfileChange.StatusHardwareFailure, Error: ex.Message);
+            return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = ex.Message };
         }
     }
 
@@ -469,7 +469,7 @@ public partial class MainViewModel
                 outcomes.Add(new ProfileApplyOutcome(
                     setting.MonitorId ?? string.Empty,
                     Connected: false,
-                    Changes: Array.Empty<ProfileChangeOutcome>()));
+                    Changes: Array.Empty<CliProfileChange>()));
                 continue;
             }
 
@@ -483,7 +483,7 @@ public partial class MainViewModel
             // hidden in the Settings UI but physically supported by the hardware must still
             // report "applied".
             var monitorId = monitorVm.Id;
-            var changes = new List<ProfileChangeOutcome>(4);
+            var changes = new List<CliProfileChange>(4);
 
             var brightnessOutcome = await TryRestoreWithOutcomeAsync(
                 setting.Brightness,
@@ -492,9 +492,9 @@ public partial class MainViewModel
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetBrightnessAsync);
-            if (brightnessOutcome.HasValue)
+            if (brightnessOutcome is not null)
             {
-                changes.Add(brightnessOutcome.Value);
+                changes.Add(brightnessOutcome);
             }
 
             var contrastOutcome = await TryRestoreWithOutcomeAsync(
@@ -504,9 +504,9 @@ public partial class MainViewModel
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetContrastAsync);
-            if (contrastOutcome.HasValue)
+            if (contrastOutcome is not null)
             {
-                changes.Add(contrastOutcome.Value);
+                changes.Add(contrastOutcome);
             }
 
             var volumeOutcome = await TryRestoreWithOutcomeAsync(
@@ -516,9 +516,9 @@ public partial class MainViewModel
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetVolumeAsync);
-            if (volumeOutcome.HasValue)
+            if (volumeOutcome is not null)
             {
-                changes.Add(volumeOutcome.Value);
+                changes.Add(volumeOutcome);
             }
 
             var colorTempOutcome = await TryRestoreWithOutcomeAsync(
@@ -528,9 +528,9 @@ public partial class MainViewModel
                 monitorId,
                 v => MonitorDtoProjector.FormatDiscrete(0x14, v),
                 _monitorManager.SetColorTemperatureAsync);
-            if (colorTempOutcome.HasValue)
+            if (colorTempOutcome is not null)
             {
-                changes.Add(colorTempOutcome.Value);
+                changes.Add(colorTempOutcome);
             }
 
             outcomes.Add(new ProfileApplyOutcome(

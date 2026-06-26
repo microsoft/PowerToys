@@ -279,7 +279,7 @@ public class CliRequestHandlerTests
     {
         var outcomes = new ProfileApplyOutcome[]
         {
-            new ProfileApplyOutcome("A", Connected: true, Changes: Array.Empty<ProfileChangeOutcome>()),
+            new ProfileApplyOutcome("A", Connected: true, Changes: Array.Empty<CliProfileChange>()),
         };
         Func<string, CancellationToken, Task<IReadOnlyList<ProfileApplyOutcome>?>> applyFn =
             (_, _) => Task.FromResult<IReadOnlyList<ProfileApplyOutcome>?>(outcomes);

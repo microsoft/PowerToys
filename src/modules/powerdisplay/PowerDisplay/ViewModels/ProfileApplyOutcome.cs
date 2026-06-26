@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using PowerDisplay.Contracts;
 
 namespace PowerDisplay.ViewModels;
 
@@ -17,7 +18,7 @@ namespace PowerDisplay.ViewModels;
 /// writes were attempted).
 /// </param>
 /// <param name="Changes">
-/// Per-setting outcomes. Each element is a <see cref="ProfileChangeOutcome"/> carrying the
+/// Per-setting outcomes. Each element is a <see cref="CliProfileChange"/> carrying the
 /// canonical setting name, the raw value requested, an optional human-readable display string
 /// (present only on success), the status string, and an optional error message (present only
 /// on hardware failure). Empty when <see cref="Connected"/> is <c>false</c>.
@@ -25,4 +26,4 @@ namespace PowerDisplay.ViewModels;
 public readonly record struct ProfileApplyOutcome(
     string MonitorId,
     bool Connected,
-    IReadOnlyList<ProfileChangeOutcome> Changes);
+    IReadOnlyList<CliProfileChange> Changes);
