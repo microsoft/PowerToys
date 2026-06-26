@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Versioning;
+using System.Security.Principal;
 using Microsoft.Win32;
 
 namespace ManagedCommon
@@ -26,11 +27,26 @@ namespace ManagedCommon
             // In debug builds, resolve directly from the running process (no installer/registry involved).
             return GetPathFromCurrentProcess();
 #else
-            // Try to get path from Per-User installation first
-            string path = GetPathFromRegistry(RegistryHive.CurrentUser);
+            // Prefer resolving from the running process' own location. This is a trusted source
+            // (the OS loaded the binary from the install directory) and works for both per-user and
+            // per-machine installs, regardless of elevation.
+            string path = GetPathFromCurrentProcess();
             if (!string.IsNullOrEmpty(path))
             {
                 return path;
+            }
+
+            // Fall back to the registry. The per-user (HKCU) hive is writable by a standard user, so an
+            // attacker could point the "powertoys" protocol command at an arbitrary local or UNC
+            // PowerToys.exe. When this process is elevated, never trust HKCU: only the per-machine
+            // (HKLM) hive, which requires administrator rights to write, is considered trustworthy.
+            if (!IsProcessElevated())
+            {
+                path = GetPathFromRegistry(RegistryHive.CurrentUser);
+                if (!string.IsNullOrEmpty(path))
+                {
+                    return path;
+                }
             }
 
             // Fall back to Per-Machine installation
@@ -42,6 +58,22 @@ namespace ManagedCommon
 
             return null;
 #endif
+        }
+
+        private static bool IsProcessElevated()
+        {
+            try
+            {
+                using var identity = WindowsIdentity.GetCurrent();
+                var principal = new WindowsPrincipal(identity);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch (Exception)
+            {
+                // If elevation can't be determined, fail safe by treating the process as elevated so the
+                // user-writable HKCU hive is never trusted.
+                return true;
+            }
         }
 
         private static string GetPathFromRegistry(RegistryHive hive)
