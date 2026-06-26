@@ -210,6 +210,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         internal void AddDefaultVariable(Variable variable, VariablesSetType type)
         {
+            if (variable == null)
+            {
+                return;
+            }
+
             if (type == VariablesSetType.User)
             {
                 UserDefaultSet.Variables.Add(variable);
@@ -466,10 +471,20 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         internal void DeleteVariable(Variable variable, ProfileVariablesSet profile)
         {
+            if (variable == null)
+            {
+                return;
+            }
+
             bool propagateChange = true;
 
             if (profile != null)
             {
+                if (profile.Variables == null)
+                {
+                    return;
+                }
+
                 // Profile variable
                 profile.Variables.Remove(variable);
 
