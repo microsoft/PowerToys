@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Numerics;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Animations;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
@@ -49,12 +48,18 @@ public sealed partial class TransientSurface : ContentControl
 
     // "Pop" transition: scale between 96% and 100% (a subtle 4% grow). Following
     // Fluent motion guidance the scale uses a decelerate (EaseOut) curve; the
-    // fade is kept very fast so the surface reads as an instant, light pop.
+    // fade is kept fast so the surface reads as an instant, light pop.
+    //
+    // The fade must run at least as long as the scale: if the scale outlasted the
+    // fade, the surface would reach full opacity while still visibly growing,
+    // which reads as a "resize" rather than a pop. Keeping the fade >= the scale
+    // hides the growth under the opacity ramp, so by the time it is fully opaque
+    // it is already at 100% size.
     private const float PopScaleFrom = 0.96f;
-    private const double PopFadeShowMs = 150;
-    private const double PopScaleShowMs = 250;
+    private const double PopFadeShowMs = 180;
+    private const double PopScaleShowMs = 150;
     private const double PopFadeHideMs = 120;
-    private const double PopScaleHideMs = 150;
+    private const double PopScaleHideMs = 120;
 
     public static readonly DependencyProperty ShowTransitionProperty = DependencyProperty.Register(
         nameof(ShowTransition),
@@ -76,6 +81,8 @@ public sealed partial class TransientSurface : ContentControl
 
     private readonly DispatcherQueueTimer _hideCompletedTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
 
+    private readonly ImplicitAnimationSet _noAnimations = new();
+
     private ImplicitAnimationSet _showAnimations = new();
     private ImplicitAnimationSet _hideAnimations = new();
     private bool _hasCustomShowAnimations;
@@ -88,9 +95,12 @@ public sealed partial class TransientSurface : ContentControl
 
         RebuildDefaultAnimations();
 
-        // Keep the scale center pinned to the surface's center so the "Pop"
-        // transition grows/shrinks from the middle rather than the top-left corner.
-        SizeChanged += (_, _) => UpdateScaleCenterPoint();
+        // Pin the scale center to the surface's center so the "Pop" transition
+        // grows/shrinks from the middle, not the top-left corner. An expression
+        // animation bound to the visual's own size keeps the center correct from
+        // the very first frame (a SizeChanged handler would race the show
+        // animation and let the first pop scale from 0,0).
+        PinScaleCenter();
 
         // Start hidden so the first Show() animates in from the configured pose.
         Visibility = Visibility.Collapsed;
@@ -223,10 +233,13 @@ public sealed partial class TransientSurface : ContentControl
         _abandonPendingHide?.Invoke();
         _abandonPendingHide = null;
 
-        // Re-apply each call so swapping animation collections at runtime takes
-        // effect on the next show/hide cycle.
+        // Attach the show animation and detach any hide animation: when Show() is
+        // called while the surface is still visible, the Collapsed -> Visible
+        // restart below would otherwise play the hide animation (a fade/scale out)
+        // immediately before the show, producing a visible flash. The real hide
+        // animation is re-attached just-in-time in Hide().
         Implicit.SetShowAnimations(this, _showAnimations);
-        Implicit.SetHideAnimations(this, _hideAnimations);
+        Implicit.SetHideAnimations(this, _noAnimations);
 
         // Reset to the hidden pose so the show animation always animates from the
         // configured starting frame.
@@ -242,6 +255,10 @@ public sealed partial class TransientSurface : ContentControl
     /// </summary>
     public void Hide()
     {
+        // Attach the hide animation just before collapsing (Show() detaches it to
+        // avoid a flash when re-showing an already-visible surface).
+        Implicit.SetHideAnimations(this, _hideAnimations);
+
         Visibility = Visibility.Collapsed;
 
         _hideCompletedTimer.Debounce(
@@ -329,10 +346,11 @@ public sealed partial class TransientSurface : ContentControl
         }
     }
 
-    private void UpdateScaleCenterPoint()
+    private void PinScaleCenter()
     {
         var visual = ElementCompositionPreview.GetElementVisual(this);
-        visual.CenterPoint = new Vector3((float)(ActualWidth / 2), (float)(ActualHeight / 2), 0);
+        var center = visual.Compositor.CreateExpressionAnimation("Vector3(this.Target.Size.X * 0.5, this.Target.Size.Y * 0.5, 0)");
+        visual.StartAnimation("CenterPoint", center);
     }
 
     private static ImplicitAnimationSet BuildShowAnimations(Transition transition)
