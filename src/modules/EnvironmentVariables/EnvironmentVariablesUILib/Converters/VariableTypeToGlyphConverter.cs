@@ -13,7 +13,11 @@ public partial class VariableTypeToGlyphConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        var type = (VariablesSetType)value;
+        if (value is not VariablesSetType type)
+        {
+            return "\uE10A"; // Generic symbol for unknown types
+        }
+
         return type switch
         {
             VariablesSetType.User => "\uE77B",
@@ -21,7 +25,7 @@ public partial class VariableTypeToGlyphConverter : IValueConverter
             VariablesSetType.Profile => "\uEDE3",
             VariablesSetType.Path => "\uE8AC",
             VariablesSetType.Duplicate => "\uE8C8",
-            _ => throw new NotImplementedException(),
+            _ => "\uE10A",
         };
     }
 
