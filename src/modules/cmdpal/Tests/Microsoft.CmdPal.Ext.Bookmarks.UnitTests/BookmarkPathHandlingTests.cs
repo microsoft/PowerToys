@@ -168,7 +168,11 @@ public class BookmarkPathHandlingTests
         public bool Launch(Classification classification, bool runAsAdmin = false)
         {
             LastLaunchedClassification = classification;
-            return true;
+
+            // Mirror the real launcher: ShellExecute fails for a filesystem target that
+            // doesn't exist, and that failure is what drives the nearest-existing-parent
+            // fallback. Existing targets (e.g. the parent directory) "launch" successfully.
+            return Directory.Exists(classification.Target) || File.Exists(classification.Target);
         }
     }
 

@@ -214,16 +214,20 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         // At this point 'head' is our best intended command token.
         var (firstHead, tail) = SplitHeadAndArgs(input);
         CommandLineHelper.ExpandPathToPhysicalFile(firstHead, true, out var head);
-        head = NormalizePathForWindows(head);
+
+        // Normalize a copy for path-detection/probing only. We must not overwrite 'head'
+        // itself, because normalization trims trailing whitespace and would turn a meaningful
+        // token (e.g. a quoted single space) into an empty string for the fallback target below.
+        var normalizedHead = NormalizePathForWindows(head);
 
         // 3.1) UWP/AppX via AppsFolder/AUMID or pkgfamily!app
         //      Since the AUMID can be actually anything, we either take a full shell:AppsFolder\AUMID
         //      as entered and we try to detect packaged app ids (pkgfamily!app).
-        if (TryGetAumid(head, out var aumid2))
+        if (TryGetAumid(normalizedHead, out var aumid2))
         {
             result = new Classification(
                 CommandKind.Aumid,
-                head,
+                normalizedHead,
                 aumid2,
                 tail,
                 LaunchMethod.ActivateAppId,
@@ -235,7 +239,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
 
         // 3.2) It's a virtual shell item (e.g. Control Panel, Recycle Bin, This PC)
         //    Shell items that are backed by filesystem paths (e.g. Downloads) should be already handled above.
-        if (CommandLineHelper.HasShellPrefix(head))
+        if (CommandLineHelper.HasShellPrefix(normalizedHead))
         {
             ShellNames.TryGetFriendlyName(input, out var displayName);
             ShellNames.TryGetFileSystemPath(input, out var fsPath);
@@ -255,7 +259,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         // 3.3) Search paths for the file name (with or without ext)
         //     If head is a file name with extension, we look only for that. If there's no extension
         //     we go and follow Windows Shell resolution rules.
-        if (TryResolveViaPath(head, out var resolvedFilePath))
+        if (TryResolveViaPath(normalizedHead, out var resolvedFilePath))
         {
             result = new Classification(
                 CommandKind.PathCommand,
@@ -270,9 +274,9 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         }
 
         // 3.4) If it looks like a path with ext but missing file, treat as document (Shell will handle assoc / error)
-        if (LooksPathy(head) && Path.HasExtension(head))
+        if (LooksPathy(normalizedHead) && Path.HasExtension(normalizedHead))
         {
-            var extension = Path.GetExtension(head);
+            var extension = Path.GetExtension(normalizedHead);
 
             // if the path extension contains placeholders, we can't assume what it is so, skip it and treat it as unknown
             var hasSpecificExtension = !isPlaceholder || !extension.Contains('{');
@@ -281,10 +285,10 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
                 result = new Classification(
                     ShellHelpers.IsExecutableExtension(extension) ? CommandKind.FileExecutable : CommandKind.FileDocument,
                     input,
-                    head,
+                    normalizedHead,
                     tail,
                     LaunchMethod.ShellExecute,
-                    HasDir(head) ? Path.GetDirectoryName(head) : null,
+                    HasDir(normalizedHead) ? Path.GetDirectoryName(normalizedHead) : null,
                     isPlaceholder);
 
                 return true;
@@ -292,7 +296,7 @@ internal sealed partial class BookmarkResolver : IBookmarkResolver
         }
 
         // 4) looks like a web URL without scheme, but not like a file with extension
-        if (head.Contains('.', StringComparison.OrdinalIgnoreCase) && head.StartsWith("www", StringComparison.OrdinalIgnoreCase))
+        if (normalizedHead.Contains('.', StringComparison.OrdinalIgnoreCase) && normalizedHead.StartsWith("www", StringComparison.OrdinalIgnoreCase))
         {
             // treat as URL, add https://
             var url = "https://" + input;
