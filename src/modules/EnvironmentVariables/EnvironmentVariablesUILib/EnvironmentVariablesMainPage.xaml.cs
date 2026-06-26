@@ -600,19 +600,12 @@ namespace EnvironmentVariablesUILib
                         continue;
                     }
 
-                    toRemove = -1;
-                    for (int i = 0; i < profile.Variables.Count; i++)
+                    for (int i = profile.Variables.Count - 1; i >= 0; i--)
                     {
                         if (AreEquivalentVariables(profile.Variables[i], removedVariable))
                         {
-                            toRemove = i;
-                            break;
+                            profile.Variables.RemoveAt(i);
                         }
-                    }
-
-                    if (toRemove != -1)
-                    {
-                        profile.Variables.RemoveAt(toRemove);
                     }
                 }
             }
