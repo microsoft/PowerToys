@@ -86,14 +86,35 @@ namespace EnvironmentVariablesUILib
                 return;
             }
 
-            var variablesSet = btn.DataContext as VariablesSet;
             var variable = btn.CommandParameter as Variable;
             if (variable == null)
             {
                 return;
             }
 
+            var variablesSet = ResolveVariableSetFromVariable(variable);
             await ShowEditDialogAsync(variable, variablesSet);
+        }
+
+        private VariablesSet ResolveVariableSetFromVariable(Variable variable)
+        {
+            if (variable == null || ViewModel == null)
+            {
+                return null;
+            }
+
+            if (variable.ParentType == VariablesSetType.User)
+            {
+                return ViewModel.UserDefaultSet;
+            }
+
+            if (variable.ParentType == VariablesSetType.System)
+            {
+                return ViewModel.SystemDefaultSet;
+            }
+
+            return ViewModel.Profiles?
+                .FirstOrDefault(profile => profile?.Variables != null && profile.Variables.Contains(variable));
         }
 
         private void EditVariable(RelayCommandParameter param)
