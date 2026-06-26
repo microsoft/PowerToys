@@ -156,10 +156,8 @@ namespace EnvironmentVariablesUILib
                 {
                     foreach (Variable variable in ExistingVariablesListView.SelectedItems)
                     {
-                        if (!profile.Variables
-                            .Where(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase)
-                                     && x.Values == variable.Values
-                                     && x.ParentType == variable.ParentType)
+                        if (variable != null && !profile.Variables
+                            .Where(x => AreEquivalentVariables(x, variable))
                             .Any())
                         {
                             var clone = variable.Clone(true);
@@ -329,8 +327,14 @@ namespace EnvironmentVariablesUILib
             if (e.AddedItems.Count > 0)
             {
                 var list = sender as ListView;
+                if (list == null)
+                {
+                    return;
+                }
+
                 var duplicates = list.SelectedItems
-                    .GroupBy(x => $"{((Variable)x).Name?.ToUpperInvariant()}|{((Variable)x).Values}|{((Variable)x).ParentType}")
+                    .OfType<Variable>()
+                    .GroupBy(x => $"{x.Name?.ToUpperInvariant()}|{x.Values}|{x.ParentType}")
                     .Where(g => g.Count() > 1)
                     .ToList();
 
@@ -355,9 +359,7 @@ namespace EnvironmentVariablesUILib
                     toRemove = -1;
                     for (int i = 0; i < profile.Variables.Count; i++)
                     {
-                        if (string.Equals(profile.Variables[i].Name, removedVariable.Name, StringComparison.OrdinalIgnoreCase)
-                            && profile.Variables[i].Values == removedVariable.Values
-                            && profile.Variables[i].ParentType == removedVariable.ParentType)
+                        if (AreEquivalentVariables(profile.Variables[i], removedVariable))
                         {
                             toRemove = i;
                             break;
@@ -377,9 +379,7 @@ namespace EnvironmentVariablesUILib
                 if (variable != null)
                 {
                     if (!profile.Variables
-                        .Where(x => string.Equals(x.Name, variable.Name, StringComparison.OrdinalIgnoreCase)
-                                 && x.Values.Equals(variable.Values, StringComparison.Ordinal)
-                                 && x.ParentType == variable.ParentType)
+                        .Where(x => AreEquivalentVariables(x, variable))
                         .Any())
                     {
                         AddVariableDialog.IsPrimaryButtonEnabled = true;
@@ -461,9 +461,7 @@ namespace EnvironmentVariablesUILib
                 {
                     foreach (var profileItem in profile.Variables)
                     {
-                        if (string.Equals(profileItem.Name, item.Name, StringComparison.OrdinalIgnoreCase)
-                            && profileItem.Values == item.Values
-                            && profileItem.ParentType == item.ParentType)
+                        if (AreEquivalentVariables(profileItem, item))
                         {
                             if (!remainingItems.Remove(item))
                             {
@@ -480,6 +478,18 @@ namespace EnvironmentVariablesUILib
             }
 
             UpdateNoMatchingDefaultVariablesText();
+        }
+
+        private static bool AreEquivalentVariables(Variable left, Variable right)
+        {
+            if (left == null || right == null)
+            {
+                return false;
+            }
+
+            return string.Equals(left.Name, right.Name, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(left.Values, right.Values, StringComparison.Ordinal)
+                && left.ParentType == right.ParentType;
         }
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
