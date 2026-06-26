@@ -88,13 +88,18 @@
   </ItemGroup>
 
   <!-- ============================================================= -->
-  <!-- MIGRATION QUARANTINE: WPF source not yet ported to WinUI 3.    -->
-  <!-- Each sub-project (B editor / C overlay / D infra) removes the  -->
-  <!-- lines for the files it migrates. When this group is empty the  -->
-  <!-- migration is complete.                                         -->
+  <!-- FOLDER GLOB CONTROL: the default SDK Compile glob is removed   -->
+  <!-- per-folder below, then the ported files are re-included        -->
+  <!-- explicitly in the ItemGroups that follow.                      -->
+  <!--                                                                 -->
+  <!-- The WPF->WinUI 3 migration is structurally complete. The dead  -->
+  <!-- WPF Behaviors\ and Shaders\ source was DELETED (TransparentWindow -->
+  <!-- built-ins / services / the native ListView / the Win2D ZoomView -->
+  <!-- replaced them), as was the unused root MainWindow.xaml shell    -->
+  <!-- (App hosts ColorPickerOverlayWindow). Shaders\GridShader.fx is  -->
+  <!-- kept as the reference spec for the alternative shader magnifier. -->
   <!-- ============================================================= -->
   <ItemGroup>
-    <Compile Remove="Behaviors\**\*.cs" />
     <!-- All Controls (HSVColor, ColorFormatControl, ColorPickerControl) are ported. -->
     <Compile Remove="Converters\**\*.cs" />
     <!-- MainView, ColorEditorView, and ZoomView (Win2D magnifier) are all ported. -->
@@ -103,20 +108,12 @@
     <Compile Remove="Mouse\**\*.cs" />
     <Compile Remove="Keyboard\**\*.cs" />
     <Compile Remove="Helpers\**\*.cs" />
-    <Compile Remove="Shaders\**\*.cs" />
     <Compile Remove="Models\**\*.cs" />
     <Compile Remove="Settings\**\*.cs" />
     <Compile Remove="Telemetry\**\*.cs" />
-    <!-- The legacy root MainWindow.xaml/.cs (WPF overlay shell) were DELETED to clear the
-         duplicate x:Class "ColorPicker.MainWindow" collision; the picking overlay, editor, and
-         zoom magnifier are now ported (TransparentWindow-based). Resources\Styles.xaml is ported
-         and merged into App.xaml. Only the WPF Behaviors\ and Shaders\ remain quarantined; the
-         Win2D ZoomView replaces the GridShaderEffect, so they are intentionally dead. -->
-
-    <!-- Old WPF .resx string table has been fully migrated to Strings\en-us\Resources.resw
-         and Properties\Resources.resx deleted; nothing in the live build references
-         Properties.Resources anymore (only the still-quarantined ColorPickerControl does). -->
-    <!-- Re-exclude the .ico/.cur lines above from the catch-all Resource glob conflicts -->
+    <!-- The old WPF .resx string table was fully migrated to Strings\en-us\Resources.resw and
+         Properties\Resources.resx deleted; nothing in the live build references
+         Properties.Resources anymore. -->
   </ItemGroup>
 
   <!-- Foundation Helpers that ARE migrated (re-included past the Helpers quarantine) -->
