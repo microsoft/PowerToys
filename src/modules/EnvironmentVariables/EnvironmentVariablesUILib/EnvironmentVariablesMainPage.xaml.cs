@@ -76,6 +76,11 @@ namespace EnvironmentVariablesUILib
         private async void EditVariable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var btn = sender as MenuFlyoutItem;
+            if (btn == null)
+            {
+                return;
+            }
+
             var variablesSet = btn.DataContext as VariablesSet;
             var variable = btn.CommandParameter as Variable;
 
@@ -87,9 +92,18 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariable(RelayCommandParameter param)
         {
+            if (param == null)
+            {
+                return;
+            }
+
             var variableSet = param.Set as ProfileVariablesSet;
             var original = param.Variable;
             var edited = EditVariableDialog.DataContext as Variable;
+            if (original == null || edited == null)
+            {
+                return;
+            }
             ViewModel.EditVariable(original, edited, variableSet);
         }
 
@@ -122,25 +136,36 @@ namespace EnvironmentVariablesUILib
         private async void RemoveProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var button = sender as MenuFlyoutItem;
-            var profile = button.CommandParameter as ProfileVariablesSet;
-
-            if (profile != null)
+            if (button == null)
             {
-                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-                ContentDialog dialog = new ContentDialog();
-                dialog.XamlRoot = RootPage.XamlRoot;
-                dialog.Title = profile.Name;
-                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
-                dialog.CloseButtonText = resourceLoader.GetString("No");
-                dialog.DefaultButton = ContentDialogButton.Primary;
-                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
-                dialog.PrimaryButtonClick += (s, args) =>
-                {
-                    ViewModel.RemoveProfile(profile);
-                };
-
-                var result = await dialog.ShowAsync();
+                return;
             }
+
+            var profile = button.CommandParameter as ProfileVariablesSet;
+            if (profile == null)
+            {
+                return;
+            }
+
+            if (RootPage == null)
+            {
+                return;
+            }
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            ContentDialog dialog = new ContentDialog();
+            dialog.XamlRoot = RootPage.XamlRoot;
+            dialog.Title = profile.Name;
+            dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+            dialog.CloseButtonText = resourceLoader.GetString("No");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
+            dialog.PrimaryButtonClick += (s, args) =>
+            {
+                ViewModel.RemoveProfile(profile);
+            };
+
+            var result = await dialog.ShowAsync();
         }
 
         private void AddVariable()
@@ -222,7 +247,16 @@ namespace EnvironmentVariablesUILib
 
         private void AddDefaultVariable(DefaultVariablesSet set)
         {
+            if (set == null)
+            {
+                return;
+            }
+
             var variable = AddDefaultVariableDialog.DataContext as Variable;
+            if (variable == null)
+            {
+                return;
+            }
             var type = set.Type;
 
             ViewModel.AddDefaultVariable(variable, type);
@@ -231,25 +265,31 @@ namespace EnvironmentVariablesUILib
         private async void Delete_Variable_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             MenuFlyoutItem selectedItem = sender as MenuFlyoutItem;
+            if (selectedItem == null || RootPage == null)
+            {
+                return;
+            }
+
             var variableSet = selectedItem.DataContext as ProfileVariablesSet;
             var variable = selectedItem.CommandParameter as Variable;
-
-            if (variable != null)
+            if (variable == null)
             {
-                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-                ContentDialog dialog = new ContentDialog();
-                dialog.XamlRoot = RootPage.XamlRoot;
-                dialog.Title = variable.Name;
-                dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
-                dialog.CloseButtonText = resourceLoader.GetString("No");
-                dialog.DefaultButton = ContentDialogButton.Primary;
-                dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Variable_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
-                dialog.PrimaryButtonClick += (s, args) =>
-                {
-                    ViewModel.DeleteVariable(variable, variableSet);
-                };
-                var result = await dialog.ShowAsync();
+                return;
             }
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            ContentDialog dialog = new ContentDialog();
+            dialog.XamlRoot = RootPage.XamlRoot;
+            dialog.Title = variable.Name;
+            dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
+            dialog.CloseButtonText = resourceLoader.GetString("No");
+            dialog.DefaultButton = ContentDialogButton.Primary;
+            dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Variable_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
+            dialog.PrimaryButtonClick += (s, args) =>
+            {
+                ViewModel.DeleteVariable(variable, variableSet);
+            };
+            var result = await dialog.ShowAsync();
         }
 
         private void CopyVariableName_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -403,18 +443,24 @@ namespace EnvironmentVariablesUILib
             SwitchViewsSegmentedView.SelectedIndex = 0;
 
             var button = sender as MenuFlyoutItem;
-            var profile = button.CommandParameter as ProfileVariablesSet;
-
-            if (profile != null)
+            if (button == null)
             {
-                var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-                AddProfileDialog.Title = resourceLoader.GetString("EditProfileDialog_Title");
-                AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
-                AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
-                AddProfileDialog.PrimaryButtonCommand = UpdateProfileCommand;
-                AddProfileDialog.DataContext = profile.Clone();
-                await AddProfileDialog.ShowAsync();
+                return;
             }
+
+            var profile = button.CommandParameter as ProfileVariablesSet;
+            if (profile == null)
+            {
+                return;
+            }
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            AddProfileDialog.Title = resourceLoader.GetString("EditProfileDialog_Title");
+            AddProfileDialog.PrimaryButtonText = resourceLoader.GetString("SaveBtn");
+            AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
+            AddProfileDialog.PrimaryButtonCommand = UpdateProfileCommand;
+            AddProfileDialog.DataContext = profile.Clone();
+            await AddProfileDialog.ShowAsync();
         }
 
         private async void AddVariableBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
