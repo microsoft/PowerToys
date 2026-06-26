@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Contracts;
@@ -18,8 +19,8 @@ namespace PowerDisplay.Ipc;
 /// Contracts result DTOs consumed by the CLI renderers. All three read-side commands (list, get,
 /// capabilities) are covered.
 /// <para>
-/// The output is byte-for-byte equivalent to what today's CLI commands produce: same display
-/// strings, same error codes/exit codes, same hidden-monitor and selector semantics.
+/// This projector is the single source of these DTOs: it defines the display strings, error
+/// codes/exit codes, and hidden-monitor and selector semantics that the CLI renderers consume.
 /// </para>
 /// </summary>
 public static class MonitorDtoProjector
@@ -28,8 +29,7 @@ public static class MonitorDtoProjector
 
     /// <summary>
     /// Builds the result DTO for the <c>list</c> command.
-    /// Hidden monitors are excluded; the returned entry per monitor mirrors
-    /// <c>ListCommand.BuildEntry</c> exactly.
+    /// Hidden monitors are excluded; each surviving monitor becomes one list entry.
     /// </summary>
     public static CliListResult BuildListResult(
         IReadOnlyList<Monitor> monitors,
@@ -173,7 +173,7 @@ public static class MonitorDtoProjector
         {
             // Transport lives in the dedicated top-level CommunicationMethod below, so leave
             // Method off the monitor ref (it is omitted from JSON) to avoid emitting the same
-            // value twice in the capabilities envelope. Mirrors CapabilitiesCommand exactly.
+            // value twice in the capabilities envelope.
             Monitor = new CliMonitorRef
             {
                 Number = selected!.MonitorNumber,
@@ -191,8 +191,7 @@ public static class MonitorDtoProjector
     // ─── Internal helpers (visible for testing) ────────────────────────────────
 
     /// <summary>
-    /// Drops monitors the user hid in PowerDisplay settings. Mirrors
-    /// <c>MonitorFiltering.ExcludeHidden</c>.
+    /// Drops monitors the user hid in PowerDisplay settings.
     /// </summary>
     internal static IReadOnlyList<Monitor> ExcludeHidden(
         IReadOnlyList<Monitor> monitors,
@@ -217,7 +216,6 @@ public static class MonitorDtoProjector
 
     /// <summary>
     /// Resolves the target monitor from the already-filtered list using CLI selector semantics.
-    /// Mirrors <c>MonitorResolver.Resolve</c> + <c>MonitorFiltering.ResolveSelected</c>.
     /// <list type="bullet">
     ///   <item>No selector → <c>SelectorMissing</c> error.</item>
     ///   <item>Both selectors → id wins (the CLI surfaces the "-n ignored" note locally).</item>
@@ -279,7 +277,7 @@ public static class MonitorDtoProjector
 
     // ─── Private helpers ───────────────────────────────────────────────────────
 
-    /// <summary>Mirrors <c>SetCommand.ToRef</c>. Shared with <see cref="SetCommandExecutor"/>.</summary>
+    /// <summary>Builds the compact monitor reference embedded in every response. Shared with <see cref="SetCommandExecutor"/>.</summary>
     internal static CliMonitorRef ToRef(Monitor m) => new()
     {
         Number = m.MonitorNumber,
@@ -288,7 +286,7 @@ public static class MonitorDtoProjector
         Method = m.CommunicationMethod,
     };
 
-    /// <summary>Mirrors <c>ListCommand.BuildEntry</c>.</summary>
+    /// <summary>Projects a monitor to its <c>list</c> entry.</summary>
     private static CliListMonitor BuildListEntry(Monitor m) => new()
     {
         Number = m.MonitorNumber,
@@ -298,7 +296,7 @@ public static class MonitorDtoProjector
     };
 
     /// <summary>
-    /// Mirrors <c>GetCommand.BuildEntry</c>. Returns null and sets <paramref name="error"/> when the
+    /// Builds the per-monitor <c>get</c> entry. Returns null and sets <paramref name="error"/> when the
     /// setting filter names an unknown setting.
     /// </summary>
     private static CliGetMonitorEntry? BuildGetEntry(
@@ -334,7 +332,6 @@ public static class MonitorDtoProjector
     /// Validates the optional <c>--setting</c> filter against <see cref="CliSettingNames.All"/>.
     /// Returns <c>true</c> with a populated error when the filter names an unknown setting.
     /// The error echoes the user's original input verbatim, not the lower-cased lookup key.
-    /// Mirrors <c>GetCommand.TryGetUnknownSettingError</c>.
     /// </summary>
     private static bool TryGetUnknownSettingError(string? settingFilter, out CliError? error)
     {
@@ -357,30 +354,28 @@ public static class MonitorDtoProjector
     }
 
     /// <summary>
-    /// Projects one setting value. Mirrors <c>GetCommand.BuildSettingValue</c>.
+    /// Projects one setting value.
     /// The value is reported only when the monitor both supports it and discovery
     /// actually read it (<see cref="Monitor.ReadValues"/>) — a default/stale field is
     /// never passed off as a live reading.
     /// </summary>
     private static CliSettingValue? BuildSettingValue(Monitor monitor, string settingName, IReadOnlyList<CustomVcpValueMapping>? customMappings) => settingName switch
     {
-        "brightness" => Reading("brightness", monitor.SupportsBrightness, monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness), monitor.CurrentBrightness, v => v + "%"),
-        "contrast" => Reading("contrast", monitor.SupportsContrast, monitor.ReadValues.HasFlag(MonitorReadFlags.Contrast), monitor.CurrentContrast, v => v + "%"),
-        "volume" => Reading("volume", monitor.SupportsVolume, monitor.ReadValues.HasFlag(MonitorReadFlags.Volume), monitor.CurrentVolume, v => v + "%"),
-        "color-temperature" => Reading("color-temperature", monitor.SupportsColorTemperature, monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature), monitor.CurrentColorTemperature, v => FormatDiscrete(0x14, v, customMappings, monitor.Id)),
-        "input-source" => Reading("input-source", monitor.SupportsInputSource, monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource), monitor.CurrentInputSource, v => FormatDiscrete(0x60, v, customMappings, monitor.Id)),
-        "power-state" => Reading("power-state", monitor.SupportsPowerState, monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState), monitor.CurrentPowerState, v => FormatDiscrete(0xD6, v, customMappings, monitor.Id)),
+        CliSettingNames.Brightness => Reading(CliSettingNames.Brightness, monitor.SupportsBrightness, monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness), monitor.CurrentBrightness, v => v + "%"),
+        CliSettingNames.Contrast => Reading(CliSettingNames.Contrast, monitor.SupportsContrast, monitor.ReadValues.HasFlag(MonitorReadFlags.Contrast), monitor.CurrentContrast, v => v + "%"),
+        CliSettingNames.Volume => Reading(CliSettingNames.Volume, monitor.SupportsVolume, monitor.ReadValues.HasFlag(MonitorReadFlags.Volume), monitor.CurrentVolume, v => v + "%"),
+        CliSettingNames.ColorTemperature => Reading(CliSettingNames.ColorTemperature, monitor.SupportsColorTemperature, monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature), monitor.CurrentColorTemperature, v => FormatDiscrete(NativeConstants.VcpCodeSelectColorPreset, v, customMappings, monitor.Id)),
+        CliSettingNames.InputSource => Reading(CliSettingNames.InputSource, monitor.SupportsInputSource, monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource), monitor.CurrentInputSource, v => FormatDiscrete(NativeConstants.VcpCodeInputSource, v, customMappings, monitor.Id)),
+        CliSettingNames.PowerState => Reading(CliSettingNames.PowerState, monitor.SupportsPowerState, monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState), monitor.CurrentPowerState, v => FormatDiscrete(NativeConstants.VcpCodePowerMode, v, customMappings, monitor.Id)),
 
         // raw is the orientation in degrees; the display string is derived from the index.
-        // The formatter ignores its int argument and calls OrientationDegrees(index) directly,
-        // matching SetCommand.BuildSettingValue's "formatter ignores its argument" comment.
-        "orientation" => Reading("orientation", !string.IsNullOrEmpty(monitor.GdiDeviceName), monitor.ReadValues.HasFlag(MonitorReadFlags.Orientation), OrientationDegreesValue(monitor.Orientation), _ => OrientationDegrees(monitor.Orientation)),
+        // The formatter ignores its int argument and calls OrientationDegrees(index) directly.
+        CliSettingNames.Orientation => Reading(CliSettingNames.Orientation, !string.IsNullOrEmpty(monitor.GdiDeviceName), monitor.ReadValues.HasFlag(MonitorReadFlags.Orientation), OrientationDegreesValue(monitor.Orientation), _ => OrientationDegrees(monitor.Orientation)),
         _ => null,
     };
 
     /// <summary>
     /// Projects one setting, gating the value on supported &amp;&amp; read.
-    /// Mirrors <c>GetCommand.Reading</c>.
     /// </summary>
     private static CliSettingValue Reading(string name, bool supported, bool read, int raw, Func<int, string> format)
     {
@@ -395,7 +390,6 @@ public static class MonitorDtoProjector
 
     /// <summary>
     /// Formats a discrete VCP value as "Name (0xNN)" or "0xNN" when the name is unknown.
-    /// Mirrors <c>SetCommand.FormatDiscrete</c>.
     /// </summary>
     internal static string FormatDiscrete(byte vcpCode, int value, IReadOnlyList<CustomVcpValueMapping>? customMappings = null, string monitorId = "")
     {
@@ -411,15 +405,14 @@ public static class MonitorDtoProjector
     /// </summary>
     internal static byte? VcpCodeForDiscreteSetting(string setting) => setting.ToLowerInvariant() switch
     {
-        "color-temperature" => 0x14,
-        "input-source" => 0x60,
-        "power-state" => 0xD6,
+        CliSettingNames.ColorTemperature => NativeConstants.VcpCodeSelectColorPreset,
+        CliSettingNames.InputSource => NativeConstants.VcpCodeInputSource,
+        CliSettingNames.PowerState => NativeConstants.VcpCodePowerMode,
         _ => null,
     };
 
     /// <summary>
     /// Returns the human-readable orientation string for a GDI orientation index (0–3).
-    /// Mirrors <c>SetCommand.OrientationDegrees</c>.
     /// </summary>
     internal static string OrientationDegrees(int index) => index switch
     {
@@ -432,7 +425,6 @@ public static class MonitorDtoProjector
 
     /// <summary>
     /// Returns the degree value for a GDI orientation index (0–3).
-    /// Mirrors <c>SetCommand.OrientationDegreesValue</c>.
     /// </summary>
     internal static int OrientationDegreesValue(int index) => index switch
     {

@@ -21,7 +21,7 @@ public sealed class CliApplyProfileResult
 
     public string Version { get; init; } = CliSchema.Version;
 
-    public string Command { get; init; } = "apply-profile";
+    public string Command { get; init; } = CliCommandNames.ApplyProfile;
 
     public string Profile { get; init; } = string.Empty;
 

@@ -13,8 +13,8 @@ namespace PowerDisplay.Ipc;
 
 /// <summary>
 /// Pure-function projector that converts the app's profile model and per-monitor apply-outcomes
-/// into the flat Contracts DTOs used by the CLI IPC renderers. Mirrors the projection logic
-/// of <c>ProfilesCommand.Run</c> and <c>ApplyProfileCommand.RunAsync</c> in the CLI project.
+/// into the flat Contracts DTOs used by the CLI IPC renderers for the <c>profiles</c> and
+/// <c>apply-profile</c> commands.
 /// </summary>
 public static class ProfileDtoProjector
 {
@@ -23,7 +23,7 @@ public static class ProfileDtoProjector
     /// <summary>
     /// Builds the result DTO for the <c>profiles</c> command.
     /// Projects each <see cref="PowerDisplayProfile"/> in <paramref name="profiles"/> to a
-    /// <see cref="CliProfileInfo"/>, matching the output of <c>ProfilesCommand.Run</c> exactly:
+    /// <see cref="CliProfileInfo"/>:
     /// <list type="bullet">
     ///   <item><see cref="CliProfileInfo.Name"/> — profile name.</item>
     ///   <item><see cref="CliProfileInfo.MonitorCount"/> — <c>MonitorSettings.Count</c>.</item>
@@ -49,7 +49,7 @@ public static class ProfileDtoProjector
                 Name = profile.Name ?? string.Empty,
                 MonitorCount = profile.MonitorSettings?.Count ?? 0,
 
-                // Mirror ProfilesCommand.Run: profile.LastModified.ToString("o", CultureInfo.InvariantCulture)
+                // ISO 8601 round-trip ("o") with invariant culture.
                 LastModified = profile.LastModified.ToString("o", CultureInfo.InvariantCulture),
             });
         }
@@ -67,8 +67,7 @@ public static class ProfileDtoProjector
     /// <c>HardwareFailure (5) &gt; OutOfRange (2) &gt; Ok (0)</c>.
     /// </para>
     /// <para>
-    /// <c>unsupported</c> settings do not affect the exit code (mirrors
-    /// <c>ApplyProfileCommand.Record</c>).
+    /// <c>unsupported</c> settings do not affect the exit code.
     /// </para>
     /// </summary>
     /// <param name="profileName">The profile that was applied.</param>
@@ -77,9 +76,9 @@ public static class ProfileDtoProjector
     /// <see cref="MainViewModel.ApplyProfileWithOutcomesAsync"/>.
     /// Must NOT be <c>null</c>; a <c>null</c> return from
     /// <c>ApplyProfileWithOutcomesAsync</c> means "profile not found" and must be
-    /// handled by the IPC handler (Task 2.5) before calling this method — the
+    /// handled by the IPC handler before calling this method — the
     /// handler returns a <c>CliErrorResult</c> with <c>CliErrorCodes.ArgumentError</c>
-    /// / exit code 7, mirroring <c>ApplyProfileCommand.RunAsync</c>.
+    /// / exit code 7.
     /// </param>
     /// <returns>
     /// The DTO to serialize to the IPC caller. The process exit code is carried on
@@ -114,7 +113,7 @@ public static class ProfileDtoProjector
             var changes = new List<CliProfileChange>(outcome.Changes.Count);
             foreach (var change in outcome.Changes)
             {
-                // Populate all CliProfileChange fields to match ApplyProfileCommand.RunAsync:
+                // Populate all CliProfileChange fields:
                 //   Value  — always the raw requested integer (percentage or VCP byte).
                 //   Display — human-readable string only when status is "applied" (e.g. "50%",
                 //             "6500K (0x05)"); null otherwise.
@@ -129,7 +128,7 @@ public static class ProfileDtoProjector
                     Error = change.Error,
                 });
 
-                // Accumulate worst-outcome flags (mirrors ApplyProfileCommand.Record).
+                // Accumulate worst-outcome flags.
                 if (change.Status == CliProfileChange.StatusHardwareFailure)
                 {
                     anyHardwareFailure = true;

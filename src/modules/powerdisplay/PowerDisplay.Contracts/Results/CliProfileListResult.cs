@@ -13,7 +13,7 @@ public sealed class CliProfileListResult
 
     public string Version { get; init; } = CliSchema.Version;
 
-    public string Command { get; init; } = "profiles";
+    public string Command { get; init; } = CliCommandNames.Profiles;
 
     public IReadOnlyList<CliProfileInfo> Profiles { get; init; } = [];
 }

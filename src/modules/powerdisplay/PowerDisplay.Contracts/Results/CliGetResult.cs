@@ -18,7 +18,7 @@ public sealed class CliGetResult
 
     public string Version { get; init; } = CliSchema.Version;
 
-    public string Command { get; init; } = "get";
+    public string Command { get; init; } = CliCommandNames.Get;
 
     public IReadOnlyList<CliGetMonitorEntry> Monitors { get; init; } = [];
 }

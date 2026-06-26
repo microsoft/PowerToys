@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
@@ -25,10 +26,9 @@ namespace PowerDisplay.Ipc;
 /// already names the single target setting.
 /// </para>
 /// <para>
-/// Faithfully reproduces the validation order and exit-code mapping of
-/// <c>SetCommand.RunAsync</c> (CLI). Error messages are inlined from the CLI resource strings
-/// so the Contracts layer stays self-contained; the CLI maps them to localized strings at render
-/// time.
+/// Defines the validation order and exit-code mapping for the <c>set</c> command. Error messages
+/// are inlined here as invariant English strings so the Contracts layer stays self-contained; see
+/// the TODO(M4) notes below for the planned move to Code-only errors localized by the CLI.
 /// </para>
 /// </summary>
 public static class SetCommandExecutor
@@ -53,7 +53,7 @@ public static class SetCommandExecutor
         SetRequest req,
         CancellationToken ct)
     {
-        // --- 1. Exclude hidden monitors (mirrors MonitorFiltering.ExcludeHidden) ---
+        // --- 1. Exclude hidden monitors ---
         var visible = MonitorDtoProjector.ExcludeHidden(snapshot, hidden);
 
         // --- 2. Resolve the target monitor ---
@@ -66,15 +66,15 @@ public static class SetCommandExecutor
         var monitorRef = MonitorDtoProjector.ToRef(monitor!);
         var setting = req.Setting?.Trim().ToLowerInvariant() ?? string.Empty;
 
-        // --- 3. Dispatch to the per-setting handler (mirrors SetCommand.RunAsync if-chain) ---
+        // --- 3. Dispatch to the per-setting handler ---
         switch (setting)
         {
-            case "brightness":
+            case CliSettingNames.Brightness:
                 return await ApplyContinuousAsync(
                     manager,
                     monitor!.Id,
                     monitorRef,
-                    "brightness",
+                    CliSettingNames.Brightness,
                     req.RawValue,
                     monitor.SupportsBrightness,
                     monitor.CurrentBrightness,
@@ -83,12 +83,12 @@ public static class SetCommandExecutor
                     (mm, id, v, c) => mm.SetBrightnessAsync(id, v, c),
                     ct);
 
-            case "contrast":
+            case CliSettingNames.Contrast:
                 return await ApplyContinuousAsync(
                     manager,
                     monitor!.Id,
                     monitorRef,
-                    "contrast",
+                    CliSettingNames.Contrast,
                     req.RawValue,
                     monitor.SupportsContrast,
                     monitor.CurrentContrast,
@@ -97,12 +97,12 @@ public static class SetCommandExecutor
                     (mm, id, v, c) => mm.SetContrastAsync(id, v, c),
                     ct);
 
-            case "volume":
+            case CliSettingNames.Volume:
                 return await ApplyContinuousAsync(
                     manager,
                     monitor!.Id,
                     monitorRef,
-                    "volume",
+                    CliSettingNames.Volume,
                     req.RawValue,
                     monitor.SupportsVolume,
                     monitor.CurrentVolume,
@@ -111,30 +111,30 @@ public static class SetCommandExecutor
                     (mm, id, v, c) => mm.SetVolumeAsync(id, v, c),
                     ct);
 
-            case "color-temperature":
+            case CliSettingNames.ColorTemperature:
                 return await ApplyDiscreteAsync(
                     manager,
                     monitor!.Id,
                     monitorRef,
-                    "color-temperature",
-                    0x14,
+                    CliSettingNames.ColorTemperature,
+                    NativeConstants.VcpCodeSelectColorPreset,
                     req.RawValue,
                     monitor.SupportsColorTemperature,
                     monitor.CurrentColorTemperature,
                     monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature),
-                    monitor.VcpCapabilitiesInfo?.GetSupportedValues(0x14),
+                    monitor.VcpCapabilitiesInfo?.GetSupportedValues(NativeConstants.VcpCodeSelectColorPreset),
                     "monitor's VCP capabilities did not advertise color preset (0x14)",
                     (mm, id, v, c) => mm.SetColorTemperatureAsync(id, v, c),
                     confirmIfDisplayBlanking: false,
                     ct);
 
-            case "input-source":
+            case CliSettingNames.InputSource:
                 return await ApplyDiscreteAsync(
                     manager,
                     monitor!.Id,
                     monitorRef,
-                    "input-source",
-                    0x60,
+                    CliSettingNames.InputSource,
+                    NativeConstants.VcpCodeInputSource,
                     req.RawValue,
                     monitor.SupportsInputSource,
                     monitor.CurrentInputSource,
@@ -145,13 +145,13 @@ public static class SetCommandExecutor
                     confirmIfDisplayBlanking: false,
                     ct);
 
-            case "power-state":
+            case CliSettingNames.PowerState:
                 return await ApplyDiscreteAsync(
                     manager,
                     monitor!.Id,
                     monitorRef,
-                    "power-state",
-                    0xD6,
+                    CliSettingNames.PowerState,
+                    NativeConstants.VcpCodePowerMode,
                     req.RawValue,
                     monitor.SupportsPowerState,
                     monitor.CurrentPowerState,
@@ -162,7 +162,7 @@ public static class SetCommandExecutor
                     confirmIfDisplayBlanking: !req.ConfirmPowerOff,
                     ct);
 
-            case "orientation":
+            case CliSettingNames.Orientation:
                 return await ApplyOrientationAsync(manager, monitor!, monitorRef, req.RawValue, ct);
 
             default:
@@ -268,7 +268,7 @@ public static class SetCommandExecutor
         }
 
         // Resolve (and verify against the monitor's advertised set) BEFORE the power-off
-        // confirmation gate — mirrors SetCommand.ApplyDiscreteAsync exactly.
+        // confirmation gate.
         var resolved = TryResolveDiscrete(vcpCode, settingName, rawValue, supportedValues, out var valueError);
         if (resolved is null)
         {
@@ -365,17 +365,16 @@ public static class SetCommandExecutor
         return (new CliSetResult
         {
             Monitor = monitorRef,
-            Setting = "orientation",
+            Setting = CliSettingNames.Orientation,
             BeforeDisplay = beforeKnown ? MonitorDtoProjector.OrientationDegrees(beforeIndex) : null,
             AfterDisplay = MonitorDtoProjector.OrientationDegrees(index.Value),
         }, null);
     }
 
-    // ─── Inlined validator logic (mirrors CLI Resolution classes) ──────────────
+    // ─── Value validation / resolution ─────────────────────────────────────────
 
     /// <summary>
     /// Validates that a continuous value (brightness/contrast/volume) is in [0, 100].
-    /// Mirrors <c>ContinuousValueValidator.Validate</c>.
     /// </summary>
     private static CliError? ValidateContinuous(string settingName, int value)
     {
@@ -442,7 +441,7 @@ public static class SetCommandExecutor
     }
 
     /// <summary>
-    /// Parses a hex literal of the form "0x??". Mirrors <c>DiscreteValueResolver.TryParseHex</c>.
+    /// Parses a hex literal of the form "0x??".
     /// </summary>
     private static int? TryParseHex(string raw)
     {
@@ -458,7 +457,6 @@ public static class SetCommandExecutor
 
     /// <summary>
     /// Resolves an orientation degree string (0, 90, 180, 270) into a GDI index (0–3).
-    /// Mirrors <c>OrientationResolver.TryResolve</c>.
     /// </summary>
     private static int? TryResolveOrientation(string raw, out CliError? error)
     {
@@ -486,13 +484,11 @@ public static class SetCommandExecutor
 
     /// <summary>
     /// VCP 0xD6 states that leave a headless caller staring at a dark panel.
-    /// Mirrors <c>SetCommand.IsDisplayBlanking</c>.
     /// </summary>
     private static bool IsDisplayBlanking(int powerState) => powerState is 0x02 or 0x03 or 0x04 or 0x05;
 
     /// <summary>
-    /// Linear scan for <paramref name="value"/> in <paramref name="list"/>. Avoids a LINQ
-    /// dependency that could conflict with existing using directives.
+    /// Linear scan for <paramref name="value"/> in <paramref name="list"/>.
     /// </summary>
     private static bool ContainsValue(IReadOnlyList<int> list, int value)
     {

@@ -13,7 +13,7 @@ public sealed class CliListResult
 
     public string Version { get; init; } = CliSchema.Version;
 
-    public string Command { get; init; } = "list";
+    public string Command { get; init; } = CliCommandNames.List;
 
     public IReadOnlyList<CliListMonitor> Monitors { get; init; } = [];
 }

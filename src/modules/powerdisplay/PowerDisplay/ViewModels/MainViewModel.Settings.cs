@@ -104,8 +104,7 @@ public partial class MainViewModel
     /// Hardware-capability flag from the underlying <c>Monitor</c> model (e.g.
     /// <c>monitorVm.SupportsBrightness</c>). Must NOT be a UI-visibility flag
     /// (<c>ShowBrightness</c>) — a setting that the user has hidden in the GUI but the
-    /// hardware actually supports must still report <c>applied</c>, matching
-    /// <c>ApplyProfileCommand.ApplyContinuousAsync</c>.
+    /// hardware actually supports must still report <c>applied</c>.
     /// </param>
     /// <param name="settingName">Canonical setting name for the outcome row.</param>
     /// <param name="monitorId">Monitor identifier forwarded to <paramref name="applyAsync"/>.</param>
@@ -134,15 +133,15 @@ public partial class MainViewModel
         if (!supportsHardware)
         {
             // Hardware does not support this setting — report unsupported regardless of whether
-            // it is hidden in the GUI (matches ApplyProfileCommand.ApplyContinuousAsync check on
+            // it is hidden in the GUI (gated on the hardware-capability flags
             // monitor.SupportsBrightness / SupportsContrast / SupportsVolume / SupportsColorTemperature).
             return new ProfileChangeOutcome(settingName, value, Display: null, CliProfileChange.StatusUnsupported, Error: null);
         }
 
-        // Basic range guard matching ApplyProfileCommand.ApplyContinuousAsync (0–100 for
+        // Basic range guard (0–100 for
         // percentage-based settings; 0x00–0xFF for VCP color-temperature).
         // color-temperature is the only non-percentage setting in profiles; it uses VCP byte range.
-        bool outOfRange = settingName == "color-temperature"
+        bool outOfRange = settingName == CliSettingNames.ColorTemperature
             ? value is < 0 or > 0xFF
             : value is < 0 or > 100;
 
@@ -287,8 +286,7 @@ public partial class MainViewModel
     /// Returns <c>null</c> when the profile name is unknown (not found or invalid).
     /// The IPC handler (Task 2.5) maps <c>null</c> to a
     /// <see cref="PowerDisplay.Contracts.CliErrorResult"/> with
-    /// <c>CliErrorCodes.ArgumentError</c> / <c>CliExitCodes.ArgumentError</c> (exit code 7),
-    /// mirroring <c>ApplyProfileCommand.RunAsync</c>.
+    /// <c>CliErrorCodes.ArgumentError</c> / <c>CliExitCodes.ArgumentError</c> (exit code 7).
     /// </para>
     /// </returns>
     public async Task<IReadOnlyList<ProfileApplyOutcome>?> ApplyProfileWithOutcomesAsync(string profileName)
@@ -483,14 +481,14 @@ public partial class MainViewModel
             // IMPORTANT: Use the hardware-capability flags (monitorVm.SupportsBrightness etc.),
             // NOT the UI-visibility flags (monitorVm.ShowBrightness etc.). A setting that is
             // hidden in the Settings UI but physically supported by the hardware must still
-            // report "applied", matching ApplyProfileCommand.ApplyContinuousAsync behavior.
+            // report "applied".
             var monitorId = monitorVm.Id;
             var changes = new List<ProfileChangeOutcome>(4);
 
             var brightnessOutcome = await TryRestoreWithOutcomeAsync(
                 setting.Brightness,
                 monitorVm.SupportsBrightness,
-                "brightness",
+                CliSettingNames.Brightness,
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetBrightnessAsync);
@@ -502,7 +500,7 @@ public partial class MainViewModel
             var contrastOutcome = await TryRestoreWithOutcomeAsync(
                 setting.Contrast,
                 monitorVm.SupportsContrast,
-                "contrast",
+                CliSettingNames.Contrast,
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetContrastAsync);
@@ -514,7 +512,7 @@ public partial class MainViewModel
             var volumeOutcome = await TryRestoreWithOutcomeAsync(
                 setting.Volume,
                 monitorVm.SupportsVolume,
-                "volume",
+                CliSettingNames.Volume,
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetVolumeAsync);
@@ -526,7 +524,7 @@ public partial class MainViewModel
             var colorTempOutcome = await TryRestoreWithOutcomeAsync(
                 setting.ColorTemperatureVcp,
                 monitorVm.SupportsColorTemperature,
-                "color-temperature",
+                CliSettingNames.ColorTemperature,
                 monitorId,
                 v => MonitorDtoProjector.FormatDiscrete(0x14, v),
                 _monitorManager.SetColorTemperatureAsync);

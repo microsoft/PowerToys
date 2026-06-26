@@ -41,13 +41,13 @@ public static class CliRequestBuilder
         // Derive the canonical setting name and raw value from the first non-null field.
         var (settingName, rawValue) = inputs switch
         {
-            { Brightness: { } v } => ("brightness", v.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-            { Contrast: { } v } => ("contrast", v.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-            { Volume: { } v } => ("volume", v.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-            { ColorTemperature: { } v } => ("color-temperature", v),
-            { InputSource: { } v } => ("input-source", v),
-            { PowerState: { } v } => ("power-state", v),
-            { Orientation: { } v } => ("orientation", v),
+            { Brightness: { } v } => (CliSettingNames.Brightness, v.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            { Contrast: { } v } => (CliSettingNames.Contrast, v.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            { Volume: { } v } => (CliSettingNames.Volume, v.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            { ColorTemperature: { } v } => (CliSettingNames.ColorTemperature, v),
+            { InputSource: { } v } => (CliSettingNames.InputSource, v),
+            { PowerState: { } v } => (CliSettingNames.PowerState, v),
+            { Orientation: { } v } => (CliSettingNames.Orientation, v),
             _ => throw new System.InvalidOperationException(
                 "BuildSet called without any setting; callers must validate CountSelectedSettings == 1 first."),
         };

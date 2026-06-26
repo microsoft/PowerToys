@@ -204,7 +204,7 @@ public sealed class CliRequestHandler
 
                 if (outcomes is null)
                 {
-                    // Profile not found — mirrors ApplyProfileCommand.RunAsync (exit code 7)
+                    // Profile not found — return ARGUMENT_ERROR / exit code 7.
                     return Serialize(MakeError(
                         CliCommandNames.ApplyProfile,
                         CliErrorCodes.ArgumentError,

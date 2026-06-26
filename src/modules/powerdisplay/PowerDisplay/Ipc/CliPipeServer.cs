@@ -31,9 +31,10 @@ namespace PowerDisplay.Ipc;
 /// <c>MouseWithoutBorders/App/Class/IClipboardHelper.cs – IpcChannel&lt;T&gt;.StartIpcServer</c>.
 /// </para>
 /// <para>
-/// <b>Concurrency:</b> <see cref="NamedPipeServerStream.MaxAllowedServerInstances"/> allows the
-/// OS to serve concurrent CLI calls without queueing at the kernel level. Each accept iteration
-/// creates a fresh server-stream instance, so connections don't block each other.
+/// <b>Concurrency:</b> the accept loop serves one request at a time — it waits for a connection,
+/// runs it to completion, then accepts the next. This is sufficient for the one-shot CLI client.
+/// <see cref="NamedPipeServerStream.MaxAllowedServerInstances"/> is passed only to avoid an
+/// artificial single-instance cap, not to serve requests concurrently.
 /// </para>
 /// </summary>
 public sealed class CliPipeServer

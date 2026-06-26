@@ -13,7 +13,7 @@ public sealed class CliCapabilitiesResult
 
     public string Version { get; init; } = CliSchema.Version;
 
-    public string Command { get; init; } = "capabilities";
+    public string Command { get; init; } = CliCommandNames.Capabilities;
 
     public CliMonitorRef Monitor { get; init; } = new();
 
