@@ -161,7 +161,7 @@ namespace EnvironmentVariablesUILib.Helpers
         // variable's ParentType. These helpers centralize that behavior for the apply/unapply/edit paths.
         internal static bool SetProfileVariableWithoutNotify(Variable variable)
         {
-            if (variable == null || string.IsNullOrEmpty(variable.Name))
+            if (variable == null || string.IsNullOrWhiteSpace(variable.Name))
             {
                 return false;
             }
@@ -173,7 +173,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static bool UnsetProfileVariableWithoutNotify(Variable variable)
         {
-            if (variable == null || string.IsNullOrEmpty(variable.Name))
+            if (variable == null || string.IsNullOrWhiteSpace(variable.Name))
             {
                 return false;
             }
@@ -185,7 +185,12 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static bool SetVariable(Variable variable)
         {
-            if (variable == null || string.IsNullOrEmpty(variable.Name))
+            if (variable == null || string.IsNullOrWhiteSpace(variable.Name))
+            {
+                return false;
+            }
+
+            if (variable.ParentType != VariablesSetType.Profile && variable.ParentType != VariablesSetType.User && variable.ParentType != VariablesSetType.System)
             {
                 return false;
             }
@@ -195,8 +200,15 @@ namespace EnvironmentVariablesUILib.Helpers
                 VariablesSetType.Profile => false,
                 VariablesSetType.User => false,
                 VariablesSetType.System => true,
-                _ => throw new NotImplementedException(),
+                _ => false,
             };
+
+            const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
+            if (!fromMachine && variable.Name.Length >= MaxUserEnvVariableLength)
+            {
+                LoggerInstance.Logger.LogError("Can't apply variable - name too long.");
+                return false;
+            }
 
             SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine);
             NotifyEnvironmentChange();
@@ -206,7 +218,12 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static bool UnsetVariable(Variable variable)
         {
-            if (variable == null || string.IsNullOrEmpty(variable.Name))
+            if (variable == null || string.IsNullOrWhiteSpace(variable.Name))
+            {
+                return false;
+            }
+
+            if (variable.ParentType != VariablesSetType.Profile && variable.ParentType != VariablesSetType.User && variable.ParentType != VariablesSetType.System)
             {
                 return false;
             }
@@ -216,7 +233,7 @@ namespace EnvironmentVariablesUILib.Helpers
                 VariablesSetType.Profile => false,
                 VariablesSetType.User => false,
                 VariablesSetType.System => true,
-                _ => throw new NotImplementedException(),
+                _ => false,
             };
 
             SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine);
