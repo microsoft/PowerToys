@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Numerics;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Animations;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
@@ -10,6 +11,7 @@ using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 
 namespace Microsoft.PowerToys.Common.UI.Controls;
 
@@ -30,9 +32,10 @@ namespace Microsoft.PowerToys.Common.UI.Controls;
 /// animates itself in/out whenever the window is shown or hidden, and uses the
 /// <see cref="TransparentWindow.Hiding"/> deferral to keep the window visible
 /// until its out-animation finishes.</para>
-/// <para>The slide direction comes from the window's
-/// <see cref="TransparentWindow.Show(SlideDirection)"/> call (or from
-/// <see cref="SlideFrom"/> when shown without one). Animations target the
+/// <para>The show transition comes from the window's
+/// <see cref="TransparentWindow.Show(Transition)"/> call (or from
+/// <see cref="ShowTransition"/> when shown without one); the hide transition
+/// always comes from <see cref="HideTransition"/>. Animations target the
 /// surface itself, so the entire surface (border, acrylic, shadow, inner
 /// content) animates as one. Apps that want a different look supply their own
 /// <c>Style TargetType="TransientSurface"</c> in resources — the standard WinUI
@@ -44,11 +47,26 @@ public sealed partial class TransientSurface : ContentControl
     private const double SlideInOffset = 24;
     private const double SlideOutOffset = 12;
 
-    public static readonly DependencyProperty SlideFromProperty = DependencyProperty.Register(
-        nameof(SlideFrom),
-        typeof(SlideDirection),
+    // "Pop" transition: scale between 96% and 100% (a subtle 4% grow). Following
+    // Fluent motion guidance the scale uses a decelerate (EaseOut) curve; the
+    // fade is kept very fast so the surface reads as an instant, light pop.
+    private const float PopScaleFrom = 0.96f;
+    private const double PopFadeShowMs = 150;
+    private const double PopScaleShowMs = 250;
+    private const double PopFadeHideMs = 120;
+    private const double PopScaleHideMs = 150;
+
+    public static readonly DependencyProperty ShowTransitionProperty = DependencyProperty.Register(
+        nameof(ShowTransition),
+        typeof(Transition),
         typeof(TransientSurface),
-        new PropertyMetadata(SlideDirection.None, OnSlideFromChanged));
+        new PropertyMetadata(Transition.None, OnTransitionChanged));
+
+    public static readonly DependencyProperty HideTransitionProperty = DependencyProperty.Register(
+        nameof(HideTransition),
+        typeof(Transition),
+        typeof(TransientSurface),
+        new PropertyMetadata(Transition.None, OnTransitionChanged));
 
     public static readonly DependencyProperty AcrylicKindProperty = DependencyProperty.Register(
         nameof(AcrylicKind),
@@ -62,12 +80,17 @@ public sealed partial class TransientSurface : ContentControl
     private ImplicitAnimationSet _hideAnimations = new();
     private bool _hasCustomShowAnimations;
     private bool _hasCustomHideAnimations;
+    private Action? _abandonPendingHide;
 
     public TransientSurface()
     {
         DefaultStyleKey = typeof(TransientSurface);
 
         RebuildDefaultAnimations();
+
+        // Keep the scale center pinned to the surface's center so the "Pop"
+        // transition grows/shrinks from the middle rather than the top-left corner.
+        SizeChanged += (_, _) => UpdateScaleCenterPoint();
 
         // Start hidden so the first Show() animates in from the configured pose.
         Visibility = Visibility.Collapsed;
@@ -80,18 +103,33 @@ public sealed partial class TransientSurface : ContentControl
     public event EventHandler? HideCompleted;
 
     /// <summary>
-    /// Gets or sets the edge the surface slides in from (and out toward) when it
-    /// is shown without an explicit direction. Defaults to
-    /// <see cref="SlideDirection.None"/>, which plays no animation at all (the
-    /// surface appears and disappears instantly); any other value adds a fade
-    /// plus a slide from that edge. Changing this regenerates the default
-    /// <see cref="ShowAnimations"/> / <see cref="HideAnimations"/> unless they
-    /// have been set explicitly.
+    /// Gets or sets the transition played when the surface is shown without an
+    /// explicit one (see <see cref="Show()"/>). Defaults to
+    /// <see cref="Transition.None"/>, which plays no animation at all (the
+    /// surface appears instantly); a directional value adds a fade plus a slide
+    /// in from that edge, and <see cref="Transition.Pop"/> a fade plus a subtle
+    /// scale-up. Changing this regenerates the default <see cref="ShowAnimations"/>
+    /// unless it has been set explicitly.
     /// </summary>
-    public SlideDirection SlideFrom
+    public Transition ShowTransition
     {
-        get => (SlideDirection)GetValue(SlideFromProperty);
-        set => SetValue(SlideFromProperty, value);
+        get => (Transition)GetValue(ShowTransitionProperty);
+        set => SetValue(ShowTransitionProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the transition played when the surface is hidden (see
+    /// <see cref="Hide"/>). Defaults to <see cref="Transition.None"/>, which
+    /// plays no animation at all (the surface disappears instantly); a
+    /// directional value adds a fade plus a slide out toward that edge, and
+    /// <see cref="Transition.Pop"/> a fade plus a subtle scale-down. Changing
+    /// this regenerates the default <see cref="HideAnimations"/> unless it has
+    /// been set explicitly.
+    /// </summary>
+    public Transition HideTransition
+    {
+        get => (Transition)GetValue(HideTransitionProperty);
+        set => SetValue(HideTransitionProperty, value);
     }
 
     /// <summary>
@@ -110,9 +148,9 @@ public sealed partial class TransientSurface : ContentControl
 
     /// <summary>
     /// Gets or sets the animations played when <see cref="Show()"/> flips the
-    /// surface to <see cref="Visibility.Visible"/>. Defaults to a fade-in plus a
-    /// slide derived from <see cref="SlideFrom"/>. Assigning a value marks the
-    /// set as custom so <see cref="SlideFrom"/> no longer overwrites it.
+    /// surface to <see cref="Visibility.Visible"/>. Defaults to the animation
+    /// derived from <see cref="ShowTransition"/>. Assigning a value marks the set
+    /// as custom so <see cref="ShowTransition"/> no longer overwrites it.
     /// </summary>
     public ImplicitAnimationSet ShowAnimations
     {
@@ -126,9 +164,9 @@ public sealed partial class TransientSurface : ContentControl
 
     /// <summary>
     /// Gets or sets the animations played when <see cref="Hide"/> flips the
-    /// surface to <see cref="Visibility.Collapsed"/>. Defaults to a fade-out plus
-    /// a slide derived from <see cref="SlideFrom"/>. Assigning a value marks the
-    /// set as custom so <see cref="SlideFrom"/> no longer overwrites it.
+    /// surface to <see cref="Visibility.Collapsed"/>. Defaults to the animation
+    /// derived from <see cref="HideTransition"/>. Assigning a value marks the set
+    /// as custom so <see cref="HideTransition"/> no longer overwrites it.
     /// </summary>
     public ImplicitAnimationSet HideAnimations
     {
@@ -159,12 +197,12 @@ public sealed partial class TransientSurface : ContentControl
     /// <summary>
     /// Resets the surface to its hidden pose and flips it to
     /// <see cref="Visibility.Visible"/> so <see cref="ShowAnimations"/> plays,
-    /// sliding in from <paramref name="direction"/>.
+    /// using <paramref name="transition"/> as the show transition.
     /// </summary>
-    /// <param name="direction">The edge to slide in from.</param>
-    public void Show(SlideDirection direction)
+    /// <param name="transition">The transition to play when showing.</param>
+    public void Show(Transition transition)
     {
-        SlideFrom = direction;
+        ShowTransition = transition;
         Show();
     }
 
@@ -177,6 +215,13 @@ public sealed partial class TransientSurface : ContentControl
     public void Show()
     {
         _hideCompletedTimer.Stop();
+
+        // If a hide from a previous cycle is still in flight, abandon it: drop its
+        // pending HideCompleted handler so the outstanding deferral is never
+        // completed. We are showing again, so the host must keep the window
+        // visible instead of later hiding it for this interrupted cycle.
+        _abandonPendingHide?.Invoke();
+        _abandonPendingHide = null;
 
         // Re-apply each call so swapping animation collections at runtime takes
         // effect on the next show/hide cycle.
@@ -205,7 +250,7 @@ public sealed partial class TransientSurface : ContentControl
             immediate: false);
     }
 
-    private static void OnSlideFromChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void OnTransitionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         ((TransientSurface)d).RebuildDefaultAnimations();
     }
@@ -228,20 +273,20 @@ public sealed partial class TransientSurface : ContentControl
         return longest;
     }
 
-    private static (string? ShowFrom, string? HideTo) GetSlideOffsets(SlideDirection direction) => direction switch
+    private static (string? ShowFrom, string? HideTo) GetSlideOffsets(Transition transition) => transition switch
     {
-        SlideDirection.Bottom => ($"0,{SlideInOffset},{ShadowDepth}", $"0,{SlideOutOffset},{ShadowDepth}"),
-        SlideDirection.Top => ($"0,{-SlideInOffset},{ShadowDepth}", $"0,{-SlideOutOffset},{ShadowDepth}"),
-        SlideDirection.Left => ($"{-SlideInOffset},0,{ShadowDepth}", $"{-SlideOutOffset},0,{ShadowDepth}"),
-        SlideDirection.Right => ($"{SlideInOffset},0,{ShadowDepth}", $"{SlideOutOffset},0,{ShadowDepth}"),
+        Transition.Bottom => ($"0,{SlideInOffset},{ShadowDepth}", $"0,{SlideOutOffset},{ShadowDepth}"),
+        Transition.Top => ($"0,{-SlideInOffset},{ShadowDepth}", $"0,{-SlideOutOffset},{ShadowDepth}"),
+        Transition.Left => ($"{-SlideInOffset},0,{ShadowDepth}", $"{-SlideOutOffset},0,{ShadowDepth}"),
+        Transition.Right => ($"{SlideInOffset},0,{ShadowDepth}", $"{SlideOutOffset},0,{ShadowDepth}"),
         _ => (null, null),
     };
 
     private void OnHostShowing(TransparentWindow sender, ShowingEventArgs e)
     {
-        if (e.Direction is SlideDirection direction)
+        if (e.Transition is Transition transition)
         {
-            Show(direction);
+            Show(transition);
         }
         else
         {
@@ -258,8 +303,14 @@ public sealed partial class TransientSurface : ContentControl
         void OnHideCompleted(object? s, EventArgs args)
         {
             HideCompleted -= OnHideCompleted;
+            _abandonPendingHide = null;
             deferral.Complete();
         }
+
+        // Let a subsequent Show() cancel this hide cleanly: unsubscribe the
+        // handler so the deferral is never completed (the window stays visible)
+        // rather than firing AppWindow.Hide for an interrupted cycle.
+        _abandonPendingHide = () => HideCompleted -= OnHideCompleted;
 
         HideCompleted += OnHideCompleted;
         Hide();
@@ -267,28 +318,57 @@ public sealed partial class TransientSurface : ContentControl
 
     private void RebuildDefaultAnimations()
     {
-        var (showFrom, hideTo) = GetSlideOffsets(SlideFrom);
-
         if (!_hasCustomShowAnimations)
         {
-            _showAnimations = BuildShowAnimations(showFrom);
+            _showAnimations = BuildShowAnimations(ShowTransition);
         }
 
         if (!_hasCustomHideAnimations)
         {
-            _hideAnimations = BuildHideAnimations(hideTo);
+            _hideAnimations = BuildHideAnimations(HideTransition);
         }
     }
 
-    private static ImplicitAnimationSet BuildShowAnimations(string? slideFrom)
+    private void UpdateScaleCenterPoint()
+    {
+        var visual = ElementCompositionPreview.GetElementVisual(this);
+        visual.CenterPoint = new Vector3((float)(ActualWidth / 2), (float)(ActualHeight / 2), 0);
+    }
+
+    private static ImplicitAnimationSet BuildShowAnimations(Transition transition)
     {
         var animations = new ImplicitAnimationSet();
 
-        if (slideFrom is null)
+        if (transition == Transition.None)
         {
-            // SlideDirection.None: no animation at all.
+            // No animation at all.
             return animations;
         }
+
+        if (transition == Transition.Pop)
+        {
+            animations.Add(new OpacityAnimation
+            {
+                From = 0,
+                To = 1.0,
+                Duration = TimeSpan.FromMilliseconds(PopFadeShowMs),
+                EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut,
+                EasingType = EasingType.Cubic,
+            });
+
+            animations.Add(new ScaleAnimation
+            {
+                From = $"{PopScaleFrom},{PopScaleFrom},1",
+                To = "1,1,1",
+                Duration = TimeSpan.FromMilliseconds(PopScaleShowMs),
+                EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut,
+                EasingType = EasingType.Cubic,
+            });
+
+            return animations;
+        }
+
+        var (slideFrom, _) = GetSlideOffsets(transition);
 
         animations.Add(new OpacityAnimation
         {
@@ -311,15 +391,40 @@ public sealed partial class TransientSurface : ContentControl
         return animations;
     }
 
-    private static ImplicitAnimationSet BuildHideAnimations(string? slideTo)
+    private static ImplicitAnimationSet BuildHideAnimations(Transition transition)
     {
         var animations = new ImplicitAnimationSet();
 
-        if (slideTo is null)
+        if (transition == Transition.None)
         {
-            // SlideDirection.None: no animation at all.
+            // No animation at all.
             return animations;
         }
+
+        if (transition == Transition.Pop)
+        {
+            animations.Add(new OpacityAnimation
+            {
+                From = 1.0,
+                To = 0,
+                Duration = TimeSpan.FromMilliseconds(PopFadeHideMs),
+                EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
+                EasingType = EasingType.Cubic,
+            });
+
+            animations.Add(new ScaleAnimation
+            {
+                From = "1,1,1",
+                To = $"{PopScaleFrom},{PopScaleFrom},1",
+                Duration = TimeSpan.FromMilliseconds(PopScaleHideMs),
+                EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
+                EasingType = EasingType.Cubic,
+            });
+
+            return animations;
+        }
+
+        var (_, slideTo) = GetSlideOffsets(transition);
 
         animations.Add(new OpacityAnimation
         {

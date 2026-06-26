@@ -15,7 +15,8 @@
         Margin="24,24,24,16"
         HorizontalAlignment="Center"
         VerticalAlignment="Bottom"
-        SlideFrom="Bottom">
+        HideTransition="Bottom"
+        ShowTransition="Bottom">
         <TextBlock
             Margin="16,10,20,12"
             Text="{x:Bind ViewModel.ToastMessage, Mode=OneWay}"
