@@ -99,7 +99,7 @@
     <Compile Remove="Views\ColorEditorView.xaml.cs" />
     <Compile Remove="Views\ZoomView.xaml.cs" />
     <Compile Remove="ViewModels\**\*.cs" />
-    <Compile Remove="ViewModelContracts\**\*.cs" />
+    <!-- ViewModelContracts (IMainViewModel/IZoomViewModel/IColorEditorViewModel) are ported. -->
     <Compile Remove="Mouse\**\*.cs" />
     <Compile Remove="Keyboard\**\*.cs" />
     <Compile Remove="Helpers\**\*.cs" />
