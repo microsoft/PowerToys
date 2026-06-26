@@ -27,7 +27,8 @@ public sealed partial class Selector : TransparentWindow, IDisposable
     // ScrollIntoView reveals the selected glyph.
     private const double RowHeightDip = 52;          // one row of accent pills (item Height=48 + card border)
     private const double DescriptionHeightDip = 48;  // extra row shown when the Unicode description is on
-    private const double ItemWidthDip = 48;          // one accent cell (ListViewItem Grid MinWidth=48)
+    private const double ItemWidthDip = 48;            // one accent cell (ListViewItem Grid MinWidth=48)
+    private const double DescriptionMinWidthDip = 600; // min bar width while the description row shows (WPF parity)
 
     private readonly Core.PowerAccent _powerAccent;
     private readonly ThemeListener _themeListener;
@@ -171,7 +172,17 @@ public sealed partial class Selector : TransparentWindow, IDisposable
         // wide - rather than measuring the ListView (which is racy while its containers realize). Cap
         // at the monitor's max usable width so a long accent list scrolls horizontally on screen.
         double maxWidthDip = _powerAccent.GetDisplayMaxWidth();
-        double widthDip = Math.Clamp(ViewModel.Characters.Count * ItemWidthDip, ItemWidthDip, maxWidthDip);
+        double contentWidthDip = ViewModel.Characters.Count * ItemWidthDip;
+
+        // The Unicode description row needs room for a readable line; the WPF original gave it a
+        // 600px MinWidth. Widen a short accent bar to match when the row is shown (the accent bar
+        // itself stays centered within the wider window).
+        if (ViewModel.ShowDescription)
+        {
+            contentWidthDip = Math.Max(contentWidthDip, DescriptionMinWidthDip);
+        }
+
+        double widthDip = Math.Clamp(contentWidthDip, ItemWidthDip, maxWidthDip);
         double heightDip = RowHeightDip + (ViewModel.ShowDescription ? DescriptionHeightDip : 0);
 
         // Calculation works in physical pixels; GetDisplayCoordinates multiplies the DIP size by
