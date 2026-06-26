@@ -665,6 +665,8 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             bool propagateChange = true;
 
+            var variableToProcess = variable;
+
             if (profile != null)
             {
                 if (profile.Variables == null)
@@ -686,6 +688,8 @@ namespace EnvironmentVariablesUILib.ViewModels
                     LoggerInstance.Logger.LogError("Failed to remove profile variable from profile list.");
                     return;
                 }
+
+                variableToProcess = targetVariable;
 
                 if (!profile.IsEnabled)
                 {
@@ -716,7 +720,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                     }
                     else
                     {
-                        profile.UnapplyVariable(variable);
+                        profile.UnapplyVariable(variableToProcess);
                     }
                 });
                 task.ContinueWith((a) =>
