@@ -249,19 +249,28 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             // Find duplicates
             var duplicates = variables.Where(x => x != null && !string.Equals("PATH", (x.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase))
-                                     .GroupBy(x => (x.Name ?? string.Empty).Trim().ToLowerInvariant())
-                                     .Where(g => g.Count() > 1);
+                                      .GroupBy(x => (x.Name ?? string.Empty).Trim().ToLowerInvariant())
+                                      .Where(g => g.Count() > 1);
             foreach (var duplicate in duplicates)
             {
-                var userVar = duplicate.ElementAt(0);
-                var systemVar = duplicate.ElementAt(1);
+                var duplicateItems = duplicate.ToList();
+                var representative = duplicateItems.First();
 
-                var clone = userVar.Clone();
+                var clone = representative.Clone();
                 clone.ParentType = VariablesSetType.Duplicate;
-                clone.Name = systemVar.Name;
-                variables.Insert(variables.IndexOf(userVar), clone);
-                variables.Remove(userVar);
-                variables.Remove(systemVar);
+                clone.Name = representative.Name;
+                var insertionIndex = variables.IndexOf(representative);
+                if (insertionIndex < 0)
+                {
+                    insertionIndex = 0;
+                }
+
+                foreach (var item in duplicateItems)
+                {
+                    variables.Remove(item);
+                }
+
+                variables.Insert(insertionIndex, clone);
             }
 
             variables = variables.OrderBy(x => x.ParentType).ToList();
