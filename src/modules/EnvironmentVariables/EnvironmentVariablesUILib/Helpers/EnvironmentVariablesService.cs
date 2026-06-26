@@ -44,7 +44,13 @@ namespace EnvironmentVariablesUILib.Helpers
 
             _fileSystem = fileSystem;
 
-            _profilesJsonFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProfilesJsonFileSubPath, "profiles.json");
+            var localApplicationDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            if (string.IsNullOrWhiteSpace(localApplicationDataPath))
+            {
+                localApplicationDataPath = Path.GetTempPath();
+            }
+
+            _profilesJsonFilePath = Path.Combine(localApplicationDataPath, ProfilesJsonFileSubPath, "profiles.json");
         }
 
         public void Dispose()
