@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -227,8 +228,9 @@ namespace EnvironmentVariablesUILib.Models
         {
             var clone = new ProfileVariablesSet(this.Id, (this.Name ?? string.Empty).Trim());
             var variables = this.Variables
-                ?.Select(variable => variable == null ? null : variable.Clone(profile: true))
-                .ToList() ?? new System.Collections.Generic.List<Variable>();
+                ?.Where(variable => variable != null)
+                .Select(variable => variable.Clone(profile: true))
+                .ToList() ?? new List<Variable>();
             clone.Variables = new ObservableCollection<Variable>(variables);
             clone.IsEnabled = this.IsEnabled;
 
