@@ -125,20 +125,12 @@ namespace EnvironmentVariablesUILib
 
                 var normalizedName = (variable.Name ?? string.Empty).Trim();
 
-                if (ViewModel.AppliedProfile != null && ViewModel.AppliedProfile.Variables != null &&
-                    ViewModel.AppliedProfile.Variables.Any(x => x != null &&
-                        string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
-                        EnvironmentVariablesHelper.IsEquivalentVariableValue(x.Values, variable.Values)))
-                {
-                    return ViewModel.AppliedProfile;
-                }
-
                 var matchingProfiles = ViewModel.Profiles?
                     .Where(profile => profile?.Variables != null &&
                         profile.Variables.Any(x => x != null &&
-                             string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
-                             EnvironmentVariablesHelper.IsEquivalentVariableValue(x.Values, variable.Values) &&
-                             x.ParentType == VariablesSetType.Profile))
+                            string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
+                            EnvironmentVariablesHelper.IsEquivalentVariableValue(x.Values, variable.Values) &&
+                            x.ParentType == VariablesSetType.Profile))
                     .ToList();
 
                 if (matchingProfiles == null || matchingProfiles.Count != 1)
