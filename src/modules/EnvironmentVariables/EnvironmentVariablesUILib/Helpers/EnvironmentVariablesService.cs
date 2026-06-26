@@ -75,7 +75,7 @@ namespace EnvironmentVariablesUILib.Helpers
                     var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
                     return profiles ?? new List<ProfileVariablesSet>();
                 }
-                catch (Exception)
+                catch (JsonException)
                 {
                     return new List<ProfileVariablesSet>();
                 }
