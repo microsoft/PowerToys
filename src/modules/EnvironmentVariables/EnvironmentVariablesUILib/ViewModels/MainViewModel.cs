@@ -325,6 +325,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             profile.Name = profile.Name.Trim();
 
+            if (profile.Variables == null)
+            {
+                profile.Variables = new ObservableCollection<Variable>();
+            }
+
             if (Profiles == null)
             {
                 Profiles = new ObservableCollection<ProfileVariablesSet>();
@@ -375,6 +380,11 @@ namespace EnvironmentVariablesUILib.ViewModels
             var existingProfile = Profiles.Where(x => x.Id == updatedProfile.Id).FirstOrDefault();
             if (existingProfile != null)
             {
+                if (updatedProfile.Variables == null)
+                {
+                    updatedProfile.Variables = new ObservableCollection<Variable>();
+                }
+
                 if (Profiles.Any(x => x != null && x.Id != updatedProfile.Id && string.Equals(x.Name, updatedProfile.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
