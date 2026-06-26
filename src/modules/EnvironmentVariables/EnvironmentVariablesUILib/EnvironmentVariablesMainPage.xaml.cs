@@ -569,31 +569,33 @@ namespace EnvironmentVariablesUILib
 
             int toRemove = -1;
 
-            if (e.AddedItems.Count > 0)
-            {
-                var list = sender as ListView;
-                if (list == null)
+                if (e.AddedItems.Count > 0)
                 {
-                    return;
-                }
+                    var list = sender as ListView;
+                    if (list == null)
+                    {
+                        return;
+                    }
 
-                var duplicates = list.SelectedItems
-                    .OfType<Variable>()
-                    .GroupBy(x => $"{(x.Name ?? string.Empty).Trim().ToUpperInvariant()}|{x.Values}|{x.ParentType}")
-                    .Where(g => g.Count() > 1)
-                    .ToList();
+                    var selectedVariables = list.SelectedItems.OfType<Variable>().ToList();
+                    var dedupedSelections = new List<Variable>();
 
-                foreach (var dup in duplicates)
-                {
+                    foreach (var selected in selectedVariables)
+                    {
+                        if (dedupedSelections.Any(x => AreEquivalentVariables(x, selected)))
+                        {
+                            continue;
+                        }
+
+                        dedupedSelections.Add(selected);
+                    }
+
                     ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-                    var duplicatedItems = dup
-                        .OrderBy(x => list.SelectedItems.IndexOf(x))
-                        .Skip(1)
-                        .ToList();
-                    foreach (var item in duplicatedItems)
+                    foreach (var item in selectedVariables.Except(dedupedSelections).ToList())
                     {
                         list.SelectedItems.Remove(item);
                     }
+
                     ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
                 }
             }
