@@ -56,6 +56,9 @@ public class HoverActionResolverTests
         bool isHome = false,
         HoverActionsMode mode = HoverActionsMode.FirstN,
         int max = -1,
+        bool isRowHovered = true,
+        bool isListSelected = false,
+        bool suppressNonSelectedRowHover = false,
         params CommandContextItemViewModel[] commands)
     {
         return new HoverActionResolveContext(
@@ -64,9 +67,10 @@ public class HoverActionResolverTests
             mode,
             max,
             HoverActionsVisibility.Default,
-            IsRowHovered: true,
-            IsListSelected: false,
-            commands);
+            isRowHovered,
+            isListSelected,
+            commands,
+            suppressNonSelectedRowHover);
     }
 
     [TestMethod]
@@ -220,8 +224,47 @@ public class HoverActionResolverTests
         var hidden = hovered with { IsRowHovered = false, IsListSelected = false };
 
         Assert.IsTrue(HoverActionResolver.ShouldShowHoverStrip(hovered, hasHoverActions: true));
+        Assert.IsTrue(HoverActionResolver.ShouldShowHoverStrip(selectedOnly, hasHoverActions: true));
         Assert.IsTrue(HoverActionResolver.ShouldShowHoverStrip(selectedOnly with { Visibility = HoverActionsVisibility.HoverOrSelected }, hasHoverActions: true));
         Assert.IsFalse(HoverActionResolver.ShouldShowHoverStrip(selectedOnly with { Visibility = HoverActionsVisibility.OnHoverOnly }, hasHoverActions: true));
         Assert.IsFalse(HoverActionResolver.ShouldShowHoverStrip(hidden, hasHoverActions: true));
+    }
+
+    [TestMethod]
+    public void ShouldShowHoverStrip_SuppressNonSelectedRowHover_HidesHoveredNonSelectedRow()
+    {
+        var commands = new[] { CreateContextItem("Edit") };
+        var hoveredNotSelected = CreateContext(
+            isRowHovered: true,
+            isListSelected: false,
+            suppressNonSelectedRowHover: true,
+            commands: commands);
+        var selectedOnly = CreateContext(
+            isRowHovered: false,
+            isListSelected: true,
+            suppressNonSelectedRowHover: true,
+            commands: commands);
+        var hoveredAndSelected = CreateContext(
+            isRowHovered: true,
+            isListSelected: true,
+            suppressNonSelectedRowHover: true,
+            commands: commands);
+
+        Assert.IsFalse(HoverActionResolver.ShouldShowHoverStrip(hoveredNotSelected, hasHoverActions: true));
+        Assert.IsTrue(HoverActionResolver.ShouldShowHoverStrip(selectedOnly, hasHoverActions: true));
+        Assert.IsTrue(HoverActionResolver.ShouldShowHoverStrip(hoveredAndSelected, hasHoverActions: true));
+    }
+
+    [TestMethod]
+    public void ShouldShowHoverStrip_SuppressNonSelectedRowHover_DoesNotHideWhenUnset()
+    {
+        var commands = new[] { CreateContextItem("Edit") };
+        var hoveredNotSelected = CreateContext(
+            isRowHovered: true,
+            isListSelected: false,
+            suppressNonSelectedRowHover: false,
+            commands: commands);
+
+        Assert.IsTrue(HoverActionResolver.ShouldShowHoverStrip(hoveredNotSelected, hasHoverActions: true));
     }
 }

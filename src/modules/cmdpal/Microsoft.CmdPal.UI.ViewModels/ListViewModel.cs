@@ -826,6 +826,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void SetSelectedItem(ListItemViewModel item)
     {
+        CancelHoverRowLoad();
         _lastSelectedItem = item;
         _lastSelectedItem.PropertyChanged += SelectedItemPropertyChanged;
 
@@ -877,8 +878,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
                 var suggestion = item.TextToSuggest;
                 DoOnUiThread(() =>
                 {
+                    if (ct.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     TextToSuggest = suggestion;
                     WeakReferenceMessenger.Default.Send<UpdateSuggestionMessage>(new(suggestion));
+                    if (EnableListHoverActions)
+                    {
+                        item.RefreshHoverActions();
+                    }
                 });
             },
             ct);
@@ -915,12 +925,23 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(item.TextToSuggest):
                 TextToSuggest = item.TextToSuggest;
                 break;
+
+            // Raised when selection slow-init completes (possibly off the UI thread).
+            case "MoreCommands":
+            case "IsSelectedInitialized":
+                if (EnableListHoverActions)
+                {
+                    DoOnUiThread(() => item.RefreshHoverActions());
+                }
+
+                break;
         }
     }
 
     private void ClearSelectedItem()
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
+        CancelHoverRowLoad();
 
         WeakReferenceMessenger.Default.Send<UpdateCommandBarMessage>(new(null));
         WeakReferenceMessenger.Default.Send<HideDetailsMessage>();
@@ -1127,6 +1148,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _selectedItemCts);
+        CancelHoverRowLoad();
     }
 
     protected override void UnsafeCleanup()
@@ -1141,6 +1163,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         CancelAndDisposeTokenSource(ref filterCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _fetchItemsCancellationTokenSource);
         CancelAndDisposeTokenSource(ref _selectedItemCts);
+        CancelHoverRowLoad();
 
         lock (_listLock)
         {

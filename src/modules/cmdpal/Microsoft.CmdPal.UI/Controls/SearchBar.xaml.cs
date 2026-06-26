@@ -140,6 +140,10 @@ public sealed partial class SearchBar : UserControl,
         }));
     }
 
+    public bool IsFilterBoxFocused() =>
+        FocusManager.GetFocusedElement(XamlRoot) is TextBox textBox &&
+        ReferenceEquals(textBox, FilterBox);
+
     public void SelectSearch()
     {
         // TODO GH #239 switch back when using the new MD text block

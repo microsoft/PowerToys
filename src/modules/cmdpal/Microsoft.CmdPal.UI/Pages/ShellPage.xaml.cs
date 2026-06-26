@@ -890,8 +890,28 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
         else if (e.Key == VirtualKey.Enter)
         {
-            WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
-            e.Handled = true;
+            var activateHover = new TryActivateHoverActionMessage();
+            WeakReferenceMessenger.Default.Send(activateHover);
+            if (activateHover.Handled)
+            {
+                e.Handled = true;
+            }
+            else
+            {
+                WeakReferenceMessenger.Default.Send<ActivateSelectedListItemMessage>();
+                e.Handled = true;
+            }
+        }
+        else if (e.Key == VirtualKey.Tab && !mods.Ctrl && !mods.Alt && !mods.Win && sender is ShellPage shell)
+        {
+            var tabMessage = new NavigateHoverActionTabMessage(
+                forward: !mods.Shift,
+                searchBoxFocused: shell.IsSearchFilterFocused());
+            WeakReferenceMessenger.Default.Send(tabMessage);
+            if (tabMessage.Handled)
+            {
+                e.Handled = true;
+            }
         }
         else if (mods.Ctrl && e.Key == VirtualKey.K)
         {
@@ -905,6 +925,8 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             e.Handled = true;
         }
     }
+
+    private bool IsSearchFilterFocused() => SearchBox.IsFilterBoxFocused();
 
     private void ShellPage_OnPointerPressed(object sender, PointerRoutedEventArgs e)
     {

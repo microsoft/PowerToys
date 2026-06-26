@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="Microsoft.CmdPal.UI.ListItemsView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -447,6 +447,7 @@
                         x:Name="HoverActionsList"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
+                        AutomationProperties.Name="Row actions"
                         Background="Transparent"
                         BorderThickness="0"
                         IsHitTestVisible="True"
@@ -456,7 +457,8 @@
                         ItemsSource="{x:Bind HoverActions, Mode=OneWay}"
                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                        SelectionMode="None"
+                        SelectedIndex="{x:Bind HoverActionSelectedIndex, Mode=OneWay}"
+                        SelectionMode="Single"
                         Visibility="{x:Bind help:BindTransformers.BoolToVisibility(AreHoverActionsVisible), Mode=OneWay, FallbackValue=Collapsed}">
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -465,6 +467,8 @@
                         </ListView.ItemsPanel>
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
+                                <Setter Property="AllowFocusOnInteraction" Value="False" />
+                                <Setter Property="IsTabStop" Value="False" />
                                 <Setter Property="Padding" Value="0" />
                                 <Setter Property="MinHeight" Value="0" />
                                 <Setter Property="MinWidth" Value="0" />

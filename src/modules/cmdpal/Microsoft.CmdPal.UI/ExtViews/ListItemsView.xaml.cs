@@ -37,7 +37,9 @@ public sealed partial class ListItemsView : UserControl,
     IRecipient<NavigatePageDownCommand>,
     IRecipient<NavigatePageUpCommand>,
     IRecipient<ActivateSelectedListItemMessage>,
-    IRecipient<ActivateSecondaryCommandMessage>
+    IRecipient<ActivateSecondaryCommandMessage>,
+    IRecipient<TryActivateHoverActionMessage>,
+    IRecipient<NavigateHoverActionTabMessage>
 {
     private readonly Dictionary<ListItemViewModel, Microsoft.UI.Dispatching.DispatcherQueueTimer> _hoverExitTimers = new();
 
@@ -78,14 +80,17 @@ public sealed partial class ListItemsView : UserControl,
     private ListViewBase ItemView => ViewModel?.IsGridView == true ? ItemsGrid : ItemsList;
 
     private readonly TappedEventHandler _listItemRowTappedHandler;
+    private readonly ItemClickEventHandler _hoverActionsItemClickHandler;
 
     public ListItemsView()
     {
         _listItemRowTappedHandler = ListItemRow_Tapped;
+        _hoverActionsItemClickHandler = HoverActionsList_ItemClick;
         this.InitializeComponent();
         this.ItemView.Loaded += Items_Loaded;
         this.ItemView.PreviewKeyDown += Items_PreviewKeyDown;
         this.ItemView.PointerPressed += Items_PointerPressed;
+        this.ItemView.PointerMoved += Items_PointerMoved;
 
         this.Loaded += OnLoaded;
         this.Unloaded += OnUnloaded;
@@ -121,6 +126,8 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Register<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Register<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Register<ActivateSecondaryCommandMessage>(this);
+        WeakReferenceMessenger.Default.Register<TryActivateHoverActionMessage>(this);
+        WeakReferenceMessenger.Default.Register<NavigateHoverActionTabMessage>(this);
         _isMessengerRegistered = true;
     }
 
@@ -139,6 +146,8 @@ public sealed partial class ListItemsView : UserControl,
         WeakReferenceMessenger.Default.Unregister<NavigatePageUpCommand>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSelectedListItemMessage>(this);
         WeakReferenceMessenger.Default.Unregister<ActivateSecondaryCommandMessage>(this);
+        WeakReferenceMessenger.Default.Unregister<TryActivateHoverActionMessage>(this);
+        WeakReferenceMessenger.Default.Unregister<NavigateHoverActionTabMessage>(this);
         _isMessengerRegistered = false;
     }
 
@@ -193,6 +202,12 @@ public sealed partial class ListItemsView : UserControl,
         {
             if (_lastInputSource == InputSource.Keyboard)
             {
+                if (item.TryGetSelectedHoverAction(out var hoverAction) && hoverAction is not null)
+                {
+                    InvokeHoverActionWithClickGuard(hoverAction, item);
+                    return;
+                }
+
                 ViewModel?.InvokeItemCommand.Execute(item);
                 return;
             }
@@ -236,6 +251,7 @@ public sealed partial class ListItemsView : UserControl,
         foreach (var removed in e.RemovedItems.OfType<ListItemViewModel>())
         {
             removed.SetListSelected(false);
+            removed.ClearHoverActionSelection();
         }
 
         var vm = ViewModel;
@@ -250,6 +266,10 @@ public sealed partial class ListItemsView : UserControl,
 
         li.SetListSelected(true);
         _stickySelectedItem = li;
+        li.ClearHoverActionSelection();
+
+        // Hover actions for the selected row: SetSelectedItem slow-init + PropertyChanged
+        // (MoreCommands / IsSelectedInitialized) refresh on the UI thread only.
 
         // User explicitly changed selection — any pending force-first intent
         // is superseded by the user's navigation.
@@ -333,6 +353,15 @@ public sealed partial class ListItemsView : UserControl,
         UnhookListItemRow(listItemContainer);
         rowGrid.Tag = vm;
         rowGrid.AddHandler(UIElement.TappedEvent, _listItemRowTappedHandler, handledEventsToo: true);
+
+        var hoverList = FindRowHoverActionsList(rowGrid);
+        if (hoverList is not null)
+        {
+            hoverList.Tag = vm;
+            hoverList.ItemClick -= _hoverActionsItemClickHandler;
+            hoverList.ItemClick += _hoverActionsItemClickHandler;
+        }
+
         return true;
     }
 
@@ -346,6 +375,13 @@ public sealed partial class ListItemsView : UserControl,
 
         rowGrid.RemoveHandler(UIElement.TappedEvent, _listItemRowTappedHandler);
         rowGrid.Tag = null;
+
+        var hoverList = FindRowHoverActionsList(rowGrid);
+        if (hoverList is not null)
+        {
+            hoverList.ItemClick -= _hoverActionsItemClickHandler;
+            hoverList.Tag = null;
+        }
     }
 
     private static Grid? GetRowContentGrid(ListViewItem listItemContainer)
@@ -410,20 +446,7 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         e.Handled = true;
-        _hoverActionClickInProgress = true;
-        try
-        {
-            InvokeHoverAction(action, vm);
-        }
-        finally
-        {
-            // Low priority: lets any queued Items_ItemClick handler fire first so it sees
-            // _hoverActionClickInProgress == true and can skip its default activation.
-            _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-            {
-                _hoverActionClickInProgress = false;
-            });
-        }
+        InvokeHoverActionWithClickGuard(action, vm);
     }
 
     private static CommandContextItemViewModel? ResolveHoverAction(
@@ -491,6 +514,7 @@ public sealed partial class ListItemsView : UserControl,
         {
             item.SetRowHovered(false);
             item.SetListSelected(false);
+            item.ClearHoverActionSelection();
         }
     }
 
@@ -503,20 +527,7 @@ public sealed partial class ListItemsView : UserControl,
 
         CancelHoverExitTimer(vm);
         vm.SetRowHovered(true);
-        var dispatcherQueue = DispatcherQueue;
-        _ = Task.Run(() =>
-        {
-            // SlowInitOnly runs the slow extension init off the UI thread.
-            // UpdateHoverActions (via RefreshHoverActions) is then dispatched back so
-            // _hoverActions is only written on the UI thread, avoiding torn reads.
-            vm.SlowInitOnly();
-            _ = dispatcherQueue.TryEnqueue(() => vm.RefreshHoverActions());
-        });
-
-        if (sender is ListViewItem container)
-        {
-            _ = DispatcherQueue.TryEnqueue(() => TryHookListItemRow(container, vm));
-        }
+        ViewModel?.EnsureHoverActionsLoadedOnHover(vm);
     }
 
     private void ListItemContainer_PointerExited(object sender, PointerRoutedEventArgs e)
@@ -527,6 +538,7 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         CancelHoverExitTimer(vm);
+        ViewModel?.CancelHoverRowLoadFor(vm);
 
         var timer = DispatcherQueue.CreateTimer();
         timer.Interval = TimeSpan.FromMilliseconds(25);
@@ -576,6 +588,37 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         WeakReferenceMessenger.Default.Send(message);
+    }
+
+    private void HoverActionsList_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (sender is not ListView { Tag: ListItemViewModel parent })
+        {
+            return;
+        }
+
+        if (e.ClickedItem is not CommandContextItemViewModel action)
+        {
+            return;
+        }
+
+        InvokeHoverActionWithClickGuard(action, parent);
+    }
+
+    private void InvokeHoverActionWithClickGuard(CommandContextItemViewModel action, ListItemViewModel parent)
+    {
+        _hoverActionClickInProgress = true;
+        try
+        {
+            InvokeHoverAction(action, parent);
+        }
+        finally
+        {
+            _ = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                _hoverActionClickInProgress = false;
+            });
+        }
     }
 
     private void ScrollToItem(ListItemViewModel li)
@@ -656,7 +699,16 @@ public sealed partial class ListItemsView : UserControl,
     }
 
     // Message-driven navigation should count as keyboard.
-    private void MarkKeyboardNavigation() => _lastInputSource = InputSource.Keyboard;
+    private void MarkKeyboardNavigation()
+    {
+        _lastInputSource = InputSource.Keyboard;
+        SetSuppressNonSelectedRowHover(true);
+    }
+
+    private void SetSuppressNonSelectedRowHover(bool suppress)
+    {
+        ViewModel?.SetSuppressNonSelectedRowHover(suppress);
+    }
 
     private void PushSelectionToVm()
     {
@@ -763,6 +815,51 @@ public sealed partial class ListItemsView : UserControl,
         else if (ItemView.SelectedItem is ListItemViewModel item)
         {
             ViewModel?.InvokeItemCommand.Execute(item);
+        }
+    }
+
+    public void Receive(TryActivateHoverActionMessage message)
+    {
+        var item = ItemView.SelectedItem as ListItemViewModel ?? _stickySelectedItem;
+        if (item is not null &&
+            item.TryGetSelectedHoverAction(out var action) &&
+            action is not null)
+        {
+            InvokeHoverActionWithClickGuard(action, item);
+            message.Handled = true;
+        }
+    }
+
+    public void Receive(NavigateHoverActionTabMessage message)
+    {
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return;
+        }
+
+        if (ItemView.SelectedItem is not ListItemViewModel item || !item.AreHoverActionsVisible)
+        {
+            return;
+        }
+
+        if (message.SearchBoxFocused && !item.HasSelectedHoverAction)
+        {
+            return;
+        }
+
+        if (message.Forward)
+        {
+            message.Handled = item.SelectNextHoverAction();
+        }
+        else if (item.HoverActionSelectedIndex == ListItemViewModel.NoHoverActionSelectionIndex)
+        {
+            // Run parity: first Shift+Tab into a row with actions selects the last icon.
+            item.SelectLastHoverAction();
+            message.Handled = item.HasSelectedHoverAction;
+        }
+        else
+        {
+            message.Handled = item.SelectPrevHoverAction();
         }
     }
 
@@ -1371,12 +1468,30 @@ public sealed partial class ListItemsView : UserControl,
 
     private void Items_PointerPressed(object sender, PointerRoutedEventArgs e) => _lastInputSource = InputSource.Pointer;
 
+    private void Items_PointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (ViewModel?.SuppressNonSelectedRowHover == true)
+        {
+            SetSuppressNonSelectedRowHover(false);
+        }
+    }
+
     private void Items_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
     {
         // Track keyboard as the last input source for activation logic.
         if (e.Key is VirtualKey.Enter or VirtualKey.Space)
         {
             _lastInputSource = InputSource.Keyboard;
+
+            var selectedItem = ItemView.SelectedItem as ListItemViewModel ?? _stickySelectedItem;
+            if (selectedItem is not null &&
+                selectedItem.TryGetSelectedHoverAction(out var action) &&
+                action is not null)
+            {
+                InvokeHoverActionWithClickGuard(action, selectedItem);
+                e.Handled = true;
+            }
+
             return;
         }
 
@@ -1389,7 +1504,7 @@ public sealed partial class ListItemsView : UserControl,
                 case VirtualKey.Right:
                 case VirtualKey.Up:
                 case VirtualKey.Down:
-                    _lastInputSource = InputSource.Keyboard;
+                    MarkKeyboardNavigation();
                     _scrollOnNextSelectionChange = true;
                     HandleGridArrowNavigation(e.Key);
                     e.Handled = true;

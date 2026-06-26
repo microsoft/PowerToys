@@ -67,19 +67,23 @@ public static class HoverActionResolver
         var visibility = ctx.Visibility;
         if (visibility == HoverActionsVisibility.Default)
         {
-            visibility = ctx.IsHomeSurface
-                ? HoverActionsVisibility.OnHoverOnly
-                : HoverActionsVisibility.HoverOrSelected;
+            visibility = HoverActionsVisibility.HoverOrSelected;
+        }
+
+        var isRowHovered = ctx.IsRowHovered;
+        if (ctx.SuppressNonSelectedRowHover && !ctx.IsListSelected)
+        {
+            isRowHovered = false;
         }
 
         return visibility switch
         {
-            HoverActionsVisibility.OnHoverOnly => ctx.IsRowHovered,
-            HoverActionsVisibility.HoverOrSelected => ctx.IsRowHovered || ctx.IsListSelected,
+            HoverActionsVisibility.OnHoverOnly => isRowHovered,
+            HoverActionsVisibility.HoverOrSelected => isRowHovered || ctx.IsListSelected,
 
             // Safe fallback for any future enum values: treat as HoverOrSelected so the
             // strip is still reachable (vs. always hidden or always visible).
-            _ => ctx.IsRowHovered || ctx.IsListSelected,
+            _ => isRowHovered || ctx.IsListSelected,
         };
     }
 

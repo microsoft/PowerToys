@@ -9,7 +9,35 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListViewModel
 {
-    public bool EnableListHoverActions => _settingsService?.Settings.EnableListHoverActions ?? true;
+    public bool EnableListHoverActions => _settingsService?.Settings.EnableListHoverActions ?? false;
+
+    public bool SuppressNonSelectedRowHover { get; private set; }
+
+    private CancellationTokenSource? _hoverRowCts;
+
+    private ListItemViewModel? _hoverRowTarget;
+
+    public void SetSuppressNonSelectedRowHover(bool suppress)
+    {
+        if (SuppressNonSelectedRowHover == suppress)
+        {
+            return;
+        }
+
+        SuppressNonSelectedRowHover = suppress;
+        RefreshHoverVisibility();
+    }
+
+    public void RefreshHoverVisibility()
+    {
+        foreach (var item in FilteredItems)
+        {
+            if (item.MayNeedHoverVisibilityRefresh)
+            {
+                item.RefreshHoverVisibility();
+            }
+        }
+    }
 
     public HoverActionSettings GetHoverActionSettings(ListItemViewModel row)
     {
@@ -74,6 +102,79 @@ public partial class ListViewModel
         {
             item.RefreshHoverActions();
         }
+    }
+
+    /// <summary>
+    /// Lazy-loads <see cref="ListItemViewModel.MoreCommands"/> for a hover-only row (not keyboard-selected).
+    /// Selected rows use <see cref="SetSelectedItem"/> and <see cref="SelectedItemPropertyChanged"/> instead.
+    /// </summary>
+    public void EnsureHoverActionsLoadedOnHover(ListItemViewModel item)
+    {
+        if (!EnableListHoverActions)
+        {
+            return;
+        }
+
+        if (item.CanResolveHoverActions)
+        {
+            item.RefreshHoverActions();
+            return;
+        }
+
+        if (ReferenceEquals(item, _lastSelectedItem))
+        {
+            return;
+        }
+
+        CancelHoverRowLoad();
+        _hoverRowTarget = item;
+
+        var cts = _hoverRowCts = new CancellationTokenSource();
+        var ct = cts.Token;
+
+        _ = Task.Run(
+            () =>
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                if (!item.SafeSlowInit())
+                {
+                    return;
+                }
+
+                if (ct.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                DoOnUiThread(() =>
+                {
+                    if (ct.IsCancellationRequested || !ReferenceEquals(_hoverRowTarget, item))
+                    {
+                        return;
+                    }
+
+                    item.RefreshHoverActions();
+                });
+            },
+            ct);
+    }
+
+    public void CancelHoverRowLoadFor(ListItemViewModel item)
+    {
+        if (ReferenceEquals(_hoverRowTarget, item))
+        {
+            CancelHoverRowLoad();
+        }
+    }
+
+    private void CancelHoverRowLoad()
+    {
+        CancelAndDisposeTokenSource(ref _hoverRowCts);
+        _hoverRowTarget = null;
     }
 
     private ICommandProvider? TryGetCommandProvider()

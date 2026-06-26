@@ -127,8 +127,6 @@ public partial class ListItemViewModel : CommandItemViewModel
 
         TextToSuggest = model.TextToSuggest;
         UpdateProperty(nameof(TextToSuggest));
-
-        UpdateHoverActions();
     }
 
     protected override void FetchProperty(string propertyName)
@@ -168,7 +166,14 @@ public partial class ListItemViewModel : CommandItemViewModel
                 break;
             case nameof(model.MoreCommands):
                 AddShowDetailsCommands();
-                UpdateHoverActions();
+
+                // UI-thread model callback (not slow-init). Selection also refreshes via
+                // ListViewModel.SelectedItemPropertyChanged.
+                if (IsSelectedInitialized)
+                {
+                    RefreshHoverActions();
+                }
+
                 break;
             case nameof(model.Title):
                 UpdateProperty(nameof(Title));
