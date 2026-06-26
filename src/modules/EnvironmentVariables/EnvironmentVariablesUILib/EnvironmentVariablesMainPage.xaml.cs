@@ -917,6 +917,8 @@ namespace EnvironmentVariablesUILib
             }
 
             var normalizedDefaultName = nameTxtBox.Text?.Trim();
+            variable.Name = normalizedDefaultName;
+
             if (defaultSet.Variables == null || string.IsNullOrWhiteSpace(normalizedDefaultName) || defaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedDefaultName, StringComparison.OrdinalIgnoreCase)) || !variable.Validate())
             {
                 AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
@@ -924,11 +926,6 @@ namespace EnvironmentVariablesUILib
             else
             {
                 AddDefaultVariableDialog.IsPrimaryButtonEnabled = true;
-            }
-
-            if (!variable.Validate())
-            {
-                AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
             }
         }
 
