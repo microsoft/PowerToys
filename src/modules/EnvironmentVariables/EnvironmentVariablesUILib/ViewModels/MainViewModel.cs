@@ -103,6 +103,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                 var profiles = _environmentVariablesService.ReadProfiles();
                 foreach (var profile in profiles)
                 {
+                    DeduplicateProfileVariables(profile);
                     profile.PropertyChanged += Profile_PropertyChanged;
 
                     foreach (var variable in profile.Variables)
@@ -238,6 +239,7 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         internal void AddProfile(ProfileVariablesSet profile)
         {
+            DeduplicateProfileVariables(profile);
             profile.PropertyChanged += Profile_PropertyChanged;
             if (profile.IsEnabled)
             {
@@ -255,6 +257,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             var existingProfile = Profiles.Where(x => x.Id == updatedProfile.Id).FirstOrDefault();
             if (existingProfile != null)
             {
+                DeduplicateProfileVariables(updatedProfile);
                 if (updatedProfile.IsEnabled)
                 {
                     // Let's unset the profile before applying the update. Even if this one is the one that's currently set.
@@ -353,6 +356,30 @@ namespace EnvironmentVariablesUILib.ViewModels
                 AppliedProfile.IsEnabled = false;
                 AppliedProfile = null;
                 appliedProfile.PropertyChanged += Profile_PropertyChanged;
+            }
+        }
+
+        private static void DeduplicateProfileVariables(ProfileVariablesSet profile)
+        {
+            if (profile?.Variables == null)
+            {
+                return;
+            }
+
+            var deduped = profile.Variables
+                .Where(variable => !string.IsNullOrWhiteSpace(variable?.Name))
+                .GroupBy(variable => variable.Name, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.First())
+                .ToList();
+
+            if (deduped.Count != profile.Variables.Count)
+            {
+                profile.Variables = new ObservableCollection<Variable>(deduped);
+
+                foreach (var variable in profile.Variables)
+                {
+                    variable.ParentType = VariablesSetType.Profile;
+                }
             }
         }
 
