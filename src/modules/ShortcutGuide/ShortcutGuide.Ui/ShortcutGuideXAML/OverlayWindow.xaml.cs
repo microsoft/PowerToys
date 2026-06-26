@@ -61,7 +61,7 @@ namespace ShortcutGuide
 
         internal string CloseType => _closeType;
 
-        internal MainPaneControl MainPaneControl => this.MainPane;
+        public MainPaneControl MainPaneControl => this.MainPane;
 
         internal TaskbarPaneControl TaskbarPaneControl => this.TaskbarPane;
 
@@ -338,7 +338,7 @@ namespace ShortcutGuide
         /// longest animation to finish, then closes the window. Multiple
         /// calls are coalesced via <see cref="_isClosing"/>.
         /// </summary>
-        private void CloseAnimated()
+        public void CloseAnimated()
         {
             if (_isClosing)
             {
@@ -347,20 +347,21 @@ namespace ShortcutGuide
 
             _isClosing = true;
 
-            // Collapse both pseudo-windows so their Implicit.HideAnimations
-            // play the exit transitions.
+            // Collapse both pseudo-windows so their Implicit.HideAnimations play
             this.MainPane.Visibility = Visibility.Collapsed;
             this.TaskbarPane.Visibility = Visibility.Collapsed;
 
-            // Wait slightly longer than the 200ms hide animations before
-            // closing the window so the user sees the full exit transition.
             var timer = this.DispatcherQueue.CreateTimer();
             timer.Interval = TimeSpan.FromMilliseconds(217);
             timer.IsRepeating = false;
             timer.Tick += (_, _) =>
             {
                 timer.Stop();
-                this.Close();
+                _isClosing = false;
+
+                MainPane.Hide();
+
+                this.AppWindow.Hide();
             };
             timer.Start();
         }
@@ -369,7 +370,7 @@ namespace ShortcutGuide
         /// Recomputes the taskbar pane's indicator children and applies the
         /// resulting layout to the Canvas-positioned pseudo-window.
         /// </summary>
-        private void UpdateTaskbarPaneLayout()
+        public void UpdateTaskbarPaneLayout()
         {
             var hwnd = WindowNative.GetWindowHandle(this);
             float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);

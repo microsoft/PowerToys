@@ -70,6 +70,58 @@ internal static partial class NativeMethods
 
     internal delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
 
+    [LibraryImport("user32.dll")]
+    internal static partial void CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, LPARAM lParam);
+
+    [DllImport("user32.dll")]
+    internal static extern void SendInput(uint nInputs, [MarshalAs(UnmanagedType.LPArray), In] INPUT[] pInputs, int cbSize);
+
+    internal struct INPUT
+    {
+        public uint Type;
+        public MOUSEKEYBDHARDWAREINPUT Data;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct MOUSEKEYBDHARDWAREINPUT
+    {
+        [FieldOffset(0)]
+        public MOUSEINPUT Mouse;
+        [FieldOffset(0)]
+        public KEYBDINPUT Keyboard;
+        [FieldOffset(0)]
+        public HARDWAREINPUT Hardware;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MOUSEINPUT
+    {
+        public int Dx;
+        public int Dy;
+        public uint MouseData;
+        public uint DwFlags;
+        public uint Time;
+        public IntPtr DwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct KEYBDINPUT
+    {
+        public ushort WVk;
+        public ushort WScan;
+        public uint DwFlags;
+        public uint Time;
+        public IntPtr DwExtraInfo;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct HARDWAREINPUT
+    {
+        public uint Msg;
+        public ushort ParamL;
+        public ushort ParamH;
+    }
+
     internal struct LPARAM(IntPtr value)
     {
         internal IntPtr Value = value;

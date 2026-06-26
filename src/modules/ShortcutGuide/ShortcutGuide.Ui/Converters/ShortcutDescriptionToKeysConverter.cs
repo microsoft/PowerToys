@@ -52,7 +52,7 @@ namespace ShortcutGuide.Converters
             if (description.Shift)
             {
                 shortcutList.Add(16); // The Shift key or button.
-            }
+            }   
 
             foreach (var key in description.Keys)
             {

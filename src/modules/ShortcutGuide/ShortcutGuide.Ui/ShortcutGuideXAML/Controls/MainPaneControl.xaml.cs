@@ -18,6 +18,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.Pages;
+using ShortcutGuide.ShortcutGuideXAML.Controls;
 
 namespace ShortcutGuide.Controls
 {
@@ -29,11 +30,10 @@ namespace ShortcutGuide.Controls
     /// </summary>
     public sealed partial class MainPaneControl : UserControl
     {
-        private readonly Task<Dictionary<string, string?>> _getAppIdsTask;
+        private Task<Dictionary<string, string?>>? _getAppIdsTask;
         private Dictionary<string, string?> _currentApplicationIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = string.Empty;
-        private bool _navItemsInitialized;
 
         /// <summary>
         /// Raised whenever the user selects a different app in the nav list.
@@ -52,33 +52,76 @@ namespace ShortcutGuide.Controls
         public MainPaneControl()
         {
             this.InitializeComponent();
+            Program.CopyAndIndexGenerationThread.Join();
+            this.TitleTextBlock.Text = ResourceLoaderInstance.ResourceLoader.GetString("Title");
 
+            this.Unloaded += OnUnloaded;
+        }
+
+        public async Task Open()
+        {
             // Same background work the original MainWindow ran in its
             // constructor: wait for the index-generation thread to finish
             // and then enumerate the apps to populate the nav list.
-            _getAppIdsTask = Task.Run(() =>
+            _getAppIdsTask = Task.Run(async () =>
             {
-                Program.CopyAndIndexGenerationThread.Join();
                 _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds(Program.ForegroundWindowHandle);
                 return _currentApplicationIds;
             });
 
-            this.TitleTextBlock.Text = ResourceLoaderInstance.ResourceLoader.GetString("Title");
+            await InitializeNavItemsAsync();
+        }
 
-            this.Loaded += OnLoaded;
-            this.Unloaded += OnUnloaded;
+        public void Hide()
+        {
+            if (this.ContentFrame.Content is ShortcutsPage currentPage)
+            {
+                currentPage.Rows.Clear();
+            }
+
+            this.ContentFrame.Navigate(typeof(BlankPage));
+
+            if (this.ContentFrame.BackStack != null)
+            {
+                this.ContentFrame.BackStack.Clear();
+            }
+
+            this.ContentFrame.Content = null;
+
+            foreach (var item in this.WindowSelector.MenuItems.OfType<NavigationViewItem>())
+            {
+                if (item.Icon is ImageIcon imageIcon)
+                {
+                    imageIcon.Source = null;
+                }
+
+                if (item.Icon is PathIcon pathIcon)
+                {
+                    pathIcon.Data = null;
+                }
+
+                item.Icon = null;
+                item.Content = null;
+            }
+
+            this.WindowSelector.MenuItems.Clear();
+
+            _shortcutFile = null;
+            _currentApplicationIds.Clear();
+
+            _getAppIdsTask?.Dispose();
+            _getAppIdsTask = null;
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
         }
 
         internal string SelectedAppName => _selectedAppName;
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            _ = InitializeNavItemsAsync();
-        }
-
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            _getAppIdsTask.Dispose();
+            _getAppIdsTask?.Dispose();
         }
 
         /// <summary>
@@ -87,7 +130,7 @@ namespace ShortcutGuide.Controls
         /// </summary>
         private async Task InitializeNavItemsAsync()
         {
-            if (_navItemsInitialized)
+            if (_getAppIdsTask == null)
             {
                 return;
             }
@@ -96,7 +139,6 @@ namespace ShortcutGuide.Controls
             {
                 _currentApplicationIds = await _getAppIdsTask.ConfigureAwait(true);
                 this.SetNavItems();
-                _navItemsInitialized = true;
             }
             catch (Exception ex)
             {
@@ -116,8 +158,16 @@ namespace ShortcutGuide.Controls
         /// </summary>
         public event EventHandler? InitializationFailed;
 
+        private IconElement BuildNavIcon(string? executablePath)
+        {
+            // FIX: Use placeholder initially to reduce upfront memory
+            // Icons can be loaded on SelectionChanged if needed
+            return new FontIcon { Glyph = "\uEB91" };
+        }
+
         private void SetNavItems()
         {
+            this.WindowSelector.MenuItems.Clear();
             if (this.WindowSelector.MenuItems.Count != 0)
             {
                 return;
@@ -157,17 +207,6 @@ namespace ShortcutGuide.Controls
             }
         }
 
-        private static IconElement BuildNavIcon(string? executablePath)
-        {
-            BitmapImage? bitmap = IconHelper.TryGetExecutableIcon(executablePath);
-            if (bitmap is not null)
-            {
-                return new ImageIcon { Source = bitmap };
-            }
-
-            return new FontIcon { Glyph = "\uEB91" };
-        }
-
         private static PathIcon CreatePathIcon(string pathData)
         {
             var geometry = (Geometry)XamlBindingHelper.ConvertValue(typeof(Geometry), pathData);
@@ -186,6 +225,15 @@ namespace ShortcutGuide.Controls
                 return;
             }
 
+            if (selectedItem.Icon is FontIcon && _currentApplicationIds.TryGetValue(selectedItem.Name, out string? exePath))
+            {
+                BitmapImage? bitmap = IconHelper.TryGetExecutableIcon(exePath);
+                if (bitmap is not null)
+                {
+                    selectedItem.Icon = new ImageIcon { Source = bitmap };
+                }
+            }
+
             this._selectedAppName = selectedItem.Name;
             App.CurrentAppName = this._selectedAppName;
             this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
@@ -197,14 +245,16 @@ namespace ShortcutGuide.Controls
                 exposesTaskbarSection = file.Shortcuts is not null &&
                     file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true);
 
+                if (this.ContentFrame.Content is ShortcutsPage currentPage)
+                {
+                    currentPage.ClearData();
+                }
+
                 this.ContentFrame.Navigate(
                     typeof(ShortcutsPage),
                     new ShortcutPageNavParam { ShortcutFile = file, AppName = this._selectedAppName });
             }
 
-            // The overlay decides whether to show/hide the taskbar pseudo-window
-            // based on this event — the pane no longer manages a second window
-            // directly.
             SelectedAppTaskbarVisibilityChanged?.Invoke(this, exposesTaskbarSection);
         }
 

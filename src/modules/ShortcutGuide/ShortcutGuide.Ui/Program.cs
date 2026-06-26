@@ -21,7 +21,7 @@ namespace ShortcutGuide
     {
         public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
 
-        public static nint ForegroundWindowHandle { get; private set; } = nint.Zero;
+        public static nint ForegroundWindowHandle { get; set; } = nint.Zero;
 
         [STAThread]
         public static void Main(string[] args)
