@@ -55,6 +55,13 @@ namespace EnvironmentVariablesUILib.Helpers
         public async Task WriteAsync(IEnumerable<ProfileVariablesSet> profiles)
         {
             string jsonData = JsonSerializer.Serialize(profiles, _serializerOptions);
+
+            var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
+            if (!string.IsNullOrWhiteSpace(directoryPath))
+            {
+                _fileSystem.Directory.CreateDirectory(directoryPath);
+            }
+
             await _fileSystem.File.WriteAllTextAsync(ProfilesJsonFilePath, jsonData);
         }
     }
