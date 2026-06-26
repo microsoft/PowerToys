@@ -133,8 +133,29 @@ namespace EnvironmentVariablesUILib.Helpers
                         }
                         catch (Exception)
                         {
-                            _fileSystem.File.Delete(ProfilesJsonFilePath);
-                            _fileSystem.File.Move(tempFilePath, ProfilesJsonFilePath);
+                            var backupFilePath = $"{ProfilesJsonFilePath}.{Guid.NewGuid():N}.bak";
+                            try
+                            {
+                                _fileSystem.File.Copy(ProfilesJsonFilePath, backupFilePath);
+                                _fileSystem.File.Delete(ProfilesJsonFilePath);
+                                _fileSystem.File.Move(tempFilePath, ProfilesJsonFilePath);
+                            }
+                            catch (Exception)
+                            {
+                                if (_fileSystem.File.Exists(backupFilePath) && !_fileSystem.File.Exists(ProfilesJsonFilePath))
+                                {
+                                    _fileSystem.File.Move(backupFilePath, ProfilesJsonFilePath);
+                                }
+
+                                throw;
+                            }
+                            finally
+                            {
+                                if (_fileSystem.File.Exists(backupFilePath))
+                                {
+                                    _fileSystem.File.Delete(backupFilePath);
+                                }
+                            }
                         }
                     }
                     else
