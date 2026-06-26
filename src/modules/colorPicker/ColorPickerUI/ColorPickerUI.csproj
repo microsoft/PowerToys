@@ -95,8 +95,7 @@
     <Compile Remove="Behaviors\**\*.cs" />
     <!-- All Controls (HSVColor, ColorFormatControl, ColorPickerControl) are ported. -->
     <Compile Remove="Converters\**\*.cs" />
-    <!-- MainView (the picking tooltip) is ported; only the editor/zoom views remain quarantined. -->
-    <Compile Remove="Views\ColorEditorView.xaml.cs" />
+    <!-- MainView + ColorEditorView are ported; only ZoomView remains quarantined. -->
     <Compile Remove="Views\ZoomView.xaml.cs" />
     <Compile Remove="ViewModels\**\*.cs" />
     <!-- ViewModelContracts (IMainViewModel/IZoomViewModel/IColorEditorViewModel) are ported. -->
@@ -116,7 +115,6 @@
          and ZoomWindow remain quarantined until sub-projects B and C port them. -->
     <Page Remove="ColorEditorWindow.xaml" />
     <Page Remove="ZoomWindow.xaml" />
-    <Page Remove="Views\ColorEditorView.xaml" />
     <Page Remove="Views\ZoomView.xaml" />
     <!-- Resources\Styles.xaml is ported and merged into App.xaml. -->
 
