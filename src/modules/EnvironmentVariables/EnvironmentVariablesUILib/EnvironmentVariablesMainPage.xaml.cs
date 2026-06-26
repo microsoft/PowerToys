@@ -786,6 +786,7 @@ namespace EnvironmentVariablesUILib
             var variable = EditVariableDialog.DataContext as Variable;
             var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
             var variableSet = param?.Set;
+            var originalVariable = param?.Variable;
             if (variable == null)
             {
                 EditVariableDialog.IsPrimaryButtonEnabled = false;
@@ -801,7 +802,11 @@ namespace EnvironmentVariablesUILib
             if (variableSet != null)
             {
                 var normalizedName = EditVariableDialogNameTxtBox.Text?.Trim();
-                if (string.IsNullOrWhiteSpace(normalizedName) || variableSet.Variables == null || variableSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)) || !variable.Valid)
+                bool hasDuplicateName = variableSet.Variables != null &&
+                    variableSet.Variables.Any(x => !ReferenceEquals(x, originalVariable)
+                        && string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase));
+
+                if (string.IsNullOrWhiteSpace(normalizedName) || variableSet.Variables == null || hasDuplicateName || !variable.Valid)
                 {
                     EditVariableDialog.IsPrimaryButtonEnabled = false;
                 }
