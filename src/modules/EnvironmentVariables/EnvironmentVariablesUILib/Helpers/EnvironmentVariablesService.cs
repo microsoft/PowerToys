@@ -137,7 +137,9 @@ namespace EnvironmentVariablesUILib.Helpers
                 result.Add(persistedProfile);
             }
 
-            return result;
+            return result
+                .OrderBy(profile => (profile.Name ?? string.Empty).Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         private static List<Variable> SanitizeProfileVariables(IEnumerable<Variable> variables)
@@ -175,7 +177,9 @@ namespace EnvironmentVariablesUILib.Helpers
                 persistedVariables.Add(variableClone);
             }
 
-            return persistedVariables;
+            return persistedVariables
+                .OrderBy(variable => (variable.Name ?? string.Empty).Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
     }
 }
