@@ -153,4 +153,18 @@
     <Compile Include="Converters\NumberToVisibilityConverter.cs" />
   </ItemGroup>
 
+  <!-- Sub-project C (input primitives): Win32 low-level mouse/keyboard hooks, the cursor
+       manager, and the mouse-info provider contract, ported off WPF (MouseHook drops the
+       WPF wheel args for a raw delta; IMouseInfoProvider uses Windows.Foundation.Point) and
+       re-included past the Mouse/Keyboard quarantines. Their stateful consumers
+       (MouseInfoProvider, KeyboardMonitor) stay quarantined until the overlay window and
+       AppStateHandler are ported. -->
+  <ItemGroup>
+    <Compile Include="Mouse\CursorManager.cs" />
+    <Compile Include="Mouse\MouseHook.cs" />
+    <Compile Include="Mouse\IMouseInfoProvider.cs" />
+    <Compile Include="Keyboard\GlobalKeyboardHook.cs" />
+    <Compile Include="Keyboard\GlobalKeyboardHookEventArgs.cs" />
+  </ItemGroup>
+
 </Project>
