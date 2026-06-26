@@ -155,12 +155,61 @@ namespace MouseWithoutBorders
 
         public void SendDragFile(string fileName)
         {
+            if (IsRemoteOrUncPath(fileName))
+            {
+                Logger.Log("SendDragFile: Rejected non-local path received over IPC: " + fileName);
+                return;
+            }
+
             DragDrop.DragDropStep05Ex(fileName);
         }
 
         public void SendClipboardData(ByteArrayOrString data, bool isFilePath)
         {
+            if (isFilePath && data.IsString && IsRemoteOrUncPath(data.GetString()))
+            {
+                Logger.Log("SendClipboardData: Rejected non-local file path received over IPC: " + data.GetString());
+                return;
+            }
+
             _ = Clipboard.CheckClipboardEx(data, isFilePath);
+        }
+
+        // The ClipboardHelper IPC endpoint is reachable by any authenticated user on the
+        // named pipe. A malicious client could inject a UNC/remote path (e.g. \\attacker\share)
+        // that, when probed via File.Exists/Directory.Exists, triggers outbound SMB
+        // authentication and leaks the user's NTLMv2 hash. The legitimate helper only ever
+        // forwards local clipboard/drag file paths, so reject anything that is not local.
+        internal static bool IsRemoteOrUncPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            if (StartsWithPathSeparatorPrefix(path))
+            {
+                return true;
+            }
+
+            try
+            {
+                string fullPath = Path.GetFullPath(path);
+                return StartsWithPathSeparatorPrefix(fullPath);
+            }
+            catch (Exception)
+            {
+                // Malformed paths cannot be trusted; treat them as remote/invalid and reject.
+                return true;
+            }
+        }
+
+        private static bool StartsWithPathSeparatorPrefix(string path)
+        {
+            // Catches UNC (\\server\share, //server/share) and device-namespace paths
+            // (\\?\UNC\..., \\.\...) that can be coerced into remote authentication.
+            return path.StartsWith(@"\\", StringComparison.Ordinal)
+                || path.StartsWith("//", StringComparison.Ordinal);
         }
     }
 #endif
