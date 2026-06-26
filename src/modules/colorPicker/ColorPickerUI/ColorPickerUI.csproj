@@ -119,7 +119,7 @@
     <Page Remove="Controls\**\*.xaml" />
     <Page Remove="Views\ColorEditorView.xaml" />
     <Page Remove="Views\ZoomView.xaml" />
-    <Page Remove="Resources\**\*.xaml" />
+    <!-- Resources\Styles.xaml is ported and merged into App.xaml. -->
 
     <!-- Old WPF .resx string table has been fully migrated to Strings\en-us\Resources.resw
          and Properties\Resources.resx deleted; nothing in the live build references
