@@ -567,27 +567,24 @@ namespace EnvironmentVariablesUILib
                 return;
             }
 
-            int toRemove = -1;
-
-                if (e.AddedItems.Count > 0)
+            if (e.AddedItems.Count > 0)
+            {
+                var list = sender as ListView;
+                if (list == null)
                 {
-                    var list = sender as ListView;
-                    if (list == null)
-                    {
-                        return;
-                    }
-
-                    var selectedVariables = list.SelectedItems.OfType<Variable>().ToList();
-                    var dedupedSelections = DeduplicateVariablesByEquivalence(selectedVariables);
-
-                    ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-                    foreach (var item in selectedVariables.Except(dedupedSelections).ToList())
-                    {
-                        list.SelectedItems.Remove(item);
-                    }
-
-                    ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
+                    return;
                 }
+
+                var selectedVariables = list.SelectedItems.OfType<Variable>().ToList();
+                var dedupedSelections = DeduplicateVariablesByEquivalence(selectedVariables);
+
+                ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
+                foreach (var item in selectedVariables.Except(dedupedSelections).ToList())
+                {
+                    list.SelectedItems.Remove(item);
+                }
+
+                ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
             }
 
             if (e.RemovedItems.Count > 0)
@@ -600,13 +597,7 @@ namespace EnvironmentVariablesUILib
                         continue;
                     }
 
-                    for (int i = profile.Variables.Count - 1; i >= 0; i--)
-                    {
-                        if (AreEquivalentVariables(profile.Variables[i], removedVariable))
-                        {
-                            profile.Variables.RemoveAt(i);
-                        }
-                    }
+                    RemoveEquivalentProfileVariables(profile.Variables, removedVariable);
                 }
             }
 
@@ -778,6 +769,22 @@ namespace EnvironmentVariablesUILib
             }
 
             return deduped;
+        }
+
+        private static void RemoveEquivalentProfileVariables(IList<Variable> variables, Variable targetVariable)
+        {
+            if (variables == null || targetVariable == null)
+            {
+                return;
+            }
+
+            for (int i = variables.Count - 1; i >= 0; i--)
+            {
+                if (AreEquivalentVariables(variables[i], targetVariable))
+                {
+                    variables.RemoveAt(i);
+                }
+            }
         }
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
