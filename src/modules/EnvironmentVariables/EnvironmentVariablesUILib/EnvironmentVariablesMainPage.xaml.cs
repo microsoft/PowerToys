@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Windows.System;
 using Windows.ApplicationModel.DataTransfer;
 
 using CommunityToolkit.Mvvm.Input;
@@ -417,6 +418,16 @@ namespace EnvironmentVariablesUILib
 
             AddVariableDialog.IsPrimaryButtonEnabled = false;
             UpdateNoMatchingDefaultVariablesText();
+        }
+
+        private void DefaultVariablesSearchBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == VirtualKey.Escape && !string.IsNullOrEmpty(DefaultVariablesSearchBox.Text))
+            {
+                e.Handled = true;
+                ClearAddVariableSearchFilter();
+                DefaultVariablesSearchBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+            }
         }
 
         private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

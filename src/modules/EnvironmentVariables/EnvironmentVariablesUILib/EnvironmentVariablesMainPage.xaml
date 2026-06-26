@@ -710,6 +710,7 @@
                                     Margin="0,8,0,4"
                                     IsClearButtonVisible="True"
                                     TextChanged="DefaultVariablesSearchBox_TextChanged"
+                                    KeyDown="DefaultVariablesSearchBox_KeyDown"
                                     VerticalAlignment="Center" />
                                 <ListView
                                     x:Name="ExistingVariablesListView"
