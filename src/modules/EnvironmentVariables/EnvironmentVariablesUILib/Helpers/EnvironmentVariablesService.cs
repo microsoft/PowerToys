@@ -105,6 +105,7 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             var profileIds = new HashSet<Guid>();
+            var profileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var profile in profiles.Where(p => p != null && p.Id != Guid.Empty))
             {
                 if (!profileIds.Add(profile.Id))
@@ -118,19 +119,14 @@ namespace EnvironmentVariablesUILib.Helpers
                     continue;
                 }
 
+                if (!profileNames.Add(profileName))
+                {
+                    continue;
+                }
+
                 var persistedVariables = profile.Variables == null
                     ? new List<Variable>()
-                    : profile.Variables
-                        .Where(v => v != null && !string.IsNullOrWhiteSpace(v.Name))
-                        .Select(v =>
-                        {
-                            var variableClone = v.Clone();
-                            variableClone.Name = v.Name?.Trim();
-                            variableClone.ParentType = VariablesSetType.Profile;
-                            variableClone.ApplyToSystem = v.ApplyToSystem;
-                            return variableClone;
-                        })
-                        .ToList();
+                    : SanitizeProfileVariables(profile.Variables);
 
                 var persistedProfile = new ProfileVariablesSet(profile.Id, profileName)
                 {
@@ -142,6 +138,44 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             return result;
+        }
+
+        private static List<Variable> SanitizeProfileVariables(IEnumerable<Variable> variables)
+        {
+            var persistedVariables = new List<Variable>();
+            var variableNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (variables == null)
+            {
+                return persistedVariables;
+            }
+
+            foreach (var variable in variables)
+            {
+                if (variable == null)
+                {
+                    continue;
+                }
+
+                var variableName = variable.Name?.Trim();
+                if (string.IsNullOrWhiteSpace(variableName))
+                {
+                    continue;
+                }
+
+                if (!variableNames.Add(variableName))
+                {
+                    continue;
+                }
+
+                var variableClone = variable.Clone();
+                variableClone.Name = variableName;
+                variableClone.ParentType = VariablesSetType.Profile;
+                variableClone.ApplyToSystem = variable.ApplyToSystem;
+
+                persistedVariables.Add(variableClone);
+            }
+
+            return persistedVariables;
         }
     }
 }
