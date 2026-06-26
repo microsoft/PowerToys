@@ -59,6 +59,11 @@ namespace EnvironmentVariablesUILib
 
         private async Task ShowEditDialogAsync(Variable variable, VariablesSet parentSet)
         {
+            if (EditVariableDialog == null || variable == null)
+            {
+                return;
+            }
+
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             EditVariableDialog.Title = resourceLoader.GetString("EditVariableDialog_Title");
@@ -93,7 +98,7 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariable(RelayCommandParameter param)
         {
-            if (param == null || ViewModel == null)
+            if (param == null || ViewModel == null || EditVariableDialog == null)
             {
                 return;
             }
@@ -713,6 +718,11 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariableDialogNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (EditVariableDialog == null || EditVariableDialogNameTxtBox == null || ViewModel == null)
+            {
+                return;
+            }
+
             var variable = EditVariableDialog.DataContext as Variable;
             var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
             var variableSet = param?.Set;
@@ -785,9 +795,14 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariableDialogValueTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (EditVariableDialog == null)
+            {
+                return;
+            }
+
             var txtBox = sender as TextBox;
             var variable = EditVariableDialog.DataContext as Variable;
-            if (EditVariableDialog == null || txtBox == null || variable == null)
+            if (txtBox == null || variable == null)
             {
                 return;
             }
@@ -799,6 +814,11 @@ namespace EnvironmentVariablesUILib
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (EditVariableDialog == null)
+            {
+                return;
+            }
+
             var menuFlyoutItem = sender as MenuFlyoutItem;
             if (menuFlyoutItem == null)
             {
@@ -828,6 +848,11 @@ namespace EnvironmentVariablesUILib
 
         private void ReorderButtonDown_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (EditVariableDialog == null)
+            {
+                return;
+            }
+
             var menuFlyoutItem = sender as MenuFlyoutItem;
             if (menuFlyoutItem == null)
             {
@@ -857,6 +882,11 @@ namespace EnvironmentVariablesUILib
 
         private void RemoveListVariableButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (EditVariableDialog == null)
+            {
+                return;
+            }
+
             var menuFlyoutItem = sender as MenuFlyoutItem;
             if (menuFlyoutItem == null)
             {
@@ -882,6 +912,11 @@ namespace EnvironmentVariablesUILib
 
         private void RemoveListVariableDuplicatesButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (EditVariableDialog == null)
+            {
+                return;
+            }
+
             var variable = EditVariableDialog.DataContext as Variable;
             if (variable?.ValuesList == null)
             {
@@ -924,6 +959,11 @@ namespace EnvironmentVariablesUILib
 
         private void InsertListEntryBeforeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (EditVariableDialog == null)
+            {
+                return;
+            }
+
             var menuFlyoutItem = sender as MenuFlyoutItem;
             if (menuFlyoutItem == null)
             {
@@ -955,6 +995,11 @@ namespace EnvironmentVariablesUILib
 
         private void InsertListEntryAfterButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (EditVariableDialog == null)
+            {
+                return;
+            }
+
             var menuFlyoutItem = sender as MenuFlyoutItem;
             if (menuFlyoutItem == null)
             {
@@ -986,6 +1031,11 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariableValuesListTextBox_LostFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (EditVariableDialog == null)
+            {
+                return;
+            }
+
             var textBox = sender as TextBox;
             if (textBox == null)
             {
