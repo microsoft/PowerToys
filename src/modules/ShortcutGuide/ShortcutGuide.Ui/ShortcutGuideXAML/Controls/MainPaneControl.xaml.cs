@@ -18,7 +18,6 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using ShortcutGuide.Helpers;
 using ShortcutGuide.Models;
 using ShortcutGuide.Pages;
-using ShortcutGuide.ShortcutGuideXAML.Controls;
 
 namespace ShortcutGuide.Controls
 {
@@ -74,19 +73,15 @@ namespace ShortcutGuide.Controls
 
         public void Hide()
         {
+            // Keep the single ShortcutsPage instance alive and just drop its
+            // data. Re-navigating the frame (to a blank page, then back to a
+            // fresh ShortcutsPage on the next open) created a new page +
+            // ItemsRepeater subtree every time, and WinUI never released the
+            // previous one, so each open/close leaked a page's worth of rows.
             if (this.ContentFrame.Content is ShortcutsPage currentPage)
             {
-                currentPage.Rows.Clear();
+                currentPage.ClearData();
             }
-
-            this.ContentFrame.Navigate(typeof(BlankPage));
-
-            if (this.ContentFrame.BackStack != null)
-            {
-                this.ContentFrame.BackStack.Clear();
-            }
-
-            this.ContentFrame.Content = null;
 
             foreach (var item in this.WindowSelector.MenuItems.OfType<NavigationViewItem>())
             {
@@ -111,10 +106,6 @@ namespace ShortcutGuide.Controls
 
             _getAppIdsTask?.Dispose();
             _getAppIdsTask = null;
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
         }
 
         internal string SelectedAppName => _selectedAppName;
@@ -245,17 +236,24 @@ namespace ShortcutGuide.Controls
                 exposesTaskbarSection = file.Shortcuts is not null &&
                     file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true);
 
-                if (this.ContentFrame.Content is ShortcutsPage currentPage)
-                {
-                    currentPage.ClearData();
-                }
-
-                this.ContentFrame.Navigate(
-                    typeof(ShortcutsPage),
-                    new ShortcutPageNavParam { ShortcutFile = file, AppName = this._selectedAppName });
+                // Reuse a single ShortcutsPage and just refresh its rows.
+                // Navigating to a new page on every selection created a fresh
+                // page + ItemsRepeater + a screenful of ShortcutItemView rows
+                // each time; WinUI pinned the previous page's native element
+                // tree (the managed wrappers had zero GC roots and were kept
+                // alive by live ComWrappers CCWs), leaking ~one page per open.
+                ShortcutsPage page = this.ContentFrame.Content as ShortcutsPage
+                    ?? this.NavigateToShortcutsPage();
+                page.SetShortcuts(file, this._selectedAppName);
             }
 
             SelectedAppTaskbarVisibilityChanged?.Invoke(this, exposesTaskbarSection);
+        }
+
+        private ShortcutsPage NavigateToShortcutsPage()
+        {
+            this.ContentFrame.Navigate(typeof(ShortcutsPage));
+            return (ShortcutsPage)this.ContentFrame.Content;
         }
 
         private void Settings_Tapped(object sender, TappedRoutedEventArgs e)

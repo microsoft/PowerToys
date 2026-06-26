@@ -34,7 +34,6 @@ namespace ShortcutGuide.Pages
             {
                 UnsubscribeFromEvents();
                 ClearData();
-                ForceItemsRepeaterCleanup();
             };
         }
 
@@ -54,23 +53,27 @@ namespace ShortcutGuide.Pages
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (e.Parameter is ShortcutPageNavParam param)
-            {
-                this._appName = param.AppName;
-                this._shortcutFile = param.ShortcutFile;
-                this.RebuildRows();
-            }
-
             UnsubscribeFromEvents();
             PinnedShortcutsHelper.PinnedShortcutsChanged += this.OnPinnedShortcutsChanged;
             _isEventSubscribed = true;
+        }
+
+        /// <summary>
+        /// Refreshes the page to show the shortcuts for the given app. The page
+        /// (and its <c>ItemsRepeater</c>) is reused across opens instead of
+        /// being recreated, so only the <see cref="Rows"/> collection changes.
+        /// </summary>
+        public void SetShortcuts(ShortcutFile file, string appName)
+        {
+            this._appName = appName;
+            this._shortcutFile = file;
+            this.RebuildRows();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
             UnsubscribeFromEvents();
             ClearData();
-            ForceItemsRepeaterCleanup();
         }
 
         public void ClearData()
@@ -79,46 +82,6 @@ namespace ShortcutGuide.Pages
             this.Rows.Clear();
             _shortcutFile = null;
             _appName = string.Empty;
-        }
-
-        /// <summary>
-        /// Forces ItemsRepeater to release all cached/recycled elements and clear WinUI's internal template cache.
-        /// This addresses the ConcurrentDictionary WeakReference cache leak in WinUI.
-        /// </summary>
-        private void ForceItemsRepeaterCleanup()
-        {
-            if (this.MainItemsRepeater == null)
-            {
-                return;
-            }
-
-            try
-            {
-                // Get the parent ScrollViewer
-                if (this.Content is ScrollViewer scrollViewer)
-                {
-                    // Create a brand new ItemsRepeater
-                    var newRepeater = new ItemsRepeater
-                    {
-                        Name = "MainItemsRepeater",
-                        Margin = new Thickness(0, 0, 0, 24),
-                        ItemTemplate = this.Resources["RowTemplateSelector"] as IElementFactory,
-                        Layout = new StackLayout(),
-                    };
-
-                    newRepeater.ElementClearing += MainItemsRepeater_ElementClearing;
-
-                    scrollViewer.Content = newRepeater;
-                }
-
-                GC.Collect(2, GCCollectionMode.Aggressive, true, true);
-                GC.WaitForPendingFinalizers();
-                GC.Collect(2, GCCollectionMode.Aggressive, true, true);
-            }
-            catch
-            {
-                // Fail silently
-            }
         }
 
         private void UnsubscribeFromEvents()

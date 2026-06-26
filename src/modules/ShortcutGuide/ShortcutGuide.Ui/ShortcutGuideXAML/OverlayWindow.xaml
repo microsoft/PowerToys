@@ -36,7 +36,7 @@
             x:Name="MainPane"
             Width="586"
             Margin="16"
-            Horizo  ntalAlignment="Left"
+            HorizontalAlignment="Left"
             VerticalAlignment="Stretch"
             Visibility="Collapsed" />
 

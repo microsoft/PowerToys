@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="ShortcutGuideXAML\Controls\BlankPage.xaml" />
     <None Remove="ShortcutGuideXAML\CustomNavigationViewStyle.xaml" />
     <None Remove="ShortcutGuideXAML\Pages\ShortcutsPage.xaml" />
     <None Remove="ShortcutGuideXAML\TaskbarIndicator.xaml" />
@@ -139,11 +138,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ShortcutGuideXAML\Styles\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="ShortcutGuideXAML\Controls\BlankPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <!-- 
     Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution 

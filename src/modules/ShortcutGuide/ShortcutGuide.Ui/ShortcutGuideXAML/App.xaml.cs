@@ -55,7 +55,7 @@ namespace ShortcutGuide
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            this.   LoadData();
+            this.LoadData();
             OverlayWindow = new OverlayWindow();
             OverlayWindow.Activate();
             OverlayWindow.AppWindow.Hide();
