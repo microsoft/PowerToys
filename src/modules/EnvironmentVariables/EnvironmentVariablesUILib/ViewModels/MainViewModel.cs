@@ -290,7 +290,7 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             if (type == VariablesSetType.User)
             {
-                if (UserDefaultSet.Variables != null && UserDefaultSet.Variables.Any(x => string.Equals(x?.Name, variable.Name, StringComparison.OrdinalIgnoreCase)))
+                if (UserDefaultSet.Variables != null && UserDefaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), variable.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }
@@ -300,7 +300,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
             else if (type == VariablesSetType.System)
             {
-                if (SystemDefaultSet.Variables != null && SystemDefaultSet.Variables.Any(x => string.Equals(x?.Name, variable.Name, StringComparison.OrdinalIgnoreCase)))
+                if (SystemDefaultSet.Variables != null && SystemDefaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), variable.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }

@@ -224,7 +224,7 @@ namespace EnvironmentVariablesUILib
                     return;
                 }
 
-                if (newVariableName.Length >= 255 || profile.Variables.Any(x => string.Equals(x?.Name, newVariableName, StringComparison.OrdinalIgnoreCase)))
+                if (newVariableName.Length >= 255 || profile.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), newVariableName, StringComparison.OrdinalIgnoreCase)))
                 {
                     AddVariableDialog.IsPrimaryButtonEnabled = false;
                     return;
