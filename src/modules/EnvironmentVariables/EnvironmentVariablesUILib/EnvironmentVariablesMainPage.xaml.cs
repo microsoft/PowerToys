@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -478,6 +479,43 @@ namespace EnvironmentVariablesUILib
 
             var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
+        }
+
+        private void RemoveListVariableDuplicatesButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var variable = EditVariableDialog.DataContext as Variable;
+            if (variable?.ValuesList == null)
+            {
+                return;
+            }
+
+            var seenValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var hasDuplicates = false;
+            var hasValueChanges = false;
+
+            for (int i = variable.ValuesList.Count - 1; i >= 0; i--)
+            {
+                var originalValue = variable.ValuesList[i].Text ?? string.Empty;
+                var trimmedValue = originalValue.Trim();
+                variable.ValuesList[i].Text = trimmedValue;
+                if (!seenValues.Add(trimmedValue))
+                {
+                    variable.ValuesList.RemoveAt(i);
+                    hasDuplicates = true;
+                }
+                else if (!string.Equals(originalValue, trimmedValue, StringComparison.Ordinal))
+                {
+                    hasValueChanges = true;
+                }
+            }
+
+            if (hasDuplicates || hasValueChanges)
+            {
+                var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+                EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
+                EditVariableDialogValueTxtBox.Text = newValues;
+                EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            }
         }
 
         private void InsertListEntryBeforeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
