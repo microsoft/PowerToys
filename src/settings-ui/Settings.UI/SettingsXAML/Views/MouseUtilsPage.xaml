@@ -285,7 +285,10 @@
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_SecondaryButtonClickColor" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x6}">
                                 <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterRightButtonClickColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterAlwaysColor" x:Uid="MouseUtils_MouseHighlighter_AlwaysColor" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMouseHighlighterAlwaysColor"
+                                x:Uid="MouseUtils_MouseHighlighter_AlwaysColor"
+                                Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
                                 <controls:ColorPickerButton IsAlphaEnabled="True" SelectedColor="{x:Bind Path=ViewModel.MouseHighlighterAlwaysColor, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard x:Uid="MouseUtils_MouseHighlighter_HighlightRadius" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
@@ -297,7 +300,10 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MouseHighlighterRadius, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterFadeDelayMs" x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMouseHighlighterFadeDelayMs"
+                                x:Uid="MouseUtils_MouseHighlighter_FadeDelayMs"
+                                Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
@@ -306,7 +312,10 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.MouseHighlighterFadeDelayMs, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
-                            <tkcontrols:SettingsCard Name="MouseUtilsMouseHighlighterFadeDurationMs" x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs" Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
+                            <tkcontrols:SettingsCard
+                                Name="MouseUtilsMouseHighlighterFadeDurationMs"
+                                x:Uid="MouseUtils_MouseHighlighter_FadeDurationMs"
+                                Visibility="{x:Bind ViewModel.HighlightModeIndex, Mode=OneWay, Converter={StaticResource IndexBitFieldToVisibilityConverter}, ConverterParameter=0x3}">
                                 <NumberBox
                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                     LargeChange="100"
