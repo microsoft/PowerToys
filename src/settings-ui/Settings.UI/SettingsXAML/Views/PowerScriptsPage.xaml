@@ -57,18 +57,37 @@
                     <ItemsControl ItemsSource="{x:Bind ViewModel.Scripts, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="viewModels:PowerScriptListItem">
-                                <tkcontrols:SettingsCard
+                                <tkcontrols:SettingsExpander
                                     Margin="0,2,0,2"
                                     Description="{x:Bind Description}"
-                                    Header="{x:Bind Name}">
-                                    <tkcontrols:SettingsCard.HeaderIcon>
+                                    Header="{x:Bind Name}"
+                                    IsExpanded="False">
+                                    <tkcontrols:SettingsExpander.HeaderIcon>
                                         <FontIcon Glyph="{x:Bind KindGlyph}" />
-                                    </tkcontrols:SettingsCard.HeaderIcon>
+                                    </tkcontrols:SettingsExpander.HeaderIcon>
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                         Text="{x:Bind Kind}" />
-                                </tkcontrols:SettingsCard>
+                                    <tkcontrols:SettingsExpander.Items>
+                                        <tkcontrols:SettingsCard
+                                            Description="Right-click any file with one of these extensions to see this script under the &quot;PowerScript&quot; menu. Separate multiple extensions with commas (e.g. .md, .markdown)."
+                                            Header="Trigger on file types"
+                                            Visibility="{x:Bind IsFileScript, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBox
+                                                    MinWidth="180"
+                                                    VerticalAlignment="Center"
+                                                    PlaceholderText=".md, .txt"
+                                                    Text="{x:Bind ExtensionsText, Mode=TwoWay}" />
+                                                <Button
+                                                    Click="ApplyExtensionsButton_Click"
+                                                    Content="Apply"
+                                                    Tag="{x:Bind}" />
+                                            </StackPanel>
+                                        </tkcontrols:SettingsCard>
+                                    </tkcontrols:SettingsExpander.Items>
+                                </tkcontrols:SettingsExpander>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
