@@ -325,7 +325,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             var originalName = (original.Name ?? string.Empty).Trim();
             var editedName = (edited.Name ?? string.Empty).Trim();
             bool changed = !string.Equals(originalName, editedName, StringComparison.OrdinalIgnoreCase) || original.Values != edited.Values;
-            if (changed && string.IsNullOrEmpty(edited.Values) && string.Equals(originalName, editedName, StringComparison.OrdinalIgnoreCase))
+            if (changed && string.IsNullOrEmpty(edited.Values))
             {
                 DeleteVariable(original, variablesSet);
                 return;
