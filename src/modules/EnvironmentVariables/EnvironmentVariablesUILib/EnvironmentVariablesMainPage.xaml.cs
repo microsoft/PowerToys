@@ -124,24 +124,11 @@ namespace EnvironmentVariablesUILib
                 }
 
                 var normalizedName = (variable.Name ?? string.Empty).Trim();
-                var normalizedValue = variable.Values ?? string.Empty;
-                var expandedValue = Environment.ExpandEnvironmentVariables(normalizedValue);
-
-                bool IsValueMatch(string candidateValue)
-                {
-                    var candidate = candidateValue ?? string.Empty;
-                    var expandedCandidate = Environment.ExpandEnvironmentVariables(candidate);
-
-                    return string.Equals(candidate, normalizedValue, StringComparison.Ordinal) ||
-                        string.Equals(expandedCandidate, normalizedValue, StringComparison.Ordinal) ||
-                        string.Equals(candidate, expandedValue, StringComparison.Ordinal) ||
-                        string.Equals(expandedCandidate, expandedValue, StringComparison.Ordinal);
-                }
 
                 if (ViewModel.AppliedProfile != null && ViewModel.AppliedProfile.Variables != null &&
                     ViewModel.AppliedProfile.Variables.Any(x => x != null &&
                         string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
-                        IsValueMatch(x.Values)))
+                        EnvironmentVariablesHelper.IsEquivalentVariableValue(x.Values, variable.Values)))
                 {
                     return ViewModel.AppliedProfile;
                 }
@@ -150,7 +137,7 @@ namespace EnvironmentVariablesUILib
                     .Where(profile => profile?.Variables != null &&
                         profile.Variables.Any(x => x != null &&
                              string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
-                             IsValueMatch(x.Values) &&
+                             EnvironmentVariablesHelper.IsEquivalentVariableValue(x.Values, variable.Values) &&
                              x.ParentType == VariablesSetType.Profile))
                     .ToList();
 
