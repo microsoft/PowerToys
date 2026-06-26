@@ -4,13 +4,14 @@
 
 using System.CommandLine;
 using PowerDisplay.Cli.Options;
+using PowerDisplay.Contracts;
 
 namespace PowerDisplay.Cli.Commands;
 
 /// <summary>
-/// Builds the <c>powerdisplay</c> root command and its subcommands. The
-/// instances are captured as properties so <see cref="Program"/> can use reference
-/// equality on <c>parseResult.CommandResult.Command</c> for dispatch.
+/// Builds the <c>powerdisplay</c> root command and its subcommands. <see cref="Program"/>
+/// dispatches on <c>parseResult.CommandResult.Command.Name</c> against the
+/// <see cref="CliCommandNames"/> constants.
 /// </summary>
 // 'partial' is required by the CsWinRT analyzer (CsWinRT1028) for AOT/WinRT-ABI compatibility,
 // even though there is only one declaration.
@@ -22,41 +23,22 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
         AddGlobalOption(CliOptions.Quiet);
         AddGlobalOption(CliOptions.TimeoutSeconds);
 
-        ListCommand = BuildList();
-        CapabilitiesCommand = BuildCapabilities();
-        GetCommand = BuildGet();
-        SetCommand = BuildSet();
-        ProfilesCommand = BuildProfiles();
-        ApplyProfileCommand = BuildApplyProfile();
-
-        AddCommand(ListCommand);
-        AddCommand(CapabilitiesCommand);
-        AddCommand(GetCommand);
-        AddCommand(SetCommand);
-        AddCommand(ProfilesCommand);
-        AddCommand(ApplyProfileCommand);
+        AddCommand(BuildList());
+        AddCommand(BuildCapabilities());
+        AddCommand(BuildGet());
+        AddCommand(BuildSet());
+        AddCommand(BuildProfiles());
+        AddCommand(BuildApplyProfile());
     }
-
-    public Command ListCommand { get; }
-
-    public Command CapabilitiesCommand { get; }
-
-    public Command GetCommand { get; }
-
-    public Command SetCommand { get; }
-
-    public Command ProfilesCommand { get; }
-
-    public Command ApplyProfileCommand { get; }
 
     private static Command BuildList()
     {
-        return new Command("list", "Discover attached monitors and print their number, stable id, name, and transport.");
+        return new Command(CliCommandNames.List, "Discover attached monitors and print their number, stable id, name, and transport.");
     }
 
     private static Command BuildCapabilities()
     {
-        var cmd = new Command("capabilities", "Print the VCP capabilities advertised by the monitor. Use --setting to restrict to one discrete setting (color-temperature, input-source, power-state).");
+        var cmd = new Command(CliCommandNames.Capabilities, "Print the VCP capabilities advertised by the monitor. Use --setting to restrict to one discrete setting (color-temperature, input-source, power-state).");
         cmd.AddOption(CliOptions.MonitorNumber);
         cmd.AddOption(CliOptions.MonitorId);
         cmd.AddOption(CliOptions.SettingFilter);
@@ -65,7 +47,7 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
 
     private static Command BuildGet()
     {
-        var cmd = new Command("get", "Read the current value of one or all settings for a monitor.");
+        var cmd = new Command(CliCommandNames.Get, "Read the current value of one or all settings for a monitor.");
         cmd.AddOption(CliOptions.MonitorNumber);
         cmd.AddOption(CliOptions.MonitorId);
         cmd.AddOption(CliOptions.SettingFilter);
@@ -74,7 +56,7 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
 
     private static Command BuildSet()
     {
-        var cmd = new Command("set", "Apply a single setting to a monitor. Exactly one --<setting> flag must be provided.");
+        var cmd = new Command(CliCommandNames.Set, "Apply a single setting to a monitor. Exactly one --<setting> flag must be provided.");
         cmd.AddOption(CliOptions.MonitorNumber);
         cmd.AddOption(CliOptions.MonitorId);
         cmd.AddOption(CliOptions.Brightness);
@@ -90,12 +72,12 @@ public sealed partial class PowerDisplayRootCommand : RootCommand
 
     private static Command BuildProfiles()
     {
-        return new Command("profiles", "List the saved PowerDisplay profiles (name, monitor count, last modified).");
+        return new Command(CliCommandNames.Profiles, "List the saved PowerDisplay profiles (name, monitor count, last modified).");
     }
 
     private static Command BuildApplyProfile()
     {
-        var cmd = new Command("apply-profile", "Apply a saved profile's per-monitor settings to the connected monitors.");
+        var cmd = new Command(CliCommandNames.ApplyProfile, "Apply a saved profile's per-monitor settings to the connected monitors.");
         cmd.AddArgument(CliOptions.ProfileName);
         return cmd;
     }

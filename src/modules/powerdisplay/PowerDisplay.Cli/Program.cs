@@ -156,108 +156,108 @@ public static class Program
         ICliOutput output,
         CancellationToken cancellationToken)
     {
-        var command = parseResult.CommandResult.Command;
-
-        // ── list ──────────────────────────────────────────────────────────────
-        if (command == root.ListCommand)
+        // Dispatch on the parsed command's name against the shared CliCommandNames constants,
+        // so no shared reference-equality singletons are required.
+        switch (parseResult.CommandResult.Command.Name)
         {
-            return await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), cancellationToken);
-        }
+            // ── list ──────────────────────────────────────────────────────────
+            case CliCommandNames.List:
+                return await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), cancellationToken);
 
-        // ── get ───────────────────────────────────────────────────────────────
-        if (command == root.GetCommand)
-        {
-            var monitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber);
-            var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
-            var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
-
-            // CLI-side syntactic validation: reject unknown --setting names here so the error
-            // is surfaced without a round-trip and matches the existing ARGUMENT_ERROR (7) shape.
-            if (settingFilter is not null
-                && System.Array.IndexOf(CliSettingNames.All, settingFilter.ToLowerInvariant()) < 0)
+            // ── get ───────────────────────────────────────────────────────────
+            case CliCommandNames.Get:
             {
-                output.WriteError(ArgumentError(
-                    CliCommandNames.Get,
-                    Resources.Error_UnknownSetting(settingFilter),
-                    Resources.Hint_ValidSettings(string.Join(", ", CliSettingNames.All))));
-                return CliExitCodes.ArgumentError;
+                var monitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber);
+                var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
+                var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
+
+                // CLI-side syntactic validation: reject unknown --setting names here so the error
+                // is surfaced without a round-trip and matches the existing ARGUMENT_ERROR (7) shape.
+                if (settingFilter is not null
+                    && System.Array.IndexOf(CliSettingNames.All, settingFilter.ToLowerInvariant()) < 0)
+                {
+                    output.WriteError(ArgumentError(
+                        CliCommandNames.Get,
+                        Resources.Error_UnknownSetting(settingFilter),
+                        Resources.Hint_ValidSettings(string.Join(", ", CliSettingNames.All))));
+                    return CliExitCodes.ArgumentError;
+                }
+
+                WarnIfMonitorNumberIgnored(output, monitorNumber, monitorId);
+
+                return await dispatcher.SendGetAsync(
+                    CliRequestBuilder.BuildGet(monitorNumber, monitorId, settingFilter),
+                    cancellationToken);
             }
 
-            WarnIfMonitorNumberIgnored(output, monitorNumber, monitorId);
-
-            return await dispatcher.SendGetAsync(
-                CliRequestBuilder.BuildGet(monitorNumber, monitorId, settingFilter),
-                cancellationToken);
-        }
-
-        // ── set ───────────────────────────────────────────────────────────────
-        if (command == root.SetCommand)
-        {
-            var inputs = new SetCommandInputs
+            // ── set ───────────────────────────────────────────────────────────
+            case CliCommandNames.Set:
             {
-                MonitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber),
-                MonitorId = parseResult.GetValueForOption(CliOptions.MonitorId),
-                Brightness = parseResult.GetValueForOption(CliOptions.Brightness),
-                Contrast = parseResult.GetValueForOption(CliOptions.Contrast),
-                Volume = parseResult.GetValueForOption(CliOptions.Volume),
-                ColorTemperature = parseResult.GetValueForOption(CliOptions.ColorTemperature),
-                InputSource = parseResult.GetValueForOption(CliOptions.InputSource),
-                PowerState = parseResult.GetValueForOption(CliOptions.PowerState),
-                Orientation = parseResult.GetValueForOption(CliOptions.Orientation),
-                ConfirmPowerOff = parseResult.GetValueForOption(CliOptions.ConfirmPowerOff),
-            };
+                var inputs = new SetCommandInputs
+                {
+                    MonitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber),
+                    MonitorId = parseResult.GetValueForOption(CliOptions.MonitorId),
+                    Brightness = parseResult.GetValueForOption(CliOptions.Brightness),
+                    Contrast = parseResult.GetValueForOption(CliOptions.Contrast),
+                    Volume = parseResult.GetValueForOption(CliOptions.Volume),
+                    ColorTemperature = parseResult.GetValueForOption(CliOptions.ColorTemperature),
+                    InputSource = parseResult.GetValueForOption(CliOptions.InputSource),
+                    PowerState = parseResult.GetValueForOption(CliOptions.PowerState),
+                    Orientation = parseResult.GetValueForOption(CliOptions.Orientation),
+                    ConfirmPowerOff = parseResult.GetValueForOption(CliOptions.ConfirmPowerOff),
+                };
 
-            // CLI-side syntactic validation: exactly one setting must be specified.
-            var selected = SetCommand.CountSelectedSettings(inputs);
-            if (selected == 0)
-            {
-                output.WriteError(ArgumentError(CliCommandNames.Set, Resources.Error_NoSettingSpecified));
-                return CliExitCodes.ArgumentError;
+                // CLI-side syntactic validation: exactly one setting must be specified.
+                var selected = SetCommand.CountSelectedSettings(inputs);
+                if (selected == 0)
+                {
+                    output.WriteError(ArgumentError(CliCommandNames.Set, Resources.Error_NoSettingSpecified));
+                    return CliExitCodes.ArgumentError;
+                }
+
+                if (selected > 1)
+                {
+                    output.WriteError(ArgumentError(CliCommandNames.Set, Resources.Error_OnlyOneSetting, Resources.Hint_OnlyOneSetting));
+                    return CliExitCodes.ArgumentError;
+                }
+
+                WarnIfMonitorNumberIgnored(output, inputs.MonitorNumber, inputs.MonitorId);
+
+                return await dispatcher.SendSetAsync(CliRequestBuilder.BuildSet(inputs), cancellationToken);
             }
 
-            if (selected > 1)
+            // ── capabilities ──────────────────────────────────────────────────
+            case CliCommandNames.Capabilities:
             {
-                output.WriteError(ArgumentError(CliCommandNames.Set, Resources.Error_OnlyOneSetting, Resources.Hint_OnlyOneSetting));
-                return CliExitCodes.ArgumentError;
+                var monitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber);
+                var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
+                var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
+
+                WarnIfMonitorNumberIgnored(output, monitorNumber, monitorId);
+
+                // An out-of-range --setting (not one of the 3 discrete settings) is validated app-side
+                // and comes back as a single ARGUMENT_ERROR envelope.
+                return await dispatcher.SendCapabilitiesAsync(
+                    CliRequestBuilder.BuildCapabilities(monitorNumber, monitorId, settingFilter),
+                    cancellationToken);
             }
 
-            WarnIfMonitorNumberIgnored(output, inputs.MonitorNumber, inputs.MonitorId);
+            // ── profiles ──────────────────────────────────────────────────────
+            case CliCommandNames.Profiles:
+                return await dispatcher.SendProfilesAsync(CliRequestBuilder.BuildProfiles(), cancellationToken);
 
-            return await dispatcher.SendSetAsync(CliRequestBuilder.BuildSet(inputs), cancellationToken);
+            // ── apply-profile ─────────────────────────────────────────────────
+            case CliCommandNames.ApplyProfile:
+            {
+                var profileName = parseResult.GetValueForArgument(CliOptions.ProfileName);
+                return await dispatcher.SendApplyProfileAsync(
+                    CliRequestBuilder.BuildApplyProfile(profileName),
+                    cancellationToken);
+            }
+
+            default:
+                return await root.InvokeAsync(args);
         }
-
-        // ── capabilities ──────────────────────────────────────────────────────
-        if (command == root.CapabilitiesCommand)
-        {
-            var monitorNumber = parseResult.GetValueForOption(CliOptions.MonitorNumber);
-            var monitorId = parseResult.GetValueForOption(CliOptions.MonitorId);
-            var settingFilter = parseResult.GetValueForOption(CliOptions.SettingFilter);
-
-            WarnIfMonitorNumberIgnored(output, monitorNumber, monitorId);
-
-            // An out-of-range --setting (not one of the 3 discrete settings) is validated app-side
-            // and comes back as a single ARGUMENT_ERROR envelope.
-            return await dispatcher.SendCapabilitiesAsync(
-                CliRequestBuilder.BuildCapabilities(monitorNumber, monitorId, settingFilter),
-                cancellationToken);
-        }
-
-        // ── profiles ──────────────────────────────────────────────────────────
-        if (command == root.ProfilesCommand)
-        {
-            return await dispatcher.SendProfilesAsync(CliRequestBuilder.BuildProfiles(), cancellationToken);
-        }
-
-        // ── apply-profile ─────────────────────────────────────────────────────
-        if (command == root.ApplyProfileCommand)
-        {
-            var profileName = parseResult.GetValueForArgument(CliOptions.ProfileName);
-            return await dispatcher.SendApplyProfileAsync(
-                CliRequestBuilder.BuildApplyProfile(profileName),
-                cancellationToken);
-        }
-
-        return await root.InvokeAsync(args);
     }
 
     // Carry-forward: the app discards -n when -i is also supplied; surface that warning
@@ -283,7 +283,7 @@ public static class Program
     // other command. Option *values* that look like help (e.g. `set -i -h`) are unaffected: they are
     // matched to an option, not to this argument.
     private static bool HelpBoundToProfileNameArgument(ParseResult parseResult)
-        => parseResult.CommandResult.Command.Name == "apply-profile"
+        => parseResult.CommandResult.Command.Name == CliCommandNames.ApplyProfile
             && IsHelpToken(parseResult.GetValueForArgument(CliOptions.ProfileName) ?? string.Empty);
 
     public static bool HasVersionToken(ParseResult parseResult)
