@@ -619,9 +619,9 @@ namespace EnvironmentVariablesUILib
             {
                 if (variable != null)
                 {
+                    var candidateName = (variable.Name ?? string.Empty).Trim();
                     if (!profile.Variables
-                        .Where(x => AreEquivalentVariables(x, variable))
-                        .Any())
+                        .Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), candidateName, StringComparison.OrdinalIgnoreCase)))
                     {
                         AddVariableDialog.IsPrimaryButtonEnabled = true;
                         break;
