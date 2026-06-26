@@ -743,10 +743,19 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
 
             var normalizedName = (target.Name ?? string.Empty).Trim();
-            return variables
+            var matches = variables
                 .Where(x => x != null && string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase))
                 .Where(x => EnvironmentVariablesHelper.IsEquivalentVariableValue(x?.Values, target.Values))
-                .FirstOrDefault();
+                .ToList();
+
+            if (matches.Count != 1)
+            {
+                LoggerInstance.Logger.LogError(
+                    $"Invalid profile variable resolution: expected one match for '{normalizedName}' but found {matches.Count}.");
+                return null;
+            }
+
+            return matches[0];
         }
     }
 }
