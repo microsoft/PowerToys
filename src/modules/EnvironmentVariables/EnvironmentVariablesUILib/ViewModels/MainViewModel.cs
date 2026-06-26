@@ -212,12 +212,12 @@ namespace EnvironmentVariablesUILib.ViewModels
             var variables = new List<Variable>();
             if (AppliedProfile != null && AppliedProfile.Variables != null)
             {
-                variables = variables.Concat(AppliedProfile.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.Profile)).OrderBy(x => x.Name)).ToList();
+                variables = variables.Concat(AppliedProfile.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values ?? string.Empty), VariablesSetType.Profile)).OrderBy(x => x.Name)).ToList();
             }
 
             // Variables are expanded to be shown in the applied variables section, so the user sees their actual values.
-            variables = variables.Concat(UserDefaultSet.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.User)).OrderBy(x => x.Name))
-                                 .Concat(SystemDefaultSet.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.System)).OrderBy(x => x.Name))
+            variables = variables.Concat(UserDefaultSet.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values ?? string.Empty), VariablesSetType.User)).OrderBy(x => x.Name))
+                                 .Concat(SystemDefaultSet.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values ?? string.Empty), VariablesSetType.System)).OrderBy(x => x.Name))
                                  .ToList();
 
             // Handle PATH variable - add USER value to the end of the SYSTEM value
