@@ -151,10 +151,7 @@ namespace EnvironmentVariablesUILib.Helpers
                             }
                             finally
                             {
-                                if (_fileSystem.File.Exists(backupFilePath))
-                                {
-                                    _fileSystem.File.Delete(backupFilePath);
-                                }
+                                 DeleteIfExists(backupFilePath);
                             }
                         }
                     }
@@ -165,10 +162,7 @@ namespace EnvironmentVariablesUILib.Helpers
                 }
                 finally
                 {
-                    if (_fileSystem.File.Exists(tempFilePath))
-                    {
-                        _fileSystem.File.Delete(tempFilePath);
-                    }
+                    DeleteIfExists(tempFilePath);
                 }
             }
             finally
@@ -181,6 +175,20 @@ namespace EnvironmentVariablesUILib.Helpers
             if (System.Threading.Volatile.Read(ref _disposed) == 1)
             {
                 throw new ObjectDisposedException(nameof(EnvironmentVariablesService));
+            }
+        }
+
+        private void DeleteIfExists(string filePath)
+        {
+            try
+            {
+                if (_fileSystem.File.Exists(filePath))
+                {
+                    _fileSystem.File.Delete(filePath);
+                }
+            }
+            catch
+            {
             }
         }
 
