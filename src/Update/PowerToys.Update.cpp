@@ -7,9 +7,13 @@
 
 #include <Windows.h>
 #include <shellapi.h>
+#include <wincrypt.h>
+#include <wintrust.h>
+#include <softpub.h>
 
 #include <filesystem>
 #include <string_view>
+#include <vector>
 
 #include <common/updating/updating.h>
 #include <common/updating/updateState.h>
@@ -209,8 +213,148 @@ bool InstallNewVersionStage1(fs::path installer)
     }
 }
 
+namespace
+{
+    // The installer is downloaded into a user-writable directory
+    // (%LOCALAPPDATA%\Microsoft\PowerToys\Updates) and is later executed by this
+    // updater, possibly elevated. Before running it we must verify it carries a
+    // valid Authenticode signature issued to Microsoft. Otherwise a local attacker
+    // could plant a malicious binary in that directory and have it executed here.
+    constexpr wchar_t EXPECTED_INSTALLER_SIGNER[] = L"Microsoft Corporation";
+
+    bool HasValidAuthenticodeChain(const std::wstring& filePath)
+    {
+        WINTRUST_FILE_INFO fileInfo{};
+        fileInfo.cbStruct = sizeof(fileInfo);
+        fileInfo.pcwszFilePath = filePath.c_str();
+
+        WINTRUST_DATA trustData{};
+        trustData.cbStruct = sizeof(trustData);
+        trustData.dwUIChoice = WTD_UI_NONE;
+        trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
+        trustData.dwUnionChoice = WTD_CHOICE_FILE;
+        trustData.dwStateAction = WTD_STATEACTION_VERIFY;
+        trustData.dwProvFlags = WTD_SAFER_FLAG;
+        trustData.pFile = &fileInfo;
+
+        GUID policyGuid = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+        const LONG status = WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &policyGuid, &trustData);
+
+        // Release the state data regardless of the verification result.
+        trustData.dwStateAction = WTD_STATEACTION_CLOSE;
+        WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &policyGuid, &trustData);
+
+        return status == ERROR_SUCCESS;
+    }
+
+    bool IsSignedByMicrosoft(const std::wstring& filePath)
+    {
+        HCERTSTORE store = nullptr;
+        HCRYPTMSG msg = nullptr;
+        DWORD encoding = 0;
+        DWORD contentType = 0;
+        DWORD formatType = 0;
+
+        if (!CryptQueryObject(CERT_QUERY_OBJECT_FILE,
+                              filePath.c_str(),
+                              CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED_EMBED,
+                              CERT_QUERY_FORMAT_FLAG_BINARY,
+                              0,
+                              &encoding,
+                              &contentType,
+                              &formatType,
+                              &store,
+                              &msg,
+                              nullptr))
+        {
+            return false;
+        }
+
+        auto storeCleanup = wil::scope_exit([&] {
+            if (msg)
+            {
+                CryptMsgClose(msg);
+            }
+            if (store)
+            {
+                CertCloseStore(store, 0);
+            }
+        });
+
+        DWORD signerInfoSize = 0;
+        if (!CryptMsgGetParam(msg, CMSG_SIGNER_INFO_PARAM, 0, nullptr, &signerInfoSize) || signerInfoSize == 0)
+        {
+            return false;
+        }
+
+        std::vector<BYTE> signerInfoBuffer(signerInfoSize);
+        auto signerInfo = reinterpret_cast<CMSG_SIGNER_INFO*>(signerInfoBuffer.data());
+        if (!CryptMsgGetParam(msg, CMSG_SIGNER_INFO_PARAM, 0, signerInfo, &signerInfoSize))
+        {
+            return false;
+        }
+
+        CERT_INFO certInfo{};
+        certInfo.Issuer = signerInfo->Issuer;
+        certInfo.SerialNumber = signerInfo->SerialNumber;
+
+        PCCERT_CONTEXT certContext = CertFindCertificateInStore(store,
+                                                                encoding,
+                                                                0,
+                                                                CERT_FIND_SUBJECT_CERT,
+                                                                &certInfo,
+                                                                nullptr);
+        if (!certContext)
+        {
+            return false;
+        }
+
+        auto certCleanup = wil::scope_exit([&] { CertFreeCertificateContext(certContext); });
+
+        const DWORD nameLen = CertGetNameStringW(certContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nullptr, nullptr, 0);
+        if (nameLen <= 1)
+        {
+            return false;
+        }
+
+        std::vector<wchar_t> subjectName(nameLen);
+        if (CertGetNameStringW(certContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, nullptr, subjectName.data(), nameLen) <= 1)
+        {
+            return false;
+        }
+
+        return std::wstring_view{ subjectName.data() } == EXPECTED_INSTALLER_SIGNER;
+    }
+
+    bool IsInstallerTrusted(const std::wstring& installerPath)
+    {
+        if (!HasValidAuthenticodeChain(installerPath))
+        {
+            Logger::error(L"Installer failed Authenticode trust verification: {}", installerPath);
+            return false;
+        }
+
+        if (!IsSignedByMicrosoft(installerPath))
+        {
+            Logger::error(L"Installer is not signed by Microsoft: {}", installerPath);
+            return false;
+        }
+
+        return true;
+    }
+}
+
 bool InstallNewVersionStage2(std::wstring installer_path)
 {
+    // Never execute an installer from the user-writable Updates directory unless it
+    // carries a valid Microsoft Authenticode signature. This is the single execution
+    // chokepoint for both freshly-downloaded and previously-downloaded installers.
+    if (!IsInstallerTrusted(installer_path))
+    {
+        Logger::error(L"Refusing to execute installer that failed signature verification: {}", installer_path);
+        return false;
+    }
+
     std::transform(begin(installer_path), end(installer_path), begin(installer_path), ::towlower);
 
     bool success = true;
