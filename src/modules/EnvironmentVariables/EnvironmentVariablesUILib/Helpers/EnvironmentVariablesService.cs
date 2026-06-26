@@ -118,6 +118,8 @@ namespace EnvironmentVariablesUILib.Helpers
             await _fileAccessLock.WaitAsync();
             try
             {
+                CleanupStaleProfileJsonArtifacts();
+
                 var persistedProfiles = SanitizeProfilesForPersistence(profiles);
                 string jsonData = JsonSerializer.Serialize(persistedProfiles, _serializerOptions);
 
@@ -191,6 +193,34 @@ namespace EnvironmentVariablesUILib.Helpers
                 if (_fileSystem.File.Exists(filePath))
                 {
                     _fileSystem.File.Delete(filePath);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private void CleanupStaleProfileJsonArtifacts()
+        {
+            var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
+            if (string.IsNullOrWhiteSpace(directoryPath) || !_fileSystem.Directory.Exists(directoryPath))
+            {
+                return;
+            }
+
+            try
+            {
+                var baseFileName = Path.GetFileName(ProfilesJsonFilePath);
+                var wildcardPattern = $"{baseFileName}.*";
+
+                foreach (var filePath in _fileSystem.Directory.EnumerateFiles(directoryPath, wildcardPattern))
+                {
+                    var extension = Path.GetExtension(filePath);
+                    if (extension.Equals(".tmp", StringComparison.OrdinalIgnoreCase)
+                        || extension.Equals(".bak", StringComparison.OrdinalIgnoreCase))
+                    {
+                        DeleteIfExists(filePath);
+                    }
                 }
             }
             catch
