@@ -37,6 +37,12 @@ namespace EnvironmentVariablesUILib.ViewModels
         private ObservableCollection<Variable> _appliedVariables = new ObservableCollection<Variable>();
 
         [ObservableProperty]
+        private ObservableCollection<Variable> _filteredDefaultVariables = new ObservableCollection<Variable>();
+
+        [ObservableProperty]
+        private string _defaultVariablesFilterText = string.Empty;
+
+        [ObservableProperty]
         private bool _isElevated;
 
         [ObservableProperty]
@@ -87,6 +93,8 @@ namespace EnvironmentVariablesUILib.ViewModels
             {
                 DefaultVariables.Variables.Add(variable);
             }
+
+            ApplyDefaultVariablesFilter();
         }
 
         public void LoadEnvironmentVariables()
@@ -381,6 +389,45 @@ namespace EnvironmentVariablesUILib.ViewModels
                     variable.ParentType = VariablesSetType.Profile;
                 }
             }
+        }
+
+        partial void OnDefaultVariablesFilterTextChanged(string value)
+        {
+            ApplyDefaultVariablesFilter();
+        }
+
+        internal void SetDefaultVariablesFilter(string filterText)
+        {
+            DefaultVariablesFilterText = filterText;
+        }
+
+        internal void ClearDefaultVariablesFilter()
+        {
+            DefaultVariablesFilterText = string.Empty;
+        }
+
+        private void ApplyDefaultVariablesFilter()
+        {
+            if (DefaultVariables == null || DefaultVariables.Variables == null)
+            {
+                FilteredDefaultVariables = new ObservableCollection<Variable>();
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(DefaultVariablesFilterText))
+            {
+                FilteredDefaultVariables = new ObservableCollection<Variable>(DefaultVariables.Variables);
+                return;
+            }
+
+            var query = DefaultVariablesFilterText.Trim();
+            var filtered = DefaultVariables.Variables
+                .Where(variable =>
+                    (!string.IsNullOrWhiteSpace(variable?.Name) && variable.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                    || (!string.IsNullOrWhiteSpace(variable?.Values) && variable.Values.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0))
+                .ToList();
+
+            FilteredDefaultVariables = new ObservableCollection<Variable>(filtered);
         }
 
         internal void RemoveProfile(ProfileVariablesSet profile)

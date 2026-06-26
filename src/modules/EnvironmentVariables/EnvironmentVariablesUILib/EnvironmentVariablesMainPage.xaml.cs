@@ -178,11 +178,24 @@ namespace EnvironmentVariablesUILib
             AddVariableDialog.Hide();
         }
 
+        private void ClearAddVariableSearchFilter()
+        {
+            if (DefaultVariablesSearchBox != null)
+            {
+                DefaultVariablesSearchBox.TextChanged -= DefaultVariablesSearchBox_TextChanged;
+                DefaultVariablesSearchBox.Text = string.Empty;
+                DefaultVariablesSearchBox.TextChanged += DefaultVariablesSearchBox_TextChanged;
+            }
+
+            ViewModel.ClearDefaultVariablesFilter();
+        }
+
         private void ResetAddVariableInputs()
         {
             AddNewVariableName.Text = string.Empty;
             AddNewVariableValue.Text = string.Empty;
             AddVariableDialog.IsPrimaryButtonEnabled = false;
+            ClearAddVariableSearchFilter();
 
             ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
             ExistingVariablesListView.SelectedItems.Clear();
@@ -372,6 +385,18 @@ namespace EnvironmentVariablesUILib
             SwitchViewsSegmentedView.SelectedIndex = 0;
             AddVariableDialog.DataContext = AddProfileDialog.DataContext;
             await AddVariableDialog.ShowAsync();
+        }
+
+        private void DefaultVariablesSearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var searchText = (sender as TextBox)?.Text;
+            ViewModel.SetDefaultVariablesFilter(searchText);
+
+            ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
+            ExistingVariablesListView.SelectedItems.Clear();
+            ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
+
+            AddVariableDialog.IsPrimaryButtonEnabled = false;
         }
 
         private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

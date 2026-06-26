@@ -229,6 +229,9 @@
   <data name="StateNotUpToDateEnvironmentMessageReceivedMsg" xml:space="preserve">
     <value>Variables have been modified. Reload to get the latest changes.</value>
   </data>
+  <data name="SearchExistingVariable.PlaceholderText" xml:space="preserve">
+    <value>Search variables by name or value</value>
+  </data>
   <data name="AddVariable_Title" xml:space="preserve">
     <value>Add variable</value>
   </data>
