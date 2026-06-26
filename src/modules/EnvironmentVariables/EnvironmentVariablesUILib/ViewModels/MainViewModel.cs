@@ -82,7 +82,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                 }
 
                 DefaultVariables.Variables.Add(variable);
-                if (AppliedProfile != null && AppliedProfile.Variables != null && AppliedProfile.Variables.Any())
+                if (AppliedProfile?.Variables != null && AppliedProfile.Variables.Any())
                 {
                     if (AppliedProfile.Variables.Any(profileVariable => IsVariableAppliedToProfile(variable, profileVariable, AppliedProfile.Name)))
                     {
