@@ -217,7 +217,14 @@ namespace EnvironmentVariablesUILib
             var activePanel = AddVariableSwitchPresenter.Value as string;
             if (activePanel == "NewVariable")
             {
-                profile.Variables.Add(new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile));
+                var newVariableName = AddNewVariableName.Text?.Trim();
+                var newVariable = new Variable(newVariableName, AddNewVariableValue.Text, VariablesSetType.Profile);
+                if (!newVariable.Valid)
+                {
+                    return;
+                }
+
+                profile.Variables.Add(newVariable);
             }
             else
             {
@@ -426,7 +433,8 @@ namespace EnvironmentVariablesUILib
                 return;
             }
 
-            if (nameTxtBox.Text.Length == 0 || nameTxtBox.Text.Length >= 255 || profile.Variables.Where(x => string.Equals(x?.Name, nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
+            var normalizedName = nameTxtBox.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName) || normalizedName.Length >= 255 || profile.Variables.Where(x => string.Equals(x?.Name, normalizedName, StringComparison.OrdinalIgnoreCase)).Any())
             {
                 AddVariableDialog.IsPrimaryButtonEnabled = false;
             }
