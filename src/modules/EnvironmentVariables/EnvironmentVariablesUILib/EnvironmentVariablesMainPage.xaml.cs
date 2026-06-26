@@ -422,6 +422,15 @@ namespace EnvironmentVariablesUILib
                 return;
             }
 
+            if (variable.ParentType == VariablesSetType.Profile)
+            {
+                variableSet = ResolveVariableSetFromVariable(variable) as ProfileVariablesSet;
+                if (variableSet == null)
+                {
+                    return;
+                }
+            }
+
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             ContentDialog dialog = new ContentDialog();
             dialog.XamlRoot = RootPage.XamlRoot;
