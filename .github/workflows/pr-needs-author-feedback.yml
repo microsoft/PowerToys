@@ -1,22 +1,17 @@
 name: PR Needs-Author-Feedback lifecycle
 
 # Handles the lifecycle of the "Needs-Author-Feedback" label on pull requests:
-# 1. When "Needs-Author-Feedback" is added to a PR:
+# 1. When the author pushes commits → remove "Needs-Author-Feedback".
+#    (Comment/review-based label removal is already handled by fabricbot in
+#    resourceManagement.yml via the Issue_Comment eventResponderTask.)
+# 2. Scheduled check every 6 hours:
 #    - After 7 days of author inactivity (measured from label application or last
 #      author activity, whichever is later) → convert PR to draft + comment.
 #    - After 14 days → close PR + comment.
-# 2. When the author pushes commits, comments, or submits a review →
-#    remove "Needs-Author-Feedback".
 
 on:
   pull_request_target:
     types: [synchronize]
-  issue_comment:
-    types: [created]
-  pull_request_review:
-    types: [submitted]
-  pull_request_review_comment:
-    types: [created]
   schedule:
     # Run every 6 hours to check for stale PRs
     - cron: '0 */6 * * *'
@@ -72,47 +67,7 @@ jobs:
               console.log(`Removed Needs-Author-Feedback from PR #${prNumber}`);
             }
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 2: When author comments (issue comment, review submission,
-  #         or inline review comment) → remove "Needs-Author-Feedback"
-  # ─────────────────────────────────────────────────────────────────────────────
-  author-responded-comment:
-    if: >-
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request &&
-       github.event.issue.state == 'open' &&
-       github.event.sender.id == github.event.issue.user.id) ||
-      (github.event_name == 'pull_request_review' &&
-       github.event.pull_request.state == 'open' &&
-       github.event.review.user.id == github.event.pull_request.user.id) ||
-      (github.event_name == 'pull_request_review_comment' &&
-       github.event.pull_request.state == 'open' &&
-       github.event.sender.id == github.event.pull_request.user.id)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Remove Needs-Author-Feedback
-        uses: actions/github-script@v9
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const prNumber = context.payload.pull_request?.number || context.payload.issue?.number;
-            const labels = (await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber,
-            })).data.map(l => l.name);
-
-            if (labels.includes('Needs-Author-Feedback')) {
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: prNumber,
-                name: 'Needs-Author-Feedback',
-              });
-              console.log(`Removed Needs-Author-Feedback from PR #${prNumber}`);
-            }
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Job 3: Scheduled check — convert to draft after 7 days, close after 14 days
+  # Job 2: Scheduled check — convert to draft after 7 days, close after 14 days
   # ─────────────────────────────────────────────────────────────────────────────
   check-stale-prs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
