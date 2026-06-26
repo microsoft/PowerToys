@@ -45,7 +45,7 @@ namespace EnvironmentVariablesUILib.Models
         public VariablesSet(Guid id, string name, VariablesSetType type)
         {
             Id = id;
-            Name = name;
+            Name = name?.Trim();
             Type = type;
             Variables = new ObservableCollection<Variable>();
 
@@ -60,7 +60,7 @@ namespace EnvironmentVariablesUILib.Models
 
         private bool Validate()
         {
-            if (string.IsNullOrWhiteSpace(Name))
+            if (string.IsNullOrWhiteSpace(Name?.Trim()))
             {
                 return false;
             }
