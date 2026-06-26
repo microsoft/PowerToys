@@ -34,7 +34,7 @@ public static class HoverActionResolver
         return mode switch
         {
             HoverActionsMode.Explicit => ResolveExplicit(candidates, ctx.MaxHoverActions),
-            HoverActionsMode.AllMoreCommands => candidates,
+            HoverActionsMode.AllMoreCommands => ApplyMax(candidates, ctx.MaxHoverActions),
             _ => TakeFirstN(candidates, ctx.MaxHoverActions),
         };
     }
