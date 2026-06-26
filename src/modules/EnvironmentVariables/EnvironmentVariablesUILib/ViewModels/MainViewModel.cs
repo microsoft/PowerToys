@@ -562,7 +562,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
 
             var deduped = cleanedVariables
-                .GroupBy(variable => $"{variable.Name?.ToUpperInvariant()}|{variable.Values}|{variable.ParentType}")
+                .GroupBy(variable => $"{variable.Name?.Trim().ToUpperInvariant()}")
                 .Select(group => group.First())
                 .ToList();
 
