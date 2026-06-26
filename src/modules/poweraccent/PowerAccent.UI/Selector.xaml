@@ -1,138 +1,150 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <common:TransparentWindow
     x:Class="PowerAccent.UI.Selector"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window"
+    xmlns:controls="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:PowerAccent.UI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="RootContent">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <controls:TransientSurface x:Name="Surface">
+        <Grid x:Name="RootContent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <ListView
-            x:Name="CharactersList"
-            Padding="0"
-            HorizontalAlignment="Center"
-            AutomationProperties.AutomationId="QuickAccentCharacterList"
-            IsHitTestVisible="False"
-            IsItemClickEnabled="False"
-            ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}"
-            ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-            ScrollViewer.HorizontalScrollMode="Enabled"
-            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-            ScrollViewer.VerticalScrollMode="Disabled"
-            SelectionMode="Single">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-            <!--
-                Custom container template that reproduces the WPF accent "pill": an inset, rounded,
-                accent-filled rectangle shown only on selection (driven by VisualStateManager, since
-                Style/ControlTemplate triggers are not available in WinUI 3), with the glyph switching
-                to on-accent foreground. Replaces the native ListViewItemPresenter, whose flat
-                full-cell selection looked like a plain blue square.
-            -->
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="IsTabStop" Value="False" />
-                    <Setter Property="Margin" Value="0" />
-                    <Setter Property="Padding" Value="0" />
-                    <!--
-                        WinUI's ListViewItem defaults MinWidth to 88 (ListViewItemMinWidth); WPF's
-                        ListBoxItem defaulted to 0. Without this override each 48px glyph cell is
-                        padded out to 88px, leaving wide gaps between accents. Pin it to the cell
-                        width so the bar is as tight as the WPF original.
-                    -->
-                    <Setter Property="MinWidth" Value="48" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="ListViewItem">
-                                <Grid
-                                    Height="48"
-                                    MinWidth="48"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center">
-                                    <Border
-                                        x:Name="SelectionIndicator"
-                                        Margin="7"
-                                        Background="{ThemeResource AccentFillColorDefaultBrush}"
-                                        BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="4"
-                                        Opacity="0" />
-                                    <ContentPresenter
-                                        x:Name="ContentPresenter"
-                                        Margin="12"
+            <ListView
+                x:Name="CharactersList"
+                Padding="0"
+                HorizontalAlignment="Center"
+                AutomationProperties.AutomationId="QuickAccentCharacterList"
+                IsHitTestVisible="False"
+                IsItemClickEnabled="False"
+                ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}"
+                ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                ScrollViewer.HorizontalScrollMode="Enabled"
+                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                ScrollViewer.VerticalScrollMode="Disabled"
+                SelectionMode="Single">
+                <!--
+                    Disable the default ListView item animations (entrance / reorder /
+                    reposition). The accent bar is rebuilt and re-selected on every keystroke;
+                    the built-in transitions make glyphs visibly slide/fade in, which reads as
+                    lag on a typing aid that must feel instant.
+                -->
+                <ListView.ItemContainerTransitions>
+                    <TransitionCollection />
+                </ListView.ItemContainerTransitions>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+                <!--
+                    Custom container template that reproduces the WPF accent "pill": an inset, rounded,
+                    accent-filled rectangle shown only on selection (driven by VisualStateManager, since
+                    Style/ControlTemplate triggers are not available in WinUI 3), with the glyph switching
+                    to on-accent foreground. Replaces the native ListViewItemPresenter, whose flat
+                    full-cell selection looked like a plain blue square.
+                -->
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="IsTabStop" Value="False" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="Padding" Value="0" />
+                        <!--
+                            WinUI's ListViewItem defaults MinWidth to 88 (ListViewItemMinWidth); WPF's
+                            ListBoxItem defaulted to 0. Without this override each 48px glyph cell is
+                            padded out to 88px, leaving wide gaps between accents. Pin it to the cell
+                            width so the bar is as tight as the WPF original.
+                        -->
+                        <Setter Property="MinWidth" Value="48" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Grid
+                                        Height="48"
+                                        MinWidth="48"
                                         HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                    <VisualStateManager.VisualStateGroups>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal" />
-                                            <VisualState x:Name="Selected">
-                                                <VisualState.Setters>
-                                                    <Setter Target="SelectionIndicator.Opacity" Value="1" />
-                                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="PointerOverSelected">
-                                                <VisualState.Setters>
-                                                    <Setter Target="SelectionIndicator.Opacity" Value="1" />
-                                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="PressedSelected">
-                                                <VisualState.Setters>
-                                                    <Setter Target="SelectionIndicator.Opacity" Value="1" />
-                                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateManager.VisualStateGroups>
-                                </Grid>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                    <TextBlock
-                        VerticalAlignment="Center"
-                        FontSize="18"
-                        Text="{x:Bind Mode=OneTime}"
-                        TextAlignment="Center" />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                                        VerticalAlignment="Center">
+                                        <Border
+                                            x:Name="SelectionIndicator"
+                                            Margin="7"
+                                            Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="4"
+                                            Opacity="0" />
+                                        <ContentPresenter
+                                            x:Name="ContentPresenter"
+                                            Margin="12"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                        <VisualStateManager.VisualStateGroups>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal" />
+                                                <VisualState x:Name="Selected">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="SelectionIndicator.Opacity" Value="1" />
+                                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="PointerOverSelected">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="SelectionIndicator.Opacity" Value="1" />
+                                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="PressedSelected">
+                                                    <VisualState.Setters>
+                                                        <Setter Target="SelectionIndicator.Opacity" Value="1" />
+                                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateManager.VisualStateGroups>
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            Text="{x:Bind Mode=OneTime}"
+                            TextAlignment="Center" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
 
-        <Grid
-            Grid.Row="1"
-            Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
-            Visibility="{x:Bind ViewModel.DescriptionVisibility, Mode=OneWay}">
-            <TextBlock
-                x:Name="CharacterName"
-                MaxHeight="36"
-                Margin="8"
-                AutomationProperties.AutomationId="QuickAccentDescription"
-                FontSize="12"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Text="{x:Bind ViewModel.Description, Mode=OneWay}"
-                TextAlignment="Center"
-                TextTrimming="CharacterEllipsis"
-                TextWrapping="Wrap" />
-            <Rectangle
-                Height="1"
-                VerticalAlignment="Top"
-                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            <Grid
+                Grid.Row="1"
+                Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
+                Visibility="{x:Bind ViewModel.DescriptionVisibility, Mode=OneWay}">
+                <TextBlock
+                    x:Name="CharacterName"
+                    MaxHeight="36"
+                    Margin="8"
+                    AutomationProperties.AutomationId="QuickAccentDescription"
+                    FontSize="12"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    Text="{x:Bind ViewModel.Description, Mode=OneWay}"
+                    TextAlignment="Center"
+                    TextTrimming="CharacterEllipsis"
+                    TextWrapping="Wrap" />
+                <Rectangle
+                    Height="1"
+                    VerticalAlignment="Top"
+                    Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+            </Grid>
         </Grid>
-    </Grid>
+    </controls:TransientSurface>
 </common:TransparentWindow>

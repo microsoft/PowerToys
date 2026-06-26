@@ -4,7 +4,6 @@
 
 using System;
 
-using CommunityToolkit.WinUI.Animations;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Flyout;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
@@ -68,9 +67,10 @@ public sealed partial class Selector : TransparentWindow, IDisposable
             Logger.LogWarning($"Quick Accent selector presenter is not an OverlappedPresenter ({AppWindow.Presenter?.GetType().Name}); the popup cannot be made always-on-top and may appear behind the active app.");
         }
 
-        // No animations: instant show/hide for typing-aid responsiveness.
-        ShowAnimations = new ImplicitAnimationSet();
-        HideAnimations = new ImplicitAnimationSet();
+        // The accent popup is shown/hidden instantly (no slide/fade) for typing-aid
+        // responsiveness. TransientSurface defaults to SlideDirection.None (no animation);
+        // SubscribeTo wires the surface to this window's Show/Hide so it follows along.
+        Surface.SubscribeTo(this);
 
         _powerAccent = new Core.PowerAccent(action => DispatcherQueue.TryEnqueue(() => action()));
         _powerAccent.OnChangeDisplay += PowerAccent_OnChangeDisplay;
@@ -96,12 +96,12 @@ public sealed partial class Selector : TransparentWindow, IDisposable
 
     private void ApplyTheme()
     {
-        // Drive the whole card (border + acrylic + inner content) from the system app theme.
-        // Card is the window's root content (xamlRoot.Content), so setting RequestedTheme flips its
-        // ActualTheme, which re-resolves {ThemeResource} brushes and fires ActualThemeChanged - the
-        // signal AlwaysActiveDesktopAcrylicBackdrop uses to retint. High-contrast resources still
+        // Drive the whole surface (border + acrylic + inner content) from the system app theme.
+        // Surface is the window's root content (xamlRoot.Content), so setting RequestedTheme flips
+        // its ActualTheme, which re-resolves {ThemeResource} brushes and fires ActualThemeChanged -
+        // the signal AlwaysActiveDesktopAcrylicBackdrop uses to retint. High-contrast resources still
         // win automatically, so only the Light/Dark axis is set here.
-        Card.RequestedTheme = ThemeHelpers.GetAppTheme() == AppTheme.Light ? ElementTheme.Light : ElementTheme.Dark;
+        Surface.RequestedTheme = ThemeHelpers.GetAppTheme() == AppTheme.Light ? ElementTheme.Light : ElementTheme.Dark;
     }
 
     private void PowerAccent_OnChangeDisplay(bool isActive, string[] chars)
