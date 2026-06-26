@@ -16,17 +16,22 @@ namespace EnvironmentVariablesUILib.Helpers
     {
         internal static string GetBackupVariableName(Variable variable, string profileName)
         {
-            return variable.Name + "_PowerToys_" + profileName;
+            return (variable?.Name ?? string.Empty) + "_PowerToys_" + (profileName ?? string.Empty);
         }
 
         internal static Variable GetExisting(string variableName)
         {
+            if (string.IsNullOrEmpty(variableName))
+            {
+                return null;
+            }
+
             DefaultVariablesSet userSet = new DefaultVariablesSet(Guid.NewGuid(), "tmpUser", VariablesSetType.User);
             GetVariables(EnvironmentVariableTarget.User, userSet);
 
             foreach (var variable in userSet.Variables)
             {
-                if (variable.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(variable?.Name, variableName, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Variable(variable.Name, variable.Values, VariablesSetType.User);
                 }
@@ -37,7 +42,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
             foreach (var variable in systemSet.Variables)
             {
-                if (variable.Name.Equals(variableName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(variable?.Name, variableName, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Variable(variable.Name, variable.Values, VariablesSetType.System);
                 }
@@ -149,6 +154,11 @@ namespace EnvironmentVariablesUILib.Helpers
         // variable's ParentType. These helpers centralize that behavior for the apply/unapply/edit paths.
         internal static bool SetProfileVariableWithoutNotify(Variable variable)
         {
+            if (variable == null || string.IsNullOrEmpty(variable.Name))
+            {
+                return false;
+            }
+
             SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, variable.Values, fromMachine: false);
 
             return true;
@@ -156,6 +166,11 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static bool UnsetProfileVariableWithoutNotify(Variable variable)
         {
+            if (variable == null || string.IsNullOrEmpty(variable.Name))
+            {
+                return false;
+            }
+
             SetEnvironmentVariableFromRegistryWithoutNotify(variable.Name, null, fromMachine: false);
 
             return true;
@@ -163,6 +178,11 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static bool SetVariable(Variable variable)
         {
+            if (variable == null || string.IsNullOrEmpty(variable.Name))
+            {
+                return false;
+            }
+
             bool fromMachine = variable.ParentType switch
             {
                 VariablesSetType.Profile => false,
@@ -179,6 +199,11 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static bool UnsetVariable(Variable variable)
         {
+            if (variable == null || string.IsNullOrEmpty(variable.Name))
+            {
+                return false;
+            }
+
             bool fromMachine = variable.ParentType switch
             {
                 VariablesSetType.Profile => false,
