@@ -9,9 +9,9 @@ using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Windows.Media;
 
 using ColorPicker.Models;
+using Windows.UI;
 
 namespace ColorPicker.Helpers
 {

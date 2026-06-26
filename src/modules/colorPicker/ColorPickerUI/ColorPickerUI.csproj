@@ -114,8 +114,9 @@
     <Page Remove="Views\**\*.xaml" />
     <Page Remove="Resources\**\*.xaml" />
 
-    <!-- Old WPF resource pipeline: removed from build, re-introduced as .resw in B/C -->
-    <EmbeddedResource Remove="Properties\Resources.resx" />
+    <!-- Old WPF .resx string table has been fully migrated to Strings\en-us\Resources.resw
+         and Properties\Resources.resx deleted; nothing in the live build references
+         Properties.Resources anymore (only the still-quarantined ColorPickerControl does). -->
     <!-- Re-exclude the .ico/.cur lines above from the catch-all Resource glob conflicts -->
   </ItemGroup>
 
@@ -135,6 +136,22 @@
     <Compile Include="Settings\SettingItem`1.cs" />
     <Compile Include="Settings\IUserSettings.cs" />
     <Compile Include="Settings\UserSettings.cs" />
+  </ItemGroup>
+
+  <!-- Sub-project B (step 1): pure color logic + value converters ported to WinUI 3,
+       re-included past the folder quarantines above (color math, model, converters).
+       Consumed later by the editor controls/views as sub-project B continues. -->
+  <ItemGroup>
+    <Compile Include="Helpers\ColorHelper.cs" />
+    <Compile Include="Helpers\ColorRepresentationHelper.cs" />
+    <Compile Include="Helpers\SerializationHelper.cs" />
+    <Compile Include="Models\ColorFormatModel.cs" />
+    <Compile Include="Controls\HSVColor.cs" />
+    <Compile Include="Converters\BoolToInvertedVisibilityConverter.cs" />
+    <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\ColorToStringConverter.cs" />
+    <Compile Include="Converters\NumberToInvertedVisibilityConverter.cs" />
+    <Compile Include="Converters\NumberToVisibilityConverter.cs" />
   </ItemGroup>
 
 </Project>

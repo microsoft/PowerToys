@@ -6,7 +6,6 @@ using System;
 using System.Drawing;
 using System.Globalization;
 
-using ColorPicker.Properties;
 using ManagedCommon;
 
 namespace ColorPicker.Helpers
@@ -22,7 +21,7 @@ namespace ColorPicker.Helpers
         /// <param name="color">The <see cref="Color"/> for the presentation</param>
         /// <param name="colorRepresentationType">The type of the representation</param>
         /// <returns>A <see cref="string"/> representation of a color</returns>
-        internal static string GetStringRepresentationFromMediaColor(System.Windows.Media.Color color, string colorRepresentationType)
+        internal static string GetStringRepresentationFromMediaColor(Windows.UI.Color color, string colorRepresentationType)
         {
             var drawingcolor = Color.FromArgb(color.A, color.R, color.G, color.B);
             return GetStringRepresentation(drawingcolor, colorRepresentationType, string.Empty);
@@ -312,57 +311,28 @@ namespace ColorPicker.Helpers
 
         public static string GetColorNameFromColorIdentifier(string colorIdentifier)
         {
-            switch (colorIdentifier)
-            {
-                case "TEXT_COLOR_WHITE": return Resources.TEXT_COLOR_WHITE;
-                case "TEXT_COLOR_BLACK": return Resources.TEXT_COLOR_BLACK;
-                case "TEXT_COLOR_LIGHTGRAY": return Resources.TEXT_COLOR_LIGHTGRAY;
-                case "TEXT_COLOR_GRAY": return Resources.TEXT_COLOR_GRAY;
-                case "TEXT_COLOR_DARKGRAY": return Resources.TEXT_COLOR_DARKGRAY;
-                case "TEXT_COLOR_CORAL": return Resources.TEXT_COLOR_CORAL;
-                case "TEXT_COLOR_ROSE": return Resources.TEXT_COLOR_ROSE;
-                case "TEXT_COLOR_LIGHTORANGE": return Resources.TEXT_COLOR_LIGHTORANGE;
-                case "TEXT_COLOR_TAN": return Resources.TEXT_COLOR_TAN;
-                case "TEXT_COLOR_LIGHTYELLOW": return Resources.TEXT_COLOR_LIGHTYELLOW;
-                case "TEXT_COLOR_LIGHTGREEN": return Resources.TEXT_COLOR_LIGHTGREEN;
-                case "TEXT_COLOR_LIME": return Resources.TEXT_COLOR_LIME;
-                case "TEXT_COLOR_AQUA": return Resources.TEXT_COLOR_AQUA;
-                case "TEXT_COLOR_SKYBLUE": return Resources.TEXT_COLOR_SKYBLUE;
-                case "TEXT_COLOR_LIGHTTURQUOISE": return Resources.TEXT_COLOR_LIGHTTURQUOISE;
-                case "TEXT_COLOR_PALEBLUE": return Resources.TEXT_COLOR_PALEBLUE;
-                case "TEXT_COLOR_LIGHTBLUE": return Resources.TEXT_COLOR_LIGHTBLUE;
-                case "TEXT_COLOR_ICEBLUE": return Resources.TEXT_COLOR_ICEBLUE;
-                case "TEXT_COLOR_PERIWINKLE": return Resources.TEXT_COLOR_PERIWINKLE;
-                case "TEXT_COLOR_LAVENDER": return Resources.TEXT_COLOR_LAVENDER;
-                case "TEXT_COLOR_PINK": return Resources.TEXT_COLOR_PINK;
-                case "TEXT_COLOR_RED": return Resources.TEXT_COLOR_RED;
-                case "TEXT_COLOR_ORANGE": return Resources.TEXT_COLOR_ORANGE;
-                case "TEXT_COLOR_BROWN": return Resources.TEXT_COLOR_BROWN;
-                case "TEXT_COLOR_GOLD": return Resources.TEXT_COLOR_GOLD;
-                case "TEXT_COLOR_YELLOW": return Resources.TEXT_COLOR_YELLOW;
-                case "TEXT_COLOR_OLIVEGREEN": return Resources.TEXT_COLOR_OLIVEGREEN;
-                case "TEXT_COLOR_GREEN": return Resources.TEXT_COLOR_GREEN;
-                case "TEXT_COLOR_BRIGHTGREEN": return Resources.TEXT_COLOR_BRIGHTGREEN;
-                case "TEXT_COLOR_TEAL": return Resources.TEXT_COLOR_TEAL;
-                case "TEXT_COLOR_TURQUOISE": return Resources.TEXT_COLOR_TURQUOISE;
-                case "TEXT_COLOR_BLUE": return Resources.TEXT_COLOR_BLUE;
-                case "TEXT_COLOR_BLUEGRAY": return Resources.TEXT_COLOR_BLUEGRAY;
-                case "TEXT_COLOR_INDIGO": return Resources.TEXT_COLOR_INDIGO;
-                case "TEXT_COLOR_PURPLE": return Resources.TEXT_COLOR_PURPLE;
-                case "TEXT_COLOR_DARKRED": return Resources.TEXT_COLOR_DARKRED;
-                case "TEXT_COLOR_DARKYELLOW": return Resources.TEXT_COLOR_DARKYELLOW;
-                case "TEXT_COLOR_DARKGREEN": return Resources.TEXT_COLOR_DARKGREEN;
-                case "TEXT_COLOR_DARKTEAL": return Resources.TEXT_COLOR_DARKTEAL;
-                case "TEXT_COLOR_DARKBLUE": return Resources.TEXT_COLOR_DARKBLUE;
-                case "TEXT_COLOR_DARKPURPLE": return Resources.TEXT_COLOR_DARKPURPLE;
-                case "TEXT_COLOR_PLUM": return Resources.TEXT_COLOR_PLUM;
-                default: return string.Empty;
-            }
+            // The color-name identifiers (e.g. "TEXT_COLOR_BLACK") are the .resw resource keys
+            // verbatim, so resolve them directly through the resource loader. This replaces the
+            // WPF-era switch over the generated Resources designer, which no longer exists after
+            // the WinUI 3 migration moved the string table from Properties\Resources.resx to
+            // Strings\en-us\Resources.resw.
+            return ResourceLoaderInstance.GetString(colorIdentifier);
         }
 
         public static string ReplaceName(string colorFormat, Color color)
         {
-            return colorFormat.Replace(ColorFormatHelper.GetColorNameParameter(), GetColorNameFromColorIdentifier(ColorNameHelper.GetColorNameIdentifier(color)));
+            var colorNameParameter = ColorFormatHelper.GetColorNameParameter();
+
+            // Only resolve the (localized, resource-backed) color name when the format string
+            // actually contains the name placeholder. This skips a resource lookup for the common
+            // numeric formats and keeps pure-conversion unit tests from requiring the MRT resource
+            // loader (and the module .pri) to be initialized in the test host.
+            if (!colorFormat.Contains(colorNameParameter, StringComparison.Ordinal))
+            {
+                return colorFormat;
+            }
+
+            return colorFormat.Replace(colorNameParameter, GetColorNameFromColorIdentifier(ColorNameHelper.GetColorNameIdentifier(color)));
         }
     }
 }

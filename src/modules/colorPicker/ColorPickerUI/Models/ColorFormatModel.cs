@@ -3,10 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Windows.Media;
 
 using ColorPicker.Helpers;
 using ManagedCommon;
+using Windows.UI;
 
 namespace ColorPicker.Models
 {
