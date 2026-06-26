@@ -69,6 +69,7 @@ namespace EnvironmentVariablesUILib.Models
                 return false;
             }
 
+            var normalizedName = (Name ?? string.Empty).Trim();
             List<string> listVariables = new()
             {
                 "_NT_ALT_SYMBOL_PATH",
@@ -81,7 +82,7 @@ namespace EnvironmentVariablesUILib.Models
 
             foreach (var name in listVariables)
             {
-                if (Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(normalizedName, name, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -102,7 +103,7 @@ namespace EnvironmentVariablesUILib.Models
 
         public Variable(string name, string values, VariablesSetType parentType)
         {
-            Name = name;
+            Name = name?.Trim();
             Values = values;
             ParentType = parentType;
 
@@ -117,18 +118,19 @@ namespace EnvironmentVariablesUILib.Models
 
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)
         {
-            if (edited == null || string.IsNullOrWhiteSpace(edited.Name))
+            var normalizedEditedName = edited?.Name?.Trim();
+            if (edited == null || string.IsNullOrWhiteSpace(normalizedEditedName))
             {
                 LoggerInstance.Logger.LogError("Invalid edited variable.");
                 return Task.CompletedTask;
             }
 
-            bool nameChanged = Name != edited.Name;
+            bool nameChanged = !string.Equals((Name ?? string.Empty).Trim(), normalizedEditedName, StringComparison.OrdinalIgnoreCase);
 
             var clone = this.Clone();
 
             // Update state
-            Name = edited.Name;
+            Name = normalizedEditedName;
             Values = edited.Values;
 
             ValuesList = ValuesStringToValuesListItemCollection(Values);
@@ -209,13 +211,14 @@ namespace EnvironmentVariablesUILib.Models
 
         public bool Validate()
         {
-            if (string.IsNullOrWhiteSpace(Name))
+            var normalizedName = Name?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName))
             {
                 return false;
             }
 
             const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
-            if (ParentType != VariablesSetType.System && Name.Length >= MaxUserEnvVariableLength)
+            if (ParentType != VariablesSetType.System && normalizedName.Length >= MaxUserEnvVariableLength)
             {
                 LoggerInstance.Logger.LogError("Variable name too long.");
                 return false;
