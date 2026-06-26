@@ -382,6 +382,7 @@
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="24" />
                                             <ColumnDefinition />
+                                            <ColumnDefinition Width="24" />
                                         </Grid.ColumnDefinitions>
                                         <FontIcon
                                             Grid.Column="0"
@@ -390,11 +391,11 @@
                                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                                             Glyph="{x:Bind ParentType, Mode=OneWay, Converter={StaticResource VariableTypeToGlyphConverter}}" />
 
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock
-                                                Text="{x:Bind Name}"
-                                                TextTrimming="CharacterEllipsis"
-                                                TextWrapping="NoWrap" />
+                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                             <TextBlock
+                                                 Text="{x:Bind Name}"
+                                                 TextTrimming="CharacterEllipsis"
+                                                 TextWrapping="NoWrap" />
                                             <TextBlock
                                                 Grid.Row="1"
                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -402,13 +403,27 @@
                                                 Text="{x:Bind Values}"
                                                 TextTrimming="CharacterEllipsis"
                                                 TextWrapping="NoWrap">
-                                                <ToolTipService.ToolTip>
-                                                    <TextBlock Text="{x:Bind Values}" TextWrapping="WrapWholeWords" />
-                                                </ToolTipService.ToolTip>
-                                            </TextBlock>
-                                        </StackPanel>
-                                    </Grid>
-                                </DataTemplate>
+                                                 <ToolTipService.ToolTip>
+                                                     <TextBlock Text="{x:Bind Values}" TextWrapping="WrapWholeWords" />
+                                                 </ToolTipService.ToolTip>
+                                             </TextBlock>
+                                         </StackPanel>
+                                         <Button
+                                             x:Uid="CopyNameAndValue"
+                                             Grid.Column="2"
+                                             VerticalAlignment="Center"
+                                             Style="{StaticResource SubtleButtonStyle}"
+                                             CommandParameter="{x:Bind (models:Variable)}"
+                                             Click="CopyAppliedVariableNameAndValue_Click">
+                                             <Button.Content>
+                                                 <FontIcon
+                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                     Glyph="&#xE8C8;"
+                                                     FontSize="14" />
+                                             </Button.Content>
+                                         </Button>
+                                     </Grid>
+                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </ScrollViewer>

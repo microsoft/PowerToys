@@ -423,6 +423,18 @@ namespace EnvironmentVariablesUILib
             CopyToClipboard($"{variable.Name}={value}");
         }
 
+        private void CopyAppliedVariableNameAndValue_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var variable = button?.CommandParameter as Variable;
+            if (variable == null)
+            {
+                return;
+            }
+
+            CopyToClipboard($"{variable.Name}={variable.Values ?? string.Empty}");
+        }
+
         private static void CopyToClipboard(string text)
         {
             try
@@ -453,7 +465,7 @@ namespace EnvironmentVariablesUILib
             }
 
             var normalizedName = nameTxtBox.Text?.Trim();
-            if (string.IsNullOrWhiteSpace(normalizedName) || normalizedName.Length >= 255 || profile.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
+            if (string.IsNullOrWhiteSpace(normalizedName) || normalizedName.Contains('=') || normalizedName.Length >= 255 || profile.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
             {
                 AddVariableDialog.IsPrimaryButtonEnabled = false;
             }
