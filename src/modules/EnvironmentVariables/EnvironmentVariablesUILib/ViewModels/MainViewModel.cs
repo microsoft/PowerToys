@@ -229,10 +229,21 @@ namespace EnvironmentVariablesUILib.ViewModels
             {
                 var clone = systemPath.Clone();
                 clone.ParentType = VariablesSetType.Path;
+                clone.Values = systemPath.Values ?? string.Empty;
 
                 if (userPath != null)
                 {
-                    clone.Values += ";" + userPath.Values;
+                    var userPathValue = userPath.Values ?? string.Empty;
+                    if (!string.IsNullOrEmpty(userPathValue))
+                    {
+                        if (!string.IsNullOrEmpty(clone.Values))
+                        {
+                            clone.Values += ";";
+                        }
+
+                        clone.Values += userPathValue;
+                    }
+
                     variables.Remove(userPath);
                 }
 
@@ -248,7 +259,8 @@ namespace EnvironmentVariablesUILib.ViewModels
             // Find duplicates
             var duplicates = variables.Where(x => x != null && !string.Equals("PATH", (x.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase))
                                       .GroupBy(x => (x.Name ?? string.Empty).Trim().ToLowerInvariant())
-                                      .Where(g => g.Count() > 1);
+                                      .Where(g => g.Count() > 1)
+                                      .ToList();
             foreach (var duplicate in duplicates)
             {
                 var duplicateItems = duplicate.ToList();
