@@ -76,12 +76,19 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             foreach (var variable in UserDefaultSet.Variables)
             {
+                if (variable == null)
+                {
+                    continue;
+                }
+
                 DefaultVariables.Variables.Add(variable);
-                if (AppliedProfile != null)
+                if (AppliedProfile != null && AppliedProfile.Variables != null && AppliedProfile.Variables.Any())
                 {
                     if (AppliedProfile.Variables.Where(
-                        x => (x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase) && x.Values.Equals(variable.Values, StringComparison.OrdinalIgnoreCase))
-                            || variable.Name.Equals(EnvironmentVariablesHelper.GetBackupVariableName(x, AppliedProfile.Name), StringComparison.OrdinalIgnoreCase)).Any())
+                        x => x != null
+                            && (!string.IsNullOrWhiteSpace(variable.Name)
+                                && (!string.IsNullOrWhiteSpace(x.Name) && variable.Name.Equals(x.Name, StringComparison.OrdinalIgnoreCase))
+                                || string.Equals(variable.Name, EnvironmentVariablesHelper.GetBackupVariableName(x, AppliedProfile.Name), StringComparison.OrdinalIgnoreCase))).Any())
                     {
                         // If it's a user variable that's also in the profile or is a backup variable, mark it as applied from profile.
                         variable.IsAppliedFromProfile = true;
@@ -133,7 +140,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                     }
                 }
 
-                var appliedProfiles = profiles.Where(x => x.IsEnabled).ToList();
+                var appliedProfiles = profiles.Where(x => x != null && x.IsEnabled).ToList();
                 if (appliedProfiles.Count > 0)
                 {
                     var appliedProfile = appliedProfiles.First();
@@ -165,20 +172,20 @@ namespace EnvironmentVariablesUILib.ViewModels
             LoadDefaultVariables();
 
             var variables = new List<Variable>();
-            if (AppliedProfile != null)
+            if (AppliedProfile != null && AppliedProfile.Variables != null)
             {
-                variables = variables.Concat(AppliedProfile.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.Profile)).OrderBy(x => x.Name)).ToList();
+                variables = variables.Concat(AppliedProfile.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.Profile)).OrderBy(x => x.Name)).ToList();
             }
 
             // Variables are expanded to be shown in the applied variables section, so the user sees their actual values.
-            variables = variables.Concat(UserDefaultSet.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.User)).OrderBy(x => x.Name))
-                                 .Concat(SystemDefaultSet.Variables.Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.System)).OrderBy(x => x.Name))
+            variables = variables.Concat(UserDefaultSet.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.User)).OrderBy(x => x.Name))
+                                 .Concat(SystemDefaultSet.Variables.Where(x => x != null).Select(x => new Variable(x.Name, Environment.ExpandEnvironmentVariables(x.Values), VariablesSetType.System)).OrderBy(x => x.Name))
                                  .ToList();
 
             // Handle PATH variable - add USER value to the end of the SYSTEM value
-            var profilePath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.Profile).FirstOrDefault();
-            var userPath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.User).FirstOrDefault();
-            var systemPath = variables.Where(x => x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.System).FirstOrDefault();
+            var profilePath = variables.Where(x => x != null && "PATH".Equals(x.Name, StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.Profile).FirstOrDefault();
+            var userPath = variables.Where(x => x != null && "PATH".Equals(x.Name, StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.User).FirstOrDefault();
+            var systemPath = variables.Where(x => x != null && "PATH".Equals(x.Name, StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.System).FirstOrDefault();
 
             if (systemPath != null)
             {
@@ -203,7 +210,9 @@ namespace EnvironmentVariablesUILib.ViewModels
             variables = variables.GroupBy(x => x.Name).Select(y => y.First()).ToList();
 
             // Find duplicates
-            var duplicates = variables.Where(x => !x.Name.Equals("PATH", StringComparison.OrdinalIgnoreCase)).GroupBy(x => x.Name.ToLower(CultureInfo.InvariantCulture)).Where(g => g.Count() > 1);
+            var duplicates = variables.Where(x => x != null && !string.Equals("PATH", x.Name, StringComparison.OrdinalIgnoreCase))
+                                     .GroupBy(x => x.Name?.ToLower(CultureInfo.InvariantCulture) ?? string.Empty)
+                                     .Where(g => g.Count() > 1);
             foreach (var duplicate in duplicates)
             {
                 var userVar = duplicate.ElementAt(0);
