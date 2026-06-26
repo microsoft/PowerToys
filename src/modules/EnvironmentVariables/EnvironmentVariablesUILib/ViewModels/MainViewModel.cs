@@ -368,7 +368,7 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             var deduped = profile.Variables
                 .Where(variable => !string.IsNullOrWhiteSpace(variable?.Name))
-                .GroupBy(variable => variable.Name, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(variable => $"{variable.Name?.ToUpperInvariant()}|{variable.Values}|{variable.ParentType}")
                 .Select(group => group.First())
                 .ToList();
 
