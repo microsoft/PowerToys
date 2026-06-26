@@ -14,7 +14,11 @@ public partial class EnvironmentStateToVisibilityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        var type = (EnvironmentState)value;
+        if (value is not EnvironmentState type)
+        {
+            return Visibility.Visible;
+        }
+
         return type switch
         {
             EnvironmentState.Unchanged => Visibility.Collapsed,
@@ -24,6 +28,6 @@ public partial class EnvironmentStateToVisibilityConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
-        throw new NotImplementedException();
+        return null;
     }
 }

@@ -31,6 +31,6 @@ public partial class VariableTypeToGlyphConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
-        throw new NotImplementedException();
+        return null;
     }
 }

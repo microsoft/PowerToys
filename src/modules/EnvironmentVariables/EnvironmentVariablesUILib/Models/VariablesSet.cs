@@ -54,7 +54,7 @@ namespace EnvironmentVariablesUILib.Models
                 VariablesSetType.User => UserIconPath,
                 VariablesSetType.System => SystemIconPath,
                 VariablesSetType.Profile => ProfileIconPath,
-                _ => throw new NotImplementedException(),
+                _ => string.Empty,
             };
         }
 

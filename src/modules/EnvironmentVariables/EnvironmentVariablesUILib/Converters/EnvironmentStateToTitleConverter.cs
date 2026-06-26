@@ -15,6 +15,11 @@ public partial class EnvironmentStateToTitleConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         var resourceLoader = ResourceLoaderInstance.ResourceLoader;
+        if (value is not EnvironmentState)
+        {
+            return resourceLoader.GetString("StateNotUpToDateTitle");
+        }
+
         var type = (EnvironmentState)value;
         return type switch
         {
@@ -25,6 +30,6 @@ public partial class EnvironmentStateToTitleConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
-        throw new NotImplementedException();
+        return null;
     }
 }

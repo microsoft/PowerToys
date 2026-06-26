@@ -13,7 +13,11 @@ public partial class EnvironmentStateToBoolConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        var type = (EnvironmentState)value;
+        if (value is not EnvironmentState type)
+        {
+            return true;
+        }
+
         return type switch
         {
             EnvironmentState.Unchanged => false,
@@ -23,6 +27,6 @@ public partial class EnvironmentStateToBoolConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {
-        throw new NotImplementedException();
+        return null;
     }
 }
