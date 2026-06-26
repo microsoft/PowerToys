@@ -221,9 +221,9 @@ namespace EnvironmentVariablesUILib.ViewModels
                                  .ToList();
 
             // Handle PATH variable - add USER value to the end of the SYSTEM value
-            var profilePath = variables.Where(x => x != null && "PATH".Equals(x.Name, StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.Profile).FirstOrDefault();
-            var userPath = variables.Where(x => x != null && "PATH".Equals(x.Name, StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.User).FirstOrDefault();
-            var systemPath = variables.Where(x => x != null && "PATH".Equals(x.Name, StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.System).FirstOrDefault();
+            var profilePath = variables.Where(x => x != null && "PATH".Equals((x.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.Profile).FirstOrDefault();
+            var userPath = variables.Where(x => x != null && "PATH".Equals((x.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.User).FirstOrDefault();
+            var systemPath = variables.Where(x => x != null && "PATH".Equals((x.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase) && x.ParentType == VariablesSetType.System).FirstOrDefault();
 
             if (systemPath != null)
             {
@@ -285,12 +285,13 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
-            variable.Name = variable.Name.Trim();
+            var normalizedName = (variable.Name ?? string.Empty).Trim();
+            variable.Name = normalizedName;
             variable.ParentType = type;
 
             if (type == VariablesSetType.User)
             {
-                if (UserDefaultSet.Variables != null && UserDefaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), variable.Name, StringComparison.OrdinalIgnoreCase)))
+                if (UserDefaultSet.Variables != null && UserDefaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }
@@ -300,7 +301,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
             else if (type == VariablesSetType.System)
             {
-                if (SystemDefaultSet.Variables != null && SystemDefaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), variable.Name, StringComparison.OrdinalIgnoreCase)))
+                if (SystemDefaultSet.Variables != null && SystemDefaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }
@@ -321,7 +322,9 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
 
             bool propagateChange = variablesSet == null /* not a profile */ || variablesSet.Id.Equals(AppliedProfile?.Id);
-            bool changed = original.Name != edited.Name || original.Values != edited.Values;
+            var originalName = (original.Name ?? string.Empty).Trim();
+            var editedName = (edited.Name ?? string.Empty).Trim();
+            bool changed = !string.Equals(originalName, editedName, StringComparison.OrdinalIgnoreCase) || original.Values != edited.Values;
             if (changed)
             {
                 var task = original.Update(edited, propagateChange, variablesSet);
