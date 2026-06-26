@@ -708,6 +708,7 @@
                                     x:Name="DefaultVariablesSearchBox"
                                     x:Uid="SearchExistingVariable"
                                     Margin="0,8,0,4"
+                                    IsClearButtonVisible="True"
                                     TextChanged="DefaultVariablesSearchBox_TextChanged"
                                     VerticalAlignment="Center" />
                                 <ListView
@@ -752,6 +753,13 @@
                                         </DataTemplate>
                                     </ListView.ItemTemplate>
                                 </ListView>
+                                <TextBlock
+                                    x:Name="NoMatchingDefaultVariablesText"
+                                    x:Uid="NoMatchingDefaultVariables"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    Visibility="Collapsed"
+                                    TextWrapping="WrapWholeWords" />
                             </StackPanel>
 
                         </tkcontrols:Case>

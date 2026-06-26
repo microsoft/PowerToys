@@ -188,6 +188,25 @@ namespace EnvironmentVariablesUILib
             }
 
             ViewModel.ClearDefaultVariablesFilter();
+            UpdateNoMatchingDefaultVariablesText();
+        }
+
+        private void UpdateNoMatchingDefaultVariablesText()
+        {
+            if (NoMatchingDefaultVariablesText == null || DefaultVariablesSearchBox == null)
+            {
+                return;
+            }
+
+            var hasActiveFilter = !string.IsNullOrWhiteSpace(DefaultVariablesSearchBox.Text);
+            if (hasActiveFilter && ViewModel.FilteredDefaultVariables.Count == 0)
+            {
+                NoMatchingDefaultVariablesText.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+            }
+            else
+            {
+                NoMatchingDefaultVariablesText.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
         }
 
         private void ResetAddVariableInputs()
@@ -397,6 +416,7 @@ namespace EnvironmentVariablesUILib
             ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
 
             AddVariableDialog.IsPrimaryButtonEnabled = false;
+            UpdateNoMatchingDefaultVariablesText();
         }
 
         private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -425,6 +445,8 @@ namespace EnvironmentVariablesUILib
                     }
                 }
             }
+
+            UpdateNoMatchingDefaultVariablesText();
         }
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
