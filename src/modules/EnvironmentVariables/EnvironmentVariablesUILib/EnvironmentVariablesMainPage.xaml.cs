@@ -343,7 +343,7 @@ namespace EnvironmentVariablesUILib
                 Variable removedVariable = e.RemovedItems[0] as Variable;
                 for (int i = 0; i < profile.Variables.Count; i++)
                 {
-                    if (profile.Variables[i].Name == removedVariable.Name && profile.Variables[i].Values == removedVariable.Values)
+                    if (profile.Variables[i].Name == removedVariable.Name && profile.Variables[i].Values == removedVariable.Values && profile.Variables[i].ParentType == removedVariable.ParentType)
                     {
                         toRemove = i;
                         break;
@@ -441,7 +441,7 @@ namespace EnvironmentVariablesUILib
                 {
                     foreach (var profileItem in profile.Variables)
                     {
-                        if (profileItem.Name == item.Name && profileItem.Values == item.Values)
+                        if (profileItem.Name == item.Name && profileItem.Values == item.Values && profileItem.ParentType == item.ParentType)
                         {
                             if (!remainingItems.Remove(item))
                             {
