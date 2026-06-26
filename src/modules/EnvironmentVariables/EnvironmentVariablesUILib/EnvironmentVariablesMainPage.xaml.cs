@@ -113,8 +113,26 @@ namespace EnvironmentVariablesUILib
                 return ViewModel.SystemDefaultSet;
             }
 
-            return ViewModel.Profiles?
-                .FirstOrDefault(profile => profile?.Variables != null && profile.Variables.Contains(variable));
+            if (variable.ParentType == VariablesSetType.Profile)
+            {
+                var exactMatch = ViewModel.Profiles?
+                    .FirstOrDefault(profile => profile?.Variables != null && profile.Variables.Contains(variable));
+                if (exactMatch != null)
+                {
+                    return exactMatch;
+                }
+
+                var normalizedName = (variable.Name ?? string.Empty).Trim();
+                return ViewModel.Profiles?
+                    .FirstOrDefault(profile =>
+                        profile?.Variables != null &&
+                        profile.Variables.Any(x => x != null &&
+                            string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(x.Values, variable.Values, StringComparison.Ordinal) &&
+                            x.ParentType == VariablesSetType.Profile));
+            }
+
+            return null;
         }
 
         private void EditVariable(RelayCommandParameter param)
