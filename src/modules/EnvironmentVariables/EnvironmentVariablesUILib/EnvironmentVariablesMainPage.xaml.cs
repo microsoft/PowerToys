@@ -639,9 +639,14 @@ namespace EnvironmentVariablesUILib
             }
 
             var variable = EditVariableDialog.DataContext as Variable;
+            if (variable?.ValuesList == null)
+            {
+                return;
+            }
+
             variable.ValuesList.Remove(listItem);
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            var newValues = string.Join(";", variable.ValuesList?.Select(x => x?.Text).ToArray());
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
@@ -659,9 +664,17 @@ namespace EnvironmentVariablesUILib
 
             for (int i = variable.ValuesList.Count - 1; i >= 0; i--)
             {
-                var originalValue = variable.ValuesList[i].Text ?? string.Empty;
+                var item = variable.ValuesList[i];
+                if (item == null)
+                {
+                    variable.ValuesList.RemoveAt(i);
+                    hasDuplicates = true;
+                    continue;
+                }
+
+                var originalValue = item.Text ?? string.Empty;
                 var trimmedValue = originalValue.Trim();
-                variable.ValuesList[i].Text = trimmedValue;
+                item.Text = trimmedValue;
                 if (!seenValues.Add(trimmedValue))
                 {
                     variable.ValuesList.RemoveAt(i);
