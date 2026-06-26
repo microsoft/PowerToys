@@ -84,11 +84,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                 DefaultVariables.Variables.Add(variable);
                 if (AppliedProfile != null && AppliedProfile.Variables != null && AppliedProfile.Variables.Any())
                 {
-                    if (AppliedProfile.Variables.Where(
-                        x => x != null
-                            && (!string.IsNullOrWhiteSpace(variable.Name)
-                                && (!string.IsNullOrWhiteSpace(x.Name) && variable.Name.Equals(x.Name, StringComparison.OrdinalIgnoreCase))
-                                || string.Equals(variable.Name, EnvironmentVariablesHelper.GetBackupVariableName(x, AppliedProfile.Name), StringComparison.OrdinalIgnoreCase))).Any())
+                    if (AppliedProfile.Variables.Any(profileVariable => IsVariableAppliedToProfile(variable, profileVariable, AppliedProfile.Name)))
                     {
                         // If it's a user variable that's also in the profile or is a backup variable, mark it as applied from profile.
                         variable.IsAppliedFromProfile = true;
@@ -102,6 +98,21 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
 
             ApplyDefaultVariablesFilter();
+        }
+
+        private static bool IsVariableAppliedToProfile(Variable defaultVariable, Variable profileVariable, string profileName)
+        {
+            if (defaultVariable == null || profileVariable == null || string.IsNullOrWhiteSpace(defaultVariable.Name))
+            {
+                return false;
+            }
+
+            if (string.Equals(defaultVariable.Name, profileVariable.Name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return string.Equals(defaultVariable.Name, EnvironmentVariablesHelper.GetBackupVariableName(profileVariable, profileName), StringComparison.OrdinalIgnoreCase);
         }
 
         public void LoadEnvironmentVariables()
