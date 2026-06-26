@@ -176,16 +176,26 @@ namespace EnvironmentVariablesUILib.Models
                     // It exists. Rename it to preserve it.
                     if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User && parentProfile != null)
                     {
-                        // Gets which name the backup variable should have.
-                        variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, parentProfile.Name);
-
-                        // Only create a backup variable if there's not one already, to avoid overriding. (solves Path nuking errors, for example, after editing path on an enabled profile)
-                        if (EnvironmentVariablesHelper.GetExisting(variableToOverride.Name) == null)
+                        var backupName = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, parentProfile.Name);
+                        var backupVariable = new Variable(variableToOverride.Name, variableToOverride.Values, variableToOverride.ParentType)
                         {
-                            // Backup the variable
-                            if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToOverride))
+                            Name = backupName,
+                        };
+
+                        if (!backupVariable.Validate())
+                        {
+                            LoggerInstance.Logger.LogError("Cannot create backup variable due to invalid backup name.");
+                        }
+                        else
+                        {
+                            // Only create a backup variable if there's not one already, to avoid overriding. (solves Path nuking errors, for example, after editing path on an enabled profile)
+                            if (EnvironmentVariablesHelper.GetExisting(backupVariable.Name) == null)
                             {
-                                LoggerInstance.Logger.LogError("Failed to set backup variable.");
+                                // Backup the variable
+                                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(backupVariable))
+                                {
+                                    LoggerInstance.Logger.LogError("Failed to set backup variable.");
+                                }
                             }
                         }
                     }
