@@ -803,7 +803,32 @@ opera.exe</value>
   <data name="PowerLauncher_GenerateThumbnailsFromFiles.Description" xml:space="preserve">
     <value>Results will try to generate thumbnails for files. Disabling this setting may increase stability and speed</value>
   </data>
-  <data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
+  <data name="PowerLauncher_EnableAudibleFeedback.Header" xml:space="preserve">
+    <value>Enable audible feedback</value>
+  </data>
+  <data name="PowerLauncher_EnableAudibleFeedback.Description" xml:space="preserve">
+    <value>Play a sound when PowerToys Run opens and close</value>
+  </data>
+  <data name="PowerLauncher_OpeningSound.Header" xml:space="preserve">
+    <value>Opening Sound</value>
+  </data>
+  <data name="PowerLauncher_OpeningSound.Description" xml:space="preserve">
+    <value>Select the sound to play when PowerToys Run opens</value>
+  </data>
+  <data name="PowerLauncher_OpeningSound_ComboBox" xml:space="preserve">
+    <value>Opening Sound</value>
+  </data>
+
+  <data name="PowerLauncher_ClosingSound.Header" xml:space="preserve">
+    <value>Closing Sound</value>
+  </data>
+  <data name="PowerLauncher_ClosingSound.Description" xml:space="preserve">
+    <value>Select the sound to play when PowerToys Run closes</value>
+  </data>
+  <data name="PowerLauncher_ClosingSound_ComboBox" xml:space="preserve">
+    <value>Closing Sound</value>
+  </data>
+	<data name="PowerLauncher_SearchQueryResultsWithDelay.Header" xml:space="preserve">
     <value>Input Smoothing</value>
     <comment>This is about adding a delay to wait for more input before executing a search</comment>
   </data>

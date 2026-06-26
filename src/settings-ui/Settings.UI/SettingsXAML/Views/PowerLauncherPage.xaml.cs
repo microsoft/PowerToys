@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows;
 using Common.UI;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -97,6 +98,42 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private void NavigateCmdPalSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.CmdPal);
+        }
+
+        private void PreviewOpeningSound_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            PlayPreviewSound(ViewModel.OpeningSound);
+        }
+
+        private void PreviewClosingSound_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            PlayPreviewSound(ViewModel.ClosingSound);
+        }
+
+        private void PlayPreviewSound(string soundName)
+        {
+            try
+            {
+                var sound = GetSystemSound(soundName);
+                sound?.Play();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogInfo("Failed to play preview sound", ex.Message);
+            }
+        }
+
+        private static System.Media.SystemSound GetSystemSound(string soundName)
+        {
+            return soundName switch
+            {
+                "Beep" => System.Media.SystemSounds.Beep,
+                "Asterisk" => System.Media.SystemSounds.Asterisk,
+                "Exclamation" => System.Media.SystemSounds.Exclamation,
+                "Hand" => System.Media.SystemSounds.Hand,
+                "Question" => System.Media.SystemSounds.Question,
+                _ => System.Media.SystemSounds.Beep,
+            };
         }
 
         /*

@@ -236,6 +236,12 @@ namespace Wox.Infrastructure.UserSettings
 
         public bool RememberLastLaunchLocation { get; set; }
 
+        public bool EnableAudibleFeedback { get; set; } = true;
+
+        public string OpeningSound { get; set; } = "Beep";
+
+        public string ClosingSound { get; set; } = "Beep";
+
         public enum ShowPluginsOverviewMode
         {
             All,
