@@ -83,11 +83,12 @@ namespace EnvironmentVariablesUILib
 
             var variablesSet = btn.DataContext as VariablesSet;
             var variable = btn.CommandParameter as Variable;
-
-            if (variable != null)
+            if (variable == null)
             {
-                await ShowEditDialogAsync(variable, variablesSet);
+                return;
             }
+
+            await ShowEditDialogAsync(variable, variablesSet);
         }
 
         private void EditVariable(RelayCommandParameter param)
@@ -109,6 +110,11 @@ namespace EnvironmentVariablesUILib
 
         private async Task AddProfileAsync()
         {
+            if (AddProfileDialog == null || SwitchViewsSegmentedView == null)
+            {
+                return;
+            }
+
             SwitchViewsSegmentedView.SelectedIndex = 0;
 
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
@@ -123,6 +129,11 @@ namespace EnvironmentVariablesUILib
 
         private void AddProfile()
         {
+            if (AddProfileDialog == null)
+            {
+                return;
+            }
+
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
             if (profile == null)
             {
@@ -134,6 +145,11 @@ namespace EnvironmentVariablesUILib
 
         private void UpdateProfile()
         {
+            if (AddProfileDialog == null)
+            {
+                return;
+            }
+
             var updatedProfile = AddProfileDialog.DataContext as ProfileVariablesSet;
             if (updatedProfile == null)
             {
@@ -181,10 +197,10 @@ namespace EnvironmentVariablesUILib
         private void AddVariable()
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
-            if (profile == null || profile.Variables == null || AddNewVariableName == null || AddNewVariableValue == null || ExistingVariablesListView == null || AddVariableSwitchPresenter == null)
+            if (AddVariableDialog == null || AddProfileDialog == null || profile == null || profile.Variables == null || AddNewVariableName == null || AddNewVariableValue == null || ExistingVariablesListView == null || AddVariableSwitchPresenter == null)
             {
                 ResetAddVariableInputs();
-                AddVariableDialog.Hide();
+                AddVariableDialog?.Hide();
                 return;
             }
 
@@ -213,12 +229,22 @@ namespace EnvironmentVariablesUILib
 
         private void CancelAddVariable()
         {
+            if (AddVariableDialog == null)
+            {
+                return;
+            }
+
             ResetAddVariableInputs();
             AddVariableDialog.Hide();
         }
 
         private void ClearAddVariableSearchFilter()
         {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
             if (DefaultVariablesSearchBox != null)
             {
                 DefaultVariablesSearchBox.TextChanged -= DefaultVariablesSearchBox_TextChanged;
@@ -232,6 +258,11 @@ namespace EnvironmentVariablesUILib
 
         private void UpdateNoMatchingDefaultVariablesText()
         {
+            if (ViewModel == null)
+            {
+                return;
+            }
+
             if (NoMatchingDefaultVariablesText == null || DefaultVariablesSearchBox == null)
             {
                 return;
@@ -250,18 +281,38 @@ namespace EnvironmentVariablesUILib
 
         private void ResetAddVariableInputs()
         {
-            AddNewVariableName.Text = string.Empty;
-            AddNewVariableValue.Text = string.Empty;
-            AddVariableDialog.IsPrimaryButtonEnabled = false;
+            if (AddNewVariableName != null)
+            {
+                AddNewVariableName.Text = string.Empty;
+            }
+
+            if (AddNewVariableValue != null)
+            {
+                AddNewVariableValue.Text = string.Empty;
+            }
+
+            if (AddVariableDialog != null)
+            {
+                AddVariableDialog.IsPrimaryButtonEnabled = false;
+            }
+
             ClearAddVariableSearchFilter();
 
-            ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-            ExistingVariablesListView.SelectedItems.Clear();
-            ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
+            if (ExistingVariablesListView != null)
+            {
+                ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
+                ExistingVariablesListView.SelectedItems.Clear();
+                ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
+            }
         }
 
         private void AddDefaultVariable(DefaultVariablesSet set)
         {
+            if (AddDefaultVariableDialog == null)
+            {
+                return;
+            }
+
             if (set == null)
             {
                 return;
@@ -347,15 +398,20 @@ namespace EnvironmentVariablesUILib
 
         private void AddNewVariableName_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (AddProfileDialog == null || AddVariableDialog == null)
+            {
+                return;
+            }
+
             TextBox nameTxtBox = sender as TextBox;
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
-            if (nameTxtBox == null || profile == null)
+            if (nameTxtBox == null || profile == null || profile.Variables == null)
             {
                 AddVariableDialog.IsPrimaryButtonEnabled = false;
                 return;
             }
 
-            if (nameTxtBox.Text.Length == 0 || nameTxtBox.Text.Length >= 255 || profile.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
+            if (nameTxtBox.Text.Length == 0 || nameTxtBox.Text.Length >= 255 || profile.Variables.Where(x => string.Equals(x?.Name, nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
             {
                 AddVariableDialog.IsPrimaryButtonEnabled = false;
             }
@@ -373,9 +429,20 @@ namespace EnvironmentVariablesUILib
 
         private void ExistingVariablesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (AddVariableDialog == null)
+            {
+                return;
+            }
+
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
             if (profile == null)
             {
+                return;
+            }
+
+            if (profile.Variables == null)
+            {
+                AddVariableDialog.IsPrimaryButtonEnabled = false;
                 return;
             }
 
@@ -455,6 +522,11 @@ namespace EnvironmentVariablesUILib
 
         private async void EditProfileBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (SwitchViewsSegmentedView == null || AddProfileDialog == null)
+            {
+                return;
+            }
+
             SwitchViewsSegmentedView.SelectedIndex = 0;
 
             var button = sender as MenuFlyoutItem;
@@ -480,6 +552,11 @@ namespace EnvironmentVariablesUILib
 
         private async void AddVariableBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (AddVariableDialog == null || SwitchViewsSegmentedView == null || AddProfileDialog == null)
+            {
+                return;
+            }
+
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
             AddVariableDialog.Title = resourceLoader.GetString("AddVariable_Title");
             AddVariableDialog.PrimaryButtonText = resourceLoader.GetString("AddBtn");
@@ -494,6 +571,11 @@ namespace EnvironmentVariablesUILib
 
         private void DefaultVariablesSearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (DefaultVariablesSearchBox == null || ExistingVariablesListView == null || AddVariableDialog == null || ViewModel == null)
+            {
+                return;
+            }
+
             var searchText = (sender as TextBox)?.Text;
             ViewModel.SetDefaultVariablesFilter(searchText);
 
@@ -507,6 +589,11 @@ namespace EnvironmentVariablesUILib
 
         private void DefaultVariablesSearchBox_KeyDown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
+            if (DefaultVariablesSearchBox == null || e == null)
+            {
+                return;
+            }
+
             if (e.Key == VirtualKey.Escape && !string.IsNullOrEmpty(DefaultVariablesSearchBox.Text))
             {
                 e.Handled = true;
@@ -519,6 +606,11 @@ namespace EnvironmentVariablesUILib
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
             if (profile == null)
+            {
+                return;
+            }
+
+            if (profile.Variables == null || ExistingVariablesListView == null)
             {
                 return;
             }
@@ -564,6 +656,11 @@ namespace EnvironmentVariablesUILib
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
         {
+            if (set == null || AddDefaultVariableDialog == null)
+            {
+                return;
+            }
+
             var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
 
             AddDefaultVariableDialog.Title = resourceLoader.GetString("AddVariable_Title");
@@ -581,6 +678,11 @@ namespace EnvironmentVariablesUILib
         private async void AddDefaultVariableBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var button = sender as Button;
+            if (button == null)
+            {
+                return;
+            }
+
             var defaultVariableSet = button.CommandParameter as DefaultVariablesSet;
 
             if (defaultVariableSet != null)
@@ -608,7 +710,7 @@ namespace EnvironmentVariablesUILib
 
             if (variableSet != null)
             {
-                if (variableSet.Variables.Where(x => x.Name.Equals(EditVariableDialogNameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any() || !variable.Valid)
+                if (variableSet.Variables == null || variableSet.Variables.Where(x => string.Equals(x?.Name, EditVariableDialogNameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any() || !variable.Valid)
                 {
                     EditVariableDialog.IsPrimaryButtonEnabled = false;
                 }
@@ -626,6 +728,11 @@ namespace EnvironmentVariablesUILib
 
         private void AddDefaultVariableNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (AddDefaultVariableDialog == null)
+            {
+                return;
+            }
+
             TextBox nameTxtBox = sender as TextBox;
             var variable = AddDefaultVariableDialog.DataContext as Variable;
             if (nameTxtBox == null || variable == null)
@@ -641,7 +748,7 @@ namespace EnvironmentVariablesUILib
                 return;
             }
 
-            if (nameTxtBox.Text.Length == 0 || defaultSet.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
+            if (defaultSet.Variables == null || nameTxtBox.Text.Length == 0 || defaultSet.Variables.Where(x => string.Equals(x?.Name, nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
             {
                 AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
             }
