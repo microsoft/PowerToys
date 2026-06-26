@@ -440,7 +440,7 @@ namespace EnvironmentVariablesUILib
             }
 
             var normalizedName = nameTxtBox.Text?.Trim();
-            if (string.IsNullOrWhiteSpace(normalizedName) || normalizedName.Length >= 255 || profile.Variables.Where(x => string.Equals(x?.Name, normalizedName, StringComparison.OrdinalIgnoreCase)).Any())
+            if (string.IsNullOrWhiteSpace(normalizedName) || normalizedName.Length >= 255 || profile.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
             {
                 AddVariableDialog.IsPrimaryButtonEnabled = false;
             }
@@ -688,7 +688,7 @@ namespace EnvironmentVariablesUILib
                 return false;
             }
 
-            return string.Equals(left.Name, right.Name, StringComparison.OrdinalIgnoreCase)
+            return string.Equals((left.Name ?? string.Empty).Trim(), (right.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase)
                 && string.Equals(left.Values, right.Values, StringComparison.Ordinal)
                 && left.ParentType == right.ParentType;
         }
@@ -754,7 +754,8 @@ namespace EnvironmentVariablesUILib
 
             if (variableSet != null)
             {
-                if (variableSet.Variables == null || variableSet.Variables.Where(x => string.Equals(x?.Name, EditVariableDialogNameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any() || !variable.Valid)
+                var normalizedName = EditVariableDialogNameTxtBox.Text?.Trim();
+                if (string.IsNullOrWhiteSpace(normalizedName) || variableSet.Variables == null || variableSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)) || !variable.Valid)
                 {
                     EditVariableDialog.IsPrimaryButtonEnabled = false;
                 }
@@ -796,7 +797,8 @@ namespace EnvironmentVariablesUILib
                 return;
             }
 
-            if (defaultSet.Variables == null || nameTxtBox.Text.Length == 0 || defaultSet.Variables.Where(x => string.Equals(x?.Name, nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
+            var normalizedDefaultName = nameTxtBox.Text?.Trim();
+            if (defaultSet.Variables == null || string.IsNullOrWhiteSpace(normalizedDefaultName) || defaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedDefaultName, StringComparison.OrdinalIgnoreCase)) || !variable.Validate())
             {
                 AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
             }

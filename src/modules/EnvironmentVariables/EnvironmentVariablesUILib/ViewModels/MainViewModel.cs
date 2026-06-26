@@ -107,12 +107,12 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return false;
             }
 
-            if (string.Equals(defaultVariable.Name, profileVariable.Name, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals((defaultVariable.Name ?? string.Empty).Trim(), (profileVariable.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            return string.Equals(defaultVariable.Name, EnvironmentVariablesHelper.GetBackupVariableName(profileVariable, profileName), StringComparison.OrdinalIgnoreCase);
+            return string.Equals((defaultVariable.Name ?? string.Empty).Trim(), EnvironmentVariablesHelper.GetBackupVariableName(profileVariable, profileName).Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
         public void LoadEnvironmentVariables()

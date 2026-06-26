@@ -21,17 +21,18 @@ namespace EnvironmentVariablesUILib.Helpers
 
         internal static Variable GetExisting(string variableName)
         {
-            if (string.IsNullOrEmpty(variableName))
+            if (string.IsNullOrWhiteSpace(variableName))
             {
                 return null;
             }
 
             DefaultVariablesSet userSet = new DefaultVariablesSet(Guid.NewGuid(), "tmpUser", VariablesSetType.User);
             GetVariables(EnvironmentVariableTarget.User, userSet);
+            var normalizedName = variableName?.Trim();
 
             foreach (var variable in userSet.Variables)
             {
-                if (string.Equals(variable?.Name, variableName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals((variable?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Variable(variable.Name, variable.Values, VariablesSetType.User);
                 }
@@ -42,7 +43,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
             foreach (var variable in systemSet.Variables)
             {
-                if (string.Equals(variable?.Name, variableName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals((variable?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase))
                 {
                     return new Variable(variable.Name, variable.Values, VariablesSetType.System);
                 }
