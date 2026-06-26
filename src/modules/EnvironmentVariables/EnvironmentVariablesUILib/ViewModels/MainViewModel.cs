@@ -528,8 +528,24 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
-            var deduped = profile.Variables
-                .Where(variable => !string.IsNullOrWhiteSpace(variable?.Name))
+            var cleanedVariables = new List<Variable>();
+            foreach (var variable in profile.Variables)
+            {
+                if (variable == null)
+                {
+                    continue;
+                }
+
+                variable.Name = variable.Name?.Trim();
+                if (string.IsNullOrWhiteSpace(variable.Name))
+                {
+                    continue;
+                }
+
+                cleanedVariables.Add(variable);
+            }
+
+            var deduped = cleanedVariables
                 .GroupBy(variable => $"{variable.Name?.ToUpperInvariant()}|{variable.Values}|{variable.ParentType}")
                 .Select(group => group.First())
                 .ToList();
