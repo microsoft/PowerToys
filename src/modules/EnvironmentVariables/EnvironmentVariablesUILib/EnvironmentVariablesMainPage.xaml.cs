@@ -290,8 +290,7 @@ namespace EnvironmentVariablesUILib
                         continue;
                     }
 
-                    var candidateName = (variable.Name ?? string.Empty).Trim();
-                    if (!profile.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), candidateName, StringComparison.OrdinalIgnoreCase)))
+                    if (!profile.Variables.Any(x => AreEquivalentVariables(x, variable)))
                     {
                         var clone = variable.Clone(true);
                         profile.Variables.Add(clone);
