@@ -139,16 +139,59 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                if (_isEnabled != value)
+                if (_isEnabled == value)
                 {
-                    _isEnabled = value;
-                    OnPropertyChanged(nameof(IsEnabled));
+                    return;
+                }
 
-                    GeneralSettingsConfig.Enabled.PowerDisplay = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-                    SendConfigMSG(outgoing.ToString());
+                if (value)
+                {
+                    // Enabling PowerDisplay can crash some monitors via DDC/CI capability
+                    // fetch (see #47556 / PR #47734). Don't commit yet — confirm with the user
+                    // first, then either commit or revert the toggle via OnPropertyChanged.
+                    _ = ConfirmAndEnableModuleAsync();
+                }
+                else
+                {
+                    CommitIsEnabled(false);
                 }
             }
+        }
+
+        private async Task ConfirmAndEnableModuleAsync()
+        {
+            try
+            {
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.EnableModule))
+                {
+                    CommitIsEnabled(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: enable-module confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(IsEnabled));
+            }
+        }
+
+        private void CommitIsEnabled(bool value)
+        {
+            _isEnabled = value;
+            OnPropertyChanged(nameof(IsEnabled));
+
+            GeneralSettingsConfig.Enabled.PowerDisplay = value;
+            OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+            SendConfigMSG(outgoing.ToString());
         }
 
         public bool IsEnabledGpoConfigured
@@ -200,7 +243,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// View-supplied confirmation dialog. Default no-op denies all dangerous enables;
         /// PowerDisplayPage replaces this in its constructor with a real dialog show.
         /// </summary>
-        public Func<string, Task<bool>> ConfirmDangerousFeatureAsync { get; set; } = _ => Task.FromResult(false);
+        public Func<PowerDisplayWarningKind, Task<bool>> ConfirmDangerousFeatureAsync { get; set; } = _ => Task.FromResult(false);
 
         // Dangerous toggle. TwoWay-bound to the UI; the setter handles the "ask first"
         // gesture entirely inside the ViewModel. Initial-binding push and post-cancel
@@ -233,17 +276,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private async Task ConfirmAndEnableMaxCompatAsync()
         {
-            if (await ConfirmDangerousFeatureAsync("PowerDisplay_MaxCompatibility"))
+            try
             {
-                _settings.Properties.MaxCompatibilityMode = true;
-                NotifySettingsChanged();
-                SignalRescanRequest();
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.MaxCompatibility))
+                {
+                    _settings.Properties.MaxCompatibilityMode = true;
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
             }
-
-            // Either branch raises PropertyChanged so the TwoWay binding pushes the
-            // ViewModel value back to the ToggleSwitch — commit echoes silently,
-            // cancel pulls the UI back to the original state.
-            OnPropertyChanged(nameof(MaxCompatibilityMode));
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: max-compat confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(MaxCompatibilityMode));
+            }
         }
 
         public bool ShowSystemTrayIcon
@@ -583,7 +639,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 else
                 {
                     // Create a dictionary for quick lookup by Id
-                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m);
+                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m, MonitorIdComparer.Instance);
 
                     // Update existing monitors or remove ones that no longer exist
                     for (int i = Monitors.Count - 1; i >= 0; i--)
@@ -932,6 +988,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SignalSettingsUpdated();
         }
 
+        /// <summary>
+        /// Re-read the flyout-owned runtime fields (linked brightness enabled + per-monitor
+        /// exclusion list) from disk into <see cref="_settings"/> so a save originating from an
+        /// unrelated Settings toggle does not overwrite them with the page's stale snapshot.
+        /// These fields have no Settings UI surface — the PowerDisplay flyout is their sole editor.
+        /// </summary>
+        private void PreserveFlyoutOwnedState()
+        {
+            try
+            {
+                var current = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+                _settings.Properties.LinkedLevelsActive = current.Properties.LinkedLevelsActive;
+                _settings.Properties.ExcludedFromSyncMonitorIds = current.Properties.ExcludedFromSyncMonitorIds;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to preserve flyout-owned PowerDisplay state before save: {ex.Message}");
+            }
+        }
+
         private void NotifySettingsChanged()
         {
             // Skip during initialization when SendConfigMSG is not yet set
@@ -939,6 +1015,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return;
             }
+
+            // linked_levels_active and excluded_from_sync_monitor_ids are owned by the PowerDisplay
+            // flyout (the only UI that toggles them); the Settings page has no surface for them.
+            // _settings was loaded once at page construction, so serializing it would otherwise
+            // clobber flyout changes made meanwhile — both on disk and in the IPC config pushed
+            // to the module. Re-read the current on-disk values and carry them forward untouched.
+            PreserveFlyoutOwnedState();
 
             // Persist locally first so settings survive even if the module DLL isn't loaded yet.
             SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);

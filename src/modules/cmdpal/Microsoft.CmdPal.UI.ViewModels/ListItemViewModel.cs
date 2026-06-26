@@ -208,7 +208,10 @@ public partial class ListItemViewModel : CommandItemViewModel
                                                   contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
                 {
                     var showDetailsCommand = new ShowDetailsCommand(Details);
-                    var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+                    var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
+                    {
+                        Icon = showDetailsCommand.Icon,
+                    };
                     var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
                     showDetailsContextItemViewModel.SlowInitializeProperties();
                     UnsafeMoreCommands.Add(showDetailsContextItemViewModel);
@@ -249,7 +252,10 @@ public partial class ListItemViewModel : CommandItemViewModel
                 }
 
                 var showDetailsCommand = new ShowDetailsCommand(Details);
-                var showDetailsContextItem = new CommandContextItem(showDetailsCommand);
+                var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
+                {
+                    Icon = showDetailsCommand.Icon,
+                };
                 var showDetailsContextItemViewModel = new CommandContextItemViewModel(showDetailsContextItem, PageContext);
                 showDetailsContextItemViewModel.SlowInitializeProperties();
                 UnsafeMoreCommands.Add(showDetailsContextItemViewModel);

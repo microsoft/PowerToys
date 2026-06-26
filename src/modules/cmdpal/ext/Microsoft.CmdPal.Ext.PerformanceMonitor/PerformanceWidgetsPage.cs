@@ -134,6 +134,25 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 MoreCommands = _networkPage.Commands,
             };
 
+            if (isBandPage)
+            {
+                _networkUpItem = new ListItem(_networkPage)
+                {
+                    Title = $"{_networkUpSpeed}",
+                    Subtitle = Resources.GetResource("Network_Send_Subtitle"),
+                    Icon = Icons.NetworkUpIcon,
+                    MoreCommands = _networkPage.Commands,
+                };
+
+                _networkDownItem = new ListItem(_networkPage)
+                {
+                    Title = $"{_networkDownSpeed}",
+                    Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
+                    Icon = Icons.NetworkDownIcon,
+                    MoreCommands = _networkPage.Commands,
+                };
+            }
+
             _networkPage.Updated += (s, e) =>
             {
                 _networkItem.Title = _networkPage.GetItemTitle(isBandPage);
@@ -253,23 +272,9 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         }
         else
         {
-            _networkUpItem = new ListItem(_networkPage!)
-            {
-                Title = $"{_networkUpSpeed}",
-                Subtitle = Resources.GetResource("Network_Send_Subtitle"),
-                MoreCommands = _networkPage!.Commands,
-            };
-
-            _networkDownItem = new ListItem(_networkPage!)
-            {
-                Title = $"{_networkDownSpeed}",
-                Subtitle = Resources.GetResource("Network_Receive_Subtitle"),
-                MoreCommands = _networkPage!.Commands,
-            };
-
             return _batteryItem is not null
-                ? new[] { _cpuItem!, _memoryItem!, _networkDownItem!, _networkUpItem!, _gpuItem!, _batteryItem! }
-                : new[] { _cpuItem!, _memoryItem!, _networkDownItem!, _networkUpItem!, _gpuItem! };
+                ? new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem!, _batteryItem! }
+                : new[] { _cpuItem!, _memoryItem!, _networkUpItem!, _networkDownItem!, _gpuItem! };
         }
     }
 

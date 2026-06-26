@@ -39,6 +39,14 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
     /// </summary>
     internal IntPtr OwnerHwnd { get; set; }
 
+    internal bool HasOpenTransientUi =>
+        ContextMenuFlyout.IsOpen ||
+        AddBandFlyout.IsOpen ||
+        EditModeContextMenu.IsOpen ||
+        EditButtonsTeachingTip.IsOpen;
+
+    internal bool IsDragOperationActive => _draggedBand is not null;
+
     public static readonly DependencyProperty ItemsOrientationProperty =
         DependencyProperty.Register(nameof(ItemsOrientation), typeof(Orientation), typeof(DockControl), new PropertyMetadata(Orientation.Horizontal));
 

@@ -172,7 +172,7 @@
 </data>
 <data name="winget_downloading" xml:space="preserve">
   <value>Downloading</value>
-  <comment></comment>
+  <comment>JA: translate as "受信" not "受け取り" for consistency with "Upload" → "送信". "受け取り" implies physical package receipt; "受信" is the correct IT term for data download.</comment>
 </data>
 <data name="winget_queued_package_download" xml:space="preserve">
   <value>Queued {0} for download...</value>
@@ -180,7 +180,7 @@
 </data>
 <data name="winget_download_progress" xml:space="preserve">
   <value>Downloading. {0} of {1}</value>
-  <comment>{0} will be replaced with a number of bytes downloaded, and {1} will be replaced with the total number to download</comment>
+  <comment>{0} will be replaced with a number of bytes downloaded, and {1} will be replaced with the total number to download. JA: translate "Downloading" as "受信" not "受け取り".</comment>
 </data>
 <data name="winget_install_package_finishing" xml:space="preserve">
   <value>Finishing install for {0}...</value>

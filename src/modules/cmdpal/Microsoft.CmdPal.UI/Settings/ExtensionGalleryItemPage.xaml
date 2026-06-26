@@ -232,7 +232,7 @@
                                 Grid.Row="3"
                                 Padding="0"
                                 AutomationProperties.AutomationId="CmdPal_GalleryItemPage_ViewRepository"
-                                NavigateUri="{x:Bind ViewModel.Homepage, Mode=OneWay}"
+                                NavigateUri="{x:Bind ViewModel.HomepageUri, Mode=OneWay}"
                                 ToolTipService.ToolTip="{x:Bind ViewModel.Homepage, Mode=OneWay}"
                                 Visibility="{x:Bind help:BindTransformers.BoolToVisibility(ViewModel.HasHomepage), Mode=OneWay, FallbackValue=Collapsed}">
                                 <StackPanel Orientation="Horizontal" Spacing="4">

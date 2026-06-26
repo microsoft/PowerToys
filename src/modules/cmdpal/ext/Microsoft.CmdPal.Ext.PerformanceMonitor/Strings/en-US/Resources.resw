@@ -326,10 +326,10 @@
     <value>Open Task Manager</value>
   </data>
   <data name="Network_Send_Subtitle" xml:space="preserve">
-    <value>Send ↑</value>
+    <value>Send</value>
   </data>
   <data name="Network_Receive_Subtitle" xml:space="preserve">
-    <value>Receive ↓</value>
+    <value>Receive</value>
   </data>
   <data name="Network_Speed_Unit_Setting_Title" xml:space="preserve">
     <value>Network speed unit</value>
