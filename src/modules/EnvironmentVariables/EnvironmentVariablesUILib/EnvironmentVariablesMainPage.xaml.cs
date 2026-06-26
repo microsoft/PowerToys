@@ -341,7 +341,14 @@ namespace EnvironmentVariablesUILib
                 foreach (var dup in duplicates)
                 {
                     ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
-                    list.SelectedItems.Remove(dup.ElementAt(1));
+                    var duplicatedItems = dup
+                        .OrderBy(x => list.SelectedItems.IndexOf(x))
+                        .Skip(1)
+                        .ToList();
+                    foreach (var item in duplicatedItems)
+                    {
+                        list.SelectedItems.Remove(item);
+                    }
                     ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
                 }
             }
