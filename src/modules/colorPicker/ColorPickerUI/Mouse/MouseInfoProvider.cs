@@ -1,38 +1,37 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel.Composition;
-using System.Configuration;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Windows.Input;
-using System.Windows.Threading;
 
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
+using Microsoft.UI.Dispatching;
 
 using static ColorPicker.NativeMethods;
 
+using Point = Windows.Foundation.Point;
+
 namespace ColorPicker.Mouse
 {
-    [Export(typeof(IMouseInfoProvider))]
-    [PartCreationPolicy(CreationPolicy.Shared)]
     public class MouseInfoProvider : IMouseInfoProvider
     {
         private readonly double _mousePullInfoIntervalInMs;
-        private readonly DispatcherTimer _timer = new DispatcherTimer();
+        private readonly DispatcherQueueTimer _timer;
         private readonly MouseHook _mouseHook;
         private readonly IUserSettings _userSettings;
-        private System.Windows.Point _previousMousePosition = new System.Windows.Point(-1, 1);
+        private Point _previousMousePosition = new Point(-1, 1);
         private Color _previousColor = Color.Transparent;
         private bool _colorFormatChanged;
 
-        [ImportingConstructor]
         public MouseInfoProvider(AppStateHandler appStateMonitor, IUserSettings userSettings)
         {
             _mousePullInfoIntervalInMs = 1000.0 / GetMainDisplayRefreshRate();
+
+            // WPF DispatcherTimer -> the UI-thread DispatcherQueueTimer. Resolve on the UI thread.
+            _timer = DispatcherQueue.GetForCurrentThread().CreateTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(_mousePullInfoIntervalInMs);
             _timer.Tick += Timer_Tick;
 
@@ -52,9 +51,9 @@ namespace ColorPicker.Mouse
 
         public event EventHandler<Color> MouseColorChanged;
 
-        public event EventHandler<System.Windows.Point> MousePositionChanged;
+        public event EventHandler<Point> MousePositionChanged;
 
-        public event EventHandler<Tuple<System.Windows.Point, bool>> OnMouseWheel;
+        public event EventHandler<Tuple<Point, bool>> OnMouseWheel;
 
         public event PrimaryMouseDownEventHandler OnPrimaryMouseDown;
 
@@ -62,23 +61,11 @@ namespace ColorPicker.Mouse
 
         public event MiddleMouseDownEventHandler OnMiddleMouseDown;
 
-        public System.Windows.Point CurrentPosition
-        {
-            get
-            {
-                return _previousMousePosition;
-            }
-        }
+        public Point CurrentPosition => _previousMousePosition;
 
-        public Color CurrentColor
-        {
-            get
-            {
-                return _previousColor;
-            }
-        }
+        public Color CurrentColor => _previousColor;
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(DispatcherQueueTimer sender, object args)
         {
             UpdateMouseInfo();
         }
@@ -101,12 +88,12 @@ namespace ColorPicker.Mouse
             }
         }
 
-        private static Color GetPixelColor(System.Windows.Point mousePosition)
+        private static Color GetPixelColor(Point mousePosition)
         {
             var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
             using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
             {
-                using (var g = Graphics.FromImage(bmp)) // Ensure Graphics object is disposed
+                using (var g = Graphics.FromImage(bmp))
                 {
                     g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
                 }
@@ -115,10 +102,10 @@ namespace ColorPicker.Mouse
             }
         }
 
-        private static System.Windows.Point GetCursorPosition()
+        private static Point GetCursorPosition()
         {
             GetCursorPos(out PointInter lpPoint);
-            return (System.Windows.Point)lpPoint;
+            return (Point)lpPoint;
         }
 
         private static double GetMainDisplayRefreshRate()
@@ -145,7 +132,7 @@ namespace ColorPicker.Mouse
         private void AppStateMonitor_AppShown(object sender, EventArgs e)
         {
             UpdateMouseInfo();
-            if (!_timer.IsEnabled)
+            if (!_timer.IsRunning)
             {
                 _timer.Start();
             }
@@ -161,15 +148,15 @@ namespace ColorPicker.Mouse
             }
         }
 
-        private void MouseHook_OnMouseWheel(object sender, MouseWheelEventArgs e)
+        private void MouseHook_OnMouseWheel(object sender, int delta)
         {
-            if (e.Delta == 0)
+            if (delta == 0)
             {
                 return;
             }
 
-            var zoomIn = e.Delta > 0;
-            OnMouseWheel?.Invoke(this, new Tuple<System.Windows.Point, bool>(_previousMousePosition, zoomIn));
+            var zoomIn = delta > 0;
+            OnMouseWheel?.Invoke(this, new Tuple<Point, bool>(_previousMousePosition, zoomIn));
         }
 
         private void MouseHook_OnPrimaryMouseDown(object sender, IntPtr wParam)
@@ -197,12 +184,12 @@ namespace ColorPicker.Mouse
 
         private void DisposeHook()
         {
-            if (_timer.IsEnabled)
+            if (_timer.IsRunning)
             {
                 _timer.Stop();
             }
 
-            _previousMousePosition = new System.Windows.Point(-1, 1);
+            _previousMousePosition = new Point(-1, 1);
             _mouseHook.OnPrimaryMouseDown -= MouseHook_OnPrimaryMouseDown;
             _mouseHook.OnMouseWheel -= MouseHook_OnMouseWheel;
             _mouseHook.OnSecondaryMouseUp -= MouseHook_OnSecondaryMouseUp;

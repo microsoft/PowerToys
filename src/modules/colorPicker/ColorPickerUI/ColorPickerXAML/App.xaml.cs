@@ -85,8 +85,17 @@ namespace ColorPicker
                 _powerToysRunnerPid = -1;
             }
 
-            Window = new MainWindow();
-            Window.Activate();
+            // Build the picking overlay first so the DI graph (AppStateHandler etc.) can read
+            // App.Window, then resolve the main view model (which wires the named events + input)
+            // and host it in the overlay's MainView. The overlay starts hidden (TransparentWindow)
+            // and is shown on the hotkey / ShowColorPicker event.
+            var overlay = new ColorPickerOverlayWindow();
+            Window = overlay;
+
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(overlay);
+            var mainViewModel = GetService<ColorPicker.ViewModelContracts.IMainViewModel>();
+            overlay.MainViewControl.DataContext = mainViewModel;
+            mainViewModel.RegisterWindowHandle(hwnd);
         }
 
         /// <summary>

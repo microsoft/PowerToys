@@ -106,14 +106,12 @@
     <Compile Remove="Models\**\*.cs" />
     <Compile Remove="Settings\**\*.cs" />
     <Compile Remove="Telemetry\**\*.cs" />
-    <Compile Remove="ColorEditorWindow.xaml.cs" />
     <Compile Remove="ZoomWindow.xaml.cs" />
     <!-- The legacy root MainWindow.xaml/.cs (the WPF overlay shell) were DELETED to clear
          the duplicate x:Class "ColorPicker.MainWindow" collision with the live
          ColorPickerXAML\MainWindow.xaml. Sub-project C builds a fresh AppWindow-based
          picking-overlay window (see git history for the old WPF shell). ColorEditorWindow
          and ZoomWindow remain quarantined until sub-projects B and C port them. -->
-    <Page Remove="ColorEditorWindow.xaml" />
     <Page Remove="ZoomWindow.xaml" />
     <Page Remove="Views\ZoomView.xaml" />
     <!-- Resources\Styles.xaml is ported and merged into App.xaml. -->
@@ -185,6 +183,16 @@
   <ItemGroup>
     <Compile Include="ViewModels\ColorEditorViewModel.cs" />
     <Compile Include="Helpers\EditorState.cs" />
+  </ItemGroup>
+
+  <!-- Sub-project C (overlay wiring, 7e-1): the activation state machine, the GDI mouse-info
+       provider, the keyboard monitor, the main view model, and the zoom-helper placeholder. -->
+  <ItemGroup>
+    <Compile Include="Helpers\AppStateHandler.cs" />
+    <Compile Include="Helpers\ZoomWindowHelper.cs" />
+    <Compile Include="Mouse\MouseInfoProvider.cs" />
+    <Compile Include="Keyboard\KeyboardMonitor.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
   </ItemGroup>
 
 </Project>

@@ -1,21 +1,19 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Windows.Input;
 
 using ColorPicker.Helpers;
 using ColorPicker.Settings;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
+using Windows.System;
 
 using static ColorPicker.NativeMethods;
 
 namespace ColorPicker.Keyboard
 {
-    [Export(typeof(KeyboardMonitor))]
     public class KeyboardMonitor : IDisposable
     {
         private readonly AppStateHandler _appStateHandler;
@@ -26,9 +24,8 @@ namespace ColorPicker.Keyboard
         private GlobalKeyboardHook _keyboardHook;
         private bool _activationShortcutPressed;
         private int keyboardMoveSpeed;
-        private Key lastArrowKeyPressed = Key.None;
+        private VirtualKey lastArrowKeyPressed = VirtualKey.None;
 
-        [ImportingConstructor]
         public KeyboardMonitor(AppStateHandler appStateHandler, IUserSettings userSettings)
         {
             _appStateHandler = appStateHandler;
@@ -70,40 +67,40 @@ namespace ColorPicker.Keyboard
             var virtualCode = e.KeyboardData.VirtualCode;
 
             // ESC pressed
-            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Escape) && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
+            if (virtualCode == (int)VirtualKey.Escape && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
             {
                 e.Handled = _appStateHandler.HandleEscPressed();
                 return;
             }
 
-            if ((virtualCode == KeyInterop.VirtualKeyFromKey(Key.Space) || virtualCode == KeyInterop.VirtualKeyFromKey(Key.Enter)) && (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown))
+            if ((virtualCode == (int)VirtualKey.Space || virtualCode == (int)VirtualKey.Enter) && (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown))
             {
                 e.Handled = _appStateHandler.HandleEnterPressed();
                 return;
             }
 
-            if (virtualCode == KeyInterop.VirtualKeyFromKey(Key.Back) && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
+            if (virtualCode == (int)VirtualKey.Back && e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown)
             {
                 e.Handled = _appStateHandler.HandleEscPressed();
                 return;
             }
 
-            if (CheckMoveNeeded(virtualCode, Key.Up, e, 0, -1))
+            if (CheckMoveNeeded(virtualCode, VirtualKey.Up, e, 0, -1))
             {
                 e.Handled = true;
                 return;
             }
-            else if (CheckMoveNeeded(virtualCode, Key.Down, e, 0, 1))
+            else if (CheckMoveNeeded(virtualCode, VirtualKey.Down, e, 0, 1))
             {
                 e.Handled = true;
                 return;
             }
-            else if (CheckMoveNeeded(virtualCode, Key.Left, e, -1, 0))
+            else if (CheckMoveNeeded(virtualCode, VirtualKey.Left, e, -1, 0))
             {
                 e.Handled = true;
                 return;
             }
-            else if (CheckMoveNeeded(virtualCode, Key.Right, e, 1, 0))
+            else if (CheckMoveNeeded(virtualCode, VirtualKey.Right, e, 1, 0))
             {
                 e.Handled = true;
                 return;
@@ -144,9 +141,9 @@ namespace ColorPicker.Keyboard
             }
         }
 
-        private bool CheckMoveNeeded(int virtualCode, Key key, GlobalKeyboardHookEventArgs e, int xMove, int yMove)
+        private bool CheckMoveNeeded(int virtualCode, VirtualKey key, GlobalKeyboardHookEventArgs e, int xMove, int yMove)
         {
-            if (virtualCode == KeyInterop.VirtualKeyFromKey(key))
+            if (virtualCode == (int)key)
             {
                 if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyDown && _appStateHandler.IsColorPickerVisible())
                 {
@@ -165,7 +162,7 @@ namespace ColorPicker.Keyboard
                 }
                 else if (e.KeyboardState == GlobalKeyboardHook.KeyboardState.KeyUp)
                 {
-                    lastArrowKeyPressed = Key.None;
+                    lastArrowKeyPressed = VirtualKey.None;
                     keyboardMoveSpeed = 0;
                 }
             }

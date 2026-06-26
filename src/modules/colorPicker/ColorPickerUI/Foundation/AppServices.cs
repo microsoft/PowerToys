@@ -44,6 +44,18 @@ namespace ColorPicker.Foundation
             // D7 settings singleton: holds the live settings.json FileSystemWatcher + in-memory
             // ColorHistory. SINGLETON, registered AFTER IThrottledActionInvoker (its ctor dep).
             services.AddSingleton<ColorPicker.Settings.IUserSettings, ColorPicker.Settings.UserSettings>();
+
+            // Sub-project C overlay + editor wiring (7e-1). All singletons; the graph is acyclic:
+            // MainViewModel -> {MouseInfoProvider, ZoomWindowHelper, AppStateHandler, KeyboardMonitor},
+            // and AppStateHandler -> IColorEditorViewModel. AppStateHandler reads App.Window, which
+            // App.OnLaunched assigns before resolving IMainViewModel.
+            services.AddSingleton<ColorPicker.ViewModelContracts.IColorEditorViewModel, ColorPicker.ViewModels.ColorEditorViewModel>();
+            services.AddSingleton<ColorPicker.ViewModelContracts.IZoomViewModel, ColorPicker.ViewModels.ZoomViewModel>();
+            services.AddSingleton<AppStateHandler>();
+            services.AddSingleton<ZoomWindowHelper>();
+            services.AddSingleton<ColorPicker.Mouse.IMouseInfoProvider, ColorPicker.Mouse.MouseInfoProvider>();
+            services.AddSingleton<ColorPicker.Keyboard.KeyboardMonitor>();
+            services.AddSingleton<ColorPicker.ViewModelContracts.IMainViewModel, ColorPicker.ViewModels.MainViewModel>();
         }
     }
 }
