@@ -137,6 +137,14 @@
     <value>Screen Ruler</value>
     <comment>"Screen Ruler" is the name of the utility</comment>
   </data>
+  <data name="PowerScripts.ModuleTitle" xml:space="preserve">
+    <value>PowerScripts</value>
+    <comment>"PowerScripts" is the name of the utility</comment>
+  </data>
+  <data name="PowerScripts.ModuleDescription" xml:space="preserve">
+    <value>Write a small script once and surface it across PowerToys and the Windows shell.</value>
+    <comment>Description of the PowerScripts utility</comment>
+  </data>
   <data name="MeasureTool_ActivationSettings.Header" xml:space="preserve">
     <value>Activation</value>
   </data>
