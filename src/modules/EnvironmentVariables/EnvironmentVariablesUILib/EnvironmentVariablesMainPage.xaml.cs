@@ -155,7 +155,9 @@ namespace EnvironmentVariablesUILib
                 {
                     foreach (Variable variable in ExistingVariablesListView.SelectedItems)
                     {
-                        if (!profile.Variables.Where(x => x.Name == variable.Name).Any())
+                        if (!profile.Variables
+                            .Where(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase) && x.Values == variable.Values)
+                            .Any())
                         {
                             var clone = variable.Clone(true);
                             profile.Variables.Add(clone);
@@ -288,7 +290,10 @@ namespace EnvironmentVariablesUILib
             if (e.AddedItems.Count > 0)
             {
                 var list = sender as ListView;
-                var duplicates = list.SelectedItems.GroupBy(x => ((Variable)x).Name.ToLowerInvariant()).Where(g => g.Count() > 1).ToList();
+                var duplicates = list.SelectedItems
+                    .GroupBy(x => $"{((Variable)x).Name?.ToUpperInvariant()}|{((Variable)x).Values}|{((Variable)x).ParentType}")
+                    .Where(g => g.Count() > 1)
+                    .ToList();
 
                 foreach (var dup in duplicates)
                 {
@@ -375,7 +380,10 @@ namespace EnvironmentVariablesUILib
                     {
                         if (profileItem.Name == item.Name && profileItem.Values == item.Values)
                         {
-                            if (ExistingVariablesListView.SelectedItems.Where(x => ((Variable)x).Name.Equals(profileItem.Name, StringComparison.OrdinalIgnoreCase)).Any())
+                            if (ExistingVariablesListView.SelectedItems
+                                .Where(x => ((Variable)x).Name.Equals(profileItem.Name, StringComparison.OrdinalIgnoreCase) &&
+                                            ((Variable)x).Values.Equals(profileItem.Values, StringComparison.Ordinal))
+                                .Any())
                             {
                                 continue;
                             }
