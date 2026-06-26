@@ -24,6 +24,8 @@ namespace EnvironmentVariablesUILib.Helpers
 
         private readonly SemaphoreSlim _fileAccessLock = new (1, 1);
 
+        private bool _disposed;
+
         private readonly IFileSystem _fileSystem;
 
         private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
@@ -42,10 +44,18 @@ namespace EnvironmentVariablesUILib.Helpers
 
         public void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _fileAccessLock.Dispose();
         }
 
         public List<ProfileVariablesSet> ReadProfiles()
         {
+            ThrowIfDisposed();
             _fileAccessLock.Wait();
             try
             {
@@ -78,6 +88,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
         public async Task WriteAsync(IEnumerable<ProfileVariablesSet> profiles)
         {
+            ThrowIfDisposed();
             await _fileAccessLock.WaitAsync();
             try
             {
@@ -122,6 +133,13 @@ namespace EnvironmentVariablesUILib.Helpers
             finally
             {
                 _fileAccessLock.Release();
+            }
+        }
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(nameof(EnvironmentVariablesService));
             }
         }
 
