@@ -37,6 +37,11 @@ namespace EnvironmentVariablesUILib.Helpers
 
         public EnvironmentVariablesService(IFileSystem fileSystem)
         {
+            if (fileSystem == null)
+            {
+                throw new ArgumentNullException(nameof(fileSystem));
+            }
+
             _fileSystem = fileSystem;
 
             _profilesJsonFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ProfilesJsonFileSubPath, "profiles.json");
