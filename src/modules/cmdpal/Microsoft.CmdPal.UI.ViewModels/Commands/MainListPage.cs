@@ -443,7 +443,7 @@ public sealed partial class MainListPage : DynamicListPage,
                 {
                     specialFallbacks.Add(s);
                 }
-                else
+                else if (s.IsEnabled)
                 {
                     commonFallbacks.Add(s);
                 }
