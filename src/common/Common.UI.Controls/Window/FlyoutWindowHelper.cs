@@ -9,7 +9,7 @@ using Microsoft.UI.Windowing;
 using Windows.Graphics;
 using WinUIEx;
 
-namespace Microsoft.PowerToys.Common.UI.Controls.Flyout;
+namespace Microsoft.PowerToys.Common.UI.Controls.Window;
 
 /// <summary>
 /// Shared helper for positioning and sizing flyout-style WinUI 3 windows

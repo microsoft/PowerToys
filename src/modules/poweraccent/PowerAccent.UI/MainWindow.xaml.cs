@@ -5,7 +5,6 @@
 using System;
 
 using ManagedCommon;
-using Microsoft.PowerToys.Common.UI.Controls.Flyout;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -24,10 +23,10 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
     // item count (count * ItemWidthDip) so the one-row bar hugs its content like the WPF original,
     // capped at the monitor's max width; beyond that the ListView scrolls horizontally and
     // ScrollIntoView reveals the selected glyph.
-    private const double RowHeightDip = 52;          // one row of accent pills (item Height=48 + card border)
-    private const double DescriptionHeightDip = 48;  // extra row shown when the Unicode description is on
+    private const double RowHeightDip = 92;          // one row of accent pills (item Height=48 + card border)
+    private const double DescriptionHeightDip = 36;  // extra row shown when the Unicode description is on
     private const double ItemWidthDip = 48;            // one accent cell (ListViewItem Grid MinWidth=48)
-    private const double DescriptionMinWidthDip = 600; // min bar width while the description row shows (WPF parity)
+    private const double DescriptionMinWidthDip = 648; // min bar width while the description row shows (WPF parity)
 
     private readonly Core.PowerAccent _powerAccent;
     private readonly ThemeListener _themeListener;
