@@ -19,6 +19,7 @@
             x:Name="CharactersList"
             Padding="0"
             HorizontalAlignment="Center"
+            AutomationProperties.AutomationId="QuickAccentCharacterList"
             IsHitTestVisible="False"
             IsItemClickEnabled="False"
             ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}"
@@ -44,6 +45,13 @@
                     <Setter Property="IsTabStop" Value="False" />
                     <Setter Property="Margin" Value="0" />
                     <Setter Property="Padding" Value="0" />
+                    <!--
+                        WinUI's ListViewItem defaults MinWidth to 88 (ListViewItemMinWidth); WPF's
+                        ListBoxItem defaulted to 0. Without this override each 48px glyph cell is
+                        padded out to 88px, leaving wide gaps between accents. Pin it to the cell
+                        width so the bar is as tight as the WPF original.
+                    -->
+                    <Setter Property="MinWidth" Value="48" />
                     <Setter Property="Template">
                         <Setter.Value>
                             <ControlTemplate TargetType="ListViewItem">
@@ -114,6 +122,7 @@
                 x:Name="CharacterName"
                 MaxHeight="36"
                 Margin="8"
+                AutomationProperties.AutomationId="QuickAccentDescription"
                 FontSize="12"
                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                 Text="{x:Bind ViewModel.Description, Mode=OneWay}"
