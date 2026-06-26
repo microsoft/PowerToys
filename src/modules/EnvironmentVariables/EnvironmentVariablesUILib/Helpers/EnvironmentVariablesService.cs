@@ -9,6 +9,7 @@ using System.IO.Abstractions;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 using EnvironmentVariablesUILib.Models;
@@ -20,6 +21,8 @@ namespace EnvironmentVariablesUILib.Helpers
         private const string ProfilesJsonFileSubPath = "Microsoft\\PowerToys\\EnvironmentVariables\\";
 
         private readonly string _profilesJsonFilePath;
+
+        private readonly SemaphoreSlim _fileAccessLock = new (1, 1);
 
         private readonly IFileSystem _fileSystem;
 
@@ -43,66 +46,82 @@ namespace EnvironmentVariablesUILib.Helpers
 
         public List<ProfileVariablesSet> ReadProfiles()
         {
-            if (!_fileSystem.File.Exists(ProfilesJsonFilePath))
-            {
-                return new List<ProfileVariablesSet>();
-            }
-
+            _fileAccessLock.Wait();
             try
             {
-                var fileContent = _fileSystem.File.ReadAllText(ProfilesJsonFilePath);
-                if (string.IsNullOrWhiteSpace(fileContent))
+                if (!_fileSystem.File.Exists(ProfilesJsonFilePath))
                 {
                     return new List<ProfileVariablesSet>();
                 }
 
-                var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
-                return profiles ?? new List<ProfileVariablesSet>();
+                try
+                {
+                    var fileContent = _fileSystem.File.ReadAllText(ProfilesJsonFilePath);
+                    if (string.IsNullOrWhiteSpace(fileContent))
+                    {
+                        return new List<ProfileVariablesSet>();
+                    }
+
+                    var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
+                    return profiles ?? new List<ProfileVariablesSet>();
+                }
+                catch (Exception)
+                {
+                    return new List<ProfileVariablesSet>();
+                }
             }
-            catch (Exception)
+            finally
             {
-                return new List<ProfileVariablesSet>();
+                _fileAccessLock.Release();
             }
         }
 
         public async Task WriteAsync(IEnumerable<ProfileVariablesSet> profiles)
         {
-            var persistedProfiles = SanitizeProfilesForPersistence(profiles);
-            string jsonData = JsonSerializer.Serialize(persistedProfiles, _serializerOptions);
-
-            var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
-            if (!string.IsNullOrWhiteSpace(directoryPath))
-            {
-                _fileSystem.Directory.CreateDirectory(directoryPath);
-            }
-
-            var tempFilePath = $"{ProfilesJsonFilePath}.{Guid.NewGuid():N}.tmp";
+            await _fileAccessLock.WaitAsync();
             try
             {
-                await _fileSystem.File.WriteAllTextAsync(tempFilePath, jsonData);
-                if (_fileSystem.File.Exists(ProfilesJsonFilePath))
+                var persistedProfiles = SanitizeProfilesForPersistence(profiles);
+                string jsonData = JsonSerializer.Serialize(persistedProfiles, _serializerOptions);
+
+                var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
+                if (!string.IsNullOrWhiteSpace(directoryPath))
                 {
-                    try
+                    _fileSystem.Directory.CreateDirectory(directoryPath);
+                }
+
+                var tempFilePath = $"{ProfilesJsonFilePath}.{Guid.NewGuid():N}.tmp";
+                try
+                {
+                    await _fileSystem.File.WriteAllTextAsync(tempFilePath, jsonData);
+                    if (_fileSystem.File.Exists(ProfilesJsonFilePath))
                     {
-                        _fileSystem.File.Replace(tempFilePath, ProfilesJsonFilePath, null);
+                        try
+                        {
+                            _fileSystem.File.Replace(tempFilePath, ProfilesJsonFilePath, null);
+                        }
+                        catch (Exception)
+                        {
+                            _fileSystem.File.Delete(ProfilesJsonFilePath);
+                            _fileSystem.File.Move(tempFilePath, ProfilesJsonFilePath);
+                        }
                     }
-                    catch (Exception)
+                    else
                     {
-                        _fileSystem.File.Delete(ProfilesJsonFilePath);
                         _fileSystem.File.Move(tempFilePath, ProfilesJsonFilePath);
                     }
                 }
-                else
+                finally
                 {
-                    _fileSystem.File.Move(tempFilePath, ProfilesJsonFilePath);
+                    if (_fileSystem.File.Exists(tempFilePath))
+                    {
+                        _fileSystem.File.Delete(tempFilePath);
+                    }
                 }
             }
             finally
             {
-                if (_fileSystem.File.Exists(tempFilePath))
-                {
-                    _fileSystem.File.Delete(tempFilePath);
-                }
+                _fileAccessLock.Release();
             }
         }
 
