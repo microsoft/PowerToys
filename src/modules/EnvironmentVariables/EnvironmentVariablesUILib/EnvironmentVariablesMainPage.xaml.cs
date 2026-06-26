@@ -247,6 +247,7 @@ namespace EnvironmentVariablesUILib
                 var dataPackage = new DataPackage();
                 dataPackage.SetText(text ?? string.Empty);
                 Clipboard.SetContent(dataPackage);
+                Clipboard.Flush();
             }
             catch
             {
