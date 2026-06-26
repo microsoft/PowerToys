@@ -75,6 +75,12 @@ namespace EnvironmentVariablesUILib.Helpers
         // When applying profile, this would take num_of_variables * 1s to propagate the changes. We do manually SendNotifyMessage with no timeout where needed.
         private static void SetEnvironmentVariableFromRegistryWithoutNotify(string variable, string value, bool fromMachine)
         {
+            if (string.IsNullOrWhiteSpace(variable))
+            {
+                LoggerInstance.Logger.LogError("Can't apply variable - invalid name.");
+                return;
+            }
+
             const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
             if (!fromMachine && variable.Length >= MaxUserEnvVariableLength)
             {
@@ -86,6 +92,7 @@ namespace EnvironmentVariablesUILib.Helpers
             {
                 if (environmentKey != null)
                 {
+                    var environmentValue = value ?? string.Empty;
                     if (value == null)
                     {
                         environmentKey.DeleteValue(variable, throwOnMissingValue: false);
@@ -93,13 +100,13 @@ namespace EnvironmentVariablesUILib.Helpers
                     else
                     {
                         // If a variable contains %, we save it as a REG_EXPAND_SZ, which is the same behavior as the Windows default environment variables editor.
-                        if (value.Contains('%'))
+                        if (environmentValue.Contains('%'))
                         {
-                            environmentKey.SetValue(variable, value, RegistryValueKind.ExpandString);
+                            environmentKey.SetValue(variable, environmentValue, RegistryValueKind.ExpandString);
                         }
                         else
                         {
-                            environmentKey.SetValue(variable, value, RegistryValueKind.String);
+                            environmentKey.SetValue(variable, environmentValue, RegistryValueKind.String);
                         }
                     }
                 }
