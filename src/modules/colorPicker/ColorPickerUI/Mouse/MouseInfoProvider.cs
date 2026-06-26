@@ -90,15 +90,26 @@ namespace ColorPicker.Mouse
 
         private static Color GetPixelColor(Point mousePosition)
         {
-            var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
-            using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
+            try
             {
-                using (var g = Graphics.FromImage(bmp))
+                var rect = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, 1, 1);
+                using (var bmp = new Bitmap(rect.Width, rect.Height, PixelFormat.Format32bppArgb))
                 {
-                    g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
-                }
+                    using (var g = Graphics.FromImage(bmp))
+                    {
+                        g.CopyFromScreen(rect.Left, rect.Top, 0, 0, bmp.Size, CopyPixelOperation.SourceCopy);
+                    }
 
-                return bmp.GetPixel(0, 0);
+                    return bmp.GetPixel(0, 0);
+                }
+            }
+            catch (Exception)
+            {
+                // GDI CopyFromScreen can throw "the handle is invalid" when no screen device
+                // context is available (e.g. a non-interactive / disconnected session, or before
+                // the desktop is ready at startup). Degrade gracefully instead of crashing the
+                // app; the next sample succeeds once a real desktop is present.
+                return Color.Black;
             }
         }
 
