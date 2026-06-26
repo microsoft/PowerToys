@@ -217,10 +217,16 @@ namespace EnvironmentVariablesUILib
             var activePanel = AddVariableSwitchPresenter.Value as string;
             if (activePanel == "NewVariable")
             {
-                var newVariableName = AddNewVariableName.Text?.Trim();
-                var newVariable = new Variable(newVariableName, AddNewVariableValue.Text, VariablesSetType.Profile);
+                var newVariableName = AddNewVariableName?.Text?.Trim();
+                var newVariable = new Variable(newVariableName, AddNewVariableValue?.Text, VariablesSetType.Profile);
                 if (!newVariable.Valid)
                 {
+                    return;
+                }
+
+                if (newVariableName.Length >= 255 || profile.Variables.Any(x => string.Equals(x?.Name, newVariableName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    AddVariableDialog.IsPrimaryButtonEnabled = false;
                     return;
                 }
 
