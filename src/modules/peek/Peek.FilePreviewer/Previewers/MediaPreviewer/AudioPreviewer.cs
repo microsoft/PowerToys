@@ -200,6 +200,7 @@ namespace Peek.FilePreviewer.Previewers.MediaPreviewer
             ".amr",
             ".flac",
             ".m4a",
+            ".opus",
             ".mp3",
             ".ogg",
             ".wav",
