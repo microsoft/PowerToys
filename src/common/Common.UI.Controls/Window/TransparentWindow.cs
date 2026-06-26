@@ -2,14 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.Runtime.InteropServices;
-using CommunityToolkit.WinUI;
-using CommunityToolkit.WinUI.Animations;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Markup;
+using Windows.Foundation;
 using WinUIEx;
 
 namespace Microsoft.PowerToys.Common.UI.Controls.Window;
@@ -26,26 +22,22 @@ namespace Microsoft.PowerToys.Common.UI.Controls.Window;
 ///   <item>Disable the Win11 1-pixel DWM border and corner rounding.</item>
 ///   <item>Mark the window as a tool window so it stays out of the taskbar and Alt-Tab.</item>
 ///   <item>Extend content into the title bar and collapse the title bar.</item>
+///   <item>Apply a <see cref="TransparentTintBackdrop"/> so the HWND is fully
+///   see-through and the visible chrome can be drawn by the content.</item>
 /// </list>
-/// <para>The visible chrome (acrylic + border + corner radius + shadow) lives
-/// in a <see cref="TransparentCard"/> that the constructor assigns to
-/// <see cref="Microsoft.UI.Xaml.Window.Content"/>. Consumers supply their own
-/// UI via <see cref="InnerContent"/> — which is the XAML default-content slot
-/// thanks to <see cref="ContentPropertyAttribute"/> — so a derived window can
-/// be written as <c>&lt;common:TransparentWindow&gt;&lt;TextBlock/&gt;&lt;/common:TransparentWindow&gt;</c>.</para>
-/// <para>Transparency is achieved with a <see cref="TransparentTintBackdrop"/>
-/// system backdrop so the area outside the <see cref="TransparentCard"/> is
-/// fully see-through. That buffer area is NOT click-through, so consumers
-/// should keep it as small as possible (just enough to give the card's
-/// shadow + slide animation room to breathe — roughly 24 px on each side).</para>
-/// <para><see cref="Show"/> and <see cref="Hide"/> coordinate <c>SW_SHOWNA</c>
-/// (no-activate), the <see cref="Microsoft.UI.Xaml.UIElement.Visibility"/>
-/// toggle on the card, and a debounced
-/// <see cref="Microsoft.UI.Windowing.AppWindow.Hide"/> sized from the longest
-/// animation in <see cref="HideAnimations"/>. Animations target the card so
-/// the entire surface (border, acrylic, shadow, inner content) slides as one.</para>
+/// <para>This window is intentionally animation-agnostic: it does not own any
+/// chrome or motion. Consumers supply their own content (typically a
+/// <see cref="TransientSurface"/>) which draws the acrylic, border, corners and
+/// shadow, and animates itself. <see cref="Show()"/> and <see cref="Hide"/>
+/// coordinate <c>SW_SHOWNA</c> (no-activate) with the
+/// <see cref="Showing"/> / <see cref="Hiding"/> events: a content surface
+/// subscribes to those (e.g. via <see cref="TransientSurface.SubscribeTo"/>)
+/// and plays its in/out animation. The <see cref="Hiding"/> event supports
+/// deferrals, so the underlying
+/// <see cref="Microsoft.UI.Windowing.AppWindow.Hide"/> is delayed until the
+/// content has finished animating out. With no listener the window simply shows
+/// or hides immediately.</para>
 /// </remarks>
-[ContentProperty(Name = nameof(InnerContent))]
 public partial class TransparentWindow : WinUIEx.WindowEx
 {
     private const uint DwmwaColorNone = 0xFFFFFFFE;
@@ -58,12 +50,7 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
     private const int SwShowNa = 8;
 
-    private readonly DispatcherQueueTimer _hideCloseTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
     private readonly nint _hwnd;
-    private readonly TransparentCard _card;
-
-    private ImplicitAnimationSet _showAnimations;
-    private ImplicitAnimationSet _hideAnimations;
 
     public TransparentWindow()
     {
@@ -86,103 +73,54 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
         ApplyExStyleBit(WsExToolWindow, true);
 
-        _showAnimations = BuildDefaultShowAnimations();
-        _hideAnimations = BuildDefaultHideAnimations();
-
-        _card = new TransparentCard();
-        Content = _card;
-
         SystemBackdrop = new TransparentTintBackdrop();
     }
 
     /// <summary>
-    /// Gets the <see cref="TransparentCard"/> that provides the window's
-    /// visible chrome (acrylic + border + shadow). Consumers can configure
-    /// its layout (e.g. <c>HorizontalAlignment</c>, <c>VerticalAlignment</c>,
-    /// <c>MaxWidth</c>, <c>Margin</c>) to position the card inside the
-    /// window, or apply a custom <c>Style</c> to change its look.
+    /// Raised (without activation) when <see cref="Show()"/> makes the window
+    /// visible. A content surface subscribes to this to play its in-animation,
+    /// sliding in from <see cref="ShowingEventArgs.Direction"/>.
     /// </summary>
-    public TransparentCard Card => _card;
+    public event TypedEventHandler<TransparentWindow, ShowingEventArgs>? Showing;
 
     /// <summary>
-    /// Gets or sets the visual hosted inside the window's
-    /// <see cref="TransparentCard"/>. This is the XAML default-content slot:
-    /// child elements declared between the opening and closing
-    /// <c>TransparentWindow</c> tags in a derived .xaml are routed here.
+    /// Raised when <see cref="Hide"/> begins dismissing the window. A content
+    /// surface subscribes to this to play its out-animation, taking a deferral
+    /// (<see cref="HidingEventArgs.GetDeferral"/>) so the underlying window stays
+    /// visible until the animation completes.
     /// </summary>
-    public object? InnerContent
-    {
-        get => _card.Content;
-        set => _card.Content = value;
-    }
+    public event TypedEventHandler<TransparentWindow, HidingEventArgs>? Hiding;
 
     /// <summary>
-    /// Gets or sets the animations played against
-    /// <see cref="Microsoft.UI.Xaml.Window.Content"/> when <see cref="Show"/>
-    /// flips it to <see cref="Visibility.Visible"/>. Defaults to a 200 ms
-    /// fade-in plus a 250 ms slide-up of 24 px.
+    /// Shows the window without activation (<c>SW_SHOWNA</c>) and raises
+    /// <see cref="Showing"/> without a direction, so subscribed content animates
+    /// in using its own configured slide direction.
     /// </summary>
-    public ImplicitAnimationSet ShowAnimations
-    {
-        get => _showAnimations;
-        set => _showAnimations = value ?? new ImplicitAnimationSet();
-    }
+    public void Show() => RaiseShow(null);
 
     /// <summary>
-    /// Gets or sets the animations played against
-    /// <see cref="Microsoft.UI.Xaml.Window.Content"/> when <see cref="Hide"/>
-    /// flips it to <see cref="Visibility.Collapsed"/>. Defaults to a 180 ms
-    /// fade-out plus a 180 ms slide-down of 12 px.
+    /// Shows the window without activation (<c>SW_SHOWNA</c>) and raises
+    /// <see cref="Showing"/> so subscribed content animates in from
+    /// <paramref name="direction"/>, overriding its configured direction.
     /// </summary>
-    public ImplicitAnimationSet HideAnimations
-    {
-        get => _hideAnimations;
-        set => _hideAnimations = value ?? new ImplicitAnimationSet();
-    }
+    /// <param name="direction">The edge the content should slide in from.</param>
+    public void Show(SlideDirection direction) => RaiseShow(direction);
 
-    /// <summary>
-    /// Shows the window without activation (<c>SW_SHOWNA</c>) and flips
-    /// <see cref="Microsoft.UI.Xaml.Window.Content"/> to
-    /// <see cref="Visibility.Visible"/> so <see cref="ShowAnimations"/> plays.
-    /// Repeated calls reset the content to its hidden pose first so the show
-    /// animation re-triggers cleanly. Any pending hide is cancelled.
-    /// </summary>
-    public void Show()
+    private void RaiseShow(SlideDirection? direction)
     {
         DispatcherQueue.TryEnqueue(
             DispatcherQueuePriority.Low,
             () =>
             {
-                _hideCloseTimer.Stop();
-
-                if (Content is UIElement content)
-                {
-                    // Re-apply each call so swapping animation collections at
-                    // runtime takes effect on the next show/hide cycle.
-                    Implicit.SetShowAnimations(content, _showAnimations);
-                    Implicit.SetHideAnimations(content, _hideAnimations);
-
-                    // Reset to the hidden pose so the show animation always
-                    // animates from the configured starting frame.
-                    content.Visibility = Visibility.Collapsed;
-                }
-
                 _ = ShowWindow(_hwnd, SwShowNa);
-
-                if (Content is UIElement c2)
-                {
-                    c2.Visibility = Visibility.Visible;
-                }
+                Showing?.Invoke(this, new ShowingEventArgs(direction));
             });
     }
 
     /// <summary>
-    /// Flips <see cref="Microsoft.UI.Xaml.Window.Content"/> to
-    /// <see cref="Visibility.Collapsed"/> so <see cref="HideAnimations"/>
-    /// plays, then hides the underlying
-    /// <see cref="Microsoft.UI.Windowing.AppWindow"/> once the longest
-    /// animation in <see cref="HideAnimations"/> (delay + duration) has
-    /// completed.
+    /// Raises <see cref="Hiding"/> so subscribed content animates out, then hides
+    /// the underlying <see cref="Microsoft.UI.Windowing.AppWindow"/> once every
+    /// deferral taken by a handler has completed (immediately if none were taken).
     /// </summary>
     public void Hide()
     {
@@ -190,34 +128,10 @@ public partial class TransparentWindow : WinUIEx.WindowEx
             DispatcherQueuePriority.Low,
             () =>
             {
-                if (Content is UIElement content)
-                {
-                    content.Visibility = Visibility.Collapsed;
-                }
-
-                _hideCloseTimer.Debounce(
-                    AppWindow.Hide,
-                    interval: GetAnimationSetTotalDuration(_hideAnimations),
-                    immediate: false);
+                var args = new HidingEventArgs();
+                Hiding?.Invoke(this, args);
+                args.RunWhenComplete(AppWindow.Hide);
             });
-    }
-
-    private static TimeSpan GetAnimationSetTotalDuration(ImplicitAnimationSet set)
-    {
-        TimeSpan longest = TimeSpan.Zero;
-        foreach (var animation in set)
-        {
-            if (animation is Animation anim)
-            {
-                var total = (anim.Delay ?? TimeSpan.Zero) + (anim.Duration ?? TimeSpan.Zero);
-                if (total > longest)
-                {
-                    longest = total;
-                }
-            }
-        }
-
-        return longest;
     }
 
     private void ApplyExStyleBit(int bit, bool set)
@@ -234,46 +148,6 @@ public partial class TransparentWindow : WinUIEx.WindowEx
             _ = SetWindowLongPtr(_hwnd, GwlExStyle, updated);
         }
     }
-
-    private static ImplicitAnimationSet BuildDefaultShowAnimations() => new()
-    {
-        new OpacityAnimation
-        {
-            From = 0,
-            To = 1.0,
-            Duration = TimeSpan.FromMilliseconds(200),
-            EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut,
-            EasingType = EasingType.Cubic,
-        },
-        new TranslationAnimation
-        {
-            From = "0,24,32",
-            To = "0,0,32",
-            Duration = TimeSpan.FromMilliseconds(250),
-            EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseOut,
-            EasingType = EasingType.Cubic,
-        },
-    };
-
-    private static ImplicitAnimationSet BuildDefaultHideAnimations() => new()
-    {
-        new OpacityAnimation
-        {
-            From = 1.0,
-            To = 0,
-            Duration = TimeSpan.FromMilliseconds(180),
-            EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
-            EasingType = EasingType.Cubic,
-        },
-        new TranslationAnimation
-        {
-            From = "0,0,32",
-            To = "0,12,32",
-            Duration = TimeSpan.FromMilliseconds(180),
-            EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
-            EasingType = EasingType.Cubic,
-        },
-    };
 
     [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
     private static partial nint GetWindowLongPtr(nint hWnd, int nIndex);
