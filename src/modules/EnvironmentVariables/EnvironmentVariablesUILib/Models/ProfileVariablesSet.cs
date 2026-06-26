@@ -150,7 +150,10 @@ namespace EnvironmentVariablesUILib.Models
                 }
 
                 var applied = EnvironmentVariablesHelper.GetExisting((variable.Name ?? string.Empty).Trim());
-                if (applied != null && applied.Values == variable.Values && applied.ParentType == VariablesSetType.User)
+                if (applied != null
+                    && string.Equals((applied.Name ?? string.Empty).Trim(), (variable.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase)
+                    && EnvironmentVariablesHelper.IsEquivalentVariableValue(applied.Values, variable.Values)
+                    && applied.ParentType == VariablesSetType.User)
                 {
                     continue;
                 }
