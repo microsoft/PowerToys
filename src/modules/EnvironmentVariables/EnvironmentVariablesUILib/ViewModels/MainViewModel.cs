@@ -645,6 +645,12 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
+            if (variable.ParentType == VariablesSetType.Profile && profile == null)
+            {
+                LoggerInstance.Logger.LogError("Invalid delete: cannot delete profile variable without owning profile set.");
+                return;
+            }
+
             bool propagateChange = true;
 
             if (profile != null)
