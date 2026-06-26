@@ -77,7 +77,7 @@ public static class CharacterMappings
             [LetterKey.VK_PERIOD] = ["…", "⁝", "\u0300", "\u0301", "\u0302", "\u0303", "\u0304", "\u0308", "\u030B", "\u030C"],
             [LetterKey.VK_MINUS] = ["~", "‐", "‑", "‒", "–", "—", "―", "⁓", "−", "⸺", "⸻", "∓", "₋", "⁻"],
             [LetterKey.VK_SLASH_] = ["÷", "√"],
-            [LetterKey.VK_DIVIDE_] = ["÷", "√"],
+            [LetterKey.VK_DIVIDE_] = ["÷", "√", "‽"],
             [LetterKey.VK_MULTIPLY_] = ["×", "⋅", "ˣ", "ₓ"],
             [LetterKey.VK_PLUS] = ["≤", "≥", "≠", "≈", "≙", "⊕", "⊗", "±", "≅", "≡", "₊", "⁺", "₌", "⁼"],
             [LetterKey.VK_BACKSLASH] = ["`", "~"],

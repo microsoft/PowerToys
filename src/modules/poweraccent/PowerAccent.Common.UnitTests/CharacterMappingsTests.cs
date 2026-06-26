@@ -280,6 +280,17 @@ public sealed class CharacterMappingsTests
             $"Expected empty result for Language.{langInfo.Id} / LetterKey.{absentKey}, which has no mapping.");
     }
 
+    [TestMethod]
+    public void GetCharacters_DivideKey_IncludesInterrobang()
+    {
+        var allLanguages = Enum.GetValues<Language>();
+        var result = CharacterMappings.GetCharacters(LetterKey.VK_DIVIDE_, allLanguages);
+
+        Assert.IsTrue(
+            result.Contains("‽"),
+            "The divide/question key should expose the interrobang character when all languages are included.");
+    }
+
     /// <summary>
     /// Spoken languages in DisplayOrder should be sorted alphabetically by their enum
     /// names to remain culturally neutral.
