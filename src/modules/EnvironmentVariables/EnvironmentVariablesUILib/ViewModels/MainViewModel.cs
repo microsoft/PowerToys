@@ -227,6 +227,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         internal void EditVariable(Variable original, Variable edited, ProfileVariablesSet variablesSet)
         {
+            if (original == null || edited == null)
+            {
+                return;
+            }
+
             bool propagateChange = variablesSet == null /* not a profile */ || variablesSet.Id.Equals(AppliedProfile?.Id);
             bool changed = original.Name != edited.Name || original.Values != edited.Values;
             if (changed)
@@ -247,6 +252,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         internal void AddProfile(ProfileVariablesSet profile)
         {
+            if (profile == null)
+            {
+                return;
+            }
+
             DeduplicateProfileVariables(profile);
             profile.PropertyChanged += Profile_PropertyChanged;
             if (profile.IsEnabled)
@@ -262,6 +272,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         internal void UpdateProfile(ProfileVariablesSet updatedProfile)
         {
+            if (updatedProfile == null)
+            {
+                return;
+            }
+
             var existingProfile = Profiles.Where(x => x.Id == updatedProfile.Id).FirstOrDefault();
             if (existingProfile != null)
             {
@@ -322,18 +337,20 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         private void SetAppliedProfile(ProfileVariablesSet profile)
         {
-            if (profile != null)
+            if (profile == null)
             {
-                if (!profile.IsApplicable())
-                {
-                    profile.PropertyChanged -= Profile_PropertyChanged;
-                    profile.IsEnabled = false;
-                    profile.PropertyChanged += Profile_PropertyChanged;
+                return;
+            }
 
-                    EnvironmentState = EnvironmentState.ProfileNotApplicable;
+            if (!profile.IsApplicable())
+            {
+                profile.PropertyChanged -= Profile_PropertyChanged;
+                profile.IsEnabled = false;
+                profile.PropertyChanged += Profile_PropertyChanged;
 
-                    return;
-                }
+                EnvironmentState = EnvironmentState.ProfileNotApplicable;
+
+                return;
             }
 
             var task = profile.Apply();
@@ -432,6 +449,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         internal void RemoveProfile(ProfileVariablesSet profile)
         {
+            if (profile == null)
+            {
+                return;
+            }
+
             if (profile.IsEnabled)
             {
                 UnsetAppliedProfile();
