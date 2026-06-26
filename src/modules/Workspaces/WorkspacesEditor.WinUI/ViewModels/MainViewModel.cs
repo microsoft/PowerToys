@@ -11,7 +11,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Timers;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -35,7 +34,7 @@ namespace WorkspacesEditor.ViewModels
         private Project _editedProject;
         private Project _projectBeforeLaunch;
         private string _projectNameBeingEdited;
-        private Timer _lastUpdatedTimer;
+        private Microsoft.UI.Xaml.DispatcherTimer _lastUpdatedTimer;
         private WorkspacesSettings _settings;
         private bool _isDisposed;
         private bool _isExistingProjectLaunched;
@@ -130,10 +129,6 @@ namespace WorkspacesEditor.ViewModels
             _settings = Utils.Settings.ReadSettings();
             OrderByIndex = (int)_settings.Properties.SortBy;
             _workspacesEditorIO = workspacesEditorIO;
-            _lastUpdatedTimer = new Timer();
-            _lastUpdatedTimer.Interval = 1000;
-            _lastUpdatedTimer.Elapsed += LastUpdatedTimerElapsed;
-            _lastUpdatedTimer.Start();
 
             StrongReferenceMessenger.Default.Register<SnapshotCapturedMessage>(this, (r, m) => ((MainViewModel)r).OnSnapshotCaptured());
             StrongReferenceMessenger.Default.Register<SnapshotCancelledMessage>(this, (r, m) => ((MainViewModel)r).CancelSnapshot());
@@ -150,6 +145,12 @@ namespace WorkspacesEditor.ViewModels
             {
                 project.InitializePreview();
             }
+
+            // Create DispatcherTimer here (requires UI thread / DispatcherQueue to exist)
+            _lastUpdatedTimer = new Microsoft.UI.Xaml.DispatcherTimer();
+            _lastUpdatedTimer.Interval = TimeSpan.FromSeconds(1);
+            _lastUpdatedTimer.Tick += LastUpdatedTimerTick;
+            _lastUpdatedTimer.Start();
 
             OnPropertyChanged(nameof(WorkspacesView));
         }
@@ -371,20 +372,17 @@ namespace WorkspacesEditor.ViewModels
             }
         }
 
-        private void LastUpdatedTimerElapsed(object sender, ElapsedEventArgs e)
+        private void LastUpdatedTimerTick(object sender, object e)
         {
             if (Workspaces == null)
             {
                 return;
             }
 
-            App.DispatcherQueue?.TryEnqueue(() =>
+            foreach (Project project in Workspaces)
             {
-                foreach (Project project in Workspaces)
-                {
-                    project.OnPropertyChanged(new PropertyChangedEventArgs("LastLaunched"));
-                }
-            });
+                project.OnPropertyChanged(new PropertyChangedEventArgs("LastLaunched"));
+            }
         }
 
         private void RunLauncher(string projectId, InvokePoint invokePoint)
@@ -551,7 +549,6 @@ namespace WorkspacesEditor.ViewModels
             if (!_isDisposed)
             {
                 _lastUpdatedTimer?.Stop();
-                _lastUpdatedTimer?.Dispose();
                 StrongReferenceMessenger.Default.UnregisterAll(this);
                 _isDisposed = true;
             }
