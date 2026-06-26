@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -192,17 +193,43 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private static string ResolveHostPath()
         {
-            var candidates = new[]
+            var candidates = new List<string>
             {
                 Path.Combine(AppContext.BaseDirectory, HostExeName),
                 Path.Combine(AppContext.BaseDirectory, "PowerScripts", HostExeName),
-                Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Microsoft",
-                    "PowerToys",
-                    "PowerScripts",
-                    HostExeName),
+                Path.Combine(ModuleDirectory, HostExeName),
             };
+
+            // Prototype dev fallback: when running an in-repo build, the Host isn't copied next to
+            // Settings, so walk up from the base directory and probe the Host project's bin output.
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir is not null)
+            {
+                foreach (var config in new[] { "Debug", "Release" })
+                {
+                    var hostBin = Path.Combine(
+                        dir.FullName,
+                        "src",
+                        "modules",
+                        "PowerScripts",
+                        "PowerScripts.Host",
+                        "bin",
+                        config);
+
+                    if (Directory.Exists(hostBin))
+                    {
+                        var found = Directory
+                            .EnumerateFiles(hostBin, HostExeName, SearchOption.AllDirectories)
+                            .FirstOrDefault();
+                        if (!string.IsNullOrEmpty(found))
+                        {
+                            candidates.Add(found);
+                        }
+                    }
+                }
+
+                dir = dir.Parent;
+            }
 
             foreach (var candidate in candidates)
             {
