@@ -584,6 +584,11 @@ namespace EnvironmentVariablesUILib
         {
             var txtBox = sender as TextBox;
             var variable = EditVariableDialog.DataContext as Variable;
+            if (txtBox == null || variable == null)
+            {
+                return;
+            }
+
             EditVariableDialog.IsPrimaryButtonEnabled = true;
 
             variable.ValuesList = Variable.ValuesStringToValuesListItemCollection(txtBox.Text);
@@ -609,10 +614,7 @@ namespace EnvironmentVariablesUILib
                 variable.ValuesList.Move(index, index - 1);
             }
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
-            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            RefreshEditVariableDialogValueTextFromList(variable);
         }
 
         private void ReorderButtonDown_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -635,10 +637,7 @@ namespace EnvironmentVariablesUILib
                 variable.ValuesList.Move(index, index + 1);
             }
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
-            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            RefreshEditVariableDialogValueTextFromList(variable);
         }
 
         private void RemoveListVariableButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -657,10 +656,7 @@ namespace EnvironmentVariablesUILib
 
             variable.ValuesList.Remove(listItem);
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x?.Text).ToArray());
-            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            RefreshEditVariableDialogValueTextFromList(variable);
         }
 
         private void RemoveListVariableDuplicatesButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -701,10 +697,7 @@ namespace EnvironmentVariablesUILib
 
             if (hasDuplicates || hasValueChanges)
             {
-                var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
-                EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-                EditVariableDialogValueTxtBox.Text = newValues;
-                EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+                RefreshEditVariableDialogValueTextFromList(variable);
             }
         }
 
@@ -717,13 +710,20 @@ namespace EnvironmentVariablesUILib
             }
 
             var variable = EditVariableDialog.DataContext as Variable;
+            if (variable?.ValuesList == null)
+            {
+                return;
+            }
+
             var index = variable.ValuesList.IndexOf(listItem);
+            if (index < 0)
+            {
+                return;
+            }
+
             variable.ValuesList.Insert(index, new Variable.ValuesListItem { Text = string.Empty });
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
-            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            RefreshEditVariableDialogValueTextFromList(variable);
         }
 
         private void InsertListEntryAfterButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -735,32 +735,59 @@ namespace EnvironmentVariablesUILib
             }
 
             var variable = EditVariableDialog.DataContext as Variable;
+            if (variable?.ValuesList == null)
+            {
+                return;
+            }
+
             var index = variable.ValuesList.IndexOf(listItem);
+            if (index < 0)
+            {
+                return;
+            }
+
             variable.ValuesList.Insert(index + 1, new Variable.ValuesListItem { Text = string.Empty });
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
-            EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
-            EditVariableDialogValueTxtBox.Text = newValues;
-            EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
+            RefreshEditVariableDialogValueTextFromList(variable);
         }
 
         private void EditVariableValuesListTextBox_LostFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as TextBox)?.DataContext as Variable.ValuesListItem;
+            var textBox = sender as TextBox;
+            if (textBox == null)
+            {
+                return;
+            }
+
+            var listItem = textBox.DataContext as Variable.ValuesListItem;
             if (listItem == null)
             {
                 return;
             }
 
-            if (listItem.Text == (sender as TextBox)?.Text)
+            if (listItem.Text == textBox.Text)
             {
                 return;
             }
 
-            listItem.Text = (sender as TextBox)?.Text;
+            listItem.Text = textBox.Text;
             var variable = EditVariableDialog.DataContext as Variable;
+            if (variable?.ValuesList == null)
+            {
+                return;
+            }
 
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
+            RefreshEditVariableDialogValueTextFromList(variable);
+        }
+
+        private void RefreshEditVariableDialogValueTextFromList(Variable variable)
+        {
+            if (variable?.ValuesList == null)
+            {
+                return;
+            }
+
+            var newValues = string.Join(";", variable.ValuesList.Select(x => x?.Text).ToArray());
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
             EditVariableDialogValueTxtBox.Text = newValues;
             EditVariableDialogValueTxtBox.TextChanged += EditVariableDialogValueTxtBox_TextChanged;
