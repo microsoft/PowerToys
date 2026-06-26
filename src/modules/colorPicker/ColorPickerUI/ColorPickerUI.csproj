@@ -93,7 +93,9 @@
   <!-- ============================================================= -->
   <ItemGroup>
     <Compile Remove="Behaviors\**\*.cs" />
-    <Compile Remove="Controls\**\*.cs" />
+    <!-- HSVColor + ColorFormatControl are ported (default glob); only ColorPickerControl
+         (the slider picker) remains quarantined. -->
+    <Compile Remove="Controls\ColorPickerControl.xaml.cs" />
     <Compile Remove="Converters\**\*.cs" />
     <!-- MainView (the picking tooltip) is ported; only the editor/zoom views remain quarantined. -->
     <Compile Remove="Views\ColorEditorView.xaml.cs" />
@@ -116,7 +118,7 @@
          and ZoomWindow remain quarantined until sub-projects B and C port them. -->
     <Page Remove="ColorEditorWindow.xaml" />
     <Page Remove="ZoomWindow.xaml" />
-    <Page Remove="Controls\**\*.xaml" />
+    <Page Remove="Controls\ColorPickerControl.xaml" />
     <Page Remove="Views\ColorEditorView.xaml" />
     <Page Remove="Views\ZoomView.xaml" />
     <!-- Resources\Styles.xaml is ported and merged into App.xaml. -->
@@ -153,7 +155,6 @@
     <Compile Include="Helpers\ColorRepresentationHelper.cs" />
     <Compile Include="Helpers\SerializationHelper.cs" />
     <Compile Include="Models\ColorFormatModel.cs" />
-    <Compile Include="Controls\HSVColor.cs" />
     <Compile Include="Converters\BoolToInvertedVisibilityConverter.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
