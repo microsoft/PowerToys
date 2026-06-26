@@ -53,12 +53,25 @@ namespace EnvironmentVariablesUILib.Models
                     // It exists. Rename it to preserve it.
                     if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
                     {
-                        variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, profileName);
+                        var backupName = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, profileName);
 
-                        // Backup the variable
-                        if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToOverride))
+                        // Only create a backup variable if there isn't one already for this profile.
+                        if (EnvironmentVariablesHelper.GetExisting(backupName) == null)
                         {
-                            LoggerInstance.Logger.LogError("Failed to set backup variable.");
+                            var backupVariable = new Variable(variableToOverride.Name, variableToOverride.Values, variableToOverride.ParentType)
+                            {
+                                Name = backupName,
+                            };
+
+                            // Backup the variable
+                            if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(backupVariable))
+                            {
+                                LoggerInstance.Logger.LogError("Failed to set backup variable.");
+                            }
+                        }
+                        else
+                        {
+                            LoggerInstance.Logger.LogError("Cannot back up user variable because backup already exists.");
                         }
                     }
 
