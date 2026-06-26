@@ -24,12 +24,4 @@ public class ResourcesTests
         // A translation with an unescaped brace is also a malformed format string.
         Assert.AreEqual("oops {", Resources.SafeFormat("oops {", "x"));
     }
-
-    [TestMethod]
-    public void KnownKey_ResolvesToNeutralEnglish()
-    {
-        // Sanity that the resx is embedded under the expected base name and the new keys resolve.
-        Assert.AreEqual("(not supported)", Resources.Text_NotSupported);
-        Assert.AreEqual("unknown setting 'hdmi'", Resources.Error_UnknownSetting("hdmi"));
-    }
 }

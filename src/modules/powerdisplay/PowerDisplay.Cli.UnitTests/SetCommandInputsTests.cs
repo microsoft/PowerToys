@@ -10,17 +10,15 @@ namespace PowerDisplay.Cli.UnitTests;
 [TestClass]
 public class SetCommandInputsTests
 {
+    // The count drives the "exactly one setting" validation in Program: 0 -> NoSetting error,
+    // 1 -> proceed, >1 -> OnlyOneSetting error. Exercise the 0/1/2 thresholds in one place.
     [TestMethod]
-    public void CountSelectedSettings_None()
-        => Assert.AreEqual(0, SetCommand.CountSelectedSettings(new SetCommandInputs()));
-
-    [TestMethod]
-    public void CountSelectedSettings_OnlyBrightness_IsOne()
-        => Assert.AreEqual(1, SetCommand.CountSelectedSettings(new SetCommandInputs { Brightness = 50 }));
-
-    [TestMethod]
-    public void CountSelectedSettings_BrightnessAndContrast_IsTwo()
-        => Assert.AreEqual(2, SetCommand.CountSelectedSettings(new SetCommandInputs { Brightness = 50, Contrast = 70 }));
+    public void CountSelectedSettings_CountsAcrossThresholds()
+    {
+        Assert.AreEqual(0, SetCommand.CountSelectedSettings(new SetCommandInputs()));
+        Assert.AreEqual(1, SetCommand.CountSelectedSettings(new SetCommandInputs { Brightness = 50 }));
+        Assert.AreEqual(2, SetCommand.CountSelectedSettings(new SetCommandInputs { Brightness = 50, Contrast = 70 }));
+    }
 
     [TestMethod]
     public void CountSelectedSettings_AllSeven()

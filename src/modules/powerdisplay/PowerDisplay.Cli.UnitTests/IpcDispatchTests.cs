@@ -129,6 +129,10 @@ public class IpcDispatchTests
         Assert.AreEqual(CliExitCodes.MonitorNotFound, exit);
         Assert.AreEqual(1, output.StderrLines.Count);
         StringAssert.Contains(output.StderrLines[0], CliErrorCodes.MonitorNotFound);
+
+        // An error envelope (isError=true) routes through the error renderer (stderr) only and must
+        // never leak to the success path (stdout).
+        Assert.AreEqual(0, output.StdoutLines.Count, "error envelope must not render via the success path");
     }
 
     // ── apply-profile exit-code carried through IPC ───────────────────────────
@@ -165,7 +169,11 @@ public class IpcDispatchTests
         var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile("Night"), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.OutOfRange, exit, "OutOfRange partial failure must return exit 2, not hardcoded HardwareFailure(5)");
-        Assert.AreEqual(1, output.StdoutLines.Count);
+
+        // A partial-failure apply-profile result is a SUCCESS envelope (isError=false): it must route
+        // through the success renderer (stdout) and never WriteError — purely on the explicit discriminator.
+        Assert.AreEqual(1, output.StdoutLines.Count, "rendered via the success path");
+        Assert.AreEqual(0, output.StderrLines.Count, "must not go through WriteError");
     }
 
     [TestMethod]
@@ -209,45 +217,6 @@ public class IpcDispatchTests
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.InternalError, exit);
-    }
-
-    // ── IsError discriminator routing ─────────────────────────────────────────
-    [TestMethod]
-    public async Task ApplyProfile_partial_failure_isError_false_routes_to_success_path()
-    {
-        // A partial-failure apply-profile result is a SUCCESS envelope (isError=false) carrying a
-        // non-zero ExitCode. The dispatcher must route it through the success renderer and return
-        // ExitCode — never the error path — purely on the explicit discriminator.
-        var result = new CliApplyProfileResult { ExitCode = CliExitCodes.OutOfRange, Profile = "Night", Monitors = [] };
-        Assert.IsFalse(result.IsError, "apply-profile result must not be flagged as an error envelope");
-
-        var output = new CaptureOutput();
-        var responseJson = SerializeSuccess(result, ContractsJsonContext.Default.CliApplyProfileResult);
-        var dispatcher = MakeDispatcher(responseJson, output);
-        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile("Night"), CancellationToken.None);
-
-        Assert.AreEqual(CliExitCodes.OutOfRange, exit);
-        Assert.AreEqual(1, output.StdoutLines.Count, "rendered via the success path");
-        Assert.AreEqual(0, output.StderrLines.Count, "must not go through WriteError");
-    }
-
-    [TestMethod]
-    public async Task Error_envelope_isError_true_routes_to_error_path()
-    {
-        var err = new CliErrorResult
-        {
-            Command = "list",
-            Error = new CliError { Code = CliErrorCodes.InternalError, Message = "boom" },
-        };
-        Assert.IsTrue(err.IsError, "an error envelope must be flagged with isError=true");
-
-        var output = new CaptureOutput();
-        var dispatcher = MakeDispatcher(SerializeError(err), output);
-        var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
-
-        Assert.AreEqual(CliExitCodes.InternalError, exit);
-        Assert.AreEqual(1, output.StderrLines.Count);
-        Assert.AreEqual(0, output.StdoutLines.Count);
     }
 
     // ── CliRequestBuilder round-trips ────────────────────────────────────────
