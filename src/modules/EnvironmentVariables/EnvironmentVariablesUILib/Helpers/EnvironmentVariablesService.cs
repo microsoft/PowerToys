@@ -60,9 +60,11 @@ namespace EnvironmentVariablesUILib.Helpers
                 return;
             }
 
+            var lockAcquired = false;
             try
             {
                 _fileAccessLock.Wait();
+                lockAcquired = true;
             }
             catch (ObjectDisposedException)
             {
@@ -70,7 +72,7 @@ namespace EnvironmentVariablesUILib.Helpers
             }
             finally
             {
-                if (_fileAccessLock.CurrentCount == 0)
+                if (lockAcquired && _fileAccessLock.CurrentCount == 0)
                 {
                     _fileAccessLock.Dispose();
                 }
