@@ -48,18 +48,18 @@ namespace EnvironmentVariablesUILib.Helpers
                 return new List<ProfileVariablesSet>();
             }
 
-            var fileContent = _fileSystem.File.ReadAllText(ProfilesJsonFilePath);
-            if (string.IsNullOrWhiteSpace(fileContent))
-            {
-                return new List<ProfileVariablesSet>();
-            }
-
             try
             {
+                var fileContent = _fileSystem.File.ReadAllText(ProfilesJsonFilePath);
+                if (string.IsNullOrWhiteSpace(fileContent))
+                {
+                    return new List<ProfileVariablesSet>();
+                }
+
                 var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
                 return profiles ?? new List<ProfileVariablesSet>();
             }
-            catch (JsonException)
+            catch (Exception)
             {
                 return new List<ProfileVariablesSet>();
             }
