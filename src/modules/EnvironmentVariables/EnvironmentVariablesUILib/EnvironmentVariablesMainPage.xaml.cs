@@ -123,12 +123,34 @@ namespace EnvironmentVariablesUILib
                 }
 
                 var normalizedName = (variable.Name ?? string.Empty).Trim();
+                var normalizedValue = variable.Values ?? string.Empty;
+                var expandedValue = Environment.ExpandEnvironmentVariables(normalizedValue);
+
+                bool IsValueMatch(string candidateValue)
+                {
+                    var candidate = candidateValue ?? string.Empty;
+                    var expandedCandidate = Environment.ExpandEnvironmentVariables(candidate);
+
+                    return string.Equals(candidate, normalizedValue, StringComparison.Ordinal) ||
+                        string.Equals(expandedCandidate, normalizedValue, StringComparison.Ordinal) ||
+                        string.Equals(candidate, expandedValue, StringComparison.Ordinal) ||
+                        string.Equals(expandedCandidate, expandedValue, StringComparison.Ordinal);
+                }
+
+                if (ViewModel.AppliedProfile != null && ViewModel.AppliedProfile.Variables != null &&
+                    ViewModel.AppliedProfile.Variables.Any(x => x != null &&
+                        string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
+                        IsValueMatch(x.Values)))
+                {
+                    return ViewModel.AppliedProfile;
+                }
+
                 var matchingProfiles = ViewModel.Profiles?
                     .Where(profile => profile?.Variables != null &&
                         profile.Variables.Any(x => x != null &&
-                            string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
-                            string.Equals(x.Values, variable.Values, StringComparison.Ordinal) &&
-                            x.ParentType == VariablesSetType.Profile))
+                             string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
+                             IsValueMatch(x.Values) &&
+                             x.ParentType == VariablesSetType.Profile))
                     .ToList();
 
                 if (matchingProfiles == null || matchingProfiles.Count != 1)
