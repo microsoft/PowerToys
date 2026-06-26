@@ -381,7 +381,9 @@ internal sealed partial class BlurImageControl : Control
 
             Logger.LogDebug($"Starting load of BlurImageControl from '{bitmapImage.UriSource}'");
 
-            // Unsubscribe from previous surface to prevent event handler accumulation
+            // Each call to LoadImageAsync creates a new LoadedImageSurface. Unsubscribe
+            // from the previous surface so the old handler (which captures `this` via
+            // the local function) doesn't prevent garbage collection.
             if (_lastLoadedSurface is not null)
             {
                 _lastLoadedSurface.LoadCompleted -= OnLoadedSurfaceOnLoadCompleted;

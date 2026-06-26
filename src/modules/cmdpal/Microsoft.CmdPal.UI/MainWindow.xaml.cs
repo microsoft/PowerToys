@@ -1688,22 +1688,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Dispose()
     {
-        _autoGoHomeTimer.Tick -= OnAutoGoHomeTimerOnTick;
         _themeService.ThemeChanged -= ThemeServiceOnThemeChanged;
-        SizeChanged -= WindowSizeChanged;
-        RootElement.ActualThemeChanged -= RootElement_ActualThemeChanged;
         App.Current.Services.GetRequiredService<ISettingsService>().SettingsChanged -= SettingsChangedHandler;
-        _localKeyboardListener.KeyPressed -= LocalKeyboardListener_OnKeyPressed;
-
-        if (RootElement?.XamlRoot is not null)
-        {
-            RootElement.XamlRoot.Changed -= XamlRoot_Changed;
-        }
-
-        if (RootElement?.CardElement is not null)
-        {
-            RootElement.CardElement.SizeChanged -= CardElement_SizeChanged;
-        }
 
         _localKeyboardListener.Dispose();
         _windowThemeSynchronizer.Dispose();

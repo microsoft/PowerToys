@@ -94,12 +94,6 @@ public sealed partial class ContentFormControl : UserControl
 
     private void DisplayCard(AdaptiveCardParseResult result)
     {
-        // Unsubscribe from the previous rendered card to prevent memory leaks
-        if (_renderedCard is not null)
-        {
-            _renderedCard.Action -= Rendered_Action;
-        }
-
         _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
         ContentGrid.Children.Clear();
         if (_renderedCard.FrameworkElement is not null)
@@ -120,8 +114,9 @@ public sealed partial class ContentFormControl : UserControl
 
     private void OnFrameworkElementLayoutUpdated(object? sender, object e)
     {
-        // Only fix once — unhook after first layout pass
-        if (_renderedCard?.FrameworkElement is FrameworkElement element)
+        // Only fix once — unhook from sender (not _renderedCard, which may have been
+        // reassigned by the time this fires).
+        if (sender is FrameworkElement element)
         {
             element.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
             FixToggleAccessibilityNames(element);
