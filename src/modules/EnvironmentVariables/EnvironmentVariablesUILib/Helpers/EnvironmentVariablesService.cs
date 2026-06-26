@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -65,7 +67,8 @@ namespace EnvironmentVariablesUILib.Helpers
 
         public async Task WriteAsync(IEnumerable<ProfileVariablesSet> profiles)
         {
-            string jsonData = JsonSerializer.Serialize(profiles, _serializerOptions);
+            var persistedProfiles = SanitizeProfilesForPersistence(profiles);
+            string jsonData = JsonSerializer.Serialize(persistedProfiles, _serializerOptions);
 
             var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
             if (!string.IsNullOrWhiteSpace(directoryPath))
@@ -74,6 +77,54 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             await _fileSystem.File.WriteAllTextAsync(ProfilesJsonFilePath, jsonData);
+        }
+
+        private static List<ProfileVariablesSet> SanitizeProfilesForPersistence(IEnumerable<ProfileVariablesSet> profiles)
+        {
+            var result = new List<ProfileVariablesSet>();
+            if (profiles == null)
+            {
+                return result;
+            }
+
+            var profileIds = new HashSet<Guid>();
+            foreach (var profile in profiles.Where(p => p != null && p.Id != Guid.Empty))
+            {
+                if (!profileIds.Add(profile.Id))
+                {
+                    continue;
+                }
+
+                var profileName = (profile.Name ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(profileName))
+                {
+                    continue;
+                }
+
+                var persistedVariables = profile.Variables == null
+                    ? new List<Variable>()
+                    : profile.Variables
+                        .Where(v => v != null && !string.IsNullOrWhiteSpace(v.Name))
+                        .Select(v =>
+                        {
+                            var variableClone = v.Clone();
+                            variableClone.Name = v.Name?.Trim();
+                            variableClone.ParentType = VariablesSetType.Profile;
+                            variableClone.ApplyToSystem = v.ApplyToSystem;
+                            return variableClone;
+                        })
+                        .ToList();
+
+                var persistedProfile = new ProfileVariablesSet(profile.Id, profileName)
+                {
+                    IsEnabled = profile.IsEnabled,
+                    Variables = new ObservableCollection<Variable>(persistedVariables),
+                };
+
+                result.Add(persistedProfile);
+            }
+
+            return result;
         }
     }
 }
