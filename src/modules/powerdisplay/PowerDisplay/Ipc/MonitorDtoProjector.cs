@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Utils;
 using PowerDisplay.Contracts;
@@ -350,20 +349,38 @@ public static class MonitorDtoProjector
     /// actually read it (<see cref="Monitor.ReadValues"/>) — a default/stale field is
     /// never passed off as a live reading.
     /// </summary>
-    private static CliSettingValue? BuildSettingValue(Monitor monitor, string settingName, IReadOnlyList<CustomVcpValueMapping>? customMappings) => settingName switch
+    private static CliSettingValue? BuildSettingValue(Monitor monitor, string settingName, IReadOnlyList<CustomVcpValueMapping>? customMappings)
     {
-        CliSettingNames.Brightness => Reading(CliSettingNames.Brightness, monitor.SupportsBrightness, monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness), monitor.CurrentBrightness, v => v + "%"),
-        CliSettingNames.Contrast => Reading(CliSettingNames.Contrast, monitor.SupportsContrast, monitor.ReadValues.HasFlag(MonitorReadFlags.Contrast), monitor.CurrentContrast, v => v + "%"),
-        CliSettingNames.Volume => Reading(CliSettingNames.Volume, monitor.SupportsVolume, monitor.ReadValues.HasFlag(MonitorReadFlags.Volume), monitor.CurrentVolume, v => v + "%"),
-        CliSettingNames.ColorTemperature => Reading(CliSettingNames.ColorTemperature, monitor.SupportsColorTemperature, monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature), monitor.CurrentColorTemperature, v => FormatDiscrete(NativeConstants.VcpCodeSelectColorPreset, v, customMappings, monitor.Id)),
-        CliSettingNames.InputSource => Reading(CliSettingNames.InputSource, monitor.SupportsInputSource, monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource), monitor.CurrentInputSource, v => FormatDiscrete(NativeConstants.VcpCodeInputSource, v, customMappings, monitor.Id)),
-        CliSettingNames.PowerState => Reading(CliSettingNames.PowerState, monitor.SupportsPowerState, monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState), monitor.CurrentPowerState, v => FormatDiscrete(NativeConstants.VcpCodePowerMode, v, customMappings, monitor.Id)),
+        // Orientation is GDI-based (not a VCP setting), so it is not in the catalog. The display
+        // string is derived from the index; the formatter ignores its int argument and calls
+        // OrientationDegrees(index) directly.
+        if (settingName == CliSettingNames.Orientation)
+        {
+            return Reading(
+                CliSettingNames.Orientation,
+                !string.IsNullOrEmpty(monitor.GdiDeviceName),
+                monitor.ReadValues.HasFlag(MonitorReadFlags.Orientation),
+                OrientationDegreesValue(monitor.Orientation),
+                _ => OrientationDegrees(monitor.Orientation));
+        }
 
-        // raw is the orientation in degrees; the display string is derived from the index.
-        // The formatter ignores its int argument and calls OrientationDegrees(index) directly.
-        CliSettingNames.Orientation => Reading(CliSettingNames.Orientation, !string.IsNullOrEmpty(monitor.GdiDeviceName), monitor.ReadValues.HasFlag(MonitorReadFlags.Orientation), OrientationDegreesValue(monitor.Orientation), _ => OrientationDegrees(monitor.Orientation)),
-        _ => null,
-    };
+        var setting = CliSettingCatalog.TryGet(settingName);
+        if (setting is null)
+        {
+            return null;
+        }
+
+        Func<int, string> format = setting.Kind == CliSettingKind.Continuous
+            ? v => v + "%"
+            : v => FormatDiscrete(setting.VcpCode, v, customMappings, monitor.Id);
+
+        return Reading(
+            setting.Name,
+            setting.Supports(monitor),
+            monitor.ReadValues.HasFlag(setting.ReadFlag),
+            setting.Current(monitor),
+            format);
+    }
 
     /// <summary>
     /// Projects one setting, gating the value on supported &amp;&amp; read.
@@ -394,13 +411,11 @@ public static class MonitorDtoProjector
     /// Maps a CLI discrete setting name to its VCP code, or null when the name is not one of the
     /// three discrete VCP settings (color-temperature 0x14, input-source 0x60, power-state 0xD6).
     /// </summary>
-    internal static byte? VcpCodeForDiscreteSetting(string setting) => setting.ToLowerInvariant() switch
+    internal static byte? VcpCodeForDiscreteSetting(string setting)
     {
-        CliSettingNames.ColorTemperature => NativeConstants.VcpCodeSelectColorPreset,
-        CliSettingNames.InputSource => NativeConstants.VcpCodeInputSource,
-        CliSettingNames.PowerState => NativeConstants.VcpCodePowerMode,
-        _ => null,
-    };
+        var descriptor = CliSettingCatalog.TryGet(setting.ToLowerInvariant());
+        return descriptor is { Kind: CliSettingKind.Discrete } ? descriptor.VcpCode : null;
+    }
 
     /// <summary>
     /// Returns the human-readable orientation string for a GDI orientation index (0–3).
