@@ -295,6 +295,13 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(profile.Name))
+            {
+                return;
+            }
+
+            profile.Name = profile.Name.Trim();
+
             if (Profiles == null)
             {
                 Profiles = new ObservableCollection<ProfileVariablesSet>();
@@ -319,6 +326,13 @@ namespace EnvironmentVariablesUILib.ViewModels
             {
                 return;
             }
+
+            if (string.IsNullOrWhiteSpace(updatedProfile.Name))
+            {
+                return;
+            }
+
+            updatedProfile.Name = updatedProfile.Name.Trim();
 
             if (Profiles == null)
             {
