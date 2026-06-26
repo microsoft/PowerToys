@@ -202,8 +202,13 @@ namespace EnvironmentVariablesUILib.Models
                 // It exists. Backup is needed.
                 if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
                 {
-                    variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, (Name ?? string.Empty).Trim());
-                    if (!variableToOverride.Validate())
+                    var backupName = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, (Name ?? string.Empty).Trim());
+                    var backupVariable = new Variable(variableToOverride.Name, variableToOverride.Values, variableToOverride.ParentType)
+                    {
+                        Name = backupName,
+                    };
+
+                    if (!backupVariable.Validate())
                     {
                         return false;
                     }
