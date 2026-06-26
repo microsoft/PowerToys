@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using Microsoft.CmdPal.Common.Text;
@@ -11,6 +13,7 @@ using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
@@ -26,6 +29,15 @@ public sealed partial class ContextMenu : UserControl,
 
     public static readonly DependencyProperty SubscribeToCommandBarProperty =
         DependencyProperty.Register(nameof(SubscribeToCommandBar), typeof(bool), typeof(ContextMenu), new PropertyMetadata(true, OnSubscribeToCommandBarChanged));
+
+    private static readonly CompositeFormat _contextMenuOpenedFormat =
+        CompositeFormat.Parse(ResourceLoaderInstance.GetString("ScreenReader_Announcement_ContextMenuOpened"));
+
+    /// <summary>
+    /// True while the context menu is transitioning from PrepareForOpen to AnnounceOpened.
+    /// Prevents ViewModel_PropertyChanged from triggering UIA-visible selection changes.
+    /// </summary>
+    private bool _isOpening;
 
     public bool ShowFilterBox
     {
@@ -103,10 +115,51 @@ public sealed partial class ContextMenu : UserControl,
 
     internal void PrepareForOpen(ContextMenuFilterLocation filterLocation)
     {
+        _isOpening = true;
+
         ViewModel.FilterOnTop = filterLocation == ContextMenuFilterLocation.Top;
         ViewModel.ResetContextMenu();
 
         UpdateUiForStackChange();
+    }
+
+    /// <summary>
+    /// Fires a single consolidated Narrator announcement.
+    /// Call this after the flyout is opened.
+    /// </summary>
+    internal void AnnounceOpened()
+    {
+        // Focus the search box immediately so the flyout captures keyboard input.
+        FocusSearchBox();
+
+        // Defer the announcement to the next dispatcher cycle. This ensures
+        // any pending FilteredItems updates have completed.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            _isOpening = false;
+
+            var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
+            var itemCount = commandItems.Count;
+            var selectedItem = CommandsDropdown.SelectedItem as CommandContextItemViewModel;
+            var selectedName = selectedItem?.Title ?? string.Empty;
+            var selectedIndex = selectedItem is not null ? commandItems.IndexOf(selectedItem) + 1 : 0;
+
+            var announcement = string.Format(
+                CultureInfo.CurrentCulture,
+                _contextMenuOpenedFormat,
+                itemCount,
+                selectedName,
+                selectedIndex);
+
+            // Raise from the dedicated announcer element which is
+            // Content-visible in UIA but has no visual presence.
+            var peer = FrameworkElementAutomationPeer.CreatePeerForElement(NarratorAnnouncer);
+            peer?.RaiseNotificationEvent(
+                AutomationNotificationKind.ActionCompleted,
+                AutomationNotificationProcessing.ImportantMostRecent,
+                announcement,
+                "ContextMenuOpened");
+        });
     }
 
     public void Receive(UpdateCommandBarMessage message)
@@ -197,7 +250,7 @@ public sealed partial class ContextMenu : UserControl,
     {
         var prop = e.PropertyName;
 
-        if (prop == nameof(ContextMenuViewModel.FilteredItems))
+        if (prop == nameof(ContextMenuViewModel.FilteredItems) && !_isOpening)
         {
             UpdateUiForStackChange();
         }
@@ -255,12 +308,14 @@ public sealed partial class ContextMenu : UserControl,
         if (e.Key == VirtualKey.Up)
         {
             NavigateUp();
+            AnnounceSelectedItem();
 
             e.Handled = true;
         }
         else if (e.Key == VirtualKey.Down)
         {
             NavigateDown();
+            AnnounceSelectedItem();
 
             e.Handled = true;
         }
@@ -345,6 +400,26 @@ public sealed partial class ContextMenu : UserControl,
     private bool IsSeparator(object item)
     {
         return item is SeparatorViewModel;
+    }
+
+    private void AnnounceSelectedItem()
+    {
+        if (CommandsDropdown.SelectedItem is not CommandContextItemViewModel selected)
+        {
+            return;
+        }
+
+        var commandItems = ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().ToList();
+        var position = commandItems.IndexOf(selected) + 1;
+        var total = commandItems.Count;
+        var announcement = $"{selected.Title}, {position} of {total}";
+
+        var peer = FrameworkElementAutomationPeer.CreatePeerForElement(NarratorAnnouncer);
+        peer?.RaiseNotificationEvent(
+            AutomationNotificationKind.ItemAdded,
+            AutomationNotificationProcessing.ImportantMostRecent,
+            announcement,
+            "ContextMenuSelectionChanged");
     }
 
     private void UpdateUiForStackChange()

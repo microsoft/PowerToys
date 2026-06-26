@@ -500,9 +500,9 @@ public sealed partial class DockControl : UserControl, IRecipient<CloseContextMe
 
     private void ContextMenuFlyout_Opened(object sender, object e)
     {
-        // We need to wait until our flyout is opened to try and toss focus
-        // at its search box. The control isn't in the UI tree before that
-        ContextControl.FocusSearchBox();
+        // Focus the filter box and fire a single consolidated Narrator
+        // announcement replacing the default cascade of UIA events.
+        ContextControl.AnnounceOpened();
     }
 
     public void Receive(CloseContextMenuMessage message)

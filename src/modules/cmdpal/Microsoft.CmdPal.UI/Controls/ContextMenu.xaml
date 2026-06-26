@@ -139,10 +139,21 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
+
+        <!--  Hidden element used solely for raising Narrator notifications.
+              It must be Content-visible in UIA but has no visual presence.  -->
+        <TextBlock
+            x:Name="NarratorAnnouncer"
+            Width="0"
+            Height="0"
+            AutomationProperties.AccessibilityView="Content"
+            AutomationProperties.LiveSetting="Assertive" />
+
         <ListView
             x:Name="CommandsDropdown"
             MinWidth="248"
             Margin="0,4,0,2"
+            AutomationProperties.AccessibilityView="Raw"
             IsItemClickEnabled="True"
             ItemClick="CommandsDropdown_ItemClick"
             ItemTemplateSelector="{StaticResource ContextItemTemplateSelector}"
@@ -166,6 +177,7 @@
         <TextBox
             x:Name="ContextFilterBox"
             x:Uid="ContextFilterBox"
+            AutomationProperties.AccessibilityView="Raw"
             Margin="0"
             Padding="10,7,6,8"
             Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
