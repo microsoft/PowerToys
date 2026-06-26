@@ -64,6 +64,11 @@ namespace EnvironmentVariablesUILib.Models
 
         private bool IsList()
         {
+            if (string.IsNullOrWhiteSpace(Name))
+            {
+                return false;
+            }
+
             List<string> listVariables = new()
             {
                 "_NT_ALT_SYMBOL_PATH",
@@ -106,7 +111,8 @@ namespace EnvironmentVariablesUILib.Models
 
         internal static ObservableCollection<ValuesListItem> ValuesStringToValuesListItemCollection(string values)
         {
-            return new ObservableCollection<ValuesListItem>(values.Split(';').Select(x => new ValuesListItem { Text = x }));
+            var source = string.IsNullOrWhiteSpace(values) ? string.Empty : values;
+            return new ObservableCollection<ValuesListItem>(source.Split(';').Select(x => new ValuesListItem { Text = x }));
         }
 
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)

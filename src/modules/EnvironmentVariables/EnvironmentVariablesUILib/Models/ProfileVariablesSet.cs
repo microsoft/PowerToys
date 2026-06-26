@@ -35,6 +35,11 @@ namespace EnvironmentVariablesUILib.Models
             {
                 foreach (var variable in Variables)
                 {
+                    if (variable == null)
+                    {
+                        continue;
+                    }
+
                     // Get existing variable with the same name if it exist
                     var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
 
@@ -66,6 +71,11 @@ namespace EnvironmentVariablesUILib.Models
             {
                 foreach (var variable in Variables)
                 {
+                    if (variable == null)
+                    {
+                        continue;
+                    }
+
                     UnapplyVariable(variable);
                 }
 
@@ -75,6 +85,11 @@ namespace EnvironmentVariablesUILib.Models
 
         public void UnapplyVariable(Variable variable)
         {
+            if (variable == null)
+            {
+                return;
+            }
+
             // Unset the variable
             if (!EnvironmentVariablesHelper.UnsetProfileVariableWithoutNotify(variable))
             {
@@ -112,6 +127,11 @@ namespace EnvironmentVariablesUILib.Models
 
             foreach (var variable in Variables)
             {
+                if (variable == null)
+                {
+                    continue;
+                }
+
                 var applied = EnvironmentVariablesHelper.GetExisting(variable.Name);
                 if (applied != null && applied.Values == variable.Values && applied.ParentType == VariablesSetType.User)
                 {
@@ -128,6 +148,11 @@ namespace EnvironmentVariablesUILib.Models
         {
             foreach (var variable in Variables)
             {
+                if (variable == null)
+                {
+                    continue;
+                }
+
                 if (!variable.Validate())
                 {
                     return false;
@@ -153,7 +178,7 @@ namespace EnvironmentVariablesUILib.Models
         public ProfileVariablesSet Clone()
         {
             var clone = new ProfileVariablesSet(this.Id, this.Name);
-            clone.Variables = new ObservableCollection<Variable>(this.Variables);
+            clone.Variables = new ObservableCollection<Variable>(this.Variables ?? new System.Collections.Generic.List<Variable>());
             clone.IsEnabled = this.IsEnabled;
 
             return clone;
