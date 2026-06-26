@@ -123,13 +123,21 @@ namespace EnvironmentVariablesUILib
                 }
 
                 var normalizedName = (variable.Name ?? string.Empty).Trim();
-                return ViewModel.Profiles?
-                    .FirstOrDefault(profile =>
-                        profile?.Variables != null &&
+                var matchingProfiles = ViewModel.Profiles?
+                    .Where(profile => profile?.Variables != null &&
                         profile.Variables.Any(x => x != null &&
                             string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase) &&
                             string.Equals(x.Values, variable.Values, StringComparison.Ordinal) &&
-                            x.ParentType == VariablesSetType.Profile));
+                            x.ParentType == VariablesSetType.Profile))
+                    .ToList();
+
+                if (matchingProfiles == null || matchingProfiles.Count != 1)
+                {
+                    LoggerInstance.Logger.LogError("Unable to uniquely resolve profile owner for edited variable.");
+                    return null;
+                }
+
+                return matchingProfiles[0];
             }
 
             return null;
