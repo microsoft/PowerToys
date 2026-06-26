@@ -340,14 +340,20 @@ namespace EnvironmentVariablesUILib
 
             if (e.RemovedItems.Count > 0)
             {
-                foreach (var removedItem in e.RemovedItems.Cast<Variable>())
+                foreach (var removedObject in e.RemovedItems)
                 {
+                    var removedVariable = removedObject as Variable;
+                    if (removedVariable == null)
+                    {
+                        continue;
+                    }
+
                     toRemove = -1;
                     for (int i = 0; i < profile.Variables.Count; i++)
                     {
-                        if (profile.Variables[i].Name.Equals(removedItem.Name, StringComparison.OrdinalIgnoreCase)
-                            && profile.Variables[i].Values == removedItem.Values
-                            && profile.Variables[i].ParentType == removedItem.ParentType)
+                        if (string.Equals(profile.Variables[i].Name, removedVariable.Name, StringComparison.OrdinalIgnoreCase)
+                            && profile.Variables[i].Values == removedVariable.Values
+                            && profile.Variables[i].ParentType == removedVariable.ParentType)
                         {
                             toRemove = i;
                             break;
@@ -367,7 +373,7 @@ namespace EnvironmentVariablesUILib
                 if (variable != null)
                 {
                     if (!profile.Variables
-                        .Where(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase)
+                        .Where(x => string.Equals(x.Name, variable.Name, StringComparison.OrdinalIgnoreCase)
                                  && x.Values.Equals(variable.Values, StringComparison.Ordinal)
                                  && x.ParentType == variable.ParentType)
                         .Any())
@@ -443,16 +449,16 @@ namespace EnvironmentVariablesUILib
             foreach (Variable item in ExistingVariablesListView.Items)
             {
                 if (item != null)
+                {
+                    foreach (var profileItem in profile.Variables)
                     {
-                        foreach (var profileItem in profile.Variables)
+                        if (string.Equals(profileItem.Name, item.Name, StringComparison.OrdinalIgnoreCase)
+                            && profileItem.Values == item.Values
+                            && profileItem.ParentType == item.ParentType)
                         {
-                            if (profileItem.Name.Equals(item.Name, StringComparison.OrdinalIgnoreCase)
-                                && profileItem.Values == item.Values
-                                && profileItem.ParentType == item.ParentType)
+                            if (!remainingItems.Remove(item))
                             {
-                                if (!remainingItems.Remove(item))
-                                {
-                                    continue;
+                                continue;
                             }
 
                             ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
