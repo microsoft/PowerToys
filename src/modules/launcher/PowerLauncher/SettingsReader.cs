@@ -151,6 +151,21 @@ namespace PowerLauncher
                         _settings.ClearInputOnLaunch = overloadSettings.Properties.ClearInputOnLaunch;
                     }
 
+                    if (_settings.EnableAudibleFeedback != overloadSettings.Properties.EnableAudibleFeedback)
+                    {
+                        _settings.EnableAudibleFeedback = overloadSettings.Properties.EnableAudibleFeedback;
+                    }
+
+                    if (_settings.OpeningSound != overloadSettings.Properties.OpeningSound)
+                    {
+                        _settings.OpeningSound = overloadSettings.Properties.OpeningSound;
+                    }
+
+                    if (_settings.ClosingSound != overloadSettings.Properties.ClosingSound)
+                    {
+                        _settings.ClosingSound = overloadSettings.Properties.ClosingSound;
+                    }
+
                     if (_settings.TabSelectsContextButtons != overloadSettings.Properties.TabSelectsContextButtons)
                     {
                         _settings.TabSelectsContextButtons = overloadSettings.Properties.TabSelectsContextButtons;
