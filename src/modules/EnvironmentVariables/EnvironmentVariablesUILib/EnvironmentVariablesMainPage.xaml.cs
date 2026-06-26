@@ -749,6 +749,10 @@ namespace EnvironmentVariablesUILib
                     EditVariableDialog.IsPrimaryButtonEnabled = true;
                 }
             }
+            else
+            {
+                EditVariableDialog.IsPrimaryButtonEnabled = false;
+            }
 
             if (!variable.Validate())
             {
