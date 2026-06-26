@@ -156,7 +156,9 @@ namespace EnvironmentVariablesUILib
                     foreach (Variable variable in ExistingVariablesListView.SelectedItems)
                     {
                         if (!profile.Variables
-                            .Where(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase) && x.Values == variable.Values)
+                            .Where(x => x.Name.Equals(variable.Name, StringComparison.OrdinalIgnoreCase)
+                                     && x.Values == variable.Values
+                                     && x.ParentType == variable.ParentType)
                             .Any())
                         {
                             var clone = variable.Clone(true);
@@ -326,7 +328,11 @@ namespace EnvironmentVariablesUILib
             {
                 if (variable != null)
                 {
-                    if (!profile.Variables.Where(x => x.Name.Equals(variable.Name, StringComparison.Ordinal) && x.Values.Equals(variable.Values, StringComparison.Ordinal)).Any())
+                    if (!profile.Variables
+                        .Where(x => x.Name.Equals(variable.Name, StringComparison.Ordinal)
+                                 && x.Values.Equals(variable.Values, StringComparison.Ordinal)
+                                 && x.ParentType == variable.ParentType)
+                        .Any())
                     {
                         AddVariableDialog.IsPrimaryButtonEnabled = true;
                         break;
