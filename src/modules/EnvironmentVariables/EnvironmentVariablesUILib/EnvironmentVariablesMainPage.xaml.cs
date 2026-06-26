@@ -124,6 +124,11 @@ namespace EnvironmentVariablesUILib
                 }
 
                 var normalizedName = (variable.Name ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(normalizedName))
+                {
+                    LoggerInstance.Logger.LogError("Unable to resolve profile owner for invalid edited variable name.");
+                    return null;
+                }
 
                 var matchingProfiles = ViewModel.Profiles?
                     .Where(profile => profile?.Variables != null &&
