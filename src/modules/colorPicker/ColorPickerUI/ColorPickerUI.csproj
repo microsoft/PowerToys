@@ -183,4 +183,11 @@
     <Compile Include="ViewModels\ZoomViewModel.cs" />
   </ItemGroup>
 
+  <!-- Sub-project B (editor): ColorEditorViewModel ported (ObservableObject + RelayCommand +
+       FileSavePicker). Its window/view/controls (ColorEditorWindow, ColorEditorView,
+       ColorPickerControl, ColorFormatControl) stay quarantined pending the XAML port. -->
+  <ItemGroup>
+    <Compile Include="ViewModels\ColorEditorViewModel.cs" />
+  </ItemGroup>
+
 </Project>

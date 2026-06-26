@@ -6,25 +6,25 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Media;
 
-using ColorPicker.Common;
 using ColorPicker.Helpers;
 using ColorPicker.Models;
 using ColorPicker.Settings;
 using ColorPicker.ViewModelContracts;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
-using Microsoft.Win32;
+using Windows.Storage.Pickers;
+using Windows.UI;
 
 namespace ColorPicker.ViewModels
 {
-    [Export(typeof(IColorEditorViewModel))]
-    public class ColorEditorViewModel : ViewModelBase, IColorEditorViewModel
+    public class ColorEditorViewModel : ObservableObject, IColorEditorViewModel
     {
         private readonly IUserSettings _userSettings;
         private readonly List<ColorFormatModel> _allColorRepresentations = new List<ColorFormatModel>();
@@ -32,16 +32,15 @@ namespace ColorPicker.ViewModels
         private bool _initializing;
         private int _selectedColorIndex;
 
-        [ImportingConstructor]
         public ColorEditorViewModel(IUserSettings userSettings)
         {
             OpenColorPickerCommand = new RelayCommand(() => OpenColorPickerRequested?.Invoke(this, EventArgs.Empty));
             OpenSettingsCommand = new RelayCommand(() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty));
 
-            RemoveColorsCommand = new RelayCommand(DeleteSelectedColors);
-            ExportColorsGroupedByColorCommand = new RelayCommand(ExportSelectedColorsByColor);
-            ExportColorsGroupedByFormatCommand = new RelayCommand(ExportSelectedColorsByFormat);
-            SelectedColorChangedCommand = new RelayCommand((newColor) =>
+            RemoveColorsCommand = new RelayCommand<object>(DeleteSelectedColors);
+            ExportColorsGroupedByColorCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByColor);
+            ExportColorsGroupedByFormatCommand = new AsyncRelayCommand<object>(ExportSelectedColorsByFormat);
+            SelectedColorChangedCommand = new RelayCommand<object>((newColor) =>
             {
                 if (ColorsHistory.Contains((Color)newColor))
                 {
@@ -74,6 +73,13 @@ namespace ColorPicker.ViewModels
         public ICommand SelectedColorChangedCommand { get; }
 
         public ICommand HideColorFormatCommand { get; }
+
+        /// <summary>
+        /// Gets or sets the editor window's native handle, used to anchor the WinUI
+        /// <see cref="FileSavePicker"/> raised by the export commands (a desktop-app
+        /// requirement). The host ColorEditorWindow assigns it once its HWND is available.
+        /// </summary>
+        public IntPtr WindowHandle { get; set; }
 
         public ObservableCollection<Color> ColorsHistory { get; } = new ObservableCollection<Color>();
 
@@ -162,29 +168,35 @@ namespace ColorPicker.ViewModels
             SessionEventHelper.Event.EditorHistoryColorRemoved = true;
         }
 
-        private void ExportSelectedColorsByColor(object selectedColors)
+        private Task ExportSelectedColorsByColor(object selectedColors)
         {
-            ExportColors(selectedColors, GroupExportedColorsBy.Color);
+            return ExportColors(selectedColors, GroupExportedColorsBy.Color);
         }
 
-        private void ExportSelectedColorsByFormat(object selectedColors)
+        private Task ExportSelectedColorsByFormat(object selectedColors)
         {
-            ExportColors(selectedColors, GroupExportedColorsBy.Format);
+            return ExportColors(selectedColors, GroupExportedColorsBy.Format);
         }
 
-        private void ExportColors(object colorsToExport, GroupExportedColorsBy method)
+        private async Task ExportColors(object colorsToExport, GroupExportedColorsBy method)
         {
             var colors = SerializationHelper.ConvertToDesiredColorFormats((IList)colorsToExport, ColorRepresentations, method);
 
-            var dialog = new SaveFileDialog
+            // WinUI 3 replaces WPF's SaveFileDialog with the WinRT FileSavePicker, which must be
+            // anchored to the owning window's HWND in a desktop (unpackaged) app.
+            var picker = new FileSavePicker
             {
-                Title = "Save selected colors to",
-                Filter = "Text Files (*.txt)|*.txt|Json Files (*.json)|*.json",
+                SuggestedStartLocation = PickerLocationId.DocumentsLibrary,
+                SuggestedFileName = "colors",
             };
+            picker.FileTypeChoices.Add("Text Files", new List<string> { ".txt" });
+            picker.FileTypeChoices.Add("Json Files", new List<string> { ".json" });
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, WindowHandle);
 
-            if (dialog.ShowDialog() == true)
+            var file = await picker.PickSaveFileAsync();
+            if (file != null)
             {
-                var extension = Path.GetExtension(dialog.FileName);
+                var extension = Path.GetExtension(file.Name);
 
                 var contentToWrite = extension.ToUpperInvariant() switch
                 {
@@ -193,7 +205,7 @@ namespace ColorPicker.ViewModels
                     _ => string.Empty,
                 };
 
-                File.WriteAllText(dialog.FileName, contentToWrite);
+                File.WriteAllText(file.Path, contentToWrite);
                 SessionEventHelper.Event.EditorColorsExported = true;
             }
         }
