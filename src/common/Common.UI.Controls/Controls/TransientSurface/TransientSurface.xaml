@@ -5,9 +5,9 @@
     xmlns:backdrops="using:Microsoft.PowerToys.Common.UI.Controls.Backdrops"
     xmlns:local="using:Microsoft.PowerToys.Common.UI.Controls">
 
-    <Style BasedOn="{StaticResource DefaultTransparentCardStyle}" TargetType="local:TransparentCard" />
+    <Style BasedOn="{StaticResource DefaultTransientSurfaceStyle}" TargetType="local:TransientSurface" />
 
-    <Style x:Key="DefaultTransparentCardStyle" TargetType="local:TransparentCard">
+    <Style x:Key="DefaultTransientSurfaceStyle" TargetType="local:TransientSurface">
         <Setter Property="BorderBrush" Value="{ThemeResource SurfaceStrokeColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
@@ -16,7 +16,7 @@
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:TransparentCard">
+                <ControlTemplate TargetType="local:TransientSurface">
                     <Grid
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
@@ -25,9 +25,9 @@
                         <Grid.Shadow>
                             <ThemeShadow />
                         </Grid.Shadow>
-                        <SystemBackdropElement CornerRadius="{TemplateBinding CornerRadius}">
+                        <SystemBackdropElement x:Name="PART_BackdropElement" CornerRadius="{TemplateBinding CornerRadius}">
                             <SystemBackdropElement.SystemBackdrop>
-                                <backdrops:AlwaysActiveDesktopAcrylicBackdrop />
+                                <backdrops:AlwaysActiveDesktopAcrylicBackdrop Kind="{TemplateBinding AcrylicKind}" />
                             </SystemBackdropElement.SystemBackdrop>
                         </SystemBackdropElement>
                         <ContentPresenter
@@ -41,5 +41,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-
 </ResourceDictionary>
