@@ -225,7 +225,10 @@ namespace EnvironmentVariablesUILib.Models
         public ProfileVariablesSet Clone()
         {
             var clone = new ProfileVariablesSet(this.Id, (this.Name ?? string.Empty).Trim());
-            clone.Variables = new ObservableCollection<Variable>(this.Variables ?? new System.Collections.Generic.List<Variable>());
+            var variables = this.Variables
+                ?.Select(variable => variable == null ? null : variable.Clone(profile: true))
+                .ToList() ?? new System.Collections.Generic.List<Variable>();
+            clone.Variables = new ObservableCollection<Variable>(variables);
             clone.IsEnabled = this.IsEnabled;
 
             return clone;
