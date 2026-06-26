@@ -759,13 +759,19 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return null;
             }
 
+            var normalizedTargetName = (target.Name ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedTargetName))
+            {
+                return null;
+            }
+
             var exactMatch = variables.FirstOrDefault(x => ReferenceEquals(x, target));
             if (exactMatch != null)
             {
                 return exactMatch;
             }
 
-            var normalizedName = (target.Name ?? string.Empty).Trim();
+            var normalizedName = normalizedTargetName;
             var matches = variables
                 .Where(x => x != null && string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase))
                 .Where(x => EnvironmentVariablesHelper.IsEquivalentVariableValue(x?.Values, target.Values))
