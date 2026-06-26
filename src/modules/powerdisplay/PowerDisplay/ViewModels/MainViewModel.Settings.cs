@@ -114,18 +114,24 @@ public partial class MainViewModel
     /// <c>v =&gt; MonitorDtoProjector.FormatDiscrete(0x14, v)</c> for color-temperature).
     /// </param>
     /// <param name="applyAsync">Hardware-write delegate returning a <see cref="MonitorOperationResult"/>.</param>
+    /// <param name="supportedValues">
+    /// For a discrete setting (color-temperature), the monitor's advertised supported VCP value set;
+    /// the value must be a member when the set is known. Pass <c>null</c> for continuous settings,
+    /// which have no discrete set. This makes the apply-profile path validate identically to <c>set</c>.
+    /// </param>
     /// <param name="ct">
     /// Cancellation token plumbed from the IPC request (Ctrl+C / <c>--timeout</c>). Cancellation
     /// propagates as <see cref="OperationCanceledException"/> so the caller can report TIMEOUT,
     /// rather than being swallowed into a hardware-failure outcome.
     /// </param>
-    private static async Task<CliProfileChange?> TryRestoreWithOutcomeAsync(
+    internal static async Task<CliProfileChange?> TryRestoreWithOutcomeAsync(
         int? savedValue,
         bool supportsHardware,
         string settingName,
         string monitorId,
         Func<int, string?> formatDisplay,
         Func<string, int, CancellationToken, Task<MonitorOperationResult>> applyAsync,
+        IReadOnlyList<int>? supportedValues,
         CancellationToken ct)
     {
         if (!savedValue.HasValue)
@@ -144,11 +150,12 @@ public partial class MainViewModel
             return new CliProfileChange { Setting = settingName, Value = value, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null };
         }
 
-        // Basic range guard (0–100 for
-        // percentage-based settings; 0x00–0xFF for VCP color-temperature).
-        // color-temperature is the only non-percentage setting in profiles; it uses VCP byte range.
+        // Range/validity guard. Continuous settings accept [0, 100]; color-temperature (the only
+        // discrete setting in profiles) must be a VCP byte AND — when the monitor advertises a
+        // supported set — a member of it, so apply-profile rejects the same values the `set` command
+        // does instead of attempting a doomed hardware write.
         bool outOfRange = settingName == CliSettingNames.ColorTemperature
-            ? value is < 0 or > 0xFF
+            ? value is < 0 or > 0xFF || !CliSettingValidation.IsDiscreteValueSupported(value, supportedValues)
             : value is < 0 or > 100;
 
         if (outOfRange)
@@ -498,6 +505,7 @@ public partial class MainViewModel
             var monitorId = monitorVm.Id;
             var changes = new List<CliProfileChange>(4);
 
+            // Continuous settings (no discrete value set) — pass null for supportedValues.
             var brightnessOutcome = await TryRestoreWithOutcomeAsync(
                 setting.Brightness,
                 monitorVm.SupportsBrightness,
@@ -505,6 +513,7 @@ public partial class MainViewModel
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetBrightnessAsync,
+                supportedValues: null,
                 ct);
             if (brightnessOutcome is not null)
             {
@@ -518,6 +527,7 @@ public partial class MainViewModel
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetContrastAsync,
+                supportedValues: null,
                 ct);
             if (contrastOutcome is not null)
             {
@@ -531,19 +541,26 @@ public partial class MainViewModel
                 monitorId,
                 v => v + "%",
                 _monitorManager.SetVolumeAsync,
+                supportedValues: null,
                 ct);
             if (volumeOutcome is not null)
             {
                 changes.Add(volumeOutcome);
             }
 
+            // color-temperature is discrete: validate the profile value against the monitor's
+            // advertised set (via the shared catalog) so apply-profile agrees with `set`.
+            var colorTempSetting = CliSettingCatalog.TryGet(CliSettingNames.ColorTemperature)!;
+            var colorTempSupported = monitorVm.VcpCapabilitiesInfo?.GetSupportedValues(colorTempSetting.VcpCode);
+
             var colorTempOutcome = await TryRestoreWithOutcomeAsync(
                 setting.ColorTemperatureVcp,
                 monitorVm.SupportsColorTemperature,
                 CliSettingNames.ColorTemperature,
                 monitorId,
-                v => MonitorDtoProjector.FormatDiscrete(0x14, v),
+                v => MonitorDtoProjector.FormatDiscrete(colorTempSetting.VcpCode, v),
                 _monitorManager.SetColorTemperatureAsync,
+                colorTempSupported,
                 ct);
             if (colorTempOutcome is not null)
             {

@@ -378,9 +378,9 @@ public static class SetCommandExecutor
         }
 
         // If the monitor reports a supported-value set, the resolved value must be in it.
-        if (supportedValues is { Count: > 0 } && !supportedValues.Contains(parsedValue.Value))
+        if (!CliSettingValidation.IsDiscreteValueSupported(parsedValue.Value, supportedValues))
         {
-            error = MakeDiscreteUnsupportedError(settingName, raw, supportedValues, vcpCode);
+            error = MakeDiscreteUnsupportedError(settingName, raw, supportedValues!, vcpCode);
             return null;
         }
 
