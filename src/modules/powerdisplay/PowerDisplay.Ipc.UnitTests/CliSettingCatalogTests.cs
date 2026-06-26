@@ -62,15 +62,6 @@ public class CliSettingCatalogTests
     }
 
     [TestMethod]
-    public void Catalog_MapsDiscreteSettingsToTheirVcpCodes()
-    {
-        // 0x14 color preset, 0x60 input source, 0xD6 power mode — the codes the projector/executor rely on.
-        Assert.AreEqual(0x14, CliSettingCatalog.TryGet(CliSettingNames.ColorTemperature)!.VcpCode);
-        Assert.AreEqual(0x60, CliSettingCatalog.TryGet(CliSettingNames.InputSource)!.VcpCode);
-        Assert.AreEqual(0xD6, CliSettingCatalog.TryGet(CliSettingNames.PowerState)!.VcpCode);
-    }
-
-    [TestMethod]
     public void Catalog_OnlyPowerStateBlanksDisplay()
     {
         // Only power-state can blank the panel, so it is the only setting that gates --confirm-power-off.

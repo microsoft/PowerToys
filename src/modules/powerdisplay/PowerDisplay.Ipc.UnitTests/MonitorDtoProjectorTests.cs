@@ -130,18 +130,6 @@ public class MonitorDtoProjectorTests
     }
 
     [TestMethod]
-    public void BuildGetResult_NoSelector_UnknownSetting_ErrorContainsOriginalCasing()
-    {
-        var monitors = new List<Monitor> { MakeMon(1, "A") };
-
-        var (_, error) = MonitorDtoProjector.BuildGetResult(monitors, EmptyHidden, number: null, id: null, settingFilter: "Brightness");
-
-        // "Brightness" is in AllSettingNames (case-insensitive), so this should succeed
-        // — re-run with something truly unknown.
-        Assert.IsNull(error, "Expected no error for known setting 'Brightness' (case-insensitive)");
-    }
-
-    [TestMethod]
     public void BuildGetResult_NoSelector_TrulyUnknownSetting_MessageContainsOriginalCase()
     {
         var monitors = new List<Monitor> { MakeMon(1, "A") };

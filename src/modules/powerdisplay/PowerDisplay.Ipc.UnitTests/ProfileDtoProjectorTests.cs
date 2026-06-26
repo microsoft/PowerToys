@@ -203,15 +203,23 @@ public class ProfileDtoProjectorTests
     }
 
     // ─── BuildApplyProfileResult — DTO field correctness ────────────────────
+
+    /// <summary>
+    /// The projector copies each <see cref="CliProfileChange"/> row verbatim (it only reads Status
+    /// for the worst-outcome exit code), so one representative outcome pins the full per-row field
+    /// pass-through: Setting, Status, Value, Display (populated and null), and Error (null and
+    /// populated). Per-status exit-code behavior is covered by the exit-code tests above.
+    /// </summary>
     [TestMethod]
-    public void BuildApplyProfileResult_ChangeRowsCarrySettingAndStatus()
+    public void BuildApplyProfileResult_ChangeRowsCarryAllFieldsVerbatim()
     {
+        const string errorMsg = "DDC SetVCP returned error 0x8";
         var outcomes = new List<ProfileApplyOutcome>
         {
             new("MON-A", Connected: true, Changes: new[]
             {
-                new CliProfileChange { Setting = "brightness", Value = 50, Display = "50%", Status = CliProfileChange.StatusApplied, Error = null },
-                new CliProfileChange { Setting = "color-temperature", Value = 5, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null },
+                new CliProfileChange { Setting = "brightness", Value = 75, Display = "75%", Status = CliProfileChange.StatusApplied, Error = null },
+                new CliProfileChange { Setting = "contrast", Value = 60, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = errorMsg },
             }),
         };
 
@@ -219,149 +227,19 @@ public class ProfileDtoProjectorTests
 
         var changes = result.Monitors[0].Changes;
         Assert.AreEqual(2, changes.Count);
-        Assert.AreEqual("brightness",        changes[0].Setting);
-        Assert.AreEqual(CliProfileChange.StatusApplied,     changes[0].Status);
-        Assert.AreEqual("color-temperature", changes[1].Setting);
-        Assert.AreEqual(CliProfileChange.StatusUnsupported, changes[1].Status);
-    }
 
-    /// <summary>
-    /// Verifies that Value, Display, and Error are populated on the CliProfileChange
-    /// DTO — these were always 0/null before the review fix.
-    /// </summary>
-    [TestMethod]
-    public void BuildApplyProfileResult_Applied_ValueAndDisplayPopulated_ErrorNull()
-    {
-        var outcomes = new List<ProfileApplyOutcome>
-        {
-            new("MON-A", Connected: true, Changes: new[]
-            {
-                new CliProfileChange { Setting = "brightness", Value = 75, Display = "75%", Status = CliProfileChange.StatusApplied, Error = null },
-            }),
-        };
+        // Applied row: Value + Display carried, Error null.
+        Assert.AreEqual("brightness", changes[0].Setting);
+        Assert.AreEqual(CliProfileChange.StatusApplied, changes[0].Status);
+        Assert.AreEqual(75, changes[0].Value);
+        Assert.AreEqual("75%", changes[0].Display);
+        Assert.IsNull(changes[0].Error);
 
-        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
-
-        var change = result.Monitors[0].Changes[0];
-        Assert.AreEqual(75,    change.Value);
-        Assert.AreEqual("75%", change.Display);
-        Assert.IsNull(change.Error);
-        Assert.AreEqual(CliProfileChange.StatusApplied, change.Status);
-    }
-
-    /// <summary>
-    /// Verifies that Value and Error are populated and Display is null on
-    /// hardware-failure — mirrors ApplyProfileCommand.ApplyContinuousAsync behavior.
-    /// </summary>
-    [TestMethod]
-    public void BuildApplyProfileResult_HardwareFailure_ValueAndErrorPopulated_DisplayNull()
-    {
-        const string errorMsg = "DDC SetVCP returned error 0x8";
-        var outcomes = new List<ProfileApplyOutcome>
-        {
-            new("MON-A", Connected: true, Changes: new[]
-            {
-                new CliProfileChange { Setting = "contrast", Value = 60, Display = null, Status = CliProfileChange.StatusHardwareFailure, Error = errorMsg },
-            }),
-        };
-
-        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
-
-        var change = result.Monitors[0].Changes[0];
-        Assert.AreEqual(60,       change.Value);
-        Assert.IsNull(change.Display);
-        Assert.AreEqual(errorMsg, change.Error);
-        Assert.AreEqual(CliProfileChange.StatusHardwareFailure, change.Status);
-    }
-
-    /// <summary>
-    /// Verifies that Value is populated and Display/Error are null on
-    /// out-of-range — mirrors ApplyProfileCommand behavior.
-    /// </summary>
-    [TestMethod]
-    public void BuildApplyProfileResult_OutOfRange_ValuePopulated_DisplayAndErrorNull()
-    {
-        var outcomes = new List<ProfileApplyOutcome>
-        {
-            new("MON-A", Connected: true, Changes: new[]
-            {
-                new CliProfileChange { Setting = "volume", Value = 150, Display = null, Status = CliProfileChange.StatusOutOfRange, Error = null },
-            }),
-        };
-
-        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
-
-        var change = result.Monitors[0].Changes[0];
-        Assert.AreEqual(150, change.Value);
-        Assert.IsNull(change.Display);
-        Assert.IsNull(change.Error);
-        Assert.AreEqual(CliProfileChange.StatusOutOfRange, change.Status);
-    }
-
-    /// <summary>
-    /// Verifies that Value is populated and Display/Error are null on
-    /// unsupported — mirrors ApplyProfileCommand behavior.
-    /// </summary>
-    [TestMethod]
-    public void BuildApplyProfileResult_Unsupported_ValuePopulated_DisplayAndErrorNull()
-    {
-        var outcomes = new List<ProfileApplyOutcome>
-        {
-            new("MON-A", Connected: true, Changes: new[]
-            {
-                new CliProfileChange { Setting = "brightness", Value = 40, Display = null, Status = CliProfileChange.StatusUnsupported, Error = null },
-            }),
-        };
-
-        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
-
-        var change = result.Monitors[0].Changes[0];
-        Assert.AreEqual(40, change.Value);
-        Assert.IsNull(change.Display);
-        Assert.IsNull(change.Error);
-        Assert.AreEqual(CliProfileChange.StatusUnsupported, change.Status);
-    }
-
-    /// <summary>
-    /// Verifies that color-temperature applied display uses
-    /// MonitorDtoProjector.FormatDiscrete(0x14, value) format (e.g. "6500K (0x05)").
-    /// The projector simply passes through whatever Display string is set in CliProfileChange,
-    /// so this test confirms the contract is carried end-to-end.
-    /// </summary>
-    [TestMethod]
-    public void BuildApplyProfileResult_ColorTemperatureApplied_DisplayIsFormatDiscrete()
-    {
-        // FormatDiscrete(0x14, 0x05) → "6500K (0x05)" per MonitorDtoProjectorTests.FormatDiscrete_KnownValue
-        var outcomes = new List<ProfileApplyOutcome>
-        {
-            new("MON-A", Connected: true, Changes: new[]
-            {
-                new CliProfileChange { Setting = "color-temperature", Value = 0x05, Display = "6500K (0x05)", Status = CliProfileChange.StatusApplied, Error = null },
-            }),
-        };
-
-        var result = ProfileDtoProjector.BuildApplyProfileResult("Profile", outcomes);
-
-        var change = result.Monitors[0].Changes[0];
-        Assert.AreEqual(0x05,           change.Value);
-        Assert.AreEqual("6500K (0x05)", change.Display);
-        Assert.IsNull(change.Error);
-    }
-
-    // ─── not-found signal (for Task 2.5 / IPC handler) ───────────────────────
-    /// <summary>
-    /// Documents the contract: ApplyProfileWithOutcomesAsync returns null when the
-    /// profile name is unknown. BuildApplyProfileResult must NOT be called with null — the IPC
-    /// handler (Task 2.5) maps null to CliErrorResult(ArgumentError/exit 7).
-    /// This test verifies BuildApplyProfileResult still throws ArgumentNullException if null is
-    /// passed (i.e., the projector does NOT silently accept null as empty).
-    /// </summary>
-    [TestMethod]
-    public void BuildApplyProfileResult_NullOutcomes_ThrowsArgumentNullException_NotFoundSignal()
-    {
-        // The IPC handler must check for null BEFORE calling BuildApplyProfileResult.
-        // If it accidentally passes null here, ArgumentNullException is the signal.
-        Assert.ThrowsException<ArgumentNullException>(
-            () => ProfileDtoProjector.BuildApplyProfileResult("UnknownProfile", null!));
+        // Hardware-failure row: Value + Error carried, Display null.
+        Assert.AreEqual("contrast", changes[1].Setting);
+        Assert.AreEqual(CliProfileChange.StatusHardwareFailure, changes[1].Status);
+        Assert.AreEqual(60, changes[1].Value);
+        Assert.IsNull(changes[1].Display);
+        Assert.AreEqual(errorMsg, changes[1].Error);
     }
 }

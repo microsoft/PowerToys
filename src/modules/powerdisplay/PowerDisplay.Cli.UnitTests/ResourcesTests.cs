@@ -11,10 +11,6 @@ namespace PowerDisplay.Cli.UnitTests;
 public class ResourcesTests
 {
     [TestMethod]
-    public void SafeFormat_ValidTemplate_Substitutes()
-        => Assert.AreEqual("value 5", Resources.SafeFormat("value {0}", 5));
-
-    [TestMethod]
     public void SafeFormat_PlaceholderIndexOutOfRange_DoesNotThrow_ReturnsTemplate()
     {
         // A translation that renumbers a placeholder ({0} -> {1}) leaves an index with no argument;

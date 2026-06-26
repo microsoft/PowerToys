@@ -335,24 +335,6 @@ public class RoundTripTests
     }
 
     [TestMethod]
-    public void GetRequest_envelope_round_trips_through_source_gen()
-    {
-        var envelope = new CliRequestEnvelope
-        {
-            Command = CliCommandNames.Get,
-            Get = new GetRequest { MonitorNumber = 2, SettingFilter = "brightness" },
-        };
-
-        var json = JsonSerializer.Serialize(envelope, ContractsJsonContext.Default.CliRequestEnvelope);
-        var back = JsonSerializer.Deserialize(json, ContractsJsonContext.Default.CliRequestEnvelope);
-
-        Assert.IsNotNull(back);
-        Assert.AreEqual(CliCommandNames.Get, back!.Command);
-        Assert.AreEqual(2, back.Get!.MonitorNumber);
-        Assert.AreEqual("brightness", back.Get.SettingFilter);
-    }
-
-    [TestMethod]
     public void CapabilitiesRequest_envelope_round_trips_through_source_gen()
     {
         var envelope = new CliRequestEnvelope

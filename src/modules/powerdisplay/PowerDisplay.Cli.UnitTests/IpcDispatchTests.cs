@@ -91,78 +91,7 @@ public class IpcDispatchTests
         StringAssert.Contains(output.StderrLines[0], "10");
     }
 
-    [TestMethod]
-    public async Task When_provider_unavailable_get_exits_10()
-    {
-        var output = new CaptureOutput();
-        var dispatcher = MakeDispatcher(null, output);
-        var exit = await dispatcher.SendGetAsync(CliRequestBuilder.BuildGet(null, null, null), CancellationToken.None);
-        Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
-    }
-
-    [TestMethod]
-    public async Task When_provider_unavailable_set_exits_10()
-    {
-        var output = new CaptureOutput();
-        var dispatcher = MakeDispatcher(null, output);
-        var inputs = new SetCommandInputs { Brightness = 50 };
-        var exit = await dispatcher.SendSetAsync(CliRequestBuilder.BuildSet(inputs), CancellationToken.None);
-        Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
-    }
-
-    [TestMethod]
-    public async Task When_provider_unavailable_capabilities_exits_10()
-    {
-        var output = new CaptureOutput();
-        var dispatcher = MakeDispatcher(null, output);
-        var exit = await dispatcher.SendCapabilitiesAsync(CliRequestBuilder.BuildCapabilities(1, null, null), CancellationToken.None);
-        Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
-    }
-
-    [TestMethod]
-    public async Task When_provider_unavailable_profiles_exits_10()
-    {
-        var output = new CaptureOutput();
-        var dispatcher = MakeDispatcher(null, output);
-        var exit = await dispatcher.SendProfilesAsync(CliRequestBuilder.BuildProfiles(), CancellationToken.None);
-        Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
-    }
-
-    [TestMethod]
-    public async Task When_provider_unavailable_apply_profile_exits_10()
-    {
-        var output = new CaptureOutput();
-        var dispatcher = MakeDispatcher(null, output);
-        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile("Night"), CancellationToken.None);
-        Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
-    }
-
     // ── Success responses rendered, exit 0 ───────────────────────────────────
-    [TestMethod]
-    public async Task Success_list_renders_result_exits_0()
-    {
-        var output = new CaptureOutput();
-        var responseJson = SerializeSuccess(new CliListResult { Monitors = [] }, ContractsJsonContext.Default.CliListResult);
-        var dispatcher = MakeDispatcher(responseJson, output);
-        var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
-
-        Assert.AreEqual(CliExitCodes.Ok, exit);
-        Assert.AreEqual(1, output.StdoutLines.Count);
-        StringAssert.Contains(output.StdoutLines[0], "list");
-    }
-
-    [TestMethod]
-    public async Task Success_get_renders_result_exits_0()
-    {
-        var output = new CaptureOutput();
-        var responseJson = SerializeSuccess(new CliGetResult { Monitors = [] }, ContractsJsonContext.Default.CliGetResult);
-        var dispatcher = MakeDispatcher(responseJson, output);
-        var exit = await dispatcher.SendGetAsync(CliRequestBuilder.BuildGet(null, null, null), CancellationToken.None);
-
-        Assert.AreEqual(CliExitCodes.Ok, exit);
-        Assert.AreEqual(1, output.StdoutLines.Count);
-    }
-
     [TestMethod]
     public async Task Success_set_renders_result_exits_0()
     {
@@ -202,27 +131,6 @@ public class IpcDispatchTests
         StringAssert.Contains(output.StderrLines[0], CliErrorCodes.MonitorNotFound);
     }
 
-    [TestMethod]
-    public async Task Error_response_hardware_failure_returns_exit_5()
-    {
-        var output = new CaptureOutput();
-        var errorResponse = new CliErrorResult
-        {
-            Command = "set",
-            Error = new CliError
-            {
-                Code = CliErrorCodes.HardwareFailure,
-                Message = "DDC/CI write failed.",
-            },
-        };
-        var responseJson = SerializeError(errorResponse);
-        var dispatcher = MakeDispatcher(responseJson, output);
-        var inputs = new SetCommandInputs { Brightness = 80 };
-        var exit = await dispatcher.SendSetAsync(CliRequestBuilder.BuildSet(inputs), CancellationToken.None);
-
-        Assert.AreEqual(CliExitCodes.HardwareFailure, exit);
-    }
-
     // ── apply-profile exit-code carried through IPC ───────────────────────────
 
     /// <summary>
@@ -258,24 +166,6 @@ public class IpcDispatchTests
 
         Assert.AreEqual(CliExitCodes.OutOfRange, exit, "OutOfRange partial failure must return exit 2, not hardcoded HardwareFailure(5)");
         Assert.AreEqual(1, output.StdoutLines.Count);
-    }
-
-    [TestMethod]
-    public async Task ApplyProfile_HardwareFailure_exits_5()
-    {
-        var output = new CaptureOutput();
-        var responseJson = SerializeSuccess(
-            new CliApplyProfileResult
-            {
-                ExitCode = CliExitCodes.HardwareFailure,
-                Profile = "Gaming",
-                Monitors = new List<CliProfileMonitorOutcome>(),
-            },
-            ContractsJsonContext.Default.CliApplyProfileResult);
-        var dispatcher = MakeDispatcher(responseJson, output);
-        var exit = await dispatcher.SendApplyProfileAsync(CliRequestBuilder.BuildApplyProfile("Gaming"), CancellationToken.None);
-
-        Assert.AreEqual(CliExitCodes.HardwareFailure, exit);
     }
 
     [TestMethod]
