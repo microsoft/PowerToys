@@ -9,6 +9,10 @@
     <AssemblyName>PowerToys.PowerAccent</AssemblyName>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <!-- Required so CommunityToolkit.Mvvm's source generator emits the WinRT-correct partial
+         property implementations for [ObservableProperty] (avoids MVVMTK0045 / CS9248).
+         Matches the sibling WinUI 3 module PowerDisplay. -->
+    <LangVersion>preview</LangVersion>
     <UseWinUI>true</UseWinUI>
     <!--
       App.xaml lives at the project root, where the WinUI SDK's default glob already
