@@ -310,23 +310,27 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             if (type == VariablesSetType.User)
             {
-                if (UserDefaultSet.Variables != null && UserDefaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
+                if (UserDefaultSet.Variables != null && UserDefaultSet.Variables.Any(x =>
+                    x != null &&
+                    string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }
 
                 UserDefaultSet.Variables.Add(variable);
-                UserDefaultSet.Variables = new ObservableCollection<Variable>(UserDefaultSet.Variables.OrderBy(x => x.Name).ToList());
+                UserDefaultSet.Variables = new ObservableCollection<Variable>(UserDefaultSet.Variables.Where(x => x != null).OrderBy(x => x.Name).ToList());
             }
             else if (type == VariablesSetType.System)
             {
-                if (SystemDefaultSet.Variables != null && SystemDefaultSet.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
+                if (SystemDefaultSet.Variables != null && SystemDefaultSet.Variables.Any(x =>
+                    x != null &&
+                    string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }
 
                 SystemDefaultSet.Variables.Add(variable);
-                SystemDefaultSet.Variables = new ObservableCollection<Variable>(SystemDefaultSet.Variables.OrderBy(x => x.Name).ToList());
+                SystemDefaultSet.Variables = new ObservableCollection<Variable>(SystemDefaultSet.Variables.Where(x => x != null).OrderBy(x => x.Name).ToList());
             }
 
             EnvironmentVariablesHelper.SetVariable(variable);
