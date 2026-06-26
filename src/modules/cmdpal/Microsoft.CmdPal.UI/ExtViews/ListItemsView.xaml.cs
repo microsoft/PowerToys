@@ -102,6 +102,7 @@ public sealed partial class ListItemsView : UserControl,
         _isLoaded = false;
         UnregisterMessenger();
         CancelPendingContextMenuOpen();
+        ClearHoverActionState(ViewModel?.FilteredItems);
     }
 
     private void RegisterMessenger()
@@ -452,7 +453,7 @@ public sealed partial class ListItemsView : UserControl,
         for (var i = 0; i < count; i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is ListView listView)
+            if (child is ListView { Name: HoverActionsListName } listView)
             {
                 return listView;
             }
@@ -465,6 +466,32 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         return null;
+    }
+
+    private const string HoverActionsListName = "HoverActionsList";
+
+    private void ClearHoverActionState(IEnumerable<ListItemViewModel>? itemsToReset = null)
+    {
+        _hoverActionClickInProgress = false;
+
+        foreach (var (vm, timer) in _hoverExitTimers.ToList())
+        {
+            timer.Stop();
+            vm.SetRowHovered(false);
+        }
+
+        _hoverExitTimers.Clear();
+
+        if (itemsToReset is null)
+        {
+            return;
+        }
+
+        foreach (var item in itemsToReset)
+        {
+            item.SetRowHovered(false);
+            item.SetListSelected(false);
+        }
     }
 
     private void ListItemContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
@@ -937,6 +964,8 @@ public sealed partial class ListItemsView : UserControl,
             if (e.OldValue is ListViewModel old)
             {
                 old.ItemsUpdated -= @this.Page_ItemsUpdated;
+                @this._stickySelectedItem?.SetListSelected(false);
+                @this.ClearHoverActionState(old.FilteredItems);
             }
 
             // Reset latched state — selection sticky/last-pushed only make sense
