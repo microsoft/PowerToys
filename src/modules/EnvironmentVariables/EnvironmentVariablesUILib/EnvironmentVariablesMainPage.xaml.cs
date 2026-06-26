@@ -124,12 +124,22 @@ namespace EnvironmentVariablesUILib
         private void AddProfile()
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            if (profile == null)
+            {
+                return;
+            }
+
             ViewModel.AddProfile(profile);
         }
 
         private void UpdateProfile()
         {
             var updatedProfile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            if (updatedProfile == null)
+            {
+                return;
+            }
+
             ViewModel.UpdateProfile(updatedProfile);
         }
 
@@ -171,23 +181,28 @@ namespace EnvironmentVariablesUILib
         private void AddVariable()
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
-            if (profile != null)
+            if (profile == null || profile.Variables == null || AddNewVariableName == null || AddNewVariableValue == null || ExistingVariablesListView == null || AddVariableSwitchPresenter == null)
             {
-                if (AddVariableSwitchPresenter.Value as string == "NewVariable")
+                ResetAddVariableInputs();
+                AddVariableDialog.Hide();
+                return;
+            }
+
+            var activePanel = AddVariableSwitchPresenter.Value as string;
+            if (activePanel == "NewVariable")
+            {
+                profile.Variables.Add(new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile));
+            }
+            else
+            {
+                foreach (Variable variable in ExistingVariablesListView.SelectedItems)
                 {
-                    profile.Variables.Add(new Variable(AddNewVariableName.Text, AddNewVariableValue.Text, VariablesSetType.Profile));
-                }
-                else
-                {
-                    foreach (Variable variable in ExistingVariablesListView.SelectedItems)
+                    if (variable != null && !profile.Variables
+                        .Where(x => AreEquivalentVariables(x, variable))
+                        .Any())
                     {
-                        if (variable != null && !profile.Variables
-                            .Where(x => AreEquivalentVariables(x, variable))
-                            .Any())
-                        {
-                            var clone = variable.Clone(true);
-                            profile.Variables.Add(clone);
-                        }
+                        var clone = variable.Clone(true);
+                        profile.Variables.Add(clone);
                     }
                 }
             }
