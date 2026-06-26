@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerDisplay.Contracts;
 using PowerDisplay.Ipc;
+using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Ipc.UnitTests;
 
@@ -67,5 +68,26 @@ public class CliSettingCatalogTests
         Assert.AreEqual(0x14, CliSettingCatalog.TryGet(CliSettingNames.ColorTemperature)!.VcpCode);
         Assert.AreEqual(0x60, CliSettingCatalog.TryGet(CliSettingNames.InputSource)!.VcpCode);
         Assert.AreEqual(0xD6, CliSettingCatalog.TryGet(CliSettingNames.PowerState)!.VcpCode);
+    }
+
+    [TestMethod]
+    public void Catalog_OnlyPowerStateBlanksDisplay()
+    {
+        // Only power-state can blank the panel, so it is the only setting that gates --confirm-power-off.
+        Assert.IsTrue(CliSettingCatalog.TryGet(CliSettingNames.PowerState)!.BlanksDisplay);
+        foreach (var setting in CliSettingCatalog.VcpSettings.Where(s => s.Name != CliSettingNames.PowerState))
+        {
+            Assert.IsFalse(setting.BlanksDisplay, $"{setting.Name} must not blank the display");
+        }
+    }
+
+    [TestMethod]
+    public void Catalog_ContinuousSettingsHaveNoDiscreteSupportedValues()
+    {
+        var monitor = new Monitor();
+        foreach (var setting in CliSettingCatalog.VcpSettings.Where(s => s.Kind == CliSettingKind.Continuous))
+        {
+            Assert.IsNull(setting.SupportedValues(monitor), $"{setting.Name} is continuous and has no discrete value set");
+        }
     }
 }

@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using PowerDisplay.Common.Drivers;
 using PowerDisplay.Common.Models;
 using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
@@ -68,120 +67,67 @@ public static class SetCommandExecutor
         var setting = req.Setting?.Trim().ToLowerInvariant() ?? string.Empty;
 
         // --- 3. Dispatch to the per-setting handler ---
-        switch (setting)
+
+        // Orientation is GDI-based (not a VCP setting), so it is not in the catalog.
+        if (setting == CliSettingNames.Orientation)
         {
-            case CliSettingNames.Brightness:
-                return await ApplyContinuousAsync(
-                    manager,
-                    monitor!.Id,
-                    monitorRef,
-                    CliSettingNames.Brightness,
-                    req.RawValue,
-                    monitor.SupportsBrightness,
-                    monitor.CurrentBrightness,
-                    monitor.ReadValues.HasFlag(MonitorReadFlags.Brightness),
-                    "monitor exposed neither a WMI brightness interface nor DDC/CI brightness (0x10)",
-                    (mm, id, v, c) => mm.SetBrightnessAsync(id, v, c),
-                    ct);
-
-            case CliSettingNames.Contrast:
-                return await ApplyContinuousAsync(
-                    manager,
-                    monitor!.Id,
-                    monitorRef,
-                    CliSettingNames.Contrast,
-                    req.RawValue,
-                    monitor.SupportsContrast,
-                    monitor.CurrentContrast,
-                    monitor.ReadValues.HasFlag(MonitorReadFlags.Contrast),
-                    "monitor's VCP capabilities did not advertise contrast (0x12)",
-                    (mm, id, v, c) => mm.SetContrastAsync(id, v, c),
-                    ct);
-
-            case CliSettingNames.Volume:
-                return await ApplyContinuousAsync(
-                    manager,
-                    monitor!.Id,
-                    monitorRef,
-                    CliSettingNames.Volume,
-                    req.RawValue,
-                    monitor.SupportsVolume,
-                    monitor.CurrentVolume,
-                    monitor.ReadValues.HasFlag(MonitorReadFlags.Volume),
-                    "monitor's VCP capabilities did not advertise audio speaker volume (0x62)",
-                    (mm, id, v, c) => mm.SetVolumeAsync(id, v, c),
-                    ct);
-
-            case CliSettingNames.ColorTemperature:
-                return await ApplyDiscreteAsync(
-                    manager,
-                    monitor!.Id,
-                    monitorRef,
-                    CliSettingNames.ColorTemperature,
-                    NativeConstants.VcpCodeSelectColorPreset,
-                    req.RawValue,
-                    monitor.SupportsColorTemperature,
-                    monitor.CurrentColorTemperature,
-                    monitor.ReadValues.HasFlag(MonitorReadFlags.ColorTemperature),
-                    monitor.VcpCapabilitiesInfo?.GetSupportedValues(NativeConstants.VcpCodeSelectColorPreset),
-                    "monitor's VCP capabilities did not advertise color preset (0x14)",
-                    (mm, id, v, c) => mm.SetColorTemperatureAsync(id, v, c),
-                    confirmIfDisplayBlanking: false,
-                    ct);
-
-            case CliSettingNames.InputSource:
-                return await ApplyDiscreteAsync(
-                    manager,
-                    monitor!.Id,
-                    monitorRef,
-                    CliSettingNames.InputSource,
-                    NativeConstants.VcpCodeInputSource,
-                    req.RawValue,
-                    monitor.SupportsInputSource,
-                    monitor.CurrentInputSource,
-                    monitor.ReadValues.HasFlag(MonitorReadFlags.InputSource),
-                    monitor.SupportedInputSources,
-                    "monitor's VCP capabilities did not advertise input source (0x60)",
-                    (mm, id, v, c) => mm.SetInputSourceAsync(id, v, c),
-                    confirmIfDisplayBlanking: false,
-                    ct);
-
-            case CliSettingNames.PowerState:
-                return await ApplyDiscreteAsync(
-                    manager,
-                    monitor!.Id,
-                    monitorRef,
-                    CliSettingNames.PowerState,
-                    NativeConstants.VcpCodePowerMode,
-                    req.RawValue,
-                    monitor.SupportsPowerState,
-                    monitor.CurrentPowerState,
-                    monitor.ReadValues.HasFlag(MonitorReadFlags.PowerState),
-                    monitor.SupportedPowerStates,
-                    "monitor's VCP capabilities did not advertise power mode (0xD6)",
-                    (mm, id, v, c) => mm.SetPowerStateAsync(id, v, c),
-                    confirmIfDisplayBlanking: !req.ConfirmPowerOff,
-                    ct);
-
-            case CliSettingNames.Orientation:
-                return await ApplyOrientationAsync(manager, monitor!, monitorRef, req.RawValue, ct);
-
-            default:
-                return (null, new CliErrorResult
-                {
-                    Command = CliCommandNames.Set,
-                    Error = new CliError
-                    {
-                        // TODO(M4): app should set Code-only; CLI maps Code->localized message
-                        Code = CliErrorCodes.ArgumentError,
-                        Message = string.Format(CultureInfo.InvariantCulture, "unknown setting '{0}'", req.Setting),
-                        Hint = string.Format(
-                            CultureInfo.InvariantCulture,
-                            "valid settings: {0}",
-                            string.Join(", ", CliSettingNames.All)),
-                    },
-                });
+            return await ApplyOrientationAsync(manager, monitor!, monitorRef, req.RawValue, ct);
         }
+
+        var descriptor = CliSettingCatalog.TryGet(setting);
+        if (descriptor is null)
+        {
+            return (null, new CliErrorResult
+            {
+                Command = CliCommandNames.Set,
+                Error = new CliError
+                {
+                    // TODO(M4): app should set Code-only; CLI maps Code->localized message
+                    Code = CliErrorCodes.ArgumentError,
+                    Message = string.Format(CultureInfo.InvariantCulture, "unknown setting '{0}'", req.Setting),
+                    Hint = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "valid settings: {0}",
+                        string.Join(", ", CliSettingNames.All)),
+                },
+            });
+        }
+
+        var supports = descriptor.Supports(monitor!);
+        var current = descriptor.Current(monitor!);
+        var beforeKnown = monitor!.ReadValues.HasFlag(descriptor.ReadFlag);
+
+        if (descriptor.Kind == CliSettingKind.Continuous)
+        {
+            return await ApplyContinuousAsync(
+                manager,
+                monitor.Id,
+                monitorRef,
+                descriptor.Name,
+                req.RawValue,
+                supports,
+                current,
+                beforeKnown,
+                descriptor.UnsupportedReason,
+                descriptor.Apply,
+                ct);
+        }
+
+        return await ApplyDiscreteAsync(
+            manager,
+            monitor.Id,
+            monitorRef,
+            descriptor.Name,
+            descriptor.VcpCode,
+            req.RawValue,
+            supports,
+            current,
+            beforeKnown,
+            descriptor.SupportedValues(monitor),
+            descriptor.UnsupportedReason,
+            descriptor.Apply,
+            confirmIfDisplayBlanking: descriptor.BlanksDisplay && !req.ConfirmPowerOff,
+            ct);
     }
 
     // ─── Continuous settings (brightness / contrast / volume) ─────────────────

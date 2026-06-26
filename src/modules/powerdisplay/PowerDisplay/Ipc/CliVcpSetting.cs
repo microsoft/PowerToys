@@ -3,7 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Ipc;
@@ -24,10 +28,26 @@ namespace PowerDisplay.Ipc;
 /// <param name="ReadFlag">The <see cref="MonitorReadFlags"/> bit set when discovery read this setting.</param>
 /// <param name="Supports">Selects the monitor's hardware-capability flag for this setting.</param>
 /// <param name="Current">Selects the monitor's last-read value for this setting.</param>
+/// <param name="SupportedValues">
+/// Selects the monitor's advertised discrete value set (used to validate a <c>set</c> value).
+/// Returns <see langword="null"/> for continuous settings, which have no discrete set.
+/// </param>
+/// <param name="Apply">The hardware-write delegate for this setting on <see cref="IMonitorManager"/>.</param>
+/// <param name="UnsupportedReason">
+/// Invariant English explanation surfaced when the monitor does not support this setting.
+/// </param>
+/// <param name="BlanksDisplay">
+/// True only for settings whose values can blank the panel (power-state); gates the
+/// <c>--confirm-power-off</c> requirement.
+/// </param>
 internal sealed record CliVcpSetting(
     string Name,
     CliSettingKind Kind,
     byte VcpCode,
     MonitorReadFlags ReadFlag,
     Func<Monitor, bool> Supports,
-    Func<Monitor, int> Current);
+    Func<Monitor, int> Current,
+    Func<Monitor, IReadOnlyList<int>?> SupportedValues,
+    Func<IMonitorManager, string, int, CancellationToken, Task<MonitorOperationResult>> Apply,
+    string UnsupportedReason,
+    bool BlanksDisplay = false);
