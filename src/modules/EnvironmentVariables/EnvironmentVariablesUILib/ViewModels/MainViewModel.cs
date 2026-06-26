@@ -321,7 +321,14 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
-            bool propagateChange = variablesSet == null /* not a profile */ || variablesSet.Id.Equals(AppliedProfile?.Id);
+            bool isProfileVariable = original.ParentType == VariablesSetType.Profile;
+            if (isProfileVariable && variablesSet == null)
+            {
+                LoggerInstance.Logger.LogError("Invalid edit: cannot edit profile variable without owning profile set.");
+                return;
+            }
+
+            bool propagateChange = !isProfileVariable || variablesSet.Id.Equals(AppliedProfile?.Id);
             var originalName = (original.Name ?? string.Empty).Trim();
             var editedName = (edited.Name ?? string.Empty).Trim();
             bool changed = !string.Equals(originalName, editedName, StringComparison.OrdinalIgnoreCase) || original.Values != edited.Values;
