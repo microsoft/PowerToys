@@ -176,4 +176,11 @@
     <Compile Include="Keyboard\GlobalKeyboardHookEventArgs.cs" />
   </ItemGroup>
 
+  <!-- Sub-project C (zoom): ZoomViewModel ported (ObservableObject + ImageSource). Its
+       window and helper (ZoomWindow, ZoomWindowHelper) stay quarantined pending the Win2D
+       magnifier port (step 8). -->
+  <ItemGroup>
+    <Compile Include="ViewModels\ZoomViewModel.cs" />
+  </ItemGroup>
+
 </Project>

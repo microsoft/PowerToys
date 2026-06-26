@@ -1,37 +1,25 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel.Composition;
-using System.Windows.Media.Imaging;
-
-using ColorPicker.Common;
 using ColorPicker.ViewModelContracts;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.UI.Xaml.Media;
 
 namespace ColorPicker.ViewModels
 {
-    [Export(typeof(IZoomViewModel))]
-    public class ZoomViewModel : ViewModelBase, IZoomViewModel
+    public class ZoomViewModel : ObservableObject, IZoomViewModel
     {
-        private BitmapSource _zoomArea;
+        private ImageSource _zoomArea;
         private double _zoomFactor = 1;
         private double _desiredWidth;
         private double _desiredHeight;
         private double _width;
         private double _height;
 
-        [ImportingConstructor]
-        public ZoomViewModel()
+        public ImageSource ZoomArea
         {
-        }
-
-        public BitmapSource ZoomArea
-        {
-            get
-            {
-                return _zoomArea;
-            }
-
+            get => _zoomArea;
             set
             {
                 _zoomArea = value;
@@ -41,11 +29,7 @@ namespace ColorPicker.ViewModels
 
         public double ZoomFactor
         {
-            get
-            {
-                return _zoomFactor;
-            }
-
+            get => _zoomFactor;
             set
             {
                 _zoomFactor = value;
@@ -55,11 +39,7 @@ namespace ColorPicker.ViewModels
 
         public double DesiredWidth
         {
-            get
-            {
-                return _desiredWidth;
-            }
-
+            get => _desiredWidth;
             set
             {
                 _desiredWidth = value;
@@ -69,11 +49,7 @@ namespace ColorPicker.ViewModels
 
         public double DesiredHeight
         {
-            get
-            {
-                return _desiredHeight;
-            }
-
+            get => _desiredHeight;
             set
             {
                 _desiredHeight = value;
@@ -83,11 +59,7 @@ namespace ColorPicker.ViewModels
 
         public double Width
         {
-            get
-            {
-                return _width;
-            }
-
+            get => _width;
             set
             {
                 _width = value;
@@ -97,11 +69,7 @@ namespace ColorPicker.ViewModels
 
         public double Height
         {
-            get
-            {
-                return _height;
-            }
-
+            get => _height;
             set
             {
                 _height = value;
