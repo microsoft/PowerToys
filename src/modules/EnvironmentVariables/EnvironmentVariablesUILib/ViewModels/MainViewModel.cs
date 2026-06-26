@@ -330,6 +330,16 @@ namespace EnvironmentVariablesUILib.ViewModels
                 Profiles = new ObservableCollection<ProfileVariablesSet>();
             }
 
+            if (Profiles.Any(p => p != null && p.Id == profile.Id))
+            {
+                return;
+            }
+
+            if (Profiles.Any(p => p != null && string.Equals(p.Name, profile.Name, StringComparison.OrdinalIgnoreCase) && p.Id != profile.Id))
+            {
+                return;
+            }
+
             DeduplicateProfileVariables(profile);
             profile.PropertyChanged += Profile_PropertyChanged;
             if (profile.IsEnabled)
@@ -365,6 +375,11 @@ namespace EnvironmentVariablesUILib.ViewModels
             var existingProfile = Profiles.Where(x => x.Id == updatedProfile.Id).FirstOrDefault();
             if (existingProfile != null)
             {
+                if (Profiles.Any(x => x != null && x.Id != updatedProfile.Id && string.Equals(x.Name, updatedProfile.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
                 DeduplicateProfileVariables(updatedProfile);
                 if (updatedProfile.IsEnabled)
                 {
