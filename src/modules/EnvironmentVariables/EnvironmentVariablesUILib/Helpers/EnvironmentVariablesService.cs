@@ -82,7 +82,15 @@ namespace EnvironmentVariablesUILib.Helpers
                 await _fileSystem.File.WriteAllTextAsync(tempFilePath, jsonData);
                 if (_fileSystem.File.Exists(ProfilesJsonFilePath))
                 {
-                    _fileSystem.File.Replace(tempFilePath, ProfilesJsonFilePath, null);
+                    try
+                    {
+                        _fileSystem.File.Replace(tempFilePath, ProfilesJsonFilePath, null);
+                    }
+                    catch (Exception)
+                    {
+                        _fileSystem.File.Delete(ProfilesJsonFilePath);
+                        _fileSystem.File.Move(tempFilePath, ProfilesJsonFilePath);
+                    }
                 }
                 else
                 {
