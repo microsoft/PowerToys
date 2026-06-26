@@ -79,7 +79,7 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     /// <summary>
     /// Raised (without activation) when <see cref="Show()"/> makes the window
     /// visible. A content surface subscribes to this to play its in-animation,
-    /// sliding in from <see cref="ShowingEventArgs.Direction"/>.
+    /// using <see cref="ShowingEventArgs.Transition"/>.
     /// </summary>
     public event TypedEventHandler<TransparentWindow, ShowingEventArgs>? Showing;
 
@@ -93,27 +93,27 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
     /// <summary>
     /// Shows the window without activation (<c>SW_SHOWNA</c>) and raises
-    /// <see cref="Showing"/> without a direction, so subscribed content animates
-    /// in using its own configured slide direction.
+    /// <see cref="Showing"/> without a transition, so subscribed content animates
+    /// in using its own configured show transition.
     /// </summary>
     public void Show() => RaiseShow(null);
 
     /// <summary>
     /// Shows the window without activation (<c>SW_SHOWNA</c>) and raises
-    /// <see cref="Showing"/> so subscribed content animates in from
-    /// <paramref name="direction"/>, overriding its configured direction.
+    /// <see cref="Showing"/> so subscribed content animates in using
+    /// <paramref name="transition"/>, overriding its configured show transition.
     /// </summary>
-    /// <param name="direction">The edge the content should slide in from.</param>
-    public void Show(SlideDirection direction) => RaiseShow(direction);
+    /// <param name="transition">The transition the content should play.</param>
+    public void Show(Transition transition) => RaiseShow(transition);
 
-    private void RaiseShow(SlideDirection? direction)
+    private void RaiseShow(Transition? transition)
     {
         DispatcherQueue.TryEnqueue(
             DispatcherQueuePriority.Low,
             () =>
             {
                 _ = ShowWindow(_hwnd, SwShowNa);
-                Showing?.Invoke(this, new ShowingEventArgs(direction));
+                Showing?.Invoke(this, new ShowingEventArgs(transition));
             });
     }
 

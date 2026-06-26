@@ -7,20 +7,20 @@ using System;
 namespace Microsoft.PowerToys.Common.UI.Controls.Window;
 
 /// <summary>
-/// Data for <see cref="TransparentWindow.Showing"/>. Carries the edge the
-/// content should slide in from, or <see langword="null"/> to let the content
-/// use its own configured direction.
+/// Data for <see cref="TransparentWindow.Showing"/>. Carries the transition the
+/// content should play, or <see langword="null"/> to let the content use its own
+/// configured show transition.
 /// </summary>
 public sealed class ShowingEventArgs : EventArgs
 {
-    public ShowingEventArgs(SlideDirection? direction)
+    public ShowingEventArgs(Transition? transition)
     {
-        Direction = direction;
+        Transition = transition;
     }
 
     /// <summary>
-    /// Gets the edge the content should slide in from, or <see langword="null"/>
-    /// to use the content's own configured direction.
+    /// Gets the transition the content should play, or <see langword="null"/> to
+    /// use the content's own configured show transition.
     /// </summary>
-    public SlideDirection? Direction { get; }
+    public Transition? Transition { get; }
 }

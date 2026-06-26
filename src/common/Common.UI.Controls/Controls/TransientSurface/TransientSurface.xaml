@@ -25,7 +25,7 @@
                         <Grid.Shadow>
                             <ThemeShadow />
                         </Grid.Shadow>
-                        <SystemBackdropElement x:Name="PART_BackdropElement" CornerRadius="{TemplateBinding CornerRadius}">
+                        <SystemBackdropElement CornerRadius="{TemplateBinding CornerRadius}">
                             <SystemBackdropElement.SystemBackdrop>
                                 <backdrops:AlwaysActiveDesktopAcrylicBackdrop Kind="{TemplateBinding AcrylicKind}" />
                             </SystemBackdropElement.SystemBackdrop>
