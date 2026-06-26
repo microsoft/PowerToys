@@ -248,13 +248,36 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
+            if (type != VariablesSetType.User && type != VariablesSetType.System)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(variable.Name) || !variable.Valid)
+            {
+                return;
+            }
+
+            variable.Name = variable.Name.Trim();
+            variable.ParentType = type;
+
             if (type == VariablesSetType.User)
             {
+                if (UserDefaultSet.Variables != null && UserDefaultSet.Variables.Any(x => string.Equals(x?.Name, variable.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
                 UserDefaultSet.Variables.Add(variable);
                 UserDefaultSet.Variables = new ObservableCollection<Variable>(UserDefaultSet.Variables.OrderBy(x => x.Name).ToList());
             }
             else if (type == VariablesSetType.System)
             {
+                if (SystemDefaultSet.Variables != null && SystemDefaultSet.Variables.Any(x => string.Equals(x?.Name, variable.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+
                 SystemDefaultSet.Variables.Add(variable);
                 SystemDefaultSet.Variables = new ObservableCollection<Variable>(SystemDefaultSet.Variables.OrderBy(x => x.Name).ToList());
             }
