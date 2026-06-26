@@ -492,7 +492,7 @@ namespace EnvironmentVariablesUILib
 
                 var duplicates = list.SelectedItems
                     .OfType<Variable>()
-                    .GroupBy(x => $"{x.Name?.ToUpperInvariant()}|{x.Values}|{x.ParentType}")
+                    .GroupBy(x => $"{(x.Name ?? string.Empty).Trim().ToUpperInvariant()}|{x.Values}|{x.ParentType}")
                     .Where(g => g.Count() > 1)
                     .ToList();
 
