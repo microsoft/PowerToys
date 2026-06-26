@@ -319,6 +319,10 @@ namespace EnvironmentVariablesUILib
         private void ExistingVariablesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            if (profile == null)
+            {
+                return;
+            }
 
             int toRemove = -1;
 
@@ -444,6 +448,11 @@ namespace EnvironmentVariablesUILib
         private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            if (profile == null)
+            {
+                return;
+            }
+
             var remainingItems = ExistingVariablesListView.Items.Cast<Variable>().ToList();
 
             foreach (Variable item in ExistingVariablesListView.Items)
