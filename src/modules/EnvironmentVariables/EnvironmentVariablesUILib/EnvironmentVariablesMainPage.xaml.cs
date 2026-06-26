@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Windows.ApplicationModel.DataTransfer;
 
 using CommunityToolkit.Mvvm.Input;
 using EnvironmentVariablesUILib.Models;
@@ -212,6 +213,43 @@ namespace EnvironmentVariablesUILib
                     ViewModel.DeleteVariable(variable, variableSet);
                 };
                 var result = await dialog.ShowAsync();
+            }
+        }
+
+        private void CopyVariableName_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var selectedItem = sender as MenuFlyoutItem;
+            var variable = selectedItem?.CommandParameter as Variable;
+            if (variable == null)
+            {
+                return;
+            }
+
+            CopyToClipboard(variable.Name);
+        }
+
+        private void CopyVariableValue_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var selectedItem = sender as MenuFlyoutItem;
+            var variable = selectedItem?.CommandParameter as Variable;
+            if (variable == null)
+            {
+                return;
+            }
+
+            CopyToClipboard(variable.Values);
+        }
+
+        private static void CopyToClipboard(string text)
+        {
+            try
+            {
+                var dataPackage = new DataPackage();
+                dataPackage.SetText(text ?? string.Empty);
+                Clipboard.SetContent(dataPackage);
+            }
+            catch
+            {
             }
         }
 
