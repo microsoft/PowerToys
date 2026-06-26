@@ -269,7 +269,7 @@
                             x:Uid="Shell_AltWindowCycle"
                             helpers:NavHelper.NavigateTo="views:AltWindowCyclePage"
                             AutomationProperties.AutomationId="AltWindowCycleNavItem"
-                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowingAndLayouts.png}" />
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/AltWindowCycle.png}" />
                         <NavigationViewItem
                             x:Name="AlwaysOnTopNavigationItem"
                             x:Uid="Shell_AlwaysOnTop"

@@ -167,9 +167,11 @@ public:
 
     virtual void enable() override
     {
-        m_enabled = true;
-        Trace::EnableAltWindowCycle(true);
-        InitializeAltWindowCycle(reinterpret_cast<HINSTANCE>(&__ImageBase));
+        m_enabled = InitializeAltWindowCycle(reinterpret_cast<HINSTANCE>(&__ImageBase));
+        if (m_enabled)
+        {
+            Trace::EnableAltWindowCycle(true);
+        }
     }
 
     virtual void disable() override

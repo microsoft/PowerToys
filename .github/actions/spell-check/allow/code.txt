@@ -369,6 +369,7 @@ DEFAULTTONEAREST
 DWRITE
 LWIN
 VCENTER
+VREDRAW
 
 # COM/WinRT interface prefixes and type fragments
 BAlt

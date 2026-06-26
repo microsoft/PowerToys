@@ -695,7 +695,15 @@ void Switcher::ShowOverlayWindow()
                           &cornerPref, sizeof(cornerPref));
     HRGN rgn = CreateRoundRectRgn(0, 0, panelW + 1, panelH + 1,
                                   2 * Scaled(8), 2 * Scaled(8));
-    SetWindowRgn(thumbHost, rgn, FALSE);
+    if (rgn != nullptr)
+    {
+        // SetWindowRgn takes ownership of the region on success; on failure the
+        // caller still owns it, so delete it to avoid leaking the HRGN.
+        if (SetWindowRgn(thumbHost, rgn, FALSE) == 0)
+        {
+            DeleteObject(rgn);
+        }
+    }
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
     RegisterThumbnails();
