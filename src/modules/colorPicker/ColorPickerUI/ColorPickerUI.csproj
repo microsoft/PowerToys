@@ -60,6 +60,8 @@
          properties (ShowAnimations/HideAnimations) when ColorPickerOverlayWindow.xaml derives
          from the Common.UI.Controls TransparentWindow base. -->
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
+    <!-- Win2D for the zoom magnifier's pixel-grid CanvasControl (7e-2 / 方案1). -->
+    <PackageReference Include="Microsoft.Graphics.Win2D" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -95,8 +97,7 @@
     <Compile Remove="Behaviors\**\*.cs" />
     <!-- All Controls (HSVColor, ColorFormatControl, ColorPickerControl) are ported. -->
     <Compile Remove="Converters\**\*.cs" />
-    <!-- MainView + ColorEditorView are ported; only ZoomView remains quarantined. -->
-    <Compile Remove="Views\ZoomView.xaml.cs" />
+    <!-- MainView, ColorEditorView, and ZoomView (Win2D magnifier) are all ported. -->
     <Compile Remove="ViewModels\**\*.cs" />
     <!-- ViewModelContracts (IMainViewModel/IZoomViewModel/IColorEditorViewModel) are ported. -->
     <Compile Remove="Mouse\**\*.cs" />
@@ -106,15 +107,11 @@
     <Compile Remove="Models\**\*.cs" />
     <Compile Remove="Settings\**\*.cs" />
     <Compile Remove="Telemetry\**\*.cs" />
-    <Compile Remove="ZoomWindow.xaml.cs" />
-    <!-- The legacy root MainWindow.xaml/.cs (the WPF overlay shell) were DELETED to clear
-         the duplicate x:Class "ColorPicker.MainWindow" collision with the live
-         ColorPickerXAML\MainWindow.xaml. Sub-project C builds a fresh AppWindow-based
-         picking-overlay window (see git history for the old WPF shell). ColorEditorWindow
-         and ZoomWindow remain quarantined until sub-projects B and C port them. -->
-    <Page Remove="ZoomWindow.xaml" />
-    <Page Remove="Views\ZoomView.xaml" />
-    <!-- Resources\Styles.xaml is ported and merged into App.xaml. -->
+    <!-- The legacy root MainWindow.xaml/.cs (WPF overlay shell) were DELETED to clear the
+         duplicate x:Class "ColorPicker.MainWindow" collision; the picking overlay, editor, and
+         zoom magnifier are now ported (TransparentWindow-based). Resources\Styles.xaml is ported
+         and merged into App.xaml. Only the WPF Behaviors\ and Shaders\ remain quarantined; the
+         Win2D ZoomView replaces the GridShaderEffect, so they are intentionally dead. -->
 
     <!-- Old WPF .resx string table has been fully migrated to Strings\en-us\Resources.resw
          and Properties\Resources.resx deleted; nothing in the live build references
@@ -190,6 +187,7 @@
   <ItemGroup>
     <Compile Include="Helpers\AppStateHandler.cs" />
     <Compile Include="Helpers\ZoomWindowHelper.cs" />
+    <Compile Include="Helpers\WindowCaptureExclusionHelper.cs" />
     <Compile Include="Mouse\MouseInfoProvider.cs" />
     <Compile Include="Keyboard\KeyboardMonitor.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />

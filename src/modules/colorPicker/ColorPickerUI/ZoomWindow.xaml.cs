@@ -1,24 +1,20 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Windows;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 
 namespace ColorPicker
 {
     /// <summary>
-    /// Interaction logic for ZoomWindow.xaml
+    /// The zoom magnifier window: a transparent, frameless, no-activate
+    /// <see cref="TransparentWindow"/> hosting the Win2D-backed <see cref="Views.ZoomView"/>.
     /// </summary>
-    public partial class ZoomWindow : Window
+    public sealed partial class ZoomWindow : TransparentWindow
     {
         public ZoomWindow()
         {
             InitializeComponent();
-            DataContext = this;
-
-            // must be large enough to fit max zoom
-            Width = 500;
-            Height = 500;
         }
     }
 }
