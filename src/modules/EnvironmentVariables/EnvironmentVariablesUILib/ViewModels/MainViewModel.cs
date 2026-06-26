@@ -245,8 +245,6 @@ namespace EnvironmentVariablesUILib.ViewModels
                 variables.Remove(systemPath);
             }
 
-            variables = variables.GroupBy(x => (x.Name ?? string.Empty).Trim()).Select(y => y.First()).ToList();
-
             // Find duplicates
             var duplicates = variables.Where(x => x != null && !string.Equals("PATH", (x.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase))
                                       .GroupBy(x => (x.Name ?? string.Empty).Trim().ToLowerInvariant())
