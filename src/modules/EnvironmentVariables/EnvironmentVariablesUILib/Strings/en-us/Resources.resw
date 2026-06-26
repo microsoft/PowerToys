@@ -256,6 +256,9 @@
   <data name="CopyName.Text" xml:space="preserve">
     <value>Copy Name</value>
   </data>
+  <data name="CopyNameAndValue.Text" xml:space="preserve">
+    <value>Copy Name = Value</value>
+  </data>
   <data name="CopyValue.Text" xml:space="preserve">
     <value>Copy Value</value>
   </data>

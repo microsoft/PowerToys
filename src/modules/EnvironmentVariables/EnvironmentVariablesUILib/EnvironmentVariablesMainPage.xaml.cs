@@ -410,6 +410,19 @@ namespace EnvironmentVariablesUILib
             CopyToClipboard(variable.Values);
         }
 
+        private void CopyVariableNameAndValue_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var selectedItem = sender as MenuFlyoutItem;
+            var variable = selectedItem?.CommandParameter as Variable;
+            if (variable == null)
+            {
+                return;
+            }
+
+            var value = variable.Values ?? string.Empty;
+            CopyToClipboard($"{variable.Name}={value}");
+        }
+
         private static void CopyToClipboard(string text)
         {
             try

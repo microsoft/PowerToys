@@ -89,6 +89,11 @@
                                     CommandParameter="{x:Bind (models:Variable)}"
                                     Icon="{ui:FontIcon Glyph=&#xE8C8;}" />
                                 <MenuFlyoutItem
+                                    x:Uid="CopyNameAndValue"
+                                    Click="CopyVariableNameAndValue_Click"
+                                    CommandParameter="{x:Bind (models:Variable)}"
+                                    Icon="{ui:FontIcon Glyph=&#xE8C8;}" />
+                                <MenuFlyoutItem
                                     x:Uid="CopyValue"
                                     Click="CopyVariableValue_Click"
                                     CommandParameter="{x:Bind (models:Variable)}"
