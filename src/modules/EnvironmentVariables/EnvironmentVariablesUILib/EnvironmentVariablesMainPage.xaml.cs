@@ -758,7 +758,7 @@ namespace EnvironmentVariablesUILib
 
         private void AddDefaultVariableNameTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (AddDefaultVariableDialog == null)
+            if (AddDefaultVariableDialog == null || ViewModel == null)
             {
                 return;
             }
