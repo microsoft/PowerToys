@@ -100,14 +100,13 @@
     <Compile Remove="Models\**\*.cs" />
     <Compile Remove="Settings\**\*.cs" />
     <Compile Remove="Telemetry\**\*.cs" />
-    <Compile Remove="MainWindow.xaml.cs" />
     <Compile Remove="ColorEditorWindow.xaml.cs" />
     <Compile Remove="ZoomWindow.xaml.cs" />
-    <!-- NOTE: the quarantined root MainWindow.xaml declares the SAME x:Class
-         "ColorPicker.MainWindow" as the live ColorPickerXAML\MainWindow.xaml. When
-         sub-project C ports the WPF picking tooltip, DELETE or RENAME this root file
-         (do not merely un-quarantine it) to avoid a duplicate-partial-class build break. -->
-    <Page Remove="MainWindow.xaml" />
+    <!-- The legacy root MainWindow.xaml/.cs (the WPF overlay shell) were DELETED to clear
+         the duplicate x:Class "ColorPicker.MainWindow" collision with the live
+         ColorPickerXAML\MainWindow.xaml. Sub-project C builds a fresh AppWindow-based
+         picking-overlay window (see git history for the old WPF shell). ColorEditorWindow
+         and ZoomWindow remain quarantined until sub-projects B and C port them. -->
     <Page Remove="ColorEditorWindow.xaml" />
     <Page Remove="ZoomWindow.xaml" />
     <Page Remove="Controls\**\*.xaml" />
