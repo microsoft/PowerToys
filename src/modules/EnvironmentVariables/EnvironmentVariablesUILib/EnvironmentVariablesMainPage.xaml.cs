@@ -444,7 +444,7 @@ namespace EnvironmentVariablesUILib
 
         private void ExistingVariablesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (AddVariableDialog == null)
+            if (AddVariableDialog == null || AddProfileDialog == null)
             {
                 return;
             }
@@ -619,6 +619,11 @@ namespace EnvironmentVariablesUILib
 
         private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
+            if (AddProfileDialog == null)
+            {
+                return;
+            }
+
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
             if (profile == null)
             {
@@ -782,7 +787,7 @@ namespace EnvironmentVariablesUILib
         {
             var txtBox = sender as TextBox;
             var variable = EditVariableDialog.DataContext as Variable;
-            if (txtBox == null || variable == null)
+            if (EditVariableDialog == null || txtBox == null || variable == null)
             {
                 return;
             }
