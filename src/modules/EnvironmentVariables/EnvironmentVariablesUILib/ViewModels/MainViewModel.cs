@@ -94,6 +94,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
             foreach (var variable in SystemDefaultSet.Variables)
             {
+                if (variable == null)
+                {
+                    continue;
+                }
+
                 DefaultVariables.Variables.Add(variable);
             }
 
