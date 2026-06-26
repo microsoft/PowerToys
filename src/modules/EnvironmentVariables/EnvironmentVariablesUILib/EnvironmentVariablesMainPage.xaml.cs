@@ -294,17 +294,19 @@ namespace EnvironmentVariablesUILib
         {
             TextBox nameTxtBox = sender as TextBox;
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
-
-            if (nameTxtBox != null)
+            if (nameTxtBox == null || profile == null)
             {
-                if (nameTxtBox.Text.Length == 0 || nameTxtBox.Text.Length >= 255 || profile.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
-                {
-                    AddVariableDialog.IsPrimaryButtonEnabled = false;
-                }
-                else
-                {
-                    AddVariableDialog.IsPrimaryButtonEnabled = true;
-                }
+                AddVariableDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
+
+            if (nameTxtBox.Text.Length == 0 || nameTxtBox.Text.Length >= 255 || profile.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
+            {
+                AddVariableDialog.IsPrimaryButtonEnabled = false;
+            }
+            else
+            {
+                AddVariableDialog.IsPrimaryButtonEnabled = true;
             }
         }
 
@@ -530,7 +532,12 @@ namespace EnvironmentVariablesUILib
         {
             var variable = EditVariableDialog.DataContext as Variable;
             var param = EditVariableDialog.PrimaryButtonCommandParameter as RelayCommandParameter;
-            var variableSet = param.Set;
+            var variableSet = param?.Set;
+            if (variable == null)
+            {
+                EditVariableDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
 
             if (variableSet == null)
             {
@@ -560,18 +567,26 @@ namespace EnvironmentVariablesUILib
         {
             TextBox nameTxtBox = sender as TextBox;
             var variable = AddDefaultVariableDialog.DataContext as Variable;
-            var defaultSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
-
-            if (nameTxtBox != null)
+            if (nameTxtBox == null || variable == null)
             {
-                if (nameTxtBox.Text.Length == 0 || defaultSet.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
-                {
-                    AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
-                }
-                else
-                {
-                    AddDefaultVariableDialog.IsPrimaryButtonEnabled = true;
-                }
+                AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
+
+            var defaultSet = variable.ParentType == VariablesSetType.User ? ViewModel.UserDefaultSet : ViewModel.SystemDefaultSet;
+            if (defaultSet == null)
+            {
+                AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
+
+            if (nameTxtBox.Text.Length == 0 || defaultSet.Variables.Where(x => x.Name.Equals(nameTxtBox.Text, StringComparison.OrdinalIgnoreCase)).Any())
+            {
+                AddDefaultVariableDialog.IsPrimaryButtonEnabled = false;
+            }
+            else
+            {
+                AddDefaultVariableDialog.IsPrimaryButtonEnabled = true;
             }
 
             if (!variable.Validate())
