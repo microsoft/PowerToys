@@ -578,17 +578,7 @@ namespace EnvironmentVariablesUILib
                     }
 
                     var selectedVariables = list.SelectedItems.OfType<Variable>().ToList();
-                    var dedupedSelections = new List<Variable>();
-
-                    foreach (var selected in selectedVariables)
-                    {
-                        if (dedupedSelections.Any(x => AreEquivalentVariables(x, selected)))
-                        {
-                            continue;
-                        }
-
-                        dedupedSelections.Add(selected);
-                    }
+                    var dedupedSelections = DeduplicateVariablesByEquivalence(selectedVariables);
 
                     ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
                     foreach (var item in selectedVariables.Except(dedupedSelections).ToList())
@@ -779,6 +769,22 @@ namespace EnvironmentVariablesUILib
 
             return string.Equals((left.Name ?? string.Empty).Trim(), (right.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase)
                 && EnvironmentVariablesHelper.IsEquivalentVariableValue(left.Values, right.Values);
+        }
+
+        private static List<Variable> DeduplicateVariablesByEquivalence(IList<Variable> variables)
+        {
+            var deduped = new List<Variable>();
+            foreach (var variable in variables)
+            {
+                if (deduped.Any(existing => AreEquivalentVariables(existing, variable)))
+                {
+                    continue;
+                }
+
+                deduped.Add(variable);
+            }
+
+            return deduped;
         }
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)
