@@ -31,6 +31,11 @@ namespace EnvironmentVariablesUILib.Models
 
         public Task Apply()
         {
+            if (Variables == null)
+            {
+                return Task.CompletedTask;
+            }
+
             return Task.Run(() =>
             {
                 foreach (var variable in Variables)
@@ -67,6 +72,11 @@ namespace EnvironmentVariablesUILib.Models
 
         public Task UnApply()
         {
+            if (Variables == null)
+            {
+                return Task.CompletedTask;
+            }
+
             return Task.Run(() =>
             {
                 foreach (var variable in Variables)
@@ -125,6 +135,11 @@ namespace EnvironmentVariablesUILib.Models
                 return false;
             }
 
+            if (Variables == null)
+            {
+                return false;
+            }
+
             foreach (var variable in Variables)
             {
                 if (variable == null)
@@ -146,6 +161,11 @@ namespace EnvironmentVariablesUILib.Models
 
         public bool IsApplicable()
         {
+            if (Variables == null)
+            {
+                return true;
+            }
+
             foreach (var variable in Variables)
             {
                 if (variable == null)

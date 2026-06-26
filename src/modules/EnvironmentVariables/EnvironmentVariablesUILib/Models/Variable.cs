@@ -117,6 +117,12 @@ namespace EnvironmentVariablesUILib.Models
 
         internal Task Update(Variable edited, bool propagateChange, ProfileVariablesSet parentProfile)
         {
+            if (edited == null || string.IsNullOrWhiteSpace(edited.Name))
+            {
+                LoggerInstance.Logger.LogError("Invalid edited variable.");
+                return Task.CompletedTask;
+            }
+
             bool nameChanged = Name != edited.Name;
 
             var clone = this.Clone();
