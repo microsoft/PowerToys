@@ -76,7 +76,24 @@ namespace EnvironmentVariablesUILib.Helpers
                 _fileSystem.Directory.CreateDirectory(directoryPath);
             }
 
-            await _fileSystem.File.WriteAllTextAsync(ProfilesJsonFilePath, jsonData);
+            var tempFilePath = $"{ProfilesJsonFilePath}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                await _fileSystem.File.WriteAllTextAsync(tempFilePath, jsonData);
+                if (_fileSystem.File.Exists(ProfilesJsonFilePath))
+                {
+                    _fileSystem.File.Delete(ProfilesJsonFilePath);
+                }
+
+                _fileSystem.File.Move(tempFilePath, ProfilesJsonFilePath);
+            }
+            finally
+            {
+                if (_fileSystem.File.Exists(tempFilePath))
+                {
+                    _fileSystem.File.Delete(tempFilePath);
+                }
+            }
         }
 
         private static List<ProfileVariablesSet> SanitizeProfilesForPersistence(IEnumerable<ProfileVariablesSet> profiles)
