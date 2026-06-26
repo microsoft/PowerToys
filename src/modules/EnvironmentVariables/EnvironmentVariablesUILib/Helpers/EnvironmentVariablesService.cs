@@ -24,7 +24,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
         private readonly SemaphoreSlim _fileAccessLock = new (1, 1);
 
-        private bool _disposed;
+        private int _disposed;
 
         private readonly IFileSystem _fileSystem;
 
@@ -44,12 +44,12 @@ namespace EnvironmentVariablesUILib.Helpers
 
         public void Dispose()
         {
-            if (_disposed)
+            if (System.Threading.Interlocked.Exchange(ref _disposed, 1) == 1)
             {
                 return;
             }
 
-            _disposed = true;
+            _fileAccessLock.Wait();
             _fileAccessLock.Dispose();
         }
 
@@ -137,7 +137,7 @@ namespace EnvironmentVariablesUILib.Helpers
         }
         private void ThrowIfDisposed()
         {
-            if (_disposed)
+            if (System.Threading.Volatile.Read(ref _disposed) == 1)
             {
                 throw new ObjectDisposedException(nameof(EnvironmentVariablesService));
             }
