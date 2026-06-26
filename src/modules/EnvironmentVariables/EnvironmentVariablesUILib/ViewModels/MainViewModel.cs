@@ -367,7 +367,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
-            if (Profiles.Any(p => p != null && string.Equals(p.Name, profile.Name, StringComparison.OrdinalIgnoreCase) && p.Id != profile.Id))
+            if (Profiles.Any(p => p != null && string.Equals((p.Name ?? string.Empty).Trim(), profile.Name, StringComparison.OrdinalIgnoreCase) && p.Id != profile.Id))
             {
                 return;
             }
@@ -412,7 +412,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                     updatedProfile.Variables = new ObservableCollection<Variable>();
                 }
 
-                if (Profiles.Any(x => x != null && x.Id != updatedProfile.Id && string.Equals(x.Name, updatedProfile.Name, StringComparison.OrdinalIgnoreCase)))
+                if (Profiles.Any(x => x != null && x.Id != updatedProfile.Id && string.Equals((x.Name ?? string.Empty).Trim(), updatedProfile.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     return;
                 }
