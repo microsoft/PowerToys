@@ -1,22 +1,33 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System.ComponentModel;
-using System.Windows;
-using System.Windows.Automation.Peers;
-using System.Windows.Controls;
+
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Controls;
 
 namespace ColorPicker.Views
 {
     /// <summary>
     /// Interaction logic for MainView.xaml
     /// </summary>
-    public partial class MainView : UserControl
+    public sealed partial class MainView : UserControl
     {
+        public MainView()
+        {
+            InitializeComponent();
+            Loaded += OnLoaded;
+        }
+
         private void EnableNarratorColorChangesAnnouncements()
         {
-            INotifyPropertyChanged viewModel = (INotifyPropertyChanged)this.DataContext;
+            if (DataContext is not INotifyPropertyChanged viewModel)
+            {
+                return;
+            }
+
             viewModel.PropertyChanged += (sender, args) =>
             {
                 if (args.PropertyName != "ColorName")
@@ -24,31 +35,24 @@ namespace ColorPicker.Views
                     return;
                 }
 
-                var colorTextBlock = (TextBlock)FindName("ColorTextBlock");
-                if (colorTextBlock == null)
+                if (ColorTextBlock == null)
                 {
                     return;
                 }
 
-                var peer = UIElementAutomationPeer.FromElement(colorTextBlock);
-                if (peer == null)
-                {
-                    peer = UIElementAutomationPeer.CreatePeerForElement(colorTextBlock);
-                }
+                // WinUI has no AutomationEvents.MenuOpened narrator-announcement hack; with the
+                // TextBlock marked AutomationProperties.LiveSetting="Assertive", raising
+                // LiveRegionChanged is the idiomatic way to announce the new color.
+                var peer = FrameworkElementAutomationPeer.FromElement(ColorTextBlock)
+                           ?? FrameworkElementAutomationPeer.CreatePeerForElement(ColorTextBlock);
 
-                peer.RaiseAutomationEvent(AutomationEvents.MenuOpened);
+                peer?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
             };
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             EnableNarratorColorChangesAnnouncements();
-        }
-
-        public MainView()
-        {
-            InitializeComponent();
-            Loaded += OnLoaded;
         }
     }
 }
