@@ -371,6 +371,7 @@ namespace EnvironmentVariablesUILib
         private void ExistingVariablesListView_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;
+            var remainingItems = ExistingVariablesListView.Items.Cast<Variable>().ToList();
 
             foreach (Variable item in ExistingVariablesListView.Items)
             {
@@ -380,10 +381,7 @@ namespace EnvironmentVariablesUILib
                     {
                         if (profileItem.Name == item.Name && profileItem.Values == item.Values)
                         {
-                            if (ExistingVariablesListView.SelectedItems
-                                .Where(x => ((Variable)x).Name.Equals(profileItem.Name, StringComparison.OrdinalIgnoreCase) &&
-                                            ((Variable)x).Values.Equals(profileItem.Values, StringComparison.Ordinal))
-                                .Any())
+                            if (!remainingItems.Remove(item))
                             {
                                 continue;
                             }
@@ -391,6 +389,7 @@ namespace EnvironmentVariablesUILib
                             ExistingVariablesListView.SelectionChanged -= ExistingVariablesListView_SelectionChanged;
                             ExistingVariablesListView.SelectedItems.Add(item);
                             ExistingVariablesListView.SelectionChanged += ExistingVariablesListView_SelectionChanged;
+                            break;
                         }
                     }
                 }
