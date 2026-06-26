@@ -124,7 +124,6 @@ public sealed partial class Selector : TransparentWindow, IDisposable
             ViewModel.Characters.Add(c);
         }
 
-        ViewModel.SelectedIndex = _selectedIndex;
         CharactersList.SelectedIndex = _selectedIndex;
         ViewModel.Description = (_selectedIndex >= 0 && _selectedIndex < _powerAccent.CharacterDescriptions.Length)
             ? _powerAccent.CharacterDescriptions[_selectedIndex]
@@ -151,7 +150,6 @@ public sealed partial class Selector : TransparentWindow, IDisposable
     private void PowerAccent_OnSelectCharacter(int index, string character)
     {
         _selectedIndex = index;
-        ViewModel.SelectedIndex = index;
         CharactersList.SelectedIndex = index;
 
         if (index >= 0 && index < _powerAccent.CharacterDescriptions.Length)

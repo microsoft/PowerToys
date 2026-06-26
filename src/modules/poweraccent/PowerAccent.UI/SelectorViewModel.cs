@@ -18,9 +18,6 @@ public partial class SelectorViewModel : ObservableObject
     public partial ObservableCollection<string> Characters { get; set; }
 
     [ObservableProperty]
-    public partial int SelectedIndex { get; set; }
-
-    [ObservableProperty]
     public partial string Description { get; set; }
 
     // Bound directly as a Visibility (no value converter). The Selector's XAML root is a
@@ -33,7 +30,6 @@ public partial class SelectorViewModel : ObservableObject
     public SelectorViewModel()
     {
         Characters = new ObservableCollection<string>();
-        SelectedIndex = -1;
         Description = string.Empty;
     }
 
