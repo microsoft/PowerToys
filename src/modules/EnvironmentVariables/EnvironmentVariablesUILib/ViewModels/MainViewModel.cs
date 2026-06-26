@@ -132,9 +132,34 @@ namespace EnvironmentVariablesUILib.ViewModels
                     profiles = new List<ProfileVariablesSet>();
                 }
 
+                var validProfiles = new List<ProfileVariablesSet>();
+                var loadedProfileIds = new HashSet<Guid>();
+                var loadedProfileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                 foreach (var profile in profiles)
                 {
-                    if (profile == null || profile.Variables == null)
+                    if (profile == null || profile.Id == Guid.Empty)
+                    {
+                        continue;
+                    }
+
+                    profile.Name = (profile.Name ?? string.Empty).Trim();
+                    if (string.IsNullOrWhiteSpace(profile.Name))
+                    {
+                        continue;
+                    }
+
+                    if (profile.Variables == null)
+                    {
+                        profile.Variables = new ObservableCollection<Variable>();
+                    }
+
+                    if (!loadedProfileIds.Add(profile.Id))
+                    {
+                        continue;
+                    }
+
+                    if (!loadedProfileNames.Add(profile.Name))
                     {
                         continue;
                     }
@@ -149,9 +174,11 @@ namespace EnvironmentVariablesUILib.ViewModels
                             variable.ParentType = VariablesSetType.Profile;
                         }
                     }
+
+                    validProfiles.Add(profile);
                 }
 
-                var appliedProfiles = profiles.Where(x => x != null && x.IsEnabled).ToList();
+                var appliedProfiles = validProfiles.Where(x => x != null && x.IsEnabled).ToList();
                 if (appliedProfiles.Count > 0)
                 {
                     var appliedProfile = appliedProfiles.First();
@@ -167,7 +194,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                     }
                 }
 
-                Profiles = new ObservableCollection<ProfileVariablesSet>(profiles);
+                Profiles = new ObservableCollection<ProfileVariablesSet>(validProfiles);
             }
             catch (Exception ex)
             {
