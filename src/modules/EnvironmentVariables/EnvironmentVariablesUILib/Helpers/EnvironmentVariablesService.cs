@@ -64,6 +64,10 @@ namespace EnvironmentVariablesUILib.Helpers
             {
                 _fileAccessLock.Wait();
             }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
             finally
             {
                 if (_fileAccessLock.CurrentCount == 0)
