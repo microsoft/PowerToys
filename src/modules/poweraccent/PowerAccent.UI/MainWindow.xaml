@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <common:TransparentWindow
-    x:Class="PowerAccent.UI.Selector"
+    x:Class="PowerAccent.UI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:common="using:Microsoft.PowerToys.Common.UI.Controls.Window"
@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <controls:TransientSurface x:Name="Surface">
+    <controls:TransientSurface x:Name="Surface" Margin="24,24,24,16">
         <Grid x:Name="RootContent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

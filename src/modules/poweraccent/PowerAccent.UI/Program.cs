@@ -89,7 +89,7 @@ internal static class Program
         app?.DispatcherQueueForApp?.TryEnqueue(() =>
         {
             _tokenSource.Cancel();
-            App.Window?.Dispose();   // Selector.SaveUsageInfo + Core.PowerAccent.Dispose on the UI thread
+            App.Window?.Dispose();   // MainWindow.SaveUsageInfo + Core.PowerAccent.Dispose on the UI thread
             app.Dispose();   // disposes ETWTrace (idempotent via _disposed guard)
             app.Exit();
         });

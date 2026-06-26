@@ -20,7 +20,7 @@ public partial class App : Application, IDisposable
 
     public DispatcherQueue DispatcherQueueForApp { get; private set; }
 
-    public static Selector Window { get; private set; }
+    public static MainWindow Window { get; private set; }
 
     public App()
     {
@@ -31,10 +31,10 @@ public partial class App : Application, IDisposable
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
         DispatcherQueueForApp = DispatcherQueue.GetForCurrentThread();
-        Window = new Selector();
+        Window = new MainWindow();
 
         // Quick Accent has no visible main window until summoned by the keyboard hook;
-        // the Selector keeps itself hidden (TransparentWindow hides its AppWindow on init).
+        // the accent selector keeps itself hidden (TransparentWindow hides its AppWindow on init).
     }
 
     protected virtual void Dispose(bool disposing)

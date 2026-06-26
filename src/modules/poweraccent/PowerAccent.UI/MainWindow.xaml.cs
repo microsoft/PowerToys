@@ -15,7 +15,7 @@ using CoreSize = PowerAccent.Core.Size;
 
 namespace PowerAccent.UI;
 
-public sealed partial class Selector : TransparentWindow, IDisposable
+public sealed partial class MainWindow : TransparentWindow, IDisposable
 {
     // Deterministic accent-bar geometry (DIP). We deliberately do NOT measure the ListView to size
     // the window: a ListView wraps its items in a ScrollViewer (whose DesiredSize does not reflect
@@ -36,7 +36,7 @@ public sealed partial class Selector : TransparentWindow, IDisposable
 
     public SelectorViewModel ViewModel { get; } = new();
 
-    public Selector()
+    public MainWindow()
     {
         InitializeComponent();
 
@@ -68,7 +68,7 @@ public sealed partial class Selector : TransparentWindow, IDisposable
         }
 
         // The accent popup is shown/hidden instantly (no slide/fade) for typing-aid
-        // responsiveness. TransientSurface defaults to SlideDirection.None (no animation);
+        // responsiveness. TransientSurface defaults to Transition.None (no animation);
         // SubscribeTo wires the surface to this window's Show/Hide so it follows along.
         Surface.SubscribeTo(this);
 
