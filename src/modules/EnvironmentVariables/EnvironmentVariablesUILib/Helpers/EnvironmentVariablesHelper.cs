@@ -19,6 +19,19 @@ namespace EnvironmentVariablesUILib.Helpers
             return (variable?.Name ?? string.Empty) + "_PowerToys_" + (profileName ?? string.Empty);
         }
 
+        internal static bool IsEquivalentVariableValue(string candidateValue, string compareValue)
+        {
+            var candidate = candidateValue ?? string.Empty;
+            var compare = compareValue ?? string.Empty;
+            var expandedCandidate = Environment.ExpandEnvironmentVariables(candidate);
+            var expandedCompare = Environment.ExpandEnvironmentVariables(compare);
+
+            return string.Equals(candidate, compare, StringComparison.Ordinal) ||
+                string.Equals(expandedCandidate, compare, StringComparison.Ordinal) ||
+                string.Equals(candidate, expandedCompare, StringComparison.Ordinal) ||
+                string.Equals(expandedCandidate, expandedCompare, StringComparison.Ordinal);
+        }
+
         internal static Variable GetExisting(string variableName)
         {
             if (string.IsNullOrWhiteSpace(variableName))

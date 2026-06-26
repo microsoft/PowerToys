@@ -11,6 +11,7 @@ using Windows.System;
 using Windows.ApplicationModel.DataTransfer;
 
 using CommunityToolkit.Mvvm.Input;
+using EnvironmentVariablesUILib.Helpers;
 using EnvironmentVariablesUILib.Models;
 using EnvironmentVariablesUILib.ViewModels;
 using Microsoft.UI.Xaml.Controls;
@@ -796,20 +797,7 @@ namespace EnvironmentVariablesUILib
             }
 
             return string.Equals((left.Name ?? string.Empty).Trim(), (right.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase)
-                && IsEquivalentVariableValue(left.Values, right.Values);
-        }
-
-        private static bool IsEquivalentVariableValue(string candidateValue, string compareValue)
-        {
-            var candidate = candidateValue ?? string.Empty;
-            var compare = compareValue ?? string.Empty;
-            var expandedCandidate = Environment.ExpandEnvironmentVariables(candidate);
-            var expandedCompare = Environment.ExpandEnvironmentVariables(compare);
-
-            return string.Equals(candidate, compare, StringComparison.Ordinal) ||
-                string.Equals(expandedCandidate, compare, StringComparison.Ordinal) ||
-                string.Equals(candidate, expandedCompare, StringComparison.Ordinal) ||
-                string.Equals(expandedCandidate, expandedCompare, StringComparison.Ordinal);
+                && EnvironmentVariablesHelper.IsEquivalentVariableValue(left.Values, right.Values);
         }
 
         private async Task ShowAddDefaultVariableDialogAsync(DefaultVariablesSet set)

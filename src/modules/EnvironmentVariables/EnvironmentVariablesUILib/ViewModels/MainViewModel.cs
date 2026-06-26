@@ -342,7 +342,8 @@ namespace EnvironmentVariablesUILib.ViewModels
             bool propagateChange = !isProfileVariable || variablesSet.Id.Equals(AppliedProfile?.Id);
             var originalName = (targetVariable.Name ?? string.Empty).Trim();
             var editedName = (edited.Name ?? string.Empty).Trim();
-            bool changed = !string.Equals(originalName, editedName, StringComparison.OrdinalIgnoreCase) || !IsEquivalentVariableValue(targetVariable.Values, edited.Values);
+            bool changed = !string.Equals(originalName, editedName, StringComparison.OrdinalIgnoreCase) ||
+                !EnvironmentVariablesHelper.IsEquivalentVariableValue(targetVariable.Values, edited.Values);
             if (changed && string.IsNullOrEmpty(edited.Values))
             {
                 DeleteVariable(targetVariable, variablesSet);
@@ -744,21 +745,8 @@ namespace EnvironmentVariablesUILib.ViewModels
             var normalizedName = (target.Name ?? string.Empty).Trim();
             return variables
                 .Where(x => x != null && string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase))
-                .Where(x => IsEquivalentVariableValue(x?.Values, target.Values))
+                .Where(x => EnvironmentVariablesHelper.IsEquivalentVariableValue(x?.Values, target.Values))
                 .FirstOrDefault();
-        }
-
-        private static bool IsEquivalentVariableValue(string candidateValue, string compareValue)
-        {
-            var candidate = candidateValue ?? string.Empty;
-            var compare = compareValue ?? string.Empty;
-            var expandedCandidate = Environment.ExpandEnvironmentVariables(candidate);
-            var expandedCompare = Environment.ExpandEnvironmentVariables(compare);
-
-            return string.Equals(candidate, compare, StringComparison.Ordinal) ||
-                string.Equals(expandedCandidate, compare, StringComparison.Ordinal) ||
-                string.Equals(candidate, expandedCompare, StringComparison.Ordinal) ||
-                string.Equals(expandedCandidate, expandedCompare, StringComparison.Ordinal);
         }
     }
 }
