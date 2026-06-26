@@ -47,9 +47,20 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             var fileContent = _fileSystem.File.ReadAllText(ProfilesJsonFilePath);
-            var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
+            if (string.IsNullOrWhiteSpace(fileContent))
+            {
+                return new List<ProfileVariablesSet>();
+            }
 
-            return profiles;
+            try
+            {
+                var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
+                return profiles ?? new List<ProfileVariablesSet>();
+            }
+            catch (JsonException)
+            {
+                return new List<ProfileVariablesSet>();
+            }
         }
 
         public async Task WriteAsync(IEnumerable<ProfileVariablesSet> profiles)
