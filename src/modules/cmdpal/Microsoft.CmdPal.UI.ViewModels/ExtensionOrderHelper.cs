@@ -5,16 +5,18 @@
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 /// <summary>
-/// Pure helper methods for sorting and inserting items according to a user-defined
-/// extension order. Operates on provider ID strings so the logic is easily testable
-/// without constructing heavyweight view-model instances.
+/// Pure helper methods for sorting items according to a user-defined extension
+/// order. Operates on provider ID strings so the logic is easily testable without
+/// constructing heavyweight view-model instances.
 /// </summary>
 internal static class ExtensionOrderHelper
 {
     /// <summary>
     /// Returns a new list with items sorted so that those whose provider is in
     /// <paramref name="extensionOrder"/> appear first (in that order), followed by
-    /// the remaining items in their original order.
+    /// the remaining items in their original order. The sort is stable: items that
+    /// share a provider (and therefore the same order index) keep their original
+    /// relative order, so a single provider's commands are never shuffled.
     /// </summary>
     internal static List<T> SortByExtensionOrder<T>(List<T> items, string[] extensionOrder, Func<T, string> providerIdSelector)
     {
@@ -39,45 +41,10 @@ internal static class ExtensionOrderHelper
             }
         }
 
-        ordered.Sort((a, b) => orderLookup[providerIdSelector(a)].CompareTo(orderLookup[providerIdSelector(b)]));
-        ordered.AddRange(unordered);
-        return ordered;
-    }
-
-    /// <summary>
-    /// Determines where to insert a new provider's items in the existing list based on
-    /// <paramref name="extensionOrder"/>. If the provider is in the order list, it's
-    /// placed after other ordered providers that precede it. Otherwise it goes at the end.
-    /// </summary>
-    internal static int FindInsertIndex<T>(List<T> items, string providerId, string[] extensionOrder, Func<T, string> providerIdSelector)
-    {
-        var providerIndex = Array.IndexOf(extensionOrder, providerId);
-        if (providerIndex < 0)
-        {
-            return items.Count;
-        }
-
-        // Find the last item in the list whose provider has a lower order index
-        for (var i = items.Count - 1; i >= 0; i--)
-        {
-            var existingIndex = Array.IndexOf(extensionOrder, providerIdSelector(items[i]));
-            if (existingIndex >= 0 && existingIndex < providerIndex)
-            {
-                // Insert after the last command of this earlier-ordered provider
-                var insertAfterProvider = providerIdSelector(items[i]);
-                for (var j = i + 1; j < items.Count; j++)
-                {
-                    if (providerIdSelector(items[j]) != insertAfterProvider)
-                    {
-                        return j;
-                    }
-                }
-
-                return i + 1;
-            }
-        }
-
-        // This provider has the lowest order index among those present — insert at the beginning
-        return 0;
+        // OrderBy is a stable sort, so commands from the same provider keep the
+        // relative order in which they were loaded.
+        var result = ordered.OrderBy(item => orderLookup[providerIdSelector(item)]).ToList();
+        result.AddRange(unordered);
+        return result;
     }
 }

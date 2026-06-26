@@ -13,10 +13,13 @@ public class ExtensionOrderTests
 {
     private static readonly string[] OrderAB = ["a", "b"];
     private static readonly string[] OrderABC = ["a", "b", "c"];
-    private static readonly string[] OrderXY = ["x", "y"];
     private static readonly string[] ExpectedXYZ = ["x", "y", "z"];
     private static readonly string[] ExpectedABC = ["a", "b", "c"];
     private static readonly string[] ExpectedABXY = ["a", "b", "x", "y"];
+    private static readonly string[] OrderExternalThenBuiltIns = ["external.foo", "builtin.apps", "builtin.calc"];
+    private static readonly string[] OrderExternalThenApps = ["external.foo", "builtin.apps"];
+    private static readonly string[] ExpectedExternalFirst = ["external.foo", "builtin.apps", "builtin.calc"];
+    private static readonly string[] ExpectedNewProviderLast = ["external.foo", "builtin.apps", "newly.installed"];
 
     [TestMethod]
     public void ExtensionOrder_DefaultIsEmpty()
@@ -137,63 +140,55 @@ public class ExtensionOrderTests
     }
 
     [TestMethod]
-    public void FindInsertIndex_ProviderNotInOrder_ReturnsCount()
+    public void SortByExtensionOrder_SameProviderItems_KeepRelativeOrder()
     {
-        var items = new List<string> { "a", "b", "c" };
+        // Two providers ("a" and "b"), each contributing several commands. The sort
+        // must be stable so a single provider's commands are never shuffled.
+        var items = new List<(string Provider, int Command)>
+        {
+            ("b", 0),
+            ("a", 0),
+            ("b", 1),
+            ("a", 1),
+            ("a", 2),
+        };
 
-        var index = ExtensionOrderHelper.FindInsertIndex(items, "unknown", OrderXY, s => s);
+        var result = ExtensionOrderHelper.SortByExtensionOrder(items, OrderAB, x => x.Provider);
 
-        Assert.AreEqual(3, index);
+        var expected = new List<(string, int)>
+        {
+            ("a", 0),
+            ("a", 1),
+            ("a", 2),
+            ("b", 0),
+            ("b", 1),
+        };
+        CollectionAssert.AreEqual(expected, result);
     }
 
     [TestMethod]
-    public void FindInsertIndex_EmptyItems_ReturnsZero()
+    public void SortByExtensionOrder_ExternalCanOutrankBuiltIn_WhenBothInOrder()
     {
-        var items = new List<string>();
+        // Built-ins load before external extensions, but the configured order lists the
+        // external provider first. Sorting the full list lets the external outrank the
+        // built-in so the result matches what the reorder dialog showed (WYSIWYG).
+        var items = new List<string> { "builtin.apps", "builtin.calc", "external.foo" };
 
-        var index = ExtensionOrderHelper.FindInsertIndex(items, "a", OrderAB, s => s);
+        var result = ExtensionOrderHelper.SortByExtensionOrder(items, OrderExternalThenBuiltIns, s => s);
 
-        Assert.AreEqual(0, index);
+        CollectionAssert.AreEqual(ExpectedExternalFirst, result);
     }
 
     [TestMethod]
-    public void FindInsertIndex_FirstInOrder_ReturnsZero()
+    public void SortByExtensionOrder_NewProviderNotInOrder_GoesToEnd()
     {
-        var items = new List<string> { "b", "c", "x" };
+        // A provider installed after the last reorder isn't in the saved order, so it
+        // keeps its natural load position at the end rather than jumping to the front.
+        var items = new List<string> { "external.foo", "builtin.apps", "newly.installed" };
 
-        var index = ExtensionOrderHelper.FindInsertIndex(items, "a", OrderABC, s => s);
+        var result = ExtensionOrderHelper.SortByExtensionOrder(items, OrderExternalThenApps, s => s);
 
-        Assert.AreEqual(0, index);
-    }
-
-    [TestMethod]
-    public void FindInsertIndex_BetweenOrderedProviders_ReturnsCorrectPosition()
-    {
-        var items = new List<string> { "a", "a", "c", "c" };
-
-        var index = ExtensionOrderHelper.FindInsertIndex(items, "b", OrderABC, s => s);
-
-        Assert.AreEqual(2, index);
-    }
-
-    [TestMethod]
-    public void FindInsertIndex_AfterLastOrderedProvider_ReturnsEnd()
-    {
-        var items = new List<string> { "a", "b" };
-
-        var index = ExtensionOrderHelper.FindInsertIndex(items, "c", OrderABC, s => s);
-
-        Assert.AreEqual(2, index);
-    }
-
-    [TestMethod]
-    public void FindInsertIndex_WithUnorderedItemsAfterOrdered_InsertsCorrectly()
-    {
-        var items = new List<string> { "a", "x", "y" };
-
-        var index = ExtensionOrderHelper.FindInsertIndex(items, "b", OrderAB, s => s);
-
-        Assert.AreEqual(1, index);
+        CollectionAssert.AreEqual(ExpectedNewProviderLast, result);
     }
 
     private static SettingsModel DeserializeSettings(string json)

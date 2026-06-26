@@ -192,16 +192,12 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             var startIndex = FindIndexForFirstProviderItem(clone, sender.ProviderId);
             clone.RemoveAll(item => item.CommandProviderId == sender.ProviderId);
 
-            if (startIndex >= clone.Count)
-            {
-                // Provider wasn't in the list yet — find position based on ExtensionOrder
-                var extensionOrder = _serviceProvider.GetRequiredService<ISettingsService>().Settings.ExtensionOrder;
-                startIndex = FindInsertIndexByExtensionOrder(clone, sender.ProviderId, extensionOrder);
-            }
+            // Insert the refreshed items where this provider previously sat (or at the
+            // end if it's brand new). RebuildTopLevelCommands then re-sorts the whole
+            // list so the provider lands in its user-configured position.
+            clone.InsertRange(Math.Min(startIndex, clone.Count), newItems);
 
-            clone.InsertRange(startIndex, newItems);
-
-            ListHelpers.InPlaceUpdateList(TopLevelCommands, clone);
+            RebuildTopLevelCommands(clone);
         }
 
         lock (_dockBandsLock)
@@ -477,16 +473,14 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
         lock (TopLevelCommands)
         {
-            var extensionOrder = _serviceProvider.GetRequiredService<ISettingsService>().Settings.ExtensionOrder;
-            if (extensionOrder.Length > 0)
-            {
-                commandsToAdd = SortByExtensionOrder(commandsToAdd, extensionOrder);
-            }
+            // Append the freshly loaded batch, then re-sort the entire top-level list
+            // so the user's configured extension order is honored across batches
+            // (built-ins and external extensions load in separate batches).
+            var clone = new List<TopLevelViewModel>(TopLevelCommands.Count + commandsToAdd.Count);
+            clone.AddRange(TopLevelCommands);
+            clone.AddRange(commandsToAdd);
 
-            foreach (var c in commandsToAdd)
-            {
-                TopLevelCommands.Add(c);
-            }
+            RebuildTopLevelCommands(clone);
         }
 
         lock (_dockBandsLock)
@@ -509,11 +503,22 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         return new RegisterAndLoadSummary(totalCommands, totalDockBands);
     }
 
-    internal static List<TopLevelViewModel> SortByExtensionOrder(List<TopLevelViewModel> commands, string[] extensionOrder)
-        => ExtensionOrderHelper.SortByExtensionOrder(commands, extensionOrder, c => c.CommandProviderId);
+    /// <summary>
+    /// Replaces the contents of <see cref="TopLevelCommands"/> with <paramref name="newCommands"/>,
+    /// first applying the user-configured extension order when one is set. Callers must hold the
+    /// <see cref="TopLevelCommands"/> lock. Built-in and external providers load in separate
+    /// batches, so re-sorting the whole list here is what lets the configured order span them.
+    /// </summary>
+    private void RebuildTopLevelCommands(List<TopLevelViewModel> newCommands)
+    {
+        var extensionOrder = _serviceProvider.GetRequiredService<ISettingsService>().Settings.ExtensionOrder;
+        if (extensionOrder.Length > 0)
+        {
+            newCommands = ExtensionOrderHelper.SortByExtensionOrder(newCommands, extensionOrder, c => c.CommandProviderId);
+        }
 
-    private static int FindInsertIndexByExtensionOrder(List<TopLevelViewModel> items, string providerId, string[] extensionOrder)
-        => ExtensionOrderHelper.FindInsertIndex(items, providerId, extensionOrder, c => c.CommandProviderId);
+        ListHelpers.InPlaceUpdateList(TopLevelCommands, newCommands);
+    }
 
     private async Task<CommandLoadResult> TryLoadCommandsAsync(CommandProviderWrapper wrapper, CancellationToken ct)
     {
@@ -559,10 +564,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             {
                 lock (TopLevelCommands)
                 {
-                    foreach (var c in commands)
-                    {
-                        TopLevelCommands.Add(c);
-                    }
+                    var clone = new List<TopLevelViewModel>(TopLevelCommands.Count + commands.Count);
+                    clone.AddRange(TopLevelCommands);
+                    clone.AddRange(commands);
+
+                    RebuildTopLevelCommands(clone);
                 }
             }
 
