@@ -328,19 +328,30 @@ namespace EnvironmentVariablesUILib.ViewModels
                 return;
             }
 
+            Variable targetVariable = original;
+            if (isProfileVariable)
+            {
+                targetVariable = ResolveProfileVariable(variablesSet?.Variables, original);
+                if (targetVariable == null)
+                {
+                    LoggerInstance.Logger.LogError("Invalid edit: cannot resolve owning profile variable.");
+                    return;
+                }
+            }
+
             bool propagateChange = !isProfileVariable || variablesSet.Id.Equals(AppliedProfile?.Id);
-            var originalName = (original.Name ?? string.Empty).Trim();
+            var originalName = (targetVariable.Name ?? string.Empty).Trim();
             var editedName = (edited.Name ?? string.Empty).Trim();
-            bool changed = !string.Equals(originalName, editedName, StringComparison.OrdinalIgnoreCase) || original.Values != edited.Values;
+            bool changed = !string.Equals(originalName, editedName, StringComparison.OrdinalIgnoreCase) || !IsEquivalentVariableValue(targetVariable.Values, edited.Values);
             if (changed && string.IsNullOrEmpty(edited.Values))
             {
-                DeleteVariable(original, variablesSet);
+                DeleteVariable(targetVariable, variablesSet);
                 return;
             }
 
             if (changed)
             {
-                var task = original.Update(edited, propagateChange, variablesSet);
+                var task = targetVariable.Update(edited, propagateChange, variablesSet);
                 task.ContinueWith(x =>
                 {
                     _dispatcherQueue.TryEnqueue(() =>
@@ -660,8 +671,20 @@ namespace EnvironmentVariablesUILib.ViewModels
                     return;
                 }
 
+                var targetVariable = ResolveProfileVariable(profile.Variables, variable);
+                if (targetVariable == null)
+                {
+                    LoggerInstance.Logger.LogError("Invalid delete: unable to resolve owning profile variable.");
+                    return;
+                }
+
                 // Profile variable
-                profile.Variables.Remove(variable);
+                var removed = profile.Variables.Remove(targetVariable);
+                if (!removed)
+                {
+                    LoggerInstance.Logger.LogError("Failed to remove profile variable from profile list.");
+                    return;
+                }
 
                 if (!profile.IsEnabled)
                 {
@@ -703,6 +726,39 @@ namespace EnvironmentVariablesUILib.ViewModels
                     });
                 });
             }
+        }
+
+        private static Variable ResolveProfileVariable(ObservableCollection<Variable> variables, Variable target)
+        {
+            if (variables == null || target == null)
+            {
+                return null;
+            }
+
+            var exactMatch = variables.FirstOrDefault(x => ReferenceEquals(x, target));
+            if (exactMatch != null)
+            {
+                return exactMatch;
+            }
+
+            var normalizedName = (target.Name ?? string.Empty).Trim();
+            return variables
+                .Where(x => x != null && string.Equals((x.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase))
+                .Where(x => IsEquivalentVariableValue(x?.Values, target.Values))
+                .FirstOrDefault();
+        }
+
+        private static bool IsEquivalentVariableValue(string candidateValue, string compareValue)
+        {
+            var candidate = candidateValue ?? string.Empty;
+            var compare = compareValue ?? string.Empty;
+            var expandedCandidate = Environment.ExpandEnvironmentVariables(candidate);
+            var expandedCompare = Environment.ExpandEnvironmentVariables(compare);
+
+            return string.Equals(candidate, compare, StringComparison.Ordinal) ||
+                string.Equals(expandedCandidate, compare, StringComparison.Ordinal) ||
+                string.Equals(candidate, expandedCompare, StringComparison.Ordinal) ||
+                string.Equals(expandedCandidate, expandedCompare, StringComparison.Ordinal);
         }
     }
 }
