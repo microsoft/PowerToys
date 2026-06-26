@@ -82,6 +82,12 @@ namespace EnvironmentVariablesUILib.Helpers
                 return;
             }
 
+            if (variable.Contains('='))
+            {
+                LoggerInstance.Logger.LogError("Can't apply variable - invalid name.");
+                return;
+            }
+
             const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
             if (!fromMachine && variable.Length >= MaxUserEnvVariableLength)
             {

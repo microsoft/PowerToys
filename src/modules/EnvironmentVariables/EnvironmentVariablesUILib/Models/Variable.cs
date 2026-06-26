@@ -217,6 +217,12 @@ namespace EnvironmentVariablesUILib.Models
                 return false;
             }
 
+            if (normalizedName.Contains('='))
+            {
+                LoggerInstance.Logger.LogError("Variable name contains invalid '=' character.");
+                return false;
+            }
+
             const int MaxUserEnvVariableLength = 255; // User-wide env vars stored in the registry have names limited to 255 chars
             if (ParentType != VariablesSetType.System && normalizedName.Length >= MaxUserEnvVariableLength)
             {
