@@ -213,6 +213,33 @@ bool InstallNewVersionStage2(std::wstring installer_path)
 {
     std::transform(begin(installer_path), end(installer_path), begin(installer_path), ::towlower);
 
+    // Security (MSRC 112000): the installer was downloaded into a user-writable directory
+    // (%LOCALAPPDATA%\Microsoft\PowerToys\Updates). Stage 2 runs elevated, so executing the
+    // installer without verifying it would let a local, non-elevated attacker swap in a
+    // malicious installer between download and execution (TOCTOU) and gain elevation.
+    //
+    // Open the installer denying write/delete sharing so it cannot be replaced from under us,
+    // then verify it is Authenticode-signed by Microsoft. The handle is kept open across the
+    // launch so the verified bytes are the bytes that run.
+    wil::unique_hfile installerFile{ CreateFileW(installer_path.c_str(),
+                                                 GENERIC_READ,
+                                                 FILE_SHARE_READ,
+                                                 nullptr,
+                                                 OPEN_EXISTING,
+                                                 FILE_ATTRIBUTE_NORMAL,
+                                                 nullptr) };
+    if (!installerFile)
+    {
+        Logger::error(L"Couldn't open the downloaded installer for verification: {}", installer_path);
+        return false;
+    }
+
+    if (!updating::verify_installer_trust(installer_path, installerFile.get()))
+    {
+        Logger::error(L"Aborting update: downloaded installer failed trust verification and will not be executed elevated");
+        return false;
+    }
+
     bool success = true;
 
     if (installer_path.ends_with(L".msi"))
