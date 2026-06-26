@@ -60,8 +60,17 @@ namespace EnvironmentVariablesUILib.Helpers
                 return;
             }
 
-            _fileAccessLock.Wait();
-            _fileAccessLock.Dispose();
+            try
+            {
+                _fileAccessLock.Wait();
+            }
+            finally
+            {
+                if (_fileAccessLock.CurrentCount == 0)
+                {
+                    _fileAccessLock.Dispose();
+                }
+            }
         }
 
         public List<ProfileVariablesSet> ReadProfiles()
