@@ -211,15 +211,21 @@ namespace EnvironmentVariablesUILib.Helpers
             try
             {
                 var baseFileName = Path.GetFileName(ProfilesJsonFilePath);
+                var expectedPrefix = baseFileName + ".";
                 var wildcardPattern = $"{baseFileName}.*";
 
                 foreach (var filePath in _fileSystem.Directory.EnumerateFiles(directoryPath, wildcardPattern))
                 {
+                    var fileName = Path.GetFileName(filePath);
                     var extension = Path.GetExtension(filePath);
                     if (extension.Equals(".tmp", StringComparison.OrdinalIgnoreCase)
                         || extension.Equals(".bak", StringComparison.OrdinalIgnoreCase))
                     {
-                        DeleteIfExists(filePath);
+                        var artifactId = fileName.Substring(expectedPrefix.Length, fileName.Length - expectedPrefix.Length - extension.Length);
+                        if (artifactId.Length == 32 && Guid.TryParseExact(artifactId, "N", out _))
+                        {
+                            DeleteIfExists(filePath);
+                        }
                     }
                 }
             }
