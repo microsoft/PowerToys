@@ -863,7 +863,7 @@ namespace EnvironmentVariablesUILib
                     }
 
                     return string.Equals((candidate.Name ?? string.Empty).Trim(), (reference.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase)
-                        && string.Equals(candidate.Values, reference.Values, StringComparison.Ordinal)
+                        && EnvironmentVariablesHelper.IsEquivalentVariableValue(candidate.Values, reference.Values)
                         && candidate.ParentType == reference.ParentType;
                 }
 
