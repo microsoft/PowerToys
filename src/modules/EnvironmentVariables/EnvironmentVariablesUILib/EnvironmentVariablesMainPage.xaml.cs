@@ -802,8 +802,25 @@ namespace EnvironmentVariablesUILib
             if (variableSet != null)
             {
                 var normalizedName = EditVariableDialogNameTxtBox.Text?.Trim();
+                static bool IsCurrentVariable(Variable candidate, Variable reference)
+                {
+                    if (candidate == null || reference == null)
+                    {
+                        return false;
+                    }
+
+                    if (ReferenceEquals(candidate, reference))
+                    {
+                        return true;
+                    }
+
+                    return string.Equals((candidate.Name ?? string.Empty).Trim(), (reference.Name ?? string.Empty).Trim(), StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(candidate.Values, reference.Values, StringComparison.Ordinal)
+                        && candidate.ParentType == reference.ParentType;
+                }
+
                 bool hasDuplicateName = variableSet.Variables != null &&
-                    variableSet.Variables.Any(x => !ReferenceEquals(x, originalVariable)
+                    variableSet.Variables.Any(x => !IsCurrentVariable(x, originalVariable)
                         && string.Equals((x?.Name ?? string.Empty).Trim(), normalizedName, StringComparison.OrdinalIgnoreCase));
 
                 if (string.IsNullOrWhiteSpace(normalizedName) || variableSet.Variables == null || hasDuplicateName || !variable.Valid)
