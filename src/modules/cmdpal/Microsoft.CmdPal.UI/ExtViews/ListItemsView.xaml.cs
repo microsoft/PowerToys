@@ -64,6 +64,8 @@ public sealed partial class ListItemsView : UserControl,
 
     private bool _hoverActionClickInProgress;
 
+    private (string RowCommandId, int Index, string Title) _lastAnnouncedHoverActionKey = (string.Empty, -1, string.Empty);
+
     private bool _isLoaded;
     private bool _isMessengerRegistered;
 
@@ -266,6 +268,7 @@ public sealed partial class ListItemsView : UserControl,
 
         li.SetListSelected(true);
         _stickySelectedItem = li;
+        ResetHoverActionAnnouncement();
         li.ClearHoverActionSelection();
 
         // Hover actions for the selected row: SetSelectedItem slow-init + PropertyChanged
@@ -861,6 +864,63 @@ public sealed partial class ListItemsView : UserControl,
         {
             message.Handled = item.SelectPrevHoverAction();
         }
+
+        if (message.Handled)
+        {
+            if (item.HasSelectedHoverAction)
+            {
+                AnnounceSelectedHoverAction(item);
+            }
+            else
+            {
+                ResetHoverActionAnnouncement();
+            }
+        }
+    }
+
+    private void ResetHoverActionAnnouncement() =>
+        _lastAnnouncedHoverActionKey = (string.Empty, -1, string.Empty);
+
+    /// <summary>
+    /// Tab-driven hover icon selection is visual-only (focus stays in the search box),
+    /// so announce the highlighted action explicitly. The strip is hidden from UIA to
+    /// avoid competing with this single notification.
+    /// </summary>
+    private void AnnounceSelectedHoverAction(ListItemViewModel row)
+    {
+        if (!row.TryGetSelectedHoverAction(out var action) || action is null)
+        {
+            return;
+        }
+
+        if (FrameworkElementAutomationPeer.FromElement(ItemsList) is null)
+        {
+            return;
+        }
+
+        var rowId = row.Command.Id ?? string.Empty;
+        var index = row.HoverActionSelectedIndex;
+        var title = action.Title ?? string.Empty;
+        if (string.IsNullOrEmpty(title))
+        {
+            return;
+        }
+
+        var selectionKey = (rowId, index, title);
+        if (selectionKey == _lastAnnouncedHoverActionKey)
+        {
+            return;
+        }
+
+        _lastAnnouncedHoverActionKey = selectionKey;
+
+        var count = row.HoverActions.Count;
+        var announcement = count > 1 ? $"{title}, {index + 1} of {count}" : title;
+
+        UIHelper.AnnounceActionForAccessibility(
+            ItemsList,
+            announcement,
+            "CommandPaletteHoverActionSelectionChanged");
     }
 
     public void Receive(ActivateSecondaryCommandMessage message)

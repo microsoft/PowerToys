@@ -353,7 +353,7 @@
             <Grid
                 Width="28"
                 Height="28"
-                AutomationProperties.Name="{x:Bind Title, Mode=OneWay}"
+                AutomationProperties.AccessibilityView="Raw"
                 ToolTipService.ToolTip="{x:Bind Title, Mode=OneWay}">
                 <cpcontrols:IconBox
                     Width="16"
@@ -447,7 +447,9 @@
                         x:Name="HoverActionsList"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
-                        AutomationProperties.Name="Row actions"
+                        AllowFocusOnInteraction="False"
+                        AutomationProperties.AccessibilityView="Raw"
+                        AutomationProperties.LiveSetting="Off"
                         Background="Transparent"
                         BorderThickness="0"
                         IsHitTestVisible="True"
