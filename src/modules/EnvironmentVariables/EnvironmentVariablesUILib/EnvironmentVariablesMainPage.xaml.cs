@@ -283,9 +283,13 @@ namespace EnvironmentVariablesUILib
             {
                 foreach (Variable variable in ExistingVariablesListView.SelectedItems)
                 {
-                    if (variable != null && !profile.Variables
-                        .Where(x => AreEquivalentVariables(x, variable))
-                        .Any())
+                    if (variable == null || string.IsNullOrWhiteSpace(variable.Name))
+                    {
+                        continue;
+                    }
+
+                    var candidateName = (variable.Name ?? string.Empty).Trim();
+                    if (!profile.Variables.Any(x => string.Equals((x?.Name ?? string.Empty).Trim(), candidateName, StringComparison.OrdinalIgnoreCase)))
                     {
                         var clone = variable.Clone(true);
                         profile.Variables.Add(clone);
