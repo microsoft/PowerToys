@@ -1149,6 +1149,12 @@ opera.exe</value>
   <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Description" xml:space="preserve">
+    <value>Choose the highlight style and customize its appearance</value>
+  </data>
   <data name="StartupAndPermissions.Header" xml:space="preserve">
     <value>Startup &amp; permissions</value>
   </data>
@@ -2811,17 +2817,29 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Fade delay (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>Time before the highlight begins to fade (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
     <value>Fade duration (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>Duration of the disappear animation (ms)</value>
-    <comment>ms = milliseconds</comment>
+  <data name="MouseUtils_MouseHighlighter_RippleSize.Header" xml:space="preserve">
+    <value>Size (px)</value>
+    <comment>Ripple mode only. px = pixels. Base radius of the click pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleIntensity.Header" xml:space="preserve">
+    <value>Intensity</value>
+    <comment>Ripple mode only. Brightness/punch of the pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleDurationMs.Header" xml:space="preserve">
+    <value>Duration (ms)</value>
+    <comment>Ripple mode only. ms = milliseconds.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Header" xml:space="preserve">
+    <value>Follow cursor while held</value>
+    <comment>Ripple mode only. Toggle for whether the held ring tracks the cursor when dragged.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Header" xml:space="preserve">
+    <value>Show crosshairs on right-click release</value>
+    <comment>Ripple mode only. Toggle for the expanding crosshair lines drawn when a right-click is released.</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
@@ -3643,6 +3661,9 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="QuickAccent_SelectedLanguage_Portuguese" xml:space="preserve">
     <value>Portuguese</value>
   </data>
+  <data name="QuickAccent_SelectedLanguage_Pitjantjatjara" xml:space="preserve">
+    <value>Pitjantjatjara/Yankunytjatjara</value>
+  </data>
   <data name="QuickAccent_SelectedLanguage_Slovak" xml:space="preserve">
     <value>Slovak</value>
   </data>
@@ -3888,6 +3909,9 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_ShowCustomPreviewSettingsCard.Description" xml:space="preserve">
     <value>Preview the output of AI formats and Image to text before pasting</value>
+  </data>
+  <data name="AdvancedPaste_ShowAIPasteSettingsCard.Content" xml:space="preserve">
+    <value>Show the AI paste input box</value>
   </data>
   <data name="AdvancedPaste_EnableAdvancedAI.Text" xml:space="preserve">
     <value>Advanced AI</value>
@@ -4386,8 +4410,8 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Automatically close the window after it loses focus</value>
     <comment>Advanced Paste is a product name, do not loc</comment>
   </data>
-  <data name="AdvancedPaste_EnableClipboardPreview.Header" xml:space="preserve">
-    <value>Show clipboard preview</value>
+  <data name="AdvancedPaste_EnableClipboardPreview.Content" xml:space="preserve">
+    <value>Show a preview of the current clipboard content</value>
     <comment>Enables display of clipboard contents preview in the Advanced Paste window</comment>
   </data>
   <data name="AdvancedPaste_AutoCopySelectionForCustomActionHotkey.Header" xml:space="preserve">
@@ -4539,7 +4563,7 @@ Activate by holding the key for the character you want to add an accent to, then
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt.ModuleDescription" xml:space="preserve">
-    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to copy screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="ZoomIt.ModuleTitle" xml:space="preserve">
@@ -4940,7 +4964,7 @@ The break timer font matches the text font.</value>
     <value>Select an area, then slowly scroll through the content without rewinding, and press the hotkey again to copy the screenshot to your clipboard</value>
   </data>
   <data name="Oobe_ZoomIt.Description" xml:space="preserve">
-    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to snip screenshots to the clipboard or to a file.</value>
+    <value>ZoomIt is a screen zoom, annotation, and recording tool for technical presentations and demos. You can also use ZoomIt to copy screenshots to the clipboard or to a file.</value>
     <comment>{Locked="ZoomIt"}</comment>
   </data>
   <data name="Oobe_ZoomIt.Title" xml:space="preserve">
@@ -5182,7 +5206,7 @@ The break timer font matches the text font.</value>
     <value>No shortcuts to show.</value>
   </data>
   <data name="HighlightMode.Description" xml:space="preserve">
-    <value>Highlight the cursor or dim the screen to spotlight it</value>
+    <value>Highlight the cursor, dim the screen to spotlight it, or pulse a ripple on each click</value>
   </data>
   <data name="HighlightMode.Header" xml:space="preserve">
     <value>Highlight mode</value>
@@ -5192,6 +5216,10 @@ The break timer font matches the text font.</value>
   </data>
   <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
     <value>Spotlight</value>
+  </data>
+  <data name="HighlightMode_Ripple_Mode.Content" xml:space="preserve">
+    <value>Ripple</value>
+    <comment>Name of the highlight mode that draws an expanding ring pulse on each click.</comment>
   </data>
   <data name="GeneralPage_EnableDataDiagnosticsText.Text" xml:space="preserve">
     <value>Helps us make PowerToys faster, more stable, and better over time</value>
@@ -5992,9 +6020,6 @@ The break timer font matches the text font.</value>
   </data>
   <data name="AdvancedPaste_EndpointDialog.SecondaryButtonText" xml:space="preserve">
     <value>Cancel</value>
-  </data>
-  <data name="AdvancedPaste_EnableClipboardPreview.Description" xml:space="preserve">
-    <value>Display a preview of the current clipboard content</value>
   </data>
   <data name="AdvancedPaste_FL_LearnMoreFoundryLocal.Content" xml:space="preserve">
     <value>Learn more</value>

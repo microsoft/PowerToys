@@ -221,7 +221,9 @@ public class Win32Program : IProgram
             RequestedShortcut = KeyChords.OpenInConsole,
         });
 
-        if (AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+        if ((AppType == ApplicationType.ShortcutApplication || AppType == ApplicationType.ApprefApplication || AppType == ApplicationType.Win32Application)
+            && !IsProtectedSystemApp(this)
+            && !IsShortcutTarget(this))
         {
             commands.Add(new CommandContextItem(
                 new UninstallApplicationConfirmation(this))
@@ -1092,5 +1094,31 @@ public class Win32Program : IProgram
             AppIdentifier = app.GetAppIdentifier(),
             FullExecutablePath = app.FullPath,
         };
+    }
+
+    /// <summary>
+    /// Determines whether a Win32 program is a protected system app whose
+    /// executable lives inside %SystemRoot% (e.g. regedit.exe, taskmgr.exe).
+    /// </summary>
+    private static bool IsProtectedSystemApp(Win32Program program)
+    {
+        return PathHelpers.IsSystemRootPath(program.FullPath);
+    }
+
+    /// <summary>
+    /// Determines whether the program's resolved path is itself a shortcut (.lnk).
+    /// This occurs when a shortcut targets another shortcut (an unresolved chain).
+    /// In this case, there is no real executable to uninstall, so the uninstall
+    /// option should be hidden.
+    /// </summary>
+    private static bool IsShortcutTarget(Win32Program program)
+    {
+        if (!PathHelpers.IsShortcutFile(program.FullPath))
+        {
+            return false;
+        }
+
+        var identifier = program.GetAppIdentifier();
+        return PathHelpers.IsShortcutFile(identifier);
     }
 }
