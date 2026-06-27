@@ -652,7 +652,7 @@ namespace EnvironmentVariablesUILib
 
         private async void AddVariableBtn_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (AddVariableDialog == null || SwitchViewsSegmentedView == null || AddProfileDialog == null)
+            if (AddVariableDialog == null || SwitchViewsSegmentedView == null || AddProfileDialog == null || RootPage == null)
             {
                 return;
             }
@@ -666,6 +666,7 @@ namespace EnvironmentVariablesUILib
             ResetAddVariableInputs();
             SwitchViewsSegmentedView.SelectedIndex = 0;
             AddVariableDialog.DataContext = AddProfileDialog.DataContext;
+            AddVariableDialog.XamlRoot = RootPage.XamlRoot;
             await AddVariableDialog.ShowAsync();
         }
 
