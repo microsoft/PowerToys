@@ -420,6 +420,16 @@ internal abstract partial class WidgetPage : OnLoadContentPage
 
     private readonly FormContent _formContent = new();
 
+    // The live graph icon is rebuilt on every metric refresh tick. Each
+    // IconInfo.FromStream(...) produces a distinct stream, and the host's
+    // CachedIconSourceProvider keys its cache on the stream's reference identity,
+    // so a fresh icon every tick adds a fresh cache entry every tick. Reuse the
+    // last IconInfo when the chart values have not changed since the last render:
+    // the same reference yields a cache hit instead of a new entry, which keeps
+    // idle and unchanged metrics from accumulating cache entries.
+    private IconInfo? _lastGraphIcon;
+    private string? _lastGraphIconSignature;
+
     public void UpdateWidget()
     {
         lock (ContentData)
@@ -440,12 +450,40 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     {
         try
         {
-            return IconInfo.FromStream(ChartHelper.CreateIconStream(GraphIconValues, chartType));
+            string signature;
+            lock (GraphIconValues)
+            {
+                signature = BuildGraphIconSignature(chartType, GraphIconValues);
+
+                // Nothing visible changed since the last render: hand back the same
+                // IconInfo so the host icon cache sees a hit, not a new entry.
+                if (_lastGraphIcon is not null && signature == _lastGraphIconSignature)
+                {
+                    return _lastGraphIcon;
+                }
+
+                var icon = IconInfo.FromStream(ChartHelper.CreateIconStream(GraphIconValues, chartType));
+                _lastGraphIcon = icon;
+                _lastGraphIconSignature = signature;
+                return icon;
+            }
         }
         catch (Exception)
         {
             return null;
         }
+    }
+
+    private static string BuildGraphIconSignature(ChartHelper.ChartType chartType, List<float> values)
+    {
+        var builder = new StringBuilder();
+        builder.Append((int)chartType).Append(':');
+        foreach (var value in values)
+        {
+            builder.Append(value.ToString("R", CultureInfo.InvariantCulture)).Append(',');
+        }
+
+        return builder.ToString();
     }
 
     protected void AddGraphIconValue(float value)
