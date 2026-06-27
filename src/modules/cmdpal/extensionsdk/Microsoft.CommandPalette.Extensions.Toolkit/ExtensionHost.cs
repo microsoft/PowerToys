@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ExtensionHost
@@ -17,6 +19,11 @@ public partial class ExtensionHost
     /// the host app is gone.
     /// </summary>
     /// <param name="message">The log message to send</param>
+    private static void LogHostForwardingFailure(string message, Exception ex)
+    {
+        Trace.WriteLine($"CmdPal extension host forwarding failed: {message}\n{ex}");
+    }
+
     public static void LogMessage(ILogMessage message)
     {
         if (Host is not null)
@@ -27,8 +34,9 @@ public partial class ExtensionHost
                 {
                     await Host.LogMessage(message);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    LogHostForwardingFailure("LogMessage", ex);
                 }
             });
         }
@@ -50,8 +58,9 @@ public partial class ExtensionHost
                 {
                     await Host.ShowStatus(message, context);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    LogHostForwardingFailure("ShowStatus", ex);
                 }
             });
         }
@@ -67,8 +76,9 @@ public partial class ExtensionHost
                 {
                     await Host.HideStatus(message);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    LogHostForwardingFailure("HideStatus", ex);
                 }
             });
         }
