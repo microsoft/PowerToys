@@ -460,7 +460,7 @@ internal abstract partial class WidgetPage : OnLoadContentPage
             string signature;
             lock (GraphIconValues)
             {
-                signature = BuildGraphIconSignature(chartType, GraphIconValues);
+                signature = ChartHelper.CreateIconSignature(GraphIconValues, chartType);
 
                 // Nothing visible changed since the last render: hand back the same
                 // IconInfo so the host icon cache sees a hit, not a new entry.
@@ -479,18 +479,6 @@ internal abstract partial class WidgetPage : OnLoadContentPage
         {
             return null;
         }
-    }
-
-    private static string BuildGraphIconSignature(ChartHelper.ChartType chartType, List<float> values)
-    {
-        var builder = new StringBuilder();
-        builder.Append((int)chartType).Append(':');
-        foreach (var value in values)
-        {
-            builder.Append(value.ToString("R", CultureInfo.InvariantCulture)).Append(',');
-        }
-
-        return builder.ToString();
     }
 
     protected void AddGraphIconValue(float value)

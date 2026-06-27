@@ -113,6 +113,36 @@ internal sealed class ChartHelper
     }
 
     /// <summary>
+    /// Builds a cache key that changes only when the rendered icon would change.
+    /// </summary>
+    /// <remarks>
+    /// The icon bitmap is fully determined by the chart type and the integer
+    /// (x, y) points produced by <see cref="CreateIconPoints"/>; everything
+    /// downstream (<see cref="FillIconArea"/>, <see cref="DrawIconLine"/>) is a
+    /// pure function of those points and the type's color. Because each pixel
+    /// row spans several percent of the value range, small idle fluctuations map
+    /// to the same points and therefore the same bitmap. Callers compare this
+    /// signature to skip regenerating an identical icon, which keeps a live but
+    /// near-flat metric from allocating a fresh icon on every refresh tick.
+    /// This reuses the same snapshot and point math as <see cref="CreateIconStream"/>
+    /// so the key can never disagree with the bitmap it represents.
+    /// </remarks>
+    public static string CreateIconSignature(List<float> chartValues, ChartType type)
+    {
+        var values = SnapshotIconValues(chartValues);
+        CreateIconPoints(values, out var xPoints, out var yPoints);
+
+        var builder = new StringBuilder();
+        builder.Append((int)type).Append(':');
+        for (var index = 0; index < yPoints.Length; index++)
+        {
+            builder.Append(xPoints[index]).Append(',').Append(yPoints[index]).Append(';');
+        }
+
+        return builder.ToString();
+    }
+
+    /// <summary>
     /// Creates an SVG image for the chart.
     /// </summary>
     /// <param name="chartValues">The values to plot on the chart</param>
