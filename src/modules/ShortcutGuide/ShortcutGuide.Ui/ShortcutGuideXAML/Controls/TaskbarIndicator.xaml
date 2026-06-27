@@ -19,7 +19,7 @@
         HorizontalAlignment="Center"
         VerticalAlignment="Center">
 
-        <!-- Body -->
+        <!--  Body  -->
         <Border
             x:Name="IndicatorRectangle"
             MinWidth="40"
@@ -43,10 +43,12 @@
                 TextAlignment="Center" />
         </Border>
 
-        <!-- Triangle tail — only the two diagonal edges are stroked (no base
-             line) so it seamlessly blends with the body border. A 1px negative
-             margin overlaps the body's border to hide the seam. Its geometry,
-             placement and margin are set in code-behind per TailDirection. -->
+        <!--
+            Triangle tail — only the two diagonal edges are stroked (no base
+            line) so it seamlessly blends with the body border. A 1px negative
+            margin overlaps the body's border to hide the seam. Its geometry,
+            placement and margin are set in code-behind per TailDirection.
+        -->
         <Path
             x:Name="Tail"
             Fill="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}"

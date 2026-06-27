@@ -47,6 +47,12 @@ namespace ShortcutGuide
         // cross-monitor moves between mixed-DPI displays.
         private bool _suppressDpiChange;
 
+        // Kept alive for the lifetime of the window: WindowMessageMonitor only
+        // holds the hook while it is reachable, so storing it as a field is
+        // required or a GC could silently break WM_DPICHANGED suppression and
+        // WM_NCLBUTTONDBLCLK handling.
+        private WindowMessageMonitor? _windowMessageMonitor;
+
         // Screen edge the taskbar is docked to (global Windows setting). Drives
         // the taskbar-indicator layout and the main pane's inset so the order
         // from a left/right taskbar reads taskbar | indicators | pane.
@@ -79,6 +85,7 @@ namespace ShortcutGuide
             // the user double-clicks anywhere in the (collapsed) caption
             // area. Matches the original MainWindow behavior.
             WindowMessageMonitor msgMonitor = new(this);
+            _windowMessageMonitor = msgMonitor;
             msgMonitor.WindowMessageReceived += (_, e) =>
             {
                 const int WM_NCLBUTTONDBLCLK = 0x00A3;

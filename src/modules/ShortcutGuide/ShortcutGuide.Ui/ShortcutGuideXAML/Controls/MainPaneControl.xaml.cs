@@ -66,7 +66,6 @@ namespace ShortcutGuide.Controls
             this.TitleTextBlock.Text = ResourceLoaderInstance.ResourceLoader.GetString("Title");
 
             this.Loaded += OnLoaded;
-            this.Unloaded += OnUnloaded;
         }
 
         internal string SelectedAppName => _selectedAppName;
@@ -74,11 +73,6 @@ namespace ShortcutGuide.Controls
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             _ = InitializeNavItemsAsync();
-        }
-
-        private void OnUnloaded(object sender, RoutedEventArgs e)
-        {
-            _getAppIdsTask.Dispose();
         }
 
         /// <summary>

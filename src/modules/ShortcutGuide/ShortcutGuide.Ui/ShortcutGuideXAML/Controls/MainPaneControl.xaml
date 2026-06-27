@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
     x:Class="ShortcutGuide.Controls.MainPaneControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -24,9 +24,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid
-                Padding="16,0"
-                ColumnSpacing="12">
+            <Grid Padding="16,0" ColumnSpacing="12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
@@ -48,10 +46,10 @@
                     Grid.Column="2"
                     Width="32"
                     Height="32"
-                    Padding="0" 
+                    Padding="0"
                     VerticalAlignment="Center"
-                    Style="{StaticResource SubtleButtonStyle}"
-                    Click="CloseButton_Click">
+                    Click="CloseButton_Click"
+                    Style="{StaticResource SubtleButtonStyle}">
                     <FontIcon FontSize="12" Glyph="&#xE711;" />
                 </Button>
             </Grid>
