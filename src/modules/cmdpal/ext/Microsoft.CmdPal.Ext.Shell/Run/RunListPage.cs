@@ -2,10 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Shell;
+using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation.Collections;
@@ -57,11 +59,14 @@ public sealed partial class RunListPage : AsyncDynamicListPage
 
     private readonly Dictionary<string, RunExeItem> _currentPathItems = new();
     private readonly List<ListItem> _pathItems = [];
+    private readonly List<ListItem> _environmentVariableItems = [];
     private ListItem? _exeItem;
 
     private bool _loadedInitialHistory;
 
     private string _currentSubdir = string.Empty;
+    private string _currentTextToSuggestDirectory = string.Empty;
+    private bool _currentWithLeadingTilde;
 
     public RunListPage(
         IRunHistoryService runHistoryService,
@@ -104,10 +109,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             correctedSearchText = string.Concat(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), searchText.AsSpan(1));
         }
 
-        // Previously, we were expanding environment variables before searching
-        // the filesystem. Now that we're using the IACListISF, we don't need to
-        // do that ourselves - it will handle it for us.
-        var expanded = correctedSearchText;
+        var expanded = ShellListPageHelpers.ExpandEnvironmentVariablesForPath(correctedSearchText);
 
         // Check for cancellation after environment expansion
         if (cancellationToken.IsCancellationRequested)
@@ -120,10 +122,15 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
             _pathItems.Clear();
+            _environmentVariableItems.Clear();
             _currentHistoryItems.Clear();
             _currentHistoryItems.AddRange(_historyItems.Values);
             return;
         }
+
+        ListHelpers.InPlaceUpdateList(
+            _environmentVariableItems,
+            BuildEnvironmentVariableItems(searchText));
 
         var couldResolvePath = false;
         var isFile = false;
@@ -293,11 +300,13 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         bool withLeadingTilde,
         CancellationToken cancellationToken)
     {
+        var browsingSearchText = ShellListPageHelpers.ExpandEnvironmentVariablesForPath(searchText);
+
         // The way AutoComplete handles "expanding" paths means passing the
         // entire string up to the last slash as the query to autocomplete on.
         //
         // we'll replicate that here
-        var lastSlash = searchText.LastIndexOfAny(['\\', '/']);
+        var lastSlash = browsingSearchText.LastIndexOfAny(['\\', '/']);
 
         // If the search text has no path separator (e.g. bare "c:"), there's
         // nothing to browse — RunDlg only enumerates directory contents when
@@ -308,7 +317,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             return;
         }
 
-        var directoryPath = searchText.Substring(0, lastSlash);
+        var directoryPath = browsingSearchText.Substring(0, lastSlash);
 
         // AutoComplete is crazy, and will just append the child items to a full
         // path, without inserting a \. So you'll get things like
@@ -320,6 +329,8 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             directoryPath += Path.DirectorySeparatorChar;
         }
 
+        var textToSuggestDirectoryPath = GetTextToSuggestDirectoryPath(searchText, browsingSearchText);
+
         // Check for cancellation before directory operations
         if (cancellationToken.IsCancellationRequested)
         {
@@ -330,7 +341,9 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         {
             { "fullFilePath", fullFilePath },
             { "searchText", searchText },
+            { "browsingSearchText", browsingSearchText },
             { "directoryPath", directoryPath },
+            { "textToSuggestDirectoryPath", textToSuggestDirectoryPath ?? string.Empty },
         });
 
         // Check for cancellation before file system enumeration
@@ -341,9 +354,11 @@ public sealed partial class RunListPage : AsyncDynamicListPage
 
         // If the directory we're in changed, then first rebuild the cache
         // of all the items in the directory, _then_ filter them below.
-        if (!_currentSubdir.Equals(directoryPath, StringComparison.OrdinalIgnoreCase))
+        if (!_currentSubdir.Equals(directoryPath, StringComparison.OrdinalIgnoreCase) ||
+            _currentWithLeadingTilde != withLeadingTilde ||
+            !_currentTextToSuggestDirectory.Equals(textToSuggestDirectoryPath ?? string.Empty, StringComparison.Ordinal))
         {
-            var succeededWithoutBeingCancelled = await ChangeDirectory(directoryPath, withLeadingTilde, cancellationToken);
+            var succeededWithoutBeingCancelled = await ChangeDirectory(directoryPath, withLeadingTilde, textToSuggestDirectoryPath, cancellationToken);
             if (!succeededWithoutBeingCancelled)
             {
                 return;
@@ -356,7 +371,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         // would lose the user's filter text — e.g. "c:\Windows\." resolves
         // to "c:\Windows", losing the "." prefix filter.
         var newMatchedPathItems = FilterCurrentDirectoryFiles(
-            searchText,
+            browsingSearchText,
             directoryPath,
             _currentSubdir,
             _currentPathItems.AsReadOnly(),
@@ -437,6 +452,28 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         return haystack.StartsWith(needle, StringComparison.InvariantCultureIgnoreCase);
     }
 
+    private static string? GetTextToSuggestDirectoryPath(string searchText, string browsingSearchText)
+    {
+        if (searchText.Equals(browsingSearchText, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var lastSlash = searchText.LastIndexOfAny(['\\', '/']);
+        if (lastSlash < 0)
+        {
+            return null;
+        }
+
+        var directoryPath = searchText.Substring(0, lastSlash);
+        if (!directoryPath.EndsWith(Path.DirectorySeparatorChar))
+        {
+            directoryPath += Path.DirectorySeparatorChar;
+        }
+
+        return directoryPath;
+    }
+
     /// <summary>
     /// Change the current directory that we are browsing to the specified
     /// directory. This will rebuild the cache of items in _currentPathItems,
@@ -444,10 +481,12 @@ public sealed partial class RunListPage : AsyncDynamicListPage
     /// It will also update _currentSubdir to the new path.
     ///
     /// Returns true if the directory change was successful, false if it was cancelled.
-    /// <param name="directoryPath">The path of the directory to change to.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// </summary>
-    private async Task<bool> ChangeDirectory(string directoryPath, bool withLeadingTilde, CancellationToken cancellationToken)
+    /// <param name="directoryPath">The path of the directory to change to.</param>
+    /// <param name="withLeadingTilde">Whether the user's input started with a tilde.</param>
+    /// <param name="textToSuggestDirectoryPath">The original directory prefix to use for suggestions.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    private async Task<bool> ChangeDirectory(string directoryPath, bool withLeadingTilde, string? textToSuggestDirectoryPath, CancellationToken cancellationToken)
     {
         _telemetryService?.LogEvent("CreatePathItems_ChangedDirectory", new PropertySet()
         {
@@ -460,7 +499,8 @@ public sealed partial class RunListPage : AsyncDynamicListPage
             withLeadingTilde,
             _historyService,
             _telemetryService,
-            cancellationToken);
+            cancellationToken,
+            textToSuggestDirectoryPath);
 
         if (newPathItems is null)
         {
@@ -476,6 +516,8 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         // Add the commands to the list
         _pathItems.Clear();
         _currentSubdir = directoryPath;
+        _currentTextToSuggestDirectory = textToSuggestDirectoryPath ?? string.Empty;
+        _currentWithLeadingTilde = withLeadingTilde;
         _currentPathItems.Clear();
         foreach ((var k, var v) in newPathItems)
         {
@@ -493,15 +535,19 @@ public sealed partial class RunListPage : AsyncDynamicListPage
     /// ACListISF API, which is what powers the AutoComplete in RunDlg.
     /// </summary>
     /// <param name="directoryPath">The path of the directory to build items for.</param>
+    /// <param name="withLeadingTilde">Whether the user's input started with a tilde.</param>
+    /// <param name="historyService">The run history service.</param>
     /// <param name="telemetryService">An optional telemetry service for logging events.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <param name="textToSuggestDirectoryPath">The original directory prefix to use for suggestions.</param>
     /// <returns>A dictionary mapping file names to ListItems, or null if cancelled.</returns>
     internal static async Task<Dictionary<string, RunExeItem>?> BuildItemsForDirectory(
         string directoryPath,
         bool withLeadingTilde,
         IRunHistoryService historyService,
         ITelemetryService? telemetryService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? textToSuggestDirectoryPath = null)
     {
         // Get all the files in the directory.
         // Run this on the OLE STA thread, because GetSuggestions needs OLE to work.
@@ -524,7 +570,12 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         foreach (var f in files)
         {
             var textToSuggest = f;
-            if (withLeadingTilde)
+            if (!string.IsNullOrEmpty(textToSuggestDirectoryPath) &&
+                f.StartsWith(directoryPath, StringComparison.OrdinalIgnoreCase))
+            {
+                textToSuggest = string.Concat(textToSuggestDirectoryPath, f.AsSpan(directoryPath.Length));
+            }
+            else if (withLeadingTilde)
             {
                 var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                 if (textToSuggest.StartsWith(userProfile, StringComparison.OrdinalIgnoreCase))
@@ -543,6 +594,44 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         }
 
         return newPathItems;
+    }
+
+    private static List<ListItem> BuildEnvironmentVariableItems(string searchText)
+    {
+        if (!ShellListPageHelpers.TryGetEnvironmentVariableCompletionPrefix(searchText, out var _, out var prefix))
+        {
+            return [];
+        }
+
+        var variableNames = new List<string>();
+        var seenVariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (DictionaryEntry variable in Environment.GetEnvironmentVariables())
+        {
+            if (variable.Key is not string variableName ||
+                !variableName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
+                !seenVariables.Add(variableName))
+            {
+                continue;
+            }
+
+            variableNames.Add(variableName);
+        }
+
+        variableNames.Sort(StringComparer.OrdinalIgnoreCase);
+
+        var items = new List<ListItem>(variableNames.Count);
+        foreach (var variableName in variableNames)
+        {
+            var variableToken = $"%{variableName}%";
+            items.Add(new ListItem()
+            {
+                Title = variableToken,
+                Subtitle = Environment.GetEnvironmentVariable(variableName) ?? string.Empty,
+                TextToSuggest = ShellListPageHelpers.CompleteEnvironmentVariableToken(searchText, variableName),
+            });
+        }
+
+        return items;
     }
 
     private void FilterHistoryItems(string newSearch, string searchText)
@@ -611,6 +700,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
 
         var totalCount =
             (_exeItem is not null ? 1 : 0) +
+            _environmentVariableItems.Count +
             _currentHistoryItems.Count +
             _pathItems.Count
             ;
@@ -621,6 +711,11 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         if (_exeItem is not null)
         {
             combined[index++] = _exeItem;
+        }
+
+        for (var i = 0; i < _environmentVariableItems.Count; i++)
+        {
+            combined[index++] = _environmentVariableItems[i];
         }
 
         for (var i = 0; i < _currentHistoryItems.Count; i++)
