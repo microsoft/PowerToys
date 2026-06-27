@@ -85,21 +85,15 @@ namespace EnvironmentVariablesUILib.Helpers
             _fileAccessLock.Wait();
             try
             {
-                List<ProfileVariablesSet> profiles;
                 try
                 {
-                    profiles = ReadProfilesFromPath(ProfilesJsonFilePath);
+                    var profiles = ReadProfilesFromPath(ProfilesJsonFilePath);
                     if (profiles != null)
                     {
                         return profiles;
                     }
 
-                    var backupProfiles = ReadProfilesFromLatestBackup(out var backupPath);
-                    if (backupProfiles != null && !string.IsNullOrWhiteSpace(backupPath))
-                    {
-                        RestoreProfilesJsonFromBackup(backupPath);
-                    }
-
+                    var backupProfiles = TryRestoreProfilesFromLatestBackup();
                     if (backupProfiles != null)
                     {
                         return backupProfiles;
@@ -107,12 +101,7 @@ namespace EnvironmentVariablesUILib.Helpers
                 }
                 catch (JsonException)
                 {
-                    var backupProfiles = ReadProfilesFromLatestBackup(out var backupPath);
-                    if (backupProfiles != null && !string.IsNullOrWhiteSpace(backupPath))
-                    {
-                        RestoreProfilesJsonFromBackup(backupPath);
-                    }
-
+                    var backupProfiles = TryRestoreProfilesFromLatestBackup();
                     if (backupProfiles != null)
                     {
                         return backupProfiles;
@@ -122,7 +111,7 @@ namespace EnvironmentVariablesUILib.Helpers
                 }
                 catch (Exception)
                 {
-                    var backupProfiles = ReadProfilesFromLatestBackup(out _);
+                    var backupProfiles = TryRestoreProfilesFromLatestBackup();
                     if (backupProfiles != null)
                     {
                         return backupProfiles;
@@ -286,6 +275,17 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             return null;
+        }
+
+        private List<ProfileVariablesSet> TryRestoreProfilesFromLatestBackup()
+        {
+            var backupProfiles = ReadProfilesFromLatestBackup(out var backupPath);
+            if (backupProfiles != null && !string.IsNullOrWhiteSpace(backupPath))
+            {
+                RestoreProfilesJsonFromBackup(backupPath);
+            }
+
+            return backupProfiles;
         }
 
         private void RestoreProfilesJsonFromBackup(string backupPath)
