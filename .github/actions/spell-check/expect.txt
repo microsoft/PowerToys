@@ -2178,6 +2178,7 @@ xclip
 xcopy
 xdf
 xfd
+xhair
 xmp
 Xoshiro
 xsi

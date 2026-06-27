@@ -1149,6 +1149,12 @@ opera.exe</value>
   <data name="Appearance_Behavior.Header" xml:space="preserve">
     <value>Appearance &amp; behavior</value>
   </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Header" xml:space="preserve">
+    <value>Highlight mode</value>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_Appearance.Description" xml:space="preserve">
+    <value>Choose the highlight style and customize its appearance</value>
+  </data>
   <data name="StartupAndPermissions.Header" xml:space="preserve">
     <value>Startup &amp; permissions</value>
   </data>
@@ -2811,17 +2817,29 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Fade delay (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDelayMs.Description" xml:space="preserve">
-    <value>Time before the highlight begins to fade (ms)</value>
-    <comment>ms = milliseconds</comment>
-  </data>
   <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Header" xml:space="preserve">
     <value>Fade duration (ms)</value>
     <comment>ms = milliseconds</comment>
   </data>
-  <data name="MouseUtils_MouseHighlighter_FadeDurationMs.Description" xml:space="preserve">
-    <value>Duration of the disappear animation (ms)</value>
-    <comment>ms = milliseconds</comment>
+  <data name="MouseUtils_MouseHighlighter_RippleSize.Header" xml:space="preserve">
+    <value>Size (px)</value>
+    <comment>Ripple mode only. px = pixels. Base radius of the click pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleIntensity.Header" xml:space="preserve">
+    <value>Intensity</value>
+    <comment>Ripple mode only. Brightness/punch of the pulse.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleDurationMs.Header" xml:space="preserve">
+    <value>Duration (ms)</value>
+    <comment>Ripple mode only. ms = milliseconds.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowDragTrail.Header" xml:space="preserve">
+    <value>Follow cursor while held</value>
+    <comment>Ripple mode only. Toggle for whether the held ring tracks the cursor when dragged.</comment>
+  </data>
+  <data name="MouseUtils_MouseHighlighter_RippleShowReleasePulse.Header" xml:space="preserve">
+    <value>Show crosshairs on right-click release</value>
+    <comment>Ripple mode only. Toggle for the expanding crosshair lines drawn when a right-click is released.</comment>
   </data>
   <data name="MouseUtils_MousePointerCrosshairs.Header" xml:space="preserve">
     <value>Mouse Pointer Crosshairs</value>
@@ -5188,7 +5206,7 @@ The break timer font matches the text font.</value>
     <value>No shortcuts to show.</value>
   </data>
   <data name="HighlightMode.Description" xml:space="preserve">
-    <value>Highlight the cursor or dim the screen to spotlight it</value>
+    <value>Highlight the cursor, dim the screen to spotlight it, or pulse a ripple on each click</value>
   </data>
   <data name="HighlightMode.Header" xml:space="preserve">
     <value>Highlight mode</value>
@@ -5198,6 +5216,10 @@ The break timer font matches the text font.</value>
   </data>
   <data name="HighlightMode_Spotlight_Mode.Content" xml:space="preserve">
     <value>Spotlight</value>
+  </data>
+  <data name="HighlightMode_Ripple_Mode.Content" xml:space="preserve">
+    <value>Ripple</value>
+    <comment>Name of the highlight mode that draws an expanding ring pulse on each click.</comment>
   </data>
   <data name="GeneralPage_EnableDataDiagnosticsText.Text" xml:space="preserve">
     <value>Helps us make PowerToys faster, more stable, and better over time</value>
