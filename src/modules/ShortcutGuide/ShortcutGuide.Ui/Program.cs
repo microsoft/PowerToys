@@ -38,6 +38,15 @@ namespace ShortcutGuide
                 return;
             }
 
+            if (args.Length >= 1 && int.TryParse(args[0], out int runnerPID))
+            {
+                RunnerHelper.WaitForPowerToysRunner(runnerPID, () =>
+                {
+                    Logger.LogInfo($"PowerToys runner process (PID={runnerPID}) exited. Exiting ShortcutGuide.");
+                    Environment.Exit(0);
+                });
+            }
+
             if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredShortcutGuideEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
             {
                 Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
