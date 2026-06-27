@@ -51,6 +51,10 @@ namespace ShortcutGuide
         private string _closeType = "Unknown";
         private bool _isClosing;
 
+        // Reused one-shot timer that defers Hide() until the close animation
+        // finishes, so CloseAnimated() doesn't allocate a timer + closure per call.
+        private Microsoft.UI.Dispatching.DispatcherQueueTimer? _closeTimer;
+
         // Set true around AppWindow.MoveAndResize() so the WndProc swallows
         // WM_DPICHANGED. Without this, WinUIEx re-scales the rect we just
         // wrote by (newDpi / oldDpi), producing a 1.5x/0.66x window on
@@ -351,19 +355,25 @@ namespace ShortcutGuide
             this.MainPane.Visibility = Visibility.Collapsed;
             this.TaskbarPane.Visibility = Visibility.Collapsed;
 
-            var timer = this.DispatcherQueue.CreateTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(217);
-            timer.IsRepeating = false;
-            timer.Tick += (_, _) =>
+            if (_closeTimer is null)
             {
-                timer.Stop();
-                _isClosing = false;
+                _closeTimer = this.DispatcherQueue.CreateTimer();
+                _closeTimer.Interval = TimeSpan.FromMilliseconds(217);
+                _closeTimer.IsRepeating = false;
+                _closeTimer.Tick += OnCloseTimerTick;
+            }
 
-                MainPane.Hide();
+            _closeTimer.Start();
+        }
 
-                this.AppWindow.Hide();
-            };
-            timer.Start();
+        private void OnCloseTimerTick(Microsoft.UI.Dispatching.DispatcherQueueTimer sender, object args)
+        {
+            sender.Stop();
+            _isClosing = false;
+
+            this.MainPane.Hide();
+
+            this.AppWindow.Hide();
         }
 
         /// <summary>
