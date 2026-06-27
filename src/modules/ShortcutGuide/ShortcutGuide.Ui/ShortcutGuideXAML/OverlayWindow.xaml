@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<winuiex:WindowEx
+<commonwin:TransparentWindow
     x:Class="ShortcutGuide.OverlayWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:commonwin="using:Microsoft.PowerToys.Common.UI.Controls.Window"
     xmlns:controls="using:ShortcutGuide.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:winuiex="using:WinUIEx"
     IsMaximizable="False"
     IsMinimizable="False"
     IsResizable="False"
@@ -18,7 +18,13 @@
         Full-monitor transparent host. The system backdrop is set in code-
         behind to TransparentTintBackdrop so the area outside the pseudo-
         windows is fully see-through; per-card acrylic is supplied inside
-        each UserControl via SystemBackdropElement + AlwaysActiveDesktopAcrylicBackdrop.
+        each UserControl via SystemBackdropElement + AlwaysActiveDesktopAcrylicBackdrop
+        (the shared Common.UI.Controls backdrop).
+    -->
+    <!--
+        The base TransparentWindow applies the TransparentTintBackdrop and strips
+        the native chrome; this overlay additionally opts into the full-bleed DWM
+        hardening because it is edge-to-edge (see ApplyFullBleedHardening).
     -->
 
     <!--
@@ -50,4 +56,4 @@
             <controls:TaskbarPaneControl x:Name="TaskbarPane" Visibility="Collapsed" />
         </Canvas>
     </Grid>
-</winuiex:WindowEx>
+</commonwin:TransparentWindow>

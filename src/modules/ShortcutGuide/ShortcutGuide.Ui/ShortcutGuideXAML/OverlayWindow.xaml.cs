@@ -8,9 +8,8 @@ using System.Runtime.InteropServices;
 using Common.UI;
 using CommunityToolkit.WinUI.Animations;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI.Composition;
-using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -36,17 +35,8 @@ namespace ShortcutGuide
     /// dispatcher, activate together, and (later) share an animation
     /// timeline.
     /// </summary>
-    public sealed partial class OverlayWindow : WindowEx
+    public sealed partial class OverlayWindow : TransparentWindow
     {
-        // DWM attributes used to disable the Win11 1-pixel system border and
-        // forced corner rounding. Without these the OS draws a faint stroke
-        // (and a small drop-shadow) around the transparent overlay, which
-        // looks like a phantom rectangle on top of the desktop.
-        private const uint DwmwaColorNone = 0xFFFFFFFE;
-        private const int DwmwaWindowCornerPreference = 33;
-        private const int DwmwaBorderColor = 34;
-        private const int DwmwcpDoNotRound = 1;
-
         private readonly Stopwatch _sessionStopwatch = Stopwatch.StartNew();
         private string _closeType = "Unknown";
         private bool _isClosing;
@@ -69,13 +59,10 @@ namespace ShortcutGuide
         {
             this.InitializeComponent();
 
-            // TransparentTintBackdrop cannot be referenced from XAML in the
-            // current Windows App SDK schema; set it here instead.
-            this.SystemBackdrop = new TransparentTintBackdrop();
-
+            // The base TransparentWindow already applies the
+            // TransparentTintBackdrop, extends content into the title bar and
+            // collapses it, and strips the native chrome.
             this.Title = ResourceLoaderInstance.ResourceLoader.GetString("Title");
-            this.ExtendsContentIntoTitleBar = true;
-            this.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 
             // Install the message hook BEFORE the first MoveAndResize so the
             // WM_DPICHANGED suppression is in place from the very first
@@ -111,7 +98,11 @@ namespace ShortcutGuide
                 }
             };
 
-            StripNativeChrome();
+            // Edge-to-edge overlay: opt into the aggressive full-bleed DWM
+            // hardening so the OS never reveals a 1-px frame seam around the
+            // monitor-sized transparent window. The baseline chrome is already
+            // applied by the base constructor.
+            this.ApplyFullBleedHardening();
 
             // Pre-size and position BEFORE Activate so the first frame the
             // user sees is already at the correct work-area size on the
@@ -165,73 +156,6 @@ namespace ShortcutGuide
             {
                 this.MainPane.Visibility = Visibility.Visible;
             };
-        }
-
-        /// <summary>
-        /// Strips the native window frame (WS_CAPTION/WS_THICKFRAME), the
-        /// extended edge styles (WS_EX_WINDOWEDGE/CLIENTEDGE/DLGMODALFRAME)
-        /// and disables the Win11 DWM 1-px system border + forced corner
-        /// rounding. Also marks the window as a tool window
-        /// (WS_EX_TOOLWINDOW) so the OS doesn't draw the default toplevel
-        /// chrome that produces the faint white outline on transparent
-        /// surfaces. Idempotent and safe to call again after the window has
-        /// been moved across monitors — a cross-monitor DPI change can reset
-        /// some of these attributes.
-        /// </summary>
-        private void StripNativeChrome()
-        {
-            nint hwnd = WindowNative.GetWindowHandle(this);
-            HwndExtensions.ToggleWindowStyle(hwnd, false, WindowStyle.TiledWindow);
-
-            // Extended styles: drop the 3-D-ish window edges Windows draws for
-            // ordinary top-level windows and switch the window into the
-            // "tool window" category. WS_EX_TOOLWINDOW also suppresses the
-            // small caption Windows would otherwise reserve, which removes
-            // the last visible 1-px line around a transparent overlay.
-            int exStyle = NativeMethods.GetWindowLongW(hwnd, NativeMethods.GWL_EXSTYLE);
-            int newExStyle = (exStyle
-                & ~NativeMethods.WS_EX_WINDOWEDGE
-                & ~NativeMethods.WS_EX_CLIENTEDGE
-                & ~NativeMethods.WS_EX_DLGMODALFRAME)
-                | NativeMethods.WS_EX_TOOLWINDOW;
-            if (newExStyle != exStyle)
-            {
-                _ = NativeMethods.SetWindowLongW(hwnd, NativeMethods.GWL_EXSTYLE, newExStyle);
-            }
-
-            // SWP_FRAMECHANGED forces DWM to re-evaluate the frame after
-            // style changes and after DwmExtendFrameIntoClientArea below.
-            const uint SWP_NOMOVE = 0x0002;
-            const uint SWP_NOSIZE = 0x0001;
-            const uint SWP_NOZORDER = 0x0004;
-            const uint SWP_NOACTIVATE = 0x0010;
-            const uint SWP_FRAMECHANGED = 0x0020;
-
-            uint borderColor = DwmwaColorNone;
-            _ = DwmSetWindowAttribute(hwnd, DwmwaBorderColor, ref borderColor, sizeof(uint));
-
-            int cornerPref = DwmwcpDoNotRound;
-            _ = DwmSetWindowAttribute(hwnd, DwmwaWindowCornerPreference, ref cornerPref, sizeof(int));
-
-            // Disable non-client rendering entirely so the DWM doesn't draw
-            // ANY frame/border chrome (not even a 1-px line).
-            int ncrpDisabled = 2; // DWMNCRP_DISABLED
-            _ = DwmSetWindowAttribute(hwnd, 2 /* DWMWA_NCRENDERING_POLICY */, ref ncrpDisabled, sizeof(int));
-
-            // Extend the frame into the entire client area. With a transparent
-            // backdrop this eliminates the last possible seam between the
-            // non-client and client regions that the DWM might draw.
-            var margins = new MARGINS { Left = -1, Right = -1, Top = -1, Bottom = -1 };
-            _ = DwmExtendFrameIntoClientArea(hwnd, ref margins);
-
-            _ = NativeMethods.SetWindowPos(
-                hwnd,
-                IntPtr.Zero,
-                0,
-                0,
-                0,
-                0,
-                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         }
 
         private void ApplyThemeFromSettings()
@@ -465,7 +389,8 @@ namespace ShortcutGuide
             // during that transition. Re-apply them defensively so the
             // overlay never reveals an OS-drawn 1-px stroke or rounded
             // shadow.
-            StripNativeChrome();
+            this.ApplyTransparentChrome();
+            this.ApplyFullBleedHardening();
 
             // The taskbar pane is anchored against the bottom of the work area,
             // so any move/resize needs a fresh layout pass.
@@ -516,24 +441,6 @@ namespace ShortcutGuide
                 EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
             });
             Implicit.SetHideAnimations(this.MainPane, hideAnimations);
-        }
-
-        [LibraryImport("dwmapi.dll")]
-        private static partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, ref uint pvAttribute, int cbAttribute);
-
-        [LibraryImport("dwmapi.dll")]
-        private static partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
-
-        [LibraryImport("dwmapi.dll")]
-        private static partial int DwmExtendFrameIntoClientArea(nint hwnd, ref MARGINS pMarInset);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct MARGINS
-        {
-            public int Left;
-            public int Right;
-            public int Top;
-            public int Bottom;
         }
     }
 }
