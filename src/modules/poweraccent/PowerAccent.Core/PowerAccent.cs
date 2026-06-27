@@ -22,6 +22,7 @@ public partial class PowerAccent : IDisposable
     private const double ScreenMinPadding = 150;
 
     private bool _visible;
+    private int _showGeneration;
     private string[] _characters = Array.Empty<string>();
     private string[] _characterDescriptions = Array.Empty<string>();
     private int _selectedIndex = -1;
@@ -98,6 +99,10 @@ public partial class PowerAccent : IDisposable
         _initialShiftState = WindowsFunctions.IsShiftState();
         _visible = true;
 
+        // Each summon gets a generation id so a delayed render queued by an earlier
+        // press can't fire for a newer one (or after the toolbar was hidden).
+        int generation = ++_showGeneration;
+
         _characters = GetCharacters(letterKey);
         _characterDescriptions = GetCharacterDescriptions(_characters);
         _showUnicodeDescription = _settingService.ShowUnicodeDescription;
@@ -105,7 +110,7 @@ public partial class PowerAccent : IDisposable
         Task.Delay(_settingService.InputTime).ContinueWith(
         t =>
         {
-            if (_visible)
+            if (_visible && generation == _showGeneration)
             {
                 OnChangeDisplay?.Invoke(true, _characters);
             }
@@ -237,6 +242,7 @@ public partial class PowerAccent : IDisposable
         OnChangeDisplay?.Invoke(false, null);
         _selectedIndex = -1;
         _visible = false;
+        _showGeneration++;
     }
 
     private void ProcessNextChar(TriggerKey triggerKey, bool shiftPressed)
