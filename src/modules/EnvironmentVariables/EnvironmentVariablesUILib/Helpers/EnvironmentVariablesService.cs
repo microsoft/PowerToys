@@ -85,13 +85,23 @@ namespace EnvironmentVariablesUILib.Helpers
             _fileAccessLock.Wait();
             try
             {
+                List<ProfileVariablesSet> profiles;
                 try
                 {
-                    return ReadProfilesFromPath(ProfilesJsonFilePath) ?? ReadProfilesFromLatestBackup();
+                    profiles = ReadProfilesFromPath(ProfilesJsonFilePath);
+                    if (profiles != null)
+                    {
+                        return profiles;
+                    }
                 }
                 catch (JsonException)
                 {
-                    var backupProfiles = ReadProfilesFromLatestBackup();
+                    var backupProfiles = ReadProfilesFromLatestBackup(out var backupPath);
+                    if (backupProfiles != null && !string.IsNullOrWhiteSpace(backupPath))
+                    {
+                        RestoreProfilesJsonFromBackup(backupPath);
+                    }
+
                     if (backupProfiles != null)
                     {
                         return backupProfiles;
@@ -99,6 +109,18 @@ namespace EnvironmentVariablesUILib.Helpers
 
                     return new List<ProfileVariablesSet>();
                 }
+                catch (Exception)
+                {
+                    var backupProfiles = ReadProfilesFromLatestBackup(out _);
+                    if (backupProfiles != null)
+                    {
+                        return backupProfiles;
+                    }
+
+                    return new List<ProfileVariablesSet>();
+                }
+
+                return new List<ProfileVariablesSet>();
             }
             finally
             {
@@ -198,7 +220,7 @@ namespace EnvironmentVariablesUILib.Helpers
         {
             if (!_fileSystem.File.Exists(filePath))
             {
-                return new List<ProfileVariablesSet>();
+                return null;
             }
 
             var fileContent = _fileSystem.File.ReadAllText(filePath);
@@ -211,8 +233,9 @@ namespace EnvironmentVariablesUILib.Helpers
             return profiles ?? new List<ProfileVariablesSet>();
         }
 
-        private List<ProfileVariablesSet> ReadProfilesFromLatestBackup()
+        private List<ProfileVariablesSet> ReadProfilesFromLatestBackup(out string backupPath)
         {
+            backupPath = null;
             var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
             if (string.IsNullOrWhiteSpace(directoryPath) || !_fileSystem.Directory.Exists(directoryPath))
             {
@@ -228,11 +251,16 @@ namespace EnvironmentVariablesUILib.Helpers
                     .Where(filePath => IsProfileArtifact(filePath, baseFileName, ".bak"))
                     .OrderByDescending(filePath => _fileSystem.File.GetLastWriteTimeUtc(filePath));
 
-                foreach (var backupPath in backupPaths)
+                foreach (var backupCandidatePath in backupPaths)
                 {
                     try
                     {
-                        return ReadProfilesFromPath(backupPath);
+                        var profiles = ReadProfilesFromPath(backupCandidatePath);
+                        if (profiles != null)
+                        {
+                            backupPath = backupCandidatePath;
+                            return profiles;
+                        }
                     }
                     catch (JsonException)
                     {
@@ -247,6 +275,24 @@ namespace EnvironmentVariablesUILib.Helpers
             }
 
             return null;
+        }
+
+        private void RestoreProfilesJsonFromBackup(string backupPath)
+        {
+            try
+            {
+                var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
+                if (!string.IsNullOrWhiteSpace(directoryPath))
+                {
+                    _fileSystem.Directory.CreateDirectory(directoryPath);
+                }
+
+                _fileSystem.File.Copy(backupPath, ProfilesJsonFilePath, true);
+                DeleteIfExists(backupPath);
+            }
+            catch
+            {
+            }
         }
 
         private static bool IsProfileArtifact(string filePath, string baseFileName, string extension)
