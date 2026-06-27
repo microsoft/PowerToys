@@ -189,6 +189,7 @@ public partial class ListItemViewModel
     {
         if (!IsListHoverActionsEnabled)
         {
+            UpdateProperty(nameof(AreHoverActionsVisible), nameof(ShowTagsWhenNotHovering));
             return;
         }
 

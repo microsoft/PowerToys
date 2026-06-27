@@ -872,7 +872,7 @@ public sealed partial class ListItemsView : UserControl,
             return;
         }
 
-        if (message.SearchBoxFocused && !item.HasSelectedHoverAction)
+        if (!item.HasSelectedHoverAction)
         {
             return;
         }
