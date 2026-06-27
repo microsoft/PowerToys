@@ -221,6 +221,12 @@ namespace EnvironmentVariablesUILib.Helpers
                     if (extension.Equals(".tmp", StringComparison.OrdinalIgnoreCase)
                         || extension.Equals(".bak", StringComparison.OrdinalIgnoreCase))
                     {
+                        var artifactIdLength = fileName.Length - expectedPrefix.Length - extension.Length;
+                        if (artifactIdLength <= 0)
+                        {
+                            continue;
+                        }
+
                         var artifactId = fileName.Substring(expectedPrefix.Length, fileName.Length - expectedPrefix.Length - extension.Length);
                         if (artifactId.Length == 32 && Guid.TryParseExact(artifactId, "N", out _))
                         {
