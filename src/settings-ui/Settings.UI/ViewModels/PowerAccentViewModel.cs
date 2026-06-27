@@ -222,7 +222,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (value != (int)_powerAccentSettings.Properties.ActivationKey)
                 {
                     _powerAccentSettings.Properties.ActivationKey = (PowerAccentActivationKey)value;
-                    OnPropertyChanged(nameof(ActivationKey));
+
+                    // RaisePropertyChanged() re-raises ActivationKey (CallerMemberName) and persists via IPC.
                     OnPropertyChanged(nameof(IsPressAndHoldActivation));
                     RaisePropertyChanged();
                 }
@@ -285,7 +286,6 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _holdDurationMs = value;
                     _powerAccentSettings.Properties.HoldDuration.Value = value;
-                    OnPropertyChanged(nameof(HoldDurationMs));
                     RaisePropertyChanged();
                 }
             }

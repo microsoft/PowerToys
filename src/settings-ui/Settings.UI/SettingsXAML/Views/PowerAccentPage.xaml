@@ -205,7 +205,8 @@
                     <tkcontrols:SettingsCard
                         Name="QuickAccentInputTimeMs"
                         x:Uid="QuickAccent_InputTimeMs"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}">
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE916;}"
+                        Visibility="{x:Bind ViewModel.IsPressAndHoldActivation, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}">
                         <NumberBox
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             LargeChange="100"

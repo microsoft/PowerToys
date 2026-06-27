@@ -197,15 +197,12 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             letterPressed = letterKey;
         }
 
-        // Press-and-hold activation (iOS/macOS style): the held letter itself opens the
-        // toolbar after the hold duration, with no separate trigger key. The base letter
-        // still types on first press (return false); subsequent auto-repeats are swallowed
-        // by the m_toolbarVisible check above, and the C# side delays the popup by the
-        // configured hold duration.
+        // Press-and-hold activation: the held letter itself opens the toolbar after the hold
+        // duration. The base letter still types on first press; auto-repeats are swallowed above.
         if (m_settings.activationKey == PowerAccentActivationKey::PressAndHold &&
             !m_toolbarVisible &&
             letterPressed != LetterKey::None &&
-            static_cast<LetterKey>(info.vkCode) == letterPressed &&
+            letterKey == letterPressed &&
             !IsBlockingModifierDown() &&
             !IsSuppressedByGameMode() &&
             !IsForegroundAppExcluded())
@@ -237,7 +234,9 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             }
         }
 
-        if (!m_toolbarVisible && letterPressed != LetterKey::None && triggerPressed && !IsSuppressedByGameMode() && !IsForegroundAppExcluded())
+        // Trigger-key activation (letter + Space/arrow) is exclusive to the non-hold modes.
+        if (m_settings.activationKey != PowerAccentActivationKey::PressAndHold &&
+            !m_toolbarVisible && letterPressed != LetterKey::None && triggerPressed && !IsSuppressedByGameMode() && !IsForegroundAppExcluded())
         {
             Logger::debug(L"Show toolbar. Letter: {}, Trigger: {}", letterPressed, triggerPressed);
 
@@ -249,7 +248,14 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_showToolbarCb(letterPressed);
         }
 
-        if (m_toolbarVisible && triggerPressed)
+        // In press-and-hold the popup only appears once the hold duration elapses, so Space/arrow
+        // must pass through until then; treat the picker as interactive only once it is shown.
+        const bool pickerInteractive =
+            m_toolbarVisible &&
+            (m_settings.activationKey != PowerAccentActivationKey::PressAndHold ||
+             m_stopwatch.elapsed() >= m_settings.holdDuration);
+
+        if (pickerInteractive && triggerPressed)
         {
             if (triggerPressed == VK_LEFT)
             {
@@ -285,8 +291,16 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
             m_rightShiftPressed = false;
         }
 
-        if (std::find(std::begin(letters), end(letters), static_cast<LetterKey>(info.vkCode)) != end(letters) && m_isLanguageLetterCb(static_cast<LetterKey>(info.vkCode)))
+        const auto releasedLetter = static_cast<LetterKey>(info.vkCode);
+        if (std::find(std::begin(letters), end(letters), releasedLetter) != end(letters) && m_isLanguageLetterCb(releasedLetter))
         {
+            // Only react to the key-up of the letter that owns the toolbar, so releasing a
+            // different held letter can't cancel or commit the active picker.
+            if (letterPressed != releasedLetter)
+            {
+                return false;
+            }
+
             letterPressed = LetterKey::None;
 
             if (m_toolbarVisible)
@@ -319,7 +333,11 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
                         m_hideToolbarCb(InputType::None);
                     }
                     m_toolbarVisible = false;
-                    return true;
+
+                    // In press-and-hold the base letter already typed on key-down and no trigger
+                    // key was consumed, so let this key-up pass through to avoid a stuck-key
+                    // perception. Trigger modes keep swallowing it as before.
+                    return m_settings.activationKey != PowerAccentActivationKey::PressAndHold;
                 }
                 Logger::debug(L"Hide toolbar event and input char");
 
