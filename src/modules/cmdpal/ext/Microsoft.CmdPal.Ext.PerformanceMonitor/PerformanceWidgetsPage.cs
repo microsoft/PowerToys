@@ -350,7 +350,14 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     private bool ShouldUseGraphIcon(PerformanceMetricKind metric)
     {
-        return _isBandPage && _singleMetric == metric && _settingsManager.UseGraphIcons;
+        // Graph icons replace a metric's list-item icon on dock bands when the
+        // setting is on. This covers single-metric bands (_singleMetric set) and
+        // the all-metrics band (_singleMetric null, so every metric qualifies).
+        // The previous _singleMetric == metric test excluded the all-metrics
+        // band, which made enabling the setting look like a no-op there.
+        return _isBandPage
+            && _settingsManager.UseGraphIcons
+            && (_singleMetric is null || _singleMetric == metric);
     }
 
     private IconInfo? GetStaticMetricIcon(PerformanceMetricKind metric)
