@@ -343,6 +343,59 @@ namespace ShortcutGuide
         }
 
         /// <summary>
+        /// Brings the kept-alive overlay back on screen for a new invocation.
+        /// Repositions to the monitor under the cursor, shows the window, and —
+        /// because a background (kept-alive) process loses the Windows
+        /// foreground race that a freshly-launched process would win — forces
+        /// the transparent overlay above the active window and gives it focus.
+        /// Without this the overlay is shown behind the active window and the
+        /// transparent host is effectively invisible.
+        /// </summary>
+        public void ShowOverlay()
+        {
+            _isClosing = false;
+
+            RepositionToCursorMonitor();
+            ApplyMainPaneAlignment();
+
+            this.AppWindow.Show();
+
+            var hwnd = WindowNative.GetWindowHandle(this);
+
+            // Win32 foreground lock: SetForegroundWindow from a process that
+            // does not already own the foreground is ignored. Temporarily
+            // attach our input queue to the foreground thread's so the call is
+            // honored, then detach. This is the canonical reliable
+            // bring-to-front recipe and is what lets the persistent background
+            // SG process surface its overlay on a hotkey press.
+            IntPtr foreground = NativeMethods.GetForegroundWindow();
+            uint foregroundThread = NativeMethods.GetWindowThreadProcessId(foreground, out _);
+            uint thisThread = NativeMethods.GetCurrentThreadId();
+
+            bool attached = false;
+            if (foregroundThread != 0 && foregroundThread != thisThread)
+            {
+                attached = NativeMethods.AttachThreadInput(thisThread, foregroundThread, true);
+            }
+
+            try
+            {
+                NativeMethods.BringWindowToTop(hwnd);
+                NativeMethods.SetForegroundWindow(hwnd);
+            }
+            finally
+            {
+                if (attached)
+                {
+                    NativeMethods.AttachThreadInput(thisThread, foregroundThread, false);
+                }
+            }
+
+            this.Activate();
+            this.AppWindow.MoveInZOrderAtTop();
+        }
+
+        /// <summary>
         /// Sizes and positions the overlay to cover the work area of the
         /// monitor that currently contains the cursor. Looks the monitor up
         /// directly from the cursor position so the work-area rect doesn't

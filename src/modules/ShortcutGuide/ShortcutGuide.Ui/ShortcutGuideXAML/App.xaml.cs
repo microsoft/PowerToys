@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
@@ -86,6 +85,7 @@ namespace ShortcutGuide
                 try
                 {
                     _launchedEvent = EventWaitHandle.OpenExisting(Constants.ShortcutGuideTriggerEvent());
+                    Logger.LogInfo($"Opened Shortcut Guide trigger event '{Constants.ShortcutGuideTriggerEvent()}'.");
                 }
                 catch (Exception ex)
                 {
@@ -185,23 +185,31 @@ namespace ShortcutGuide
             var handles = new WaitHandle[] { _launchedEvent };
             try
             {
+                Logger.LogInfo("Shortcut Guide show-event listener started.");
                 while (true)
                 {
                     var index = WaitHandle.WaitAny(handles);
                     if (index == 0)
                     {
+                        Logger.LogInfo("Shortcut Guide trigger event signaled.");
                         OverlayWindow.DispatcherQueue.TryEnqueue(async () =>
                         {
-                            if (Keyboard.IsKeyDown(Key.LWin))
+                            // VK_LWIN long-press shows only the taskbar pane.
+                            // Use the Win32 key state directly: WPF's
+                            // System.Windows.Input.Keyboard is not initialized
+                            // on the WinUI UI thread.
+                            const int VK_LWIN = 0x5B;
+                            bool winKeyDown = (NativeMethods.GetAsyncKeyState(VK_LWIN) & 0x8000) != 0;
+
+                            if (winKeyDown)
                             {
                                 if (OverlayWindow.AppWindow.IsVisible)
                                 {
                                     return;
                                 }
 
-                                OverlayWindow.AppWindow.Show();
                                 OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
-                                OverlayWindow.AppWindow.MoveInZOrderAtTop();
+                                OverlayWindow.ShowOverlay();
                                 OverlayWindow.UpdateTaskbarPaneLayout();
                                 OverlayWindow.TaskbarPaneControl.Visibility = Visibility.Visible;
                                 return;
@@ -216,9 +224,8 @@ namespace ShortcutGuide
                             {
                                 Program.ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
                                 OverlayWindow.MainPaneControl.Visibility = Visibility.Collapsed;
-                                OverlayWindow.AppWindow.Show();
+                                OverlayWindow.ShowOverlay();
                                 await OverlayWindow.MainPaneControl.Open();
-                                OverlayWindow.AppWindow.MoveInZOrderAtTop();
                                 OverlayWindow.UpdateTaskbarPaneLayout();
                                 OverlayWindow.MainPaneControl.Visibility = Visibility.Visible;
                             }
