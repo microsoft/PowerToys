@@ -57,7 +57,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - Tab
+            - "<Tab>"
       - Name: Previous tab
         Shortcut:
         - Win: false
@@ -65,7 +65,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - Tab
+            - "<Tab>"
       - Name: Switch to tab at position (1–8)
         Shortcut:
         - Win: false
@@ -161,7 +161,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - Back
+            - "<Backspace>"
       - Name: Delete next word
         Shortcut:
         - Win: false
@@ -177,7 +177,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - Home
+            - "<Home>"
       - Name: Move cursor to end of note
         Shortcut:
         - Win: false
@@ -185,7 +185,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - End
+            - "<End>"
       - Name: Add file property
         Shortcut:
         - Win: false
