@@ -52,7 +52,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Tab
+              - "<Tab>"
       - Name: Previous Scene Tab
         Shortcut:
           - Win: false
@@ -60,7 +60,7 @@ Shortcuts:
             Shift: true
             Alt: false
             Keys:
-              - Tab
+              - "<Tab>"
       - Name: Filter Files
         Shortcut:
           - Win: false
@@ -336,7 +336,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Space
+              - "<Space>"
       - Name: Select Mode
         Shortcut:
           - Win: false
@@ -464,7 +464,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Ins
+              - "<Insert>"
       - Name: Insert Key (Existing Tracks)
         Shortcut:
           - Win: false
@@ -472,7 +472,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Ins
+              - "<Insert>"
       - Name: Make Custom Bones from Nodes
         Shortcut:
           - Win: false
@@ -616,7 +616,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - PgDown
+              - "<PageDown>"
       - Name: Top View
         Shortcut:
           - Win: false
@@ -946,7 +946,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Space
+              - "<Space>"
       - Name: Evaluate Selection
         Shortcut:
           - Win: false
@@ -1370,7 +1370,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Del
+              - "<Delete>"
       - Name: Focus Path
         Shortcut:
           - Win: false
@@ -1420,7 +1420,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Del
+              - "<Delete>"
   - SectionName: Scene tree dock
     Properties:
       - Name: Add Child Node
@@ -1454,7 +1454,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Del
+              - "<Delete>"
       - Name: Force Delete
         Shortcut:
           - Win: false
@@ -1462,7 +1462,7 @@ Shortcuts:
             Shift: true
             Alt: false
             Keys:
-              - Del
+              - "<Delete>"
       - Name: Duplicate
         Shortcut:
           - Win: false
@@ -1512,7 +1512,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Del
+              - "<Delete>"
       - Name: Go to Next Step
         Shortcut:
           - Win: false
@@ -1570,7 +1570,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Del
+              - "<Delete>"
       - Name: Cancel
         Shortcut:
           - Win: false
@@ -1578,7 +1578,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Esc
+              - "<Escape>"
       - Name: Paint
         Shortcut:
           - Win: false
@@ -1668,7 +1668,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - PgDown
+              - "<PageDown>"
       - Name: Previous Coordinate
         Shortcut:
           - Win: false
@@ -1676,7 +1676,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - PgUp
+              - "<PageUp>"
       - Name: Region Mode
         Shortcut:
           - Win: false
@@ -1936,4 +1936,4 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - Delete
+              - "<Delete>"
