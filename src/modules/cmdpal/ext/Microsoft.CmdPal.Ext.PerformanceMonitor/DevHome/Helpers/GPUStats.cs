@@ -231,6 +231,20 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                 return;
             }
 
+            // If we don't have a DXGI name for this adapter yet, it registered
+            // counters after we were constructed (e.g. an eGPU hot-plug or a GPU
+            // leaving a low-power state). Re-enumerate once to pick up its
+            // friendly name rather than falling back to "GPU N". This runs at
+            // most once per newly-seen adapter, so the steady-state tick is
+            // unaffected.
+            if (!_adaptersByLuid.ContainsKey(luidKey))
+            {
+                foreach (var adapter in GpuAdapterNames.GetByLuid())
+                {
+                    _adaptersByLuid[adapter.Key] = adapter.Value;
+                }
+            }
+
             _adaptersByLuid.TryGetValue(luidKey, out var info);
 
             // Hide software adapters (e.g. the Microsoft Basic Render Driver / WARP):
