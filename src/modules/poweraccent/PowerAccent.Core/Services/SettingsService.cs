@@ -59,6 +59,9 @@ public class SettingsService
                         InputTime = settings.Properties.InputTime.Value;
                         _keyboardListener.UpdateInputTime(InputTime);
 
+                        HoldDuration = settings.Properties.HoldDuration.Value;
+                        _keyboardListener.UpdateHoldDuration(HoldDuration);
+
                         ExcludedApps = settings.Properties.ExcludedApps.Value;
                         _keyboardListener.UpdateExcludedApps(ExcludedApps);
 
@@ -193,6 +196,21 @@ public class SettingsService
         set
         {
             _inputTime = value;
+        }
+    }
+
+    private int _holdDuration = PowerAccentSettings.DefaultHoldDurationMs;
+
+    public int HoldDuration
+    {
+        get
+        {
+            return _holdDuration;
+        }
+
+        set
+        {
+            _holdDuration = value;
         }
     }
 

@@ -88,6 +88,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             _inputTimeMs = _powerAccentSettings.Properties.InputTime.Value;
 
+            _holdDurationMs = _powerAccentSettings.Properties.HoldDuration.Value;
+
             _excludedApps = _powerAccentSettings.Properties.ExcludedApps.Value;
 
             var selectedLangEntries = _powerAccentSettings.Properties.SelectedLang.Value
@@ -221,10 +223,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _powerAccentSettings.Properties.ActivationKey = (PowerAccentActivationKey)value;
                     OnPropertyChanged(nameof(ActivationKey));
+                    OnPropertyChanged(nameof(IsPressAndHoldActivation));
                     RaisePropertyChanged();
                 }
             }
         }
+
+        public bool IsPressAndHoldActivation => (PowerAccentActivationKey)ActivationKey == PowerAccentActivationKey.PressAndHold;
 
         public bool DoNotActivateOnGameMode
         {
@@ -260,6 +265,27 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _inputTimeMs = value;
                     _powerAccentSettings.Properties.InputTime.Value = value;
                     OnPropertyChanged(nameof(InputTimeMs));
+                    RaisePropertyChanged();
+                }
+            }
+        }
+
+        private int _holdDurationMs = PowerAccentSettings.DefaultHoldDurationMs;
+
+        public int HoldDurationMs
+        {
+            get
+            {
+                return _holdDurationMs;
+            }
+
+            set
+            {
+                if (value != _holdDurationMs)
+                {
+                    _holdDurationMs = value;
+                    _powerAccentSettings.Properties.HoldDuration.Value = value;
+                    OnPropertyChanged(nameof(HoldDurationMs));
                     RaisePropertyChanged();
                 }
             }

@@ -11,6 +11,8 @@ using PowerAccent.Core.Services;
 using PowerAccent.Core.Tools;
 using PowerToys.PowerAccentKeyboardService;
 
+using PowerAccentActivationKey = Microsoft.PowerToys.Settings.UI.Library.Enumerations.PowerAccentActivationKey;
+
 namespace PowerAccent.Core;
 
 public partial class PowerAccent : IDisposable
@@ -102,7 +104,11 @@ public partial class PowerAccent : IDisposable
         _characterDescriptions = GetCharacterDescriptions(_characters);
         _showUnicodeDescription = _settingService.ShowUnicodeDescription;
 
-        Task.Delay(_settingService.InputTime).ContinueWith(
+        int displayDelay = _settingService.ActivationKey == PowerAccentActivationKey.PressAndHold
+            ? _settingService.HoldDuration
+            : _settingService.InputTime;
+
+        Task.Delay(displayDelay).ContinueWith(
         t =>
         {
             if (_visible)

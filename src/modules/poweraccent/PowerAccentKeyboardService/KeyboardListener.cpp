@@ -96,6 +96,11 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
         m_settings.inputTime = std::chrono::milliseconds(inputTime);
     }
 
+    void KeyboardListener::UpdateHoldDuration(int32_t holdDuration)
+    {
+        m_settings.holdDuration = std::chrono::milliseconds(holdDuration);
+    }
+
     void KeyboardListener::UpdateExcludedApps(std::wstring_view excludedAppsView)
     {
         std::vector<std::wstring> excludedApps;
@@ -121,6 +126,17 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
     bool KeyboardListener::IsSuppressedByGameMode()
     {
         return m_settings.doNotActivateOnGameMode && detect_game_mode();
+    }
+
+    bool KeyboardListener::IsBlockingModifierDown()
+    {
+        // Ctrl / Alt (including AltGr = Ctrl+Alt) / Win turn a held letter into a shortcut,
+        // so they must not trigger press-and-hold. Shift is intentionally allowed so that
+        // uppercase accents still work.
+        return (GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
+               (GetAsyncKeyState(VK_MENU) & 0x8000) ||
+               (GetAsyncKeyState(VK_LWIN) & 0x8000) ||
+               (GetAsyncKeyState(VK_RWIN) & 0x8000);
     }
 
     bool KeyboardListener::IsForegroundAppExcluded()
@@ -179,6 +195,28 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
             m_stopwatch.reset();
             letterPressed = letterKey;
+        }
+
+        // Press-and-hold activation (iOS/macOS style): the held letter itself opens the
+        // toolbar after the hold duration, with no separate trigger key. The base letter
+        // still types on first press (return false); subsequent auto-repeats are swallowed
+        // by the m_toolbarVisible check above, and the C# side delays the popup by the
+        // configured hold duration.
+        if (m_settings.activationKey == PowerAccentActivationKey::PressAndHold &&
+            !m_toolbarVisible &&
+            letterPressed != LetterKey::None &&
+            static_cast<LetterKey>(info.vkCode) == letterPressed &&
+            !IsBlockingModifierDown() &&
+            !IsSuppressedByGameMode() &&
+            !IsForegroundAppExcluded())
+        {
+            Logger::debug(L"Show toolbar (press-and-hold). Letter: {}", letterPressed);
+            m_triggeredWithSpace = false;
+            m_triggeredWithLeftArrow = false;
+            m_triggeredWithRightArrow = false;
+            m_toolbarVisible = true;
+            m_showToolbarCb(letterPressed);
+            return false;
         }
 
         UINT triggerPressed = 0;
@@ -253,7 +291,13 @@ namespace winrt::PowerToys::PowerAccentKeyboardService::implementation
 
             if (m_toolbarVisible)
             {
-                if (m_stopwatch.elapsed() < m_settings.inputTime)
+                // Press-and-hold uses its own (typically longer) hold duration as the
+                // minimum-hold threshold; the trigger-key modes use inputTime.
+                const auto activationThreshold =
+                    m_settings.activationKey == PowerAccentActivationKey::PressAndHold
+                        ? m_settings.holdDuration
+                        : m_settings.inputTime;
+                if (m_stopwatch.elapsed() < activationThreshold)
                 {
                     Logger::debug(L"Activation too fast. Do nothing.");
 
