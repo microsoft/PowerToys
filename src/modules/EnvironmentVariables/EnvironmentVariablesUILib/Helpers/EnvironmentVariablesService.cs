@@ -93,6 +93,17 @@ namespace EnvironmentVariablesUILib.Helpers
                     {
                         return profiles;
                     }
+
+                    var backupProfiles = ReadProfilesFromLatestBackup(out var backupPath);
+                    if (backupProfiles != null && !string.IsNullOrWhiteSpace(backupPath))
+                    {
+                        RestoreProfilesJsonFromBackup(backupPath);
+                    }
+
+                    if (backupProfiles != null)
+                    {
+                        return backupProfiles;
+                    }
                 }
                 catch (JsonException)
                 {
