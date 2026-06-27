@@ -47,6 +47,11 @@ namespace ShortcutGuide
         // cross-monitor moves between mixed-DPI displays.
         private bool _suppressDpiChange;
 
+        // Screen edge the taskbar is docked to (global Windows setting). Drives
+        // the taskbar-indicator layout and the main pane's inset so the order
+        // from a left/right taskbar reads taskbar | indicators | pane.
+        private TaskbarEdge _taskbarEdge = TaskbarEdge.Bottom;
+
         internal long SessionDurationMs => _sessionStopwatch.ElapsedMilliseconds;
 
         internal string CloseType => _closeType;
@@ -303,7 +308,8 @@ namespace ShortcutGuide
                 overlayPhysicalOriginX: this.AppWindow.Position.X,
                 overlayPhysicalOriginY: this.AppWindow.Position.Y,
                 dpi: dpi,
-                workAreaBottomPhysical: workArea.Bottom);
+                workAreaPhysical: workArea,
+                edge: _taskbarEdge);
 
             if (layout is null)
             {
@@ -327,6 +333,11 @@ namespace ShortcutGuide
         /// </summary>
         private void RepositionToCursorMonitor()
         {
+            // The taskbar edge is a global setting; refresh it whenever we
+            // reposition so the indicator layout follows a taskbar that the
+            // user moved between sessions.
+            _taskbarEdge = TasklistPositions.GetEdge();
+
             if (!NativeMethods.GetCursorPos(out NativeMethods.POINT cursor))
             {
                 return;
@@ -412,6 +423,26 @@ namespace ShortcutGuide
             this.MainPane.HorizontalAlignment = isRight
                 ? HorizontalAlignment.Right
                 : HorizontalAlignment.Left;
+
+            // When the taskbar is docked to the same side the pane is aligned to,
+            // reserve room for the vertical indicator strip so the layout reads
+            // taskbar | indicators | pane instead of the pane overlapping the
+            // indicators. The reserve = 8px edge gap + 46px (body + tail) + 16px
+            // gap before the pane. Other edges keep the default 16px margin.
+            const double DefaultMarginDip = 16;
+            const double IndicatorReserveDip = 8 + 46 + 16;
+            double leftMargin = DefaultMarginDip;
+            double rightMargin = DefaultMarginDip;
+            if (_taskbarEdge == TaskbarEdge.Left && !isRight)
+            {
+                leftMargin = IndicatorReserveDip;
+            }
+            else if (_taskbarEdge == TaskbarEdge.Right && isRight)
+            {
+                rightMargin = IndicatorReserveDip;
+            }
+
+            this.MainPane.Margin = new Thickness(leftMargin, DefaultMarginDip, rightMargin, DefaultMarginDip);
 
             // Slide direction matches the pane's edge: left-aligned slides
             // from the left, right-aligned slides from the right — same as

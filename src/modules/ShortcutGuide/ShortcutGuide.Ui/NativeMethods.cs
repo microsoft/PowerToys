@@ -18,6 +18,12 @@ internal static partial class NativeMethods
     internal const int WS_EX_CLIENTEDGE = 0x00000200;
     internal const int WS_EX_DLGMODALFRAME = 0x00000001;
 
+    internal const uint ABM_GETTASKBARPOS = 0x00000005;
+    internal const uint ABE_LEFT = 0;
+    internal const uint ABE_TOP = 1;
+    internal const uint ABE_RIGHT = 2;
+    internal const uint ABE_BOTTOM = 3;
+
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint uFlags);
@@ -59,6 +65,9 @@ internal static partial class NativeMethods
 
     [DllImport("../PowerToys.Interop.dll", EntryPoint = "get_buttons")]
     internal static extern IntPtr GetTasklistButtons(IntPtr monitor, out int size);
+
+    [LibraryImport("shell32.dll", EntryPoint = "SHAppBarMessage")]
+    internal static partial IntPtr SHAppBarMessage(uint dwMessage, ref APPBARDATA pData);
 
     [LibraryImport("../PowerToys.Interop.dll", EntryPoint = "IsCurrentWindowExcludedFromShortcutGuide")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -122,6 +131,17 @@ internal static partial class NativeMethods
         public RECT RcMonitor;
         public RECT RcWork;
         public uint DwFlags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct APPBARDATA
+    {
+        public uint CbSize;
+        public IntPtr HWnd;
+        public uint UCallbackMessage;
+        public uint UEdge;
+        public RECT Rc;
+        public IntPtr LParam;
     }
 
     public enum MonitorFromWindowDwFlags
