@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
@@ -30,8 +32,9 @@ public partial class ExtensionHostInstance
                 {
                     await Host.LogMessage(message);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    LogHostForwardingFailure("Failed to send log message to extension host.", ex);
                 }
             });
         }
@@ -53,8 +56,9 @@ public partial class ExtensionHostInstance
                 {
                     await Host.ShowStatus(message, context);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    LogHostForwardingFailure("Failed to send show status message to extension host.", ex);
                 }
             });
         }
@@ -70,10 +74,16 @@ public partial class ExtensionHostInstance
                 {
                     await Host.HideStatus(message);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    LogHostForwardingFailure("Failed to send hide status message to extension host.", ex);
                 }
             });
         }
+    }
+
+    private static void LogHostForwardingFailure(string message, Exception ex)
+    {
+        Trace.WriteLine($"[CmdPal][ExtensionHostInstance] {message} ({ex.GetType().Name}): {ex.Message}");
     }
 }
