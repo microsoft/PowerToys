@@ -328,7 +328,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 0
+              - "<0>"
       - Name: Pan View
         Shortcut:
           - Win: false
@@ -720,7 +720,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 1
+              - "<1>"
       - Name: 2 Viewports
         Shortcut:
           - Win: false
@@ -728,7 +728,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 2
+              - "<2>"
       - Name: 2 Viewports (Alt)
         Shortcut:
           - Win: false
@@ -736,7 +736,7 @@ Shortcuts:
             Shift: false
             Alt: true
             Keys:
-              - 2
+              - "<2>"
       - Name: 3 Viewports
         Shortcut:
           - Win: false
@@ -744,7 +744,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 3
+              - "<3>"
       - Name: 3 Viewports (Alt)
         Shortcut:
           - Win: false
@@ -752,7 +752,7 @@ Shortcuts:
             Shift: false
             Alt: true
             Keys:
-              - 3
+              - "<3>"
       - Name: 4 Viewports
         Shortcut:
           - Win: false
@@ -760,7 +760,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 4
+              - "<4>"
   - SectionName: Text editor
     Properties:
       - Name: Cut
@@ -1252,7 +1252,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 0
+              - "<0>"
   - SectionName: Editor output
     Properties:
       - Name: Copy Selection
@@ -1684,7 +1684,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 1
+              - "<1>"
       - Name: Collision Mode
         Shortcut:
           - Win: false
@@ -1692,7 +1692,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 2
+              - "<2>"
       - Name: Occlusion Mode
         Shortcut:
           - Win: false
@@ -1700,7 +1700,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 3
+              - "<3>"
       - Name: Navigation Mode
         Shortcut:
           - Win: false
@@ -1708,7 +1708,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 4
+              - "<4>"
       - Name: Bitmask Mode
         Shortcut:
           - Win: false
@@ -1716,7 +1716,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 5
+              - "<5>"
       - Name: Priority Mode
         Shortcut:
           - Win: false
@@ -1724,7 +1724,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 6
+              - "<6>"
       - Name: Icon Mode
         Shortcut:
           - Win: false
@@ -1732,7 +1732,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 7
+              - "<7>"
       - Name: Z Index Mode
         Shortcut:
           - Win: false
@@ -1740,7 +1740,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 8
+              - "<8>"
   - SectionName: GridMap Editor
     Properties:
       - Name: Previous Floor
@@ -1750,7 +1750,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 1
+              - "<1>"
       - Name: Next Floor
         Shortcut:
           - Win: false
@@ -1758,7 +1758,7 @@ Shortcuts:
             Shift: false
             Alt: false
             Keys:
-              - 3
+              - "<3>"
       - Name: Edit X Axis
         Shortcut:
           - Win: false
