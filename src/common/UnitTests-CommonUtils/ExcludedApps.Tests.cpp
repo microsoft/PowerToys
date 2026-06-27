@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "TestHelpers.h"
+#include <algorithm>
+#include <interop/excluded_app.h>
 #include <excluded_apps.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -73,6 +75,45 @@ namespace UnitTestsCommonUtils
             std::wstring path = L"C:\\Windows\\System32\\notepad.exe";
             std::vector<std::wstring> apps = { L"notepad.exe" };
             Assert::IsTrue(find_app_name_in_path(path, apps));
+        }
+
+        TEST_METHOD(ShortcutGuideBuiltInExcludedProcessNames_ContainsAtlantisExecutables)
+        {
+            const auto containsProcessName = [](std::wstring_view processName) {
+                return std::find(
+                           shortcut_guide::interop::built_in_excluded_process_names.begin(),
+                           shortcut_guide::interop::built_in_excluded_process_names.end(),
+                           processName) != shortcut_guide::interop::built_in_excluded_process_names.end();
+            };
+
+            Assert::IsTrue(containsProcessName(L"ATLANTIS.EXE"));
+            Assert::IsTrue(containsProcessName(L"AWP.EXE"));
+        }
+
+        TEST_METHOD(FindAppNameInPath_AtlantisExecutableName_ReturnsTrue)
+        {
+            std::wstring path = L"C:\\PROGRAM FILES\\ATLANTIS\\ATLANTIS.EXE";
+            std::vector<std::wstring> apps = { L"ATLANTIS.EXE" };
+            Assert::IsTrue(find_app_name_in_path(path, apps));
+        }
+
+        TEST_METHOD(FindAppNameInPath_AtlantisAlternateExecutableName_ReturnsTrue)
+        {
+            std::wstring path = L"C:\\PROGRAM FILES\\ATLANTIS\\AWP.EXE";
+            std::vector<std::wstring> apps = { L"AWP.EXE" };
+            Assert::IsTrue(find_app_name_in_path(path, apps));
+        }
+
+        TEST_METHOD(ShortcutGuideBuiltInExcludedWindowTitles_ContainsAtlantisWordProcessor)
+        {
+            const auto containsWindowTitle = [](std::wstring_view windowTitle) {
+                return std::find(
+                           shortcut_guide::interop::built_in_excluded_window_titles.begin(),
+                           shortcut_guide::interop::built_in_excluded_window_titles.end(),
+                           windowTitle) != shortcut_guide::interop::built_in_excluded_window_titles.end();
+            };
+
+            Assert::IsTrue(containsWindowTitle(L"ATLANTIS WORD PROCESSOR"));
         }
 
         TEST_METHOD(FindAppNameInPath_UNCPath_Works)
