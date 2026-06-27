@@ -55,7 +55,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - Delete
+            - "<Delete>"
       - Name: Permanently delete message
         Shortcut:
         - Win: false
@@ -63,7 +63,7 @@ Shortcuts:
           Shift: true
           Alt: false
           Keys:
-            - Delete
+            - "<Delete>"
       - Name: Mark as read
         Shortcut:
         - Win: false
@@ -99,7 +99,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - "1"
+            - "<1>"
       - Name: Go to Calendar
         Recommended: true
         Shortcut:
@@ -108,7 +108,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - "2"
+            - "<2>"
       - Name: Go to People
         Shortcut:
         - Win: false
@@ -116,7 +116,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - "3"
+            - "<3>"
       - Name: Go to To Do
         Shortcut:
         - Win: false
@@ -124,7 +124,7 @@ Shortcuts:
           Shift: false
           Alt: false
           Keys:
-            - "4"
+            - "<4>"
       - Name: Go to next message
         Shortcut:
         - Win: false
@@ -244,7 +244,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - "1"
+            - "<1>"
       - Name: Switch to Work week view
         Shortcut:
         - Win: false
@@ -252,7 +252,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - "2"
+            - "<2>"
       - Name: Switch to full Week view
         Shortcut:
         - Win: false
@@ -260,7 +260,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - "3"
+            - "<3>"
       - Name: Switch to Month view
         Shortcut:
         - Win: false
@@ -268,7 +268,7 @@ Shortcuts:
           Shift: false
           Alt: true
           Keys:
-            - "4"
+            - "<4>"
       - Name: Go to previous time period
         Shortcut:
         - Win: false
