@@ -16,7 +16,7 @@
         (slide + fade keyed to the user's left/right alignment), so the surface
         only contributes chrome here.
     -->
-    <controls:TransientSurface AcrylicKind="Default" Visibility="Visible">
+    <controls:TransientSurface AcrylicKind="Thin" Visibility="Visible">
 
         <Grid>
             <Grid.RowDefinitions>
