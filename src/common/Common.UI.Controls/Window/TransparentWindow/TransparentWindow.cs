@@ -5,6 +5,8 @@
 using System.Runtime.InteropServices;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 using WinUIEx;
 
@@ -37,6 +39,18 @@ namespace Microsoft.PowerToys.Common.UI.Controls.Window;
 /// <see cref="Microsoft.UI.Windowing.AppWindow.Hide"/> is delayed until the
 /// content has finished animating out. With no listener the window simply shows
 /// or hides immediately.</para>
+/// <para><b>Multiple surfaces.</b> More than one <see cref="TransientSurface"/>
+/// may host on the same window by each calling
+/// <see cref="TransientSurface.SubscribeTo"/>. The <see cref="Showing"/> and
+/// <see cref="Hiding"/> events are simply raised for every subscriber, and
+/// because <see cref="HidingEventArgs"/> aggregates deferrals the underlying
+/// window is hidden only after <em>all</em> surfaces have finished animating
+/// out. To let each surface play its own distinct transition, call the
+/// parameterless <see cref="Show()"/> (so every surface uses its configured
+/// <c>ShowTransition</c>/<c>HideTransition</c>); the <see cref="Show(Transition)"/>
+/// overload instead broadcasts a single transition to all surfaces. Sizing the
+/// window and positioning each surface within it remain the consumer's
+/// responsibility (this window owns no layout).</para>
 /// </remarks>
 public partial class TransparentWindow : WinUIEx.WindowEx
 {
@@ -63,6 +77,9 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
     private readonly nint _hwnd;
 
+    private bool _inputHooked;
+    private bool _seenActivated;
+
     public TransparentWindow()
     {
         AppWindow.Hide();
@@ -74,6 +91,8 @@ public partial class TransparentWindow : WinUIEx.WindowEx
         ApplyTransparentChrome();
 
         SystemBackdrop = new TransparentTintBackdrop();
+
+        Activated += OnActivatedForDismiss;
     }
 
     /// <summary>
@@ -155,6 +174,26 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether pressing <c>Esc</c> while the
+    /// window content has keyboard focus dismisses the window (<see cref="Hide"/>).
+    /// Defaults to <see langword="false"/>. The window is shown without
+    /// activation, so the consumer must activate it for its content to receive
+    /// keyboard input.
+    /// </summary>
+    public bool DismissOnEscape { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the window dismisses itself
+    /// (<see cref="Hide"/>) when it loses focus (is deactivated), i.e. light
+    /// dismiss. Defaults to <see langword="false"/>. Only takes effect after the
+    /// window has been activated at least once since the last <see cref="Show()"/>,
+    /// so the transient deactivation that can occur during the show sequence does
+    /// not dismiss it prematurely. The window is shown without activation, so the
+    /// consumer must activate it for this to apply.
+    /// </summary>
+    public bool DismissOnFocusLost { get; set; }
+
+    /// <summary>
     /// Raised (without activation) when <see cref="Show()"/> makes the window
     /// visible. A content surface subscribes to this to play its in-animation,
     /// using <see cref="ShowingEventArgs.Transition"/>.
@@ -190,6 +229,8 @@ public partial class TransparentWindow : WinUIEx.WindowEx
             DispatcherQueuePriority.Low,
             () =>
             {
+                _seenActivated = false;
+                EnsureInputHooks();
                 _ = ShowWindow(_hwnd, SwShowNa);
                 Showing?.Invoke(this, new ShowingEventArgs(transition));
             });
@@ -210,6 +251,41 @@ public partial class TransparentWindow : WinUIEx.WindowEx
                 Hiding?.Invoke(this, args);
                 args.RunWhenComplete(AppWindow.Hide);
             });
+    }
+
+    private void OnActivatedForDismiss(object sender, WindowActivatedEventArgs args)
+    {
+        if (args.WindowActivationState == WindowActivationState.Deactivated)
+        {
+            if (DismissOnFocusLost && _seenActivated)
+            {
+                Hide();
+            }
+
+            return;
+        }
+
+        _seenActivated = true;
+    }
+
+    private void EnsureInputHooks()
+    {
+        if (_inputHooked || Content is not UIElement element)
+        {
+            return;
+        }
+
+        element.KeyDown += OnContentKeyDown;
+        _inputHooked = true;
+    }
+
+    private void OnContentKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (DismissOnEscape && e.Key == global::Windows.System.VirtualKey.Escape)
+        {
+            e.Handled = true;
+            Hide();
+        }
     }
 
     private void ApplyExStyleBit(int bit, bool set)
