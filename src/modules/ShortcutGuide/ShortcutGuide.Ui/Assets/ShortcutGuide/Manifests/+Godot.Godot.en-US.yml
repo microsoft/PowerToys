@@ -1,4 +1,4 @@
-PackageName: Godot.Godot
+PackageName: +Godot.Godot
 Name: Godot
 WindowFilter: "Godot.exe"
 BackgroundProcess: false
