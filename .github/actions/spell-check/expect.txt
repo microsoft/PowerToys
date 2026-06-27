@@ -836,6 +836,7 @@ INTRESOURCE
 INVALIDARG
 invalidoperatioexception
 invokecommand
+iOS
 ipcmanager
 ipreviewhandlervisualssetfont
 IPTC

@@ -199,20 +199,7 @@ public class SettingsService
         }
     }
 
-    private int _holdDuration = PowerAccentSettings.DefaultHoldDurationMs;
-
-    public int HoldDuration
-    {
-        get
-        {
-            return _holdDuration;
-        }
-
-        set
-        {
-            _holdDuration = value;
-        }
-    }
+    public int HoldDuration { get; set; } = PowerAccentSettings.DefaultHoldDurationMs;
 
     private string _excludedApps;
 
