@@ -148,8 +148,9 @@ public sealed class ApplicationInfoService : IApplicationInfoService
             var isElevated = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
             return isElevated;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            CoreLogger.LogError("Failed to determine process elevation status", ex);
             return false;
         }
     }
