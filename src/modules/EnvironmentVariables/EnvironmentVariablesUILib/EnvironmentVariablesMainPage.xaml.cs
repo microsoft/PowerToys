@@ -76,6 +76,7 @@ namespace EnvironmentVariablesUILib
             var clone = variable.Clone();
             EditVariableDialog.DataContext = clone;
 
+            SetDialogXamlRoot(EditVariableDialog);
             await EditVariableDialog.ShowAsync();
         }
 
@@ -183,6 +184,7 @@ namespace EnvironmentVariablesUILib
             AddProfileDialog.PrimaryButtonCommand = AddProfileCommand;
             AddProfileDialog.DataContext = new ProfileVariablesSet(Guid.NewGuid(), string.Empty);
 
+            SetDialogXamlRoot(AddProfileDialog);
             await AddProfileDialog.ShowAsync();
         }
 
@@ -647,6 +649,7 @@ namespace EnvironmentVariablesUILib
             AddProfileDialog.SecondaryButtonText = resourceLoader.GetString("CancelBtn");
             AddProfileDialog.PrimaryButtonCommand = UpdateProfileCommand;
             AddProfileDialog.DataContext = profile.Clone();
+            SetDialogXamlRoot(AddProfileDialog);
             await AddProfileDialog.ShowAsync();
         }
 
@@ -666,7 +669,7 @@ namespace EnvironmentVariablesUILib
             ResetAddVariableInputs();
             SwitchViewsSegmentedView.SelectedIndex = 0;
             AddVariableDialog.DataContext = AddProfileDialog.DataContext;
-            AddVariableDialog.XamlRoot = RootPage.XamlRoot;
+            SetDialogXamlRoot(AddVariableDialog);
             await AddVariableDialog.ShowAsync();
         }
 
@@ -748,6 +751,16 @@ namespace EnvironmentVariablesUILib
             UpdateNoMatchingDefaultVariablesText();
         }
 
+        private void SetDialogXamlRoot(ContentDialog dialog)
+        {
+            if (dialog == null || RootPage == null)
+            {
+                return;
+            }
+
+            dialog.XamlRoot = RootPage.XamlRoot;
+        }
+
         private static bool AreEquivalentVariables(Variable left, Variable right)
         {
             if (left == null || right == null)
@@ -808,6 +821,7 @@ namespace EnvironmentVariablesUILib
 
             var variableType = set.Id == VariablesSet.SystemGuid ? VariablesSetType.System : VariablesSetType.User;
             AddDefaultVariableDialog.DataContext = new Variable(string.Empty, string.Empty, variableType);
+            SetDialogXamlRoot(AddDefaultVariableDialog);
 
             await AddDefaultVariableDialog.ShowAsync();
         }
