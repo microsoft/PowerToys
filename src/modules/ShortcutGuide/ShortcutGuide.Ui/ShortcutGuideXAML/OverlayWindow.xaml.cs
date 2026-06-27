@@ -41,6 +41,10 @@ namespace ShortcutGuide
         private string _closeType = "Unknown";
         private bool _isClosing;
 
+        // Reused one-shot timer that defers Hide() until the close animation
+        // finishes, so CloseAnimated() doesn't allocate a timer + closure per call.
+        private Microsoft.UI.Dispatching.DispatcherQueueTimer? _closeTimer;
+
         // Set true around AppWindow.MoveAndResize() so the WndProc swallows
         // WM_DPICHANGED. Without this, WinUIEx re-scales the rect we just
         // wrote by (newDpi / oldDpi), producing a 1.5x/0.66x window on
@@ -62,7 +66,7 @@ namespace ShortcutGuide
 
         internal string CloseType => _closeType;
 
-        internal MainPaneControl MainPaneControl => this.MainPane;
+        public MainPaneControl MainPaneControl => this.MainPane;
 
         internal TaskbarPaneControl TaskbarPaneControl => this.TaskbarPane;
 
@@ -274,7 +278,7 @@ namespace ShortcutGuide
         /// longest animation to finish, then closes the window. Multiple
         /// calls are coalesced via <see cref="_isClosing"/>.
         /// </summary>
-        private void CloseAnimated()
+        public void CloseAnimated()
         {
             if (_isClosing)
             {
@@ -283,29 +287,36 @@ namespace ShortcutGuide
 
             _isClosing = true;
 
-            // Collapse both pseudo-windows so their Implicit.HideAnimations
-            // play the exit transitions.
+            // Collapse both pseudo-windows so their Implicit.HideAnimations play
             this.MainPane.Visibility = Visibility.Collapsed;
             this.TaskbarPane.Visibility = Visibility.Collapsed;
 
-            // Wait slightly longer than the 200ms hide animations before
-            // closing the window so the user sees the full exit transition.
-            var timer = this.DispatcherQueue.CreateTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(217);
-            timer.IsRepeating = false;
-            timer.Tick += (_, _) =>
+            if (_closeTimer is null)
             {
-                timer.Stop();
-                this.Close();
-            };
-            timer.Start();
+                _closeTimer = this.DispatcherQueue.CreateTimer();
+                _closeTimer.Interval = TimeSpan.FromMilliseconds(217);
+                _closeTimer.IsRepeating = false;
+                _closeTimer.Tick += OnCloseTimerTick;
+            }
+
+            _closeTimer.Start();
+        }
+
+        private void OnCloseTimerTick(Microsoft.UI.Dispatching.DispatcherQueueTimer sender, object args)
+        {
+            sender.Stop();
+            _isClosing = false;
+
+            this.MainPane.Hide();
+
+            this.AppWindow.Hide();
         }
 
         /// <summary>
         /// Recomputes the taskbar pane's indicator children and applies the
         /// resulting layout to the Canvas-positioned pseudo-window.
         /// </summary>
-        private void UpdateTaskbarPaneLayout()
+        public void UpdateTaskbarPaneLayout()
         {
             var hwnd = WindowNative.GetWindowHandle(this);
             float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);

@@ -29,11 +29,11 @@ namespace ShortcutGuide.Controls
     /// </summary>
     public sealed partial class MainPaneControl : UserControl
     {
-        private readonly Task<Dictionary<string, string?>> _getAppIdsTask;
+        private Task<Dictionary<string, string?>>? _getAppIdsTask;
         private Dictionary<string, string?> _currentApplicationIds = [];
+        private List<string> _lastNavItemIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = string.Empty;
-        private bool _navItemsInitialized;
 
         /// <summary>
         /// Raised whenever the user selects a different app in the nav list.
@@ -52,27 +52,58 @@ namespace ShortcutGuide.Controls
         public MainPaneControl()
         {
             this.InitializeComponent();
+            Program.CopyAndIndexGenerationThread.Join();
+            this.TitleTextBlock.Text = ResourceLoaderInstance.ResourceLoader.GetString("Title");
 
+            this.Unloaded += OnUnloaded;
+        }
+
+        public async Task Open()
+        {
             // Same background work the original MainWindow ran in its
             // constructor: wait for the index-generation thread to finish
             // and then enumerate the apps to populate the nav list.
-            _getAppIdsTask = Task.Run(() =>
+            _getAppIdsTask = Task.Run(async () =>
             {
-                Program.CopyAndIndexGenerationThread.Join();
                 _currentApplicationIds = ManifestInterpreter.GetAllCurrentApplicationIds(Program.ForegroundWindowHandle);
                 return _currentApplicationIds;
             });
 
-            this.TitleTextBlock.Text = ResourceLoaderInstance.ResourceLoader.GetString("Title");
+            await InitializeNavItemsAsync();
+        }
 
-            this.Loaded += OnLoaded;
+        public void Hide()
+        {
+            // Keep the single ShortcutsPage instance alive and just drop its
+            // data. Re-navigating the frame (to a blank page, then back to a
+            // fresh ShortcutsPage on the next open) created a new page +
+            // ItemsRepeater subtree every time, and WinUI never released the
+            // previous one, so each open/close leaked a page's worth of rows.
+            if (this.ContentFrame.Content is ShortcutsPage currentPage)
+            {
+                currentPage.ClearData();
+            }
+
+            // Keep MenuItems alive for reuse on the next open.
+            // Clearing the collection and recreating NavigationViewItems on
+            // every open pins the previous native WinUI element tree via
+            // CsWinRT CCWs that survive GC (same root cause as ShortcutsPage).
+            // Clearing only the selection ensures SelectionChanged fires when
+            // Open() re-selects MenuItems[0], which triggers SetShortcuts().
+            this.WindowSelector.SelectedItem = null;
+
+            _shortcutFile = null;
+            _currentApplicationIds.Clear();
+
+            _getAppIdsTask?.Dispose();
+            _getAppIdsTask = null;
         }
 
         internal string SelectedAppName => _selectedAppName;
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private void OnUnloaded(object sender, RoutedEventArgs e)
         {
-            _ = InitializeNavItemsAsync();
+            _getAppIdsTask?.Dispose();
         }
 
         /// <summary>
@@ -81,7 +112,7 @@ namespace ShortcutGuide.Controls
         /// </summary>
         private async Task InitializeNavItemsAsync()
         {
-            if (_navItemsInitialized)
+            if (_getAppIdsTask == null)
             {
                 return;
             }
@@ -90,7 +121,6 @@ namespace ShortcutGuide.Controls
             {
                 _currentApplicationIds = await _getAppIdsTask.ConfigureAwait(true);
                 this.SetNavItems();
-                _navItemsInitialized = true;
             }
             catch (Exception ex)
             {
@@ -110,12 +140,32 @@ namespace ShortcutGuide.Controls
         /// </summary>
         public event EventHandler? InitializationFailed;
 
+        private IconElement BuildNavIcon(string? executablePath)
+        {
+            // FIX: Use placeholder initially to reduce upfront memory
+            // Icons can be loaded on SelectionChanged if needed
+            return new FontIcon { Glyph = "\uEB91" };
+        }
+
         private void SetNavItems()
         {
-            if (this.WindowSelector.MenuItems.Count != 0)
+            var newIds = this._currentApplicationIds.Keys.ToList();
+
+            // Reuse the existing NavigationViewItem objects when the set of
+            // apps has not changed. Creating new items on every open pins the
+            // previous native WinUI element tree via CsWinRT CCWs that survive
+            // GC (same root cause as the ShortcutsPage leak fixed in this
+            // branch). Selection was cleared in Hide(), so re-selecting
+            // MenuItems[0] always fires SelectionChanged.
+            if (newIds.SequenceEqual(_lastNavItemIds, StringComparer.Ordinal)
+                && this.WindowSelector.MenuItems.Count > 0)
             {
+                this.WindowSelector.SelectedItem = this.WindowSelector.MenuItems[0];
                 return;
             }
+
+            _lastNavItemIds = newIds;
+            this.WindowSelector.MenuItems.Clear();
 
             string defaultShellName = ManifestInterpreter.GetCachedIndexYamlFile().DefaultShellName;
 
@@ -151,17 +201,6 @@ namespace ShortcutGuide.Controls
             }
         }
 
-        private static IconElement BuildNavIcon(string? executablePath)
-        {
-            BitmapImage? bitmap = IconHelper.TryGetExecutableIcon(executablePath);
-            if (bitmap is not null)
-            {
-                return new ImageIcon { Source = bitmap };
-            }
-
-            return new FontIcon { Glyph = "\uEB91" };
-        }
-
         private static PathIcon CreatePathIcon(string pathData)
         {
             var geometry = (Geometry)XamlBindingHelper.ConvertValue(typeof(Geometry), pathData);
@@ -180,6 +219,15 @@ namespace ShortcutGuide.Controls
                 return;
             }
 
+            if (selectedItem.Icon is FontIcon && _currentApplicationIds.TryGetValue(selectedItem.Name, out string? exePath))
+            {
+                BitmapImage? bitmap = IconHelper.TryGetExecutableIcon(exePath);
+                if (bitmap is not null)
+                {
+                    selectedItem.Icon = new ImageIcon { Source = bitmap };
+                }
+            }
+
             this._selectedAppName = selectedItem.Name;
             App.CurrentAppName = this._selectedAppName;
             this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
@@ -191,15 +239,24 @@ namespace ShortcutGuide.Controls
                 exposesTaskbarSection = file.Shortcuts is not null &&
                     file.Shortcuts.Any(c => c.SectionName?.StartsWith("<TASKBAR1-9>", StringComparison.Ordinal) == true);
 
-                this.ContentFrame.Navigate(
-                    typeof(ShortcutsPage),
-                    new ShortcutPageNavParam { ShortcutFile = file, AppName = this._selectedAppName });
+                // Reuse a single ShortcutsPage and just refresh its rows.
+                // Navigating to a new page on every selection created a fresh
+                // page + ItemsRepeater + a screenful of ShortcutItemView rows
+                // each time; WinUI pinned the previous page's native element
+                // tree (the managed wrappers had zero GC roots and were kept
+                // alive by live ComWrappers CCWs), leaking ~one page per open.
+                ShortcutsPage page = this.ContentFrame.Content as ShortcutsPage
+                    ?? this.NavigateToShortcutsPage();
+                page.SetShortcuts(file, this._selectedAppName);
             }
 
-            // The overlay decides whether to show/hide the taskbar pseudo-window
-            // based on this event — the pane no longer manages a second window
-            // directly.
             SelectedAppTaskbarVisibilityChanged?.Invoke(this, exposesTaskbarSection);
+        }
+
+        private ShortcutsPage NavigateToShortcutsPage()
+        {
+            this.ContentFrame.Navigate(typeof(ShortcutsPage));
+            return (ShortcutsPage)this.ContentFrame.Content;
         }
 
         private void Settings_Tapped(object sender, TappedRoutedEventArgs e)
