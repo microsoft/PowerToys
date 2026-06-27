@@ -96,45 +96,110 @@ public static class TestHelper
         Assert.AreEqual(enable, toggleSwitch.IsOn, $"Screen Ruler toggle switch should be {(enable ? "ON" : "OFF")} for {testName}");
     }
 
-    /// <summary>Read the activation shortcut from the ShortcutControl's EditButton HelpText.</summary>
+    /// <summary>
+    /// Read the activation shortcut straight from the Settings window's ShortcutControl — the
+    /// EditButton's UIA HelpText, which the control sets to the live shortcut (e.g.
+    /// "Win + Ctrl + Shift + M"). Polls until the window reports a real shortcut (a chord that
+    /// includes a non-modifier key) rather than the "Configure shortcut" placeholder or a transient
+    /// empty value while the page is still binding. Never substitutes a hard-coded default: the test
+    /// must send exactly what the module is bound to, because a wrong/stale default would silently
+    /// fail to activate and mask the real problem.
+    /// </summary>
     public static Key[] ReadActivationShortcut(UITestBase testBase)
     {
         var shortcutCard = testBase.Session.Find<Element>(By.AccessibilityId("Shortcut_ScreenRuler"), 5000);
         var shortcutButton = shortcutCard.Find<Element>(By.AccessibilityId("EditButton"), 5000);
-        return ParseShortcutText(shortcutButton.HelpText);
+
+        string helpText = string.Empty;
+        var deadline = DateTime.UtcNow.AddMilliseconds(5000);
+        do
+        {
+            helpText = shortcutButton.HelpText ?? string.Empty;
+            var keys = ParseShortcutText(helpText);
+            if (HasMainKey(keys))
+            {
+                testBase.TestContext.WriteLine($"Activation shortcut read from Settings: '{helpText}'.");
+                return keys;
+            }
+
+            Thread.Sleep(200);
+        }
+        while (DateTime.UtcNow < deadline);
+
+        Assert.Fail(
+            $"Could not read the Screen Ruler activation shortcut from the Settings window: the " +
+            $"ShortcutControl EditButton HelpText was '{helpText}' (expected a chord such as " +
+            $"'Win + Ctrl + Shift + M'). Refusing to fall back to a hard-coded default.");
+        return Array.Empty<Key>(); // unreachable — Assert.Fail throws.
     }
 
-    /// <summary>Parse "Win + Ctrl + Shift + M" into a Key chord (note: "win" maps to <see cref="Key.LWin"/>).</summary>
+    /// <summary>
+    /// Parse a shortcut string like "Win + Ctrl + Shift + M" into a <see cref="Key"/> chord (note:
+    /// "win" maps to <see cref="Key.LWin"/>). Returns exactly the keys present — NO default
+    /// substitution; the caller decides whether the result is a usable shortcut.
+    /// </summary>
     public static Key[] ParseShortcutText(string shortcutText)
     {
+        var keys = new List<Key>();
         if (string.IsNullOrEmpty(shortcutText))
         {
-            return new[] { Key.LWin, Key.Ctrl, Key.Shift, Key.M };
+            return keys.ToArray();
         }
 
-        var keys = new List<Key>();
         foreach (var part in shortcutText.Split(ShortcutSeparators, StringSplitOptions.RemoveEmptyEntries))
         {
-            var cleanPart = part.Trim().ToLowerInvariant();
-            Key? key = cleanPart switch
-            {
-                "win" or "windows" => Key.LWin,
-                "ctrl" or "control" => Key.Ctrl,
-                "shift" => Key.Shift,
-                "alt" => Key.Alt,
-                _ when cleanPart.Length == 1 && cleanPart[0] >= 'a' && cleanPart[0] <= 'z' =>
-                    (Key)Enum.Parse(typeof(Key), cleanPart.ToUpperInvariant()),
-                _ => null,
-            };
-
+            var key = ParseKeyToken(part);
             if (key.HasValue)
             {
                 keys.Add(key.Value);
             }
         }
 
-        return keys.Count > 0 ? keys.ToArray() : new[] { Key.LWin, Key.Ctrl, Key.Shift, Key.M };
+        return keys.ToArray();
     }
+
+    /// <summary>Map one display token ("Win"/"Ctrl"/"Shift"/"Alt", a letter, a digit, "F5", "Space"…) to a <see cref="Key"/>.</summary>
+    private static Key? ParseKeyToken(string token)
+    {
+        var t = token.Trim();
+        if (t.Length == 0)
+        {
+            return null;
+        }
+
+        switch (t.ToLowerInvariant())
+        {
+            case "win":
+            case "windows":
+                return Key.LWin;
+            case "ctrl":
+            case "control":
+                return Key.Ctrl;
+            case "shift":
+                return Key.Shift;
+            case "alt":
+                return Key.Alt;
+        }
+
+        // Single digit 0-9 → enum names Num0..Num9.
+        if (t.Length == 1 && t[0] >= '0' && t[0] <= '9')
+        {
+            return Enum.TryParse<Key>("Num" + t, out var num) ? num : null;
+        }
+
+        // Letters, function keys ("F5") and named keys ("Space"/"Enter"/"Esc"/"Tab"/"Home"…) match the
+        // Key enum names. Require a leading letter so numeric strings aren't cast straight to enum values.
+        if (char.IsLetter(t[0]) && Enum.TryParse<Key>(t, ignoreCase: true, out var k))
+        {
+            return k;
+        }
+
+        return null;
+    }
+
+    /// <summary>True when the chord includes a non-modifier (main) key — i.e. a real, activatable shortcut.</summary>
+    private static bool HasMainKey(Key[] keys) =>
+        keys.Any(k => k is not (Key.LWin or Key.Ctrl or Key.Shift or Key.Alt));
 
     /// <summary>True when at least one Measure Tool window is open.</summary>
     public static bool IsScreenRulerUIOpen(UITestBase testBase) =>
