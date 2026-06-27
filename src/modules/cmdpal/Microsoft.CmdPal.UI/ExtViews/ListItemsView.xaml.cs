@@ -333,11 +333,17 @@ public sealed partial class ListItemsView : UserControl,
 
         if (args.ItemContainer is ListViewItem listItemContainer)
         {
+            listItemContainer.Tag = vm;
+
+            if (ViewModel?.EnableListHoverActions != true)
+            {
+                return;
+            }
+
             listItemContainer.PointerEntered -= ListItemContainer_PointerEntered;
             listItemContainer.PointerExited -= ListItemContainer_PointerExited;
             listItemContainer.PointerEntered += ListItemContainer_PointerEntered;
             listItemContainer.PointerExited += ListItemContainer_PointerExited;
-            listItemContainer.Tag = vm;
             if (!TryHookListItemRow(listItemContainer, vm) && args.Phase < 3)
             {
                 args.RegisterUpdateCallback(ItemsList_ContainerContentChanging);
@@ -355,6 +361,12 @@ public sealed partial class ListItemsView : UserControl,
 
         UnhookListItemRow(listItemContainer);
         rowGrid.Tag = vm;
+
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return true;
+        }
+
         rowGrid.AddHandler(UIElement.TappedEvent, _listItemRowTappedHandler, handledEventsToo: true);
 
         var hoverList = FindRowHoverActionsList(rowGrid);
@@ -523,6 +535,11 @@ public sealed partial class ListItemsView : UserControl,
 
     private void ListItemContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return;
+        }
+
         if (sender is not ListViewItem { Tag: ListItemViewModel vm })
         {
             return;
@@ -535,6 +552,11 @@ public sealed partial class ListItemsView : UserControl,
 
     private void ListItemContainer_PointerExited(object sender, PointerRoutedEventArgs e)
     {
+        if (ViewModel?.EnableListHoverActions != true)
+        {
+            return;
+        }
+
         if (sender is not ListViewItem { Tag: ListItemViewModel vm })
         {
             return;
@@ -841,6 +863,11 @@ public sealed partial class ListItemsView : UserControl,
         }
 
         if (ItemView.SelectedItem is not ListItemViewModel item || !item.AreHoverActionsVisible)
+        {
+            return;
+        }
+
+        if (!message.SearchBoxFocused)
         {
             return;
         }

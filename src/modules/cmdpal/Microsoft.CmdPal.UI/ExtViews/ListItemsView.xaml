@@ -445,6 +445,7 @@
 
                     <ListView
                         x:Name="HoverActionsList"
+                        x:Load="{x:Bind IsListHoverActionsEnabled, Mode=OneWay}"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         AllowFocusOnInteraction="False"

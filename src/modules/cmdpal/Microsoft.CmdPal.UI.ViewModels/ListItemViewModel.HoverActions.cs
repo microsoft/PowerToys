@@ -21,6 +21,11 @@ public partial class ListItemViewModel
 
     public bool HasHoverActions => _hoverActions.Count > 0;
 
+    public bool IsListHoverActionsEnabled =>
+        PageContext.TryGetTarget(out var pageContext) &&
+        pageContext is ListViewModel listViewModel &&
+        listViewModel.EnableListHoverActions;
+
     public int HoverActionSelectedIndex
     {
         get => _hoverActionSelectedIndex;
@@ -182,6 +187,11 @@ public partial class ListItemViewModel
 
     private void UpdateHoverVisibilityProperties()
     {
+        if (!IsListHoverActionsEnabled)
+        {
+            return;
+        }
+
         UpdateProperty(
             nameof(HoverActions),
             nameof(HasHoverActions),
