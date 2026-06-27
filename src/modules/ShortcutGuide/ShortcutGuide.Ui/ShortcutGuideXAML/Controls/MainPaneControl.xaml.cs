@@ -31,6 +31,7 @@ namespace ShortcutGuide.Controls
     {
         private Task<Dictionary<string, string?>>? _getAppIdsTask;
         private Dictionary<string, string?> _currentApplicationIds = [];
+        private List<string> _lastNavItemIds = [];
         private ShortcutFile? _shortcutFile;
         private string _selectedAppName = string.Empty;
 
@@ -83,23 +84,13 @@ namespace ShortcutGuide.Controls
                 currentPage.ClearData();
             }
 
-            foreach (var item in this.WindowSelector.MenuItems.OfType<NavigationViewItem>())
-            {
-                if (item.Icon is ImageIcon imageIcon)
-                {
-                    imageIcon.Source = null;
-                }
-
-                if (item.Icon is PathIcon pathIcon)
-                {
-                    pathIcon.Data = null;
-                }
-
-                item.Icon = null;
-                item.Content = null;
-            }
-
-            this.WindowSelector.MenuItems.Clear();
+            // Keep MenuItems alive for reuse on the next open.
+            // Clearing the collection and recreating NavigationViewItems on
+            // every open pins the previous native WinUI element tree via
+            // CsWinRT CCWs that survive GC (same root cause as ShortcutsPage).
+            // Clearing only the selection ensures SelectionChanged fires when
+            // Open() re-selects MenuItems[0], which triggers SetShortcuts().
+            this.WindowSelector.SelectedItem = null;
 
             _shortcutFile = null;
             _currentApplicationIds.Clear();
@@ -158,11 +149,23 @@ namespace ShortcutGuide.Controls
 
         private void SetNavItems()
         {
-            this.WindowSelector.MenuItems.Clear();
-            if (this.WindowSelector.MenuItems.Count != 0)
+            var newIds = this._currentApplicationIds.Keys.ToList();
+
+            // Reuse the existing NavigationViewItem objects when the set of
+            // apps has not changed. Creating new items on every open pins the
+            // previous native WinUI element tree via CsWinRT CCWs that survive
+            // GC (same root cause as the ShortcutsPage leak fixed in this
+            // branch). Selection was cleared in Hide(), so re-selecting
+            // MenuItems[0] always fires SelectionChanged.
+            if (newIds.SequenceEqual(_lastNavItemIds, StringComparer.Ordinal)
+                && this.WindowSelector.MenuItems.Count > 0)
             {
+                this.WindowSelector.SelectedItem = this.WindowSelector.MenuItems[0];
                 return;
             }
+
+            _lastNavItemIds = newIds;
+            this.WindowSelector.MenuItems.Clear();
 
             string defaultShellName = ManifestInterpreter.GetCachedIndexYamlFile().DefaultShellName;
 
