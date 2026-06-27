@@ -3,30 +3,20 @@
     x:Class="ShortcutGuide.Controls.MainPaneControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:backdrops="using:Microsoft.PowerToys.Common.UI.Controls.Backdrops"
+    xmlns:controls="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <!--
-        Pseudo-window: chrome (per-card acrylic + border + corner radius + shadow)
-        is provided here in XAML instead of by a real WindowEx host. The outer Grid
-        carries Translation Z=24 so its ThemeShadow projects onto the transparent
-        overlay window behind it.
+        Pseudo-window chrome (per-card desktop acrylic + 1px border + 8px corner
+        radius + ThemeShadow) is provided by the shared TransientSurface from
+        Common.UI.Controls instead of being hand-rolled here. Its built-in
+        show/hide transitions are intentionally left at the default (None):
+        OverlayWindow drives the entrance/exit animation on this whole control
+        (slide + fade keyed to the user's left/right alignment), so the surface
+        only contributes chrome here.
     -->
-    <Grid
-        BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
-        BorderThickness="1"
-        CornerRadius="8"
-        Translation="0,0,24">
-        <Grid.Shadow>
-            <ThemeShadow />
-        </Grid.Shadow>
-
-        <SystemBackdropElement CornerRadius="8">
-            <SystemBackdropElement.SystemBackdrop>
-                <backdrops:AlwaysActiveDesktopAcrylicBackdrop />
-            </SystemBackdropElement.SystemBackdrop>
-        </SystemBackdropElement>
+    <controls:TransientSurface AcrylicKind="Default" Visibility="Visible">
 
         <Grid>
             <Grid.RowDefinitions>
@@ -97,5 +87,5 @@
                 </NavigationView.Resources>
             </NavigationView>
         </Grid>
-    </Grid>
+    </controls:TransientSurface>
 </UserControl>
