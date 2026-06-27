@@ -40,6 +40,21 @@ public sealed partial class TaskbarIndicator : UserControl
     }
 
     /// <summary>
+    /// Resizes the indicator body so it stays proportional to the actual
+    /// taskbar button it labels. Windows shrinks taskbar buttons when icons are
+    /// set to the small size (or when many apps are open and buttons are
+    /// combined), so the caller derives <paramref name="bodyDip"/> from the
+    /// measured button rect; the font scales with it to stay centered.
+    /// </summary>
+    internal void SetBodySize(double bodyDip)
+    {
+        IndicatorRectangle.MinWidth = bodyDip;
+        IndicatorRectangle.MinHeight = bodyDip;
+        IndicatorRectangle.Padding = new Thickness(Math.Max(2, Math.Round(bodyDip * 0.2)));
+        IndicatorText.FontSize = Math.Max(11, Math.Round(bodyDip * 0.4));
+    }
+
+    /// <summary>
     /// Reflows the body and triangle tail and (re)configures the slide-in /
     /// slide-out animation so the tail points toward <paramref name="direction"/>
     /// and the indicator animates in from that same edge. Replaces the previously

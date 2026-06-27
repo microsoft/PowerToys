@@ -64,18 +64,36 @@ namespace ShortcutGuide.Controls
                 return null;
             }
 
-            // Each indicator is a standalone tooltip: a 40x40 body plus a 6px
+            // Each indicator is a standalone tooltip: a square body plus a 6px
             // triangle tail on the side that faces the taskbar. The "thickness"
             // (minor axis: body + tail) sits perpendicular to the taskbar edge;
-            // the body alone (40px) runs along the taskbar.
-            const double IndicatorBodyDip = 40;
+            // the body alone runs along the taskbar.
+            //
+            // The body size is derived from the actual taskbar button slot so it
+            // tracks Windows' icon size: when icons are set to "small" (or many
+            // apps are open and buttons are combined) the UIA button rects shrink,
+            // and the indicators shrink with them. We use the smallest slot along
+            // the taskbar so neighbouring bubbles never overlap, clamped to a
+            // readable range.
+            const double MaxBodyDip = 40;
+            const double MinBodyDip = 28;
+            const double IndicatorGapDip = 4;
             const double TriangleTailDip = 6;
             const double EdgeMarginDip = 8;
-            double indicatorThicknessDip = IndicatorBodyDip + TriangleTailDip;
+
+            bool horizontal = edge is TaskbarEdge.Top or TaskbarEdge.Bottom;
+
+            double minSlotPhysical = double.MaxValue;
+            foreach (TasklistButton b in buttons)
+            {
+                minSlotPhysical = Math.Min(minSlotPhysical, horizontal ? b.Width : b.Height);
+            }
+
+            double indicatorBodyDip = Math.Clamp((minSlotPhysical / dpi) - IndicatorGapDip, MinBodyDip, MaxBodyDip);
+            double indicatorThicknessDip = indicatorBodyDip + TriangleTailDip;
 
             this.KeyHolder.Children.Clear();
 
-            bool horizontal = edge is TaskbarEdge.Top or TaskbarEdge.Bottom;
             IndicatorTailDirection tail = edge switch
             {
                 TaskbarEdge.Bottom => IndicatorTailDirection.Down,
@@ -96,12 +114,12 @@ namespace ShortcutGuide.Controls
 
                 foreach (TasklistButton b in buttons)
                 {
-                    TaskbarIndicator indicator = CreateIndicator(b, tail);
+                    TaskbarIndicator indicator = CreateIndicator(b, tail, indicatorBodyDip);
                     this.KeyHolder.Children.Add(indicator);
 
                     // Center each indicator's body over its button along the X axis.
                     double buttonCenterPhysical = b.X + (b.Width / 2.0);
-                    double indicatorLeftDip = ((buttonCenterPhysical - leftmostPhysicalX) / dpi) - (IndicatorBodyDip / 2.0);
+                    double indicatorLeftDip = ((buttonCenterPhysical - leftmostPhysicalX) / dpi) - (indicatorBodyDip / 2.0);
                     Canvas.SetLeft(indicator, indicatorLeftDip);
                     Canvas.SetTop(indicator, 0);
                 }
@@ -130,12 +148,12 @@ namespace ShortcutGuide.Controls
 
                 foreach (TasklistButton b in buttons)
                 {
-                    TaskbarIndicator indicator = CreateIndicator(b, tail);
+                    TaskbarIndicator indicator = CreateIndicator(b, tail, indicatorBodyDip);
                     this.KeyHolder.Children.Add(indicator);
 
                     // Center each indicator's body over its button along the Y axis.
                     double buttonCenterPhysical = b.Y + (b.Height / 2.0);
-                    double indicatorTopDip = ((buttonCenterPhysical - topmostPhysicalY) / dpi) - (IndicatorBodyDip / 2.0);
+                    double indicatorTopDip = ((buttonCenterPhysical - topmostPhysicalY) / dpi) - (indicatorBodyDip / 2.0);
                     Canvas.SetTop(indicator, indicatorTopDip);
                     Canvas.SetLeft(indicator, 0);
                 }
@@ -154,12 +172,13 @@ namespace ShortcutGuide.Controls
             }
         }
 
-        private static TaskbarIndicator CreateIndicator(TasklistButton button, IndicatorTailDirection tail)
+        private static TaskbarIndicator CreateIndicator(TasklistButton button, IndicatorTailDirection tail, double bodyDip)
         {
             TaskbarIndicator indicator = new()
             {
                 Label = button.Keynum >= 10 ? "0" : button.Keynum.ToString(CultureInfo.InvariantCulture),
             };
+            indicator.SetBodySize(bodyDip);
             indicator.ApplyTailDirection(tail);
             return indicator;
         }
