@@ -226,7 +226,7 @@ namespace EnvironmentVariablesUILib.Helpers
             var fileContent = _fileSystem.File.ReadAllText(filePath);
             if (string.IsNullOrWhiteSpace(fileContent))
             {
-                return new List<ProfileVariablesSet>();
+                return null;
             }
 
             var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
