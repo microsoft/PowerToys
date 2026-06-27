@@ -85,24 +85,18 @@ namespace EnvironmentVariablesUILib.Helpers
             _fileAccessLock.Wait();
             try
             {
-                if (!_fileSystem.File.Exists(ProfilesJsonFilePath))
-                {
-                    return new List<ProfileVariablesSet>();
-                }
-
                 try
                 {
-                    var fileContent = _fileSystem.File.ReadAllText(ProfilesJsonFilePath);
-                    if (string.IsNullOrWhiteSpace(fileContent))
-                    {
-                        return new List<ProfileVariablesSet>();
-                    }
-
-                    var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
-                    return profiles ?? new List<ProfileVariablesSet>();
+                    return ReadProfilesFromPath(ProfilesJsonFilePath) ?? ReadProfilesFromLatestBackup();
                 }
                 catch (JsonException)
                 {
+                    var backupProfiles = ReadProfilesFromLatestBackup();
+                    if (backupProfiles != null)
+                    {
+                        return backupProfiles;
+                    }
+
                     return new List<ProfileVariablesSet>();
                 }
             }
@@ -200,6 +194,84 @@ namespace EnvironmentVariablesUILib.Helpers
             }
         }
 
+        private List<ProfileVariablesSet> ReadProfilesFromPath(string filePath)
+        {
+            if (!_fileSystem.File.Exists(filePath))
+            {
+                return new List<ProfileVariablesSet>();
+            }
+
+            var fileContent = _fileSystem.File.ReadAllText(filePath);
+            if (string.IsNullOrWhiteSpace(fileContent))
+            {
+                return new List<ProfileVariablesSet>();
+            }
+
+            var profiles = JsonSerializer.Deserialize<List<ProfileVariablesSet>>(fileContent);
+            return profiles ?? new List<ProfileVariablesSet>();
+        }
+
+        private List<ProfileVariablesSet> ReadProfilesFromLatestBackup()
+        {
+            var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
+            if (string.IsNullOrWhiteSpace(directoryPath) || !_fileSystem.Directory.Exists(directoryPath))
+            {
+                return null;
+            }
+
+            try
+            {
+                var baseFileName = Path.GetFileName(ProfilesJsonFilePath);
+                var wildcardPattern = $"{baseFileName}.*.bak";
+
+                var backupPaths = _fileSystem.Directory.EnumerateFiles(directoryPath, wildcardPattern)
+                    .Where(filePath => IsProfileArtifact(filePath, baseFileName, ".bak"))
+                    .OrderByDescending(filePath => _fileSystem.File.GetLastWriteTimeUtc(filePath));
+
+                foreach (var backupPath in backupPaths)
+                {
+                    try
+                    {
+                        return ReadProfilesFromPath(backupPath);
+                    }
+                    catch (JsonException)
+                    {
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
+        }
+
+        private static bool IsProfileArtifact(string filePath, string baseFileName, string extension)
+        {
+            var fileName = Path.GetFileName(filePath);
+            if (!fileName.StartsWith(baseFileName + ".", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (!Path.GetExtension(filePath).Equals(extension, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            var artifactIdLength = fileName.Length - baseFileName.Length - 1 - extension.Length;
+            if (artifactIdLength != 32)
+            {
+                return false;
+            }
+
+            var artifactId = fileName.Substring(baseFileName.Length + 1, artifactIdLength);
+            return Guid.TryParseExact(artifactId, "N", out _);
+        }
+
         private void CleanupStaleProfileJsonArtifacts()
         {
             var directoryPath = Path.GetDirectoryName(_profilesJsonFilePath);
@@ -211,27 +283,20 @@ namespace EnvironmentVariablesUILib.Helpers
             try
             {
                 var baseFileName = Path.GetFileName(ProfilesJsonFilePath);
-                var expectedPrefix = baseFileName + ".";
                 var wildcardPattern = $"{baseFileName}.*";
 
                 foreach (var filePath in _fileSystem.Directory.EnumerateFiles(directoryPath, wildcardPattern))
                 {
-                    var fileName = Path.GetFileName(filePath);
                     var extension = Path.GetExtension(filePath);
                     if (extension.Equals(".tmp", StringComparison.OrdinalIgnoreCase)
                         || extension.Equals(".bak", StringComparison.OrdinalIgnoreCase))
                     {
-                        var artifactIdLength = fileName.Length - expectedPrefix.Length - extension.Length;
-                        if (artifactIdLength <= 0)
+                        if (!IsProfileArtifact(filePath, baseFileName, extension))
                         {
                             continue;
                         }
 
-                        var artifactId = fileName.Substring(expectedPrefix.Length, fileName.Length - expectedPrefix.Length - extension.Length);
-                        if (artifactId.Length == 32 && Guid.TryParseExact(artifactId, "N", out _))
-                        {
-                            DeleteIfExists(filePath);
-                        }
+                        DeleteIfExists(filePath);
                     }
                 }
             }
