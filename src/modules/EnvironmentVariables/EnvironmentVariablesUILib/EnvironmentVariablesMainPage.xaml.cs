@@ -244,20 +244,10 @@ namespace EnvironmentVariablesUILib
                 return;
             }
 
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            ContentDialog dialog = new ContentDialog();
-            dialog.XamlRoot = RootPage.XamlRoot;
-            dialog.Title = profile.Name;
-            dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
-            dialog.CloseButtonText = resourceLoader.GetString("No");
-            dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Dialog_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
-            dialog.PrimaryButtonClick += (s, args) =>
-            {
-                ViewModel.RemoveProfile(profile);
-            };
-
-            var result = await dialog.ShowAsync();
+            await ShowDeleteConfirmationDialogAsync(
+                profile.Name,
+                "Delete_Dialog_Description",
+                () => ViewModel.RemoveProfile(profile));
         }
 
         private void AddVariable()
@@ -439,19 +429,40 @@ namespace EnvironmentVariablesUILib
                 }
             }
 
-            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
-            ContentDialog dialog = new ContentDialog();
-            dialog.XamlRoot = RootPage.XamlRoot;
-            dialog.Title = variable.Name;
-            dialog.PrimaryButtonText = resourceLoader.GetString("Yes");
-            dialog.CloseButtonText = resourceLoader.GetString("No");
-            dialog.DefaultButton = ContentDialogButton.Primary;
-            dialog.Content = new TextBlock() { Text = resourceLoader.GetString("Delete_Variable_Description"), TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords };
-            dialog.PrimaryButtonClick += (s, args) =>
+            await ShowDeleteConfirmationDialogAsync(
+                variable.Name,
+                "Delete_Variable_Description",
+                () => ViewModel.DeleteVariable(variable, variableSet));
+        }
+
+        private async Task ShowDeleteConfirmationDialogAsync(string title, string descriptionKey, Action onConfirm)
+        {
+            if (RootPage == null || onConfirm == null || string.IsNullOrWhiteSpace(descriptionKey))
             {
-                ViewModel.DeleteVariable(variable, variableSet);
+                return;
+            }
+
+            var resourceLoader = Helpers.ResourceLoaderInstance.ResourceLoader;
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                PrimaryButtonText = resourceLoader.GetString("Yes"),
+                CloseButtonText = resourceLoader.GetString("No"),
+                DefaultButton = ContentDialogButton.Primary,
+                IsLightDismissEnabled = false,
+                Content = new TextBlock()
+                {
+                    Text = resourceLoader.GetString(descriptionKey),
+                    TextWrapping = Microsoft.UI.Xaml.TextWrapping.WrapWholeWords
+                }
             };
+
+            SetDialogXamlRoot(dialog);
             var result = await dialog.ShowAsync();
+            if (result == ContentDialogResult.Primary)
+            {
+                onConfirm();
+            }
         }
 
         private void CopyVariableName_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
