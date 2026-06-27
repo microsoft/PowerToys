@@ -46,11 +46,23 @@ public static class TestHelper
     // hotkeys/overlays interfere).
     public const string ModuleSettingsKey = "Measure Tool";
 
+    // Ambient per-test diagnostics. ScreenRuler UI tests run sequentially, so a single ambient
+    // instance is safe. The logger is created in InitializeTest and flushed (as a TestExecutionLog
+    // artifact) in CleanupTest; Log(...) is a no-op when no test is active.
+    private static DiagnosticLogger? log;
+
+    /// <summary>Append a verbose, timestamped step to the current test's execution log.</summary>
+    private static void Log(string message) => log?.Step(message);
+
     /// <summary>Navigate to the Screen Ruler settings page, enable the toggle, and read the shortcut.</summary>
     public static Key[] InitializeTest(UITestBase testBase, string testName)
     {
+        log = new DiagnosticLogger(testBase, testName);
+
+        Log("InitializeTest: navigating to the Screen Ruler settings page");
         LaunchFromSetting(testBase);
 
+        Log("InitializeTest: enabling the Screen Ruler toggle");
         var toggleSwitch = SetScreenRulerToggle(testBase, enable: true);
         Assert.IsTrue(toggleSwitch.IsOn, $"Screen Ruler toggle switch should be ON for {testName}");
 
@@ -58,13 +70,23 @@ public static class TestHelper
         Assert.IsNotNull(activationKeys, "Should be able to read activation shortcut");
         Assert.IsTrue(activationKeys.Length > 0, "Activation shortcut should contain at least one key");
 
+        Log($"InitializeTest: ready; activation shortcut = {string.Join(" + ", activationKeys)}");
         return activationKeys;
     }
 
-    /// <summary>Close the Screen Ruler UI (best-effort).</summary>
+    /// <summary>Close the Screen Ruler UI (best-effort) and flush the execution-log artifact.</summary>
     public static void CleanupTest(UITestBase testBase)
     {
-        CloseScreenRulerUI(testBase);
+        try
+        {
+            Log("CleanupTest: closing the Screen Ruler UI");
+            CloseScreenRulerUI(testBase);
+        }
+        finally
+        {
+            log?.Save();
+            log = null;
+        }
     }
 
     /// <summary>Navigate to the Screen Ruler (Measure Tool) settings page.</summary>
@@ -288,11 +310,15 @@ public static class TestHelper
 
         for (int i = 0; i < attempts; i++)
         {
+            Log($"SendShortcutUntilVisible: attempt {i + 1}/{attempts} — sending the activation chord");
             KeyboardHelper.SendKeys(activationKeys);
             if (WaitForScreenRulerUI(testBase, perAttemptMs))
             {
+                Log($"SendShortcutUntilVisible: MeasureToolUI process detected on attempt {i + 1}");
                 return true;
             }
+
+            Log($"SendShortcutUntilVisible: still not visible after attempt {i + 1}");
         }
 
         return false;
@@ -309,13 +335,17 @@ public static class TestHelper
         MouseHelper.MoveTo(cx, cy);
         Thread.Sleep(200);
 
+        Log($"ActivateScreenRuler: sending activation chord {string.Join(" + ", activationKeys)}");
         Assert.IsTrue(
             SendShortcutUntilVisible(testBase, activationKeys),
             $"ScreenRulerUI should appear after pressing activation shortcut for {testName}: {string.Join(" + ", activationKeys)}");
 
         // Process-scoped session so the toolbar buttons resolve regardless of which Measure Tool
         // window owns them (the winappcli equivalent of the legacy global Find).
-        return Session.FromProcess(ScreenRulerProcess, PowerToysModule.ScreenRuler, timeoutMS: 5000);
+        Log("ActivateScreenRuler: toolbar is up; building the process-scoped session");
+        var ruler = Session.FromProcess(ScreenRulerProcess, PowerToysModule.ScreenRuler, timeoutMS: 5000);
+        Log("ActivateScreenRuler: session ready");
+        return ruler;
     }
 
     /// <summary>Run a spacing-tool measurement and validate the clipboard output.</summary>
@@ -329,6 +359,7 @@ public static class TestHelper
         PerformMeasurementAction();
 
         var clipboardText = GetClipboardText();
+        Log($"PerformSpacingToolTest[{testName}]: clipboard after measurement = '{clipboardText}' (length {clipboardText.Length})");
         Assert.IsFalse(string.IsNullOrEmpty(clipboardText), $"{testName}: Clipboard should contain measurement data");
         Assert.IsTrue(
             ValidateSpacingClipboardContent(clipboardText, testName),
@@ -364,6 +395,7 @@ public static class TestHelper
         Thread.Sleep(300);
 
         var clipboardText = GetClipboardText();
+        Log($"PerformBoundsToolTest: clipboard after drag = '{clipboardText}' (length {clipboardText.Length})");
         Assert.IsFalse(string.IsNullOrEmpty(clipboardText), "Clipboard should contain measurement data");
         Assert.IsTrue(
             clipboardText.Contains("100 × 100") || clipboardText.Contains("100 x 100"),
@@ -392,18 +424,24 @@ public static class TestHelper
         for (int attempt = 1; attempt <= attempts; attempt++)
         {
             // (a) Accessibility invoke via winappcli — coordinate-free, so a 0×0 button rect is fine.
+            Log($"SelectToolAndVerify[{testName}]: attempt {attempt}/{attempts} — UIA invoke of {buttonId}");
             ruler.Find<Element>(By.AccessibilityId(buttonId), 15000).Click(msPostAction: 300);
             if (MoveOffToolbarAndWaitForOverlay(cx, cy))
             {
+                Log($"SelectToolAndVerify[{testName}]: overlay present after UIA invoke (attempt {attempt})");
                 return;
             }
 
             // (b) Keyboard accelerator backup (Ctrl+<n>) — the toolbar is the foreground window.
+            Log($"SelectToolAndVerify[{testName}]: no overlay after invoke; keyboard backup Ctrl+{acceleratorDigit}");
             KeyboardHelper.SendKeys(Key.Ctrl, acceleratorDigit);
             if (MoveOffToolbarAndWaitForOverlay(cx, cy))
             {
+                Log($"SelectToolAndVerify[{testName}]: overlay present after keyboard backup (attempt {attempt})");
                 return;
             }
+
+            Log($"SelectToolAndVerify[{testName}]: still no overlay after attempt {attempt}");
         }
 
         Assert.Fail(
@@ -443,10 +481,19 @@ public static class TestHelper
     /// once a tool is engaged and the cursor is over the capture surface. This is the reliable
     /// "we're in capture state" signal that the blind click-then-measure approach was missing.
     /// </summary>
-    private static bool IsMeasureOverlayPresent() =>
-        WindowsFinder.ListByApp(ScreenRulerProcess).Any(w =>
+    private static bool IsMeasureOverlayPresent()
+    {
+        var windows = WindowsFinder.ListByApp(ScreenRulerProcess);
+        var present = windows.Any(w =>
             w.Title.Contains("MeasureToolOverlay", StringComparison.OrdinalIgnoreCase) ||
             w.ClassName.Contains("OverlayWindow", StringComparison.OrdinalIgnoreCase));
+
+        var summary = windows.Count == 0
+            ? "(none)"
+            : string.Join(", ", windows.Select(w => $"'{w.Title}'[{w.ClassName}]"));
+        Log($"IsMeasureOverlayPresent: {windows.Count} window(s): {summary} => overlay {(present ? "PRESENT" : "absent")}");
+        return present;
+    }
 
     /// <summary>The toolbar keyboard accelerator (Ctrl+1..4) that selects each tool.</summary>
     private static Key AcceleratorFor(string buttonId) => buttonId switch
@@ -465,12 +512,14 @@ public static class TestHelper
         // SetCursorPos can land without a tracked move, leaving the measurement empty), then click
         // to capture.
         var (cx, cy) = ScreenCenter();
+        Log($"PerformMeasurementAction: two-step move to centre ({cx},{cy}), then left-click to capture");
         MouseHelper.MoveTo(cx - 60, cy - 60);
         Thread.Sleep(200);
         MouseHelper.MoveTo(cx, cy);
         Thread.Sleep(400);
         MouseHelper.LeftClick();
         Thread.Sleep(500);
+        Log("PerformMeasurementAction: right-click to dismiss the selection");
         MouseHelper.RightClick();
         Thread.Sleep(400);
     }
