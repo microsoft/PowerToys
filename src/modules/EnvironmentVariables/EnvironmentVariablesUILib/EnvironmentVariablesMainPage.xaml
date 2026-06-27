@@ -437,7 +437,8 @@
             x:Uid="AddDefaultVariableDialog"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             IsSecondaryButtonEnabled="True"
-            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+            IsLightDismissEnabled="False">
             <ContentDialog.DataContext>
                 <models:Variable />
             </ContentDialog.DataContext>
@@ -469,7 +470,8 @@
             x:Uid="EditVariableDialog"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             IsSecondaryButtonEnabled="True"
-            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+            IsLightDismissEnabled="False">
             <ContentDialog.DataContext>
                 <models:Variable />
             </ContentDialog.DataContext>
@@ -568,7 +570,8 @@
             x:Uid="AddProfileDialog"
             IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
             IsSecondaryButtonEnabled="True"
-            PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
+            PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+            IsLightDismissEnabled="False">
             <ContentDialog.DataContext>
                 <models:ProfileVariablesSet />
             </ContentDialog.DataContext>
