@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Run;
+using Microsoft.CmdPal.Ext.Shell.Helpers;
 using Microsoft.CmdPal.Ext.UnitTestBase;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -85,6 +86,68 @@ public class RunPageTests : CommandPaletteUnitTestBase
             IgnoreInaccessible = true,
         };
         return Directory.EnumerateFileSystemEntries(path, "*", o);
+    }
+
+    private static ScopeExit SetEnvironmentVariableForTest(string name, string value)
+    {
+        var originalValue = Environment.GetEnvironmentVariable(name);
+        Environment.SetEnvironmentVariable(name, value);
+        return new ScopeExit(() => Environment.SetEnvironmentVariable(name, originalValue));
+    }
+
+    [TestMethod]
+    public void TryGetEnvironmentVariableCompletionPrefix_OnlyMatchesUnterminatedTokens()
+    {
+        Assert.IsTrue(ShellListPageHelpers.TryGetEnvironmentVariableCompletionPrefix("%USE", out var tokenStart, out var prefix));
+        Assert.AreEqual(0, tokenStart);
+        Assert.AreEqual("USE", prefix);
+
+        Assert.IsTrue(ShellListPageHelpers.TryGetEnvironmentVariableCompletionPrefix("cmd %use", out tokenStart, out prefix));
+        Assert.AreEqual(4, tokenStart);
+        Assert.AreEqual("use", prefix);
+
+        Assert.IsFalse(ShellListPageHelpers.TryGetEnvironmentVariableCompletionPrefix("%USERPROFILE%", out _, out _));
+        Assert.IsFalse(ShellListPageHelpers.TryGetEnvironmentVariableCompletionPrefix("%", out _, out _));
+        Assert.IsFalse(ShellListPageHelpers.TryGetEnvironmentVariableCompletionPrefix("%%", out _, out _));
+        Assert.IsFalse(ShellListPageHelpers.TryGetEnvironmentVariableCompletionPrefix("C:\\Windows", out _, out _));
+    }
+
+    [TestMethod]
+    public void CompleteEnvironmentVariableToken_ReplacesUnterminatedToken()
+    {
+        var completed = ShellListPageHelpers.CompleteEnvironmentVariableToken("cmd %use", "USERPROFILE");
+
+        Assert.AreEqual("cmd %USERPROFILE%", completed);
+    }
+
+    [TestMethod]
+    public void ExpandEnvironmentVariablesForPath_ExpandsKnownCompletedToken()
+    {
+        const string envName = "CMDPAL_TEST_ENV_EXPAND";
+        var envValue = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        using var cleanup = SetEnvironmentVariableForTest(envName, envValue);
+
+        var expanded = ShellListPageHelpers.ExpandEnvironmentVariablesForPath($"%{envName}%\\Docs");
+        var lowerCaseExpanded = ShellListPageHelpers.ExpandEnvironmentVariablesForPath($"%{envName.ToLowerInvariant()}%\\Docs");
+
+        Assert.AreEqual(envValue + "\\Docs", expanded);
+        Assert.AreEqual(envValue + "\\Docs", lowerCaseExpanded);
+    }
+
+    [TestMethod]
+    public void ExpandEnvironmentVariablesForPath_LeavesUnknownAndEmptyTokensUnchanged()
+    {
+        const string unknownEnvName = "CMDPAL_TEST_ENV_UNKNOWN";
+        const string emptyEnvName = "CMDPAL_TEST_ENV_EMPTY";
+        Environment.SetEnvironmentVariable(unknownEnvName, null);
+        using var cleanup = SetEnvironmentVariableForTest(emptyEnvName, string.Empty);
+
+        var unknownInput = $"%{unknownEnvName}%\\Docs";
+        var emptyInput = $"%{emptyEnvName}%\\Docs";
+
+        Assert.AreEqual(unknownInput, ShellListPageHelpers.ExpandEnvironmentVariablesForPath(unknownInput));
+        Assert.AreEqual(emptyInput, ShellListPageHelpers.ExpandEnvironmentVariablesForPath(emptyInput));
+        Assert.AreEqual("C:\\Windows", ShellListPageHelpers.ExpandEnvironmentVariablesForPath("C:\\Windows"));
     }
 
     [TestMethod]
@@ -286,6 +349,67 @@ public class RunPageTests : CommandPaletteUnitTestBase
 
         var commandList = page.GetItems();
         Assert.IsNotNull(commandList);
+    }
+
+    [TestMethod]
+    public async Task TestEnvironmentVariableAutocompleteSuggestions()
+    {
+        const string envName = "CMDPAL_TEST_ENV_SUGGESTION";
+        using var cleanup = SetEnvironmentVariableForTest(envName, "autocomplete-value");
+
+        var nativeService = CreateMockHistoryService().Object;
+        using var page = new RunListPage(nativeService, telemetryService: null);
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "%cmdpal_test_env_sugg"; });
+
+        var commandList = page.GetItems();
+        var envItem = commandList.FirstOrDefault(item => item.Title.Equals($"%{envName}%", StringComparison.OrdinalIgnoreCase));
+
+        Assert.IsNotNull(envItem);
+        Assert.AreEqual($"%{envName}%", envItem.TextToSuggest);
+    }
+
+    [TestMethod]
+    public async Task TestCompletedEnvironmentVariableEnumeratesDirectory()
+    {
+        const string envName = "CMDPAL_TEST_ENV_DIRECTORY";
+
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        using var cleanupDir = new ScopeExit(() => Directory.Delete(tempDir, recursive: true));
+        using var cleanupEnv = SetEnvironmentVariableForTest(envName, tempDir);
+
+        var testFile = Path.Combine(tempDir, "child.txt");
+        File.WriteAllText(testFile, "test content");
+        var testDirectory = Path.Combine(tempDir, "Docs");
+        Directory.CreateDirectory(testDirectory);
+
+        var nativeService = CreateMockHistoryService().Object;
+        using var page = new RunListPage(nativeService, telemetryService: null);
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = $"%{envName}%\\"; });
+
+        var commandList = page.GetItems();
+        Assert.AreEqual(2 + ExeItemCount, commandList.Length);
+
+        var childItem = commandList.FirstOrDefault(item => item.Title.Equals("child.txt", StringComparison.OrdinalIgnoreCase));
+        Assert.IsNotNull(childItem);
+        Assert.AreEqual($"%{envName}%\\child.txt", childItem.TextToSuggest);
+    }
+
+    [TestMethod]
+    public async Task TestUnknownEnvironmentVariableDoesNotEnumeratePath()
+    {
+        var envName = "CMDPAL_TEST_ENV_UNKNOWN_" + Guid.NewGuid().ToString("N");
+        Environment.SetEnvironmentVariable(envName, null);
+
+        var nativeService = CreateMockHistoryService().Object;
+        using var page = new RunListPage(nativeService, telemetryService: null);
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = $"%{envName}%\\"; });
+
+        var commandList = page.GetItems();
+        Assert.AreEqual(ExeItemCount, commandList.Length);
     }
 
     [TestMethod]
