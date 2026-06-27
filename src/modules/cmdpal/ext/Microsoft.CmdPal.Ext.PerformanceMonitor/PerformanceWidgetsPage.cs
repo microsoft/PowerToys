@@ -67,6 +67,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
     private readonly string _id;
     private readonly bool _isBandPage;
     private readonly PerformanceMetricKind? _singleMetric;
+    private readonly SettingsManager _settingsManager;
 
     private readonly SystemCPUUsageWidgetPage? _cpuPage;
     private readonly ListItem? _cpuItem;
@@ -91,6 +92,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
 
     public PerformanceWidgetsPage(SettingsManager settingsManager, bool isBandPage = false, PerformanceMetricKind? singleMetric = null)
     {
+        _settingsManager = settingsManager;
         _isBandPage = isBandPage;
         _singleMetric = singleMetric;
         _id = singleMetric is null ? BaseId : $"{BaseId}.{GetMetricSuffix(singleMetric.Value)}";
@@ -107,6 +109,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _cpuPage.Updated += (s, e) =>
             {
                 _cpuItem.Title = _cpuPage.GetItemTitle(isBandPage);
+                UpdateMetricIcon(PerformanceMetricKind.Cpu);
             };
         }
 
@@ -122,6 +125,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _memoryPage.Updated += (s, e) =>
             {
                 _memoryItem.Title = _memoryPage.GetItemTitle(isBandPage);
+                UpdateMetricIcon(PerformanceMetricKind.Memory);
             };
         }
 
@@ -141,6 +145,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _networkDownSpeed = _networkPage.GetDownSpeed();
                 _networkDownItem?.Title = $"{_networkDownSpeed}";
                 _networkUpItem?.Title = $"{_networkUpSpeed}";
+                UpdateMetricIcon(PerformanceMetricKind.Network);
             };
         }
 
@@ -156,6 +161,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
             _gpuPage.Updated += (s, e) =>
             {
                 _gpuItem.Title = _gpuPage.GetItemTitle(isBandPage);
+                UpdateMetricIcon(PerformanceMetricKind.Gpu);
             };
         }
 
@@ -175,7 +181,7 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _batteryPage.Updated += (s, e) =>
                 {
                     _batteryItem.Title = _batteryPage.GetItemTitle(isBandPage);
-                    _batteryItem.Icon = _batteryPage.CurrentIcon;
+                    UpdateMetricIcon(PerformanceMetricKind.Battery);
                 };
             }
         }
@@ -208,6 +214,8 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
                 _batteryItem.Subtitle = Resources.GetResource("Battery_Usage_Subtitle");
             }
         }
+
+        UpdateAllMetricIcons();
     }
 
     protected override void Loaded()
@@ -284,6 +292,76 @@ internal sealed partial class PerformanceWidgetsPage : OnLoadStaticListPage, IDi
         _batteryPage?.Dispose();
     }
 
+    private void UpdateAllMetricIcons()
+    {
+        UpdateMetricIcon(PerformanceMetricKind.Cpu);
+        UpdateMetricIcon(PerformanceMetricKind.Memory);
+        UpdateMetricIcon(PerformanceMetricKind.Network);
+        UpdateMetricIcon(PerformanceMetricKind.Gpu);
+        UpdateMetricIcon(PerformanceMetricKind.Battery);
+    }
+
+    private void UpdateMetricIcon(PerformanceMetricKind metric)
+    {
+        var item = GetMetricItem(metric);
+        if (item is null)
+        {
+            return;
+        }
+
+        item.Icon = GetMetricIcon(metric);
+    }
+
+    private ListItem? GetMetricItem(PerformanceMetricKind metric)
+    {
+        return metric switch
+        {
+            PerformanceMetricKind.Cpu => _cpuItem,
+            PerformanceMetricKind.Memory => _memoryItem,
+            PerformanceMetricKind.Network => _networkItem,
+            PerformanceMetricKind.Gpu => _gpuItem,
+            PerformanceMetricKind.Battery => _batteryItem,
+            _ => null,
+        };
+    }
+
+    private IconInfo? GetMetricIcon(PerformanceMetricKind metric)
+    {
+        if (ShouldUseGraphIcon(metric))
+        {
+            var graphIcon = metric switch
+            {
+                PerformanceMetricKind.Cpu => _cpuPage?.CreateGraphIcon(ChartHelper.ChartType.CPU),
+                PerformanceMetricKind.Memory => _memoryPage?.CreateGraphIcon(ChartHelper.ChartType.Mem),
+                PerformanceMetricKind.Network => _networkPage?.CreateGraphIcon(ChartHelper.ChartType.Net),
+                PerformanceMetricKind.Gpu => _gpuPage?.CreateGraphIcon(ChartHelper.ChartType.GPU),
+                PerformanceMetricKind.Battery => _batteryPage?.CreateGraphIcon(ChartHelper.ChartType.Battery),
+                _ => null,
+            };
+
+            if (graphIcon is not null)
+            {
+                return graphIcon;
+            }
+        }
+
+        return GetStaticMetricIcon(metric);
+    }
+
+    private bool ShouldUseGraphIcon(PerformanceMetricKind metric)
+    {
+        return _isBandPage && _singleMetric == metric && _settingsManager.UseGraphIcons;
+    }
+
+    private IconInfo? GetStaticMetricIcon(PerformanceMetricKind metric)
+    {
+        return metric switch
+        {
+            PerformanceMetricKind.Battery => _batteryPage?.CurrentIcon ?? Icons.BatteryIcon,
+            _ => null,
+        };
+    }
+
     private bool IncludesMetric(PerformanceMetricKind metric)
     {
         return _singleMetric is null || _singleMetric == metric;
@@ -313,6 +391,8 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     internal event EventHandler? Updated;
 
     protected Dictionary<string, string> ContentData { get; } = new();
+
+    protected List<float> GraphIconValues { get; } = new();
 
     protected WidgetPageState Page { get; set; } = WidgetPageState.Unknown;
 
@@ -355,6 +435,34 @@ internal abstract partial class WidgetPage : OnLoadContentPage
     protected abstract void LoadContentData();
 
     protected abstract string GetTemplatePath(WidgetPageState page);
+
+    internal IconInfo? CreateGraphIcon(ChartHelper.ChartType chartType)
+    {
+        try
+        {
+            return IconInfo.FromStream(ChartHelper.CreateIconStream(GraphIconValues, chartType));
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    protected void AddGraphIconValue(float value)
+    {
+        lock (GraphIconValues)
+        {
+            ChartHelper.AddNextChartValue(value, GraphIconValues);
+        }
+    }
+
+    protected void ClearGraphIconValues()
+    {
+        lock (GraphIconValues)
+        {
+            GraphIconValues.Clear();
+        }
+    }
 
     protected string GetTemplateForPage(WidgetPageState page)
     {
@@ -456,6 +564,8 @@ internal sealed partial class SystemCPUUsageWidgetPage : WidgetPage, IDisposable
             var currentData = _dataManager.GetCPUStats();
 
             var dataDuration = timer.ElapsedMilliseconds;
+
+            AddGraphIconValue(currentData.CpuUsage * 100);
 
             ContentData["cpuUsage"] = FloatToPercentString(currentData.CpuUsage);
             ContentData["cpuSpeed"] = SpeedToString(currentData.CpuSpeed);
@@ -564,6 +674,8 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
             var currentData = _dataManager.GetMemoryStats();
 
             var dataDuration = timer.ElapsedMilliseconds;
+
+            AddGraphIconValue(currentData.MemUsage * 100);
 
             ContentData["allMem"] = MemUlongToString(currentData.AllMem);
             ContentData["usedMem"] = MemUlongToString(currentData.UsedMem);
@@ -696,6 +808,8 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
             var netName = currentData.GetNetworkName(_networkIndex);
             var networkStats = currentData.GetNetworkUsage(_networkIndex);
+
+            AddGraphIconValue(networkStats.Usage * 100);
 
             ContentData["networkUsage"] = FloatToPercentString(networkStats.Usage);
             ContentData["netSent"] = SpeedToString(networkStats.Sent);
@@ -906,12 +1020,14 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
     private void HandlePrevNetwork()
     {
         _networkIndex = _dataManager.GetNetworkStats().GetPrevNetworkIndex(_networkIndex);
+        ClearGraphIconValues();
         UpdateWidget();
     }
 
     private void HandleNextNetwork()
     {
         _networkIndex = _dataManager.GetNetworkStats().GetNextNetworkIndex(_networkIndex);
+        ClearGraphIconValues();
         UpdateWidget();
     }
 
@@ -998,8 +1114,11 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             var dataDuration = timer.ElapsedMilliseconds;
 
             var gpuName = stats.GetGPUName(_gpuActiveIndex);
+            var gpuUsage = stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType);
 
-            ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
+            AddGraphIconValue(gpuUsage * 100);
+
+            ContentData["gpuUsage"] = FloatToPercentString(gpuUsage);
             ContentData["gpuName"] = gpuName;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
             ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
@@ -1061,12 +1180,14 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
     private void HandlePrevGPU()
     {
         _gpuActiveIndex = _dataManager.GetGPUStats().GetPrevGPUIndex(_gpuActiveIndex);
+        ClearGraphIconValues();
         UpdateWidget();
     }
 
     private void HandleNextGPU()
     {
         _gpuActiveIndex = _dataManager.GetGPUStats().GetNextGPUIndex(_gpuActiveIndex);
+        ClearGraphIconValues();
         UpdateWidget();
     }
 
@@ -1142,6 +1263,15 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             var stats = _dataManager.GetBatteryStats();
 
             CurrentIcon = Icons.BatteryGlyph(stats.ChargePercent, stats.IsCharging, stats.HasBattery);
+
+            if (stats.HasBattery && stats.ChargePercent >= 0)
+            {
+                AddGraphIconValue(stats.ChargePercent * 100);
+            }
+            else
+            {
+                ClearGraphIconValues();
+            }
 
             if (!stats.HasBattery)
             {

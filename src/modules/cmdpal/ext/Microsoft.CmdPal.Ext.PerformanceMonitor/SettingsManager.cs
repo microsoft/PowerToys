@@ -25,10 +25,18 @@ internal sealed class SettingsManager : JsonSettingsManager
             new ChoiceSetSetting.Choice(Resources.GetResource("Network_Speed_Unit_BinaryBytesPerSec"), NetworkSpeedUnit.BinaryBytesPerSecond.ToString("G")),
         ]);
 
+    private readonly ToggleSetting _useGraphIcons = new(
+        Namespaced(nameof(UseGraphIcons)),
+        Resources.GetResource("Graph_Icons_Setting_Title"),
+        Resources.GetResource("Graph_Icons_Setting_Description"),
+        false);
+
     public NetworkSpeedUnit NetworkSpeedUnit =>
         Enum.TryParse<NetworkSpeedUnit>(_networkSpeedUnit.Value, out var unit)
             ? unit
             : NetworkSpeedUnit.BitsPerSecond;
+
+    public bool UseGraphIcons => _useGraphIcons.Value;
 
     private static string SettingsJsonPath()
     {
@@ -42,6 +50,7 @@ internal sealed class SettingsManager : JsonSettingsManager
         FilePath = SettingsJsonPath();
 
         Settings.Add(_networkSpeedUnit);
+        Settings.Add(_useGraphIcons);
 
         LoadSettings();
 

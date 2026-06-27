@@ -2,10 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Xml.Linq;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
 
 namespace CoreWidgetProvider.Helpers;
 
@@ -17,10 +20,13 @@ internal sealed class ChartHelper
         GPU,
         Mem,
         Net,
+        Battery,
     }
 
     public const int ChartHeight = 86;
     public const int ChartWidth = 268;
+    public const int IconHeight = 32;
+    public const int IconWidth = 32;
 
     private const string LightGrayBoxStyle = "fill:none;stroke:lightgrey;stroke-width:1";
 
@@ -28,6 +34,7 @@ internal sealed class ChartHelper
     private const string GPULineStyle = "fill:none;stroke:rgb(222,104,242);stroke-width:1";
     private const string MemLineStyle = "fill:none;stroke:rgb(92,158,250);stroke-width:1";
     private const string NetLineStyle = "fill:none;stroke:rgb(245,98,142);stroke-width:1";
+    private const string BatteryLineStyle = "fill:none;stroke:rgb(78,203,113);stroke-width:1";
 
     private const string FillStyle = "fill:url(#gradientId);stroke:transparent";
 
@@ -42,6 +49,9 @@ internal sealed class ChartHelper
 
     private const string NetBrushStop1Style = "stop-color:rgb(245,98,142);stop-opacity:0.4";
     private const string NetBrushStop2Style = "stop-color:rgb(130,0,47);stop-opacity:0.25";
+
+    private const string BatteryBrushStop1Style = "stop-color:rgb(78,203,113);stop-opacity:0.4";
+    private const string BatteryBrushStop2Style = "stop-color:rgb(19,95,48);stop-opacity:0.25";
 
     private const string SvgElement = "svg";
     private const string RectElement = "rect";
@@ -62,11 +72,44 @@ internal sealed class ChartHelper
     private const string IdAttr = "id";
 
     private const int MaxChartValues = 34;
+    private const int IconPadding = 3;
+    private const int IconStrokeRadius = 1;
+    private const byte IconFillAlpha = 44;
+    private const byte IconLineAlpha = 255;
 
     public static string CreateImageUrl(List<float> chartValues, ChartType type)
     {
         var chartStr = CreateChart(chartValues, type);
         return "data:image/svg+xml;utf8," + chartStr;
+    }
+
+    public static IRandomAccessStream CreateIconStream(List<float> chartValues, ChartType type)
+    {
+        var values = SnapshotIconValues(chartValues);
+        var pixelBytes = RenderIconPixels(values, type);
+        var stream = new InMemoryRandomAccessStream();
+
+        try
+        {
+            var encoder = BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, stream).GetAwaiter().GetResult();
+            encoder.SetPixelData(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                (uint)IconWidth,
+                (uint)IconHeight,
+                96,
+                96,
+                pixelBytes);
+            encoder.FlushAsync().GetAwaiter().GetResult();
+
+            stream.Seek(0);
+            return stream;
+        }
+        catch
+        {
+            stream.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -174,6 +217,10 @@ internal sealed class ChartHelper
                 stop1Style = NetBrushStop1Style;
                 stop2Style = NetBrushStop2Style;
                 break;
+            case ChartType.Battery:
+                stop1Style = BatteryBrushStop1Style;
+                stop2Style = BatteryBrushStop2Style;
+                break;
             case ChartType.CPU:
             default:
                 stop1Style = CPUBrushStop1Style;
@@ -213,10 +260,179 @@ internal sealed class ChartHelper
             ChartType.GPU => GPULineStyle,
             ChartType.Mem => MemLineStyle,
             ChartType.Net => NetLineStyle,
+            ChartType.Battery => BatteryLineStyle,
             _ => CPULineStyle,
         };
 
         return lineStyle;
+    }
+
+    private static float[] SnapshotIconValues(List<float> chartValues)
+    {
+        lock (chartValues)
+        {
+            if (chartValues.Count == 0)
+            {
+                return [0, 0];
+            }
+
+            if (chartValues.Count == 1)
+            {
+                var value = ClampChartValue(chartValues[0]);
+                return [value, value];
+            }
+
+            var values = new float[chartValues.Count];
+            for (var index = 0; index < chartValues.Count; index++)
+            {
+                values[index] = ClampChartValue(chartValues[index]);
+            }
+
+            return values;
+        }
+    }
+
+    private static byte[] RenderIconPixels(float[] values, ChartType type)
+    {
+        var pixels = new byte[IconWidth * IconHeight * 4];
+        var (red, green, blue) = GetIconColor(type);
+        CreateIconPoints(values, out var xPoints, out var yPoints);
+
+        FillIconArea(pixels, xPoints, yPoints, red, green, blue);
+        DrawIconLine(pixels, xPoints, yPoints, red, green, blue);
+
+        return pixels;
+    }
+
+    private static void CreateIconPoints(float[] values, out int[] xPoints, out int[] yPoints)
+    {
+        var count = values.Length;
+        xPoints = new int[count];
+        yPoints = new int[count];
+
+        var drawableWidth = IconWidth - (IconPadding * 2) - 1;
+        var drawableHeight = IconHeight - (IconPadding * 2) - 1;
+        var bottom = IconHeight - IconPadding - 1;
+
+        for (var index = 0; index < count; index++)
+        {
+            xPoints[index] = IconPadding + (int)Math.Round(index * drawableWidth / (double)(count - 1));
+            yPoints[index] = bottom - (int)Math.Round(values[index] * drawableHeight / 100.0);
+        }
+    }
+
+    private static void FillIconArea(byte[] pixels, int[] xPoints, int[] yPoints, byte red, byte green, byte blue)
+    {
+        var bottom = IconHeight - IconPadding - 1;
+
+        for (var index = 0; index < xPoints.Length - 1; index++)
+        {
+            var startX = xPoints[index];
+            var endX = xPoints[index + 1];
+            var startY = yPoints[index];
+            var endY = yPoints[index + 1];
+            var segmentWidth = Math.Max(1, endX - startX);
+
+            for (var x = startX; x <= endX; x++)
+            {
+                var position = (x - startX) / (double)segmentWidth;
+                var y = (int)Math.Round(startY + ((endY - startY) * position));
+                for (var fillY = Math.Max(IconPadding, y); fillY <= bottom; fillY++)
+                {
+                    SetPixel(pixels, x, fillY, red, green, blue, IconFillAlpha);
+                }
+            }
+        }
+    }
+
+    private static void DrawIconLine(byte[] pixels, int[] xPoints, int[] yPoints, byte red, byte green, byte blue)
+    {
+        for (var index = 0; index < xPoints.Length - 1; index++)
+        {
+            DrawLine(pixels, xPoints[index], yPoints[index], xPoints[index + 1], yPoints[index + 1], red, green, blue);
+        }
+    }
+
+    private static void DrawLine(byte[] pixels, int startX, int startY, int endX, int endY, byte red, byte green, byte blue)
+    {
+        var deltaX = Math.Abs(endX - startX);
+        var stepX = startX < endX ? 1 : -1;
+        var deltaY = -Math.Abs(endY - startY);
+        var stepY = startY < endY ? 1 : -1;
+        var error = deltaX + deltaY;
+
+        while (true)
+        {
+            DrawLinePoint(pixels, startX, startY, red, green, blue);
+
+            if (startX == endX && startY == endY)
+            {
+                break;
+            }
+
+            var error2 = error * 2;
+            if (error2 >= deltaY)
+            {
+                error += deltaY;
+                startX += stepX;
+            }
+
+            if (error2 <= deltaX)
+            {
+                error += deltaX;
+                startY += stepY;
+            }
+        }
+    }
+
+    private static void DrawLinePoint(byte[] pixels, int centerX, int centerY, byte red, byte green, byte blue)
+    {
+        for (var y = centerY - IconStrokeRadius; y <= centerY + IconStrokeRadius; y++)
+        {
+            for (var x = centerX - IconStrokeRadius; x <= centerX + IconStrokeRadius; x++)
+            {
+                if (Math.Abs(centerX - x) + Math.Abs(centerY - y) <= IconStrokeRadius)
+                {
+                    SetPixel(pixels, x, y, red, green, blue, IconLineAlpha);
+                }
+            }
+        }
+    }
+
+    private static void SetPixel(byte[] pixels, int x, int y, byte red, byte green, byte blue, byte alpha)
+    {
+        if (x < 0 || x >= IconWidth || y < 0 || y >= IconHeight)
+        {
+            return;
+        }
+
+        var offset = ((y * IconWidth) + x) * 4;
+        pixels[offset] = Premultiply(blue, alpha);
+        pixels[offset + 1] = Premultiply(green, alpha);
+        pixels[offset + 2] = Premultiply(red, alpha);
+        pixels[offset + 3] = alpha;
+    }
+
+    private static byte Premultiply(byte value, byte alpha)
+    {
+        return (byte)((value * alpha) / 255);
+    }
+
+    private static float ClampChartValue(float value)
+    {
+        return Math.Clamp(value, 0, 100);
+    }
+
+    private static (byte Red, byte Green, byte Blue) GetIconColor(ChartType type)
+    {
+        return type switch
+        {
+            ChartType.GPU => (222, 104, 242),
+            ChartType.Mem => (92, 158, 250),
+            ChartType.Net => (245, 98, 142),
+            ChartType.Battery => (78, 203, 113),
+            _ => (57, 184, 227),
+        };
     }
 
     private static StringBuilder TransformPointsToLine(List<float> chartValues, out int startX, out int finalX)

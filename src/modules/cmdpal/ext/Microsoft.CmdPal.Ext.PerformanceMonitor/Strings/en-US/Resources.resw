@@ -346,4 +346,10 @@
   <data name="Network_Speed_Unit_BinaryBytesPerSec" xml:space="preserve">
     <value>Binary bytes per second (KiB/s, MiB/s, GiB/s)</value>
   </data>
+  <data name="Graph_Icons_Setting_Title" xml:space="preserve">
+    <value>Use graph icons for dock bands</value>
+  </data>
+  <data name="Graph_Icons_Setting_Description" xml:space="preserve">
+    <value>Show live sparkline icons for single-metric Performance Monitor dock bands</value>
+  </data>
 </root>
