@@ -1231,5 +1231,15 @@ namespace EnvironmentVariablesUILib
         {
             ResetAddVariableInputs();
         }
+
+        private void AddVariableDialog_Opened(ContentDialog sender, Microsoft.UI.Xaml.Controls.ContentDialogOpenedEventArgs args)
+        {
+            if (AddNewVariableName == null)
+            {
+                return;
+            }
+
+            AddNewVariableName.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
+        }
     }
 }

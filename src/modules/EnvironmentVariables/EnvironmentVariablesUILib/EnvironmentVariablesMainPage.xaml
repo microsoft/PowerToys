@@ -675,6 +675,8 @@
             IsPrimaryButtonEnabled="False"
             IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}"
+            IsLightDismissEnabled="False"
+            Opened="AddVariableDialog_Opened"
             Closed="AddVariableDialog_Closed">
             <ContentDialog.DataContext>
                 <models:ProfileVariablesSet />
