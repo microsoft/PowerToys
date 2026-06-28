@@ -19,50 +19,29 @@ namespace NonLocalizable
 
 namespace
 {
-    // v6: settings folder is %ProgramData%\Microsoft\PowerToys\Workspaces\<sid>.
-    // The launcher reads directly from this path (DACL grants R+X to the
-    // owning user).  Writers (Editor / SnapshotTool) must go through the
-    // PTWorkspacesSvc named pipe — see WorkspacesSettingsClient.
-    std::wstring GetServiceManagedUserFolder()
+    // v6: the protected settings store lives under %ProgramData% and is reached
+    // only through the PTSettingsSvc named pipe (PTSettingsClient GetBlob/PutBlob)
+    // — see JsonUtils::ReadWorkspacesFromService / WriteWorkspacesToService.
+    //
+    // This %LocalAppData% folder is the *user-writable* working location: the
+    // pre-v6 / no-service fallback file and the transient snapshot->editor temp
+    // handoff.  It matches the managed editor (FolderUtils.DataFolder), so the
+    // snapshot tool (writer) and editor (reader) agree on the temp path.
+    std::wstring GetUserWritableWorkspacesFolder()
     {
-        PWSTR programData = nullptr;
+        PWSTR localAppData = nullptr;
         std::wstring root;
-        if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_ProgramData, 0, nullptr, &programData)))
+        if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &localAppData)))
         {
-            root = programData;
-            CoTaskMemFree(programData);
+            root = localAppData;
+            CoTaskMemFree(localAppData);
         }
         else
         {
-            root = L"C:\\ProgramData";
+            return L"";
         }
         root += L"\\Microsoft\\PowerToys\\Workspaces";
-
-        // Resolve current user SID.
-        HANDLE token = nullptr;
-        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
-        {
-            return root;
-        }
-        DWORD size = 0;
-        GetTokenInformation(token, TokenUser, nullptr, 0, &size);
-        std::vector<BYTE> buf(size);
-        if (!GetTokenInformation(token, TokenUser, buf.data(), size, &size))
-        {
-            CloseHandle(token);
-            return root;
-        }
-        CloseHandle(token);
-
-        LPWSTR sidStr = nullptr;
-        if (!ConvertSidToStringSidW(
-                reinterpret_cast<TOKEN_USER*>(buf.data())->User.Sid, &sidStr))
-        {
-            return root;
-        }
-        std::wstring full = root + L"\\" + sidStr;
-        LocalFree(sidStr);
-        return full;
+        return root;
     }
 }
 
@@ -70,12 +49,14 @@ namespace WorkspacesData
 {
     std::wstring WorkspacesFile()
     {
-        return GetServiceManagedUserFolder() + L"\\workspaces.json";
+        // No-service fallback location (also the legacy / migration source).
+        return GetUserWritableWorkspacesFolder() + L"\\workspaces.json";
     }
 
     std::wstring TempWorkspacesFile()
     {
-        return GetServiceManagedUserFolder() + L"\\temp-workspaces.json";
+        // Transient snapshot->editor handoff; user-writable, matches the editor.
+        return GetUserWritableWorkspacesFolder() + L"\\temp-workspaces.json";
     }
 
     RECT WorkspacesProject::Application::Position::toRect() const noexcept

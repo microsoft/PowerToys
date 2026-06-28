@@ -5,6 +5,8 @@
 
 #include <common/logger/logger.h>
 
+#include "../WorkspacesSettingsClient/PTSettingsClient.h"
+
 namespace JsonUtils
 {
     Result<WorkspacesData::WorkspacesProject, WorkspacesFileError> ReadSingleWorkspace(const std::wstring& fileName)
@@ -87,6 +89,76 @@ namespace JsonUtils
         }
 
         return true;
+    }
+
+    Result<std::vector<WorkspacesData::WorkspacesProject>, WorkspacesFileError> ReadWorkspacesFromService()
+    {
+        std::vector<uint8_t> bytes;
+        auto rc = PTSettingsClient::GetBlob(bytes);
+        switch (rc)
+        {
+        case PTSettingsClient::Result::Ok:
+        {
+            try
+            {
+                // The blob is the same UTF-8 JSON the Editor writes.
+                std::string utf8(bytes.begin(), bytes.end());
+                auto obj = json::JsonValue::Parse(winrt::to_hstring(utf8)).GetObjectW();
+                auto parsed = WorkspacesData::WorkspacesListJSON::FromJson(obj);
+                if (parsed.has_value())
+                {
+                    return Ok(parsed.value());
+                }
+                Logger::critical("Incorrect Workspaces blob from service");
+                return Error(WorkspacesFileError::IncorrectFileError);
+            }
+            catch (std::exception ex)
+            {
+                Logger::critical("Exception parsing Workspaces blob: {}", ex.what());
+                return Error(WorkspacesFileError::FileReadingError);
+            }
+        }
+
+        case PTSettingsClient::Result::NotFound:
+            // Service is up but this user has no blob yet (first run).
+            return Ok(std::vector<WorkspacesData::WorkspacesProject>{});
+
+        case PTSettingsClient::Result::ServiceUnavailable:
+            // No service (no-admin / declined-UAC): legacy file fallback.
+            return ReadWorkspaces(WorkspacesData::WorkspacesFile());
+
+        default:
+            Logger::error("GetBlob failed ({}); treating workspaces as empty.", static_cast<int>(rc));
+            return Ok(std::vector<WorkspacesData::WorkspacesProject>{});
+        }
+    }
+
+    bool WriteWorkspacesToService(const std::vector<WorkspacesData::WorkspacesProject>& projects)
+    {
+        try
+        {
+            std::wstring str{ WorkspacesData::WorkspacesListJSON::ToJson(projects).Stringify().c_str() };
+            std::string utf8 = winrt::to_string(winrt::hstring(str));
+            std::vector<uint8_t> bytes(utf8.begin(), utf8.end());
+
+            auto rc = PTSettingsClient::PutBlob(bytes);
+            if (rc == PTSettingsClient::Result::Ok)
+            {
+                return true;
+            }
+            if (rc == PTSettingsClient::Result::ServiceUnavailable)
+            {
+                // No service: legacy file fallback (no-admin / declined-UAC).
+                return Write(WorkspacesData::WorkspacesFile(), projects);
+            }
+            Logger::error("PutBlob failed ({}) writing workspaces.", static_cast<int>(rc));
+            return false;
+        }
+        catch (std::exception ex)
+        {
+            Logger::error("Exception writing workspaces via service: {}", ex.what());
+            return false;
+        }
     }
 
     bool Write(const std::wstring& fileName, const WorkspacesData::WorkspacesProject& project)
