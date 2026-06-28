@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -23,12 +23,15 @@ namespace ColorPicker.Helpers
         {
             if (!string.IsNullOrEmpty(colorRepresentationToCopy))
             {
+                // اضافه شدن ثبت در تاریخچه
+                HistoryManager.AddColor(colorRepresentationToCopy);
+
                 // nasty hack - sometimes clipboard can be in use and it will raise and exception
                 for (int i = 0; i < 10; i++)
                 {
                     try
                     {
-                        Clipboard.SetDataObject(colorRepresentationToCopy);
+                        Clipboard.SetDataObject(colorRepresentationToCopy, true);
                         break;
                     }
                     catch (COMException ex)
