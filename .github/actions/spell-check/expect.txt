@@ -135,6 +135,7 @@ BITMAPINFO
 BITMAPINFOHEADER
 BITSPERPEL
 BITSPIXEL
+Blackmagic
 bla
 BLENDFUNCTION
 blittable
@@ -539,6 +540,7 @@ EXTRINSICPROPERTIES
 eyetracker
 FANCYZONESDRAWLAYOUTTEST
 FANCYZONESEDITOR
+Fairlight
 FARPROC
 fdw
 fdx
@@ -2178,6 +2180,7 @@ xclip
 xcopy
 xdf
 xfd
+xhair
 xmp
 Xoshiro
 xsi
