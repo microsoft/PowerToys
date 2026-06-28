@@ -237,8 +237,15 @@
       <Component Id="PTSettingsServicePayloadExe"
                  Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0006}">
         <File Id="PTSettingsSvcExePerUser"
-              Name="PowerToys.PTSettingsSvc.exe"
-              KeyPath="yes" />
+              Name="PowerToys.PTSettingsSvc.exe" />
+        <!-- Per-user (user-profile) component: KeyPath must be an HKCU
+             registry value, not a file (WiX ICE38). -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string"
+                         Name="PTSettingsServicePayloadExe"
+                         Value=""
+                         KeyPath="yes" />
+        </RegistryKey>
       </Component>
     </DirectoryRef>
 
@@ -247,8 +254,15 @@
       <Component Id="PTSettingsServicePayloadScript"
                  Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0007}">
         <File Id="PtHardenScriptPerUser"
-              Name="Harden-PtSettingsPerUser.ps1"
-              KeyPath="yes" />
+              Name="Harden-PtSettingsPerUser.ps1" />
+        <!-- Per-user (user-profile) component: KeyPath must be an HKCU
+             registry value, not a file (WiX ICE38). -->
+        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string"
+                         Name="PTSettingsServicePayloadScript"
+                         Value=""
+                         KeyPath="yes" />
+        </RegistryKey>
       </Component>
     </DirectoryRef>
 
