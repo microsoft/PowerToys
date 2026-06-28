@@ -234,11 +234,16 @@ public sealed class WinGetPackageManagerService : IWinGetPackageManagerService
                     var selector = initialization.Factory.CreatePackageMatchFilter();
                     selector.Field = PackageMatchField.Id;
                     selector.Option = PackageFieldMatchOption.Equals;
-                    selector.Value = id;
+                    selector.Value = id.ToUpperInvariant();
                     options.Selectors.Add(selector);
 
                     var findResult = await Task.Run(() => catalog.FindPackages(options), cancellationToken).ConfigureAwait(false);
-                    if (findResult.Status == FindPackagesResultStatus.Ok && findResult.Matches.Count > 0)
+                    if (findResult.Status != FindPackagesResultStatus.Ok)
+                    {
+                        throw new InvalidOperationException($"Microsoft Store package lookup failed for '{id}': {findResult.Status}");
+                    }
+
+                    if (findResult.Matches.Count > 0 )
                     {
                         var package = findResult.Matches[0].CatalogPackage;
                         return (id, package);
