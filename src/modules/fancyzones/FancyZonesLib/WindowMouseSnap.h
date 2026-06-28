@@ -13,9 +13,12 @@ public:
     static std::unique_ptr<WindowMouseSnap> Create(HWND window, const std::unordered_map<HMONITOR, std::unique_ptr<WorkArea>>& activeWorkAreas, notifications::NotificationUtil* notificationUtil);
     ~WindowMouseSnap();
 
+    HWND GetDraggedWindow() const noexcept { return m_window; }
+
     bool MoveSizeStart(HMONITOR monitor, bool isSnapping);
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool isSnapping, bool isSelectManyZonesState);
     void MoveSizeEnd();
+    void Abort();
 
 private:
     void SwitchSnappingMode(bool isSnapping);

@@ -21,9 +21,12 @@ namespace ShortcutGuide
     {
         public static Thread CopyAndIndexGenerationThread { get; private set; } = null!;
 
+        public static nint ForegroundWindowHandle { get; private set; } = nint.Zero;
+
         [STAThread]
         public static void Main(string[] args)
         {
+            ForegroundWindowHandle = NativeMethods.GetForegroundWindow();
             Logger.InitializeLogger("\\ShortcutGuide\\Logs");
 
             // The module interface passes: <powertoys_pid> [telemetry]

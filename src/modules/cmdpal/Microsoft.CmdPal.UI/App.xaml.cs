@@ -264,7 +264,10 @@ public partial class App : Application, IDisposable
         // Core services
         services.AddSingleton(appInfoService);
 
-        services.AddSingleton<IExtensionService, ExtensionService>();
+        // Load IExtensionServices here
+        services.AddSingleton<IExtensionService, BuiltInExtensionService>();
+        services.AddSingleton<IExtensionService, WinRTExtensionService>();
+
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();

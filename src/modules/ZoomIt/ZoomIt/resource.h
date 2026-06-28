@@ -127,6 +127,16 @@
 #define IDC_WEBCAM_SHAPE_LABEL          1121
 #define IDC_TRIM_APPEND                 1122
 #define IDC_RECORD_ASPECT_RATIO         1123
+#define IDC_WEBCAM_BACKGROUND_BLUR      1124
+#define IDC_WEBCAM_BG_LABEL             1125
+#define IDC_WEBCAM_BG_MODE              1126
+#define IDC_WEBCAM_BG_IMAGE             1127
+#define IDC_WEBCAM_BG_BROWSE            1128
+#define IDC_THIRDPARTY_NOTICES          1129
+#define IDC_WEBCAM_SETTINGS             1130
+#define IDC_WEBCAM_BRIGHTNESS_LABEL     1131
+#define IDC_WEBCAM_BRIGHTNESS_SLIDER    1132
+#define IDC_NOISE_CANCELLATION          1133
 #define IDC_SAVE                        40002
 #define IDC_COPY                        40004
 #define IDC_RECORD                      40006
@@ -142,7 +152,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        120
 #define _APS_NEXT_COMMAND_VALUE         40015
-#define _APS_NEXT_CONTROL_VALUE         1124
+#define _APS_NEXT_CONTROL_VALUE         1134
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
