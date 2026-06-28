@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Window
     x:Class="ColorPicker.ColorEditorWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,7 +8,7 @@
     mc:Ignorable="d">
     <ContentControl
         x:Name="ContentPresenter"
-        x:FieldModifier="public"
         HorizontalContentAlignment="Stretch"
-        VerticalContentAlignment="Stretch" />
+        VerticalContentAlignment="Stretch"
+        x:FieldModifier="public" />
 </Window>

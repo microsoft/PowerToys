@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="ColorPicker.Views.ZoomView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,10 +14,12 @@
         BorderBrush="{ThemeResource SurfaceStrokeColorDefaultBrush}"
         BorderThickness="1"
         CornerRadius="{ThemeResource ControlCornerRadius}">
-        <!--  Approach A / 方案1: a single Win2D CanvasControl draws the zoomed (nearest-neighbor)
-              capture plus the pixel grid, replacing the WPF ShaderEffect. See GridShader.fx for
-              the original grid spec; the brightness-adaptive color + radius reveal are simplified
-              here and can be refined (or escalated to 方案2) after desktop verification.  -->
+        <!--
+            Approach A / 方案1: a single Win2D CanvasControl draws the zoomed (nearest-neighbor)
+            capture plus the pixel grid, replacing the WPF ShaderEffect. See GridShader.fx for
+            the original grid spec; the brightness-adaptive color + radius reveal are simplified
+            here and can be refined (or escalated to 方案2) after desktop verification.
+        -->
         <canvas:CanvasControl
             x:Name="ZoomCanvas"
             Margin="3"
