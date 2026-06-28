@@ -195,9 +195,9 @@ namespace
         const int contentW = cr.right - 2 * margin;
         int y = margin;
 
-        st->hStatus = CreateWindowExW(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_LEFT | SS_NOPREFIX, margin, y, contentW, Scale(30, dpi), hwnd, nullptr, inst, nullptr);
+        st->hStatus = CreateWindowExW(0, L"STATIC", L"", WS_CHILD | WS_VISIBLE | SS_LEFT | SS_NOPREFIX, margin, y, contentW, Scale(58, dpi), hwnd, nullptr, inst, nullptr);
         SendMessageW(st->hStatus, WM_SETFONT, reinterpret_cast<WPARAM>(st->hHeaderFont), TRUE);
-        y += Scale(38, dpi);
+        y += Scale(64, dpi);
 
         st->hPath = CreateWindowExW(0, L"EDIT", L"", WS_CHILD | ES_READONLY | ES_AUTOHSCROLL | WS_TABSTOP, margin, y, contentW, Scale(24, dpi), hwnd, nullptr, inst, nullptr);
         SendMessageW(st->hPath, WM_SETFONT, reinterpret_cast<WPARAM>(st->hFont), TRUE);
@@ -350,7 +350,7 @@ void run_bug_report_dialog(const std::wstring& toolPath, const std::function<voi
     const DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
     const DWORD exStyle = WS_EX_DLGMODALFRAME | WS_EX_APPWINDOW;
 
-    RECT rc{ 0, 0, Scale(440, st.dpi), Scale(240, st.dpi) };
+    RECT rc{ 0, 0, Scale(480, st.dpi), Scale(270, st.dpi) };
     AdjustWindowRectExForDpi(&rc, style, FALSE, exStyle, st.dpi);
     const int w = rc.right - rc.left;
     const int h = rc.bottom - rc.top;
