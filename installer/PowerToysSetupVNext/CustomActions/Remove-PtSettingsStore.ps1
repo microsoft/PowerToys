@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  PTSettingsSvc — uninstall cleanup (Design-v6-Final.md §11 uninstall/cleanup).
+  PTSettingsSvc - uninstall cleanup (Design-v6-Final.md section 11 uninstall/cleanup).
 
   Runs as SYSTEM from the per-machine MSI (deferred CustomAction, on uninstall).
   Removes the service and recursively deletes the protected data tree.
@@ -8,7 +8,7 @@
   This recursive delete is REQUIRED: the per-user <SID>\blob.bin nodes are created
   by the service at runtime and are NOT in the MSI component table, so the MSI's
   default RemoveFolder won't touch them.  A non-elevated per-user uninstall cannot
-  do this (the tree is SYSTEM-owned, user has only RX) — only the elevated/SYSTEM
+  do this (the tree is SYSTEM-owned, user has only RX) - only the elevated/SYSTEM
   per-machine uninstall can.
 
 .PARAMETER RemoveService   Stop + delete the PTSettingsSvc service (default: on).

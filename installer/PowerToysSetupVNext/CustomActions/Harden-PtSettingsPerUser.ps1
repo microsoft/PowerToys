@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  PTSettingsSvc — per-user lazy hardening (Design-v6-Final.md §11 "Lazy per-user install").
+  PTSettingsSvc - per-user lazy hardening (Design-v6-Final.md section 11 "Lazy per-user install").
 
   Run ELEVATED (the one-time UAC) the first time a per-user install needs protection
   (first save/launch of a workspace with a launch-as-admin entry).  It:
@@ -70,7 +70,7 @@ foreach ($d in @($nsRoot, (Join-Path $nsRoot $UserSid)))
 $blob = Join-Path (Join-Path $nsRoot $UserSid) 'blob.bin'
 if (Test-Path $blob)
 {
-    Write-Output "blob already present for $UserSid — nothing to migrate."
+    Write-Output "blob already present for $UserSid - nothing to migrate."
 }
 else
 {
@@ -79,7 +79,8 @@ else
     if ($legacy -and (Test-Path $legacy))
     {
         [System.IO.File]::WriteAllBytes($blob, [System.IO.File]::ReadAllBytes($legacy))
-        Write-Output "migrated legacy file for $UserSid ($([System.IO.FileInfo]::new($blob).Length) bytes)."
+        $blobSize = ([System.IO.FileInfo]::new($blob)).Length
+        Write-Output "migrated legacy file for $UserSid ($blobSize bytes)."
     }
     else
     {

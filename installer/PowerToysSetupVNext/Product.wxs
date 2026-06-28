@@ -70,13 +70,19 @@
       <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
       <!--
-        PowerToys Settings Service (PTSettingsSvc) — per-machine only.
-        A per-user MSI is non-elevated and cannot register a service; per-user
-        hardening uses a one-time-elevation path (Design §11 / §15 #5 d), a
-        follow-up.  Guarded so per-user builds omit the service entirely.
+        PowerToys Settings Service (PTSettingsSvc).
+        Per-machine: the MSI is elevated, so it registers the service and lays
+        down the protected store eagerly (PTSettingsServiceComponentGroup).
+        Per-user: the MSI is non-elevated and cannot register a service, so it
+        only stages the service payload (exe + hardening script); the service is
+        registered + the store hardened lazily via a one-time elevation the first
+        time protection is needed (Design §11 / §15 #5 d), driven by
+        SettingsBootstrapper / ServiceProvisioner in the managed code.
       -->
       <?if $(var.PerUser) != "true" ?>
       <ComponentGroupRef Id="PTSettingsServiceComponentGroup" />
+      <?else?>
+      <ComponentGroupRef Id="PTSettingsServicePayloadComponentGroup" />
       <?endif?>
       <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>

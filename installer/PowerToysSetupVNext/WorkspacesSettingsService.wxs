@@ -218,4 +218,59 @@
       <ComponentRef Id="PTSettingsCustomActionScripts" />
     </ComponentGroup>
   </Fragment>
+
+  <!--
+    Per-user payload (Design §11).  A per-user MSI is non-elevated and cannot
+    register a service or write the protected %ProgramData% store, so it only
+    STAGES the service binary and the hardening script under the install folder.
+    The managed ServiceProvisioner registers the service + hardens the store
+    later via a one-time elevation.  No ServiceInstall / no DACL changes here.
+  -->
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="PTSettingsPayloadFolder" Name="WorkspacesSettingsService" />
+    </DirectoryRef>
+
+    <DirectoryRef Id="PTSettingsPayloadFolder"
+                  FileSource="$(var.PTSettingsSvcFilesPath)">
+      <Component Id="PTSettingsServicePayloadExe"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0006}">
+        <File Id="PTSettingsSvcExePerUser"
+              Name="PowerToys.PTSettingsSvc.exe"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="PTSettingsPayloadFolder"
+                  FileSource="$(var.ProjectDir)\CustomActions">
+      <Component Id="PTSettingsServicePayloadScript"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0007}">
+        <File Id="PtHardenScriptPerUser"
+              Name="Harden-PtSettingsPerUser.ps1"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <!-- Remove the staged payload folder on uninstall. -->
+    <DirectoryRef Id="PTSettingsPayloadFolder">
+      <Component Id="RemovePTSettingsPayloadFolder"
+                 Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0008}">
+        <RegistryKey Root="HKCU" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string"
+                         Name="RemovePTSettingsPayloadFolder"
+                         Value=""
+                         KeyPath="yes" />
+        </RegistryKey>
+        <RemoveFolder Id="RemoveFolderPTSettingsPayload"
+                      Directory="PTSettingsPayloadFolder"
+                      On="uninstall" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="PTSettingsServicePayloadComponentGroup">
+      <ComponentRef Id="PTSettingsServicePayloadExe" />
+      <ComponentRef Id="PTSettingsServicePayloadScript" />
+      <ComponentRef Id="RemovePTSettingsPayloadFolder" />
+    </ComponentGroup>
+  </Fragment>
 </Wix>

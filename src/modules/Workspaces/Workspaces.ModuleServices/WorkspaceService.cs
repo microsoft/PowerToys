@@ -53,6 +53,8 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
 
         try
         {
+            EnsureSettingsInitialized(SettingsBootstrapper.TriggerReason.WorkspaceLaunching);
+
             var powertoysBaseDir = PowerToysPathResolver.GetPowerToysInstallPath();
             if (string.IsNullOrEmpty(powertoysBaseDir))
             {
@@ -85,7 +87,7 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
     {
         try
         {
-            EnsureMigrationBackstop();
+            EnsureSettingsInitialized();
 
             var items = WorkspacesStorage.Load();
 
@@ -97,27 +99,26 @@ public sealed class WorkspaceService : ModuleServiceBase, IWorkspaceService
         }
     }
 
-    // One-shot legacy-migration backstop (Design-v6-Final.md §10/§11).  Primary
-    // seeding happens at install (per-machine) or the lazy hardening step
-    // (per-user); this catches stragglers — a user whose legacy file appeared
-    // after install.  Idempotent (sentinel-guarded inside Run); runs at most
-    // once per process and never blocks reads.
-    private static int _migrationChecked;
-
-    private static void EnsureMigrationBackstop()
+    // Deferred settings initialization (Design-v6-Final.md §11).  Composes the
+    // service-initialization and legacy-migration blocks behind one call so new
+    // trigger points only have to invoke SettingsBootstrapper.EnsureInitialized.
+    // On a per-machine install the service is already up, so provisioning is a
+    // no-op and only the migration backstop runs.  On a per-user install with no
+    // service yet, this performs the one-time elevation to register + harden it.
+    private static void EnsureSettingsInitialized(
+        SettingsBootstrapper.TriggerReason reason = SettingsBootstrapper.TriggerReason.EditorOpened)
     {
-        if (Interlocked.Exchange(ref _migrationChecked, 1) != 0)
-        {
-            return;
-        }
-
         try
         {
-            WorkspacesMigration.Run();
+            SettingsBootstrapper.EnsureInitialized(new BootstrapRequest
+            {
+                Reason = reason,
+                InstallFolder = PowerToysPathResolver.GetPowerToysInstallPath(),
+            });
         }
         catch (Exception)
         {
-            // Best-effort backstop; on failure reads fall back per WorkspacesStorage.
+            // Best-effort; on failure reads fall back per WorkspacesStorage.
         }
     }
 }

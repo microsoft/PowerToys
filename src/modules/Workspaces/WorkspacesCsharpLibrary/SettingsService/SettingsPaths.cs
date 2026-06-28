@@ -29,6 +29,18 @@ public static class SettingsPaths
     // Pre-v6 per-user data folder under %LocalAppData%.
     private const string LegacySubpath = @"Microsoft\PowerToys\Workspaces";
 
+    // Subfolder of the install root that carries the settings-service payload
+    // (the service exe and the per-user hardening script).  The per-machine MSI
+    // registers the service from here; the per-user install ships the same
+    // payload unregistered so deferred initialization can register it lazily.
+    private const string ServicePayloadSubdir = "WorkspacesSettingsService";
+
+    /// <summary>File name of the settings-service executable.</summary>
+    public const string ServiceBinaryName = "PowerToys.PTSettingsSvc.exe";
+
+    /// <summary>File name of the per-user lazy-hardening script.</summary>
+    public const string HardenScriptName = "Harden-PtSettingsPerUser.ps1";
+
     /// <summary>%ProgramData%\Microsoft\PowerToys\SettingsSvc\Workspaces</summary>
     public static string ServiceManagedNamespaceRoot()
     {
@@ -62,5 +74,36 @@ public static class SettingsPaths
     {
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         return Path.Combine(localAppData, LegacySubpath, ".migrated-to-svc");
+    }
+
+    /// <summary>
+    /// Sentinel recording that deferred service provisioning has already been
+    /// attempted for this user, so repeated trigger points don't re-prompt for
+    /// elevation.  Lives under %LocalAppData% (user-writable): it only governs
+    /// UX back-off, never security.
+    /// </summary>
+    public static string ProvisionAttemptSentinel()
+    {
+        var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        return Path.Combine(localAppData, LegacySubpath, ".svc-provision-attempted");
+    }
+
+    /// <summary>Folder under the install root that carries the settings-service payload.</summary>
+    public static string ServicePayloadDir(string installFolder)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(installFolder);
+        return Path.Combine(installFolder, ServicePayloadSubdir);
+    }
+
+    /// <summary>Full path to the settings-service executable inside an install folder.</summary>
+    public static string ServiceBinaryPath(string installFolder)
+    {
+        return Path.Combine(ServicePayloadDir(installFolder), ServiceBinaryName);
+    }
+
+    /// <summary>Full path to the per-user hardening script inside an install folder.</summary>
+    public static string HardenScriptPath(string installFolder)
+    {
+        return Path.Combine(ServicePayloadDir(installFolder), HardenScriptName);
     }
 }

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  PTSettingsSvc — install-time per-machine seeding (Design-v6-Final.md §11 MIGRATION).
+  PTSettingsSvc - install-time per-machine seeding (Design-v6-Final.md section 11 MIGRATION).
 
   Runs as SYSTEM from the per-machine MSI (deferred CustomAction).  Seeds every
   existing user's protected blob from their legacy %LocalAppData% Workspaces file:
@@ -8,7 +8,7 @@
      %LocalAppData%\Microsoft\PowerToys\Workspaces\workspaces.json   (user U)
         ->  %ProgramData%\Microsoft\PowerToys\SettingsSvc\<ns>\<SID(U)>\blob.bin
 
-  Direct SYSTEM file write — no service round-trip, no migration opcode.  The blob
+  Direct SYSTEM file write - no service round-trip, no migration opcode.  The blob
   is created with owner=SYSTEM and a PROTECTED DACL (svc:F, admin:F, system:F,
   <user>:RX) so the user can read but never tamper.  Idempotent (skips a SID that
   already has a blob).
