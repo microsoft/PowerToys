@@ -86,12 +86,22 @@ internal static class Program
     private static void Terminate()
     {
         var app = App.Current;
-        app?.DispatcherQueueForApp?.TryEnqueue(() =>
+        var queue = app?.DispatcherQueueForApp;
+
+        // If the exit signal arrives during the brief startup window before OnLaunched has set
+        // DispatcherQueueForApp (e.g. the runner dies, or disable() is called, right after launch),
+        // or the queue is already draining, TryEnqueue can't run our cleanup. Fall back to a hard
+        // exit so we never orphan the process with the low-level keyboard hook still installed. The
+        // OS releases the hook on process termination; usage stats are simply not saved on this path.
+        if (queue is null || !queue.TryEnqueue(() =>
         {
             _tokenSource.Cancel();
             App.Window?.Dispose();   // MainWindow.SaveUsageInfo + Core.PowerAccent.Dispose on the UI thread
             app.Dispose();   // disposes ETWTrace (idempotent via _disposed guard)
             app.Exit();
-        });
+        }))
+        {
+            Environment.Exit(0);
+        }
     }
 }

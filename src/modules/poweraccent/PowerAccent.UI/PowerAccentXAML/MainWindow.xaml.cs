@@ -71,15 +71,15 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         // SubscribeTo wires the surface to this window's Show/Hide so it follows along.
         Surface.SubscribeTo(this);
 
-        _powerAccent = new Core.PowerAccent(action => DispatcherQueue.TryEnqueue(() => action()));
+        _powerAccent = new Core.PowerAccent(RunOnUiThread);
         _powerAccent.OnChangeDisplay += PowerAccent_OnChangeDisplay;
         _powerAccent.OnSelectCharacter += PowerAccent_OnSelectCharacter;
 
         // The accent popup is a long-lived, never-activated SW_SHOWNA overlay, so it does not get
         // WinUI 3's automatic runtime theme switching the way an activated window would. Mirror the
         // WPF original's ThemeMode="System" by following the system app theme explicitly: apply it
-        // now and on every change. ThemeListener raises ThemeChanged from a WMI background thread,
-        // so the handler marshals back to the UI thread before touching XAML.
+        // now and on every change. ThemeListener raises ThemeChanged from a registry-watcher
+        // background thread, so the handler marshals back to the UI thread before touching XAML.
         try
         {
             _themeListener = new ThemeListener();
@@ -91,6 +91,26 @@ public sealed partial class MainWindow : TransparentWindow, IDisposable
         }
 
         ApplyTheme();
+    }
+
+    // Marshals the keyboard-hook callbacks (ShowToolbar / HideToolbar / NextChar) onto the UI
+    // thread. The low-level keyboard hook is installed on this same UI thread, so the callbacks
+    // already arrive here; run them inline in that case to match the WPF original's
+    // Dispatcher.Invoke, which executed synchronously when already on the dispatcher thread. That
+    // keeps the accent injection (the SendInput backspace+char in SendInputAndHideToolbar) ordered
+    // before the hook returns and the trigger key-up propagates - a bare TryEnqueue would defer even
+    // on this thread, leaving a window where a fast next keystroke races the injection. If ever
+    // called off-thread, fall back to enqueueing.
+    private void RunOnUiThread(Action action)
+    {
+        if (DispatcherQueue.HasThreadAccess)
+        {
+            action();
+        }
+        else
+        {
+            DispatcherQueue.TryEnqueue(() => action());
+        }
     }
 
     private void ApplyTheme()

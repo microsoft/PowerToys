@@ -16,10 +16,12 @@
     <LangVersion>preview</LangVersion>
     <UseWinUI>true</UseWinUI>
     <!--
-      App.xaml lives at the project root, where the WinUI SDK's default glob already
-      includes it as the ApplicationDefinition. Disable that default so the explicit
-      <ApplicationDefinition Include="App.xaml" /> below is the single one (siblings such
-      as Hosts avoid this by nesting App.xaml in a subfolder; QuickAccess.UI uses this flag).
+      App.xaml and the windows live under PowerAccentXAML\ (not the project root). Nesting the XAML
+      in a named subfolder is the repo convention for WinUI 3 apps that share the WinUI3Apps output
+      folder (see Peek's PeekXAML\, PowerDisplay's PowerDisplayXAML\): it keeps the compiled .xbf out
+      of the WinUI3Apps root, so the "Audit WinAppSDK applications path asset conflicts" pipeline step
+      passes. Disable the default ApplicationDefinition glob so the explicit
+      <ApplicationDefinition Include="PowerAccentXAML\App.xaml" /> below is the single one.
     -->
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
@@ -73,10 +75,10 @@
   </Target>
 
   <ItemGroup>
-    <Page Remove="App.xaml" />
+    <Page Remove="PowerAccentXAML\App.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml" />
+    <ApplicationDefinition Include="PowerAccentXAML\App.xaml" />
   </ItemGroup>
 
   <ItemGroup>
