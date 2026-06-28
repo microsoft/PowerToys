@@ -85,8 +85,9 @@ namespace PTSettingsSvc
 
         void HandleGetBlob(HANDLE pipe, const CallerIdentity& id)
         {
-            std::wstring target = GetUserBlobPath(id.binding->namespaceId,
-                                                  id.userSidString);
+            std::wstring target = GetUserFilePath(id.userSidString,
+                                                  id.binding->namespaceId,
+                                                  id.binding->fileName);
             std::vector<BYTE> bytes;
             HRESULT hr = ReadFileFully(target, kMaxPayloadBytes, bytes);
             if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) ||
@@ -115,10 +116,23 @@ namespace PTSettingsSvc
             // payload-agnostic; the caller is responsible for whatever
             // shape it wants on disk.  See Design-v6-Final.md §4.
 
-            // Ensure intermediate <namespace>\ folder exists.  Inherits the
-            // root's PROTECTED DACL (svc:F, admin:F, AuthUsers:RX); no
-            // tightening needed at this level.
-            std::wstring nsFolder = GetNamespaceFolder(id.binding->namespaceId);
+            // Ensure the per-user node <storeRoot>\<sid> exists and carries the
+            // PROTECTED, user-isolating DACL (svc:F, admin:F, this-user:RX).
+            // It is applied once here and inherited by the namespace folder and
+            // the file below — that single tightening is what stops user A from
+            // reading user B's data (Design §9).
+            HRESULT hr = EnsureUserFolder(GetUserFolder(id.userSidString),
+                                          id.userSidString);
+            if (FAILED(hr))
+            {
+                SendStatus(pipe, Status::IoError);
+                return;
+            }
+
+            // Ensure the <sid>\<namespace> folder.  It inherits the protected
+            // DACL from the per-user node, so no tightening is needed here.
+            std::wstring nsFolder = GetUserNamespaceFolder(id.userSidString,
+                                                           id.binding->namespaceId);
             if (!CreateDirectoryW(nsFolder.c_str(), nullptr))
             {
                 DWORD err = GetLastError();
@@ -129,20 +143,10 @@ namespace PTSettingsSvc
                 }
             }
 
-            // Ensure <namespace>\<sid>\ exists and tighten its DACL so user
-            // A can't read user B's blob (replace blanket AuthUsers:RX with
-            // specific user-SID:RX).  See Design-v6-Final.md §9.
-            HRESULT hr = EnsureUserFolder(
-                GetUserNamespaceFolder(id.binding->namespaceId, id.userSidString),
-                id.userSidString);
-            if (FAILED(hr))
-            {
-                SendStatus(pipe, Status::IoError);
-                return;
-            }
-
             hr = WriteFileAtomically(
-                GetUserBlobPath(id.binding->namespaceId, id.userSidString),
+                GetUserFilePath(id.userSidString,
+                                id.binding->namespaceId,
+                                id.binding->fileName),
                 payload);
             SendStatus(pipe, FAILED(hr) ? Status::IoError : Status::Ok);
         }

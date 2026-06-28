@@ -18,7 +18,7 @@
 param(
     [string]$RepoRoot    = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..\..\..')).Path,
     [string]$FakeInstall = (Join-Path $env:TEMP 'PTFakeInstall'),
-    [string]$DataRoot    = 'C:\ProgramData\Microsoft\PowerToys\SettingsSvc'
+    [string]$DataRoot    = 'C:\ProgramData\Microsoft\PowerToys\Settings'
 )
 
 $ErrorActionPreference = 'Continue'
@@ -151,7 +151,7 @@ Step "5. PutBlob then GetBlob round-trip" {
 
 # 6) GetBlob NotFound on fresh namespace -------------------------------
 Step "6. GetBlob NotFound semantics (delete blob, expect NotFound)" {
-    $blobPath = Join-Path (Join-Path (Join-Path $DataRoot 'Workspaces') ([Security.Principal.WindowsIdentity]::GetCurrent().User.Value)) 'blob.bin'
+    $blobPath = Join-Path (Join-Path (Join-Path $DataRoot ([Security.Principal.WindowsIdentity]::GetCurrent().User.Value)) 'Workspaces') 'workspaces.json'
     if (Test-Path $blobPath)
     {
         # Need elevation to delete - service owns the dir.
@@ -178,7 +178,7 @@ Step "7. Per-user folder DACL (svc:F, admin:F, current-user:RX, others denied)" 
     Run-Caller $renamedCaller @('put', $tmpPayload) | Out-Null
 
     $userSid  = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-    $userDir  = Join-Path (Join-Path $DataRoot 'Workspaces') $userSid
+    $userDir  = Join-Path $DataRoot $userSid
 
     if (-not (Test-Path $userDir))
     {
@@ -228,8 +228,8 @@ Step "8. Owner of store nodes is a non-user principal (SYSTEM/Admin/service)" {
     Run-Caller $renamedCaller @('put', $tmpPayload) | Out-Null
 
     $userSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-    $userDir = Join-Path (Join-Path $DataRoot 'Workspaces') $userSid
-    $blob    = Join-Path $userDir 'blob.bin'
+    $userDir = Join-Path $DataRoot $userSid
+    $blob    = Join-Path (Join-Path $userDir 'Workspaces') 'workspaces.json'
 
     $me      = "$env:USERDOMAIN\$env:USERNAME"
     $trusted = @('NT AUTHORITY\SYSTEM', 'BUILTIN\Administrators', 'NT SERVICE\PTSettingsSvc')
@@ -266,7 +266,7 @@ Step "9. Medium-IL user token cannot write or delete the blob" {
     Run-Caller $renamedCaller @('put', $tmpPayload) | Out-Null
 
     $userSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-    $blob    = Join-Path (Join-Path (Join-Path $DataRoot 'Workspaces') $userSid) 'blob.bin'
+    $blob    = Join-Path (Join-Path (Join-Path $DataRoot $userSid) 'Workspaces') 'workspaces.json'
 
     $out = (& $safer $blob 2>&1) -join "`n"
     Write-Host ($out -split "`n" | ForEach-Object { "  $_" }) -Separator "`n"

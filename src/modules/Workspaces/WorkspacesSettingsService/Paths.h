@@ -7,19 +7,22 @@
 
 namespace PTSettingsSvc
 {
-    // %ProgramData%\Microsoft\PowerToys\SettingsSvc
-    std::wstring GetSettingsSvcRoot();
+    // %ProgramData%\Microsoft\PowerToys\Settings
+    std::wstring GetSettingsRoot();
 
-    // %ProgramData%\Microsoft\PowerToys\SettingsSvc\<namespaceId>
-    std::wstring GetNamespaceFolder(const std::wstring& namespaceId);
+    // %ProgramData%\Microsoft\PowerToys\Settings\<sid>
+    // Per-user node: this is where the protected, user-isolating DACL is
+    // applied; everything below inherits it.
+    std::wstring GetUserFolder(const std::wstring& userSidString);
 
-    // %ProgramData%\Microsoft\PowerToys\SettingsSvc\<namespaceId>\<sid>
-    std::wstring GetUserNamespaceFolder(const std::wstring& namespaceId,
-                                        const std::wstring& userSidString);
+    // %ProgramData%\Microsoft\PowerToys\Settings\<sid>\<namespaceId>
+    std::wstring GetUserNamespaceFolder(const std::wstring& userSidString,
+                                        const std::wstring& namespaceId);
 
-    // %ProgramData%\Microsoft\PowerToys\SettingsSvc\<namespaceId>\<sid>\blob.bin
-    std::wstring GetUserBlobPath(const std::wstring& namespaceId,
-                                 const std::wstring& userSidString);
+    // %ProgramData%\Microsoft\PowerToys\Settings\<sid>\<namespaceId>\<fileName>
+    std::wstring GetUserFilePath(const std::wstring& userSidString,
+                                 const std::wstring& namespaceId,
+                                 const std::wstring& fileName);
 
     // Path to the PowerToys install folder (from HKLM\SOFTWARE\Classes\PowerToys
     // or the registry key the bootstrapper writes).  Empty string on failure.

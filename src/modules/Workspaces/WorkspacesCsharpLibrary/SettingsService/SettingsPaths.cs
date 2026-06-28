@@ -23,8 +23,12 @@ public static class SettingsPaths
     // CallerBinding table (mirror of the native "Workspaces" namespace).
     private const string NamespaceId = "Workspaces";
 
-    // %ProgramData%\Microsoft\PowerToys\SettingsSvc\<namespace>
-    private const string SettingsSvcSubpath = @"Microsoft\PowerToys\SettingsSvc";
+    // Canonical file name kept inside the namespace folder (mirror of the
+    // native CallerBinding fileName).  Keeps the original, human-readable name.
+    private const string WorkspacesFileName = "workspaces.json";
+
+    // %ProgramData%\Microsoft\PowerToys\Settings  (the service-managed store root)
+    private const string SettingsStoreSubpath = @"Microsoft\PowerToys\Settings";
 
     // Pre-v6 per-user data folder under %LocalAppData%.
     private const string LegacySubpath = @"Microsoft\PowerToys\Workspaces";
@@ -41,25 +45,31 @@ public static class SettingsPaths
     /// <summary>File name of the per-user lazy-hardening script.</summary>
     public const string HardenScriptName = "Harden-PtSettingsPerUser.ps1";
 
-    /// <summary>%ProgramData%\Microsoft\PowerToys\SettingsSvc\Workspaces</summary>
-    public static string ServiceManagedNamespaceRoot()
+    /// <summary>%ProgramData%\Microsoft\PowerToys\Settings (the store root).</summary>
+    public static string ServiceStoreRoot()
     {
         var programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-        return Path.Combine(programData, SettingsSvcSubpath, NamespaceId);
+        return Path.Combine(programData, SettingsStoreSubpath);
     }
 
-    /// <summary>%ProgramData%\Microsoft\PowerToys\SettingsSvc\Workspaces\&lt;current-user-sid&gt;</summary>
+    /// <summary>%ProgramData%\Microsoft\PowerToys\Settings\&lt;current-user-sid&gt; (per-user node).</summary>
     public static string CurrentUserFolder()
     {
         var sid = WindowsIdentity.GetCurrent().User?.Value
                   ?? throw new InvalidOperationException("No current user SID");
-        return Path.Combine(ServiceManagedNamespaceRoot(), sid);
+        return Path.Combine(ServiceStoreRoot(), sid);
     }
 
-    /// <summary>The opaque per-user blob the service reads/writes (direct-read allowed).</summary>
-    public static string CurrentUserBlobFile()
+    /// <summary>%ProgramData%\Microsoft\PowerToys\Settings\&lt;sid&gt;\Workspaces (namespace folder).</summary>
+    public static string CurrentUserNamespaceFolder()
     {
-        return Path.Combine(CurrentUserFolder(), "blob.bin");
+        return Path.Combine(CurrentUserFolder(), NamespaceId);
+    }
+
+    /// <summary>The per-user settings file the service reads/writes (direct-read allowed).</summary>
+    public static string CurrentUserFile()
+    {
+        return Path.Combine(CurrentUserNamespaceFolder(), WorkspacesFileName);
     }
 
     /// <summary>The pre-v6 location.  Used by one-shot migration and the no-service fallback.</summary>

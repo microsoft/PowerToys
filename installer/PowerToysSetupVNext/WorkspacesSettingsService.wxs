@@ -95,17 +95,18 @@
     </DirectoryRef>
 
     <!--
-      %ProgramData%\Microsoft\PowerToys\SettingsSvc — created at install with a
+      %ProgramData%\Microsoft\PowerToys\Settings — created at install with a
       PROTECTED DACL (Design §9).  util:PermissionEx replaces the inherited
       DACL with the explicit ACEs below, so the default %ProgramData%
-      "Users can create" ACE does not carry through.  Per-namespace
-      (e.g. \Workspaces) and per-user (\<sid>) subfolders are created and
-      tightened by the service on first write.
+      "Users can create" ACE does not carry through.  Authenticated Users get
+      RX so each user can traverse to their own \<sid> node.  Per-user (\<sid>)
+      and per-namespace (\<sid>\Workspaces) subfolders are created and tightened
+      by the service on first write (SID-first layout).
     -->
     <StandardDirectory Id="CommonAppDataFolder">
       <Directory Id="PTSettingsDataMicrosoft" Name="Microsoft">
         <Directory Id="PTSettingsDataPT" Name="PowerToys">
-          <Directory Id="PTSettingsDataRoot" Name="SettingsSvc">
+          <Directory Id="PTSettingsDataRoot" Name="Settings">
             <Component Id="CreatePTSettingsDataRoot"
                        Guid="{F1F4C1B3-2E11-4F11-9E0E-2DBB4D9E0003}">
               <CreateFolder>

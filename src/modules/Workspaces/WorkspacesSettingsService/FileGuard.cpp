@@ -78,9 +78,11 @@ namespace PTSettingsSvc
             // Per Design-v6-Final.md §9 the per-user folder DACL is:
             //   svc:F, admin:F, <specific user>:RX
             // Everyone else implicitly denied because we PROTECT the DACL
-            // below (no inheritance from <root>\<namespace>\, so the blanket
-            // AuthUsers:RX granted at the root level does NOT carry through
-            // here — that's how user A can't read user B's blob).
+            // below (no inheritance from <storeRoot>\, so the blanket
+            // AuthUsers:RX granted at the store root does NOT carry through
+            // here — that's how user A can't read user B's data).  Applied at
+            // the per-user <sid> node, it inherits down to the namespace folder
+            // and the file.
             EXPLICIT_ACCESS_W ea[3] = {};
 
             ea[0].grfAccessPermissions = GENERIC_ALL;

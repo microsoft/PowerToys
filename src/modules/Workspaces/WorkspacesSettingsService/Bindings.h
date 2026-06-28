@@ -4,7 +4,8 @@
 // Caller-to-namespace binding table for PTSettingsSvc.
 //
 // The service is intentionally namespace-agnostic at the storage layer —
-// every PutBlob / GetBlob touches `<DataRoot>\<namespaceId>\<userSid>\blob.bin`.
+// every PutBlob / GetBlob touches
+// `<storeRoot>\<userSid>\<namespaceId>\<fileName>`.
 // The only place the service knows anything module-specific is this
 // table: which executable basenames are allowed to talk to it, and which
 // namespace each one operates on.
@@ -21,7 +22,8 @@ namespace PTSettingsSvc
     struct CallerBinding
     {
         const wchar_t* exeBasename;   // case-insensitive compare
-        const wchar_t* namespaceId;   // subfolder under <DataRoot>
+        const wchar_t* namespaceId;   // subfolder under <storeRoot>\<sid>
+        const wchar_t* fileName;      // canonical file name kept inside that namespace folder
     };
 
     // Pointer into a static, immutable table.  Lifetime is the lifetime of

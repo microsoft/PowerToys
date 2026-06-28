@@ -24,7 +24,7 @@ $ErrorActionPreference = 'Stop'
 
 $svcExe        = Join-Path $RepoRoot 'x64\Debug\WorkspacesSettingsService\PowerToys.PTSettingsSvc.exe'
 $smokeExe      = Join-Path $RepoRoot 'x64\Debug\WorkspacesSvcSmokeTest\PowerToys.PTSettingsSvcSmokeTest.exe'
-$dataRoot      = 'C:\ProgramData\Microsoft\PowerToys\SettingsSvc'
+$dataRoot      = 'C:\ProgramData\Microsoft\PowerToys\Settings'
 $renamedCaller = Join-Path $FakeInstall 'PowerToys.WorkspacesEditor.exe'
 $badCaller     = Join-Path $FakeInstall 'PowerToys.PTSettingsSvcSmokeTest.exe'
 

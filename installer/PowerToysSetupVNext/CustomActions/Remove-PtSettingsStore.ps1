@@ -37,7 +37,7 @@ if ($RemoveService)
 
 if ($RemoveData)
 {
-    $root = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Microsoft\PowerToys\SettingsSvc'
+    $root = Join-Path ([Environment]::GetFolderPath('CommonApplicationData')) 'Microsoft\PowerToys\Settings'
     if (Test-Path $root)
     {
         # Recursive delete works because this runs as SYSTEM/admin (the tree is

@@ -31,26 +31,27 @@ namespace PTSettingsSvc
         }
     }
 
-    std::wstring GetSettingsSvcRoot()
+    std::wstring GetSettingsRoot()
     {
-        return GetProgramDataFolder() + L"\\Microsoft\\PowerToys\\SettingsSvc";
+        return GetProgramDataFolder() + L"\\Microsoft\\PowerToys\\Settings";
     }
 
-    std::wstring GetNamespaceFolder(const std::wstring& namespaceId)
+    std::wstring GetUserFolder(const std::wstring& userSidString)
     {
-        return GetSettingsSvcRoot() + L"\\" + namespaceId;
+        return GetSettingsRoot() + L"\\" + userSidString;
     }
 
-    std::wstring GetUserNamespaceFolder(const std::wstring& namespaceId,
-                                        const std::wstring& userSidString)
+    std::wstring GetUserNamespaceFolder(const std::wstring& userSidString,
+                                        const std::wstring& namespaceId)
     {
-        return GetNamespaceFolder(namespaceId) + L"\\" + userSidString;
+        return GetUserFolder(userSidString) + L"\\" + namespaceId;
     }
 
-    std::wstring GetUserBlobPath(const std::wstring& namespaceId,
-                                 const std::wstring& userSidString)
+    std::wstring GetUserFilePath(const std::wstring& userSidString,
+                                 const std::wstring& namespaceId,
+                                 const std::wstring& fileName)
     {
-        return GetUserNamespaceFolder(namespaceId, userSidString) + L"\\blob.bin";
+        return GetUserNamespaceFolder(userSidString, namespaceId) + L"\\" + fileName;
     }
 
     std::wstring GetPowerToysInstallFolder()

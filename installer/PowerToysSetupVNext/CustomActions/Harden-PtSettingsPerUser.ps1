@@ -22,27 +22,49 @@ param(
     [string]$ServiceName   = 'PTSettingsSvc',
     [string]$ServiceBinary = '',
     [string]$NamespaceId   = 'Workspaces',
+    [string]$FileName      = 'workspaces.json',
     [string]$LegacyRelative= 'AppData\Local\Microsoft\PowerToys\Workspaces\workspaces.json',
     [string]$ServiceAccount= 'NT SERVICE\PTSettingsSvc'
 )
 
 $ErrorActionPreference = 'Stop'
 $programData = [Environment]::GetFolderPath('CommonApplicationData')
-$nsRoot      = Join-Path $programData "Microsoft\PowerToys\SettingsSvc\$NamespaceId"
+# SID-first layout: <storeRoot>\<sid>\<namespace>\<file>
+$storeRoot = Join-Path $programData 'Microsoft\PowerToys\Settings'
+$userRoot  = Join-Path $storeRoot $UserSid
+$nsFolder  = Join-Path $userRoot $NamespaceId
+$file      = Join-Path $nsFolder $FileName
 
-function Set-ProtectedAcl([string]$path, [bool]$isDir, [string]$sid)
+# Store root: SYSTEM/Admins/service Full, Authenticated Users RX (so each user
+# can traverse to their own <sid> node), owner SYSTEM, PROTECTED.
+function Set-RootAcl([string]$path)
 {
-    $acl = if ($isDir) { New-Object System.Security.AccessControl.DirectorySecurity } `
-           else        { New-Object System.Security.AccessControl.FileSecurity }
+    $acl = New-Object System.Security.AccessControl.DirectorySecurity
     $acl.SetAccessRuleProtection($true, $false)
     $acl.SetOwner([System.Security.Principal.SecurityIdentifier]'S-1-5-18')   # SYSTEM
-    $inh = if ($isDir) { 'ContainerInherit,ObjectInherit' } else { 'None' }
     foreach ($p in @('NT AUTHORITY\SYSTEM','BUILTIN\Administrators',$ServiceAccount))
     {
-        $acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($p,'FullControl',$inh,'None','Allow')))
+        $acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($p,'FullControl','ContainerInherit,ObjectInherit','None','Allow')))
     }
     $acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule(
-        (New-Object Security.Principal.SecurityIdentifier($sid)),'ReadAndExecute,Synchronize',$inh,'None','Allow')))
+        'NT AUTHORITY\Authenticated Users','ReadAndExecute','ContainerInherit,ObjectInherit','None','Allow')))
+    Set-Acl -Path $path -AclObject $acl
+}
+
+# Per-user node: svc/SYSTEM/Admins Full, THIS user RX only, owner SYSTEM,
+# PROTECTED (drops the root's blanket AuthUsers RX so user A can't read user B).
+# Applied once at <sid>; the namespace folder and file inherit it.
+function Set-ProtectedAcl([string]$path, [string]$sid)
+{
+    $acl = New-Object System.Security.AccessControl.DirectorySecurity
+    $acl.SetAccessRuleProtection($true, $false)
+    $acl.SetOwner([System.Security.Principal.SecurityIdentifier]'S-1-5-18')   # SYSTEM
+    foreach ($p in @('NT AUTHORITY\SYSTEM','BUILTIN\Administrators',$ServiceAccount))
+    {
+        $acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule($p,'FullControl','ContainerInherit,ObjectInherit','None','Allow')))
+    }
+    $acl.AddAccessRule((New-Object Security.AccessControl.FileSystemAccessRule(
+        (New-Object Security.Principal.SecurityIdentifier($sid)),'ReadAndExecute,Synchronize','ContainerInherit,ObjectInherit','None','Allow')))
     Set-Acl -Path $path -AclObject $acl
 }
 
@@ -59,18 +81,18 @@ if (-not (Get-Service $ServiceName -ErrorAction SilentlyContinue))
 }
 else { Write-Output "service '$ServiceName' already present." }
 
-# 2) Ensure the protected data root + this user's folder.
-foreach ($d in @($nsRoot, (Join-Path $nsRoot $UserSid)))
-{
-    if (-not (Test-Path $d)) { New-Item -ItemType Directory -Force $d | Out-Null }
-    Set-ProtectedAcl -path $d -isDir $true -sid $UserSid
-}
+# 2) Ensure the store root + this user's protected node (namespace inherits).
+if (-not (Test-Path $storeRoot)) { New-Item -ItemType Directory -Force $storeRoot | Out-Null }
+Set-RootAcl $storeRoot
+if (-not (Test-Path $userRoot)) { New-Item -ItemType Directory -Force $userRoot | Out-Null }
+Set-ProtectedAcl -path $userRoot -sid $UserSid
+if (-not (Test-Path $nsFolder)) { New-Item -ItemType Directory -Force $nsFolder | Out-Null }
 
-# 3) Migrate this user's legacy file into the protected blob (idempotent).
-$blob = Join-Path (Join-Path $nsRoot $UserSid) 'blob.bin'
-if (Test-Path $blob)
+# 3) Migrate this user's legacy file into the protected store (idempotent).
+#    The file inherits the protected DACL from the <sid> node above.
+if (Test-Path $file)
 {
-    Write-Output "blob already present for $UserSid - nothing to migrate."
+    Write-Output "settings file already present for $UserSid - nothing to migrate."
 }
 else
 {
@@ -78,16 +100,15 @@ else
     $legacy = if ($profilePath) { Join-Path $profilePath $LegacyRelative } else { $null }
     if ($legacy -and (Test-Path $legacy))
     {
-        [System.IO.File]::WriteAllBytes($blob, [System.IO.File]::ReadAllBytes($legacy))
-        $blobSize = ([System.IO.FileInfo]::new($blob)).Length
-        Write-Output "migrated legacy file for $UserSid ($blobSize bytes)."
+        [System.IO.File]::WriteAllBytes($file, [System.IO.File]::ReadAllBytes($legacy))
+        $fileSize = ([System.IO.FileInfo]::new($file)).Length
+        Write-Output "migrated legacy file for $UserSid ($fileSize bytes)."
     }
     else
     {
-        [System.IO.File]::WriteAllBytes($blob, [byte[]]@())   # empty protected blob
-        Write-Output "no legacy file; created empty protected blob for $UserSid."
+        [System.IO.File]::WriteAllBytes($file, [byte[]]@())   # empty protected file
+        Write-Output "no legacy file; created empty protected settings file for $UserSid."
     }
-    Set-ProtectedAcl -path $blob -isDir $false -sid $UserSid
 }
 
 Write-Output "per-user hardening complete for $UserSid."
