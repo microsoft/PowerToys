@@ -40,7 +40,7 @@ public static class PTSettingsClient
     }
 
     // Mirror of PTSettingsSvc::kPipeName (server side strips the \\.\pipe\ prefix).
-    private const string PipeName = "PTSettingsSvc";
+    public const string PipeName = "PTSettingsSvc";
 
     // Mirror of PTSettingsSvc::kMaxPayloadBytes (1 MiB).
     private const int MaxPayloadBytes = 1 * 1024 * 1024;

@@ -76,7 +76,39 @@ public static class ServiceProvisioner
     /// <summary>True when the service answers (installed and running).</summary>
     public static bool IsServiceAvailable()
     {
+        // Fast pre-check: if the named pipe doesn't exist, the service isn't
+        // running, so skip PTSettingsClient.Ping() whose connect waits out a
+        // multi-second timeout for a missing pipe.  This keeps the common
+        // "no service yet" path (per-user, pre-provision) cheap (~ms) instead
+        // of blocking the caller for the full connect timeout.
+        if (!PipeExists())
+        {
+            return false;
+        }
+
         return PTSettingsClient.Ping() != PTSettingsClient.Result.Unavailable;
+    }
+
+    private static bool PipeExists()
+    {
+        try
+        {
+            foreach (var pipe in Directory.EnumerateFiles(@"\\.\pipe\"))
+            {
+                if (string.Equals(Path.GetFileName(pipe), PTSettingsClient.PipeName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // If enumeration fails for any reason, fall back to the (slower but
+            // authoritative) connect probe rather than wrongly reporting absent.
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
